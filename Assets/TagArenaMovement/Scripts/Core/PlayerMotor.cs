@@ -38,6 +38,8 @@ namespace TagArena.Movement
         public float SuperGlideT { get; private set; } = -1f;
         public Vector3 WallNormal => _probe.Wall.normal;
         public bool WallLeft => _probe.Wall.left;
+        public Collider WallCollider => _probe != null ? _probe.Wall.collider : null;
+        public Vector3 WallPoint => _probe != null ? _probe.Wall.point : Vector3.zero;
         /// <summary>Visual lip only. The mantle timer and the stand point write are unchanged.</summary>
         public bool LedgeHit => _probe != null && _probe.Ledge.hit;
         public Vector3 LedgeStand => _probe != null ? _probe.Ledge.standPoint : Vector3.zero;

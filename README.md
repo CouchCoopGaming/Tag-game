@@ -267,6 +267,10 @@ Keys **1** Hot Potato · **2** Least It · **3** Trail Tag · Enter to play · *
 Art drop in `Assets/Art/Characters/`. In Unity: **Tag → Setup Dummy Prefabs From FBX**, then add `DummyAvatarBinder` on Player/DummyRunner and assign the two prefabs (hides capsule).
 
 
+## Roll reference
+
+The shoulder-roll shape was keyed from the pose clips `01_roll_grass` and `02_drop_roll_gravel` on `cursor/tag-storror-mocap` (`Docs/Storror/out/json/` and the strips beside them). Those two clips are grade B: usable with care. They are reference only. That branch is not merged here. The roll stays visual: 0.52 s, and it still starts at 65% of terminal speed.
+
 ## Hub visuals (dummies + park props)
 After pull, in Unity once: **Tag → Setup Hub Visuals (Dummies + Props + Play Bind)** (or accept the auto dialog).
 That fills Dummy prefabs from FBX, copies into Resources, binds Player/DummyRunner, and enables PARK prop dressing.

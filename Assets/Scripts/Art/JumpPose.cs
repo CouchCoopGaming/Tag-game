@@ -31,13 +31,13 @@ namespace Tag.Art
         public const float DriveThigh = 88f;
         public const float DriveKnee = -110f;
         public const float SwingArmPitch = -146f;
-        public const float SwingArmYaw = 24f;
+        public const float SwingArmYaw = -24f;
         public const float SwingElbow = -16f;
 
         public const float TuckThigh = 76f;
         public const float TuckKnee = -112f;
         public const float TuckArmPitch = -126f;
-        public const float TuckArmYaw = 18f;
+        public const float TuckArmYaw = -18f;
         public const float TuckElbow = -26f;
         public const float TuckSpine = -8f;
         public const float TuckHip = 14f;
@@ -45,7 +45,7 @@ namespace Tag.Art
         public const float FallThigh = 16f;
         public const float FallKnee = -18f;
         public const float FallArmPitch = -30f;
-        public const float FallArmYaw = 58f;
+        public const float FallArmYaw = -58f;
         public const float FallElbow = -12f;
         public const float FallSpine = 6f;
         public const float FallHip = 4f;
@@ -168,8 +168,8 @@ namespace Tag.Art
             float reachY = Mathf.Lerp(outY, outY + 6f, gait);
             float yawL = Mathf.Lerp(outY, reachY, frontR * gait);
             float yawR = Mathf.Lerp(outY, reachY, frontL * gait);
-            float elbowReach = Mathf.Lerp(-10f, -6f, gait);
-            float elbowPull = Mathf.Lerp(-18f, -30f, gait);
+            float elbowReach = Mathf.Lerp(VerbPoseClips.ElbowClear, -6f, gait);
+            float elbowPull = VerbPoseClips.ElbowClear;
             return new Sample
             {
                 ThighL = thighL,
@@ -251,8 +251,8 @@ namespace Tag.Art
             if (!(CrouchHip > TuckHip && TuckHip > FallHip)) return false;
             if (!(SwingArmPitch < TuckArmPitch && TuckArmPitch < FallArmPitch)) return false;
             if (FallArmPitch > -20f) return false;
-            if (!(FallArmYaw > SwingArmYaw && SwingArmYaw > TuckArmYaw)) return false;
-            if (FallArmYaw < TuckArmYaw + 30f) return false;
+            if (!(FallArmYaw < SwingArmYaw && SwingArmYaw < TuckArmYaw)) return false;
+            if (FallArmYaw > TuckArmYaw - 30f) return false;
 
             const float cycle = 0.9f;
             float sinC = Mathf.Sin(cycle);
@@ -280,13 +280,13 @@ namespace Tag.Art
 
             Sample hung = At(0f, 0.4f, true);
             if (hung.ThighL <= FallThigh || hung.ThighL >= TuckThigh) return false;
-            if (hung.ArmYawL <= TuckArmYaw || hung.ArmYawL >= FallArmYaw) return false;
+            if (hung.ArmYawL >= TuckArmYaw || hung.ArmYawL <= FallArmYaw) return false;
 
             Sample fall = At(-16f, 0.5f, true);
             if (fall.ThighL > 25f || fall.ThighR > 25f) return false;
             if (fall.KneeL < -30f || fall.KneeR < -30f) return false;
-            if (fall.ArmYawL < 50f) return false;
-            if (fall.ArmYawL < rise.ArmYawL + 25f) return false;
+            if (fall.ArmYawL > -50f) return false;
+            if (fall.ArmYawL > rise.ArmYawL - 25f) return false;
 
             Sample full = Mixed(24.7f, 0.2f, true, 12f, sinC, cycle);
             if (Mathf.Abs(full.ThighL - rise.ThighL) > 0.05f) return false;

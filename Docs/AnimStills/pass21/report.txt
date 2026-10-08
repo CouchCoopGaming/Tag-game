@@ -1,0 +1,44 @@
+Pass 21. Side view, grey scene, red only on pose overlap. 1024x576. Each file is under 400 KB.
+
+Outward yaw is negative on the left arm and positive on the right. ShoulderFlare stays 24 and is not stacked on keys that already sit outward. The rope hand takes extra pitch along that reach: 0 at the fall (-30) and -32 at the pull (-80).
+
+Per frame, absolute depth, 0.5 cm limit, joined neighbours exempt within 3 cm of the joint. World depth is 0. poseFails is 0.
+
+grapple-latch 4 frames
+  pose 0.18 / 0.16 / 0.17 / 0.13 cm
+  rig  2.35 / 2.26 / 1.74 / 1.66 cm
+  t=0.000 lead hand 33.6 cm in front of the face
+  t=0.070 lead hand 10.1 cm in front of the face
+  before t=0.070: head through the rope 1.39 cm, hand 32 cm behind the face, red 305
+  after t=0.070: red 0
+
+grapple-pull 15 frames
+  pose 0.15 to 0.39 cm, worst t=0.333 spine/thigh
+  rig up to 2.34 cm
+  yaw stays -32 / 32
+  left hand 3.3 cm in front of the face, 38 cm in front of the chest
+  before t=0.333: pose 0.39 cm, world 0, hand 35 cm behind the face, red 0
+  after t=0.333: red 0
+
+grapple-release 4 frames
+  pose 0.17 / 0.08 / 0.00 / 0.06 cm
+  rig  0.95 / 1.21 / 1.09 / 1.57 cm
+  hand stays in front (10 to 15 cm)
+  before t=0.000: head through the rope 1.39 cm, red 338
+  after t=0.000: red 0
+
+grapple-miss 9 frames
+  pose 0.08, 0.08, 0.08, 0.17, 0.35, 0.42, 0.18, 0.00, 0.00 cm
+  rig up to 3.40 cm on the off-arm hinge
+  t=0 throw hand 33.4 cm in front of the face
+  before t=0.000: lead upper arm 1.91 cm inside the chest, red 980
+  after t=0.000: red 0
+
+launch-rise 2 frames, both pose 0.24 cm, rig 0.89 cm
+launch-mill 2 frames, both pose 0.24 cm, rig 1.18 cm
+  before: both upper arms through the head at 9.54 cm, lower arms 8.91 and 8.79 cm, red 1558
+  after: hands at x -0.47 and 0.47, z 2.07, red 0
+
+Checker on these seven clips: no-clip clips=7 frames=40 worldMax=0.00 poseMax=0.42 rigMax=3.40 poseFails=0 rigJoint=39
+
+StrafeJumpSim exits 0. Gameplay lines match the post-merge sim. exit-fit grapple=-78 moved to grapple=-109 because that token is this body pitch.

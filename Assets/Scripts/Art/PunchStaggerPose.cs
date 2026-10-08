@@ -21,14 +21,14 @@ namespace Tag.Art
         public const float Slew = 280f;
 
         public const float ArmPitchL = 46f;
-        public const float ArmYawL = 28f;
+        public const float ArmYawL = -28f;
         public const float ArmRollL = 14f;
-        public const float ElbowL = -30f;
+        public const float ElbowL = VerbPoseClips.ElbowClear;
         public const float ArmPitchR = 34f;
-        public const float ArmYawR = -26f;
+        public const float ArmYawR = 24f;
         public const float ArmRollR = -12f;
-        public const float ElbowR = -24f;
-        public const float ThighL = 38f;
+        public const float ElbowR = VerbPoseClips.ElbowClear;
+        public const float ThighL = 28f;
         public const float ThighR = -16f;
         public const float KneeL = -34f;
         public const float KneeR = -8f;
@@ -95,8 +95,8 @@ namespace Tag.Art
 
             Sample pose = Stumble();
             if (pose.ArmPitchL < 36f || pose.ArmPitchR < 24f) return false;
-            if (pose.ArmYawL < 18f || pose.ArmYawR > -18f) return false;
-            if (pose.ThighL < 28f || pose.ThighR > -8f) return false;
+            if (pose.ArmYawL > -16f || pose.ArmYawR < 16f) return false;
+            if (pose.ThighL < 24f || pose.ThighR > -8f) return false;
             if (pose.KneeL > -24f || pose.KneeR < -20f) return false;
             if (Mathf.Abs(pose.KneeL - pose.KneeR) < 16f) return false;
             if (pose.Hip + pose.Spine > -28f) return false;

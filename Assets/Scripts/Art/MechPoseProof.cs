@@ -25,8 +25,8 @@ namespace Tag.Art
             if (Mathf.Abs(WallPose.RunCadenceFull - GaitBlend.CadenceAt(WallPose.WallRunSpeedRef)) > 0.2f) return false;
             WallPose.Sample run = WallPose.Run(1f, true);
             if (run.LeanZ > -15f || run.LeanZ < -21f) return false;
-            if (run.ArmYawL < 28f) return false;
-            if (run.ArmPitchL < -10f || run.ArmPitchL > 16f) return false;
+            if (run.ArmYawL > -4f) return false;
+            if (run.ArmPitchL > -8f || run.ArmPitchL < -40f) return false;
             WallPose.Sample runBack = WallPose.Run(-1f, true);
             if (run.ThighR <= run.ThighL) return false;
             if (runBack.ThighL <= runBack.ThighR) return false;
@@ -50,7 +50,7 @@ namespace Tag.Art
 
             WallJumpPose.Sample kick = WallJumpPose.Push(true);
             if (kick.ThighL < 40f || kick.ThighR < 40f) return false;
-            if (kick.ArmPitchL < 20f || kick.ArmPitchR < 20f) return false;
+            if (kick.ArmPitchL > -12f || kick.ArmPitchR > -12f) return false;
             if (kick.LeanZ > -15f || kick.LeanZ < -21f) return false;
             float end = WallJumpPose.BeatSeconds + WallJumpPose.EaseSeconds;
             if (WallJumpPose.JumpWeight(end) < 0.999f) return false;

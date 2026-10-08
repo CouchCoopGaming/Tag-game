@@ -51,6 +51,8 @@ namespace Tag.Settings
             Line(text, "rounds", s.RoundsPerMatch);
             Line(text, "split", s.SplitAxis);
             Line(text, "listen", s.Listener);
+            Line(text, "comic", s.ComicWords ? 1f : 0f);
+            Line(text, "effects", s.Effects);
             for (int i = 0; i < (int)PlayAction.Count; i++)
             {
                 var action = (PlayAction)i;
@@ -180,7 +182,7 @@ namespace Tag.Settings
             if (key == "master" || key == "sfx" || key == "ui" || key == "music" || key == "mute") return true;
             if (key == "hud" || key == "colorblind" || key == "minimap" || key == "accessSeat") return true;
             if (key == "arena" || key == "ai" || key == "diff" || key == "roundLen" || key == "rounds") return true;
-            if (key == "split" || key == "listen") return true;
+            if (key == "split" || key == "listen" || key == "comic" || key == "effects") return true;
             if (key.StartsWith("kb.", StringComparison.Ordinal) || key.StartsWith("pad.", StringComparison.Ordinal))
                 return true;
             if (key.StartsWith("pb.", StringComparison.Ordinal) || key.StartsWith("sp.", StringComparison.Ordinal))
@@ -225,6 +227,8 @@ namespace Tag.Settings
             else if (key == "rounds") settings.RoundsPerMatch = (int)Num(value, settings.RoundsPerMatch);
             else if (key == "split") settings.SplitAxis = (int)Num(value, settings.SplitAxis);
             else if (key == "listen") settings.Listener = (int)Num(value, settings.Listener);
+            else if (key == "comic") settings.ComicWords = Flag(value);
+            else if (key == "effects") settings.Effects = (int)Num(value, settings.Effects);
             else if (key.StartsWith("kb.", StringComparison.Ordinal))
                 Assign(binds, key.Substring(3), value, true);
             else if (key.StartsWith("pad.", StringComparison.Ordinal))

@@ -260,6 +260,159 @@ Jumps, hops, and air strafes read on the body. The jump still leaves the ground 
 
 The jump still leaves on the press frame. The tuck at the top holds the arms out for balance, clear of the head. A long fall keeps the chest up, looks at the landing, and spreads the arms with the palms down. A landing at about 36.5 m/s rolls into the run. A slower sprint landing eases out of the absorb. Wall-run jumps and cling drops no longer pop the arms. Try it: jump, watch the hands at the top, drop from high enough to roll, then wall-run off and drop a cling.
 
+## Animation exits and the landing roll
+
+Each move now has a short recovery you can see as it ends. The body eases back into the run, the idle, or the air pose. Jump, slide, punch, dash, or lunge peels that recovery off in about six hundredths of a second, and the new move shows the same frame. Nothing here changes speed, coyote, cling, or the slide.
+
+- Wall-run: a push off the wall, or a foot reaching down if you are already dropping.
+- Wall jump: a tuck, then the body opens.
+- Climb top-out: a hand plant, the lead knee up, then a stand. A climb that goes into a mantle waits until the mantle finishes, then plays this.
+- Cling drop: the hands open and the body falls off the wall.
+- Vault: the trail leg sweeps through and you land in stride. This is a fast mantle.
+- Mantle: both hands press the lip and the chest comes up. Slower than the vault, and not the climb top-out.
+- Slide: a pop-up into the run. The slide itself is unchanged.
+- Air dash: the stretch settles back to center.
+- Punch: the right arm folds back and the weight sits back.
+- Lunge: the reach collapses, weight back, then the stride.
+- Zip drop: the hands leave the cable.
+- Launch pad: knees take the landing, then you stand. A fall that is fast enough to roll uses the roll instead.
+- Grapple: the left hand leads as you arrive, and it opens when you let go.
+- Stagger: the stumble catches a step.
+- Tag-back: the flinch shakes off when the one-second window ends.
+- Ordinary landings: a knee bend that gets deeper as the fall gets faster.
+
+A fall that reaches 65% of terminal speed (36.50 m/s down, a drop of about 18.69 m from a dead stop at the current fall gravity) plays a shoulder roll along your travel. Standing almost still at that speed is a short crouch instead. You keep your speed. There is no extra stun. The camera does not roll. A small dust puff and the hard-land sound mark the shoulder. Try it: fall from high enough that the drop is about 19 meters, land while running, then land again with no stick. Jump during the roll and the jump should win immediately.
+
+## Deeper exits and a real shoulder roll
+
+The recoveries from the last pass now move like a person changing their mind, and the fast landing is a parkour roll instead of a crouch with a tip.
+
+- The roll turns the mesh a full circle over the lead shoulder. The chin tucks, the lead arm sweeps, the shoulder touches, the back crosses, the legs come over, a foot plants, and you are running at the speed you landed with. The body stays on the ground. The capsule does not roll, and the camera does not roll. Try it: fall about 19 meters while running, and watch the shoulder. Strafe as you land and the other shoulder leads. Land again with the stick straight and the lead shoulder swaps.
+- Standing still at that same fall puts both hands on the ground, then you stand up. Try it: the same drop, but let go of the stick before you hit.
+- Shorter falls have three landings. A small hop keeps the chest up. A medium fall bends the knees. A hard fall, still under the roll, brings the hands down near the ground. None of them change your speed. Try it: step off a curb, then a first-floor roof, then something just under the roll.
+- Leaving a wall, a vault, a slide, or a climb plays the matching side. The arms follow the chest, and the head is the last thing to settle. Try it: wall-run the left wall and the right wall, then vault and pop into a slide. The slide should arrive without a snap.
+- Jump during the roll and the jump shows within a blink. The roll does not make you wait.
+
+## Dust and comic words
+
+Footfalls kick up dust, and a punch or a tag pops a comic word. Speed, slide, and the camera stay as they were.
+
+- Walking is a small puff. Sprinting is a thicker cloud. Starting a run, spinning hard, and dropping into a slide kick more dust. The slide leaves a trail. A wall run scuffs, and a vault puffs at the hands. Grass is a light fleck, sand and mulch hang in the air, concrete fades fast, wood is a faint splinter, metal is almost quiet unless you pivot, and a wet surface splashes. Try it: sprint the lawn, then the sand, then a hard turn on the concrete.
+- A punch shows POP! or POW!. A tag shows BAM! or WHAM!. The same word does not repeat on the next hit. The letters face you in every split pane. Pause → Settings → Comic words turns them off. Reduced flashing hides the dust and the words. Try it: Practice, dummy on, punch, then tag.
+
+## Verb effects and comic lettering
+
+The contact words now read as a comic burst, and the big moves leave a trail you can see. Speed, slide, and the camera stay as they were.
+
+- POP!, POW!, BAM!, and WHAM! each have their own explosion shape and colors. A thick black outline, a second burst the letters overlap, and print dots you can see. The letters are big, tight, and arched, with a black stroke, a thin white inner line, and a block shadow. A tag adds speed lines behind BAM! and WHAM!. They punch in a little too big, wobble, and fade on the same short beat as before. Try it: punch the dummy, then tag.
+- Pause → Settings → Effects is Off, Low, or Full. Full is the default. Off hides the dust, the words, and these trails. Low draws fewer of them. Reduced flashing hides them too.
+- A hard landing stamps a ring and flicks debris. The shoulder roll swirls dust along the path. A dash leaves a few ghosts in your color. The rope sags, wobbles, chips the hook point, and snaps when you let go. A pad throws an up ring and a wind streak. A zip sparks along the ride. A stagger puts dizzy stars over the head for the same quarter second. Tag-back keeps its one second and pulses a colored rim so you can see who is safe in every split pane. A wall run scuffs, and a wet wall drips. Sprinting leaves wisps. Try it: fall, dash, rope, pad, zip, then take a hit.
+
+## Landing ring, dizzy stars, and a wet wall
+
+BAM! and WHAM! sit a little larger in their bursts, and the big moves you own in this pass read more clearly. Speed, slide, and the camera stay as they were.
+
+- BAM! and WHAM! are about a tenth bigger inside the explosion, so they match POP and POW. Try it: tag the dummy and look at the letters against the burst.
+- A small hop stamps a small ring. A medium fall stamps a wider one and throws more debris. A heavy fall, and the shoulder roll, stamp the full ring. The roll also swirls dust along the path. Try it: step off a curb, then a roof, then fall about 19 meters while running.
+- A dash leaves a short trail of ghosts in your color. Low effects draws one fewer. Try it: dash, then set Effects to Low and dash again.
+- The rope still sags and wobbles. The hook chips the surface, and letting go snaps. Try it: click to pull, then double-click to release.
+- A stagger puts three comic stars over the head for the same quarter second. They use the same burst, outline, and print dots as the words. Try it: let the dummy punch you.
+- Tag-back still lasts one second. A colored rim pulses on the safe body in every split pane. Try it: get tagged, then look at the body before you can be tagged again.
+- A wet wall drips when a foot plants. Try it: wall-run a surface named wet.
+- Pause → Settings → Effects is still Off, Low, or Full. Off and Reduced flashing hide these trails.
+
+## Softer trails and five quieter exits
+
+The landing ring, the dust, the dash ghosts, and the wet drips now read as printed art instead of a placeholder. Speed, slide, and the camera stay as they were.
+
+- A landing stamps a soft ring in the color of the ground. A heavy fall cracks that ring. Debris is a short puff that grows and fades. The shoulder roll leaves the same puff along the path. Try it: hop, then fall hard onto concrete, then onto dirt.
+- A dash leaves a tinted afterimage with a bright rim. It fades out instead of popping off. Try it: dash.
+- The rope still sags. The hook chips the surface with a small cracked stamp, and letting go eases the snap away. Try it: click to pull, then double-click to release.
+- Dizzy stars grow in and fade out over the same quarter second. Try it: let the dummy punch you.
+- A wet wall drips a real droplet when a foot plants. Try it: wall-run a surface named wet.
+- Leaving a zip, a hard standing land, a wall jump, a climb, or a mantle eases in a little longer. Jump, slide, punch, dash, and lunge still peel an exit off in the same short window.
+
+## A real ghost and a tucked roll
+
+A dash now leaves copies of your body, and the fast landing rolls over the shoulder instead of planting the head. Speed, slide, and the camera stay as they were.
+
+- The ghosts are your silhouette at the last few steps of the dash, in your color, with a bright rim. The one closest to you is the strongest. The ones behind fade out. Try it: dash, and look at the trail. It should read as you, not as a flat card.
+- The roll tucks the chin and bends the lead arm into a hoop. You go over that shoulder, across the back, and up into the run. It is still the same half second, and it still waits for the same fast fall. Try it: fall about 19 meters while running, and watch the shoulder come down first. The head stays tucked.
+- An exit eases in once. The live pose joins the recovery over the first 22% of the clip. The extra 0.16 s fade is not stacked on that join. A stagger, and the end of tag-back, still fade in on the short blend, because those two do not join. Try it: leave a wall jump, then take a stagger. The wall jump should leave the shove without a second fade.
+- Sprinting draws pale speed lines. A wall run or a climb throws sparks at the chest and the hand, above the foot scuff. A tag throws a gold burst with no letters. Becoming It, or losing it, swells once on the body and rings outward. A pad leaves a cyan trail and a zip leaves a violet one. Try it: sprint, wall-run metal, tag, then take It.
+
+## Dash trail, shoulder roll, and a comic tag
+
+The pictures for the dash, the roll, and the tag now show the move from the side, on grass and concrete, in warm light. Speed, the roll timer, and the camera in play stay as they were.
+
+- The dash ghosts trail behind you. Each one is your color and a step more transparent, with a bright rim, and they overlap your body. They are not white cards standing in a row. Try it: dash, and look back along the path.
+- The roll reaches one hand down, tucks the chin, goes over the shoulder with the legs in, and comes up into the run. The whole body stays in frame. It is still the same half second, and it still waits for the same fast fall. Try it: fall about 19 meters while running.
+- The tag picture is a jagged burst at the hand. Black outline, print dots, a white flash, speed spikes, and no letters. The words still say POP, POW, BAM, and WHAM. Try it: tag the dummy, then compare the hand to the still.
+
+## A low roll, and the trail matches your body
+
+The dash trail uses the same bolted body as the runner. A fast landing stays low across one shoulder. A tag throws the comic burst where the fist lands. Speed, the roll timer, and the camera stay as they were.
+
+- The ghosts are your mesh, bolts and all, a step more transparent each, with a bright rim. Try it: dash, and compare the trail to your own head and shoulders.
+- The roll plants a hand, drops the lead shoulder, crosses the back toward the opposite hip, and comes up onto the feet. The hips stay low, and the head stays off the ground. It is still the same half second, and it still waits for the same fast fall. Try it: fall about 19 meters while running.
+- A tag draws the comic burst on the contact. No letters. The words still say POP, POW, BAM, and WHAM. Turning comic words off still hides the burst. Try it: tag the dummy.
+- Dirt throws a bigger, browner trail than concrete at the same sprint. Try it: sprint on the concrete, then onto dirt.
+
+## Dust you can see, and the rest of the effects
+
+The dash trail, the tag, and the dust pictures were taken again. A hard landing, a slide, a launch pad, and a zip each have a picture too. Speed, the roll timer, and the camera in play stay as they were.
+
+- The dash ghosts and the solid runner are the same bolted body. The bolts sit on the crown, so the picture looks down enough to show them on both. Try it: dash, and compare the trail to your own head.
+- A tag stops the fist on the shoulder. The comic burst sits on that contact, under the face, with no letters. Try it: tag the dummy and watch the hand meet the shoulder.
+- Dirt throws a warm cloud at each step when you sprint. Concrete throws a small pale puff. A walk on dirt is fainter than the sprint. Grass is a few flecks. Try it: walk, then sprint, and cross from dirt onto concrete.
+- A hard landing draws a ring and kicks up debris. A slide leaves two short scrape ribbons. A pad throws a cyan ring on the way up. A zip throws violet sparks along the cable. Try it: drop from a roof, slide, hit a pad, then take a zip.
+
+## Clouds, a real absorb, and a tucked launch
+
+The effect pictures were taken again in the park, in warm daylight. Speed, the roll timer, and the camera in play stay as they were.
+
+- Dust at your feet is a soft filled cloud. A sprint on dirt throws a tan one. Concrete throws a smaller gray one. A walk is a short puff. Try it: walk, then sprint, and cross from dirt onto concrete.
+- A hard landing that is not fast enough to roll drops into a deep knee bend, chest forward, head up, one hand near a foot, with the ring and the debris. Try it: hop off something about head height while moving.
+- A launch pad kicks up a short cyan burst around your knees and you leave it in a tuck, with a few speed lines behind you. Try it: run over a pad.
+- A zip leans you along the cable and sparks trail off the hand. A punch throws a small POW!. A tag is still the bigger burst with no letters. Try it: take a zip, then punch the dummy.
+
+## A planted landing, and a punch word you can read
+
+The effect pictures were taken again. Speed, the roll timer, and the camera in play stay as they were.
+
+- Dirt dust is a lighter cloud than the ground under it, with a warm edge. Concrete is still the small gray puff, and a walk is still the short one. Try it: sprint on dirt, then on concrete.
+- A hard landing that is not fast enough to roll drops into a squat: feet under you, knees bent, chest forward, head up, one hand by a foot. The ring and the debris stay. Try it: hop off something about head height while moving.
+- A punch puts a small POW! on the fist. A tag is still the bigger burst with no letters. Try it: punch the dummy, then tag.
+- A zip still sparks off the hand, a slide still leaves two scrape ribbons, and a grapple shows the sagging rope and the hook. Try it: take a zip, slide, then fire the rope.
+
+## A punch that lands, and a slide that stays feet-first
+
+The effect pictures were taken again. Speed, the roll timer, and the camera in play stay as they were.
+
+- A punch reaches the other runner. The fist is out, the POW! sits on the contact, and a tag is still the bigger burst with no letters. Try it: punch the dummy.
+- A slide stays feet-first: chest tipped back, one leg tucked, a hand trailing, sparks at the heel. Try it: slide on the grass.
+- A zip is a side view of the whole body hanging from the handle, with the sparks on the trolley. A grapple rope comes out of the left hand. Try it: take a zip, then fire the rope.
+
+## Both hands on the line, and a slide on the ground
+
+The effect pictures were taken again. Speed, the roll timer, and the camera in play stay as they were.
+
+- A zip puts both hands on the trolley. The knees tuck, the legs trail, and the sparks are the same warm orange as the other metal hits. Try it: grab a zip line.
+- A slide sits on the ground. The trail leg folds under. Dirt kicks up a dust spray, and concrete kicks up sparks. Try it: slide on grass, then on concrete.
+- A grapple swings. The arm stays out along the rope, the body leans with the arc, and the knees stay bent. Try it: fire the rope and swing.
+- A punch still lands on the back. The target leans, the head snaps, and the fist leaves a short trail. Try it: punch the dummy.
+- A wall run leaves faint streaks at the foot. A wall jump kicks up a puff. A vault plants the hands in a puff on the box. Try it: run a wall, jump off it, then vault a box.
+
+## Hips on the dirt, and a foot on the wall
+
+The effect pictures were taken again. Speed, the roll timer, and the camera in play stay as they were.
+
+- A slide sets the hips on dirt. The trail leg folds under, and dust leaves the lead heel. Try it: slide on the dirt path, then on concrete.
+- A wall run is a long wall. The near foot is on the face, the body leans in, and the streaks start at that foot. Try it: run the wall.
+- A wall jump plants the kick on the face and leaves a puff there. Try it: jump off the wall.
+- A vault puts both hands on the box. The hips stay above it and the legs swing over. Try it: vault a box.
+- The zip, the grapple swing, and the punch stay as they were.
+
 ## Motion, thirteenth pass
 
 A long fall now bends the knees, sets the feet a little ahead, and opens the arms. Climbing onto a ledge, vaulting, sliding, grabbing and leaving a zip, arriving and letting go of a grapple, and leaving a launch pad no longer pop a bone in one frame. Speeds and the timers you feel are the same. Try it: fall from high up and watch the knees, then climb, vault, slide, zip, grapple, and hit a launch pad.

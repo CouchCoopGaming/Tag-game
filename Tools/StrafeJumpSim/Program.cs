@@ -1105,6 +1105,58 @@ static class Program
             return 1;
         }
 
+        Console.WriteLine(Tag.Art.VerbExitProof.ProofLine());
+        if (!Tag.Art.VerbExitProof.Holds())
+        {
+            Console.Error.WriteLine("verb exits are not held");
+            return 1;
+        }
+
+        Console.WriteLine(Tag.Art.LandingRollPose.ProofLine());
+        if (!Tag.Art.LandingRollPose.Holds())
+        {
+            Console.Error.WriteLine("landing roll is not held");
+            return 1;
+        }
+
+        Tag.Art.VerbExitStills.Write(Path.Combine(RepoRoot(), "Docs", "AnimStills", "pass2"));
+
+        Console.WriteLine(Tag.FX.DustLook.ProofLine());
+        if (!Tag.FX.DustLook.Holds())
+        {
+            Console.Error.WriteLine("running dust is not held");
+            return 1;
+        }
+        Console.WriteLine(Tag.FX.ComicWords.ProofLine());
+        if (!Tag.FX.ComicWords.Holds())
+        {
+            Console.Error.WriteLine("comic words are not held");
+            return 1;
+        }
+        Tag.FX.FxStills.Write(Path.Combine(RepoRoot(), "Docs", "AnimStills", "pass3"));
+
+        Console.WriteLine(Tag.FX.VerbFxLook.ProofLine());
+        if (!Tag.FX.VerbFxLook.Holds())
+        {
+            Console.Error.WriteLine("verb fx is not held");
+            return 1;
+        }
+        Tag.FX.VerbFxStills.Write(Path.Combine(RepoRoot(), "Docs", "AnimStills", "pass4"));
+
+        Console.WriteLine(Tag.Art.VerbExitFit.ProofLine());
+        if (!Tag.Art.VerbExitFit.Holds())
+        {
+            Console.Error.WriteLine("exit fit is not held");
+            return 1;
+        }
+        Console.WriteLine(Tag.FX.Pass5Look.ProofLine());
+        if (!Tag.FX.Pass5Look.Holds())
+        {
+            Console.Error.WriteLine("pass 5 fx is not held");
+            return 1;
+        }
+        Tag.FX.Pass5Stills.Write(Path.Combine(RepoRoot(), "Docs", "AnimStills", "pass5"));
+
         Console.WriteLine("solo grapple on; couch rope on; opponent gate off; jet off; clips and locks held");
         return 0;
     }

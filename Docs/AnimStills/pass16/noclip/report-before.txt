@@ -1,0 +1,184 @@
+no-clip clips=35 frames=320 worldMax=22.44 poseMax=22.44 rigMax=3.52 poseFails=263 rigJoint=294
+exit-WallRun frames=10 world=19.87 pose=19.87 rig=2.30 poseFails=10 rigJoint=10 worst_t=0.200 pair=Mesh_UpperLeg_L/SolidWall via=world
+  pose Mesh_UpperLeg_L/SolidWall 19.87
+  pose Mesh_Chest/SolidWall 19.08
+  pose Mesh_Hips/SolidWall 18.12
+  pose Mesh_Chest/Mesh_UpperArm_L 3.20
+  pose Mesh_Chest/Mesh_UpperArm_R 1.91
+  pose Mesh_Spine/Mesh_UpperLeg_L 0.65
+exit-WallJump frames=10 world=14.53 pose=14.53 rig=3.47 poseFails=10 rigJoint=10 worst_t=0.300 pair=Mesh_UpperArm_L/SolidWall via=world
+  pose Mesh_UpperArm_L/SolidWall 14.53
+  pose Mesh_Spine/Mesh_UpperLeg_R 3.06
+  pose Mesh_Spine/Mesh_UpperLeg_L 2.90
+  pose Mesh_Hand_R/Mesh_LowerArm_L 1.79
+  pose Mesh_Chest/Mesh_UpperArm_R 0.98
+  pose Mesh_Chest/Mesh_UpperLeg_R 0.57
+exit-ClimbTopOut frames=11 world=21.42 pose=21.42 rig=3.14 poseFails=11 rigJoint=11 worst_t=0.320 pair=Mesh_LowerArm_R/SolidBox via=world
+  pose Mesh_LowerArm_R/SolidBox 21.42
+  pose Mesh_UpperArm_R/SolidBox 20.90
+  pose Mesh_Hand_L/Mesh_Head 5.40
+  pose Mesh_Head/Mesh_LowerArm_L 5.30
+  pose Mesh_Chest/Mesh_UpperArm_R 5.24
+  pose Mesh_LowerArm_L/Mesh_UpperArm_R 4.27
+  pose Mesh_Chest/Mesh_UpperArm_L 3.91
+  pose Mesh_UpperArm_L/Mesh_UpperArm_R 3.75
+exit-ClingDrop frames=8 world=12.64 pose=12.64 rig=0.80 poseFails=8 rigJoint=8 worst_t=0.220 pair=Mesh_UpperArm_L/SolidWall via=world
+  pose Mesh_UpperArm_L/SolidWall 12.64
+  pose Mesh_Chest/Mesh_UpperArm_L 5.36
+  pose Mesh_Chest/Mesh_UpperArm_R 5.12
+  pose Mesh_LowerArm_L/Mesh_UpperArm_R 2.93
+  pose Mesh_LowerArm_L/Mesh_LowerArm_R 2.63
+  pose Mesh_UpperArm_L/Mesh_UpperArm_R 2.57
+  pose Mesh_LowerArm_R/Mesh_UpperArm_L 2.15
+exit-Vault frames=10 world=0.09 pose=1.16 rig=0.99 poseFails=2 rigJoint=10 worst_t=0.300 pair=Mesh_Chest/Mesh_UpperArm_R via=self
+  pose Mesh_Chest/Mesh_UpperArm_R 1.16
+  pose Mesh_Spine/Mesh_UpperLeg_R 0.94
+exit-Mantle frames=10 world=21.83 pose=21.83 rig=3.31 poseFails=10 rigJoint=10 worst_t=0.280 pair=Mesh_LowerArm_R/SolidBox via=world
+  pose Mesh_LowerArm_R/SolidBox 21.83
+  pose Mesh_UpperArm_R/SolidBox 20.77
+  pose Mesh_UpperArm_L/SolidBox 20.03
+  pose Mesh_LowerArm_L/SolidBox 19.97
+  pose Mesh_Chest/Mesh_UpperArm_R 4.05
+  pose Mesh_LowerArm_L/Mesh_LowerArm_R 3.59
+  pose Mesh_LowerArm_R/Mesh_UpperArm_L 3.31
+  pose Mesh_LowerArm_L/Mesh_UpperArm_R 3.18
+exit-Slide frames=9 world=0.00 pose=2.37 rig=1.40 poseFails=9 rigJoint=9 worst_t=0.000 pair=Mesh_Spine/Mesh_UpperLeg_L via=self
+  pose Mesh_Spine/Mesh_UpperLeg_L 2.37
+  pose Mesh_Chest/Mesh_UpperArm_L 1.40
+  pose Mesh_Chest/Mesh_UpperLeg_L 0.87
+exit-AirDash frames=7 world=0.00 pose=0.24 rig=0.68 poseFails=0 rigJoint=2 worst_t=0.180 pair=Mesh_Spine/Mesh_UpperLeg_R via=self
+exit-Punch frames=10 world=0.00 pose=0.74 rig=2.24 poseFails=10 rigJoint=10 worst_t=0.000 pair=Mesh_Chest/Mesh_UpperArm_L via=self
+  pose Mesh_Chest/Mesh_UpperArm_L 0.74
+exit-Lunge frames=9 world=0.00 pose=0.54 rig=0.73 poseFails=1 rigJoint=9 worst_t=0.067 pair=Mesh_Spine/Mesh_UpperLeg_L via=self
+  pose Mesh_Spine/Mesh_UpperLeg_L 0.54
+exit-ZipDrop frames=9 world=0.00 pose=7.97 rig=1.84 poseFails=9 rigJoint=9 worst_t=0.000 pair=Mesh_Head/Mesh_LowerArm_L via=self
+  pose Mesh_Head/Mesh_LowerArm_L 7.97
+  pose Mesh_Head/Mesh_LowerArm_R 6.90
+  pose Mesh_Head/Mesh_UpperArm_L 6.72
+  pose Mesh_Head/Mesh_UpperArm_R 6.24
+  pose Mesh_LowerArm_R/Mesh_UpperArm_L 3.91
+  pose Mesh_UpperArm_L/Mesh_UpperArm_R 3.64
+  pose Mesh_LowerArm_L/Mesh_UpperArm_R 2.86
+  pose Mesh_Neck/Mesh_UpperArm_L 2.83
+exit-LaunchLand frames=10 world=0.00 pose=3.02 rig=2.35 poseFails=10 rigJoint=10 worst_t=0.267 pair=Mesh_Chest/Mesh_UpperArm_L via=self
+  pose Mesh_Chest/Mesh_UpperArm_L 3.02
+  pose Mesh_Chest/Mesh_UpperArm_R 2.54
+exit-GrappleArrive frames=9 world=0.00 pose=4.44 rig=2.35 poseFails=9 rigJoint=9 worst_t=0.100 pair=Mesh_Chest/Mesh_UpperArm_L via=self
+  pose Mesh_Chest/Mesh_UpperArm_L 4.44
+exit-GrappleRelease frames=8 world=0.00 pose=1.21 rig=2.35 poseFails=7 rigJoint=8 worst_t=0.167 pair=Mesh_Chest/Mesh_UpperArm_L via=self
+  pose Mesh_Chest/Mesh_UpperArm_L 1.21
+exit-Stagger frames=10 world=0.00 pose=2.67 rig=1.09 poseFails=10 rigJoint=10 worst_t=0.100 pair=Mesh_Chest/Mesh_UpperArm_L via=self
+  pose Mesh_Chest/Mesh_UpperArm_L 2.67
+  pose Mesh_Chest/Mesh_UpperArm_R 2.34
+exit-TagBackEnd frames=8 world=0.00 pose=2.42 rig=1.72 poseFails=8 rigJoint=8 worst_t=0.167 pair=Mesh_Chest/Mesh_UpperArm_R via=self
+  pose Mesh_Chest/Mesh_UpperArm_R 2.42
+  pose Mesh_Chest/Mesh_UpperArm_L 1.11
+exit-SoftLand frames=9 world=0.00 pose=0.37 rig=1.25 poseFails=0 rigJoint=9 worst_t=0.233 pair=Mesh_Spine/Mesh_UpperLeg_R via=self
+exit-Roll frames=17 world=0.00 pose=4.17 rig=3.52 poseFails=17 rigJoint=17 worst_t=0.133 pair=Mesh_Hand_R/Mesh_UpperArm_L via=self
+  pose Mesh_Hand_R/Mesh_UpperArm_L 4.17
+  pose Mesh_Chest/Mesh_UpperLeg_R 3.96
+  pose Mesh_Spine/Mesh_UpperLeg_R 3.36
+  pose Mesh_Chest/Mesh_UpperArm_R 3.35
+  pose Mesh_Chest/Mesh_LowerArm_R 3.21
+  pose Mesh_Spine/Mesh_UpperLeg_L 3.00
+  pose Mesh_Hips/Mesh_LowerArm_R 2.60
+  pose Mesh_Hips/Mesh_UpperArm_R 1.36
+exit-RollAbsorb frames=11 world=0.00 pose=1.53 rig=2.04 poseFails=11 rigJoint=11 worst_t=0.000 pair=Mesh_Spine/Mesh_UpperLeg_L via=self
+  pose Mesh_Spine/Mesh_UpperLeg_L 1.53
+  pose Mesh_Spine/Mesh_UpperLeg_R 1.04
+  pose Mesh_Chest/Mesh_Hips 0.53
+wall-run frames=9 world=11.82 pose=11.82 rig=2.33 poseFails=9 rigJoint=9 worst_t=0.000 pair=Mesh_UpperArm_L/SolidWall via=world
+  pose Mesh_UpperArm_L/SolidWall 11.82
+  pose Mesh_LowerArm_L/SolidWall 8.95
+  pose Mesh_Chest/Mesh_UpperArm_L 3.75
+  pose Mesh_Chest/Mesh_UpperArm_R 3.03
+  pose Mesh_Spine/Mesh_UpperLeg_L 0.82
+wall-jump frames=10 world=19.98 pose=19.98 rig=1.58 poseFails=10 rigJoint=10 worst_t=0.167 pair=Mesh_UpperArm_L/SolidWall via=world
+  pose Mesh_UpperArm_L/SolidWall 19.98
+  pose Mesh_Chest/Mesh_UpperArm_L 4.33
+  pose Mesh_LowerArm_L/Mesh_UpperArm_R 3.51
+  pose Mesh_Neck/Mesh_UpperArm_R 3.51
+  pose Mesh_Neck/Mesh_UpperArm_L 3.51
+  pose Mesh_LowerArm_R/Mesh_UpperArm_L 3.40
+  pose Mesh_UpperArm_L/Mesh_UpperArm_R 3.35
+  pose Mesh_Chest/Mesh_UpperArm_R 3.28
+vault frames=13 world=22.44 pose=22.44 rig=3.24 poseFails=10 rigJoint=13 worst_t=0.000 pair=Mesh_LowerArm_R/SolidBox via=world
+  pose Mesh_LowerArm_R/SolidBox 22.44
+  pose Mesh_UpperArm_R/SolidBox 20.21
+  pose Mesh_Head/Mesh_LowerArm_L 5.87
+  pose Mesh_Hand_L/Mesh_Head 5.40
+  pose Mesh_Chest/Mesh_UpperArm_R 5.22
+  pose Mesh_Chest/Mesh_UpperArm_L 5.03
+  pose Mesh_Foot_L/SolidBox 4.24
+  pose Mesh_LowerArm_L/Mesh_LowerArm_R 3.99
+zip-catch frames=5 world=1.90 pose=5.52 rig=2.12 poseFails=5 rigJoint=3 worst_t=0.000 pair=Mesh_Chest/Mesh_UpperArm_R via=self
+  pose Mesh_Chest/Mesh_UpperArm_R 5.52
+  pose Mesh_Chest/Mesh_UpperArm_L 5.52
+  pose Mesh_LowerArm_L/Mesh_UpperArm_R 4.09
+  pose Mesh_LowerArm_R/Mesh_UpperArm_L 4.09
+  pose Mesh_UpperArm_L/Mesh_UpperArm_R 3.86
+  pose Mesh_LowerArm_L/Mesh_LowerArm_R 3.35
+  pose Mesh_Neck/SolidZip 1.90
+  pose Mesh_Head/SolidZip 1.49
+zip-ride frames=13 world=1.39 pose=4.24 rig=0.31 poseFails=13 rigJoint=0 worst_t=0.100 pair=Mesh_Chest/Mesh_UpperArm_L via=self
+  pose Mesh_Chest/Mesh_UpperArm_L 4.24
+  pose Mesh_Chest/Mesh_UpperArm_R 4.24
+  pose Mesh_LowerArm_L/Mesh_LowerArm_R 3.13
+  pose Mesh_LowerArm_L/Mesh_UpperArm_R 2.72
+  pose Mesh_LowerArm_R/Mesh_UpperArm_L 2.72
+  pose Mesh_Head/SolidZip 1.39
+zip-release frames=6 world=1.96 pose=4.24 rig=2.04 poseFails=6 rigJoint=4 worst_t=0.000 pair=Mesh_Chest/Mesh_UpperArm_L via=self
+  pose Mesh_Chest/Mesh_UpperArm_L 4.24
+  pose Mesh_Chest/Mesh_UpperArm_R 4.24
+  pose Mesh_LowerArm_L/Mesh_LowerArm_R 3.13
+  pose Mesh_Hand_L/Mesh_LowerArm_R 2.82
+  pose Mesh_Hand_R/Mesh_LowerArm_L 2.82
+  pose Mesh_LowerArm_R/Mesh_UpperArm_L 2.72
+  pose Mesh_LowerArm_L/Mesh_UpperArm_R 2.72
+  pose Mesh_Chest/SolidZip 1.96
+grapple-aim frames=4 world=0.00 pose=3.69 rig=2.23 poseFails=3 rigJoint=3 worst_t=0.080 pair=Mesh_Chest/Mesh_UpperArm_R via=self
+  pose Mesh_Chest/Mesh_UpperArm_R 3.69
+grapple-latch frames=4 world=0.00 pose=3.14 rig=2.51 poseFails=4 rigJoint=4 worst_t=0.070 pair=Mesh_LowerArm_R/Mesh_UpperArm_L via=self
+  pose Mesh_LowerArm_R/Mesh_UpperArm_L 3.14
+  pose Mesh_UpperArm_L/Mesh_UpperArm_R 2.67
+  pose Mesh_LowerArm_L/Mesh_UpperArm_R 2.60
+  pose Mesh_Neck/Mesh_UpperArm_L 1.73
+  pose Mesh_Head/Mesh_UpperArm_L 1.70
+  pose Mesh_Head/Mesh_LowerArm_L 1.68
+  pose Mesh_Neck/Mesh_UpperArm_R 1.10
+  pose Mesh_Chest/Mesh_UpperArm_R 0.90
+grapple-pull frames=15 world=0.00 pose=3.14 rig=2.04 poseFails=15 rigJoint=15 worst_t=0.000 pair=Mesh_LowerArm_R/Mesh_UpperArm_L via=self
+  pose Mesh_LowerArm_R/Mesh_UpperArm_L 3.14
+  pose Mesh_UpperArm_L/Mesh_UpperArm_R 2.67
+  pose Mesh_LowerArm_L/Mesh_UpperArm_R 2.60
+  pose Mesh_Neck/Mesh_UpperArm_L 1.73
+  pose Mesh_Head/Mesh_UpperArm_L 1.44
+  pose Mesh_Neck/Mesh_UpperArm_R 1.10
+  pose Mesh_Head/Mesh_LowerArm_L 0.83
+  pose Mesh_LowerArm_L/Mesh_LowerArm_R 0.54
+grapple-release frames=4 world=1.00 pose=5.56 rig=2.23 poseFails=4 rigJoint=4 worst_t=0.033 pair=Mesh_Chest/Mesh_UpperArm_R via=self
+  pose Mesh_Chest/Mesh_UpperArm_R 5.56
+  pose Mesh_Chest/Mesh_UpperArm_L 4.62
+  pose Mesh_LowerArm_R/Mesh_UpperArm_L 3.14
+  pose Mesh_Hips/Mesh_LowerArm_L 3.14
+  pose Mesh_Hips/Mesh_LowerArm_R 3.14
+  pose Mesh_UpperArm_L/Mesh_UpperArm_R 2.67
+  pose Mesh_LowerArm_L/Mesh_UpperArm_R 2.60
+  pose Mesh_LowerArm_L/Mesh_Spine 2.30
+grapple-miss frames=9 world=0.00 pose=3.69 rig=3.40 poseFails=9 rigJoint=9 worst_t=0.240 pair=Mesh_Chest/Mesh_UpperArm_R via=self
+  pose Mesh_Chest/Mesh_UpperArm_R 3.69
+  pose Mesh_Chest/Mesh_UpperArm_L 2.59
+slide frames=13 world=0.00 pose=2.13 rig=2.33 poseFails=12 rigJoint=12 worst_t=0.100 pair=Mesh_Spine/Mesh_UpperLeg_L via=self
+  pose Mesh_Spine/Mesh_UpperLeg_L 2.13
+  pose Mesh_Chest/Mesh_UpperArm_L 1.79
+  pose Mesh_Chest/Mesh_UpperLeg_L 0.88
+punch frames=8 world=0.00 pose=7.13 rig=3.34 poseFails=5 rigJoint=8 worst_t=0.000 pair=Mesh_Hand_R/Mesh_Head via=self
+  pose Mesh_Hand_R/Mesh_Head 7.13
+  pose Mesh_Chest/Mesh_UpperArm_R 5.21
+  pose Mesh_Head/Mesh_LowerArm_R 5.02
+punch-recover frames=6 world=0.00 pose=0.22 rig=2.81 poseFails=0 rigJoint=6 worst_t=0.000 pair=Mesh_Spine/Mesh_UpperLeg_L via=self
+tag frames=7 world=0.00 pose=1.82 rig=3.27 poseFails=2 rigJoint=7 worst_t=0.200 pair=Mesh_Chest/Mesh_UpperArm_L via=self
+  pose Mesh_Chest/Mesh_UpperArm_R 1.82
+  pose Mesh_Chest/Mesh_UpperArm_L 1.82
+stagger frames=9 world=0.00 pose=0.76 rig=1.25 poseFails=4 rigJoint=7 worst_t=0.067 pair=Mesh_Spine/Mesh_UpperLeg_L via=self
+  pose Mesh_Spine/Mesh_UpperLeg_L 0.76

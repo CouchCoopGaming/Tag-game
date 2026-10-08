@@ -181,9 +181,9 @@ namespace Tag.Art
             float sinC = Mathf.Sin(cycle);
             JumpPose.Sample stride = Exit(8f, 12f, sinC, cycle);
             JumpPose.Sample fall = Exit(-16f, 12f, sinC, cycle);
-            if (fall.ArmYawL < 50f) return false;
+            if (fall.ArmYawL > -50f) return false;
             if (fall.ThighL > 25f) return false;
-            if (stride.ArmYawL > fall.ArmYawL) return false;
+            if (stride.ArmYawL < fall.ArmYawL) return false;
             if (Mathf.Abs(stride.ThighL - stride.ThighR) < 4f) return false;
             return true;
         }
