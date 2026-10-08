@@ -92,10 +92,74 @@ One frame of the hard-turn plant moves the thigh 2.7° where the unsmoothed gap 
 
 Stick figures from the joint angles are in `Docs/SmoothStills/pass3/loco-air-ik.png`. Twelve rows, eight frames. Sprint, strafe, air, hard turn, slope, and wall hand. Before, then after.
 
+## Pass 4
+
+Fifty-seven presentation pairs the motor can actually enter are measured in `TransitionMatrix`. Each pair reports the worst one-frame bone gap and the visual-root jump. A stride step at or under 33° stays on the exponential gait slew, so the feet do not lag. A larger gap uses a wider spring: 0.12 s up to 180°, 0.16 s past that. The 0.71 m mantle exit stays on the 0.10 s position spring. A larger absorbed pop, still under the respawn gate, uses 0.18 s. Every measured pair is now under the pass-1 limits. Exit clips, the landing roll, and particles stay on the anim-fx lane. These blends finish on the destination pose, so that lane can take the body from there.
+
+Worst ten pose pairs, raw one-frame gap then the sprung step. Root is the visual mesh jump on that same pair.
+
+| Pair | Pose before | Pose after | Root before | Root after |
+|---|---|---|---|---|
+| air → punch | 228.8° | 17.4° | 0.000 m | 0.000 m |
+| punch → air | 228.8° | 17.4° | 0.000 m | 0.000 m |
+| air → dash | 214.8° | 16.4° | 0.000 m | 0.000 m |
+| dash → air | 214.8° | 16.4° | 0.000 m | 0.000 m |
+| slide → air | 192.8° | 14.7° | 0.000 m | 0.000 m |
+| air → stagger | 190.8° | 14.5° | 0.000 m | 0.000 m |
+| stagger → air | 190.8° | 14.5° | 0.000 m | 0.000 m |
+| dash → climb | 190.0° | 14.5° | 0.000 m | 0.000 m |
+| ground → pad | 182.1° | 13.9° | 0.000 m | 0.000 m |
+| ground → air | 158.8° | 16.2° | 0.000 m | 0.000 m |
+
+The largest root pair is mantle → ground (and vault → ground, the same exit write): 0.710 m down to 0.086 m. Climb → wall run and wall run → climb are pose handoffs, not a new motor edge. Vault → mantle is the same vault playing forward.
+
+- Idle already breathed and shifted weight. It now looks around once a period, and the It stands a little taller than a runner. Crouch walk at 3.68 uses a cadence of 35.31 rad/s, so the short step does not skate. A slide leans, drags the trailing hand, and looks forward. Slide speed is unchanged. Sprint arm swing scales from 1.00 at a walk to 1.35 at 13.8. A tag or a punch flinch adds a head and chest snap on the existing 0.25 s stagger clock. It does not change stagger time.
+- A cling slip at 3.7 scrabbles the hands and feet on top of the drag. A wall run plants both feet on the wall for the entry, then the plant eases off. Climb and wall run crossfade over 0.12 s when the wall mode changes.
+
+Stick figures from the joint angles are in `Docs/SmoothStills/pass4/idle-wall-flinch.png`. Twelve rows, eight frames. Idle, crouch, slide, slip, wall handoff, and flinch. Before, then after.
+
+## Pass 5
+
+The owner can watch every verb in one scene, and the upper body can play on top of a live stride.
+
+- `Assets/Scenes/MotionGallery.unity` is a row of Hier dummies. Each one runs the real motor and the real pose stack through one loop: run start, stop, and pivot; climb cycle and the top; wall run and wall jump; vault; mantle; slide; dash; punch and lunge; zip; pad; grapple pull and release; stagger and flinch; idle It beside an idle runner. A label sits over each dummy. The camera orbits the row. F switches to a free-fly camera. T sets `Time.timeScale` to 0.25 and the scene puts it back to 1 when it closes. Gameplay `slowMo` stays 0. The menu is Tag → Motion Gallery. Play stays the first enabled build scene. The gallery is listed after Boot and left disabled, so the smoke line stays `scenes=2`.
+- A punch, a lunge tell, and a grapple aim move the arms and twist the spine toward the aim. While the pawn is running, sliding, airborne, or wall-running, the legs keep that cycle. A stand can still take a full-body punch. The lunge burst still commits the legs. Measured: run, slide, air, and wall keep legs (`upper-body run=1 slide=1 air=1 wall=1 idle=0 twist=36`).
+- A zip hang adds sway and a leg trail that grow with ride speed and sit at 0 when the ride is stopped. At speed 14 the trail is −22° and the extra sway is 6°, on top of the authored sway of 7°. A grapple pull pitches the chest along the rope (18° when the rope is 40° up) and trails the legs (−16° at speed 14). A pad arc windmills the arms on the way up (28° at the launch rise) and the windmill is 0 on the way down. Zip speed, pull speed, and the pad arc are unchanged.
+- The transition matrix was run again. All 57 pairs stay under the pass-1 limits. Worst pose is still air → punch, 228.8° down to 17.4°. Worst root is still mantle → ground, 0.710 m down to 0.086 m. `over=0`. The response line is still 0/0 on every verb.
+
+Stick figures from the joint angles are in `Docs/SmoothStills/pass5/layer-hang.png`. Twelve rows, eight frames. Punch, lunge tell, grapple aim, zip hang, rope pull, and pad windmill. Before, then after.
+
+Items 2–9 below stay as they are. Exit poses, the landing roll, landing tiers, and particles stay with the anim-fx lane.
+
+## Pass 6
+
+Controls. The press still happens on the same frame. Coyote, jump, speeds, and the other locked numbers are unchanged.
+
+The reader runs at execution order −200, the cameras apply look at −100, and the motor moves at 0. Rendering is after LateUpdate. Keyboard and gamepad move were already sampled in that same Update as the capsule. Mouse look already reached the picture before the frame was drawn. The extra frame was the body heading: yaw was written in LateUpdate, so the first Move of a look still used the previous facing.
+
+| Path | Before | After |
+|---|---|---|
+| Keyboard to first capsule move | 0 frames | 0 frames |
+| Gamepad to first capsule move | 0 frames | 0 frames |
+| Mouse look to the picture | 0 frames | 0 frames |
+| Look to the move that uses the new heading | 1 frame | 0 frames |
+
+`beforeMouse=1` and `beforeLook=1` in the sim line are that heading frame. After the change both are 0. Gamepad events are processed in the dynamic update, so a stick is not held for the fixed step. Nothing reads move or look from FixedUpdate. The fixed timestep stays 0.02. The rigidbody interpolation stays None. Vsync default is now 1, and while vsync is on the frame cap stays with the display (`targetFrameRate` −1). If vsync is off, the fallback cap is 60.
+
+The joystick axes in the input manager used a per-axis deadzone of 0.19 and passed the rest of the stick through unchanged. A diagonal whose two components were both under 0.19 produced no move, and a stick at 0.20 came out as 0.20 (a step). Those axes are now deadzone 0. The reader applies a radial inner of 0.19, an outer of 1, and a linear curve. A full cardinal and a full diagonal both come out at magnitude 1.000. A stick at 0.20 comes out at 0.012. A stick at 0.50 comes out at about 0.383. Keyboard axes stay −1, 0, or 1, so a full key press stays magnitude 1. The motor still ignores a wish shorter than length 0.1, so the capsule starts once the raw stick magnitude is about 0.27, on a cardinal and on a diagonal alike. Forward on the stick counts as sprint once the shaped axis passes 0.40, which is a raw deflection of about 0.51. The sprint button and the W key are unchanged.
+
+Mouse look is still the delta times sensitivity. There is no look smoothing and no mouse acceleration. Gamepad look has an accel curve that stays off (`lookAccel=0`). Turning it up eases small deflections and keeps a full stick at full speed. Inner deadzone, outer deadzone, the stick curve, and look accel are stored on `GameSettings` and in the settings blob (`stickInner`, `stickOuter`, `stickCurve`, `lookAccel`). The blob version stays 2, so an older file keeps these defaults. The pause menu still has 19 rows. The options screen can grow those rows later.
+
+Items 2–9 still do not fit this pass. A short stride stays on the exponential slew. Kill-box snaps stay instant. Exit poses, the landing roll, landing tiers, and particles stay with the anim-fx lane. A capsule-mounted locomotor still skips mesh yaw. An unbound mannequin still skips the visual offset. The vault capsule still teleports on the last mantle frame. Air dash is still 0.10 s with the pose arriving over 0.06 s. Landing still waits one sample so a hop can cancel the thud.
+
+`response-latency kb=0 mouse=0 pad=0 look=0 beforeKb=0 beforeMouse=1 beforePad=0 beforeLook=1 read=-200 cam=-100 motor=0 vsync=1 rate=-1 fixed=0.02`
+
+`stick-quality diag=1.000 card=1.000 ramp=0.012 axialHole=0 inner=0.19 outer=1 curve=1 lookAccel=0`
+
 ## TODO still open
 
 1. Done this pass. Small `LookRotation` steps ease. Large steps still snap with the mouse.
-2. Gait slews of 18–64 are a couple of frames, on purpose. Do not spring them or the feet lag the stride.
+2. A stride step at or under about 33° stays on the exponential gait slew. Do not spring that step or the feet lag. A verb-sized gap on the same slew is a different case and uses the wide spring from pass 4.
 3. Kill-box and other `Place` calls still snap the mesh. They should. Do not ease a respawn across the park.
 4. Wall-cling marks, slide scrape, dash ribbons, dust, and any new particle are the anim-fx lane (`cursor/tag-anim-fx`). That lane also owns the exit animation of each verb and the landing roll.
 5. If the locomotor sits on the capsule instead of a child, the mesh yaw is skipped so it cannot fight the camera yaw. Those pawns still snap their facing with the camera.

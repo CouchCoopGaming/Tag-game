@@ -683,6 +683,9 @@ static class Program
         Console.WriteLine(Tag.Art.SmoothMotion.ResponseLine());
         Console.WriteLine(Tag.Art.LocomotionPolish.ProofLine());
         Console.WriteLine(Tag.Art.LocomotionPolish.StepLine());
+        Console.WriteLine(Tag.Art.BodyLife.ProofLine());
+        Console.WriteLine(Tag.Art.TransitionMatrix.ProofLine());
+        Console.WriteLine(Tag.Art.TransitionMatrix.TopLine());
         if (!Tag.Art.SmoothMotion.Holds())
         {
             Console.Error.WriteLine("smooth motion is not held");
@@ -691,6 +694,40 @@ static class Program
         if (!Tag.Art.LocomotionPolish.Holds())
         {
             Console.Error.WriteLine("locomotion polish is not held");
+            return 1;
+        }
+        if (!Tag.Art.BodyLife.Holds())
+        {
+            Console.Error.WriteLine("body life is not held");
+            return 1;
+        }
+        if (!Tag.Art.TransitionMatrix.Holds())
+        {
+            Console.Error.WriteLine("transition matrix is not held");
+            return 1;
+        }
+        Console.WriteLine(Tag.Art.UpperBody.ProofLine());
+        Console.WriteLine(Tag.Art.HangMotion.ProofLine());
+        Console.WriteLine(Tag.Settings.ResponseLatency.ProofLine());
+        Console.WriteLine(Tag.Settings.StickQuality.ProofLine());
+        if (!Tag.Art.UpperBody.Holds())
+        {
+            Console.Error.WriteLine("upper body is not held");
+            return 1;
+        }
+        if (!Tag.Art.HangMotion.Holds())
+        {
+            Console.Error.WriteLine("hang motion is not held");
+            return 1;
+        }
+        if (!Tag.Settings.ResponseLatency.Holds())
+        {
+            Console.Error.WriteLine("response latency is not held");
+            return 1;
+        }
+        if (!Tag.Settings.StickQuality.Holds())
+        {
+            Console.Error.WriteLine("stick quality is not held");
             return 1;
         }
         if (!AssetHas("Assets/Scripts/Art/DummyLocomotor.cs",
@@ -707,7 +744,21 @@ static class Program
                 "LocomotionPolish.AirPhase",
                 "LocomotionPolish.FootPitch",
                 "LocomotionPolish.HandPitch",
-                "LocomotionPolish.HeadYaw"))
+                "LocomotionPolish.HeadYaw",
+                "TransitionMatrix.BoneSeconds",
+                "TransitionMatrix.RootSeconds",
+                "BodyLife.CrouchCadence",
+                "BodyLife.Scrabble",
+                "BodyLife.EntryPlant",
+                "BodyLife.ModeBlend",
+                "BodyLife.ArmPump",
+                "BodyLife.FlinchWeight",
+                "UpperBody.KeepLegs",
+                "UpperBody.AimTwist",
+                "HangMotion.LegTrail",
+                "HangMotion.SwayExtra",
+                "HangMotion.RopeSpine",
+                "HangMotion.Windmill"))
         {
             Console.Error.WriteLine("smooth motion is not on the locomotor");
             return 1;
@@ -735,6 +786,62 @@ static class Program
             Console.Error.WriteLine("boom pull-in is not instant");
             return 1;
         }
+        if (!AssetHas("Assets/TagArenaMovement/Scripts/Camera/TpsMoveCamera.cs",
+                "DefaultExecutionOrder(-100)",
+                "void ApplyLook()"))
+        {
+            Console.Error.WriteLine("third-person look is not before the motor");
+            return 1;
+        }
+        if (!AssetHas("Assets/TagArenaMovement/Scripts/Camera/FpsMoveCamera.cs",
+                "DefaultExecutionOrder(-100)",
+                "void ApplyLook()"))
+        {
+            Console.Error.WriteLine("first-person look is not before the motor");
+            return 1;
+        }
+        if (LateHas("Assets/TagArenaMovement/Scripts/Camera/TpsMoveCamera.cs", "LookFeel.Deltas")
+            || LateHas("Assets/TagArenaMovement/Scripts/Camera/FpsMoveCamera.cs", "LookFeel.Deltas"))
+        {
+            Console.Error.WriteLine("look is still applied in LateUpdate");
+            return 1;
+        }
+        if (!AssetHas("Assets/TagArenaMovement/Scripts/Input/PlayerInputReader.cs",
+                "StickQuality.Shape"))
+        {
+            Console.Error.WriteLine("stick shape is not on the reader");
+            return 1;
+        }
+        if (!AssetHas("Assets/Scripts/Settings/LookFeel.cs", "lookX * Sens"))
+        {
+            Console.Error.WriteLine("mouse look is not a straight multiply");
+            return 1;
+        }
+        if (File.ReadAllText("Assets/Scripts/Settings/LookFeel.cs").IndexOf("SmoothDamp", StringComparison.Ordinal) >= 0)
+        {
+            Console.Error.WriteLine("look smoothing was added");
+            return 1;
+        }
+        if (!AssetHas("Assets/Scripts/Settings/SettingsRuntime.cs", "ProcessEventsInDynamicUpdate"))
+        {
+            Console.Error.WriteLine("input events are not on the dynamic update");
+            return 1;
+        }
+        if (!AssetHas("ProjectSettings/QualitySettings.asset", "vSyncCount: 1"))
+        {
+            Console.Error.WriteLine("vsync is not on");
+            return 1;
+        }
+        if (!AssetHas("ProjectSettings/TimeManager.asset", "Fixed Timestep: 0.02"))
+        {
+            Console.Error.WriteLine("fixed timestep moved");
+            return 1;
+        }
+        if (File.ReadAllText("ProjectSettings/InputManager.asset").IndexOf("dead: 0.19", StringComparison.Ordinal) >= 0)
+        {
+            Console.Error.WriteLine("joystick axial deadzone remains");
+            return 1;
+        }
         if (!AssetHas("Assets/Scripts/Art/WallPose.cs",
                 "PlantShape",
                 "HoldWeight",
@@ -750,6 +857,35 @@ static class Program
         Tag.Art.SmoothMotion.WriteParkourStills(Path.Combine(still2, "climb-wall-mantle.png"));
         string still3 = Path.Combine(RepoRoot(), "Docs", "SmoothStills", "pass3");
         Tag.Art.SmoothMotion.WriteLocomotionStills(Path.Combine(still3, "loco-air-ik.png"));
+        string still4 = Path.Combine(RepoRoot(), "Docs", "SmoothStills", "pass4");
+        Tag.Art.SmoothMotion.WritePass4Stills(Path.Combine(still4, "idle-wall-flinch.png"));
+        string still5 = Path.Combine(RepoRoot(), "Docs", "SmoothStills", "pass5");
+        Tag.Art.SmoothMotion.WritePass5Stills(Path.Combine(still5, "layer-hang.png"));
+        if (!File.Exists(Path.Combine(RepoRoot(), "Assets", "Scenes", "MotionGallery.unity")))
+        {
+            Console.Error.WriteLine("motion gallery scene is missing");
+            return 1;
+        }
+        if (!AssetHas("Assets/Editor/MotionGalleryMenu.cs", "Tag/Motion Gallery", "MotionGallery.unity"))
+        {
+            Console.Error.WriteLine("motion gallery menu is missing");
+            return 1;
+        }
+        if (!AssetHas("Assets/Scripts/Art/MotionGallery.cs",
+                "DefaultExecutionOrder(-300)",
+                "Time.timeScale"))
+        {
+            Console.Error.WriteLine("motion gallery driver is missing");
+            return 1;
+        }
+        string buildList = File.ReadAllText(Path.Combine(RepoRoot(), "ProjectSettings", "EditorBuildSettings.asset"));
+        int playAt = buildList.IndexOf("Assets/Scenes/Play.unity", StringComparison.Ordinal);
+        int galleryAt = buildList.IndexOf("Assets/Scenes/MotionGallery.unity", StringComparison.Ordinal);
+        if (playAt < 0 || galleryAt < 0 || galleryAt < playAt)
+        {
+            Console.Error.WriteLine("motion gallery is not after Play in the build list");
+            return 1;
+        }
 
         Console.WriteLine("solo grapple on; opponent and couch off; jet off; clips and locks held");
         return 0;
@@ -770,6 +906,15 @@ static class Program
     }
 
     static bool Locked(float value, float expect) => Math.Abs(value - expect) <= 0.001f;
+
+    static bool LateHas(string path, string needle)
+    {
+        if (!File.Exists(path)) return false;
+        string text = File.ReadAllText(path);
+        int late = text.IndexOf("void LateUpdate", StringComparison.Ordinal);
+        if (late < 0) return false;
+        return text.IndexOf(needle, late, StringComparison.Ordinal) >= 0;
+    }
 
     static bool AssetHas(string path, params string[] needles)
     {

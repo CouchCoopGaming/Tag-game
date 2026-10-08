@@ -177,3 +177,30 @@ The stride, the jump, and the hands and feet read as one move. Speeds are the sa
 - The head turns a little toward where you are going, the chest counters, and the arms follow through after a stride. Try it: sprint, then let go of the stick and watch the arms settle.
 - The camera eases tiny look steps. A fast mouse turn still snaps. No zoom punch, no shake, no slow motion.
 - Nothing here waits on an animation. The before/after numbers are in `Docs/SmoothMotionAudit.md`. Stick figures are in `Docs/SmoothStills/pass3/loco-air-ik.png`.
+
+## Body and transitions, fourth pass
+
+The body fills in the poses that were still a single shape, and the hard cuts between moves ease. Speeds, slide, and the press timing are the same.
+
+- Changing move no longer snaps the mesh through a huge pose. The big ones were air into a punch (228.8° down to 17.4° on one frame) and the vault exit (0.710 m down to 0.086 m). A normal running step is left alone so the feet stay with the ground. Try it: punch out of a jump, air dash, then vault a rail.
+- Standing still breathes, shifts weight, and glances around. The It holds the chest a little higher than a runner. Crouch-walking keeps the feet under you. A slide leans, drags a hand, and looks where it is going. Sprinting pumps the arms harder than walking. Getting tagged or punched flinches on the same short stumble you already had. Try it: stand, crouch-walk, slide, sprint, then tag the dummy.
+- Slipping on a wall scrabbles. A wall run plants the feet as it catches, and climb and wall run blend into each other. Try it: cling, let yourself slip, then wall-run into a climb.
+- The numbers are in `Docs/SmoothMotionAudit.md`. Stick figures are in `Docs/SmoothStills/pass4/idle-wall-flinch.png`.
+
+## Motion gallery, fifth pass
+
+You can watch every move in one scene, and a punch no longer freezes the legs.
+
+- Tag → Motion Gallery opens a row of dummies. Each one loops one move on the real body: run, climb, wall run, vault, mantle, slide, dash, punch, zip, pad, grapple, stagger, and idle It next to a runner. The camera orbits. F flies. T slows time in that scene only. A normal game still starts in the park, and slow motion in a match stays off. Try it: Tag → Motion Gallery, press Play, then press T.
+- Punching, winding up a lunge, or aiming the rope moves the arms and turns the chest. Running, sliding, jumping, and wall-running keep their legs. Try it: sprint and punch, then punch in the air.
+- Hanging on a zip sways and trails the legs harder as the ride hits 14. A grapple pull leans the chest along the rope and lets the legs trail. A launch pad windmills the arms on the way up and settles them on the way down. Try it: take a zip, pull the rope, then hit a pad.
+- The hard cuts between moves are the same as the fourth pass. A press is still the same frame. Stick figures are in `Docs/SmoothStills/pass5/layer-hang.png`.
+
+## Controls, sixth pass
+
+The stick and the look respond on the frame you move them. Speeds, jump, and slide are the same.
+
+- Turning the camera now turns the body before the capsule steps, so the first move of a look goes the way you are facing. Keyboard and gamepad movement were already the same frame. Mouse look was already on the picture the same frame. Try it: flick the mouse and push forward together.
+- A gamepad stick uses a round deadzone. A light diagonal used to disappear, and a small push used to jump from nothing to a big step. Full tilt is still full speed, on a diagonal too. A half push is a little softer than before (about 0.38 of full, where it used to pass through as 0.50). Keyboard movement is unchanged. Try it: walk the stick in a slow circle, then hold it in the corner.
+- Mouse look has no smoothing and no acceleration. Gamepad look can use an acceleration curve, and that curve is off until you turn it up. The inner deadzone, the outer edge, the stick curve, and that look curve are saved with the other settings. The pause list does not have new rows yet.
+- The game waits for the display (vsync on). The physics step is unchanged, and the body still moves once per frame. Try it: sprint a straight line and watch the stride stay even.

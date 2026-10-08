@@ -23,6 +23,10 @@ namespace Tag.Settings
         public const float PadLookDefault = 2.2f;
         public const float PadLookMin = 0.5f;
         public const float PadLookMax = 8f;
+        public const float StickInnerDefault = 0.19f;
+        public const float StickOuterDefault = 1f;
+        public const float StickCurveDefault = 1f;
+        public const float LookAccelDefault = 0f;
         public const float MasterDefault = 0.8f;
         public const float SfxDefault = 1f;
         public const float UiDefault = 1f;
@@ -64,6 +68,10 @@ namespace Tag.Settings
 
         public float MouseSensitivity = MouseDefault;
         public float GamepadLook = PadLookDefault;
+        public float StickInner = StickInnerDefault;
+        public float StickOuter = StickOuterDefault;
+        public float StickCurve = StickCurveDefault;
+        public float LookAccel = LookAccelDefault;
         public bool InvertY;
         public float Fov = FovDefault;
         public float Master = MasterDefault;
@@ -119,6 +127,10 @@ namespace Tag.Settings
         {
             MouseSensitivity = other.MouseSensitivity;
             GamepadLook = other.GamepadLook;
+            StickInner = other.StickInner;
+            StickOuter = other.StickOuter;
+            StickCurve = other.StickCurve;
+            LookAccel = other.LookAccel;
             InvertY = other.InvertY;
             Fov = other.Fov;
             Master = other.Master;
@@ -149,6 +161,12 @@ namespace Tag.Settings
         {
             MouseSensitivity = ClampFloat(MouseSensitivity, MouseMin, MouseMax);
             GamepadLook = ClampFloat(GamepadLook, PadLookMin, PadLookMax);
+            StickInner = ClampFloat(StickInner, 0f, 0.5f);
+            float outerMin = StickInner + 0.05f;
+            if (outerMin > 1f) outerMin = 1f;
+            StickOuter = ClampFloat(StickOuter, outerMin, 1f);
+            StickCurve = ClampFloat(StickCurve, 0.5f, 3f);
+            LookAccel = ClampFloat(LookAccel, 0f, 1f);
             Fov = ClampFloat(Fov, FovMin, FovMax);
             Master = ClampFloat(Master, 0f, 1f);
             Sfx = ClampFloat(Sfx, 0f, 1f);

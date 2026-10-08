@@ -703,6 +703,406 @@ namespace Tag.Art
             WritePng(path, pix, w, h);
         }
 
+        /// <summary>
+        /// Idle, crouch, slide, slip, the wall handoff, and the hit flinch.
+        /// Before is the pose that was already playing. After is this pass.
+        /// </summary>
+        public static void WritePass4Stills(string path)
+        {
+            const int frames = 8;
+            const int cellW = 120;
+            const int cellH = 156;
+            const int labelW = 168;
+            const int rows = 12;
+            int w = labelW + frames * cellW;
+            int h = rows * cellH;
+            var pix = new byte[w * h * 3];
+            Fill(pix, w, h, 16, 18, 22);
+            PaintLoco(pix, w, h, rows, 0, "IDLE", "BEFORE", TrackIdle(false), 196, 122, 96, false, 0f);
+            PaintLoco(pix, w, h, rows, 1, "IDLE", "AFTER", TrackIdle(true), 120, 196, 150, false, 0f);
+            PaintLoco(pix, w, h, rows, 2, "CROUCH", "BEFORE", TrackCrouch(false), 196, 122, 96, false, 0f);
+            PaintLoco(pix, w, h, rows, 3, "CROUCH", "AFTER", TrackCrouch(true), 120, 186, 210, false, 0f);
+            PaintLoco(pix, w, h, rows, 4, "SLIDE", "BEFORE", TrackSlide(false), 196, 122, 96, false, 0f);
+            PaintLoco(pix, w, h, rows, 5, "SLIDE", "AFTER", TrackSlide(true), 230, 176, 120, false, 0f);
+            PaintLoco(pix, w, h, rows, 6, "SLIP", "BEFORE", TrackSlip(false), 196, 122, 96, true, 0f);
+            PaintLoco(pix, w, h, rows, 7, "SLIP", "AFTER", TrackSlip(true), 150, 210, 140, true, 0f);
+            PaintLoco(pix, w, h, rows, 8, "WALL", "BEFORE", TrackWallMode(false), 196, 122, 96, true, 0f);
+            PaintLoco(pix, w, h, rows, 9, "WALL", "AFTER", TrackWallMode(true), 186, 168, 230, true, 0f);
+            PaintLoco(pix, w, h, rows, 10, "FLINCH", "BEFORE", TrackFlinch(false), 196, 122, 96, false, 0f);
+            PaintLoco(pix, w, h, rows, 11, "FLINCH", "AFTER", TrackFlinch(true), 230, 200, 120, false, 0f);
+            string dir = Path.GetDirectoryName(path);
+            if (!string.IsNullOrEmpty(dir))
+                Directory.CreateDirectory(dir);
+            WritePng(path, pix, w, h);
+        }
+
+        /// <summary>
+        /// Upper body over a run, and hang secondary motion.
+        /// Before replaces the legs. After keeps the cycle and adds the hang.
+        /// </summary>
+        public static void WritePass5Stills(string path)
+        {
+            const int frames = 8;
+            const int cellW = 120;
+            const int cellH = 156;
+            const int labelW = 168;
+            const int rows = 12;
+            int w = labelW + frames * cellW;
+            int h = rows * cellH;
+            var pix = new byte[w * h * 3];
+            Fill(pix, w, h, 16, 18, 22);
+            PaintLoco(pix, w, h, rows, 0, "PUNCH", "BEFORE", TrackPunchLayer(false), 196, 122, 96, false, 0f);
+            PaintLoco(pix, w, h, rows, 1, "PUNCH", "AFTER", TrackPunchLayer(true), 120, 196, 150, false, 0f);
+            PaintLoco(pix, w, h, rows, 2, "TELL", "BEFORE", TrackTellLayer(false), 196, 122, 96, false, 0f);
+            PaintLoco(pix, w, h, rows, 3, "TELL", "AFTER", TrackTellLayer(true), 186, 168, 230, false, 0f);
+            PaintLoco(pix, w, h, rows, 4, "AIM", "BEFORE", TrackAimLayer(false), 196, 122, 96, false, 0f);
+            PaintLoco(pix, w, h, rows, 5, "AIM", "AFTER", TrackAimLayer(true), 150, 210, 140, false, 0f);
+            PaintLoco(pix, w, h, rows, 6, "ZIP", "BEFORE", TrackZipHang(false), 196, 122, 96, false, 0f);
+            PaintLoco(pix, w, h, rows, 7, "ZIP", "AFTER", TrackZipHang(true), 210, 140, 210, false, 0f);
+            PaintLoco(pix, w, h, rows, 8, "ROPE", "BEFORE", TrackRopeHang(false), 196, 122, 96, false, 0f);
+            PaintLoco(pix, w, h, rows, 9, "ROPE", "AFTER", TrackRopeHang(true), 230, 176, 120, false, 0f);
+            PaintLoco(pix, w, h, rows, 10, "PAD", "BEFORE", TrackPadMill(false), 196, 122, 96, false, 0f);
+            PaintLoco(pix, w, h, rows, 11, "PAD", "AFTER", TrackPadMill(true), 120, 186, 210, false, 0f);
+            string dir = Path.GetDirectoryName(path);
+            if (!string.IsNullOrEmpty(dir))
+                Directory.CreateDirectory(dir);
+            WritePng(path, pix, w, h);
+        }
+
+        static float StrideThigh(int frame, float sign)
+        {
+            return (float)Math.Sin(frame * 0.78f) * 34f * sign;
+        }
+
+        static Fig[] TrackPunchLayer(bool layered)
+        {
+            var shot = new Fig[8];
+            for (int i = 0; i < 8; i++)
+            {
+                float arm = i < 4 ? VerbPoseClips.PunchCockPitch : VerbPoseClips.PunchStrikePitch;
+                float yaw = i < 4 ? VerbPoseClips.PunchCockSpineYaw : VerbPoseClips.PunchStrikeSpineYaw;
+                float twist = UpperBody.AimTwist(yaw);
+                shot[i] = new Fig
+                {
+                    ArmL = -20f,
+                    ArmR = arm,
+                    ElbL = -16f,
+                    ElbR = i < 4 ? VerbPoseClips.PunchCockElbow : VerbPoseClips.PunchStrikeElbow,
+                    ThL = layered ? StrideThigh(i, 1f) : (i < 4 ? 8f : VerbPoseClips.PunchStrikeLeadThigh),
+                    ThR = layered ? StrideThigh(i, -1f) : (i < 4 ? -6f : VerbPoseClips.PunchStrikeTrailThigh),
+                    KnL = layered ? -18f : -8f,
+                    KnR = layered ? -12f : -6f,
+                    Spine = 8f,
+                    Hip = 0f,
+                    Head = -6f,
+                    Lean = twist * 0.35f,
+                };
+            }
+            return shot;
+        }
+
+        static Fig[] TrackTellLayer(bool layered)
+        {
+            var shot = new Fig[8];
+            LungePose.Sample tell = LungePose.Telegraph();
+            float twist = UpperBody.AimTwist(tell.SpineYaw);
+            for (int i = 0; i < 8; i++)
+            {
+                shot[i] = new Fig
+                {
+                    ArmL = tell.ArmPitchL,
+                    ArmR = tell.ArmPitchR,
+                    ElbL = tell.ElbowL,
+                    ElbR = tell.ElbowR,
+                    ThL = layered ? StrideThigh(i, 1f) : tell.ThighL,
+                    ThR = layered ? StrideThigh(i, -1f) : tell.ThighR,
+                    KnL = layered ? -16f : tell.KneeL,
+                    KnR = layered ? -10f : tell.KneeR,
+                    Spine = tell.Spine,
+                    Hip = layered ? 0f : tell.Hip,
+                    Head = tell.Head,
+                    Lean = twist * 0.35f,
+                };
+            }
+            return shot;
+        }
+
+        static Fig[] TrackAimLayer(bool layered)
+        {
+            var shot = new Fig[8];
+            for (int i = 0; i < 8; i++)
+            {
+                float yaw = -28f + i * 8f;
+                GrapplePose.Sample aim = GrapplePose.Aim(12f, yaw);
+                float twist = layered ? UpperBody.AimTwist(aim.SpineYaw) : aim.SpineYaw;
+                shot[i] = new Fig
+                {
+                    ArmL = aim.ArmPitchL,
+                    ArmR = aim.ArmPitchR,
+                    ElbL = aim.ElbowL,
+                    ElbR = aim.ElbowR,
+                    ThL = layered ? StrideThigh(i, 1f) : aim.ThighL,
+                    ThR = layered ? StrideThigh(i, -1f) : aim.ThighR,
+                    KnL = layered ? -14f : aim.KneeL,
+                    KnR = layered ? -10f : aim.KneeR,
+                    Spine = aim.Spine,
+                    Hip = 0f,
+                    Head = aim.Head,
+                    Lean = twist,
+                };
+            }
+            return shot;
+        }
+
+        static Fig[] TrackZipHang(bool trail)
+        {
+            var shot = new Fig[8];
+            WallPose.Sample hang = WallPose.CableHang();
+            for (int i = 0; i < 8; i++)
+            {
+                float time = i * 0.22f;
+                float speed = trail ? HangMotion.ZipSpeed : 0f;
+                float legs = trail ? HangMotion.LegTrail(speed) : 0f;
+                float sway = ZipPose.Sway(time, speed) + (trail ? HangMotion.SwayExtra(time, speed) : 0f);
+                shot[i] = new Fig
+                {
+                    ArmL = hang.ArmPitchL,
+                    ArmR = hang.ArmPitchR,
+                    ElbL = hang.ElbowL,
+                    ElbR = hang.ElbowR,
+                    ThL = hang.ThighL + legs,
+                    ThR = hang.ThighR + legs,
+                    KnL = hang.KneeL,
+                    KnR = hang.KneeR,
+                    Spine = hang.Spine,
+                    Hip = hang.Hip,
+                    Head = hang.Head,
+                    Lean = sway,
+                };
+            }
+            return shot;
+        }
+
+        static Fig[] TrackRopeHang(bool trail)
+        {
+            var shot = new Fig[8];
+            for (int i = 0; i < 8; i++)
+            {
+                float elev = -10f + i * 8f;
+                GrapplePose.Sample pull = GrapplePose.Pull(i % 2 == 0 ? 1f : -1f, 4f, 8f);
+                float pitch = trail ? HangMotion.RopeSpine(elev) : 0f;
+                float legs = trail ? HangMotion.RopeLeg(HangMotion.ZipSpeed) : 0f;
+                shot[i] = new Fig
+                {
+                    ArmL = pull.ArmPitchL,
+                    ArmR = pull.ArmPitchR,
+                    ElbL = pull.ElbowL,
+                    ElbR = pull.ElbowR,
+                    ThL = pull.ThighL + legs,
+                    ThR = pull.ThighR + legs,
+                    KnL = pull.KneeL,
+                    KnR = pull.KneeR,
+                    Spine = pull.Spine + pitch,
+                    Hip = pull.Hip,
+                    Head = pull.Head,
+                    Lean = pull.SpineYaw,
+                };
+            }
+            return shot;
+        }
+
+        static Fig[] TrackPadMill(bool mill)
+        {
+            var shot = new Fig[8];
+            for (int i = 0; i < 8; i++)
+            {
+                float vy = i < 5 ? 24.7f - i * 6f : -8f - (i - 5) * 4f;
+                LaunchPose.Sample pose = LaunchPose.At(vy);
+                float t = 0.35f + i * 0.18f;
+                float add = mill ? HangMotion.Windmill(t, vy) : 0f;
+                shot[i] = new Fig
+                {
+                    ArmL = pose.ArmPitchL + add,
+                    ArmR = pose.ArmPitchR - add,
+                    ElbL = pose.ElbowL,
+                    ElbR = pose.ElbowR,
+                    ThL = pose.ThighL,
+                    ThR = pose.ThighR,
+                    KnL = pose.KneeL,
+                    KnR = pose.KneeR,
+                    Spine = pose.Spine,
+                    Hip = pose.Hip,
+                    Head = pose.Head,
+                    Lean = 0f,
+                };
+            }
+            return shot;
+        }
+
+        static Fig[] TrackIdle(bool life)
+        {
+            var shot = new Fig[8];
+            for (int i = 0; i < 8; i++)
+            {
+                float shift = i * 0.55f;
+                float breath = i * 0.7f;
+                IdlePose.Sample idle = IdlePose.At(shift, breath);
+                float look = 0f;
+                float chest = 0f;
+                if (life)
+                {
+                    float t = BodyLife.LookPeriod * (1f - BodyLife.LookWindow) + i * 0.18f;
+                    look = BodyLife.LookYawAt(t);
+                    chest = i < 4 ? BodyLife.PostureChest(false) : BodyLife.PostureChest(true);
+                }
+                shot[i] = new Fig
+                {
+                    ArmL = -16f + idle.Shoulder, ArmR = -16f + idle.Shoulder,
+                    ElbL = -12f, ElbR = -12f,
+                    ThL = idle.ThighL, ThR = idle.ThighR,
+                    KnL = idle.KneeL, KnR = idle.KneeR,
+                    Spine = idle.ChestPitch + chest, Hip = idle.HipRoll,
+                    Head = idle.HeadPitch + look * 0.4f, Lean = look,
+                };
+            }
+            return shot;
+        }
+
+        static Fig[] TrackCrouch(bool matched)
+        {
+            var shot = new Fig[8];
+            float phase = 0.2f;
+            float rate = matched ? BodyLife.CrouchCadence(BodyLife.CrouchSpeed) : 6.2f;
+            for (int i = 0; i < 8; i++)
+            {
+                float s = (float)Math.Sin(phase);
+                float step = s > 0f ? s : 0f;
+                float other = s < 0f ? -s : 0f;
+                shot[i] = new Fig
+                {
+                    ArmL = CrouchPose.ArmPitch, ArmR = CrouchPose.ArmPitch,
+                    ElbL = CrouchPose.Elbow, ElbR = CrouchPose.Elbow,
+                    ThL = CrouchPose.WalkThigh(step, other),
+                    ThR = CrouchPose.WalkThigh(other, step),
+                    KnL = CrouchPose.WalkKnee(step),
+                    KnR = CrouchPose.WalkKnee(other),
+                    Spine = CrouchPose.Spine, Hip = CrouchPose.Hip,
+                    Head = CrouchPose.Head, Lean = 0f,
+                };
+                phase += rate * Dt;
+            }
+            return shot;
+        }
+
+        static Fig[] TrackSlide(bool life)
+        {
+            var shot = new Fig[8];
+            for (int i = 0; i < 8; i++)
+            {
+                float lean = 0f;
+                float hand = 0f;
+                float head = VerbPoseClips.SlideHead;
+                if (life)
+                {
+                    BodyLife.SlideMotion(i * 0.45f, out lean, out hand, out float look);
+                    head += look;
+                }
+                shot[i] = new Fig
+                {
+                    ArmL = VerbPoseClips.SlideLeadArmPitch,
+                    ArmR = VerbPoseClips.SlideBalanceArmPitch + hand,
+                    ElbL = VerbPoseClips.SlideLeadElbow,
+                    ElbR = VerbPoseClips.SlideBalanceElbow,
+                    ThL = VerbPoseClips.SlideLeadThigh,
+                    ThR = VerbPoseClips.SlideTrailThigh,
+                    KnL = VerbPoseClips.SlideLeadKnee,
+                    KnR = VerbPoseClips.SlideTrailKnee,
+                    Spine = VerbPoseClips.SlideSpine + lean,
+                    Hip = VerbPoseClips.SlideHip,
+                    Head = head,
+                    Lean = lean,
+                };
+            }
+            return shot;
+        }
+
+        static Fig[] TrackSlip(bool scrabble)
+        {
+            var shot = new Fig[8];
+            float phase = 0f;
+            float rate = WallPose.SlipRate(-WallPose.SlipSpeedRef);
+            for (int i = 0; i < 8; i++)
+            {
+                WallPose.Sample sample = WallPose.Climb((float)Math.Sin(phase), -WallPose.SlipSpeedRef);
+                if (scrabble)
+                {
+                    BodyLife.Scrabble(phase, 1f, out float hL, out float hR, out float fL, out float fR);
+                    sample.ArmPitchL += hL;
+                    sample.ArmPitchR += hR;
+                    sample.FootL += fL;
+                    sample.FootR += fR;
+                }
+                Fig fig = Fig.From(sample);
+                fig.KnL += sample.FootL;
+                fig.KnR += sample.FootR;
+                shot[i] = fig;
+                phase += rate * Dt;
+            }
+            return shot;
+        }
+
+        static Fig[] TrackWallMode(bool blend)
+        {
+            var shot = new Fig[8];
+            WallPose.Sample climb = WallPose.Climb(0.8f, WallPose.ClimbSpeedRef);
+            WallPose.Sample run = WallPose.RunCycle(1.2f, true);
+            for (int i = 0; i < 8; i++)
+            {
+                float u = i / 7f;
+                float t = blend ? PoseHandoff.Ease(u) : (i < 4 ? 0f : 1f);
+                WallPose.Sample sample = WallPose.Mix(climb, run, t);
+                if (blend)
+                {
+                    float plant = BodyLife.EntryPlant(u * BodyLife.EntryPlantSeconds);
+                    sample.FootL += BodyLife.EntryFoot * plant;
+                    sample.FootR += BodyLife.EntryFoot * plant;
+                }
+                Fig fig = Fig.From(sample);
+                fig.KnL += sample.FootL;
+                fig.KnR += sample.FootR;
+                shot[i] = fig;
+            }
+            return shot;
+        }
+
+        static Fig[] TrackFlinch(bool layered)
+        {
+            var shot = new Fig[8];
+            PunchStaggerPose.Sample pose = PunchStaggerPose.Stumble();
+            for (int i = 0; i < 8; i++)
+            {
+                float age = (i + 1) * Dt;
+                float w = PunchStaggerPose.Weight(age);
+                float head = pose.Head * w;
+                float spine = pose.Spine * w;
+                if (layered)
+                {
+                    float flinch = BodyLife.FlinchWeight(age);
+                    head += BodyLife.FlinchHead * flinch;
+                    spine += BodyLife.FlinchSpine * flinch;
+                }
+                shot[i] = new Fig
+                {
+                    ArmL = pose.ArmPitchL * w, ArmR = pose.ArmPitchR * w,
+                    ElbL = pose.ElbowL, ElbR = pose.ElbowR,
+                    ThL = pose.ThighL * w, ThR = pose.ThighR * w,
+                    KnL = pose.KneeL * w, KnR = pose.KneeR * w,
+                    Spine = spine, Hip = pose.Hip * w, Head = head, Lean = 0f,
+                };
+            }
+            return shot;
+        }
+
         static Fig[] TrackStride(bool play, bool strafe, bool back)
         {
             var shot = new Fig[8];

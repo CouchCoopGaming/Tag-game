@@ -21,6 +21,10 @@ namespace Tag.Settings
             text.Append("v=2\n");
             Line(text, "mouse", s.MouseSensitivity);
             Line(text, "padLook", s.GamepadLook);
+            Line(text, "stickInner", s.StickInner);
+            Line(text, "stickOuter", s.StickOuter);
+            Line(text, "stickCurve", s.StickCurve);
+            Line(text, "lookAccel", s.LookAccel);
             Line(text, "invertY", s.InvertY ? 1f : 0f);
             Line(text, "fov", s.Fov);
             Line(text, "master", s.Master);
@@ -172,6 +176,7 @@ namespace Tag.Settings
         static bool Known(string key)
         {
             if (key == "mouse" || key == "padLook" || key == "invertY" || key == "fov") return true;
+            if (key == "stickInner" || key == "stickOuter" || key == "stickCurve" || key == "lookAccel") return true;
             if (key == "master" || key == "sfx" || key == "ui" || key == "music" || key == "mute") return true;
             if (key == "hud" || key == "colorblind" || key == "minimap" || key == "accessSeat") return true;
             if (key == "arena" || key == "ai" || key == "diff" || key == "roundLen" || key == "rounds") return true;
@@ -194,6 +199,10 @@ namespace Tag.Settings
         {
             if (key == "mouse") settings.MouseSensitivity = Num(value, settings.MouseSensitivity);
             else if (key == "padLook") settings.GamepadLook = Num(value, settings.GamepadLook);
+            else if (key == "stickInner") settings.StickInner = Num(value, settings.StickInner);
+            else if (key == "stickOuter") settings.StickOuter = Num(value, settings.StickOuter);
+            else if (key == "stickCurve") settings.StickCurve = Num(value, settings.StickCurve);
+            else if (key == "lookAccel") settings.LookAccel = Num(value, settings.LookAccel);
             else if (key == "invertY") settings.InvertY = Flag(value);
             else if (key == "fov") settings.Fov = Num(value, settings.Fov);
             else if (key == "master") settings.Master = Num(value, settings.Master);
