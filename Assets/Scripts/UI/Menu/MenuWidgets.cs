@@ -87,12 +87,10 @@ namespace Tag.Ui.Menu
             var fill = Place(rt, "Fill", 0f, 0f, w, h);
             var plate = fill.gameObject.AddComponent<Image>();
             MenuArt.Plate(plate, allow ? MenuTheme.Panel : MenuTheme.Off, true);
-            float sheenH = h * 0.42f;
-            if (sheenH < 18f) sheenH = 18f;
-            var sheen = Place(rt, "Sheen", 8f, 6f, w - 16f, sheenH);
+            var sheen = Place(rt, "Sheen", 8f, UiFit.StripeY, w - 16f, UiFit.StripeH);
             var sheenImage = sheen.gameObject.AddComponent<Image>();
             sheenImage.sprite = MenuArt.Sheen;
-            sheenImage.color = new Color(1f, 1f, 1f, 0.34f);
+            sheenImage.color = new Color(1f, 1f, 1f, 0.55f);
             sheenImage.raycastTarget = false;
             var button = rt.gameObject.AddComponent<Button>();
             button.targetGraphic = plate;
@@ -101,13 +99,18 @@ namespace Tag.Ui.Menu
             nav.mode = Navigation.Mode.None;
             button.navigation = nav;
 
-            var bar = Place(rt, "Bar", 10f, 16f, 12f, h - 32f);
+            float barTop = UiFit.StripeClear() + 2f;
+            var bar = Place(rt, "Bar", 10f, barTop, 12f, h - barTop - 8f);
             var barImage = bar.gameObject.AddComponent<Image>();
             MenuArt.Plate(barImage, new Color(1f, 1f, 1f, 0.35f), true);
             barImage.raycastTarget = false;
 
-            var title = Words(rt, label, 40, TextAnchor.MiddleLeft, MenuTheme.Cream, new Vector2(0f, 0.42f), new Vector2(1f, 1f));
-            var sub = Words(rt, detail, UiFit.FloorFont, TextAnchor.UpperLeft, MenuTheme.Mute, new Vector2(0f, 0f), new Vector2(1f, 0.48f));
+            bool two = !string.IsNullOrEmpty(detail);
+            UiFit.TileText(h, two, out float titleFromTop, out float titleH, out float detailFromTop, out float detailH);
+            var title = Words(rt, label, 40, TextAnchor.MiddleLeft, MenuTheme.Cream, Vector2.zero, Vector2.one);
+            var sub = Words(rt, detail, UiFit.FloorFont, TextAnchor.MiddleLeft, MenuTheme.Mute, Vector2.zero, Vector2.one);
+            Band(title, h, titleFromTop, titleH);
+            Band(sub, h, detailFromTop, detailH);
             var tile = rt.gameObject.AddComponent<MenuTile>();
             tile.Plate = plate;
             tile.Stroke = stroke;
@@ -135,9 +138,11 @@ namespace Tag.Ui.Menu
             if (tile == null || icon == null) return;
             RectTransform root = tile.transform as RectTransform;
             float h = root != null ? root.sizeDelta.y : size + 20f;
-            float s = Mathf.Min(size, h - 16f);
+            float s = Mathf.Min(size, h - UiFit.StripeClear() - 8f);
             if (s < 24f) s = 24f;
-            var well = Place(tile.transform, "IconWell", 14f, (h - s) * 0.5f, s, s);
+            float iconY = (h - s) * 0.5f;
+            if (iconY < UiFit.StripeClear()) iconY = UiFit.StripeClear();
+            var well = Place(tile.transform, "IconWell", 14f, iconY, s, s);
             var wellImage = well.gameObject.AddComponent<Image>();
             MenuArt.Plate(wellImage, new Color(tint.r, tint.g, tint.b, 0.9f), true);
             wellImage.raycastTarget = false;
@@ -174,9 +179,13 @@ namespace Tag.Ui.Menu
             if (tile == null) return;
             if (tile.Label != null)
             {
+                RectTransform root = tile.transform as RectTransform;
+                float h = root != null ? root.sizeDelta.y : 140f;
+                if (h < 1f) h = 140f;
+                float top = UiFit.StripeClear() / h;
                 RectTransform rt = tile.Label.rectTransform;
                 rt.anchorMin = new Vector2(0f, 0.40f);
-                rt.anchorMax = new Vector2(1f, 0.96f);
+                rt.anchorMax = new Vector2(1f, 1f - top);
                 rt.offsetMin = new Vector2(inset, 2f);
                 rt.offsetMax = new Vector2(-16f, -2f);
                 tile.Label.alignment = TextAnchor.MiddleLeft;
@@ -212,9 +221,14 @@ namespace Tag.Ui.Menu
             image.raycastTarget = false;
             if (tile.Label != null)
             {
+                float labelH = 52f;
+                float top = UiFit.StripeClear();
                 RectTransform rt = tile.Label.rectTransform;
-                rt.anchorMin = new Vector2(0f, 0.78f);
-                rt.anchorMax = new Vector2(1f, 1f);
+                rt.anchorMin = new Vector2(0f, 1f - (top + labelH) / h);
+                rt.anchorMax = new Vector2(1f, 1f - top / h);
+                rt.offsetMin = new Vector2(18f, 0f);
+                rt.offsetMax = new Vector2(-18f, 0f);
+                tile.Label.alignment = TextAnchor.MiddleCenter;
             }
             if (tile.Detail != null)
             {
@@ -258,6 +272,47 @@ namespace Tag.Ui.Menu
             Text fill = Heading(root, "TAG", size, TextAnchor.MiddleCenter, MenuTheme.Gold, Vector2.zero, Vector2.one);
             fill.alignment = TextAnchor.MiddleCenter;
             return root;
+        }
+
+        public static void Reflow(MenuTile tile)
+        {
+            if (tile == null || tile.Label == null) return;
+            RectTransform root = tile.transform as RectTransform;
+            if (root == null) return;
+            float h = root.sizeDelta.y;
+            if (h < 1f) return;
+            bool two = false;
+            if (tile.Detail != null && !string.IsNullOrEmpty(tile.Detail.text))
+            {
+                string text = tile.Detail.text;
+                for (int i = 0; i < text.Length; i++)
+                {
+                    if (text[i] != ' ')
+                    {
+                        two = true;
+                        break;
+                    }
+                }
+            }
+            UiFit.TileText(h, two, out float titleFromTop, out float titleH, out float detailFromTop, out float detailH);
+            Band(tile.Label, h, titleFromTop, titleH);
+            if (tile.Detail != null) Band(tile.Detail, h, detailFromTop, detailH);
+        }
+
+        static void Band(Text label, float h, float fromTop, float band)
+        {
+            if (label == null || h < 1f) return;
+            if (band < 0f) band = 0f;
+            float yMax = (h - fromTop) / h;
+            float yMin = (h - fromTop - band) / h;
+            if (yMax > 1f) yMax = 1f;
+            if (yMin < 0f) yMin = 0f;
+            RectTransform rt = label.rectTransform;
+            rt.anchorMin = new Vector2(0f, yMin);
+            rt.anchorMax = new Vector2(1f, yMax);
+            rt.offsetMin = new Vector2(18f, 0f);
+            rt.offsetMax = new Vector2(-18f, 0f);
+            label.alignment = TextAnchor.MiddleLeft;
         }
 
         static void Inset(Text label, float extra)

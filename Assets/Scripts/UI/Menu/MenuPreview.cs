@@ -296,7 +296,7 @@ namespace Tag.Ui.Menu
                 var step = GameObject.CreatePrimitive(PrimitiveType.Cube);
                 step.name = "Step" + i.ToString();
                 step.transform.SetParent(_podiumRoot, false);
-                float wide = i == 0 ? 1.22f : i == 3 ? 0.98f : 1.10f;
+                float wide = i == 0 ? 1.16f : i == 3 ? 1.28f : 1.06f;
                 float deep = 1.02f;
                 step.transform.localPosition = new Vector3(xs[i], heights[i] * 0.5f, 0f);
                 step.transform.localScale = new Vector3(wide, heights[i], deep);
@@ -342,7 +342,7 @@ namespace Tag.Ui.Menu
                 shade.name = "Shade" + i.ToString();
                 shade.transform.SetParent(stand.transform, false);
                 shade.transform.localPosition = new Vector3(0f, 0.015f, 0f);
-                shade.transform.localScale = new Vector3(0.85f, 0.01f, 0.85f);
+                shade.transform.localScale = new Vector3(1.15f, 0.012f, 0.72f);
                 var shadeCol = shade.GetComponent<Collider>();
                 if (shadeCol != null) Destroy(shadeCol);
                 var shadeRend = shade.GetComponent<Renderer>();
@@ -371,7 +371,7 @@ namespace Tag.Ui.Menu
             var cam = camGo.AddComponent<Camera>();
             cam.clearFlags = CameraClearFlags.SolidColor;
             cam.backgroundColor = new Color(0f, 0f, 0f, 0f);
-            cam.fieldOfView = 32f;
+            cam.fieldOfView = 26f;
             cam.nearClipPlane = 0.05f;
             cam.farClipPlane = 40f;
             cam.depth = -19;
@@ -379,8 +379,8 @@ namespace Tag.Ui.Menu
             _podiumRt = new RenderTexture(1280, 720, 16, RenderTextureFormat.ARGB32);
             _podiumRt.Create();
             cam.targetTexture = _podiumRt;
-            cam.transform.position = _podiumRoot.position + new Vector3(0.45f, 1.85f, 8.4f);
-            cam.transform.LookAt(_podiumRoot.position + new Vector3(0.45f, 1.25f, 0f));
+            cam.transform.position = _podiumRoot.position + new Vector3(0.78f, 1.55f, 6.2f);
+            cam.transform.LookAt(_podiumRoot.position + new Vector3(0.78f, 1.05f, 0f));
             _podiumCam = cam;
         }
 
@@ -396,12 +396,36 @@ namespace Tag.Ui.Menu
                 var stand = new GameObject("Runner" + i.ToString());
                 stand.transform.SetParent(_paradeRoot, false);
                 stand.transform.localPosition = new Vector3(x[i], 0f, 0f);
+                var shade = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+                shade.name = "Contact";
+                shade.transform.SetParent(stand.transform, false);
+                Collider shadeCol = shade.GetComponent<Collider>();
+                if (shadeCol != null) DestroyImmediate(shadeCol);
+                shade.transform.localScale = new Vector3(1.55f, 0.012f, 1.55f);
+                shade.transform.localPosition = new Vector3(0f, 0.012f, 0f);
+                Renderer shadeRend = shade.GetComponent<Renderer>();
+                if (shadeRend != null)
+                    shadeRend.sharedMaterial = DummyPrimitiveFactory.MakeMat(new Color(0.04f, 0.06f, 0.10f, 1f), 0.9f, 0f);
+                var disc = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+                disc.name = "Pedestal";
+                disc.transform.SetParent(stand.transform, false);
+                Collider discCol = disc.GetComponent<Collider>();
+                if (discCol != null) DestroyImmediate(discCol);
+                disc.transform.localScale = new Vector3(1.15f, 0.04f, 1.15f);
+                disc.transform.localPosition = new Vector3(0f, 0.05f, 0f);
+                Renderer discRend = disc.GetComponent<Renderer>();
+                if (discRend != null)
+                    discRend.sharedMaterial = DummyPrimitiveFactory.MakeMat(MenuTheme.Seat(i), 0.22f, 0.18f);
                 GameObject body = MenuMannequin.Spawn(stand.transform, MenuMannequin.NameOf(4), MenuMannequin.NameOf(i), false);
-                MenuCheer.Dress(body, MenuTheme.Seat(i));
-                MenuIdle idle = body.GetComponent<MenuIdle>();
-                if (idle != null) idle.enabled = false;
-                MenuStride stride = body.AddComponent<MenuStride>();
-                stride.Begin(i % 2 == 1, i * 0.37f);
+                if (body != null)
+                {
+                    body.transform.localPosition = new Vector3(0f, 0.08f, 0f);
+                    MenuCheer.Dress(body, MenuTheme.Seat(i));
+                    MenuIdle idle = body.GetComponent<MenuIdle>();
+                    if (idle != null) idle.enabled = false;
+                    MenuStride stride = body.AddComponent<MenuStride>();
+                    stride.Begin(i % 2 == 1, i * 0.37f);
+                }
             }
             var camGo = new GameObject("ParadeCam");
             camGo.transform.SetParent(transform, false);
@@ -416,8 +440,8 @@ namespace Tag.Ui.Menu
             _paradeRt = new RenderTexture(1280, 720, 16, RenderTextureFormat.ARGB32);
             _paradeRt.Create();
             cam.targetTexture = _paradeRt;
-            cam.transform.position = _paradeRoot.position + new Vector3(0f, 1.45f, 6.2f);
-            cam.transform.LookAt(_paradeRoot.position + new Vector3(0f, 1.05f, 0f));
+            cam.transform.position = _paradeRoot.position + new Vector3(0f, 1.15f, 7.2f);
+            cam.transform.LookAt(_paradeRoot.position + new Vector3(0f, 0.82f, 0f));
             _paradeCam = cam;
         }
 

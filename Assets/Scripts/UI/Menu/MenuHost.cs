@@ -999,6 +999,28 @@ namespace Tag.Ui.Menu
             rt.offsetMax = new Vector2(-8f, -2f);
         }
 
+        static void Pull(Text label, float x)
+        {
+            if (label == null) return;
+            RectTransform rt = label.rectTransform;
+            Vector2 min = rt.offsetMin;
+            if (min.x < x) min.x = x;
+            rt.offsetMin = min;
+        }
+
+        static void SeatChip(Transform parent, float x, float y, int seat)
+        {
+            if (parent == null) return;
+            if (seat < 0) seat = 0;
+            if (seat > 3) seat = 3;
+            var rt = MenuWidgets.Place(parent, "SeatTag", x, y, 68f, 36f);
+            var plate = rt.gameObject.AddComponent<Image>();
+            MenuArt.Plate(plate, MenuTheme.Navy, true);
+            plate.raycastTarget = false;
+            Text word = MenuWidgets.Words(rt, "P" + (seat + 1).ToString(), UiFit.FloorFont, TextAnchor.MiddleCenter, MenuTheme.Cream, Vector2.zero, Vector2.one);
+            Snug(word);
+        }
+
         void Animate()
         {
             MenuJuice.Tick(Time.unscaledDeltaTime);
@@ -1825,12 +1847,16 @@ namespace Tag.Ui.Menu
                 statPlate.raycastTarget = false;
                 _castReady[s] = MenuWidgets.Words(statRt, "", UiFit.FloorFont, TextAnchor.MiddleLeft, MenuTheme.Cream, Vector2.zero, Vector2.one);
                 Snug(_castReady[s]);
+                SeatChip(card, 12f, 12f, s);
                 _castJoin[s] = MenuWidgets.Words(card, PadGlyph.Join(PadGlyph.Generic), 32, TextAnchor.MiddleCenter, MenuTheme.Cream, new Vector2(0.08f, 0.34f), new Vector2(0.92f, 0.72f));
-                float burstW = cardW * 0.92f;
-                float burstH = viewH * 0.78f;
-                var burst = MenuWidgets.Place(card, "ReadyBurst", (cardW - burstW) * 0.5f, 18f, burstW, burstH);
-                burst.pivot = new Vector2(0.5f, 0.5f);
-                burst.anchoredPosition = new Vector2(cardW * 0.5f, -(18f + burstH * 0.5f));
+                float burstW = viewSide * 0.42f;
+                float burstH = viewH * 0.22f;
+                if (burstH < 48f) burstH = 48f;
+                float burstX = viewX + viewSide - burstW - 6f;
+                float burstY = 10f + viewH - burstH - 8f;
+                var burst = MenuWidgets.Place(card, "ReadyBurst", burstX, burstY, burstW, burstH);
+                burst.pivot = new Vector2(1f, 0f);
+                burst.anchoredPosition = new Vector2(burstX + burstW, -(burstY + burstH));
                 var burstImage = burst.gameObject.AddComponent<RawImage>();
                 burstImage.texture = MenuBackdrop.Ready;
                 burstImage.raycastTarget = false;
@@ -1857,7 +1883,7 @@ namespace Tag.Ui.Menu
                 float x = gridX + col * (colW + 8f);
                 float y = gridTop + row * gridStep;
                 string name = c < LocalProfiles.HierNames.Length ? LocalProfiles.HierNames[c] : "Color";
-                AddTile(x, y, colW, gridH, c, name.ToUpperInvariant(), "", true);
+                AddTile(x, y, colW, gridH, c, name.ToUpperInvariant(), " ", true);
                 MenuTile tile = TileAt(c);
                 if (tile != null)
                 {
@@ -2191,20 +2217,9 @@ namespace Tag.Ui.Menu
                     tile.Tint(Color.Lerp(MenuTheme.Ink, MenuTheme.Seat(seat), UiSweep.SeatMix));
                     if (tile.Stroke != null && _rows[rank].Winner)
                         tile.Stroke.color = MenuTheme.Gold;
-                    if (tile.Label != null)
-                    {
-                        RectTransform titleRt = tile.Label.rectTransform;
-                        titleRt.anchorMin = new Vector2(0f, 0.62f);
-                        titleRt.anchorMax = new Vector2(1f, 1f);
-                    }
-                    if (tile.Detail != null)
-                    {
-                        RectTransform detailRt = tile.Detail.rectTransform;
-                        detailRt.anchorMin = new Vector2(0f, 0f);
-                        detailRt.anchorMax = new Vector2(1f, 0.60f);
-                        detailRt.offsetMin = new Vector2(10f, 4f);
-                        detailRt.offsetMax = new Vector2(-10f, -2f);
-                    }
+                    SeatChip(tile.transform, 28f, UiFit.StripeClear(), seat);
+                    Pull(tile.Label, 100f);
+                    Pull(tile.Detail, 100f);
                     MenuReveal.Row(tile.transform as RectTransform);
                 }
             }
@@ -2857,6 +2872,7 @@ namespace Tag.Ui.Menu
                     if (MenuSession.Ready[s]) who += " ready";
                 }
                 _castMark[c].text = who;
+                MenuWidgets.Reflow(TileAt(c));
             }
             for (int s = 0; s < 4; s++)
             {
@@ -3018,17 +3034,7 @@ namespace Tag.Ui.Menu
                         detail = LocalProfiles.CardOf(id);
                     }
                 }
-                MenuTile row = AddTile(x, 8f + v * 128f, w, 120f, index, title, detail, true);
-                if (row != null && row.Detail != null)
-                {
-                    row.Detail.rectTransform.anchorMin = new Vector2(0.02f, 0.02f);
-                    row.Detail.rectTransform.anchorMax = new Vector2(0.98f, 0.62f);
-                }
-                if (row != null && row.Label != null)
-                {
-                    row.Label.rectTransform.anchorMin = new Vector2(0.02f, 0.62f);
-                    row.Label.rectTransform.anchorMax = new Vector2(0.98f, 0.98f);
-                }
+                AddTile(x, 8f + v * 128f, w, 120f, index, title, detail, true);
             }
             RefreshFocus();
         }

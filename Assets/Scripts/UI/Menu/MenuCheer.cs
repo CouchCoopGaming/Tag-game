@@ -23,11 +23,11 @@ namespace Tag.Ui.Menu
 
         public static void Slot(int rank, out float x, out float height)
         {
-            if (rank <= 0) { x = 0.02f; height = 1.16f; return; }
-            if (rank == 1) { x = -1.32f; height = 0.78f; return; }
-            if (rank == 2) { x = 1.28f; height = 0.52f; return; }
-            x = 2.38f;
-            height = 0.30f;
+            if (rank <= 0) { x = 0.00f; height = 0.72f; return; }
+            if (rank == 1) { x = -1.46f; height = 0.50f; return; }
+            if (rank == 2) { x = 1.50f; height = 0.34f; return; }
+            x = 2.92f;
+            height = 0.20f;
         }
 
         public static void Dress(GameObject body, Color color)

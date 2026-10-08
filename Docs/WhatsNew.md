@@ -292,6 +292,8 @@ The eleventh pass puts the real Hier figure in the four player colors on the tit
 
 The twelfth pass shows that prompt once: PRESS and the button, or PRESS START. Character cards keep the name, the colors, the hat, and ready on two lines that stay inside the card from 80% to 130%. Each figure stands full body on its disc. Results puts the four places on a stepped block in front of Mega Park, with a celebration, a clap, and a slump, and the first-place card shows the round wins in full. Space still jumps. Mockups are in `Docs/UiStills/pass12/`.
 
+The thirteenth pass centers each button label under the highlight stripe and puts the sublabel on a second line. READY sits in the corner of the portrait so the face stays visible. The card frame is the seat, marked P1 to P4, and the color you picked stays on the figure and the swatch. Results uses that same seat bar. The four figures stand larger on their own blocks, each with a contact shadow, and the time reads as seconds as It. The title crew stands on discs under the lockup. Space still jumps. Mockups are in `Docs/UiStills/pass13/`.
+
 ## Motion, ninth pass
 
 The wall jump, the rope, the zip, the launch pad, a landing, the dash flash, a hard turnaround, and a punch while you run all ease instead of snapping. Speeds, the jump, and the dash length are the same.

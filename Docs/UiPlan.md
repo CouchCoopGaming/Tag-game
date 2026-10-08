@@ -189,6 +189,14 @@ Character cards use two lines. The name and the color pair sit on the first when
 
 Results stands the four figures on a stepped block with a number, a trim lip, and a confetti burst. First celebrates, second and third clap, fourth slumps. The park photo sits behind them. The inner RESULTS line is gone. The header is the only one. "2 round wins" has its own line on the first-place card. Mockups are in `Docs/UiStills/pass12/`.
 
+## Pass 13
+
+Button labels sit in the well under the highlight stripe, with 6 px of clearance, and a sublabel on its own line. That layout is the same on the main menu, arena, character colors, records, and the results actions.
+
+The READY burst sits in the lower corner of the portrait so the face stays clear. Each card frame stays the seat color, with a P1 to P4 tag, and the chosen color stays on the figure and the gold-ringed swatch. Results uses that same seat bar and tag.
+
+The results group is closer, each figure has a contact shadow on its own block, and the time reads "8.5s as It". The title crew stands on discs with contact shadows, under the lockup and above the prompt. Mockups are in `Docs/UiStills/pass13/`.
+
 ## Later passes
 
 - A 2D focus grid on rules so Left from a rule row lands on a mode tile.

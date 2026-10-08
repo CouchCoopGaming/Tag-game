@@ -180,16 +180,16 @@ namespace Tag.Ui.Menu
             view = h * 0.46f;
             if (view > 420f) view = 420f;
             if (view < 180f) view = 180f;
-            rankH = 156f;
+            rankH = 180f;
             btnH = 88f;
             rankY = view + 10f;
             btnY = rankY + rankH + 10f;
             if (btnY + btnH > h)
             {
-                view = h - 148f - 80f - 28f;
-                if (view < 160f) view = 160f;
-                rankH = 148f;
+                rankH = 176f;
                 btnH = 80f;
+                view = h - rankH - btnH - 24f;
+                if (view < 160f) view = 160f;
                 rankY = view + 8f;
                 btnY = rankY + rankH + 8f;
             }
@@ -238,10 +238,49 @@ namespace Tag.Ui.Menu
             return rankW - 20f;
         }
 
+        public const float StripeY = 3f;
+        public const float StripeH = 8f;
+        public const float StripeGap = 6f;
+
+        public static float StripeClear()
+        {
+            return StripeY + StripeH + StripeGap;
+        }
+
+        public static void TileText(float h, bool two, out float titleFromTop, out float titleH, out float detailFromTop, out float detailH)
+        {
+            float top = StripeClear();
+            float bot = 4f;
+            float well = h - top - bot;
+            if (well < 1f) well = 1f;
+            if (two && well < FloorFont * 2f)
+            {
+                bot = 2f;
+                well = h - top - bot;
+                if (well < 1f) well = 1f;
+            }
+            if (!two)
+            {
+                titleFromTop = top;
+                titleH = well;
+                detailFromTop = top + well;
+                detailH = 0f;
+                return;
+            }
+            float titleBand = FloorFont + 4f;
+            if (titleBand > well - FloorFont) titleBand = well * 0.5f;
+            if (titleBand < 1f) titleBand = 1f;
+            titleFromTop = top;
+            titleH = titleBand;
+            detailFromTop = top + titleBand;
+            detailH = well - titleBand;
+        }
+
         public static float RankBoxH(float scale)
         {
             Bands(scale, out _, out _, out float rankH, out _, out _);
-            return rankH * 0.60f - 8f;
+            TileText(rankH, true, out _, out _, out _, out float detailH);
+            return detailH;
         }
 
         public static bool CardsHold()
@@ -287,11 +326,13 @@ namespace Tag.Ui.Menu
         public static string FormatStats(bool winner, int tags, float time, int wins)
         {
             string tagWord = tags == 1 ? "1 tag" : tags.ToString() + " tags";
-            string timeWord = time.ToString("0.0") + "s It";
+            string timeWord = time.ToString("0.0") + "s as It";
             string winWord = wins == 1 ? "1 round win" : wins.ToString() + " round wins";
-            string head = (winner ? "WIN  " : "") + tagWord + "  " + timeWord;
+            if (winner)
+                return "WIN  " + tagWord + "\n" + timeWord + "\n" + winWord;
+            string head = tagWord + "  " + timeWord;
             if (InkWidth(head) > RankInk(ScaleMax))
-                head = (winner ? "WIN  " : "") + tagWord;
+                head = tagWord + "\n" + timeWord;
             return head + "\n" + winWord;
         }
 
@@ -304,11 +345,12 @@ namespace Tag.Ui.Menu
             {
                 float ink = RankInk(scales[i]);
                 float box = RankBoxH(scales[i]);
-                if (ink < 200f || box < CastLine * 2f) return false;
+                if (ink < 200f || box < CastLine * 3f) return false;
                 if (!RankFits(shown, ink, box)) return false;
                 if (!RankFits(wide, ink, box)) return false;
             }
             if (shown.IndexOf("2 round wins") < 0) return false;
+            if (shown.IndexOf("s as It") < 0) return false;
             return true;
         }
 
