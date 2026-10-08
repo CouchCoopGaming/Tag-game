@@ -399,6 +399,14 @@ Results cards use the seat band: P1 red circle, P2 blue triangle, P3 orange squa
 
 `Docs/UiStills/pass49/rules.png` and `results.png` are the checks. Each is under 400 KB. pose stays 0 and rigJoint stays 26. The gameplay proof lines are unchanged.
 
+## Pass 50
+
+Rules stay as they were in pass 49. Results fills the safe area. Each card is most of the column: the seat-tinted figure stands in it, with that seat's shape on the chest. First celebrates, second and third stand, and fourth shrugs. The soles sit 0.5 cm above the block. First is a little taller. The header reads RESULTS. The lines on a card are the tracked match record: time as It, tags, punches landed, and longest time untagged. The costume is a chip that says Costume and the look name. First wears a gold ribbon. Gold on a button is focus, so Rematch is the only gold outline. The buttons sit on the bottom of the safe area, above a bar that reads Space confirms and Esc goes back.
+
+Controls, while a bind is listening, says Press a key or a button. Esc cancels. A key that already belongs to another action swaps, and the bar says Swapped with that action. Reset says the bindings are back to the defaults and Jump is Space. Title, the main menu, join, pause, and loading are unchanged.
+
+`Docs/UiStills/pass50/results.png` and `controls.png` are the checks. Each is under 400 KB. pose stays 0 and rigJoint stays 26. The gameplay proof lines are unchanged.
+
 ## Later passes
 
 - A 2D focus grid on rules so Left from a rule row lands on a mode tile.

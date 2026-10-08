@@ -209,6 +209,25 @@ namespace Tag.Ui.Menu
             return 0.05f * s;
         }
 
+        /// <summary>
+        /// Last place. A small shoulder lift. The arms stay near the body so
+        /// the pose does not sink a shell past the rest overlap.
+        /// </summary>
+        public static Angles Shrug(float t)
+        {
+            float s = Mathf.Sin(t * 1.4f);
+            var a = new Angles();
+            a.Head = 6f;
+            a.Spine = 3f;
+            a.ArmPitchL = 12f + 2f * s;
+            a.ArmPitchR = 12f + 2f * s;
+            a.ElbowL = -10f;
+            a.ElbowR = -10f;
+            a.KneeL = -2f;
+            a.KneeR = -2f;
+            return a;
+        }
+
         /// <summary>Last place. Head down, shoulders forward, arms hanging.</summary>
         public static Angles Slump(float t)
         {

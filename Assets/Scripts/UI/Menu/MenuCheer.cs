@@ -4,9 +4,8 @@ using UnityEngine;
 namespace Tag.Ui.Menu
 {
     /// <summary>
-    /// Results poses. The winner raises both arms and hops.
-        /// Second pumps one fist. Third holds both fists in front of the chest. Last place slumps.
-    /// These are menu clips. Reduce motion holds one frame.
+    /// Results poses. First celebrates with both arms up. Second and third stand.
+    /// Fourth gives a small shrug. Feet stay 0.5 cm above the block. Reduce motion holds one frame.
     /// </summary>
     public sealed class MenuCheer : MonoBehaviour
     {
@@ -16,9 +15,7 @@ namespace Tag.Ui.Menu
         Quaternion _hips0, _spine0, _head0;
         Quaternion _armL0, _armR0, _foreL0, _foreR0;
         Quaternion _thighL0, _thighR0, _kneeL0, _kneeR0;
-        bool _win;
-        bool _clap;
-        bool _small;
+        int _place;
         bool _still;
         Renderer[] _rend;
         int _rendCount;
@@ -58,28 +55,34 @@ namespace Tag.Ui.Menu
             }
         }
 
-        public static void Play(GameObject body, bool win, bool clap, bool small)
+        /// <summary>The deep bow. Results uses the lighter shrug so the shoulders stay small.</summary>
+        public static MenuAlive.Angles Bow()
+        {
+            return MenuAlive.Slump(0.2f);
+        }
+
+        public static void Play(GameObject body, int place)
         {
             if (body == null) return;
             MenuIdle idle = body.GetComponent<MenuIdle>();
             if (idle != null) idle.enabled = false;
             MenuCheer cheer = body.GetComponent<MenuCheer>();
             if (cheer == null) cheer = body.AddComponent<MenuCheer>();
-            cheer.Begin(win, clap, small);
+            cheer.Begin(place);
         }
 
-        public void Begin(bool win, bool clap, bool small)
+        public void Begin(int place)
         {
-            _win = win;
-            _clap = clap && !win;
-            _small = small && _clap;
+            _place = place;
+            if (_place < 0) _place = 0;
+            if (_place > 3) _place = 3;
             _still = MenuVideo.ReduceMotion || MenuCapture.Running;
             _born = Time.unscaledTime;
             Cache();
             Apply(0f);
         }
 
-        /// <summary>World Y of the block top. Soles stay within 1 cm of it.</summary>
+        /// <summary>World Y of the block top. Soles sit 0.5 cm above it.</summary>
         public void Floor(float worldY)
         {
             _floor = worldY;
@@ -106,12 +109,11 @@ namespace Tag.Ui.Menu
                 poseU = u * u * (3f - 2f * u);
             }
             MenuAlive.Angles a;
-            if (_win) a = MenuAlive.Cheer(time, poseU);
-            else if (_clap && _small) a = MenuAlive.Chest(time);
-            else if (_clap) a = MenuAlive.Pump(time);
-            else a = MenuAlive.Slump(time);
-            if (!_win && poseU < 1f) a = Blend(a, poseU);
-            _hop = _win && poseU > 0.99f ? MenuAlive.Hop(time) : 0f;
+            if (_place <= 0) a = MenuAlive.Cheer(time, poseU);
+            else if (_place >= 3) a = MenuAlive.Shrug(time);
+            else a = MenuAlive.Ready();
+            if (_place > 0 && poseU < 1f) a = Blend(a, poseU);
+            _hop = 0f;
             Pose(a);
             Ground();
         }

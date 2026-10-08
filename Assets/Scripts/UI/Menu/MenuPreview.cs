@@ -240,9 +240,12 @@ namespace Tag.Ui.Menu
                 if (_rankNum[i] != null)
                     _rankNum[i].color = MenuTheme.SeatInk(seat);
                 GameObject body = MenuMannequin.Spawn(_podiumAnchor[i], MenuMannequin.NameOf(row.Hier), MenuMannequin.NameOf(row.Accent), row.Hat != 0);
-                bool win = row.Winner;
-                bool clap = !win && i < 3;
-                MenuCheer.Play(body, win, clap, i == 2);
+                if (body != null)
+                {
+                    MenuCheer.Dress(body, MenuTheme.SeatBand(seat));
+                    ChestDecal(body, seat);
+                }
+                MenuCheer.Play(body, i);
                 if (body != null) body.transform.localPosition = new Vector3(0f, 0.04f, 0f);
                 MenuCheer planted = body != null ? body.GetComponent<MenuCheer>() : null;
                 _planter[i] = planted;
@@ -261,6 +264,65 @@ namespace Tag.Ui.Menu
             {
                 if (_confetti[i] != null) _confetti[i].gameObject.SetActive(party);
             }
+        }
+
+        /// <summary>
+        /// One figure from the results picture, cropped around that place.
+        /// </summary>
+        public void ShowRank(int rank, RawImage view)
+        {
+            if (view == null || _podiumRt == null) return;
+            view.texture = _podiumRt;
+            view.color = Color.white;
+            view.raycastTarget = false;
+            float center = BlockFraction(rank);
+            if (center < 0.08f) center = 0.08f;
+            if (center > 0.92f) center = 0.92f;
+            const float slice = 0.22f;
+            float left = 1f - (center - slice * 0.5f);
+            view.uvRect = new Rect(left, 0.02f, -slice, 0.90f);
+        }
+
+        static void ChestDecal(GameObject body, int seat)
+        {
+            if (body == null) return;
+            Transform chest = FindNamed(body.transform, "Chest");
+            if (chest == null) chest = FindNamed(body.transform, "Spine");
+            if (chest == null) chest = body.transform;
+            var quad = GameObject.CreatePrimitive(PrimitiveType.Quad);
+            quad.name = "SeatDecal";
+            quad.transform.SetParent(chest, false);
+            quad.transform.localPosition = new Vector3(0f, 0.04f, 0.12f);
+            quad.transform.localRotation = Quaternion.identity;
+            quad.transform.localScale = new Vector3(0.18f, 0.18f, 1f);
+            Collider col = quad.GetComponent<Collider>();
+            if (col != null) DestroyImmediate(col);
+            Sprite sprite = SeatMark.For(seat);
+            Shader shader = Shader.Find("Sprites/Default");
+            if (shader == null) shader = Shader.Find("Unlit/Transparent");
+            if (shader == null) shader = Shader.Find("Unlit/Color");
+            var mat = shader != null ? new Material(shader) : DummyPrimitiveFactory.MakeMat(Color.white, 0.2f, 0f);
+            if (sprite != null && sprite.texture != null)
+            {
+                if (mat.HasProperty("_MainTex")) mat.SetTexture("_MainTex", sprite.texture);
+                if (mat.HasProperty("_BaseMap")) mat.SetTexture("_BaseMap", sprite.texture);
+            }
+            if (mat.HasProperty("_Color")) mat.SetColor("_Color", Color.white);
+            if (mat.HasProperty("_BaseColor")) mat.SetColor("_BaseColor", Color.white);
+            Renderer rend = quad.GetComponent<Renderer>();
+            if (rend != null) rend.sharedMaterial = mat;
+        }
+
+        static Transform FindNamed(Transform root, string token)
+        {
+            if (root == null || string.IsNullOrEmpty(token)) return null;
+            if (root.name.IndexOf(token, System.StringComparison.OrdinalIgnoreCase) >= 0) return root;
+            for (int i = 0; i < root.childCount; i++)
+            {
+                Transform found = FindNamed(root.GetChild(i), token);
+                if (found != null) return found;
+            }
+            return null;
         }
 
         /// <summary>

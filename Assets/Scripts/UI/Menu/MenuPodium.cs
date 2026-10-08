@@ -20,6 +20,8 @@ namespace Tag.Ui.Menu
             public string Name;
             public float Time;
             public int Tags;
+            public int Punches;
+            public float Untagged;
             public int Wins;
             public bool Alive;
             public bool Winner;
@@ -57,6 +59,8 @@ namespace Tag.Ui.Menu
                     row.Name = string.IsNullOrEmpty(MatchBook.Name[i]) ? "Player" : MatchBook.Name[i];
                     row.Time = MatchBook.TimeAsIt[i];
                     row.Tags = MatchBook.TagsMade[i];
+                    row.Punches = MatchBook.PunchesLanded[i];
+                    row.Untagged = MatchBook.LongestSurvival[i];
                     row.Hier = 4;
                     row.Accent = i;
                     row.Seat = -1;
@@ -122,7 +126,11 @@ namespace Tag.Ui.Menu
 
         public static string Stats(Row row)
         {
-            return UiFit.FormatStats(row.Winner, row.Tags, row.Time, row.Wins);
+            string time = row.Time.ToString("0.0") + "s as It";
+            string tags = row.Tags == 1 ? "1 tag" : row.Tags.ToString() + " tags";
+            string punches = row.Punches == 1 ? "1 punch" : row.Punches.ToString() + " punches";
+            string free = row.Untagged.ToString("0.0") + "s untagged";
+            return time + "\n" + tags + "\n" + punches + "\n" + free;
         }
 
         public static string ChaseLine(float seconds, string who)
@@ -142,6 +150,8 @@ namespace Tag.Ui.Menu
                 row.Name = i == 0 ? "P1" : i == 1 ? "P2" : i == 2 ? "P3" : "P4";
                 row.Tags = 6 - i;
                 row.Time = 8.5f + i * 6.2f;
+                row.Punches = 4 - i;
+                row.Untagged = 18f - i * 4.5f;
                 row.Wins = i == 0 ? 2 : i == 1 ? 1 : 0;
                 row.Alive = i < 2;
                 row.Winner = i == 0;
@@ -161,6 +171,7 @@ namespace Tag.Ui.Menu
             row.Name = string.IsNullOrEmpty(pawn.PlayerId) ? "Player" : pawn.PlayerId;
             row.Time = pawn.TimeAsIt;
             row.Tags = pawn.TagsLanded;
+            ReadBook(ref row);
             row.Alive = pawn.IsAlive;
             row.Wins = mode.RoundWinsOf(row.Name);
             row.Winner = mode.WinnerNamed(row.Name);
@@ -184,6 +195,29 @@ namespace Tag.Ui.Menu
             if (colors > 0) row.Hier = h % colors;
             row.Accent = (row.Hier + 1) % (colors > 0 ? colors : 1);
             return row;
+        }
+
+        static void ReadBook(ref Row row)
+        {
+            int i = BookOf(row.Name);
+            if (i < 0) return;
+            row.Punches = MatchBook.PunchesLanded[i];
+            row.Untagged = MatchBook.LongestSurvival[i];
+            if (!MatchBook.Sealed) return;
+            row.Time = MatchBook.TimeAsIt[i];
+            row.Tags = MatchBook.TagsMade[i];
+        }
+
+        static int BookOf(string name)
+        {
+            if (string.IsNullOrEmpty(name) || MatchBook.Count <= 0) return -1;
+            int n = MatchBook.Count;
+            if (n > MatchBook.Cap) n = MatchBook.Cap;
+            for (int i = 0; i < n; i++)
+            {
+                if (MatchBook.Name[i] == name) return i;
+            }
+            return -1;
         }
 
         static int LocalProfilesLength()

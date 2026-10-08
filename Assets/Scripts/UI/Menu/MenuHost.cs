@@ -1396,6 +1396,58 @@ namespace Tag.Ui.Menu
             rt.offsetMin = min;
         }
 
+        static void BandText(Text label, float fromTop, float height)
+        {
+            if (label == null) return;
+            if (height < 24f) height = 24f;
+            RectTransform rt = label.rectTransform;
+            rt.anchorMin = new Vector2(0f, 1f);
+            rt.anchorMax = new Vector2(1f, 1f);
+            rt.pivot = new Vector2(0.5f, 1f);
+            rt.anchoredPosition = new Vector2(0f, -fromTop);
+            rt.sizeDelta = new Vector2(-16f, height);
+        }
+
+        static void CostumeChip(Transform parent, float x, float y, int hier)
+        {
+            if (parent == null) return;
+            string name = MenuMannequin.NameOf(hier);
+            Color look = MenuMannequin.Swatch(name);
+            RectTransform rt = MenuWidgets.Place(parent, "Costume", x, y, 310f, 44f);
+            Image plate = rt.gameObject.AddComponent<Image>();
+            MenuArt.Plate(plate, look, true);
+            plate.raycastTarget = false;
+            Text word = MenuWidgets.Words(rt, "Costume  " + name, UiFit.FloorFont, TextAnchor.MiddleCenter, MenuTheme.Ink, Vector2.zero, Vector2.one);
+            if (word != null)
+            {
+                word.color = MenuMannequin.DarkStep(name);
+                word.raycastTarget = false;
+                Snug(word);
+            }
+        }
+
+        static void WinnerRibbon(Transform parent, float cardW)
+        {
+            if (parent == null) return;
+            float x = cardW - 72f;
+            RectTransform rt = MenuWidgets.Place(parent, "Ribbon", x, 18f, 56f, 36f);
+            Image band = rt.gameObject.AddComponent<Image>();
+            band.color = MenuTheme.Gold;
+            band.raycastTarget = false;
+            RectTransform tailL = MenuWidgets.Place(rt, "Tail", 4f, 28f, 16f, 22f);
+            tailL.pivot = new Vector2(0.5f, 0f);
+            tailL.localRotation = Quaternion.Euler(0f, 0f, 18f);
+            Image left = tailL.gameObject.AddComponent<Image>();
+            left.color = MenuTheme.Gold;
+            left.raycastTarget = false;
+            RectTransform tailR = MenuWidgets.Place(rt, "Tail", 36f, 28f, 16f, 22f);
+            tailR.pivot = new Vector2(0.5f, 0f);
+            tailR.localRotation = Quaternion.Euler(0f, 0f, -18f);
+            Image right = tailR.gameObject.AddComponent<Image>();
+            right.color = MenuTheme.Gold;
+            right.raycastTarget = false;
+        }
+
         static void SeatChip(Transform parent, float x, float y, int seat)
         {
             SeatChip(parent, x, y, seat, MenuTheme.Seat(seat), false);
@@ -3309,10 +3361,7 @@ namespace Tag.Ui.Menu
             ShowFlyover(ParkArena.Mega, 1f);
             TagModeController mode = TagModeController.Instance;
             TagModeId modeId = mode != null ? mode.SelectedMode : MenuSession.Mode;
-            string headline = "RESULTS";
-            if (mode != null && !string.IsNullOrEmpty(mode.ResultMessage))
-                headline = mode.ResultMessage;
-            TitleBar("  " + headline);
+            TitleBar("  RESULTS");
             int n = FillRanks();
             float chase = n > 0 ? _rows[0].Chase : 0f;
             string chaseWho = n > 0 ? _rows[0].ChaseName : "";
@@ -3325,114 +3374,74 @@ namespace Tag.Ui.Menu
                 _banner.text = MenuPodium.Summary(modeId, _rows, n, chase, chaseWho);
             float span = UiFit.BodyW(UiFit.Current());
             float bodyH = UiFit.BodyH(UiFit.Current());
-            float rankH = 168f;
-            float btnH = 80f;
-            float gap = 8f;
-            float top = 8f;
-            float maxStageH = bodyH - rankH - btnH - gap * 2f - top;
-            if (maxStageH < 180f) maxStageH = 180f;
-            float stageW = span - 32f;
-            if (stageW > 1680f) stageW = 1680f;
-            float fitH = stageW * (9f / 16f);
-            float fitW = stageW;
-            if (fitH > maxStageH)
-            {
-                fitH = maxStageH;
-                fitW = fitH * (16f / 9f);
-            }
-            float stageX = (span - fitW) * 0.5f;
-            float rankY = top + fitH + gap;
-            float btnY = rankY + rankH + gap;
-            if (btnY + btnH > bodyH)
-            {
-                fitH -= btnY + btnH - bodyH;
-                if (fitH < 160f) fitH = 160f;
-                fitW = fitH * (16f / 9f);
-                stageX = (span - fitW) * 0.5f;
-                rankY = top + fitH + gap;
-                btnY = rankY + rankH + gap;
-            }
-            var stage = MenuWidgets.Place(_body, "ResultsView", stageX, top, fitW, fitH);
-            var frame = stage.gameObject.AddComponent<Image>();
-            frame.color = new Color(0f, 0f, 0f, 0f);
-            frame.raycastTarget = false;
-            var viewRt = MenuWidgets.Place(stage, "View", 0f, 0f, fitW, fitH);
-            var view = viewRt.gameObject.AddComponent<RawImage>();
-            view.raycastTarget = false;
-            if (_preview != null) _preview.ShowPodium(n, _rows, view);
-            float cardGutter = 40f;
-            float leftPx = fitW;
-            float rightPx = 0f;
-            var blockPx = new float[n > 0 ? n : 1];
-            for (int rank = 0; rank < n; rank++)
-            {
-                float px = MenuPreview.BlockFraction(rank) * fitW;
-                blockPx[rank] = px;
-                if (px < leftPx) leftPx = px;
-                if (px > rightPx) rightPx = px;
-            }
-            for (int a = 0; a < n; a++)
-            {
-                for (int b = a + 1; b < n; b++)
-                {
-                    if (blockPx[b] < blockPx[a])
-                    {
-                        float swap = blockPx[a];
-                        blockPx[a] = blockPx[b];
-                        blockPx[b] = swap;
-                    }
-                }
-            }
-            float minGap = fitW;
-            for (int a = 1; a < n; a++)
-            {
-                float step = blockPx[a] - blockPx[a - 1];
-                if (step < minGap) minGap = step;
-            }
-            float rankW = minGap - cardGutter;
-            float edge = 8f;
-            float roomL = leftPx - edge;
-            float roomR = fitW - edge - rightPx;
-            if (rankW > roomL * 2f) rankW = roomL * 2f;
-            if (rankW > roomR * 2f) rankW = roomR * 2f;
-            if (rankW > minGap - 8f) rankW = minGap - 8f;
-            if (rankW < 120f && minGap - 8f >= 120f) rankW = 120f;
+            const float hintH = 48f;
+            const float btnH = 80f;
+            const float lift = 22f;
+            float hintY = bodyH - hintH - 8f;
+            float btnY = hintY - btnH - 8f;
+            float cardBottom = btnY - 12f;
+            float cardTop = 28f;
+            float cardH = cardBottom - cardTop;
+            if (cardH < 220f) cardH = 220f;
+            if (n < 1) n = 0;
+            if (_preview != null) _preview.ShowPodium(n, _rows, null);
+            float gap = 12f;
+            float cardW = n > 0 ? (span - 16f - gap * (n - 1)) / n : span - 16f;
+            if (cardW > 440f) cardW = 440f;
+            float rowW = n * cardW + (n > 1 ? gap * (n - 1) : 0f);
+            float rowX = (span - rowW) * 0.5f;
+            if (rowX < 8f) rowX = 8f;
             for (int rank = 0; rank < n; rank++)
             {
                 string detail = MenuPodium.Stats(_rows[rank]);
                 int seat = _rows[rank].Seat;
                 if (seat < 0) seat = rank;
-                float cardX = stageX + MenuPreview.BlockFraction(rank) * fitW - rankW * 0.5f;
-                float cardY = rankY;
-                if (_rows[rank].Winner) cardY -= 18f;
-                MenuTile tile = AddTile(cardX, cardY, rankW, rankH, 20 + rank, MenuTheme.Place(rank) + "  " + _rows[rank].Name, detail, false);
-                if (tile != null)
+                bool first = rank == 0;
+                float h = first ? cardH + lift : cardH;
+                float cardY = first ? cardTop - lift : cardTop;
+                if (cardY < 4f) cardY = 4f;
+                float cardX = rowX + rank * (cardW + gap);
+                MenuTile tile = AddTile(cardX, cardY, cardW, h, 20 + rank, MenuTheme.Place(rank) + "  " + _rows[rank].Name, detail, false);
+                if (tile == null) continue;
+                tile.KeepBar = true;
+                Color seatColor = MenuTheme.SeatBand(seat);
+                tile.BarColor = seatColor;
+                if (tile.Bar != null)
                 {
-                    tile.KeepBar = true;
-                    Color seatColor = MenuTheme.SeatBand(seat);
-                    Color look = MenuMannequin.Swatch(MenuMannequin.NameOf(_rows[rank].Hier));
-                    tile.BarColor = seatColor;
-                    if (tile.Bar != null)
-                    {
-                        tile.Bar.color = tile.BarColor;
-                        RectTransform barRt = tile.Bar.rectTransform;
-                        barRt.anchoredPosition = new Vector2(0f, 0f);
-                        barRt.sizeDelta = new Vector2(rankW, 10f);
-                    }
-                    tile.Tint(Color.Lerp(MenuTheme.Ink, seatColor, UiSweep.SeatMix));
-                    if (tile.Stroke != null && _rows[rank].Winner)
-                        tile.Stroke.color = MenuTheme.Gold;
-                    float chipX = rankW - 154f;
-                    if (chipX < 8f) chipX = 8f;
-                    SeatChip(tile.transform, chipX, UiFit.StripeClear() + 6f, seat, seatColor, true);
-                    RectTransform swatch = MenuWidgets.Place(tile.transform, "LookSwatch", rankW - 34f, UiFit.StripeClear() + 12f, 22f, 22f);
-                    var swatchImage = swatch.gameObject.AddComponent<Image>();
-                    swatchImage.color = look;
-                    swatchImage.raycastTarget = false;
-                    Pull(tile.Label, 18f);
-                    Pull(tile.Detail, 18f);
-                    MenuReveal.Row(tile.transform as RectTransform);
+                    tile.Bar.color = tile.BarColor;
+                    RectTransform barRt = tile.Bar.rectTransform;
+                    barRt.anchoredPosition = new Vector2(0f, 0f);
+                    barRt.sizeDelta = new Vector2(cardW, 10f);
                 }
+                tile.Tint(Color.Lerp(MenuTheme.Ink, seatColor, UiSweep.SeatMix));
+                float figH = h * 0.58f;
+                var figRt = MenuWidgets.Place(tile.transform, "Figure", 10f, UiFit.StripeClear() + 4f, cardW - 20f, figH);
+                var figure = figRt.gameObject.AddComponent<RawImage>();
+                figure.raycastTarget = false;
+                if (_preview != null) _preview.ShowRank(rank, figure);
+                float textTop = UiFit.StripeClear() + 8f + figH;
+                BandText(tile.Label, textTop, 36f);
+                float costumeY = h - 70f;
+                BandText(tile.Detail, textTop + 36f, costumeY - textTop - 42f);
+                if (tile.Detail != null) tile.Detail.alignment = TextAnchor.UpperLeft;
+                SeatChip(tile.transform, cardW - 130f, textTop, seat, seatColor, true);
+                CostumeChip(tile.transform, 12f, costumeY, _rows[rank].Hier);
+                if (first) WinnerRibbon(tile.transform, cardW);
+                Pull(tile.Label, 18f);
+                PullText(tile.Label, 140f);
+                Pull(tile.Detail, 18f);
+                MenuReveal.Row(tile.transform as RectTransform);
+            }
+            RectTransform hint = MenuWidgets.Place(_body, "ResultHint", 8f, hintY, span - 16f, hintH);
+            Image hintPlate = hint.gameObject.AddComponent<Image>();
+            MenuArt.Plate(hintPlate, MenuTheme.Navy, true);
+            hintPlate.raycastTarget = false;
+            Text hintText = MenuWidgets.Words(hint, "Space confirms. Esc goes back.", UiFit.FloorFont, TextAnchor.MiddleLeft, MenuTheme.Gold, Vector2.zero, Vector2.one);
+            if (hintText != null)
+            {
+                hintText.raycastTarget = false;
+                hintText.rectTransform.offsetMin = new Vector2(16f, 0f);
+                hintText.rectTransform.offsetMax = new Vector2(-16f, 0f);
             }
             float btnW = (span - 40f) / 4f;
             if (btnW > 436f) btnW = 436f;
@@ -3675,6 +3684,26 @@ namespace Tag.Ui.Menu
                 }
             }
             PaintControlScroll(win, listTop);
+            string prompt = "";
+            if (_capturing) prompt = "Press a key or a button. Esc cancels.";
+            else if (!string.IsNullOrEmpty(_conflict)) prompt = _conflict;
+            if (_banner != null)
+                _banner.text = prompt.Length > 0 ? prompt : "Space always jumps.";
+            if (prompt.Length > 0)
+            {
+                float body = UiFit.BodyH(UiFit.Current());
+                RectTransform bar = MenuWidgets.Place(_body, "BindPrompt", rowX, body - 64f, rowW, 52f);
+                Image plate = bar.gameObject.AddComponent<Image>();
+                MenuArt.Plate(plate, MenuTheme.Navy, true);
+                plate.raycastTarget = false;
+                Text word = MenuWidgets.Words(bar, prompt, UiFit.FloorFont, TextAnchor.MiddleLeft, MenuTheme.Gold, Vector2.zero, Vector2.one);
+                if (word != null)
+                {
+                    word.raycastTarget = false;
+                    word.rectTransform.offsetMin = new Vector2(16f, 0f);
+                    word.rectTransform.offsetMax = new Vector2(-16f, 0f);
+                }
+            }
             RefreshFocus();
         }
 
@@ -3730,6 +3759,7 @@ namespace Tag.Ui.Menu
         {
             float top = 8f + 76f;
             float body = UiFit.BodyH(UiFit.Current());
+            if (_capturing || !string.IsNullOrEmpty(_conflict)) body -= 72f;
             int n = OptWindow;
             if (top + (n + 1) * 96f <= body) n += 1;
             while (n > 4 && top + n * 96f > body) n--;
@@ -4056,7 +4086,7 @@ namespace Tag.Ui.Menu
                 ActionBinds.Current = binds;
                 LocalProfiles.StoreBinds(0, binds);
                 SettingsRuntime.Save();
-                _conflict = "";
+                _conflict = "Bindings are back to the defaults. Jump is Space.";
                 MenuAudio.Confirm();
                 PaintControls();
                 return;
@@ -4191,14 +4221,37 @@ namespace Tag.Ui.Menu
                 PaintControls();
                 return;
             }
-            ActionBinds trial = (ActionBinds.Current ?? ActionBinds.Defaults()).Clone();
+            ActionBinds live = ActionBinds.Current ?? ActionBinds.Defaults();
+            string displaced = pad ? live.Gamepad[(int)action] : live.Keyboard[(int)action];
+            ActionBinds trial = live.Clone();
             if (pad) trial.SetGamepad(action, token);
             else trial.SetKeyboard(action, token);
             if (trial.Conflict(action, out PlayAction other))
             {
-                _conflict = ActionBinds.Name(action) + " conflicts with " + ActionBinds.Name(other);
+                if (other == action)
+                {
+                    _conflict = "That key is kept. Pick another.";
+                    _capturing = false;
+                    MenuAudio.Error();
+                    PaintControls();
+                    return;
+                }
+                if (pad) trial.SetGamepad(other, displaced);
+                else trial.SetKeyboard(other, displaced);
+                if (trial.Conflict(action, out _) || trial.Conflict(other, out _))
+                {
+                    _conflict = ActionBinds.Name(action) + " stays. " + ActionBinds.Name(other) + " kept that key.";
+                    _capturing = false;
+                    MenuAudio.Error();
+                    PaintControls();
+                    return;
+                }
+                ActionBinds.Current = trial;
+                LocalProfiles.StoreBinds(0, trial);
+                SettingsRuntime.Save();
                 _capturing = false;
-                MenuAudio.Error();
+                _conflict = "Swapped with " + ActionBinds.Name(other) + ".";
+                MenuAudio.Confirm();
                 PaintControls();
                 return;
             }
