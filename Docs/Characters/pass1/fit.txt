@@ -1,0 +1,16 @@
+costume-fit sets=12 frames=4128 worldMax=0.38 fails=0
+cloth-band min=0.60 max=0.60 under=0 over=0
+accessory-max=12.41 piece=Lab_Brim
+worst sprint t=0.200 cm=0.38
+worn Reed-1-hood tris=10858
+worn Reed-2-cap tris=11094
+worn Reed-3-helmet tris=10938
+worn Bram-1-helmet tris=10938
+worn Bram-2-cap tris=11094
+worn Bram-3-hood tris=10858
+worn Pip-1-cap tris=7760
+worn Pip-2-hair tris=7464
+worn Pip-3-helmet tris=7604
+worn Sol-1-collar-cap tris=11270
+worn Sol-2-hood tris=10858
+worn Sol-3-helmet-pack tris=11082
