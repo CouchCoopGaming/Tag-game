@@ -902,7 +902,8 @@ def _point_inside(bvh, blender_point):
     origin = Vector(blender_point)
     direction = Vector((1.0, 0.17, 0.09)).normalized()
     hits = 0
-    for _ in range(12):
+    # A ray through a brick pier can cross more than a dozen faces.
+    for _ in range(64):
         loc, _normal, _idx, _dist = bvh.ray_cast(origin, direction)
         if loc is None:
             break
@@ -1550,7 +1551,7 @@ def load_asset_modules():
     if ROOT not in sys.path:
         sys.path.insert(0, ROOT)
     skip = {
-        "_common", "build_all", "render_pass1", "render_pass2", "render_pass3", "render_pass4", "render_pass5", "render_pass6", "render_pass7", "render_pass8", "render_pass9", "render_pass10", "render_pass11", "render_pass12", "render_pass13", "render_pass14", "render_pass15", "render_pass16", "render_pass17", "render_pass18", "render_pass19", "render_pass20", "render_pass21", "render_pass22", "render_pass23", "render_pass24",
+        "_common", "build_all", "render_pass1", "render_pass2", "render_pass3", "render_pass4", "render_pass5", "render_pass6", "render_pass7", "render_pass8", "render_pass9", "render_pass10", "render_pass11", "render_pass12", "render_pass13", "render_pass14", "render_pass15", "render_pass16", "render_pass17", "render_pass18", "render_pass19", "render_pass20", "render_pass21", "render_pass22", "render_pass23", "render_pass24", "render_pass25",
         "write_unity", "_kit",
     }
     names = []

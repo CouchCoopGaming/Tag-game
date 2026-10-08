@@ -116,41 +116,61 @@ def _fit_holes(span, wall_h, kind):
     return holes
 
 
-def _window(g, origin, axis, inward, hole, trim, lod):
-    """Frame, recessed glass, mullions, and a backing. hole is (cx, cy, w, h)."""
+# _wall shells are 0.22 m thick and centered on the wall origin.
+_WALL_HALF = 0.11
+# Sash sits this far behind the outer brick face.
+_REVEAL = 0.13
+
+
+def _window(g, origin, axis, inward, hole, trim, lod, body="Lib_Brick"):
+    """Brick returns in the opening, sash 13 cm back, stone sill and lintel."""
     cx, cy, w, h = hole
-    gap = 0.012
-    fw, fh = w - gap * 2, h - gap * 2
-    glass_w, glass_h = fw - 0.10, fh - 0.10
-    depth = 0.08
+    glass_w, glass_h = w - 0.16, h - 0.16
+    face = _WALL_HALF
+    # Glass just inside the inner end of the jamb so the two shells do not touch.
+    glass_d = face - _REVEAL - 0.012
+    # Jamb runs from 1 cm behind the face back to the reveal plane.
+    jamb_outer = face - 0.010
+    jamb_inner = face - _REVEAL
+    jamb_mid = (jamb_outer + jamb_inner) * 0.5
+    jamb_depth = jamb_outer - jamb_inner
+    side = 0.036
+    # Stay inside the hole. The wall panel stops 4 mm outside the cut.
+    inset = side * 0.5 + 0.006
     if axis == "z":
-        z_out = origin
-        z_glass = z_out + inward * depth
-        z_back = z_out + inward * 0.34
-        g.box((cx, cy + fh * 0.5 - 0.03, z_out + inward * 0.02), (fw, 0.06, 0.05), trim)
-        g.box((cx, cy - fh * 0.5 + 0.03, z_out + inward * 0.02), (fw, 0.06, 0.05), trim)
-        g.box((cx - fw * 0.5 + 0.03, cy, z_out + inward * 0.02), (0.06, fh, 0.05), trim)
-        g.box((cx + fw * 0.5 - 0.03, cy, z_out + inward * 0.02), (0.06, fh, 0.05), trim)
-        outer = z_out - inward * 0.18
-        g.box((cx, cy - h * 0.5 - 0.02, outer), (w + 0.06, 0.05, 0.08), "Lib_Concrete")
+        z_glass = _street(origin, inward, glass_d)
+        z_jamb = _street(origin, inward, jamb_mid)
+        g.box((cx - w * 0.5 + inset, cy, z_jamb), (side, h - 0.012, jamb_depth), body)
+        g.box((cx + w * 0.5 - inset, cy, z_jamb), (side, h - 0.012, jamb_depth), body)
+        inner_w = w - inset * 2 - side - 0.008
+        g.box((cx, cy + h * 0.5 - inset, z_jamb), (inner_w, side, jamb_depth), body)
+        g.box((cx, cy - h * 0.5 + inset, z_jamb), (inner_w, side, jamb_depth), body)
+        # Sill and lintel sit entirely outside the brick face.
+        z_stone = _street(origin, inward, face + 0.055)
+        g.box((cx, cy - h * 0.5 - 0.045, z_stone), (w + 0.10, 0.055, 0.07), "Lib_Concrete")
+        g.box((cx, cy + h * 0.5 + 0.045, z_stone), (w + 0.14, 0.06, 0.06), "Lib_Concrete")
         g.box((cx, cy, z_glass), (glass_w, glass_h, 0.012), "Lib_Window")
         if lod == 0:
-            g.box((cx, cy, z_glass - inward * 0.008), (0.025, glass_h - 0.08, 0.012), trim)
-            g.box((cx, cy, z_glass - inward * 0.008), (glass_w - 0.08, 0.025, 0.012), trim)
+            bar = _street(origin, inward, glass_d - 0.010)
+            g.box((cx, cy, bar), (0.025, glass_h - 0.06, 0.012), trim)
+            g.box((cx, cy, bar), (glass_w - 0.06, 0.025, 0.012), trim)
         _casing(g, origin, "z", inward, cx, cy, w, h, trim)
         return (cx, cy, z_glass, glass_w, glass_h, "z")
-    x_out = origin
-    x_glass = x_out + inward * depth
-    g.box((x_out + inward * 0.02, cy + fh * 0.5 - 0.03, cx), (0.05, 0.06, fw), trim)
-    g.box((x_out + inward * 0.02, cy - fh * 0.5 + 0.03, cx), (0.05, 0.06, fw), trim)
-    g.box((x_out + inward * 0.02, cy, cx - fw * 0.5 + 0.03), (0.05, fh, 0.06), trim)
-    g.box((x_out + inward * 0.02, cy, cx + fw * 0.5 - 0.03), (0.05, fh, 0.06), trim)
-    outer = x_out - inward * 0.18
-    g.box((outer, cy - h * 0.5 - 0.02, cx), (0.08, 0.05, w + 0.06), "Lib_Concrete")
+    x_glass = _street(origin, inward, glass_d)
+    x_jamb = _street(origin, inward, jamb_mid)
+    g.box((x_jamb, cy, cx - w * 0.5 + inset), (jamb_depth, h - 0.012, side), body)
+    g.box((x_jamb, cy, cx + w * 0.5 - inset), (jamb_depth, h - 0.012, side), body)
+    inner_w = w - inset * 2 - side - 0.008
+    g.box((x_jamb, cy + h * 0.5 - inset, cx), (jamb_depth, side, inner_w), body)
+    g.box((x_jamb, cy - h * 0.5 + inset, cx), (jamb_depth, side, inner_w), body)
+    x_stone = _street(origin, inward, face + 0.055)
+    g.box((x_stone, cy - h * 0.5 - 0.045, cx), (0.07, 0.055, w + 0.10), "Lib_Concrete")
+    g.box((x_stone, cy + h * 0.5 + 0.045, cx), (0.06, 0.06, w + 0.14), "Lib_Concrete")
     g.box((x_glass, cy, cx), (0.012, glass_h, glass_w), "Lib_Window")
     if lod == 0:
-        g.box((x_glass - inward * 0.008, cy, cx), (0.012, glass_h - 0.08, 0.025), trim)
-        g.box((x_glass - inward * 0.008, cy, cx), (0.012, 0.025, glass_w - 0.08), trim)
+        bar = _street(origin, inward, glass_d - 0.010)
+        g.box((bar, cy, cx), (0.012, glass_h - 0.06, 0.025), trim)
+        g.box((bar, cy, cx), (0.012, 0.025, glass_w - 0.06), trim)
     _casing(g, origin, "x", inward, cx, cy, w, h, trim)
     return (x_glass, cy, cx, glass_w, glass_h, "x")
 
@@ -166,7 +186,8 @@ def _place_backing(g, info, inward, lit):
 
 def _casing(g, origin, axis, inward, cx, cy, w, h, trim):
     """Architrave proud of the outer face, clear of the wall shell."""
-    n = origin - inward * 0.145
+    # Proud of the stone sill and lintel, which end about 20 cm out from the wall center.
+    n = origin - inward * 0.220
     t = 0.075
     d = 0.032
     if axis == "z":
@@ -207,7 +228,7 @@ def _solid_door(g, origin, axis, inward, hole, trim, lod):
 
 def _door(g, origin, axis, inward, hole, trim, lod):
     cx, cy, w, h = hole
-    info = _window(g, origin, axis, inward, hole, trim, lod)
+    info = _window(g, origin, axis, inward, hole, trim, lod, "Lib_Brick")
     # Handle on the glass, street side.
     if axis == "z" and lod == 0:
         g.box((cx + w * 0.28, cy, origin - inward * 0.02), (0.04, 0.12, 0.03), "Lib_Brass")
@@ -238,7 +259,7 @@ def _wall(g, cols, axis, origin, inward, span, y0, y1, holes, body, trim, lod, t
         if door:
             info = _door(g, origin, axis, inward, (cx, cy, w, h), trim, lod)
         else:
-            info = _window(g, origin, axis, inward, (cx, cy, w, h), trim, lod)
+            info = _window(g, origin, axis, inward, (cx, cy, w, h), trim, lod, body)
         _place_backing(g, info, inward, lit)
         if info[5] == "z":
             cols.append(("box", "Col_Glass", (info[0], info[1], info[2]), (info[3] * 0.85, info[4] * 0.85, 0.008)))
@@ -367,7 +388,8 @@ def _dress_storefront(g, cols, axis, origin, inward, span, profile, style, lod, 
     kick = spec["kick"]
     glass_bot = kick + 0.045
     glass_top = SHOP_HEAD - 0.05
-    glass_n = _street(origin, inward, 0.055)
+    # Display sits 14 cm behind the brick face. The wall shell is 0.22 m, centered.
+    glass_n = _street(origin, inward, _WALL_HALF - 0.14)
     door_n = _street(origin, inward, -0.18)
 
     def bays_of(a0, a1):
@@ -382,9 +404,11 @@ def _dress_storefront(g, cols, axis, origin, inward, span, profile, style, lod, 
     # Bulkhead under the display only. The door runs to the sidewalk.
     for a0, a1 in bays:
         inset = 0.012
+        kick_h = max(0.18, kick - 0.08)
+        kick_y = 0.055 + kick_h * 0.5
         _c, _s = _box_ax(
-            g, axis, (a0 + a1) * 0.5, kick * 0.48, origin,
-            (a1 - a0) - inset * 2, kick * 0.86, 0.15, spec["kick_mat"],
+            g, axis, (a0 + a1) * 0.5, kick_y, _street(origin, inward, 0.04),
+            (a1 - a0) - inset * 2, kick_h, 0.10, spec["kick_mat"],
         )
         _col_box(cols, "Col_Kick", _c, ((a1 - a0) - 0.06, kick * 0.7, 0.10) if axis == "z" else (0.10, kick * 0.7, (a1 - a0) - 0.06))
         if lod == 0:
@@ -396,12 +420,13 @@ def _dress_storefront(g, cols, axis, origin, inward, span, profile, style, lod, 
         _c, _s = _box_ax(g, axis, (a0 + a1) * 0.5, gcy, glass_n, (a1 - a0) - 0.05, gh - 0.04, 0.012, "Lib_ShopGlass")
         _col_box(cols, "Col_Glass", _c, ((a1 - a0) - 0.08, gh - 0.08, 0.008) if axis == "z" else (0.008, gh - 0.08, (a1 - a0) - 0.08))
         if lod < 2:
-            _box_ax(g, axis, a0, gcy, _street(origin, inward, 0.06), 0.04, gh, 0.04, mullion)
+            # Mullion fills the reveal, from just behind the brick face back to the glass.
+            _box_ax(g, axis, a0, gcy, _street(origin, inward, 0.035), 0.045, gh, 0.09, mullion)
         if spec["rail"] and lod < 2:
-            _box_ax(g, axis, (a0 + a1) * 0.5, 1.48, _street(origin, inward, 0.095), (a1 - a0) - 0.08, 0.03, 0.016, "Lib_PaintRed")
+            _box_ax(g, axis, (a0 + a1) * 0.5, 1.48, _street(origin, inward, _WALL_HALF - 0.12), (a1 - a0) - 0.08, 0.03, 0.016, "Lib_PaintRed")
     if bays and lod < 2:
         last = bays[-1][1]
-        _box_ax(g, axis, last, gcy, _street(origin, inward, 0.06), 0.04, gh, 0.04, mullion)
+        _box_ax(g, axis, last, gcy, _street(origin, inward, 0.035), 0.045, gh, 0.09, mullion)
     # Shelves and a dark interior card behind the glass, clear of the door recess.
     shelf_n = _street(origin, inward, -0.50)
     for a0, a1 in bays:
@@ -436,8 +461,8 @@ def _dress_storefront(g, cols, axis, origin, inward, span, profile, style, lod, 
         _box_ax(g, axis, dc, 1.45, lite_n, door_w * 0.55, 0.70, 0.012, "Lib_ShopGlass")
         _box_ax(g, axis, dc + door_w * 0.30, 1.05, _street(origin, inward, -0.14), 0.035, 0.12, 0.02, "Lib_Brass")
     # Jambs from the glass plane back to the door. They stay inside the opening.
-    jamb_n = _street(origin, inward, -0.05)
-    jamb_d = 0.18
+    jamb_n = _street(origin, inward, -0.11)
+    jamb_d = 0.14
     for edge, sign in ((door_a, -1.0), (door_b, 1.0)):
         _box_ax(g, axis, edge + sign * 0.02, 1.08, jamb_n, 0.04, 1.96, jamb_d, profile["trim"])
     _box_ax(g, axis, dc, 2.16, jamb_n, door_w - 0.02, 0.045, jamb_d, profile["trim"])
@@ -466,12 +491,13 @@ def _dress_storefront(g, cols, axis, origin, inward, span, profile, style, lod, 
     if run1 - run0 > 0.8:
         mid = (run0 + run1) * 0.5
         rw = run1 - run0
-        _c, _s = _box_ax(g, axis, mid, 3.56, _street(origin, inward, 0.165), rw, 0.12, 0.06, "Lib_Brick")
-        _col_box(cols, "Col_String", _c, (rw - 0.08, 0.07, 0.035) if axis == "z" else (0.035, 0.07, rw - 0.08))
-        _c, _s = _box_ax(g, axis, mid, 3.74, _street(origin, inward, 0.21), rw, 0.11, 0.10, "Lib_Concrete")
-        _col_box(cols, "Col_Cornice", _c, (rw - 0.08, 0.06, 0.06) if axis == "z" else (0.06, 0.06, rw - 0.08))
+        # Bed, then a corona that projects past it, then a smaller cap. The soffit is the corona's underside.
+        _c, _s = _box_ax(g, axis, mid, 3.52, _street(origin, inward, 0.17), rw, 0.08, 0.08, "Lib_Brick")
+        _col_box(cols, "Col_String", _c, (rw - 0.10, 0.05, 0.04) if axis == "z" else (0.04, 0.05, rw - 0.10))
+        _c, _s = _box_ax(g, axis, mid, 3.68, _street(origin, inward, 0.28), rw, 0.16, 0.18, "Lib_Concrete")
+        _col_box(cols, "Col_Cornice", _c, (rw - 0.10, 0.10, 0.12) if axis == "z" else (0.12, 0.10, rw - 0.10))
         if lod < 2:
-            _box_ax(g, axis, mid, 3.86, _street(origin, inward, 0.175), rw, 0.05, 0.05, profile["trim"])
+            _box_ax(g, axis, mid, 3.80, _street(origin, inward, 0.22), rw, 0.05, 0.10, profile["trim"])
     _awning_fabric(g, cols, axis, origin, inward, -half + 0.02, half - 0.02, profile["awning"], lod)
 
 

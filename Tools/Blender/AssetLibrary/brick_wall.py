@@ -14,8 +14,9 @@ def create():
     a = Asset(
         "Brick_Wall",
         "Buildings",
-        "4.00 x 3.20 x 0.30 m brick bay. Exterior is +Z. A door and a window sit in 10 cm brick reveals, "
-        "with one stone lintel and a stone sill. Butt the ends to Brick_Corner.",
+        "4.00 x 3.20 x 0.30 m brick bay. Exterior is +Z. A door and a window sit in brick reveals, "
+        "with one stone lintel and a stone sill. A concrete corona projects about 23 cm on +Z under the cap. "
+        "Butt the ends to Brick_Corner.",
     )
     a.climbable = True
     a.climb_note = (
@@ -44,10 +45,12 @@ def create():
         _door(g, lod)
         _window(g, lod)
         g.box((0, 3.16, 0), (W, 0.08, T + 0.08), "Lib_Concrete", bevel=bev, segs=bs, uv_scale=0.8)
+        # Corona on the street face, clear of the brick (face at z=0.15), under the cap.
+        g.box((0, 2.98, 0.30), (3.84, 0.12, 0.16), "Lib_Concrete", uv_scale=0.6)
         a.end()
     a.box("Climb_Wall", (0, 1.65, 0), (W, 2.94, T))
     a.box("Col_Plinth", (0, 0.09, 0), (W, 0.18, T + 0.06))
-    a.box("Col_Cornice", (0, 3.16, 0), (W, 0.08, T + 0.08))
+    a.box("Col_Cornice", (0, 3.16, 0), (3.70, 0.05, 0.28))
     return a
 
 

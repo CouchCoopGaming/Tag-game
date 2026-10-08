@@ -66,12 +66,17 @@ def _facade(g, lod):
     else:
         openings = ((-1.5, 4.60), (1.5, 4.60))
     for x, y in openings:
-        g.box((x, y, 3.055), (0.70, 1.00, 0.016), "Lib_ShopGlass")
-        g.box((x, y - 0.54, 3.18), (0.74, 0.05, 0.16), "Lib_PaintCream")
-        g.box((x, y + 0.54, 3.16), (0.74, 0.045, 0.10), "Lib_Concrete")
+        # Skin outer face is z=3.20. Jambs sit in the pier gap, sash 13 cm back.
+        g.box((x - 0.38, y, 3.12), (0.036, 0.92, 0.12), "Lib_Brick", uv_scale=BRICK_UV)
+        g.box((x + 0.38, y, 3.12), (0.036, 0.92, 0.12), "Lib_Brick", uv_scale=BRICK_UV)
+        g.box((x, y + 0.48, 3.12), (0.68, 0.036, 0.12), "Lib_Brick", uv_scale=BRICK_UV)
+        g.box((x, y - 0.48, 3.12), (0.68, 0.036, 0.12), "Lib_Brick", uv_scale=BRICK_UV)
+        g.box((x, y, 3.04), (0.70, 0.92, 0.016), "Lib_ShopGlass")
+        g.box((x, y - 0.58, 3.32), (0.92, 0.06, 0.14), "Lib_Concrete")
+        g.box((x, y + 0.58, 3.30), (0.96, 0.07, 0.10), "Lib_Concrete")
         if lod == 0:
-            g.box((x, y, 3.078), (0.70, 0.02, 0.012), "Lib_PaintCream")
-            g.box((x, y, 3.078), (0.02, 0.96, 0.012), "Lib_PaintCream")
+            g.box((x, y, 3.02), (0.62, 0.02, 0.012), "Lib_PaintCream")
+            g.box((x, y, 3.02), (0.02, 0.84, 0.012), "Lib_PaintCream")
     g.box((0, 1.16, 3.10), (0.92, 2.00, 0.03), "Lib_WoodDark")
     if lod == 0:
         g.box((0, 2.22, 3.055), (0.70, 0.10, 0.016), "Lib_ShopGlass")
@@ -79,8 +84,15 @@ def _facade(g, lod):
 
 
 def _cornice(g):
+    """Parapet cap, then a corona that projects past each wall so the soffit reads."""
     g.box((0, 9.48, -0.06), (8.46, 0.18, 6.78), "Lib_PaintCream", uv_scale=0.6)
     g.box((0, 9.70, -0.06), (8.22, 0.12, 6.54), "Lib_Concrete", uv_scale=0.5)
+    # Front skin ends at z=3.20. Corona starts 5 cm past it and runs under the cap.
+    g.box((0, 9.28, 3.38), (7.90, 0.14, 0.22), "Lib_Concrete", uv_scale=0.5)
+    g.box((0, 9.28, -3.42), (7.90, 0.14, 0.22), "Lib_Concrete", uv_scale=0.5)
+    # Sides stop short of the front and back pieces.
+    g.box((4.18, 9.28, -0.02), (0.20, 0.14, 6.44), "Lib_Concrete", uv_scale=0.5)
+    g.box((-4.18, 9.28, -0.02), (0.20, 0.14, 6.44), "Lib_Concrete", uv_scale=0.5)
 
 
 def _entry(g, lod):
@@ -125,7 +137,8 @@ def create():
         "WalkUp",
         "Buildings",
         "Brick walk-up, 8.0 x 6.4 m, three stories, parapet at 9.5 m. Brick is 13 courses per metre. "
-        "Windows are recessed 13 cm with sills and lintels. Stoop and canopy on +Z. "
+        "Windows are recessed 13 cm with brick returns, a stone sill, and a lintel. "
+        "A concrete corona projects past each wall under the parapet cap. Stoop and canopy on +Z. "
         "Fire-escape landings at 3.95 m and 6.85 m, brackets back to the wall, rail 1.05 m above each deck.",
     )
     a.loose_pivot = True
@@ -155,6 +168,10 @@ def create():
     a.box("Col_Stoop", (0, 0.09, 3.62), (1.55, 0.12, 0.60))
     a.box("Col_Canopy", (0, 2.52, 3.66), (1.60, 0.05, 0.62))
     a.box("Col_Cornice", (0, 9.48, -0.06), (8.10, 0.12, 6.40))
+    a.box("Col_CoronaF", (0, 9.28, 3.38), (7.50, 0.08, 0.14))
+    a.box("Col_CoronaB", (0, 9.28, -3.42), (7.50, 0.08, 0.14))
+    a.box("Col_CoronaR", (4.18, 9.28, -0.02), (0.12, 0.08, 6.10))
+    a.box("Col_CoronaL", (-4.18, 9.28, -0.02), (0.12, 0.08, 6.10))
     a.box("Col_Deck_0", (X_ESC, 3.90, 3.70), (1.05, 0.02, 0.08))
     a.capsule("Vault_Rail_0", (X_ESC, 4.97, 4.06), 0.012, 0.95, 0)
     a.box("Col_Deck_1", (X_ESC, 6.80, 3.70), (1.05, 0.02, 0.08))

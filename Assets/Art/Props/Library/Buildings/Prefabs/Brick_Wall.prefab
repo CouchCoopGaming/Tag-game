@@ -47,7 +47,7 @@ LODGroup:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 100000}
   serializedVersion: 2
-  m_LocalReferencePoint: {x: 0, y: 1.6, z: 0.005}
+  m_LocalReferencePoint: {x: 0, y: 1.6, z: 0.095}
   m_Size: 4
   m_FadeMode: 0
   m_AnimateCrossFading: 0
@@ -79,7 +79,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Tag.Art.Library.LibraryPropMeta
   category: "Buildings"
-  summary: "4.00 x 3.20 x 0.30 m brick bay. Exterior is +Z. A door and a window sit in 10 cm brick reveals, with one stone lintel and a stone sill. Butt the ends to Brick_Corner."
+  summary: "4.00 x 3.20 x 0.30 m brick bay. Exterior is +Z. A door and a window sit in brick reveals, with one stone lintel and a stone sill. A concrete corona projects about 23 cm on +Z under the cap. Butt the ends to Brick_Corner."
   climbable: 1
   vaultable: 0
   vaultHeightMeters: 0
@@ -525,5 +525,5 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 4, y: 0.08, z: 0.38}
+  m_Size: {x: 3.7, y: 0.05, z: 0.28}
   m_Center: {x: 0, y: 0, z: 0}
