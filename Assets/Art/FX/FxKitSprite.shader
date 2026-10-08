@@ -74,6 +74,19 @@ Shader "Tag/FxKitSprite"
                 return o;
             }
 
+            float ChunkMask(float2 p)
+            {
+                float ang = atan2(p.y, p.x);
+                float wob = 0.62 + 0.10 * sin(ang * 3.0) + 0.08 * sin(ang * 5.0 + 1.7);
+                return saturate(1.0 - smoothstep(wob - 0.05, wob + 0.02, length(p)));
+            }
+
+            float SplinterMask(float2 p)
+            {
+                float r = abs(p.x) * 2.6 + abs(p.y);
+                return saturate(1.0 - smoothstep(0.70, 0.90, r));
+            }
+
             float StarMask(float2 p)
             {
                 float r = length(p);
@@ -105,6 +118,10 @@ Shader "Tag/FxKitSprite"
                 }
                 else if (_Shape < 2.5)
                     mask = StarMask(p);
+                else if (_Shape < 3.5)
+                    mask = ChunkMask(p);
+                else if (_Shape < 4.5)
+                    mask = SplinterMask(p);
 
                 float edge = 1.0;
                 if (_Edge >= 0.0 && _Edge < 0.5) edge = 1.0 - i.uv.x;

@@ -76,19 +76,27 @@ Shader "Tag/ComicBillboard"
             };
 
             // Clip y spans 2, so a half of 0.22 is 22% of the pane and 0.30 is 30%.
-            // Settle and shrink stay on the 22% floor. The overshoot peak stretches to 30%.
+            // The spikes fill 344/512 of the cell. These halves are the visible ink,
+            // and the quad is larger by that fraction so the spikes hit the target.
+            // Settle and shrink stay on the 22% floor. The overshoot peak is 30%.
+            #define INK_FRAC 0.671875
             #define PANE_HALF_SETTLE 0.22
             #define PANE_HALF_PEAK 0.30
             #define LIFE_PEAK 1.25
 
             float ScreenHalf(float life)
             {
+                float visible;
                 if (life <= 1.0)
-                    return PANE_HALF_SETTLE * life;
-                float u = (life - 1.0) / (LIFE_PEAK - 1.0);
-                if (u < 0.0) u = 0.0;
-                if (u > 1.0) u = 1.0;
-                return lerp(PANE_HALF_SETTLE, PANE_HALF_PEAK, u);
+                    visible = PANE_HALF_SETTLE * life;
+                else
+                {
+                    float u = (life - 1.0) / (LIFE_PEAK - 1.0);
+                    if (u < 0.0) u = 0.0;
+                    if (u > 1.0) u = 1.0;
+                    visible = lerp(PANE_HALF_SETTLE, PANE_HALF_PEAK, u);
+                }
+                return visible / INK_FRAC;
             }
 
             Varyings vert(Attributes input)

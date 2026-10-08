@@ -13,7 +13,7 @@ import bake_comic_layers as bake
 import render_comic_sheet as comic_sheet
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
-OUT = os.path.join(ROOT, "Docs", "FxStills", "pass21")
+OUT = os.path.join(ROOT, "Docs", "FxStills", "pass22")
 FONT = comic_sheet.FONT_PATH
 
 
@@ -417,9 +417,10 @@ def jagged_tail(draw, hit, burst_edge, color=(12, 10, 8)):
 
 
 def pane_fraction(life):
-    """Full burst height as a fraction of the pane.
+    """Visible burst-ink height as a fraction of the pane.
 
     Settle and the shrink stay on the 22% floor. The overshoot peak is 30%.
+    The padded cell is larger than the spikes, so the fit uses the alpha box.
     """
     if life <= 1.0:
         return 0.22 * life
@@ -450,8 +451,15 @@ def nudge_inside(cx, cy, width, height, pw, ph, margin=8.0):
     return cx + dx, cy + dy, dx, dy
 
 
+def ink_box(glyph):
+    bb = glyph.getchannel("A").point(lambda p: 255 if p > 16 else 0).getbbox()
+    if bb is None:
+        return 0, 0, glyph.width, glyph.height
+    return bb
+
+
 def couch_four():
-    """1280x720. Arena plates, two runners, burst at the 30% peak."""
+    """1280x720. Arena plates, two runners, burst ink at the 30% peak."""
     names = ("SPROING!", "WHIZZ!", "POW!", "SMACK!")
     plates = (
         os.path.join(ROOT, "Docs", "ArenaStills", "MegaPark_Eye.png"),
@@ -467,6 +475,7 @@ def couch_four():
     board = Image.new("RGB", (1280, 720), (12, 12, 12))
     draw = ImageDraw.Draw(board)
     font = ImageFont.truetype(FONT, 22)
+    meta = []
     pw, ph = 640, 360
     # Peak of the overshoot. Scale is 1.25, the word a little larger.
     age = 0.029
@@ -503,39 +512,64 @@ def couch_four():
         burst_cx = hit_x + side * side_px
         burst_cy = hit_y - up_px
         _text, burst, word = posed_layers(index)
-        # 22% floor, stretched to 30% of the pane at the overshoot peak.
+        # Visible spike ink, not the padded cell. Peak life is 1.25, so this is 30%.
         burst_px = pane_fraction(life) * ph
-        word_px = burst_px * punch
-        _tilt, _skew, size, _arc, _wide, tall = style_of(index)
-        pre_h = (bake.CELL + 48) * size * tall
+        src_box = ink_box(burst)
+        src_h = max(1, src_box[3] - src_box[1])
+        scale = burst_px / float(src_h)
 
-        def fit(glyph, height):
-            scale = height / float(pre_h)
-            nw = max(1, int(round(glyph.width * scale)))
-            nh = max(1, int(round(glyph.height * scale)))
+        def fit(glyph, extra):
+            nw = max(1, int(round(glyph.width * scale * extra)))
+            nh = max(1, int(round(glyph.height * scale * extra)))
             return glyph.resize((nw, nh), Image.Resampling.LANCZOS)
 
-        back = fit(burst, burst_px)
-        front = fit(word, word_px)
-        # The word is the larger glyph. Nudge both inward if either would leave the pane.
+        back = fit(burst, 1.0)
+        front = fit(word, punch)
+        placed = ink_box(back)
+        ink_w = placed[2] - placed[0]
+        ink_h = placed[3] - placed[1]
+        # Nudge the larger of the two glyphs so neither crosses the pane.
+        span_w = max(front.width, back.width)
+        span_h = max(front.height, back.height)
         burst_cx, burst_cy, nudge_x, nudge_y = nudge_inside(
-            burst_cx, burst_cy, front.width, front.height, pw, ph,
+            burst_cx, burst_cy, span_w, span_h, pw, ph,
         )
-        # Tail stops at the near edge of the burst so it points at the hit.
-        edge_y = burst_cy + back.height * 0.28
+        # Tail stops at the near edge of the spikes so it points at the hit.
+        edge_y = burst_cy - back.height * 0.5 + placed[3] - 4
         jagged_tail(ImageDraw.Draw(scene), (hit_x, hit_y), (burst_cx, edge_y))
-        scene.alpha_composite(back, (int(burst_cx - back.width / 2), int(burst_cy - back.height / 2)))
-        scene.alpha_composite(front, (int(burst_cx - front.width / 2), int(burst_cy - front.height / 2)))
+        ref = scene.copy()
+        back_xy = (int(round(burst_cx - back.width / 2)), int(round(burst_cy - back.height / 2)))
+        front_xy = (int(round(burst_cx - front.width / 2)), int(round(burst_cy - front.height / 2)))
+        scene.alpha_composite(back, back_xy)
+        scene.alpha_composite(front, front_xy)
+        ink_pane = (
+            back_xy[0] + placed[0],
+            back_xy[1] + placed[1],
+            back_xy[0] + placed[2],
+            back_xy[1] + placed[3],
+        )
         ox = (n % 2) * pw
         oy = (n // 2) * ph
         board.paste(scene.convert("RGB"), (ox, oy))
         draw.text((ox + 16, oy + ph - 32), text, font=font, fill=(255, 244, 220))
+        ev = ATLAS_EVENT.get(index, 0)
+        color = comic_sheet.EVENTS[ev][1]
+        meta.append({
+            "text": text,
+            "color": color,
+            "ox": ox,
+            "oy": oy,
+            "ref": ref.convert("RGB"),
+            "ink": ink_pane,
+            "target": burst_px,
+        })
         print(
             "COUCH", text,
             "life", round(life, 3),
             "punch", round(punch, 3),
-            "burst_px", round(burst_px, 1),
-            "word_px", round(word_px, 1),
+            "ink", ink_w, ink_h,
+            "frac", round(ink_h / float(ph), 3),
+            "target", round(burst_px, 1),
             "body_px", round(body, 1),
             "up", round(up_px, 1),
             "side", round(side_px, 1),
@@ -543,7 +577,123 @@ def couch_four():
         )
     draw.line((640, 0, 640, 720), fill=(8, 8, 8), width=4)
     draw.line((0, 360, 1280, 360), fill=(8, 8, 8), width=4)
-    return board
+    return board, meta
+
+
+def _near(mask, x, y, rad, w, h):
+    x0 = max(0, x - rad)
+    x1 = min(w - 1, x + rad)
+    y0 = max(0, y - rad)
+    y1 = min(h - 1, y + rad)
+    for yy in range(y0, y1 + 1):
+        row = mask[yy]
+        for xx in range(x0, x1 + 1):
+            if row[xx]:
+                return True
+    return False
+
+
+def measure_saved_couch(meta):
+    """Burst bounding box in the saved jpeg, one line per pane.
+
+    The word is yellow and sits on the star. The box is the spike ink,
+    including the black outline, and it has to land on 30% of the pane.
+    """
+    import io
+    import numpy as np
+
+    path = os.path.join(OUT, "comic-couch.jpg")
+    saved = Image.open(path).convert("RGB")
+    sw, sh = saved.size
+    ref_board = Image.new("RGB", (sw, sh), (12, 12, 12))
+    draw = ImageDraw.Draw(ref_board)
+    font = ImageFont.truetype(FONT, 22)
+    for row in meta:
+        ref_board.paste(row["ref"], (row["ox"], row["oy"]))
+        draw.text((row["ox"] + 16, row["oy"] + row["ref"].size[1] - 32), row["text"], font=font, fill=(255, 244, 220))
+    draw.line((640, 0, 640, 720), fill=(8, 8, 8), width=4)
+    draw.line((0, 360, 1280, 360), fill=(8, 8, 8), width=4)
+    buf = io.BytesIO()
+    ref_board.save(buf, format="JPEG", quality=85, optimize=True)
+    buf.seek(0)
+    ref_jpg = Image.open(buf).convert("RGB")
+    saved_np = np.asarray(saved).astype(np.int16)
+    ref_np = np.asarray(ref_jpg).astype(np.int16)
+    fails = 0
+    for row in meta:
+        ox, oy = row["ox"], row["oy"]
+        pw, ph = row["ref"].size
+        color = np.array(row["color"], dtype=np.int16)
+        dark = (color * 0.40).astype(np.int16)
+        pane = saved_np[oy:oy + ph, ox:ox + pw]
+        base = ref_np[oy:oy + ph, ox:ox + pw]
+        delta = np.abs(pane - base).sum(axis=2)
+        changed = delta > 36
+        rgb = pane
+        yellow = (
+            (rgb[:, :, 0] > 190)
+            & (rgb[:, :, 1] > 160)
+            & (rgb[:, :, 2] < 150)
+            & (rgb[:, :, 0] + rgb[:, :, 1] > rgb[:, :, 2] * 3)
+        )
+        fill = (np.abs(rgb - color).max(axis=2) < 42) & changed & ~yellow
+        tone = (np.abs(rgb - dark).max(axis=2) < 34) & changed & ~yellow
+        burstish = fill | tone
+        # Black outline sits just outside the colour. Count it when it changed
+        # and touches the colour, and skip the word's own stroke.
+        dark_px = (rgb.max(axis=2) < 70) & changed & ~yellow
+        ys_b, xs_b = np.where(burstish)
+        if len(xs_b) == 0:
+            print("COUCH-FILE", row["text"], "bbox NONE")
+            fails += 1
+            continue
+        pad = 6
+        outline = np.zeros_like(burstish)
+        for y, x in zip(ys_b.tolist(), xs_b.tolist()):
+            y0 = max(0, y - pad)
+            y1 = min(ph, y + pad + 1)
+            x0 = max(0, x - pad)
+            x1 = min(pw, x + pad + 1)
+            outline[y0:y1, x0:x1] = True
+        outline &= dark_px
+        # Drop outline pixels that only touch the yellow word.
+        word = yellow
+        keep = burstish | outline
+        # A dark pixel beside yellow and not beside the fill is the word stroke.
+        if word.any():
+            near_word = np.zeros_like(word)
+            wy, wx = np.where(word)
+            for y, x in zip(wy.tolist(), wx.tolist()):
+                y0 = max(0, y - 2)
+                y1 = min(ph, y + 3)
+                x0 = max(0, x - 2)
+                x1 = min(pw, x + 3)
+                near_word[y0:y1, x0:x1] = True
+            keep &= ~((~burstish) & near_word & ~fill)
+        ys, xs = np.where(keep)
+        if len(xs) == 0:
+            print("COUCH-FILE", row["text"], "bbox NONE")
+            fails += 1
+            continue
+        x0, x1 = int(xs.min()), int(xs.max())
+        y0, y1 = int(ys.min()), int(ys.max())
+        bw = x1 - x0 + 1
+        bh = y1 - y0 + 1
+        frac = bh / float(ph)
+        ink = row["ink"]
+        print(
+            "COUCH-FILE", row["text"],
+            "bbox", x0, y0, x1, y1,
+            "w", bw, "h", bh,
+            "frac", round(frac, 3),
+            "pane", ph,
+            "file", sw, sh,
+            "ink", ink[0], ink[1], ink[2], ink[3],
+        )
+        if frac < 0.29 or frac > 0.31:
+            print("COUCH-FILE FAIL", row["text"], "frac", round(frac, 3))
+            fails += 1
+    return fails
 
 
 def index_of(word):
@@ -568,7 +718,10 @@ def main():
     save_jpeg(sheet("Angle variety   each word has its own tilt", [index_of(w) for w in angles], 4), "comic-angles.jpg")
     save_jpeg(life_strip(), "comic-life.jpg")
     save_jpeg(sheet("Every word at full size", list(range(len(bake.WORDS))), 6), "comic-all.jpg")
-    save_jpeg(couch_four(), "comic-couch.jpg")
+    board, meta = couch_four()
+    save_jpeg(board, "comic-couch.jpg")
+    if measure_saved_couch(meta):
+        return 1
     prev = None
     for i, (text, _k, _f) in enumerate(bake.WORDS):
         tilt = style_of(i)[0]

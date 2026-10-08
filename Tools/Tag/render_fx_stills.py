@@ -4737,6 +4737,296 @@ def render_pass19_park(arm, cam):
         print("PLATE", name, "px", round(pix, 1), "xy", round(sx, 1), round(sy, 1))
 
 
+def impact22_strength(speed):
+    span = 36.5 - 13.8
+    k = (speed - 13.8) / span
+    if k < 0.0:
+        k = 0.0
+    if k > 1.15:
+        k = 1.15
+    return k
+
+
+def impact22_state(surface, speed, age_u=0.56):
+    """Same curve as ImpactFx.Measure. age_u 0.56 is the peak-expansion frame."""
+    k = impact22_strength(speed)
+    radius = 1.45 + k * 1.85
+    chunk = 0.34 + k * 0.22
+    bits = 15 + int(k * 15.0)
+    if bits < 15:
+        bits = 15
+    if bits > 30:
+        bits = 30
+    life = 0.25
+    hop_lo = 0.30 + k * 0.25
+    hop_hi = 0.48 + k * 0.32
+    if surface == "grass":
+        bit = (0.34, 0.40, 0.16)
+        dust = (0.58, 0.64, 0.30)
+        plumes = 0
+        kind = "grass"
+    elif surface == "dirt":
+        bit = (0.42, 0.26, 0.12)
+        dust = (0.72, 0.50, 0.26)
+        plumes = min(8, 6 + int(k * 2.0))
+        kind = "chunk"
+    elif surface == "wood":
+        bit = (0.40, 0.22, 0.08)
+        dust = (0.80, 0.70, 0.52)
+        plumes = 5
+        kind = "wood"
+    else:
+        bit = (0.58, 0.56, 0.52)
+        dust = (0.76, 0.75, 0.72)
+        plumes = min(8, 6 + int(k * 2.0))
+        kind = "chunk"
+    grow = 1.0 if age_u >= 0.56 else 0.22 + 0.78 * (1.0 - (1.0 - age_u / 0.56) ** 2)
+    fade = 1.0 if age_u <= 0.56 else 1.0 - (age_u - 0.56) / 0.44
+    return {
+        "radius": radius,
+        "shown": radius * grow,
+        "chunk": chunk,
+        "bits": bits,
+        "plumes": plumes,
+        "life": life,
+        "age": age_u * life,
+        "opacity": 0.94 * fade,
+        "bit": bit,
+        "dust": dust,
+        "kind": kind,
+        "hop_lo": hop_lo,
+        "hop_hi": hop_hi,
+        "k": k,
+        "u": age_u,
+    }
+
+
+def impact22_bit(i, state, salt):
+    """World offset from the impact at the still's age. Matches ImpactFx hops."""
+    h = p11_rand(i, salt)
+    h2 = p11_rand(i, salt + 4)
+    age = state["age"]
+    hop = state["hop_lo"] + (state["hop_hi"] - state["hop_lo"]) * h2
+    vy = math.sqrt(2.0 * 48.0 * hop)
+    spread = state["radius"] * (1.6 + h * 3.2)
+    ang = (i + h * 0.35) / float(max(state["bits"], 1)) * math.tau
+    dist = (0.08 + h * 0.16) + spread * age
+    z = 0.06 + vy * age - 0.5 * 48.0 * age * age
+    if z < 0.03:
+        z = 0.03
+    return ang, dist, z, h, h2
+
+
+def impact22_unlit(name, color, alpha, strength):
+    """Emission is the surface colour, so a pale ring does not blow out to white."""
+    mat = make_mat(name, (0.0, 0.0, 0.0, 1.0), 1.0, alpha, emit=strength)
+    node = mat.node_tree.nodes.get("Principled BSDF")
+    key = "Emission Color" if "Emission Color" in node.inputs else None
+    if key:
+        node.inputs[key].default_value = (color[0], color[1], color[2], 1.0)
+    return mat
+
+
+def impact22_draw(origin, normal, state, cam_loc):
+    shown = state["shown"]
+    dust = state["dust"]
+    bit_col = state["bit"]
+    n = Vector(normal).normalized()
+    up = Vector((0.0, 0.0, 1.0))
+    quat = up.rotation_difference(n)
+    major = shown * 0.70
+    minor = max(0.12, shown * 0.24)
+    bpy.ops.mesh.primitive_torus_add(
+        major_radius=major,
+        minor_radius=minor,
+        major_segments=48,
+        minor_segments=12,
+        location=origin + n * 0.04,
+        rotation=quat.to_euler(),
+    )
+    ring = bpy.context.active_object
+    ring.name = p11_name("Fx")
+    ring.data.materials.append(impact22_unlit(
+        p11_name("Mat"), dust, state["opacity"], 1.0,
+    ))
+    bpy.ops.mesh.primitive_torus_add(
+        major_radius=shown * 0.97,
+        minor_radius=max(0.05, shown * 0.055),
+        major_segments=48,
+        minor_segments=8,
+        location=origin + n * 0.045,
+        rotation=quat.to_euler(),
+    )
+    lip = bpy.context.active_object
+    lip.name = p11_name("Fx")
+    lip_col = tuple(c * 0.38 for c in dust)
+    lip.data.materials.append(impact22_unlit(
+        p11_name("Mat"), lip_col, state["opacity"], 1.0,
+    ))
+    bpy.ops.mesh.primitive_cylinder_add(
+        radius=shown * 0.50,
+        depth=0.02,
+        location=origin + n * 0.025,
+        rotation=quat.to_euler(),
+    )
+    haze = bpy.context.active_object
+    haze.name = p11_name("Fx")
+    haze.data.materials.append(impact22_unlit(
+        p11_name("Mat"), dust, state["opacity"] * 0.35, 0.55,
+    ))
+    kind = state["kind"]
+    for i in range(state["bits"]):
+        ang, dist, z, h, h2 = impact22_bit(i, state, 5)
+        radial = Vector((math.cos(ang), math.sin(ang), 0.0))
+        if abs(n.z) < 0.75:
+            along = Vector((-n.y, n.x, 0.0))
+            if along.length < 0.001:
+                along = Vector((1.0, 0.0, 0.0))
+            along.normalize()
+            slide = math.cos(ang) * state["radius"] * (1.6 + h * 3.2) * state["age"]
+            off = 0.35 + state["radius"] * (1.6 + h * 3.2) * (0.55 + h * 0.35) * state["age"]
+            hop_z = math.sin(ang) * (0.08 + h * 0.16) + (z - 0.06)
+            pos = origin + along * slide + n * off
+            pos.z = origin.z + hop_z
+        else:
+            pos = origin + radial * dist
+            pos.z = z
+        tint = 0.82 + h * 0.28
+        col = (bit_col[0] * tint, bit_col[1] * (0.82 + h2 * 0.28), bit_col[2] * (0.82 + h * 0.22), 1.0)
+        size = state["chunk"] * (0.75 + h2 * 0.55)
+        splinter = kind == "wood" and (i % 2) == 0
+        if splinter:
+            bpy.ops.mesh.primitive_cube_add(size=1.0, location=pos)
+            obj = bpy.context.active_object
+            obj.scale = (size * 0.22, size * 0.18, size * 1.35)
+            obj.rotation_euler = (0.4 * h, 0.2, ang)
+        elif kind == "grass":
+            bpy.ops.mesh.primitive_cube_add(size=1.0, location=pos)
+            obj = bpy.context.active_object
+            obj.scale = (size * 0.85, size * 0.16, size * 0.32)
+            obj.rotation_euler = (0.3, 0.2 * h2, ang)
+        else:
+            bpy.ops.mesh.primitive_ico_sphere_add(radius=size * 0.55, location=pos, subdivisions=1)
+            obj = bpy.context.active_object
+            obj.scale = (0.85 + h * 0.35, 0.75 + h2 * 0.3, 0.9 + h * 0.25)
+            obj.rotation_euler = (h * 2.0, h2 * 2.0, ang)
+        obj.name = p11_name("Fx")
+        obj.data.materials.append(make_mat(p11_name("Mat"), col, 0.55, 1.0, emit=0.85))
+    for i in range(state["plumes"]):
+        h = p11_rand(i, 11)
+        h2 = p11_rand(i, 15)
+        age = state["age"]
+        hop = 0.22 + 0.33 * h2
+        vy = math.sqrt(2.0 * 48.0 * hop)
+        spread = state["radius"] * (0.55 + h * 1.15)
+        ang = h * math.tau
+        dist = (0.12 + h * 0.2) + spread * age
+        z = 0.08 + vy * age - 0.5 * 48.0 * age * age
+        if z < 0.04:
+            z = 0.04
+        if abs(n.z) < 0.75:
+            along = Vector((-n.y, n.x, 0.0))
+            if along.length < 0.001:
+                along = Vector((1.0, 0.0, 0.0))
+            along.normalize()
+            pos = origin + along * math.cos(ang) * dist * 0.55 + n * (0.2 + dist * 0.28)
+            pos.z = origin.z + (z - 0.08)
+        else:
+            pos = origin + Vector((math.cos(ang) * dist, math.sin(ang) * dist, z))
+        puff = (0.62 + state["k"] * 0.40) * (0.85 + h2 * 0.4) * (0.9 + 0.25 * state["u"])
+        p11_puff(pos, puff, puff * 0.82, dust + (1.0,), min(0.78, state["opacity"]), cam_loc)
+
+
+def render_pass22_impact(arm, cam):
+    """Chase-cam impact sheet at the ring's peak expansion, plus one wall slam."""
+    for obj in bpy.data.objects:
+        if obj.type == "LIGHT" and obj.data.type == "SUN":
+            obj.data.energy = 1.4
+        elif obj.type == "LIGHT" and obj.data.type == "AREA":
+            obj.data.energy = 28
+        if obj.name in ("PropGround", "PropSlab") or "Seam" in obj.name:
+            obj.hide_render = True
+    scene = bpy.context.scene
+    scene.render.resolution_x = 640
+    scene.render.resolution_y = 360
+    scene.eevee.taa_render_samples = 8
+    scene.view_settings.view_transform = "Standard"
+    scene.view_settings.look = "None"
+    scene.view_settings.exposure = 0.0
+    scene.view_settings.gamma = 1.0
+    out_dir = os.path.join(ROOT, "Docs", "FxStills", "pass22")
+    os.makedirs(out_dir, exist_ok=True)
+    tmp = "/tmp/pass22-impact"
+    os.makedirs(tmp, exist_ok=True)
+    surfaces = ("concrete", "grass", "dirt", "wood")
+    levels = (("low", 13.8), ("high", 36.5))
+    yaw = 24.0
+    cells = []
+    titles = []
+    from PIL import Image
+
+    for surface in surfaces:
+        for label, speed in levels:
+            p11_ground(surface, asphalt=(surface == "concrete"))
+            apply_pose(arm, pose_land, 0.0, yaw)
+            foot = p11_foot(arm)
+            p14_aim(cam, foot, yaw)
+            state = impact22_state(surface, speed)
+            impact22_draw(Vector((foot.x, foot.y, 0.02)), (0.0, 0.0, 1.0), state, cam.location)
+            png = os.path.join(tmp, "%s-%s.png" % (surface, label))
+            scene.render.filepath = png
+            bpy.ops.render.render(write_still=True)
+            image = Image.open(png).convert("RGB")
+            path = os.path.join(out_dir, "impact-%s-%s.jpg" % (surface, label))
+            p14_jpeg(path, image)
+            cells.append(image.resize((320, 180), Image.Resampling.LANCZOS))
+            titles.append("%s %s  r %.0fcm  bits %d" % (
+                surface, label, state["shown"] * 100.0, state["bits"],
+            ))
+            print(
+                "IMPACT", surface, label,
+                "k", round(state["k"], 2),
+                "shown", round(state["shown"], 2),
+                "chunk", round(state["chunk"], 3),
+                "bits", state["bits"],
+                "plumes", state["plumes"],
+                "age", round(state["age"], 3),
+            )
+    p11_ground("concrete", asphalt=True)
+    apply_pose(arm, pose_stagger, 0.0, 0.0)
+    foot = p11_foot(arm)
+    fwd, _left = p11_heading(0.0)
+    face = foot + fwd * 1.05
+    center = face + fwd * 0.16
+    bpy.ops.mesh.primitive_cube_add(size=1.0, location=(center.x, center.y, 2.2))
+    wall = bpy.context.active_object
+    wall.name = p11_name("Geo")
+    wall.scale = (8.0, 0.28, 4.4)
+    wall.data.materials.append(make_mat(p11_name("Mat"), (0.30, 0.30, 0.28, 1.0), 0.88))
+    p14_aim(cam, foot, 0.0)
+    state = impact22_state("concrete", 13.8)
+    hit = center - fwd * 0.14
+    hit.z = 1.25
+    impact22_draw(hit, (-fwd.x, -fwd.y, 0.0), state, cam.location)
+    png = os.path.join(tmp, "wall.png")
+    scene.render.filepath = png
+    bpy.ops.render.render(write_still=True)
+    image = Image.open(png).convert("RGB")
+    p14_jpeg(os.path.join(out_dir, "impact-wall.jpg"), image)
+    print(
+        "IMPACT wall",
+        "shown", round(state["shown"], 2),
+        "bits", state["bits"],
+        "plumes", state["plumes"],
+    )
+    p14_grid(
+        cells, titles,
+        "Impact shockwave   chase cam   sprint 13.8 vs hard land 36.5",
+        os.path.join(out_dir, "impact-sheet.jpg"),
+        4,
+    )
+
+
 def main():
     global OUT
     if os.environ.get("FX_PASS17") == "1":
@@ -4748,6 +5038,9 @@ def main():
     bpy.ops.import_scene.fbx(filepath=FBX)
     arm = next(obj for obj in bpy.data.objects if obj.type == "ARMATURE")
     cam = setup_world(arm)
+    if os.environ.get("FX_PASS22") == "1":
+        render_pass22_impact(arm, cam)
+        return
     if os.environ.get("FX_PASS21") == "1":
         render_pass21_impact(arm, cam)
         return
