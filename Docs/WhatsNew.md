@@ -362,6 +362,8 @@ The twenty-second pass fills the standings card. Rank, the seat shape, It time, 
 
 The twenty-third pass uses those costume colors on the seat chrome: red, blue, orange, and lavender. Each standings chip sits on a dark well so it reads on the gold winner row. The name sits beside the shape, and the time header says IT TIME. Loading keeps the card at the bottom of the pane, with the park above, and the tip names the bound button, such as Hold [Left stick] against a wall to climb. Unity is not installed here, so the stills are composites in `Docs/UiStills/screens2/pass23/`. Space still jumps.
 
+The twenty-fourth pass uses the costume colors on the world It marker and the in-world seat tints, the same red, blue, orange, and lavender as the HUD. Colour-blind seat colors replace both when that option is on. The four that ship miss the color-blind pair floor: protan 0.08, deutan 0.05, tritan 0.20. Orange against red fails it, and blue against lavender fails it further. The seat shapes plus a lighter and a darker step in each hue would separate them. Loading keeps Mega Park bright above the card, with a different view on each seat, and a tip reads Sprint [LB], then slide [B]. The plate shows Waiting 0%, Loading 60%, and Ready. Unity is not installed here, so the stills are composites in `Docs/UiStills/screens2/pass24/`. Space still jumps.
+
 ## Motion, ninth pass
 
 The wall jump, the rope, the zip, the launch pad, a landing, the dash flash, a hard turnaround, and a punch while you run all ease instead of snapping. Speeds, the jump, and the dash length are the same.
