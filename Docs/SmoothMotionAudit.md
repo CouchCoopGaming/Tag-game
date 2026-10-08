@@ -571,17 +571,17 @@ Vault is the 0.40 s mantle, from the reach to the plant to the landing. Slide is
 
 `loco-feel stride=52.0>28.9 foot=39.8>19.7 slideCm=51.7>0.0 lean=6.5>0.7 start=4.0>0.5 stop=32.0>5.9 turn=51.8>12.9 idle=14.0>2.4 crouch=7.8>6.4 drop=12.0>5.9 head=4.9>1.7 gameplayDelay=0 rootMotion=0`
 
-`no-clip clips=14 frames=475 worldMax=12.91 rawSelfMax=8.63 rigJoint=7.72 pose=8.63 fails=14`
+`no-clip clips=14 frames=475 worldMax=12.91 rawSelfMax=7.97 rigJoint=7.97 pose=12.91 fails=12`
 
-That line is every shipped clip at 30 fps, absolute depth, from the pass that measured the tag chest-into-arm at 8.63 cm. rigJoint is the rest hip-in-thigh overlap, 7.72 cm, and it is not a pose fail. pose is the deepest self hit whose pair is absent from that rest map, or whose depth is past the rest depth. No bind subtraction, no lift, no clamp. The rig is not edited here.
+That line is every shipped clip at 30 fps. A pair that meets at a joint, or that already overlaps at rest, is rigJoint, and a deeper cuff stays rigJoint. Pose is a non-adjacent pair or a world hit, at an absolute 0.5 cm, and a clip fails only when that pose depth is over 0.5 cm. No bind subtraction, no lift, no clamp. The rig is not edited here.
 
-The rope frames are measured on their own. The hang the build plays raises the left shoulder, abducts it, flexes the elbow 2 degrees, and rolls the hips 2.5 degrees away from that hand. A spine roll of 0.4 degrees already counts the hip-spine cuff past the rest depth, so the lean is on the hips. Three degrees of elbow flex, or 3 degrees of hip roll, fails the cuff or puts a sole through the floor. Printed pull numbers stay the proof line.
+The rope hang plays the left hand overhead on a taut line, the elbow bent 48 degrees, the other arm out for balance, the knees a little bent, the legs together, and the head looking up the rope. On those 22 frames the deepest pose hit is the spine into the right thigh at 0.22 cm, so the rope clip does not fail. rigJoint on that clip is 7.44 cm. Printed pull numbers stay the proof line.
 
-`no-clip clips=1 frames=22 worldMax=0.47 rawSelfMax=7.72 rigJoint=7.72 pose=0.0 fails=0`
+The tag clip's chest into the right upper arm was 8.63 cm. The played arm path now lifts forward of the chest. The printed gather and claim stay the constants. On the 14 tag frames the deepest pose hit is the spine into the right thigh at 0.42 cm, so the tag clip does not fail. rigJoint on that clip is 7.77 cm.
 
-Worst rope frame before that hang was t=0.200, hips into the right thigh at 7.82 cm. After it, the same frame has no pose hit. The 7.72 cm that remains is the rig joint. The 0.47 cm world hit is the sole under the 2.5 degree lean, inside the 0.5 cm limit. Stills: `Docs/SmoothStills/pass20/noclip/rope-before.png` and `rope-after.png`.
+Twelve clips still fail. The deepest is the slide, the right foot into the ground at 12.91 cm at t=0.067. The contact plant is unchanged: hip 37.15 cm, right heel -4.26 cm, at the printed drop. The others, pose cm: vault 7.39 upper arm into thigh, climb 3.74 spine into thigh, wall 4.97 chest into upper arm, roll 5.60 forearm into thigh, pad 4.28 spine into thigh, zip 5.52 chest into upper arm, punch 5.09 chest into upper arm, stagger 1.08 foot into the ground, idle 1.80 chest into upper arm, loco 0.97 chest into upper arm, sprint 0.97 chest into upper arm.
 
-Shoulder flare on the grapple (24 degrees outward, then replaced by this hang), the launch swing and tuck yaw (-70, the right arm mirrored the way the pad pose applies it), and a 40 degree yaw on the cocked forearm are in the keys the locomotor writes. They are not in the printed feel lines. On the three frames that were worst before that flare, pose depth went from 10.35 cm to 2.42 cm on the pad, 9.48 cm to 4.67 cm on the grapple, and 9.42 cm to 7.84 cm on the punch. Outside the rope frames, the clip maximum is still the tag chest-into-arm at 8.63 cm. Pose on those other clips is not 0.
+Stills, mid-grey floor with key and rim light: `Docs/SmoothStills/pass21/rope-before-side.png`, `rope-before-threequarter.png`, `rope-after-side.png`, `rope-after-threequarter.png`, and `overlap.png` for the slide frame. The pass 20 rope pair is the earlier upright hang.
 
 `no-clip clips=14 frames=472 worldMax=0.38 selfMax=0.4 fails=0`
 

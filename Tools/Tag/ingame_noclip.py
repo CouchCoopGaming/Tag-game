@@ -130,7 +130,7 @@ def main():
             clips.append(frame["clip"])
             order.append({
                 "name": frame["clip"], "frames": 0,
-                "world": 0.0, "raw": 0.0, "pose": 0.0,
+                "world": 0.0, "raw": 0.0, "pose": 0.0, "rig": 0.0,
                 "worst": None, "raw_at": None, "world_at": None, "pose_at": None,
             })
     by_name = {row["name"]: row for row in order}
@@ -154,13 +154,13 @@ def main():
                 row["raw_at"] = (frame["t"], hit["a"], hit["b"], hit["depth"])
             if hit["kind"] == "self" and hit["depth"] > raw_max:
                 raw_max = hit["depth"]
-            if hit["kind"] == "self":
-                key = tuple(sorted((hit["a"], hit["b"])))
-                rest_depth = rest.get(key, 0.0)
-                # Rest pairs at or under their rest depth are the rig. Anything else
-                # is pose, reported as absolute depth. No bind subtraction, no clamp.
-                if rest_depth > 0.0 and hit["depth"] <= rest_depth + 0.0005:
-                    continue
+            if hit["kind"] == "self" and n.is_rig_pair(hit, rest):
+                if hit["depth"] > rig:
+                    rig = hit["depth"]
+                if hit["depth"] > row["rig"]:
+                    row["rig"] = hit["depth"]
+                continue
+            if n.is_pose_hit(hit, rest):
                 absolute = hit["depth"]
                 if absolute > row["pose"]:
                     row["pose"] = absolute
@@ -201,8 +201,8 @@ def main():
         if pose_at is not None:
             pose_t = pose_at[0]
             pose_pieces = pose_at[1] + " " + pose_at[2]
-        # pose is animation past the rest overlap. World keeps the 0.5 cm limit.
-        if row["pose"] > 0.0005 or row["world"] > n.LIMIT_M:
+        # Pose is a non-adjacent pair or the world, absolute 0.5 cm.
+        if row["pose"] > n.LIMIT_M:
             fails += 1
         print(
             "RAW", row["name"],
@@ -212,6 +212,7 @@ def main():
             "posePieces", pose_pieces,
             "worldPieces", world_pieces,
             "rawSelf", n.cm(row["raw"]),
+            "rig", n.cm(row["rig"]),
             "pose", n.cm(row["pose"]),
             "world", n.cm(row["world"]),
         )

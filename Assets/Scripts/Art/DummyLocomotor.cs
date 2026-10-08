@@ -15955,8 +15955,8 @@ namespace Tag.Art
         {
             if (weight <= 0.001f) return;
             pose = GrapplePose.ForBody(pose);
-            Quaternion uaL = _uaL0 * Quaternion.Euler(pose.ArmPitchL, pose.ArmYawL, armZ);
-            Quaternion uaR = _uaR0 * Quaternion.Euler(pose.ArmPitchR, pose.ArmYawR, -armZ);
+            Quaternion uaL = _uaL0 * Quaternion.Euler(pose.ArmPitchL, pose.ArmYawL, GrapplePose.HangRollL);
+            Quaternion uaR = _uaR0 * Quaternion.Euler(pose.ArmPitchR, pose.ArmYawR, 0f);
             Quaternion laL = _laL0 * Quaternion.Euler(pose.ElbowL, 0f, 0f);
             Quaternion laR = _laR0 * Quaternion.Euler(pose.ElbowR, 0f, 0f);
             // Chest, head, and hip yaw yield to AimTorso so the turns do not stack.
@@ -19546,7 +19546,13 @@ namespace Tag.Art
                 PunchTagPose.Beat tag = PunchTagPose.Tag(flinchAmt);
                 if (tag.Weight > 0.02f)
                 {
-                    BlendVerb(VerbPoseClips.TagCatchPose(bind, tag.Sample), tag.Weight);
+                    VerbPoseClips.Pose pose = VerbPoseClips.TagCatchPose(bind, tag.Sample);
+                    BlendVerb(pose, tag.Weight);
+                    if (_footL != null && _footR != null)
+                    {
+                        _ftLT = Quaternion.Slerp(_ftL0, pose.FtL, tag.Weight);
+                        _ftRT = Quaternion.Slerp(_ftR0, pose.FtR, tag.Weight);
+                    }
                     VerbClip = VerbPoseClips.TagCatch;
                     VerbState = VerbPoseClips.StateTag;
                     return;

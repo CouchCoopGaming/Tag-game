@@ -267,7 +267,7 @@ static class PoseKeyDump
                 s = GrapplePose.ForBody(GrapplePose.Release(0f, -4f, 0f, age));
             }
             Emit(w, c, "grapple", t, s.ThighL, s.ThighR, s.KneeL, s.KneeR, 0f, 0f,
-                s.ArmPitchL, s.ArmPitchR, s.ArmYawL, s.ArmYawR, 0f, 0f,
+                s.ArmPitchL, s.ArmPitchR, s.ArmYawL, s.ArmYawR, GrapplePose.HangRollL, 0f,
                 s.ElbowL, s.ElbowR, s.Hip, s.Spine, s.Head, GrapplePose.HangLean, s.HipYaw, s.SpineYaw, 0f, 0f, 0f,
                 0f, 0f, GrapplePose.HangShoulder);
             if (t >= dur) break;
@@ -327,18 +327,19 @@ static class PoseKeyDump
                 Mathf.Lerp(VerbPoseClips.TagWindupKnee, VerbPoseClips.TagKnee, u),
                 Mathf.Lerp(VerbPoseClips.TagWindupKnee, VerbPoseClips.TagKnee, u),
                 0f, 0f,
-                Mathf.Lerp(VerbPoseClips.TagWindupArmPitch, VerbPoseClips.TagArmPitch, u),
-                Mathf.Lerp(VerbPoseClips.TagWindupArmPitch, VerbPoseClips.TagArmPitch, u),
-                Mathf.Lerp(VerbPoseClips.TagWindupArmYaw, VerbPoseClips.TagArmYaw, u),
-                Mathf.Lerp(-VerbPoseClips.TagWindupArmYaw, -VerbPoseClips.TagArmYaw, u),
+                Mathf.Lerp(VerbPoseClips.TagWindupArmPitch, VerbPoseClips.TagArmPitch, u) + VerbPoseClips.TagClearPitch * u,
+                Mathf.Lerp(VerbPoseClips.TagWindupArmPitch, VerbPoseClips.TagArmPitch, u) + VerbPoseClips.TagClearPitch * u,
+                Mathf.Lerp(VerbPoseClips.TagWindupArmYaw, VerbPoseClips.TagArmYaw, u) + VerbPoseClips.TagClearYaw * u,
+                Mathf.Lerp(-VerbPoseClips.TagWindupArmYaw, -VerbPoseClips.TagArmYaw, u) - VerbPoseClips.TagClearYaw * u,
                 Mathf.Lerp(VerbPoseClips.TagWindupArmRoll, VerbPoseClips.TagArmRoll, u),
                 Mathf.Lerp(-VerbPoseClips.TagWindupArmRoll, -VerbPoseClips.TagArmRoll, u),
-                Mathf.Lerp(VerbPoseClips.TagWindupElbow, VerbPoseClips.TagElbow, u),
-                Mathf.Lerp(VerbPoseClips.TagWindupElbow, VerbPoseClips.TagElbow, u),
+                Mathf.Lerp(VerbPoseClips.TagWindupElbow, VerbPoseClips.TagElbow, u) + VerbPoseClips.TagClearElbow * u,
+                Mathf.Lerp(VerbPoseClips.TagWindupElbow, VerbPoseClips.TagElbow, u) + VerbPoseClips.TagClearElbow * u,
                 Mathf.Lerp(VerbPoseClips.TagWindupHip, VerbPoseClips.TagHip, u),
                 Mathf.Lerp(VerbPoseClips.TagWindupSpine, VerbPoseClips.TagSpine, u),
                 Mathf.Lerp(VerbPoseClips.TagWindupHead, VerbPoseClips.TagHead, u),
-                0f, 0f, 0f, 0f, 0f, 0f);
+                0f, 0f, 0f,
+                VerbPoseClips.TagClearFoot, VerbPoseClips.TagClearFoot, 0f);
             if (t >= dur) break;
         }
     }

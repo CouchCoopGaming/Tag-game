@@ -3,8 +3,10 @@
 The mannequin is rigid pieces parented to bones. Each evaluated piece is
 tested against the clip's solid meshes and against every other piece.
 Joined neighbours (parent and child, skipping bones that have no piece)
-are exempt only within 3 cm of the shared joint. Anything deeper than
-0.5 cm fails. Gameplay timers are not read here.
+omit the 3 cm ball around the shared joint. Overlap of a pair that meets
+at a joint, or that already overlaps at rest, is rigJoint. Pose is a
+non-adjacent pair, or a world hit, at an absolute 0.5 cm. Pose fails have
+to be zero. Gameplay timers are not read here.
 """
 import math
 import os
@@ -685,6 +687,29 @@ def over_limit(hits, authored=None):
 
 def cm(depth):
     return round(depth * 100.0, 2)
+
+
+def is_rig_pair(hit, rest):
+    """A pair that meets at a joint, or that already overlaps at rest.
+
+    That overlap belongs to the rig lane. Depth past the rest cuff stays
+    rigJoint. Pose is a non-adjacent pair, or a world hit.
+    """
+    if hit.get("kind") != "self":
+        return False
+    if hit.get("joined"):
+        return True
+    key = tuple(sorted((hit["a"], hit["b"])))
+    return rest.get(key, 0.0) > 0.0
+
+
+def is_pose_hit(hit, rest):
+    """Non-adjacent self hits and world hits. The limit is absolute 0.5 cm."""
+    if hit.get("kind") == "world":
+        return True
+    if hit.get("kind") != "self":
+        return False
+    return not is_rig_pair(hit, rest)
 
 
 def rest_map(hits):

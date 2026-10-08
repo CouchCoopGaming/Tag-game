@@ -27,30 +27,34 @@ namespace Tag.Art
         /// </summary>
         public const float ShoulderFlare = 24f;
 
-        /// <summary>Played left arm, raised off the neck. Printed pull pitch stays the sample.</summary>
-        public const float HangPitchL = -100f;
-        /// <summary>Played off arm, out beside the ribs so the two arms do not meet.</summary>
-        public const float HangPitchR = -90f;
-        /// <summary>Played abduction. The left hand sits out from the chest, not through it.</summary>
-        public const float HangYaw = 120f;
-        /// <summary>
-        /// Played elbow flex, in degrees. Two degrees clears the head and the torso
-        /// without burying the forearm in the upper arm. Three degrees crosses the
-        /// rig cuff, and that absolute depth counts. Printed elbows stay the sample.
-        /// </summary>
-        public const float HangElbow = -2f;
-        /// <summary>
-        /// Hip roll away from the left hand, in degrees. A spine roll of 0.4 degrees
-        /// already puts the hip-spine cuff past the rest depth, so the lean sits on
-        /// the hips and that cuff stays the rig. 2.5 degrees keeps the sole inside
-        /// 0.5 cm of the floor. 3 degrees does not.
-        /// </summary>
-        public const float HangLean = -2.5f;
-        /// <summary>
-        /// Left clavicle yaw, in degrees. It lifts the left shoulder on top of the
-        /// raised, abducted upper arm. Printed arm pitches stay the sample.
-        /// </summary>
-        public const float HangShoulder = 12f;
+        /// <summary>Played rope hand, overhead. Printed pull pitch stays the sample.</summary>
+        public const float HangPitchL = -158f;
+        /// <summary>Played balance arm, out at shoulder height.</summary>
+        public const float HangPitchR = -48f;
+        /// <summary>Rope hand stays over the shoulder. The forearm clears the head.</summary>
+        public const float HangYaw = 18f;
+        /// <summary>Balance arm yaw, out to the free side.</summary>
+        public const float HangYawR = 90f;
+        /// <summary>Rope elbow, inside the 30–60 degree bend. Printed elbows stay the sample.</summary>
+        public const float HangElbowL = -48f;
+        /// <summary>Balance elbow, soft, hand clear of the hip.</summary>
+        public const float HangElbowR = -20f;
+        /// <summary>Rope arm roll so the bend brings the hand over the head.</summary>
+        public const float HangRollL = 22f;
+        /// <summary>Hip pitch. The torso hangs under the hand, a little back.</summary>
+        public const float HangHip = -12f;
+        /// <summary>Chest reaches up the rope.</summary>
+        public const float HangSpine = 10f;
+        /// <summary>Both thighs. The legs stay together.</summary>
+        public const float HangThigh = 6f;
+        /// <summary>Both knees, a little bent.</summary>
+        public const float HangKnee = -36f;
+        /// <summary>Face up the rope. Head/neck overlap is the rig joint.</summary>
+        public const float HangHead = -26f;
+        /// <summary>Small hip roll. The body stays in line under the rope.</summary>
+        public const float HangLean = -6f;
+        /// <summary>Left clavicle lift into the overhead grip.</summary>
+        public const float HangShoulder = 8f;
 
         /// <summary>Move the lead sample onto the left arm, then park the hang clear of the body.</summary>
         public static Sample ForBody(Sample s)
@@ -65,25 +69,22 @@ namespace Tag.Art
             float elbow = s.ElbowL;
             s.ElbowL = s.ElbowR;
             s.ElbowR = elbow;
-            // Raised and abducted. The printed aim, latch, and pull numbers are
-            // already on the sample the proofs read. This is the body that plays.
+            // The printed aim, latch, and pull numbers stay on the sample the proofs
+            // read. This is the hang the body plays: rope hand overhead, the other
+            // arm out, knees a little bent, face up the line.
             s.ArmPitchL = HangPitchL;
             s.ArmPitchR = HangPitchR;
             s.ArmYawL = HangYaw;
-            s.ArmYawR = -HangYaw;
-            s.ElbowL = HangElbow;
-            s.ElbowR = HangElbow;
-            // Skull stays inside the neck's rest overlap. Printed head constants stay.
-            if (s.Head < -12f || s.Head > 0f)
-                s.Head = -8f;
-            // Trunk and legs sit on the joint. A fold here is the rig cuff counted
-            // at its full depth. The rope elevation is applied later, from this neutral hang.
-            s.Hip = 0f;
-            s.Spine = 0f;
-            s.ThighL = 0f;
-            s.ThighR = 0f;
-            s.KneeL = 0f;
-            s.KneeR = 0f;
+            s.ArmYawR = HangYawR;
+            s.ElbowL = HangElbowL;
+            s.ElbowR = HangElbowR;
+            s.Head = HangHead;
+            s.Hip = HangHip;
+            s.Spine = HangSpine;
+            s.ThighL = HangThigh;
+            s.ThighR = HangThigh;
+            s.KneeL = HangKnee;
+            s.KneeR = HangKnee;
             return s;
         }
 

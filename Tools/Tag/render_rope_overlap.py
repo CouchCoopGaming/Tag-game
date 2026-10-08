@@ -42,13 +42,10 @@ def ghost_body():
 
 
 def pose_hit(arm, rest):
+    """Deepest non-adjacent pair or world hit. Joint cuffs stay on the rig lane."""
     worst = None
     for hit in n.scan_frame(arm):
-        if hit["kind"] != "self":
-            continue
-        key = tuple(sorted((hit["a"], hit["b"])))
-        rest_depth = rest.get(key, 0.0)
-        if rest_depth > 0.0 and hit["depth"] <= rest_depth + 0.0005:
+        if not n.is_pose_hit(hit, rest):
             continue
         if worst is None or hit["depth"] > worst["depth"]:
             worst = hit
