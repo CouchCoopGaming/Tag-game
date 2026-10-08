@@ -1,5 +1,6 @@
 using System.IO;
 using Tag.Couch;
+using Tag.Ui.Hud;
 using UnityEngine;
 
 namespace Tag.Ui.Menu
@@ -46,6 +47,9 @@ namespace Tag.Ui.Menu
             "13-practice"
         };
 
+        static readonly int[] HudPlayers = { 1, 2, 4 };
+        static readonly string[] HudNames = { "14-hud-1", "15-hud-2", "16-hud-4" };
+
         static bool _run;
         static int _index;
         static int _wait;
@@ -76,22 +80,43 @@ namespace Tag.Ui.Menu
         public static bool Drive(MenuHost host)
         {
             if (!_run || host == null) return false;
-            if (_index < 0 || _index >= Order.Length)
+            int total = Order.Length + HudPlayers.Length;
+            if (_index < 0 || _index >= total)
             {
                 Finish();
                 return true;
             }
             _wait++;
-            if (_wait == 1)
+            if (_index < Order.Length)
             {
-                host.Present(Order[_index]);
-                return true;
+                if (_wait == 1)
+                {
+                    MatchHud.EndPreview();
+                    host.Present(Order[_index]);
+                    return true;
+                }
+                if (_wait < 4) return true;
+                Save(Names[_index]);
             }
-            if (_wait < 4) return true;
-            Save(Names[_index]);
+            else
+            {
+                int hud = _index - Order.Length;
+                if (_wait == 1)
+                {
+                    host.HideForMatch();
+                    MatchHud.Preview(HudPlayers[hud]);
+                    return true;
+                }
+                if (_wait < 4) return true;
+                Save(HudNames[hud]);
+            }
             _wait = 0;
             _index++;
-            if (_index >= Order.Length) Finish();
+            if (_index >= total)
+            {
+                MatchHud.EndPreview();
+                Finish();
+            }
             return true;
         }
 

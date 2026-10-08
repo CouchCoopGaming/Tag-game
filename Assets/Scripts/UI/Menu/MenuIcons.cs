@@ -22,6 +22,12 @@ namespace Tag.Ui.Menu
         static Sprite _door;
         static Sprite _keys;
         static Sprite _either;
+        static Sprite _arrows;
+        static Sprite _space;
+        static Sprite _esc;
+        static Sprite _stick;
+        static Sprite _south;
+        static Sprite _east;
 
         public static Sprite Play => _play ??= Runner();
         public static Sprite Cone => _cone ??= TrafficCone();
@@ -31,6 +37,12 @@ namespace Tag.Ui.Menu
         public static Sprite Door => _door ??= ExitDoor();
         public static Sprite Keys => _keys ??= Keyboard();
         public static Sprite Either => _either ??= JoinMark();
+        public static Sprite KeyArrows => _arrows ??= ArrowKeys();
+        public static Sprite KeySpace => _space ??= SpaceKey();
+        public static Sprite KeyEsc => _esc ??= EscKey();
+        public static Sprite Stick => _stick ??= StickCap();
+        public static Sprite South => _south ??= FaceCap(new Color(0.15f, 0.72f, 0.32f, 1f), LetterA());
+        public static Sprite East => _east ??= FaceCap(new Color(0.90f, 0.22f, 0.28f, 1f), LetterB());
 
         static Sprite Runner()
         {
@@ -88,21 +100,134 @@ namespace Tag.Ui.Menu
         {
             const int n = 96;
             Color[] px = Clear(n, n);
+            DrawStar(px, n, 48, 48, 44f, 18f, new Color(0.12f, 0.06f, 0.02f, 1f));
+            DrawStar(px, n, 48, 48, 34f, 14f, new Color(1f, 0.98f, 0.92f, 1f));
+            return Bake(px, n, n);
+        }
+
+        static void DrawStar(Color[] px, int n, int cx, int cy, float outer, float inner, Color c)
+        {
             for (int i = 0; i < 5; i++)
             {
                 float a = -Mathf.PI * 0.5f + i * Mathf.PI * 2f / 5f;
                 float b = a + Mathf.PI * 2f / 10f;
-                int x0 = 48 + Mathf.RoundToInt(Mathf.Cos(a) * 40f);
-                int y0 = 48 + Mathf.RoundToInt(Mathf.Sin(a) * 40f);
-                int x1 = 48 + Mathf.RoundToInt(Mathf.Cos(b) * 16f);
-                int y1 = 48 + Mathf.RoundToInt(Mathf.Sin(b) * 16f);
-                float c = b + Mathf.PI * 2f / 10f;
-                int x2 = 48 + Mathf.RoundToInt(Mathf.Cos(c) * 40f);
-                int y2 = 48 + Mathf.RoundToInt(Mathf.Sin(c) * 40f);
-                Tri(px, n, 48, 48, x0, y0, x1, y1, MenuTheme.Gold);
-                Tri(px, n, 48, 48, x1, y1, x2, y2, MenuTheme.Gold);
+                float d = a + Mathf.PI * 2f / 5f;
+                int x0 = cx + Mathf.RoundToInt(Mathf.Cos(a) * outer);
+                int y0 = cy + Mathf.RoundToInt(Mathf.Sin(a) * outer);
+                int x1 = cx + Mathf.RoundToInt(Mathf.Cos(b) * inner);
+                int y1 = cy + Mathf.RoundToInt(Mathf.Sin(b) * inner);
+                int x2 = cx + Mathf.RoundToInt(Mathf.Cos(d) * outer);
+                int y2 = cy + Mathf.RoundToInt(Mathf.Sin(d) * outer);
+                Tri(px, n, cx, cy, x0, y0, x1, y1, c);
+                Tri(px, n, cx, cy, x1, y1, x2, y2, c);
             }
+        }
+
+        static Sprite ArrowKeys()
+        {
+            const int n = 128;
+            Color[] px = Clear(n, n);
+            KeyBody(px, n, 8, 16, 120, 112);
+            Color ink = new Color(0.06f, 0.10f, 0.20f, 1f);
+            Tri(px, n, 64, 100, 48, 78, 80, 78, ink);
+            Tri(px, n, 64, 28, 48, 50, 80, 50, ink);
+            Tri(px, n, 28, 64, 50, 48, 50, 80, ink);
+            Tri(px, n, 100, 64, 78, 48, 78, 80, ink);
+            Fill(px, n, 58, 50, 70, 78, ink);
+            Fill(px, n, 50, 58, 78, 70, ink);
             return Bake(px, n, n);
+        }
+
+        static Sprite SpaceKey()
+        {
+            const int n = 128;
+            Color[] px = Clear(n, n);
+            KeyBody(px, n, 6, 28, 122, 100);
+            RoundBox(px, n, 22, 48, 106, 78, 8, new Color(0.06f, 0.10f, 0.20f, 1f));
+            return Bake(px, n, n);
+        }
+
+        static Sprite EscKey()
+        {
+            const int n = 128;
+            Color[] px = Clear(n, n);
+            KeyBody(px, n, 8, 24, 120, 104);
+            Color ink = new Color(0.06f, 0.10f, 0.20f, 1f);
+            Stamp(px, n, 18, 40, 5, LetterE(), ink);
+            Stamp(px, n, 50, 40, 5, LetterS(), ink);
+            Stamp(px, n, 82, 40, 5, LetterC(), ink);
+            return Bake(px, n, n);
+        }
+
+        static Sprite StickCap()
+        {
+            const int n = 128;
+            Color[] px = Clear(n, n);
+            Disc(px, n, 64, 58, 40, new Color(0.10f, 0.14f, 0.22f, 1f));
+            Disc(px, n, 64, 58, 30, new Color(0.82f, 0.88f, 0.96f, 1f));
+            Disc(px, n, 64, 58, 8, new Color(0.10f, 0.14f, 0.22f, 1f));
+            Disc(px, n, 86, 80, 16, new Color(0.06f, 0.10f, 0.20f, 1f));
+            Disc(px, n, 86, 80, 11, Color.white);
+            return Bake(px, n, n);
+        }
+
+        static Sprite FaceCap(Color face, int[] letter)
+        {
+            const int n = 128;
+            Color[] px = Clear(n, n);
+            Disc(px, n, 64, 64, 52, new Color(0.06f, 0.08f, 0.12f, 1f));
+            Disc(px, n, 64, 64, 44, face);
+            Disc(px, n, 64, 78, 10, new Color(1f, 1f, 1f, 0.28f));
+            Stamp(px, n, 46, 42, 7, letter, Color.white);
+            return Bake(px, n, n);
+        }
+
+        static void KeyBody(Color[] px, int n, int x0, int y0, int x1, int y1)
+        {
+            RoundBox(px, n, x0, y0, x1, y1, 16, new Color(0.06f, 0.10f, 0.18f, 1f));
+            RoundBox(px, n, x0 + 6, y0 + 6, x1 - 6, y1 - 6, 12, new Color(0.96f, 0.97f, 1f, 1f));
+        }
+
+        static int[] LetterE()
+        {
+            return new[] { 0x1F, 0x10, 0x1E, 0x10, 0x1F };
+        }
+
+        static int[] LetterS()
+        {
+            return new[] { 0x0F, 0x10, 0x0E, 0x01, 0x1E };
+        }
+
+        static int[] LetterC()
+        {
+            return new[] { 0x0F, 0x10, 0x10, 0x10, 0x0F };
+        }
+
+        static int[] LetterA()
+        {
+            return new[] { 0x0E, 0x11, 0x1F, 0x11, 0x11 };
+        }
+
+        static int[] LetterB()
+        {
+            return new[] { 0x1E, 0x11, 0x1E, 0x11, 0x1E };
+        }
+
+        static void Stamp(Color[] px, int w, int h, int ox, int oy, int scale, int[] rows, Color c)
+        {
+            int n = rows.Length;
+            for (int r = 0; r < n; r++)
+            {
+                int bits = rows[r];
+                for (int col = 0; col < 5; col++)
+                {
+                    int mask = 1 << (4 - col);
+                    if ((bits & mask) == 0) continue;
+                    int x0 = ox + col * scale;
+                    int y0 = oy + (n - 1 - r) * scale;
+                    Fill(px, w, h, x0, y0, x0 + scale - 1, y0 + scale - 1, c);
+                }
+            }
         }
 
         static Sprite ExitDoor()
@@ -223,10 +348,12 @@ namespace Tag.Ui.Menu
             {
                 for (int x = minX; x <= maxX; x++)
                 {
-                    float w0 = Edge(x1, y1, x2, y2, x, y) / area;
-                    float w1 = Edge(x2, y2, x0, y0, x, y) / area;
-                    float w2 = Edge(x0, y0, x1, y1, x, y) / area;
-                    if (w0 >= 0f && w1 >= 0f && w2 >= 0f) Plot(px, n, n, x, y, c);
+                    float w0 = Edge(x1, y1, x2, y2, x, y);
+                    float w1 = Edge(x2, y2, x0, y0, x, y);
+                    float w2 = Edge(x0, y0, x1, y1, x, y);
+                    bool pos = w0 >= 0f && w1 >= 0f && w2 >= 0f;
+                    bool neg = w0 <= 0f && w1 <= 0f && w2 <= 0f;
+                    if (pos || neg) Plot(px, n, n, x, y, c);
                 }
             }
         }

@@ -107,6 +107,30 @@ namespace Tag.Modes
         public ITagMode ActiveMode => _mode;
         public TagModeContext Context => _ctx;
         public MatchPhase Phase => _phase;
+        /// <summary>Seconds left in the current countdown or post-round beat. Display only.</summary>
+        public float PhaseSeconds => _phaseTimer;
+        /// <summary>1-based round for the top counter. Hot Potato uses its fuse index.</summary>
+        public int RoundShown
+        {
+            get
+            {
+                HotPotatoMode hot = _mode as HotPotatoMode;
+                if (hot == null) return 1;
+                return hot.RoundIndex;
+            }
+        }
+        /// <summary>Round cap already stored on the mode tuning. Display only.</summary>
+        public int RoundCap
+        {
+            get
+            {
+                if (selectedMode == TagModeId.HotPotato && hotPotatoTuning != null && hotPotatoTuning.maxRounds > 0)
+                    return hotPotatoTuning.maxRounds;
+                if (selectedMode == TagModeId.LeastIt && leastItTuning != null && leastItTuning.roundCount > 0)
+                    return leastItTuning.roundCount;
+                return 1;
+            }
+        }
         public bool SuddenDeath => _ctx.SuddenDeath;
         /// <summary>False during the short results arm so Esc/R/Q ignore the round-end click.</summary>
         public bool ResultsInputReady =>
@@ -1363,11 +1387,18 @@ namespace Tag.Modes
             }
 
             PracticeHud.Draw();
-            DrawItBanner();
+            bool matchHud = Tag.Ui.Hud.MatchHud.Active;
+            if (!matchHud) DrawItBanner();
 
             if (_phase == MatchPhase.Countdown)
             {
-                DrawCountdownCard();
+                if (!matchHud) DrawCountdownCard();
+                return;
+            }
+
+            if (matchHud)
+            {
+                if (_phase == MatchPhase.Results) DrawResultsCard();
                 return;
             }
 

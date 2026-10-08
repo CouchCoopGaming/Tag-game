@@ -147,6 +147,9 @@ namespace Tag.Modes
         public bool ShouldEndRound(TagModeContext ctx) => _matchOver;
         public IReadOnlyList<string> GetWinnerIds(TagModeContext ctx) => _matchWinners;
 
+        /// <summary>1-based fuse round. Display only.</summary>
+        public int RoundIndex => _roundIndex < 1 ? 1 : _roundIndex;
+
         /// <summary>Round wins already counted by the fuse. First to 2 takes the match.</summary>
         public int RoundWins(string playerId)
         {

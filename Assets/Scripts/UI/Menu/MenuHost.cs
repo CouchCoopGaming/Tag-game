@@ -151,6 +151,7 @@ namespace Tag.Ui.Menu
         readonly Text[] _glyphWord = new Text[3];
         float _actAt;
         readonly Text[] _readyStamp = new Text[4];
+        readonly Text[] _castJoin = new Text[4];
         readonly Image[] _castPlate = new Image[4];
         readonly MenuPodium.Row[] _rows = new MenuPodium.Row[4];
 
@@ -457,6 +458,9 @@ namespace Tag.Ui.Menu
             {
                 _castView[i] = null;
                 _castReady[i] = null;
+                _castJoin[i] = null;
+                _castPlate[i] = null;
+                _readyStamp[i] = null;
             }
             if (_body == null) return;
             for (int i = _body.childCount - 1; i >= 0; i--)
@@ -712,14 +716,14 @@ namespace Tag.Ui.Menu
                 MenuArt.Plate(image, MenuTheme.Navy, true);
                 image.raycastTarget = false;
                 _glyphChip[i] = image;
-                var iconRt = MenuWidgets.Place(chip, "Icon", 10f, 8f, 36f, 36f);
+                var iconRt = MenuWidgets.Place(chip, "Icon", 8f, 6f, 72f, 40f);
                 var icon = iconRt.gameObject.AddComponent<Image>();
                 icon.sprite = MenuIcons.Keys;
                 icon.preserveAspect = true;
                 icon.raycastTarget = false;
                 _glyphIcon[i] = icon;
                 _glyphWord[i] = MenuWidgets.Words(chip, words[i], 22, TextAnchor.MiddleCenter, MenuTheme.Cream, Vector2.zero, Vector2.one);
-                _glyphWord[i].rectTransform.offsetMin = new Vector2(48f, 4f);
+                _glyphWord[i].rectTransform.offsetMin = new Vector2(86f, 4f);
             }
         }
 
@@ -738,7 +742,7 @@ namespace Tag.Ui.Menu
             {
                 if (_glyphWord[i] != null) _glyphWord[i].text = words[i];
                 if (_glyphChip[i] != null) _glyphChip[i].color = chip;
-                if (_glyphIcon[i] != null) _glyphIcon[i].sprite = pad ? MenuIcons.Pad : MenuIcons.Keys;
+                if (_glyphIcon[i] != null) _glyphIcon[i].sprite = FooterIcon(pad, i);
             }
         }
 
@@ -930,6 +934,18 @@ namespace Tag.Ui.Menu
                             MenuAudio.Back();
                             Open(_castBack);
                             return;
+                        }
+                        if (edge.Join || edge.Confirm || edge.Start)
+                        {
+                            if (CouchPlay.Join(edge.Device))
+                            {
+                                int slot = SeatOf(edge.Device);
+                                if (slot >= 0 && LocalProfiles.SeatName(slot) == null)
+                                    LocalProfiles.SeatGuest(slot);
+                                if (slot >= 0) MenuSession.PullLook(slot);
+                                MenuAudio.Confirm();
+                                RefreshCast();
+                            }
                         }
                         continue;
                     }
@@ -1250,25 +1266,25 @@ namespace Tag.Ui.Menu
             _count = 0;
             if (_header != null) _header.text = "  Characters";
             if (_dim != null) _dim.color = MenuTheme.Veil;
-            int shown = 0;
             for (int s = 0; s < 4; s++)
             {
-                if (!CouchPlay.HumanAt(s)) continue;
-                float x = 16f + shown * 448f;
+                float x = 16f + s * 448f;
                 var card = MenuWidgets.Place(_body, "Cast" + s.ToString(), x, 8f, 428f, 420f);
                 var plate = card.gameObject.AddComponent<Image>();
-                MenuArt.Plate(plate, Color.Lerp(MenuTheme.Panel, MenuTheme.Seat(s), 0.55f), true);
+                MenuArt.Plate(plate, MenuTheme.Seat(s), true);
                 plate.raycastTarget = false;
                 _castPlate[s] = plate;
                 var viewRt = MenuWidgets.Place(card, "View", 16f, 16f, 396f, 280f);
                 var raw = viewRt.gameObject.AddComponent<RawImage>();
                 raw.raycastTarget = false;
                 _castView[s] = raw;
-                _castReady[s] = MenuWidgets.Words(card, "", 26, TextAnchor.MiddleLeft, MenuTheme.Cream, new Vector2(0f, 0f), new Vector2(1f, 0.28f));
-                _readyStamp[s] = MenuWidgets.Words(card, "READY!", 54, TextAnchor.MiddleCenter, MenuTheme.Gold, new Vector2(0.15f, 0.28f), new Vector2(0.85f, 0.62f));
+                _castJoin[s] = MenuWidgets.Words(card, "Press A / Space to join", 32, TextAnchor.MiddleCenter, MenuTheme.Ink, new Vector2(0.06f, 0.22f), new Vector2(0.94f, 0.78f));
+                Outline joinEdge = _castJoin[s].GetComponent<Outline>();
+                if (joinEdge != null) joinEdge.effectColor = new Color(1f, 0.98f, 0.92f, 0.95f);
+                _castReady[s] = MenuWidgets.Words(card, "", 22, TextAnchor.MiddleLeft, MenuTheme.Cream, new Vector2(0f, 0f), new Vector2(1f, 0.28f));
+                _readyStamp[s] = MenuWidgets.Words(card, "READY!", 48, TextAnchor.MiddleCenter, MenuTheme.Gold, new Vector2(0.12f, 0.30f), new Vector2(0.88f, 0.62f));
                 _readyStamp[s].rectTransform.localRotation = Quaternion.Euler(0f, 0f, -14f);
                 _readyStamp[s].gameObject.SetActive(false);
-                shown++;
             }
             for (int c = 0; c < 6; c++)
             {
@@ -2030,7 +2046,16 @@ namespace Tag.Ui.Menu
             }
             for (int s = 0; s < 4; s++)
             {
-                if (!CouchPlay.HumanAt(s)) continue;
+                bool human = CouchPlay.HumanAt(s);
+                if (_castJoin[s] != null) _castJoin[s].gameObject.SetActive(!human);
+                if (_castView[s] != null) _castView[s].gameObject.SetActive(human);
+                if (!human)
+                {
+                    if (_readyStamp[s] != null) _readyStamp[s].gameObject.SetActive(false);
+                    if (_castReady[s] != null) _castReady[s].text = "";
+                    if (_castPlate[s] != null) _castPlate[s].color = MenuTheme.Seat(s);
+                    continue;
+                }
                 if (_preview != null) _preview.Apply(s, MenuSession.Hier[s], MenuSession.Accent[s], MenuSession.Hat[s], _castView[s]);
                 if (_castReady[s] == null) continue;
                 string skin = MenuSession.Hier[s] >= 0 && MenuSession.Hier[s] < LocalProfiles.HierNames.Length
@@ -2077,6 +2102,19 @@ namespace Tag.Ui.Menu
                 if (CouchPlay.HumanAt(s) && CouchPlay.DeviceOf(s) == device) return s;
             }
             return -1;
+        }
+
+        static Sprite FooterIcon(bool pad, int index)
+        {
+            if (pad)
+            {
+                if (index == 1) return MenuIcons.South;
+                if (index == 2) return MenuIcons.East;
+                return MenuIcons.Stick;
+            }
+            if (index == 1) return MenuIcons.KeySpace;
+            if (index == 2) return MenuIcons.KeyEsc;
+            return MenuIcons.KeyArrows;
         }
 
         static int JoinSig()

@@ -177,6 +177,7 @@ namespace TagArena.Movement
 
         void OnGUI()
         {
+            if (Tag.Ui.Hud.MatchHud.Active) return;
             if (!motor) return;
             WarmStyles();
             if (_big == null) return;
