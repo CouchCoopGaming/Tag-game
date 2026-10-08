@@ -4,7 +4,7 @@ using UnityEngine;
 namespace Tag.FX
 {
     /// <summary>
-    /// Hard-land and wall-slam shockwave. A thick ring on the surface, a burst
+    /// Hard-land and wall-slam shockwave. A thin ring on the surface, a burst
     /// of chunky debris, and a short dust plume on dirt and concrete.
     /// Colour follows the surface. Size follows impact speed.
     /// Visual only. The land and wall FX toggles hide it. No new settings row.
@@ -12,7 +12,7 @@ namespace Tag.FX
     [DefaultExecutionOrder(140)]
     public sealed class ImpactFx : MonoBehaviour
     {
-        public const int BitsMin = 15;
+        public const int BitsMin = 5;
         public const int BitsMax = 30;
         public const float SlamSpeed = 13.8f;
         public const float HardSpeed = 36.5f;
@@ -22,7 +22,8 @@ namespace Tag.FX
         const int PlumeMax = 8;
         const int PieceMax = BitsMax + PlumeMax;
         const int Slots = 4;
-        const float RingOuter = 0.94f;
+        const float RingOuter = 0.96f;
+        const float RingInner = 0.78f;
         const float ShapeSoft = 0f;
         const float ShapeChunk = 3f;
         const float ShapeSplinter = 4f;
@@ -57,8 +58,8 @@ namespace Tag.FX
         }
 
         /// <summary>
-        /// Thick ring and chunky debris. Hard land is clearly bigger than a sprint slam.
-        /// Colours are the surface dust, not the pale foot-puff table.
+        /// Thin ring and chunky debris. A hard land is a stronger, fuller burst
+        /// than a sprint slam. Colours are the surface dust.
         /// </summary>
         public static Spec Measure(int surface, float speed)
         {
@@ -66,12 +67,12 @@ namespace Tag.FX
             var spec = new Spec();
             spec.Radius = 1.45f + k * 1.85f;
             spec.Chunk = 0.34f + k * 0.22f;
-            int bits = BitsMin + (int)(k * 15f);
+            int bits = BitsMin + (int)(k * 14f);
             if (bits < BitsMin) bits = BitsMin;
             if (bits > BitsMax) bits = BitsMax;
             spec.Bits = bits;
             spec.Life = LifeSeconds;
-            spec.Opacity = 0.94f;
+            spec.Opacity = 0.42f + k * 0.48f;
             spec.HopLo = 0.30f + k * 0.25f;
             spec.HopHi = 0.48f + k * 0.32f;
             spec.Splinter = 0f;
@@ -95,7 +96,7 @@ namespace Tag.FX
                 spec.DustR = 0.72f;
                 spec.DustG = 0.50f;
                 spec.DustB = 0.26f;
-                spec.Plumes = 6 + (int)(k * 2f);
+                spec.Plumes = 2 + (int)(k * 4f);
             }
             else if (surface == (int)DustLook.Surface.Wood)
             {
@@ -106,7 +107,7 @@ namespace Tag.FX
                 spec.DustG = 0.70f;
                 spec.DustB = 0.52f;
                 spec.Splinter = 1f;
-                spec.Plumes = 5;
+                spec.Plumes = 2 + (int)(k * 2f);
             }
             else if (surface == (int)DustLook.Surface.Metal)
             {
@@ -125,7 +126,7 @@ namespace Tag.FX
                 spec.DustR = 0.55f;
                 spec.DustG = 0.68f;
                 spec.DustB = 0.74f;
-                spec.Plumes = 4;
+                spec.Plumes = 2 + (int)(k * 2f);
             }
             else
             {
@@ -135,7 +136,7 @@ namespace Tag.FX
                 spec.DustR = 0.76f;
                 spec.DustG = 0.75f;
                 spec.DustB = 0.72f;
-                spec.Plumes = 6 + (int)(k * 2f);
+                spec.Plumes = 2 + (int)(k * 4f);
             }
             if (spec.Plumes > PlumeMax) spec.Plumes = PlumeMax;
             return spec;
@@ -302,15 +303,19 @@ namespace Tag.FX
                     Hide(i);
                     continue;
                 }
+                float grow = Grow(_age[i], _life[i]);
                 float fade = Fade(_age[i], _life[i]);
-                float shown = _radius[i] * Grow(_age[i], _life[i]);
+                float shown = _radius[i] * grow;
                 float diameter = shown * 2f / RingOuter;
                 Vector3 n = _normal[i];
-                _ring[i].localPosition = n * 0.04f;
+                _ring[i].localPosition = n * 0.03f;
                 _ring[i].localRotation = Quaternion.FromToRotation(Vector3.up, n);
                 _ring[i].localScale = new Vector3(diameter, 1f, diameter);
+                // The ring thins out as it expands, so the ground stays visible through it.
+                float thin = 1f - 0.55f * grow;
+                if (thin < 0.2f) thin = 0.2f;
                 Color ring = _color[i];
-                ring.a = _opacity[i] * fade;
+                ring.a = _opacity[i] * fade * thin;
                 _ringMat[i].color = ring;
                 int live = _bits[i] + _plumes[i];
                 for (int b = 0; b < PieceMax; b++)
@@ -554,7 +559,6 @@ namespace Tag.FX
         static Texture2D RingTex()
         {
             const int n = 128;
-            const float inner = 0.58f;
             var tex = new Texture2D(n, n, TextureFormat.RGBA32, false);
             var pixels = new Color[n * n];
             float mid = (n - 1) * 0.5f;
@@ -566,21 +570,14 @@ namespace Tag.FX
                     float dy = (y - mid) / mid;
                     float r = Mathf.Sqrt(dx * dx + dy * dy);
                     float a = 0f;
-                    if (r <= RingOuter)
+                    // Donut. Inner radius stays at least 70% of the outer edge.
+                    if (r <= RingOuter && r >= RingInner)
                     {
-                        if (r >= inner)
-                        {
-                            float rise = (r - inner) / 0.05f;
-                            if (rise > 1f) rise = 1f;
-                            float fall = (RingOuter - r) / 0.07f;
-                            if (fall > 1f) fall = 1f;
-                            a = rise < fall ? rise : fall;
-                        }
-                        else
-                        {
-                            float haze = 1f - r / inner;
-                            a = haze * haze * 0.22f;
-                        }
+                        float rise = (r - RingInner) / 0.035f;
+                        if (rise > 1f) rise = 1f;
+                        float fall = (RingOuter - r) / 0.035f;
+                        if (fall > 1f) fall = 1f;
+                        a = rise < fall ? rise : fall;
                     }
                     pixels[y * n + x] = new Color(1f, 1f, 1f, a);
                 }

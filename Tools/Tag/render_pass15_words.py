@@ -13,7 +13,7 @@ import bake_comic_layers as bake
 import render_comic_sheet as comic_sheet
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
-OUT = os.path.join(ROOT, "Docs", "FxStills", "pass22")
+OUT = os.path.join(ROOT, "Docs", "FxStills", "pass23")
 FONT = comic_sheet.FONT_PATH
 
 
@@ -159,42 +159,36 @@ def sheet(title, indices, cols):
     return board
 
 
+def ease_out_back(t):
+    """Peaks at 1.20 so a 0.25 start becomes a 1.15 overshoot and ends at 1."""
+    c1 = 2.592389
+    c3 = c1 + 1.0
+    u = t - 1.0
+    return 1.0 + c3 * u * u * u + c1 * u * u
+
+
 def life_scale(age):
-    """Matches ComicWords.Scale. Overshoot by 0.05 s, then shrink to nothing by 0.45 s."""
-    pop = 0.05
+    """Matches ComicWords.Scale. Quarter size, overshoot near 0.11 s, gone by 0.45 s."""
     life = 0.45
-    if age <= 0.0 or age >= life:
+    settle = 0.16
+    hold = 0.30
+    if age < 0.0 or age >= life:
         return 0.0
-    if age < pop:
-        u = age / pop
-        peak_at = 0.58
-        peak = 1.25
-        if u < peak_at:
-            t = u / peak_at
-            e = t * t * (3.0 - 2.0 * t)
-            return peak * e
-        settle = (u - peak_at) / (1.0 - peak_at)
-        down = settle * settle * (3.0 - 2.0 * settle)
-        return peak + (1.0 - peak) * down
-    v = (age - pop) / (life - pop)
-    ease = v * v * (3.0 - 2.0 * v)
-    return 1.0 - ease
+    if age < settle:
+        t = (age / settle) ** 1.7
+        return 0.25 + 0.75 * ease_out_back(t)
+    if age < hold:
+        return 1.0
+    u = (age - hold) / (life - hold)
+    down = u * u * (3.0 - 2.0 * u)
+    return 1.0 - down
 
 
 def word_punch(age):
-    """Word and burst share Scale. The word overshoots a little more, then matches."""
-    pop = 0.05
-    peak_at = pop * 0.58
-    extra = 0.18
-    if age <= 0.0 or age >= pop:
+    """The word shares Scale. There is no extra punch on the overshoot."""
+    if age < 0.0:
         return 1.0
-    if age < peak_at:
-        t = age / peak_at
-        e = t * t * (3.0 - 2.0 * t)
-        return 1.0 + extra * e
-    settle = (age - peak_at) / (pop - peak_at)
-    down = settle * settle * (3.0 - 2.0 * settle)
-    return 1.0 + extra * (1.0 - down)
+    return 1.0
 
 
 def word_scale(age):
@@ -217,17 +211,13 @@ def word_scale(age):
 
 
 def life_alpha(age):
-    pop = 0.05
-    hold = 0.28
+    hold = 0.30
     life = 0.45
     if age < 0.0 or age >= life:
         return 0.0
-    if age < pop:
-        return age / pop
-    if age < pop + hold:
+    if age <= hold:
         return 1.0
-    span = life - pop - hold
-    u = (age - pop - hold) / span
+    u = (age - hold) / (life - hold)
     if u < 0.0:
         u = 0.0
     if u > 1.0:
@@ -285,8 +275,17 @@ def frame_at(burst, word, age, box):
 def life_strip():
     index = index_of("POW!")
     text, burst, word = posed_layers(index)
-    ages = (0.00, 0.03, 0.09, 0.18, 0.33, 0.45)
-    labels = ("0.00 born", "0.03 past full", "0.09 together", "0.18 shrinking", "0.33 smaller", "0.45 gone")
+    ages = (0.00, 0.04, 0.08, 0.12, 0.20, 0.30, 0.40, 0.45)
+    labels = (
+        "0.00 small",
+        "0.04 growing",
+        "0.08 growing",
+        "0.12 overshoot",
+        "0.20 settled",
+        "0.30 hold",
+        "0.40 shrinking",
+        "0.45 gone",
+    )
     font = ImageFont.truetype(FONT, 22)
     small = ImageFont.truetype(FONT, 16)
     box = (220, 220)
@@ -297,7 +296,7 @@ def life_strip():
     h = head + box[1] + foot + gap
     board = Image.new("RGB", (w, h), (22, 20, 18))
     draw = ImageDraw.Draw(board)
-    draw.text((12, 8), "POW!    word and burst born together    then gone by 0.45 s", font=font, fill=(255, 220, 120))
+    draw.text((12, 8), "POW!    small, grow, overshoot, hold, shrink    gone by 0.45 s", font=font, fill=(255, 220, 120))
     for n, (age, label) in enumerate(zip(ages, labels)):
         panel = frame_at(burst, word, age, box)
         x = gap + n * (box[0] + gap)
@@ -419,17 +418,14 @@ def jagged_tail(draw, hit, burst_edge, color=(12, 10, 8)):
 def pane_fraction(life):
     """Visible burst-ink height as a fraction of the pane.
 
-    Settle and the shrink stay on the 22% floor. The overshoot peak is 30%.
-    The padded cell is larger than the spikes, so the fit uses the alpha box.
+    The 1.15 overshoot is 30% of the pane. Smaller scales keep that ratio.
     """
-    if life <= 1.0:
-        return 0.22 * life
-    u = (life - 1.0) / 0.25
-    if u < 0.0:
-        u = 0.0
-    if u > 1.0:
-        u = 1.0
-    return 0.22 + (0.30 - 0.22) * u
+    if life <= 0.0:
+        return 0.0
+    frac = 0.30 * (life / 1.15)
+    if frac > 0.30:
+        frac = 0.30
+    return frac
 
 
 def nudge_inside(cx, cy, width, height, pw, ph, margin=8.0):
@@ -477,8 +473,8 @@ def couch_four():
     font = ImageFont.truetype(FONT, 22)
     meta = []
     pw, ph = 640, 360
-    # Peak of the overshoot. Scale is 1.25, the word a little larger.
-    age = 0.029
+    # True peak of the ease-out-back. Scale is 1.15, which is 30% of the pane.
+    age = 0.109
     life = life_scale(age)
     punch = word_punch(age)
     body = runners["attacker"]["body"]
@@ -512,7 +508,7 @@ def couch_four():
         burst_cx = hit_x + side * side_px
         burst_cy = hit_y - up_px
         _text, burst, word = posed_layers(index)
-        # Visible spike ink, not the padded cell. Peak life is 1.25, so this is 30%.
+        # Visible spike ink, not the padded cell. The 1.15 overshoot is 30% of the pane.
         burst_px = pane_fraction(life) * ph
         src_box = ink_box(burst)
         src_h = max(1, src_box[3] - src_box[1])

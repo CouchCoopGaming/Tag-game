@@ -75,50 +75,49 @@ namespace Tag.FX
         }
 
         /// <summary>
-        /// Extra size on the word during the shared overshoot. 1 the rest of the life,
-        /// so the word and the burst are born together and then scale as one unit.
+        /// The word and the burst share Scale. No extra punch on top of the overshoot.
         /// </summary>
         public static float WordPunch(float age)
         {
-            float peakAt = PopSeconds * 0.58f;
-            const float extra = 0.18f;
-            if (age <= 0f || age >= PopSeconds) return 1f;
-            if (age < peakAt)
-            {
-                float t = age / peakAt;
-                float e = t * t * (3f - 2f * t);
-                return 1f + extra * e;
-            }
-            float settle = (age - peakAt) / (PopSeconds - peakAt);
-            float down = settle * settle * (3f - 2f * settle);
-            return 1f + extra * (1f - down);
+            if (age < 0f) return 1f;
+            return 1f;
         }
 
         /// <summary>
-        /// Starts at 0, overshoots to 1.25, is back at 1 by 0.05 s, then shrinks away by 0.45 s.
+        /// Ease-out-back from a quarter size. The overshoot of 1.15 lands near 0.11 s,
+        /// the settle to 1 is at 0.16 s, the hold runs to 0.30 s, then it shrinks away by 0.45 s.
         /// </summary>
         public static float Scale(float age)
         {
-            if (age <= 0f || age >= LifeSeconds) return 0f;
-            if (age < PopSeconds)
+            if (age < 0f || age >= LifeSeconds) return 0f;
+            const float settle = 0.16f;
+            const float hold = 0.30f;
+            const float start = 0.25f;
+            if (age < settle)
             {
-                float u = age / PopSeconds;
-                const float peakAt = 0.58f;
-                const float peak = 1.25f;
-                if (u < peakAt)
-                {
-                    float t = u / peakAt;
-                    float e = t * t * (3f - 2f * t);
-                    return peak * e;
-                }
-                float settle = (u - peakAt) / (1f - peakAt);
-                float down = settle * settle * (3f - 2f * settle);
-                return peak + (1f - peak) * down;
+                float t = age / settle;
+                // The back ease is front-loaded. Raising time keeps the grow on screen
+                // for about a tenth of a second instead of a single frame.
+                t = (float)System.Math.Pow(t, 1.7);
+                float eased = EaseOutBack(t);
+                return start + (1f - start) * eased;
             }
-            float span = LifeSeconds - PopSeconds;
-            float v = (age - PopSeconds) / span;
-            float ease = v * v * (3f - 2f * v);
-            return 1f - ease;
+            if (age < hold) return 1f;
+            float span = LifeSeconds - hold;
+            float u = (age - hold) / span;
+            if (u < 0f) u = 0f;
+            if (u > 1f) u = 1f;
+            float down = u * u * (3f - 2f * u);
+            return 1f - down;
+        }
+
+        /// <summary>Peaks at 1.20, so a 0.25 start maps to a 1.15 overshoot and ends at 1.</summary>
+        static float EaseOutBack(float t)
+        {
+            const float c1 = 2.592389f;
+            float c3 = c1 + 1f;
+            float u = t - 1f;
+            return 1f + c3 * u * u * u + c1 * u * u;
         }
 
         /// <summary>A few degrees of wobble that dies before the hold. Radians.</summary>
@@ -134,11 +133,11 @@ namespace Tag.FX
         public static float Alpha(float age)
         {
             if (age < 0f || age >= LifeSeconds) return 0f;
-            if (age < PopSeconds) return age / PopSeconds;
-            if (age < PopSeconds + HoldSeconds) return 1f;
-            float span = LifeSeconds - PopSeconds - HoldSeconds;
+            const float holdUntil = 0.30f;
+            if (age <= holdUntil) return 1f;
+            float span = LifeSeconds - holdUntil;
             if (span < 0.01f) return 0f;
-            float u = (age - PopSeconds - HoldSeconds) / span;
+            float u = (age - holdUntil) / span;
             if (u < 0f) u = 0f;
             if (u > 1f) u = 1f;
             return 1f - u;
@@ -221,8 +220,12 @@ namespace Tag.FX
             if (Count != 4) return false;
             if (PopSeconds < 0.04f || PopSeconds > 0.06f) return false;
             if (LifeSeconds < 0.40f || LifeSeconds > 0.50f) return false;
-            if (Scale(0f) > 0.20f || Scale(PopSeconds) < 0.98f) return false;
-            if (Scale(PopSeconds * 0.58f) < 1.15f) return false;
+            if (Scale(0f) < 0.24f || Scale(0f) > 0.27f) return false;
+            if (Scale(0.109f) < 1.13f) return false;
+            if (Scale(0.16f) < 0.97f || Scale(0.16f) > 1.04f) return false;
+            if (Scale(0.30f) < 0.97f) return false;
+            if (Scale(0.40f) > 0.45f) return false;
+            if (Scale(LifeSeconds) > 0.001f) return false;
             float wob = Wobble(0.03f);
             if (wob < 0.02f || wob > 0.12f) return false;
             if (Wobble(0f) != 0f || Wobble(LifeSeconds) != 0f) return false;

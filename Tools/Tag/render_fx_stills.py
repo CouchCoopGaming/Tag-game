@@ -4748,13 +4748,17 @@ def impact22_strength(speed):
 
 
 def impact22_state(surface, speed, age_u=0.56):
-    """Same curve as ImpactFx.Measure. age_u 0.56 is the peak-expansion frame."""
+    """Same curve as ImpactFx.Measure. age_u 0.56 is the peak-expansion frame.
+
+    The ring is a donut: texture inner 0.78 over outer 0.96, so the hole is
+    81% of the outer radius. Alpha falls as the ring grows.
+    """
     k = impact22_strength(speed)
     radius = 1.45 + k * 1.85
     chunk = 0.34 + k * 0.22
-    bits = 15 + int(k * 15.0)
-    if bits < 15:
-        bits = 15
+    bits = 5 + int(k * 14.0)
+    if bits < 5:
+        bits = 5
     if bits > 30:
         bits = 30
     life = 0.25
@@ -4768,20 +4772,25 @@ def impact22_state(surface, speed, age_u=0.56):
     elif surface == "dirt":
         bit = (0.42, 0.26, 0.12)
         dust = (0.72, 0.50, 0.26)
-        plumes = min(8, 6 + int(k * 2.0))
+        plumes = min(8, 2 + int(k * 4.0))
         kind = "chunk"
     elif surface == "wood":
         bit = (0.40, 0.22, 0.08)
         dust = (0.80, 0.70, 0.52)
-        plumes = 5
+        plumes = min(8, 2 + int(k * 2.0))
         kind = "wood"
     else:
         bit = (0.58, 0.56, 0.52)
         dust = (0.76, 0.75, 0.72)
-        plumes = min(8, 6 + int(k * 2.0))
+        plumes = min(8, 2 + int(k * 4.0))
         kind = "chunk"
     grow = 1.0 if age_u >= 0.56 else 0.22 + 0.78 * (1.0 - (1.0 - age_u / 0.56) ** 2)
     fade = 1.0 if age_u <= 0.56 else 1.0 - (age_u - 0.56) / 0.44
+    if fade < 0.0:
+        fade = 0.0
+    thin = 1.0 - 0.55 * grow
+    if thin < 0.2:
+        thin = 0.2
     return {
         "radius": radius,
         "shown": radius * grow,
@@ -4790,7 +4799,8 @@ def impact22_state(surface, speed, age_u=0.56):
         "plumes": plumes,
         "life": life,
         "age": age_u * life,
-        "opacity": 0.94 * fade,
+        "opacity": (0.42 + k * 0.48) * fade * thin,
+        "plume": min(0.72, fade * 0.72),
         "bit": bit,
         "dust": dust,
         "kind": kind,
@@ -4798,6 +4808,8 @@ def impact22_state(surface, speed, age_u=0.56):
         "hop_hi": hop_hi,
         "k": k,
         "u": age_u,
+        "grow": grow,
+        "inner": 0.78 / 0.96,
     }
 
 
@@ -4827,6 +4839,80 @@ def impact22_unlit(name, color, alpha, strength):
     return mat
 
 
+def impact23_ring_image():
+    """Donut mask. Inner 0.78, outer 0.96, soft edges, hole fully clear."""
+    cached = getattr(impact23_ring_image, "image", None)
+    if cached is not None:
+        return cached
+    n = 128
+    image = bpy.data.images.new("ImpactRing", width=n, height=n, alpha=True, float_buffer=False)
+    image.colorspace_settings.name = "Non-Color"
+    mid = (n - 1) * 0.5
+    inner = 0.78
+    outer = 0.96
+    pixels = [0.0] * (n * n * 4)
+    for y in range(n):
+        for x in range(n):
+            dx = (x - mid) / mid
+            dy = (y - mid) / mid
+            r = math.sqrt(dx * dx + dy * dy)
+            a = 0.0
+            if inner <= r <= outer:
+                rise = (r - inner) / 0.035
+                fall = (outer - r) / 0.035
+                if rise > 1.0:
+                    rise = 1.0
+                if fall > 1.0:
+                    fall = 1.0
+                a = rise if rise < fall else fall
+            i = (y * n + x) * 4
+            pixels[i] = 1.0
+            pixels[i + 1] = 1.0
+            pixels[i + 2] = 1.0
+            pixels[i + 3] = a
+    image.pixels.foreach_set(pixels)
+    image.pack()
+    impact23_ring_image.image = image
+    return image
+
+
+def impact23_ring_mat(name, color, alpha):
+    """Flat decal. The hole and the ground under the band stay visible."""
+    mat = bpy.data.materials.new(name)
+    mat.use_nodes = True
+    mat.blend_method = "BLEND"
+    mat.use_backface_culling = False
+    if hasattr(mat, "shadow_method"):
+        mat.shadow_method = "NONE"
+    if hasattr(mat, "show_transparent_back"):
+        mat.show_transparent_back = True
+    nt = mat.node_tree
+    nt.nodes.clear()
+    out = nt.nodes.new("ShaderNodeOutputMaterial")
+    tex = nt.nodes.new("ShaderNodeTexImage")
+    tex.image = impact23_ring_image()
+    mul = nt.nodes.new("ShaderNodeMath")
+    mul.operation = "MULTIPLY"
+    mul.inputs[1].default_value = alpha
+    diff = nt.nodes.new("ShaderNodeBsdfDiffuse")
+    diff.inputs["Color"].default_value = (color[0], color[1], color[2], 1.0)
+    diff.inputs["Roughness"].default_value = 1.0
+    emit = nt.nodes.new("ShaderNodeEmission")
+    emit.inputs["Color"].default_value = (color[0], color[1], color[2], 1.0)
+    emit.inputs["Strength"].default_value = 0.35
+    add = nt.nodes.new("ShaderNodeAddShader")
+    trans = nt.nodes.new("ShaderNodeBsdfTransparent")
+    mix = nt.nodes.new("ShaderNodeMixShader")
+    nt.links.new(diff.outputs["BSDF"], add.inputs[0])
+    nt.links.new(emit.outputs["Emission"], add.inputs[1])
+    nt.links.new(tex.outputs["Alpha"], mul.inputs[0])
+    nt.links.new(mul.outputs["Value"], mix.inputs["Fac"])
+    nt.links.new(trans.outputs["BSDF"], mix.inputs[1])
+    nt.links.new(add.outputs["Shader"], mix.inputs[2])
+    nt.links.new(mix.outputs["Shader"], out.inputs["Surface"])
+    return mat
+
+
 def impact22_draw(origin, normal, state, cam_loc):
     shown = state["shown"]
     dust = state["dust"]
@@ -4834,45 +4920,19 @@ def impact22_draw(origin, normal, state, cam_loc):
     n = Vector(normal).normalized()
     up = Vector((0.0, 0.0, 1.0))
     quat = up.rotation_difference(n)
-    major = shown * 0.70
-    minor = max(0.12, shown * 0.24)
-    bpy.ops.mesh.primitive_torus_add(
-        major_radius=major,
-        minor_radius=minor,
-        major_segments=48,
-        minor_segments=12,
-        location=origin + n * 0.04,
+    # Plane is 1 unit across. Texture outer sits at 0.96 of the half-extent,
+    # so the visible outer radius equals `shown` and the hole is 81% of that.
+    diameter = shown * 2.0 / 0.96
+    bpy.ops.mesh.primitive_plane_add(
+        size=1.0,
+        location=origin + n * 0.03,
         rotation=quat.to_euler(),
     )
     ring = bpy.context.active_object
     ring.name = p11_name("Fx")
-    ring.data.materials.append(impact22_unlit(
-        p11_name("Mat"), dust, state["opacity"], 1.0,
-    ))
-    bpy.ops.mesh.primitive_torus_add(
-        major_radius=shown * 0.97,
-        minor_radius=max(0.05, shown * 0.055),
-        major_segments=48,
-        minor_segments=8,
-        location=origin + n * 0.045,
-        rotation=quat.to_euler(),
-    )
-    lip = bpy.context.active_object
-    lip.name = p11_name("Fx")
-    lip_col = tuple(c * 0.38 for c in dust)
-    lip.data.materials.append(impact22_unlit(
-        p11_name("Mat"), lip_col, state["opacity"], 1.0,
-    ))
-    bpy.ops.mesh.primitive_cylinder_add(
-        radius=shown * 0.50,
-        depth=0.02,
-        location=origin + n * 0.025,
-        rotation=quat.to_euler(),
-    )
-    haze = bpy.context.active_object
-    haze.name = p11_name("Fx")
-    haze.data.materials.append(impact22_unlit(
-        p11_name("Mat"), dust, state["opacity"] * 0.35, 0.55,
+    ring.scale = (diameter, diameter, 1.0)
+    ring.data.materials.append(impact23_ring_mat(
+        p11_name("Mat"), dust, state["opacity"],
     ))
     kind = state["kind"]
     for i in range(state["bits"]):
@@ -4934,11 +4994,11 @@ def impact22_draw(origin, normal, state, cam_loc):
         else:
             pos = origin + Vector((math.cos(ang) * dist, math.sin(ang) * dist, z))
         puff = (0.62 + state["k"] * 0.40) * (0.85 + h2 * 0.4) * (0.9 + 0.25 * state["u"])
-        p11_puff(pos, puff, puff * 0.82, dust + (1.0,), min(0.78, state["opacity"]), cam_loc)
+        p11_puff(pos, puff, puff * 0.82, dust + (1.0,), state["plume"], cam_loc)
 
 
 def render_pass22_impact(arm, cam):
-    """Chase-cam impact sheet at the ring's peak expansion, plus one wall slam."""
+    """Chase-cam impact sheet at peak expansion, a concrete time strip, and one wall slam."""
     for obj in bpy.data.objects:
         if obj.type == "LIGHT" and obj.data.type == "SUN":
             obj.data.energy = 1.4
@@ -4954,9 +5014,9 @@ def render_pass22_impact(arm, cam):
     scene.view_settings.look = "None"
     scene.view_settings.exposure = 0.0
     scene.view_settings.gamma = 1.0
-    out_dir = os.path.join(ROOT, "Docs", "FxStills", "pass22")
+    out_dir = os.path.join(ROOT, "Docs", "FxStills", "pass23")
     os.makedirs(out_dir, exist_ok=True)
-    tmp = "/tmp/pass22-impact"
+    tmp = "/tmp/pass23-impact"
     os.makedirs(tmp, exist_ok=True)
     surfaces = ("concrete", "grass", "dirt", "wood")
     levels = (("low", 13.8), ("high", 36.5))
@@ -4987,6 +5047,9 @@ def render_pass22_impact(arm, cam):
                 "IMPACT", surface, label,
                 "k", round(state["k"], 2),
                 "shown", round(state["shown"], 2),
+                "inner", round(state["shown"] * state["inner"], 2),
+                "ratio", round(state["inner"], 3),
+                "alpha", round(state["opacity"], 3),
                 "chunk", round(state["chunk"], 3),
                 "bits", state["bits"],
                 "plumes", state["plumes"],
@@ -5021,9 +5084,41 @@ def render_pass22_impact(arm, cam):
     )
     p14_grid(
         cells, titles,
-        "Impact shockwave   chase cam   sprint 13.8 vs hard land 36.5",
+        "Impact shockwave   thin ring   chase cam   sprint 13.8 vs hard land 36.5",
         os.path.join(out_dir, "impact-sheet.jpg"),
         4,
+    )
+    # Hard land on concrete, same chase camera, four ages through the expand and fade.
+    p11_ground("concrete", asphalt=True)
+    apply_pose(arm, pose_land, 0.0, yaw)
+    foot = p11_foot(arm)
+    p14_aim(cam, foot, yaw)
+    strip = []
+    strip_titles = []
+    for age in (0.04, 0.10, 0.16, 0.22):
+        p11_clear("P11Fx")
+        state = impact22_state("concrete", 36.5, age_u=age / 0.25)
+        impact22_draw(Vector((foot.x, foot.y, 0.02)), (0.0, 0.0, 1.0), state, cam.location)
+        png = os.path.join(tmp, "strip-%.2f.png" % age)
+        scene.render.filepath = png
+        bpy.ops.render.render(write_still=True)
+        image = Image.open(png).convert("RGB")
+        strip.append(image.resize((480, 270), Image.Resampling.LANCZOS))
+        strip_titles.append("%.2f s   r %.0fcm   a %.2f" % (
+            age, state["shown"] * 100.0, state["opacity"],
+        ))
+        print(
+            "STRIP", round(age, 2),
+            "shown", round(state["shown"], 2),
+            "inner", round(state["shown"] * state["inner"], 2),
+            "ratio", round(state["inner"], 3),
+            "alpha", round(state["opacity"], 3),
+            "bits", state["bits"],
+        )
+    p14_sheet(
+        strip, strip_titles,
+        "Hard land on concrete   thin ring expands then fades",
+        os.path.join(out_dir, "impact-strip.jpg"),
     )
 
 
@@ -5038,7 +5133,7 @@ def main():
     bpy.ops.import_scene.fbx(filepath=FBX)
     arm = next(obj for obj in bpy.data.objects if obj.type == "ARMATURE")
     cam = setup_world(arm)
-    if os.environ.get("FX_PASS22") == "1":
+    if os.environ.get("FX_PASS23") == "1" or os.environ.get("FX_PASS22") == "1":
         render_pass22_impact(arm, cam)
         return
     if os.environ.get("FX_PASS21") == "1":
