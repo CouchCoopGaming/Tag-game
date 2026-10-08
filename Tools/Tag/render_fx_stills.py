@@ -57,6 +57,7 @@ RIG_PAIRS = {
 }
 POSE_ADDED = []
 FAIL_DEPTH = {}
+CHART_N = 0
 
 
 def note_added(label):
@@ -117,11 +118,27 @@ def torso(arm, hip, spine, head):
 
 
 def pose_land(arm):
-    leg(arm, "L", 22.0, 24.0, 4.0)
-    leg(arm, "R", 16.0, 18.0, -4.0)
-    arm_pose(arm, "L", 12.0, -8.0, 0.0, 0.0)
-    arm_pose(arm, "R", 6.0, -6.0, 0.0, 0.0)
-    torso(arm, 12.0, 6.0, -4.0)
+    """LandPose.Hard(handLeft) at full absorb. sinC >= 0 plants the left hand.
+
+    armZ is Lerp(4, 8, max(gait, runVis)) at planar 0, which is 4. The 0.50 m
+    mesh drop is not added: the still grounds the lowest vertex.
+    """
+    foot = -(74.0 + -125.0)
+    arm_z = 4.0
+    set_zxy(arm, "UpperLeg_L", -74.0, 0.0, 0.0)
+    set_zxy(arm, "LowerLeg_L", -(-125.0), 0.0, 0.0)
+    set_zxy(arm, "Foot_L", -foot, 0.0, 0.0)
+    set_zxy(arm, "UpperLeg_R", -74.0, 0.0, 0.0)
+    set_zxy(arm, "LowerLeg_R", -(-125.0), 0.0, 0.0)
+    set_zxy(arm, "Foot_R", -foot, 0.0, 0.0)
+    set_zxy(arm, "UpperArm_L", 18.0, 16.0, arm_z)
+    set_zxy(arm, "LowerArm_L", -16.0, 0.0, 0.0)
+    set_zxy(arm, "UpperArm_R", -30.0, -12.0, -arm_z)
+    set_zxy(arm, "LowerArm_R", -40.0, 0.0, 0.0)
+    set_zxy(arm, "Hips", 46.0, 0.0, 0.0)
+    set_zxy(arm, "Spine", 28.0, 0.0, 0.0)
+    set_zxy(arm, "Head", -8.0, 0.0, 0.0)
+    print("RUNTIME land Hard handLeft foot", round(foot, 2), "armZ", arm_z)
 
 
 def _ease(u):
@@ -134,6 +151,31 @@ def _ease(u):
 
 def _lerp(a, b, t):
     return a + (b - a) * t
+
+
+def _clamp(v, lo, hi):
+    if v < lo:
+        return lo
+    if v > hi:
+        return hi
+    return v
+
+
+def _inv(a, b, v):
+    d = b - a
+    if -0.00001 < d < 0.00001:
+        return 0.0
+    return _clamp((v - a) / d, 0.0, 1.0)
+
+
+def _smooth(u):
+    u = _clamp(u, 0.0, 1.0)
+    return u * u * (3.0 - 2.0 * u)
+
+
+def _pose_weight(speed):
+    t = _inv(0.35, 12.0, speed)
+    return 1.0 - (1.0 - t) * (1.0 - t)
 
 
 def roll_sample():
@@ -189,36 +231,150 @@ def pose_roll(arm):
 
 
 def pose_grapple(arm):
-    leg(arm, "L", 16.0, -18.0)
-    leg(arm, "R", 8.0, -12.0)
-    arm_pose(arm, "L", -46.0, -32.0, -8.0, -4.0)
-    arm_pose(arm, "R", 8.0, -16.0, -8.0, 0.0)
-    torso(arm, -6.0, 4.0, -2.0)
+    """Pull(phaseSin=0, vy=0, lean=0), ForBody once, weight 1.
+
+    ApplyBodyLine(elev=0) and RopeLeg(0). armZ is 4 at planar 0.
+    The still's hook sits level with the hand, so the rope elevation is 0.
+    """
+    tuck = _smooth(_inv(3.0, -10.0, 0.0))
+    fwd = 0.5
+    thigh_l = _lerp(_lerp(-30.0, 20.0, fwd), -6.0, tuck)
+    thigh_r = _lerp(_lerp(20.0, -30.0, fwd), -6.0, tuck)
+    knee_l = _lerp(_lerp(-8.0, -32.0, fwd), -94.0, tuck)
+    knee_r = _lerp(_lerp(-32.0, -8.0, fwd), -90.0, tuck)
+    pitch_l, pitch_r = -134.0, -126.0
+    yaw_l, yaw_r = 8.0, -8.0
+    elbow_l, elbow_r = -2.0, -4.0
+    hip, spine, head = 36.0, 56.0, -20.0
+    fix = 0.0 - (hip + spine)
+    spine = spine + fix * 0.55
+    hip = hip + fix * 0.45
+    arm_z = 4.0
+    set_zxy(arm, "UpperLeg_L", -thigh_l, 0.0, 0.0)
+    set_zxy(arm, "LowerLeg_L", -knee_l, 0.0, 0.0)
+    set_zxy(arm, "UpperLeg_R", -thigh_r, 0.0, 0.0)
+    set_zxy(arm, "LowerLeg_R", -knee_r, 0.0, 0.0)
+    set_zxy(arm, "UpperArm_L", pitch_l, yaw_l, arm_z)
+    set_zxy(arm, "LowerArm_L", elbow_l, 0.0, 0.0)
+    set_zxy(arm, "UpperArm_R", pitch_r, yaw_r, -arm_z)
+    set_zxy(arm, "LowerArm_R", elbow_r, 0.0, 0.0)
+    set_zxy(arm, "Hips", hip, 0.0, 0.0)
+    set_zxy(arm, "Spine", spine, 0.0, 0.0)
+    set_zxy(arm, "Head", -head, 0.0, 0.0)
+    print(
+        "RUNTIME grapple pull tuck", round(tuck, 4),
+        "hip", round(hip, 2), "spine", round(spine, 2),
+        "thigh", round(thigh_l, 2), round(thigh_r, 2),
+        "knee", round(knee_l, 2), round(knee_r, 2),
+    )
+
+
+def _gait_leg(phase, weight):
+    s = math.sin(phase)
+    c = math.cos(phase)
+    front = _lerp(26.0, 48.0, weight)
+    back = _lerp(14.0, 30.0, weight)
+    thigh = s * front if s >= 0.0 else s * back
+    if c <= 0.0:
+        knee = -5.0
+        foot = -(thigh + knee)
+    else:
+        knee = -(4.0 + c * _lerp(48.0, 90.0, weight))
+        foot = 0.0
+    return thigh, knee, foot
 
 
 def pose_run(arm):
-    leg(arm, "L", 14.0, -18.0, 4.0)
-    leg(arm, "R", -8.0, -6.0, -4.0)
-    arm_pose(arm, "L", 8.0, -8.0, 0.0, 0.0)
-    arm_pose(arm, "R", -8.0, -6.0, 0.0, 0.0)
-    torso(arm, 4.0, 2.0, 2.0)
+    """Grounded run at GaitBlend.RunSpeed 9, phase 2 rad, breath 0, no turn, no look.
+
+    Legs are GaitBlend.At. Arms are the grounded block: LocoFeel.ArmPitch,
+    the outward yaw, and the reach elbow. Spine is the settled cruise lean.
+    """
+    phase = 2.0
+    speed = 9.0
+    gait_sin = math.sin(phase)
+    weight = _pose_weight(speed)
+    run_amt = _inv(5.5, 11.5, speed)
+    gait = max(weight, run_amt)
+    idle = 1.0 - gait
+    arm_z = _lerp(4.0, 8.0, max(weight, run_amt))
+    amp = _lerp(32.0, 46.0, _inv(6.9, 13.8, speed))
+    pitch_l = -(-gait_sin) * amp - 12.0 * idle
+    pitch_r = -(gait_sin) * amp - 12.0 * idle
+    out_y = _lerp(12.0, 8.0, gait)
+    reach_y = _lerp(out_y, out_y + 6.0, run_amt)
+    y_l = _lerp(out_y, reach_y, max(0.0, -gait_sin) * gait)
+    y_r = _lerp(out_y, reach_y, max(0.0, gait_sin) * gait)
+    roll = _lerp(0.0, arm_z, gait)
+    elbow_reach = _lerp(-10.0, -6.0, run_amt)
+    elbow_pull = _lerp(-18.0, -30.0, run_amt)
+    elbow_l = _lerp(elbow_reach, elbow_pull, max(0.0, gait_sin) * gait)
+    elbow_r = _lerp(elbow_reach, elbow_pull, max(0.0, -gait_sin) * gait)
+    tau = math.tau
+    phase_r = phase + math.pi
+    if phase_r >= tau:
+        phase_r -= tau
+    th_l, kn_l, ft_l = _gait_leg(phase, weight)
+    th_r, kn_r, ft_r = _gait_leg(phase_r, weight)
+    cruise = _inv(6.9, 13.8, speed) * 6.5
+    set_zxy(arm, "UpperLeg_L", -th_l, 0.0, 0.0)
+    set_zxy(arm, "LowerLeg_L", -kn_l, 0.0, 0.0)
+    set_zxy(arm, "Foot_L", -ft_l, 0.0, 0.0)
+    set_zxy(arm, "UpperLeg_R", -th_r, 0.0, 0.0)
+    set_zxy(arm, "LowerLeg_R", -kn_r, 0.0, 0.0)
+    set_zxy(arm, "Foot_R", -ft_r, 0.0, 0.0)
+    set_zxy(arm, "UpperArm_L", pitch_l, y_l, roll)
+    set_zxy(arm, "LowerArm_L", elbow_l, 0.0, 0.0)
+    set_zxy(arm, "UpperArm_R", pitch_r, -y_r, -roll)
+    set_zxy(arm, "LowerArm_R", elbow_r, 0.0, 0.0)
+    set_zxy(arm, "Hips", 0.0, 0.0, 0.0)
+    set_zxy(arm, "Spine", cruise, 0.0, 0.0)
+    set_zxy(arm, "Head", 0.0, 0.0, 0.0)
+    print(
+        "RUNTIME run phase", round(phase, 3), "weight", round(weight, 4),
+        "thigh", round(th_l, 2), round(th_r, 2),
+        "knee", round(kn_l, 2), round(kn_r, 2),
+        "pitch", round(pitch_l, 2), round(pitch_r, 2),
+        "yaw", round(y_l, 2), round(-y_r, 2),
+        "elbow", round(elbow_l, 2), round(elbow_r, 2),
+        "cruise", round(cruise, 2), "armZ", round(arm_z, 2),
+    )
 
 
 def pose_stagger(arm):
-    leg(arm, "L", 14.0, -22.0, 4.0)
-    leg(arm, "R", -6.0, -12.0, -4.0)
-    arm_pose(arm, "L", 8.0, -8.0, -6.0, 2.0)
-    arm_pose(arm, "R", -6.0, -8.0, -6.0, 0.0)
-    torso(arm, 6.0, 2.0, 2.0)
+    """PunchStaggerPose.Stumble at Weight 1 (age 0.10, inside the hold)."""
+    set_zxy(arm, "UpperLeg_L", -38.0, 0.0, 0.0)
+    set_zxy(arm, "LowerLeg_L", -(-34.0), 0.0, 0.0)
+    set_zxy(arm, "UpperLeg_R", -(-16.0), 0.0, 0.0)
+    set_zxy(arm, "LowerLeg_R", -(-8.0), 0.0, 0.0)
+    set_zxy(arm, "UpperArm_L", 46.0, 28.0, 14.0)
+    set_zxy(arm, "LowerArm_L", -30.0, 0.0, 0.0)
+    set_zxy(arm, "UpperArm_R", 34.0, -26.0, -12.0)
+    set_zxy(arm, "LowerArm_R", -24.0, 0.0, 0.0)
+    set_zxy(arm, "Hips", -18.0, 8.0, 0.0)
+    set_zxy(arm, "Spine", -16.0, -6.0, 0.0)
+    set_zxy(arm, "Head", -(-24.0), 4.0, 0.0)
+    print("RUNTIME stagger Stumble weight 1")
 
 
 def pose_launch(arm):
-    # Arms up and out, elbows soft, so the forearms stay off the neck and the other arm.
-    leg(arm, "L", 22.0, -20.0, 6.0)
-    leg(arm, "R", 18.0, -16.0, -6.0)
-    arm_pose(arm, "L", -46.0, -32.0, -8.0, 4.0)
-    arm_pose(arm, "R", -46.0, -32.0, -8.0, 4.0)
-    torso(arm, 2.0, -2.0, -2.0)
+    """LaunchPose.At(24.7) after PadOpen has arrived. Windmill(time=0) is 0.
+
+    ApplyLaunchPose negates the right arm yaw. Knees stay on the rise sample
+    because OpenAmount(24.7) is 0.
+    """
+    set_zxy(arm, "UpperLeg_L", -42.0, 0.0, 0.0)
+    set_zxy(arm, "LowerLeg_L", -(-52.0), 0.0, 0.0)
+    set_zxy(arm, "UpperLeg_R", -38.0, 0.0, 0.0)
+    set_zxy(arm, "LowerLeg_R", -(-46.0), 0.0, 0.0)
+    set_zxy(arm, "UpperArm_L", -155.0, 16.0, 0.0)
+    set_zxy(arm, "LowerArm_L", -14.0, 0.0, 0.0)
+    set_zxy(arm, "UpperArm_R", -155.0, -16.0, 0.0)
+    set_zxy(arm, "LowerArm_R", -14.0, 0.0, 0.0)
+    set_zxy(arm, "Hips", 6.0, 0.0, 0.0)
+    set_zxy(arm, "Spine", -4.0, 0.0, 0.0)
+    set_zxy(arm, "Head", -(-10.0), 0.0, 0.0)
+    print("RUNTIME launch At(24.7) padOpen 1 windmill 0")
 
 
 def wall_run_angles():
@@ -298,11 +454,19 @@ def pose_wall(arm):
 
 
 def pose_punch(arm):
-    leg(arm, "L", 16.0, -24.0, 4.0)
-    leg(arm, "R", -8.0, -12.0, -4.0)
-    arm_pose(arm, "L", 6.0, -10.0, -6.0, 0.0)
-    arm_pose(arm, "R", -40.0, -18.0, -8.0, 0.0)
-    torso(arm, 4.0, 2.0, 2.0)
+    """VerbPoseClips.PunchStrikePose at sample 1. The right arm is the strike."""
+    set_zxy(arm, "UpperLeg_L", -20.0, 0.0, 0.0)
+    set_zxy(arm, "LowerLeg_L", -(-8.0), 0.0, 0.0)
+    set_zxy(arm, "UpperLeg_R", -(-18.0), 0.0, 0.0)
+    set_zxy(arm, "LowerLeg_R", -(-6.0), 0.0, 0.0)
+    set_zxy(arm, "UpperArm_L", 84.0, -18.0, 10.0)
+    set_zxy(arm, "LowerArm_L", -36.0, 0.0, 0.0)
+    set_zxy(arm, "UpperArm_R", -74.0, 4.0, -10.0)
+    set_zxy(arm, "LowerArm_R", -4.0, 0.0, 0.0)
+    set_zxy(arm, "Hips", 10.0, 36.0, 0.0)
+    set_zxy(arm, "Spine", 6.0, 52.0, 0.0)
+    set_zxy(arm, "Head", -(-6.0), 18.0, 0.0)
+    print("RUNTIME punch strike sample 1")
 
 
 def look_at(obj, target):
@@ -825,6 +989,19 @@ def launch_fx(origin):
         add_curve("FxStreak%d" % i, [a, b], 0.016, CYAN, 0.9, 0.85)
 
 
+def kit_shimmer(t, tension, time):
+    """FxKitLook.Shimmer. The proof sample at (0.5, 1, 0.4) stays 1.8 cm."""
+    t = _clamp(t, 0.0, 1.0)
+    tension = _clamp(tension, 0.0, 1.0)
+    bell = 4.0 * t * (1.0 - t)
+    amp = 0.028 * (0.35 + 0.65 * tension)
+    return amp * bell * math.sin(time * 14.0 + t * 9.0)
+
+
+# Peak of Shimmer is ShimmerAmp (2.8 cm). Drawn peak is 0.9 cm.
+ROPE_SLACK_SCALE = 0.009 / 0.028
+
+
 def rope_shimmer(hand, anchor):
     delta = anchor - hand
     dist = delta.length
@@ -836,13 +1013,15 @@ def rope_shimmer(hand, anchor):
         side = Vector((1, 0, 0))
     side.normalize()
     pts = []
+    peak = 0.0
     for i in range(8):
         t = i / 7.0
-        bell = 4 * t * (1 - t)
-        wob = 0.028 * bell
+        wob = kit_shimmer(t, 1.0, 0.4) * ROPE_SLACK_SCALE
+        peak = max(peak, abs(wob))
         pts.append(hand + direction * (dist * t) + side * wob)
-    # One line, 1.8 cm across. bevel_depth is the radius.
+    # Width stays 1.8 cm across. The sag is the scaled shimmer.
     add_curve("FxRope", pts, 0.009, ROPE, 1.0, 0.0)
+    print("ROPE slack_cm", round(peak * 100.0, 2), "width_cm", 1.8, "peak_cap_cm", round(0.028 * ROPE_SLACK_SCALE * 100.0, 2))
 
 
 def chip(name, location, size, color):
@@ -1717,6 +1896,293 @@ def ghost_body():
             slot.material = ghost
 
 
+def dust_puff_spec(surface, speed):
+    """DustLook.At size, opacity, and count. Kick is none. Colours are the still read."""
+    t = 0.0
+    if 13.8 > 6.9:
+        t = (speed - 6.9) / (13.8 - 6.9)
+    t = _clamp(t, 0.0, 1.35)
+    size = 0.07 + t * 0.20
+    opacity = 0.18 + t * 0.54
+    count = 2.0 + t * 6.0
+    if surface == "grass":
+        size *= 0.75
+        opacity *= 0.40
+        count *= 0.55
+    elif surface == "dirt":
+        size *= 1.45
+        opacity *= 1.15
+        count *= 1.35
+    elif surface == "wood":
+        size *= 0.38
+        opacity *= 0.32
+        count *= 0.40
+    else:
+        size *= 0.55
+        opacity *= 0.50
+        count *= 0.50
+    if opacity > 0.95:
+        opacity = 0.95
+    n = int(count + 0.5)
+    if n > 12:
+        n = 12
+    if n < 0:
+        n = 0
+    return size, opacity, n
+
+
+def chart_hide():
+    hidden = []
+    for obj in list(bpy.data.objects):
+        if obj.type in {"LIGHT", "CAMERA"} or obj.hide_render:
+            continue
+        hidden.append(obj)
+        obj.hide_render = True
+    return hidden
+
+
+def chart_show(hidden):
+    for obj in hidden:
+        obj.hide_render = False
+
+
+def chart_clear():
+    for obj in list(bpy.data.objects):
+        if obj.name.startswith("Chart"):
+            mesh = obj.data
+            bpy.data.objects.remove(obj, do_unlink=True)
+            if mesh is not None and mesh.users == 0:
+                if isinstance(mesh, bpy.types.Mesh):
+                    bpy.data.meshes.remove(mesh)
+                elif isinstance(mesh, bpy.types.Curve):
+                    bpy.data.curves.remove(mesh)
+
+
+def _chart_id(prefix):
+    global CHART_N
+    CHART_N += 1
+    return "%s%d" % (prefix, CHART_N)
+
+
+def chart_text(body, location, size, color):
+    name = _chart_id("ChartText")
+    bpy.ops.object.text_add(location=location, rotation=(math.pi / 2.0, 0.0, 0.0))
+    obj = bpy.context.active_object
+    obj.name = name
+    obj.data.body = body
+    obj.data.size = size
+    obj.data.align_x = "CENTER"
+    obj.data.align_y = "CENTER"
+    obj.data.extrude = 0.002
+    obj.data.materials.append(make_mat(name + "Mat", color, 0.5, 1.0, 0.0))
+    return obj
+
+
+def chart_plane(name, location, scale, color):
+    name = _chart_id(name)
+    bpy.ops.mesh.primitive_plane_add(size=1.0, location=location, rotation=(math.pi / 2.0, 0.0, 0.0))
+    obj = bpy.context.active_object
+    obj.name = name
+    obj.scale = scale
+    obj.data.materials.append(make_mat(name + "Mat", color, 0.85, 1.0, 0.0))
+    return obj
+
+
+def chart_disc(name, location, size, color, opacity):
+    name = _chart_id(name)
+    bpy.ops.mesh.primitive_plane_add(size=1.0, location=location, rotation=(math.pi / 2.0, 0.0, 0.0))
+    obj = bpy.context.active_object
+    obj.name = name
+    obj.scale = (size, size * 0.72, 1.0)
+    mat = bpy.data.materials.new(name + "Mat")
+    mat.use_nodes = True
+    mat.blend_method = "BLEND"
+    if hasattr(mat, "shadow_method"):
+        mat.shadow_method = "NONE"
+    nt = mat.node_tree
+    nt.nodes.clear()
+    out = nt.nodes.new("ShaderNodeOutputMaterial")
+    tex = nt.nodes.new("ShaderNodeTexImage")
+    tex.image = soft_image()
+    mul = nt.nodes.new("ShaderNodeMath")
+    mul.operation = "MULTIPLY"
+    mul.inputs[1].default_value = opacity
+    diff = nt.nodes.new("ShaderNodeBsdfDiffuse")
+    diff.inputs["Color"].default_value = (color[0], color[1], color[2], 1.0)
+    diff.inputs["Roughness"].default_value = 0.9
+    trans = nt.nodes.new("ShaderNodeBsdfTransparent")
+    mix = nt.nodes.new("ShaderNodeMixShader")
+    nt.links.new(tex.outputs["Alpha"], mul.inputs[0])
+    nt.links.new(mul.outputs["Value"], mix.inputs["Fac"])
+    nt.links.new(trans.outputs["BSDF"], mix.inputs[1])
+    nt.links.new(diff.outputs["BSDF"], mix.inputs[2])
+    nt.links.new(mix.outputs["Shader"], out.inputs["Surface"])
+    obj.data.materials.append(mat)
+    return obj
+
+
+def render_dust_grid(cam):
+    """3 speeds by 4 surfaces. Size and count follow DustLook.At. Colours are the still read."""
+    hidden = chart_hide()
+    bg = bpy.context.scene.world.node_tree.nodes["Background"]
+    old_color = tuple(bg.inputs["Color"].default_value)
+    old_strength = bg.inputs["Strength"].default_value
+    bg.inputs["Color"].default_value = (0.94, 0.93, 0.90, 1.0)
+    bg.inputs["Strength"].default_value = 0.85
+    saved = (cam.location.copy(), cam.rotation_euler.copy(), cam.data.lens, cam.data.type, cam.data.ortho_scale)
+    surfaces = ("concrete", "dirt", "grass", "wood")
+    speeds = (("walk", 6.9), ("run", 9.0), ("sprint", 13.8))
+    swatch = {
+        "concrete": (0.55, 0.55, 0.53, 1.0),
+        "dirt": (0.45, 0.30, 0.16, 1.0),
+        "grass": (0.32, 0.46, 0.22, 1.0),
+        "wood": (0.76, 0.62, 0.40, 1.0),
+    }
+    puff_color = {
+        "concrete": (0.78, 0.78, 0.76, 1.0),
+        "dirt": (0.62, 0.40, 0.20, 1.0),
+        "grass": (0.70, 0.68, 0.60, 1.0),
+        "wood": (0.90, 0.84, 0.70, 1.0),
+    }
+    grass_bit = (0.28, 0.62, 0.16, 1.0)
+    chart_plane("ChartPaper", Vector((1.72, 0.08, 1.25)), (5.6, 3.3, 1.0), (0.93, 0.92, 0.89, 1.0))
+    for col, surface in enumerate(surfaces):
+        x = col * 1.15
+        chart_text(surface, Vector((x, -0.02, 2.42)), 0.13, (0.12, 0.12, 0.12, 1.0))
+        for row, (label, speed) in enumerate(speeds):
+            size, opacity, count = dust_puff_spec(surface, speed)
+            z = 1.85 - row * 0.72
+            origin = Vector((x, -0.04, z))
+            chart_text(label, origin + Vector((0.0, -0.01, 0.26)), 0.08, (0.12, 0.11, 0.10, 1.0))
+            chart_plane("ChartSwatch", origin + Vector((0.0, 0.03, -0.22)), (0.98, 0.14, 1.0), swatch[surface])
+            print("DUST", surface, label, "size", round(size, 3), "opacity", round(opacity, 3), "count", count)
+            for i in range(count):
+                ang = i / max(count, 1) * math.tau
+                spread = 0.03 + (i % 3) * 0.028
+                loc = origin + Vector((math.cos(ang) * spread, -0.01 * (i + 1), 0.02 + math.sin(ang) * spread * 0.35))
+                shown = 0.055 + size * 0.55
+                chart_disc("ChartPuff", loc, shown, puff_color[surface], opacity)
+            if surface == "grass":
+                bits = 1 if count < 3 else 2
+                for b in range(bits):
+                    fleck = origin + Vector((0.06 + b * 0.09, -0.08, 0.06))
+                    name = _chart_id("ChartBit")
+                    bpy.ops.mesh.primitive_uv_sphere_add(radius=0.045, location=fleck, segments=10, ring_count=6)
+                    bit = bpy.context.active_object
+                    bit.name = name
+                    bit.data.materials.append(make_mat(name + "Mat", grass_bit, 0.8, 1.0, 0.0))
+    cam.data.type = "ORTHO"
+    cam.data.ortho_scale = 5.15
+    cam.location = Vector((1.72, -3.2, 1.25))
+    look_at(cam, Vector((1.72, 0.0, 1.25)))
+    render_to(os.path.join(OUT, "running-dust.png"))
+    chart_clear()
+    cam.location, cam.rotation_euler = saved[0], saved[1]
+    cam.data.lens = saved[2]
+    cam.data.type = saved[3]
+    cam.data.ortho_scale = saved[4]
+    bg.inputs["Color"].default_value = old_color
+    bg.inputs["Strength"].default_value = old_strength
+    chart_show(hidden)
+
+
+def burst_mat(name, color, dots):
+    mat = bpy.data.materials.new(name)
+    mat.use_nodes = True
+    nt = mat.node_tree
+    nt.nodes.clear()
+    out = nt.nodes.new("ShaderNodeOutputMaterial")
+    diff = nt.nodes.new("ShaderNodeBsdfDiffuse")
+    diff.inputs["Roughness"].default_value = 0.55
+    if not dots:
+        diff.inputs["Color"].default_value = color
+        nt.links.new(diff.outputs["BSDF"], out.inputs["Surface"])
+        return mat
+    coord = nt.nodes.new("ShaderNodeTexCoord")
+    vor = nt.nodes.new("ShaderNodeTexVoronoi")
+    vor.inputs["Scale"].default_value = 42.0
+    ramp = nt.nodes.new("ShaderNodeValToRGB")
+    ramp.color_ramp.elements[0].position = 0.12
+    ramp.color_ramp.elements[0].color = (0.05, 0.04, 0.05, 1.0)
+    ramp.color_ramp.elements[1].position = 0.22
+    ramp.color_ramp.elements[1].color = color
+    nt.links.new(coord.outputs["Object"], vor.inputs["Vector"])
+    nt.links.new(vor.outputs["Distance"], ramp.inputs["Fac"])
+    nt.links.new(ramp.outputs["Color"], diff.inputs["Color"])
+    nt.links.new(diff.outputs["BSDF"], out.inputs["Surface"])
+    return mat
+
+
+def burst_star(name, location, scale, color, dots):
+    mesh = bpy.data.meshes.new(name + "Mesh")
+    verts = [(0.0, 0.0, 0.0)]
+    for i in range(16):
+        ang = i * math.pi / 8.0 - math.pi / 2.0
+        radius = 0.46 if i % 2 == 0 else 0.20
+        verts.append((math.cos(ang) * radius, math.sin(ang) * radius, 0.0))
+    faces = [(0, 1 + i, 1 + (i + 1) % 16) for i in range(16)]
+    mesh.from_pydata(verts, [], faces)
+    mesh.update()
+    obj = bpy.data.objects.new(name, mesh)
+    bpy.context.collection.objects.link(obj)
+    obj.location = location
+    obj.scale = (scale, scale, scale)
+    obj.rotation_euler = Euler((math.pi / 2.0, 0.0, 0.0), "XYZ")
+    obj.data.materials.append(burst_mat(name + "Mat", color, dots))
+    return obj
+
+
+def render_comic(cam):
+    """POP POW BAM WHAM by hit strength. On shows the bursts. Off shows the row only."""
+    hidden = chart_hide()
+    bg = bpy.context.scene.world.node_tree.nodes["Background"]
+    old_color = tuple(bg.inputs["Color"].default_value)
+    old_strength = bg.inputs["Strength"].default_value
+    bg.inputs["Color"].default_value = (0.96, 0.95, 0.92, 1.0)
+    bg.inputs["Strength"].default_value = 0.9
+    saved = (cam.location.copy(), cam.rotation_euler.copy(), cam.data.lens, cam.data.type, cam.data.ortho_scale)
+    words = (
+        ("POP!", (1.0, 0.86, 0.12, 1.0), 0.42, "light"),
+        ("POW!", (1.0, 0.46, 0.08, 1.0), 0.56, "firm"),
+        ("BAM!", (0.95, 0.12, 0.18, 1.0), 0.72, "hard"),
+        ("WHAM!", (0.62, 0.18, 0.95, 1.0), 0.90, "heavy"),
+    )
+    chart_plane("ChartPaper", Vector((0.65, 0.12, 1.20)), (5.4, 3.15, 1.0), (0.95, 0.93, 0.88, 1.0))
+    chart_plane("ChartOn", Vector((0.65, 0.02, 2.28)), (4.6, 0.36, 1.0), (0.16, 0.15, 0.13, 1.0))
+    chart_text("Comic words  On", Vector((0.65, -0.03, 2.28)), 0.16, (0.98, 0.95, 0.82, 1.0))
+    chart_plane("ChartOff", Vector((0.65, 0.02, 0.22)), (4.6, 0.36, 1.0), (0.78, 0.76, 0.72, 1.0))
+    chart_text("Comic words  Off", Vector((0.65, -0.03, 0.22)), 0.16, (0.28, 0.27, 0.25, 1.0))
+    for i, (word, color, scale, strength) in enumerate(words):
+        x = -1.05 + i * 1.15
+        burst_star("ChartOutline", Vector((x, 0.05, 1.28)), scale * 1.18, (0.05, 0.04, 0.04, 1.0), False)
+        burst_star("ChartBurst", Vector((x, 0.0, 1.28)), scale, color, True)
+        chart_text(word, Vector((x, -0.06, 1.28)), 0.10 + scale * 0.05, (0.06, 0.05, 0.05, 1.0))
+        chart_text(strength, Vector((x, -0.02, 0.62)), 0.09, (0.18, 0.16, 0.14, 1.0))
+        print("COMIC", word, strength, "scale", scale)
+    cam.data.type = "ORTHO"
+    cam.data.ortho_scale = 5.3
+    cam.location = Vector((0.65, -3.4, 1.20))
+    look_at(cam, Vector((0.65, 0.0, 1.20)))
+    render_to(os.path.join(OUT, "comic-bursts.png"))
+    chart_clear()
+    cam.location, cam.rotation_euler = saved[0], saved[1]
+    cam.data.lens = saved[2]
+    cam.data.type = saved[3]
+    cam.data.ortho_scale = saved[4]
+    bg.inputs["Color"].default_value = old_color
+    bg.inputs["Strength"].default_value = old_strength
+    chart_show(hidden)
+
+
+def render_charts(cam, only_set):
+    if MEASURE_ONLY:
+        return
+    if not only_set or "running-dust" in only_set:
+        render_dust_grid(cam)
+    if not only_set or "comic-bursts" in only_set:
+        render_comic(cam)
+
+
 def main():
     os.makedirs(OUT, exist_ok=True)
     bpy.ops.wm.read_factory_settings(use_empty=True)
@@ -1749,6 +2215,7 @@ def main():
             "no-clip clips=%d frames=%d worldMax=%.2f selfMax=%.2f fails=%d"
             % (len(totals), len(totals), world_max * 100.0, self_max * 100.0, fails)
         )
+        render_charts(cam, only_set)
         return
 
     clear_fx()
@@ -1827,6 +2294,7 @@ def main():
         "no-clip clips=%d frames=%d worldMax=%.2f selfMax=%.2f fails=%d"
         % (clips, clips, world_max * 100.0, self_max * 100.0, fails)
     )
+    render_charts(cam, only_set)
 
 
 if __name__ == "__main__":

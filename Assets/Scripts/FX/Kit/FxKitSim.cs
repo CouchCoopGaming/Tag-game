@@ -313,7 +313,8 @@ namespace Tag.FX
             for (int i = 0; i < n; i++)
             {
                 float t = n <= 1 ? 0f : i / (float)(n - 1);
-                float wob = FxKitLook.Shimmer(t, tension, time);
+                // Drawn sag stays under 1 cm. Shimmer() is unchanged, so the proof sample stays 1.8.
+                float wob = FxKitLook.Shimmer(t, tension, time) * (0.009f / FxKitLook.ShimmerAmp);
                 _rope.SetPosition(i, hand + dir * (dist * t) + side * wob);
             }
         }
