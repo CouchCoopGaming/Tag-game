@@ -22,45 +22,50 @@ BURST_ROWS = 2
 STAR_FRAC = 0.74
 WORD_TIMES = 1.17
 
-# Atlas order matches ComicWords.AtlasWord. Contact stays the bold Bangers look.
-# Whiff is thinner and cooler, land is heavy and dust-coloured, crash is jagged.
+# Atlas order matches ComicWords.AtlasWord. The burst keeps the event colour.
+# The word fill is the opposite comic ink: yellow or white on a dark burst,
+# red or navy on a light burst, with a heavy black outline on the light ink.
+NAVY = (12, 18, 72)
+YELLOW = (255, 230, 40)
+WHITE = (255, 255, 255)
+RED = (140, 10, 20)
 WORDS = (
-    ("POP!", "contact", (255, 220, 40)),
-    ("POW!", "contact", (255, 140, 28)),
-    ("BAM!", "contact", (240, 36, 48)),
-    ("WHAM!", "contact", (168, 52, 242)),
-    ("SMACK!", "contact", (255, 186, 48)),
-    ("WHACK!", "contact", (255, 96, 32)),
-    ("THWACK!", "crash", (255, 88, 36)),
-    ("BONK!", "contact", (214, 64, 220)),
-    ("KAPOW!", "contact", (255, 244, 210)),
-    ("TAG!", "contact", (242, 64, 122)),
-    ("GOTCHA!", "contact", (255, 120, 150)),
-    ("MINE!", "contact", (255, 210, 170)),
-    ("WHIFF!", "whiff", (170, 214, 255)),
-    ("SWISH!", "whiff", (120, 186, 255)),
-    ("WHOOSH!", "whiff", (196, 228, 255)),
-    ("THUD!", "land", (196, 140, 78)),
-    ("WHUMP!", "land", (168, 108, 58)),
-    ("THUMP!", "land", (150, 96, 52)),
-    ("BOING!", "whiff", (255, 214, 80)),
-    ("SPROING!", "whiff", (255, 186, 64)),
-    ("POING!", "whiff", (255, 230, 120)),
-    ("ZING!", "whiff", (64, 210, 220)),
-    ("ZIP!", "whiff", (36, 186, 210)),
-    ("WHIZZ!", "whiff", (120, 230, 236)),
-    ("THWIP!", "whiff", (64, 196, 168)),
-    ("FWIP!", "whiff", (36, 160, 140)),
-    ("ZWIP!", "whiff", (150, 230, 210)),
-    ("KRAK!", "crash", (230, 56, 28)),
-    ("SLAM!", "crash", (255, 112, 40)),
-    ("SPLAT!", "crash", (196, 42, 36)),
-    ("OOF!", "contact", (186, 196, 72)),
-    ("UGH!", "contact", (150, 168, 64)),
-    ("OUCH!", "contact", (210, 186, 80)),
-    ("BOOM!", "land", (120, 78, 46)),
-    ("KRUNCH!", "land", (176, 124, 68)),
-    ("MISS!", "whiff", (110, 160, 230)),
+    ("POP!", "contact", NAVY),
+    ("POW!", "contact", NAVY),
+    ("BAM!", "contact", NAVY),
+    ("WHAM!", "contact", YELLOW),
+    ("SMACK!", "contact", NAVY),
+    ("WHACK!", "contact", NAVY),
+    ("THWACK!", "crash", YELLOW),
+    ("BONK!", "contact", YELLOW),
+    ("KAPOW!", "contact", YELLOW),
+    ("TAG!", "contact", WHITE),
+    ("GOTCHA!", "contact", WHITE),
+    ("MINE!", "contact", WHITE),
+    ("WHIFF!", "whiff", RED),
+    ("SWISH!", "whiff", RED),
+    ("WHOOSH!", "whiff", RED),
+    ("THUD!", "land", WHITE),
+    ("WHUMP!", "land", WHITE),
+    ("THUMP!", "land", WHITE),
+    ("BOING!", "whiff", RED),
+    ("SPROING!", "whiff", RED),
+    ("POING!", "whiff", RED),
+    ("ZING!", "whiff", RED),
+    ("ZIP!", "whiff", RED),
+    ("WHIZZ!", "whiff", RED),
+    ("THWIP!", "whiff", YELLOW),
+    ("FWIP!", "whiff", YELLOW),
+    ("ZWIP!", "whiff", YELLOW),
+    ("KRAK!", "crash", YELLOW),
+    ("SLAM!", "crash", YELLOW),
+    ("SPLAT!", "crash", YELLOW),
+    ("OOF!", "contact", WHITE),
+    ("UGH!", "contact", WHITE),
+    ("OUCH!", "contact", WHITE),
+    ("BOOM!", "land", WHITE),
+    ("KRUNCH!", "land", WHITE),
+    ("MISS!", "whiff", RED),
 )
 
 
@@ -121,18 +126,28 @@ def measure_star(radius):
     return im, box
 
 
+def fill_is_light(fill):
+    r, g, b = fill
+    return (0.2126 * r + 0.7152 * g + 0.0722 * b) > 150
+
+
 def fit_word(word, fill, target_w, kind):
+    # Light ink gets the heavy black outline. Dark ink keeps a thinner edge.
+    heavy = 0.12 if fill_is_light(fill) else None
     if kind == "whiff":
-        glyph = sheet.render_after(word, target_w * 0.92, fill, stroke_frac=0.045, track=0.70, tilt=0.0)
+        stroke = 0.11 if fill_is_light(fill) else 0.07
+        glyph = sheet.render_after(word, target_w * 0.92, fill, stroke_frac=stroke, track=0.70, tilt=0.0)
         glyph = streaks(glyph)
     elif kind == "land":
-        glyph = sheet.render_after(word, target_w * 1.05, fill, stroke_frac=0.13, track=0.92, tilt=0.0)
+        stroke = heavy if heavy else 0.13
+        glyph = sheet.render_after(word, target_w * 1.05, fill, stroke_frac=stroke, track=0.92, tilt=0.0)
         glyph = squash(glyph, 0.78)
     elif kind == "crash":
-        glyph = sheet.render_after(word, target_w, fill, stroke_frac=0.10, track=0.76, tilt=0.0)
+        stroke = heavy if heavy else 0.10
+        glyph = sheet.render_after(word, target_w, fill, stroke_frac=stroke, track=0.76, tilt=0.0)
         glyph = crack(glyph)
     else:
-        glyph = sheet.render_after(word, target_w, fill, tilt=0.0)
+        glyph = sheet.render_after(word, target_w, fill, stroke_frac=heavy, tilt=0.0)
     span = sheet.fill_span(glyph, fill)
     if span is None:
         return glyph
@@ -457,8 +472,8 @@ def main():
     for yy in range(28, 28 + pane):
         for xx in range(0, pane):
             r, g, b = px[xx, yy]
-            # THWACK fill is orange. The pane border is gold and is not the word.
-            if r > 200 and g < 140 and b < 90 and r > g + 40:
+            # THWACK fill is yellow. The pane border is gold and is not the word.
+            if r > 230 and g > 180 and b < 70 and r > g + 15:
                 xs.append(xx)
                 ys.append(yy)
     if xs:

@@ -13,7 +13,7 @@ import bake_comic_layers as bake
 import render_comic_sheet as comic_sheet
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
-OUT = os.path.join(ROOT, "Docs", "FxStills", "pass17")
+OUT = os.path.join(ROOT, "Docs", "FxStills", "pass18")
 FONT = comic_sheet.FONT_PATH
 
 
@@ -303,6 +303,95 @@ def life_strip():
     return board
 
 
+def rel_lum(rgb):
+    def lin(c):
+        c = c / 255.0
+        return c / 12.92 if c <= 0.04045 else ((c + 0.055) / 1.055) ** 2.4
+    r, g, b = (lin(c) for c in rgb)
+    return 0.2126 * r + 0.7152 * g + 0.0722 * b
+
+
+def wcag(word_fill, burst_fill):
+    hi = max(rel_lum(word_fill), rel_lum(burst_fill))
+    lo = min(rel_lum(word_fill), rel_lum(burst_fill))
+    return (hi + 0.05) / (lo + 0.05)
+
+
+def contrast_report():
+    """Word fill against the event burst. Every pair has to clear 3.0."""
+    worst = None
+    worst_name = ""
+    failed = 0
+    for i, (text, _kind, fill) in enumerate(bake.WORDS):
+        burst = comic_sheet.EVENTS[ATLAS_EVENT[i]][1]
+        score = wcag(fill, burst)
+        if worst is None or score < worst:
+            worst = score
+            worst_name = text
+        if score < 3.0:
+            failed += 1
+            print("CONTRAST FAIL", text, "%.2f" % score)
+    print("contrast min=%.2f worst=%s" % (worst, worst_name))
+    return failed
+
+
+def live_pair(index, age, width):
+    """Burst behind the word, both at the shared life scale, game tilt already applied."""
+    _text, burst, word = posed_layers(index)
+    bs = life_scale(age)
+    ws = bs * word_punch(age)
+    alpha = life_alpha(age)
+    full = max(burst.width, word.width, 1)
+    base = width / float(full)
+
+    def layer(glyph, scale):
+        nw = max(1, int(glyph.width * scale * base))
+        nh = max(1, int(glyph.height * scale * base))
+        im = glyph.resize((nw, nh), Image.Resampling.LANCZOS)
+        if alpha < 0.999:
+            im.putalpha(im.getchannel("A").point(lambda p: int(p * alpha)))
+        return im
+
+    back = layer(burst, bs)
+    front = layer(word, ws)
+    w = max(back.width, front.width)
+    h = max(back.height, front.height)
+    canvas = Image.new("RGBA", (w, h), (0, 0, 0, 0))
+    canvas.alpha_composite(back, ((w - back.width) // 2, (h - back.height) // 2))
+    canvas.alpha_composite(front, ((w - front.width) // 2, (h - front.height) // 2))
+    return canvas
+
+
+def pane_scene(pw, ph):
+    scene = Image.new("RGB", (pw, ph), (156, 186, 208))
+    draw = ImageDraw.Draw(scene)
+    horizon = int(ph * 0.58)
+    draw.rectangle((0, horizon, pw, ph), fill=(112, 108, 92))
+    draw.rectangle((0, int(ph * 0.74), pw, ph), fill=(86, 82, 68))
+    return scene
+
+
+def couch_four():
+    """1280x720 split screen. Four of the words that used to match their burst."""
+    names = ("SPROING!", "WHIZZ!", "THWIP!", "THUD!")
+    board = Image.new("RGB", (1280, 720), (12, 12, 12))
+    draw = ImageDraw.Draw(board)
+    font = ImageFont.truetype(FONT, 22)
+    pw, ph = 640, 360
+    age = 0.12
+    for n, text in enumerate(names):
+        scene = pane_scene(pw, ph)
+        pair = live_pair(index_of(text), age, 250)
+        scene.paste(pair, ((pw - pair.width) // 2, int(ph * 0.42) - pair.height // 2), pair)
+        ox = (n % 2) * pw
+        oy = (n // 2) * ph
+        board.paste(scene, (ox, oy))
+        draw.text((ox + 16, oy + ph - 36), text, font=font, fill=(255, 244, 220))
+    draw.line((640, 0, 640, 720), fill=(8, 8, 8), width=4)
+    draw.line((0, 360, 1280, 360), fill=(8, 8, 8), width=4)
+    return board
+
+
 def index_of(word):
     for i, (text, _kind, _fill) in enumerate(bake.WORDS):
         if text == word:
@@ -311,6 +400,8 @@ def index_of(word):
 
 
 def main():
+    if contrast_report():
+        return 1
     groups = (
         ("comic-contact.jpg", "Contact   punch or tag lands", ("POW!", "BAM!", "WHAM!", "SMACK!")),
         ("comic-whiff.jpg", "Whiff   missed punch or tag", ("WHIFF!", "SWISH!", "WHOOSH!", "MISS!")),
@@ -323,6 +414,7 @@ def main():
     save_jpeg(sheet("Angle variety   each word has its own tilt", [index_of(w) for w in angles], 4), "comic-angles.jpg")
     save_jpeg(life_strip(), "comic-life.jpg")
     save_jpeg(sheet("Every word at full size", list(range(len(bake.WORDS))), 6), "comic-all.jpg")
+    save_jpeg(couch_four(), "comic-couch.jpg")
     prev = None
     for i, (text, _k, _f) in enumerate(bake.WORDS):
         tilt = style_of(i)[0]
