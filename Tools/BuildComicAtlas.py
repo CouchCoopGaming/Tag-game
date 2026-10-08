@@ -124,7 +124,7 @@ def benday(mask, color, spacing, radius, angle):
             y0, y1 = y - rad, y + rad + 1
             x0, x1 = x - rad, x + rad + 1
             patch = ink[y0:y1, x0:x1]
-            np.maximum(patch, disk * 255, out=patch)
+            np.maximum(patch, disk, out=patch)
     dot = Image.new("RGBA", (w, h), color)
     dot.putalpha(Image.fromarray(ink, "L"))
     return dot
@@ -143,7 +143,51 @@ def burst_masks(size, outer_spec, inner_spec, ax, ay, outline, inner_outline, in
     return outer, outer_key, inner, inner_key
 
 
-def paint_burst(canvas, outer, outer_key, inner, inner_key, fill, inner_c, dots, dot_spacing, dot_radius, dot_angle, fringe=None):
+def darker(rgb, mul):
+    return tuple(max(0, min(255, int(c * mul))) for c in rgb[:3]) + (255,)
+
+
+def paint_speed_lines(canvas, outer):
+    """Short wedges behind a tag word so BAM and WHAM read bigger than a punch."""
+    bb = outer.getbbox()
+    if not bb:
+        return
+    cx = canvas.size[0] * 0.5
+    cy = canvas.size[1] * 0.5
+    rad = max(bb[2] - bb[0], bb[3] - bb[1]) * 0.5
+    limit = canvas.size[0] - 18
+    overlay = Image.new("RGBA", canvas.size, (0, 0, 0, 0))
+    draw = ImageDraw.Draw(overlay)
+    wedges = (
+        (-32, 1.22, 11), (-12, 1.36, 8), (14, 1.18, 13), (38, 1.30, 9),
+        (64, 1.16, 12), (92, 1.34, 8), (118, 1.20, 14), (148, 1.28, 9),
+        (176, 1.14, 11), (204, 1.32, 8), (232, 1.18, 13), (258, 1.30, 9),
+        (286, 1.15, 12), (314, 1.28, 8), (340, 1.18, 11), (358, 1.26, 10),
+    )
+    for deg, reach, half in wedges:
+        a = math.radians(deg - 90.0)
+        ca, sa = math.cos(a), math.sin(a)
+        px, py = -sa, ca
+        r0 = rad * 0.58
+        r1 = min(rad * reach, limit - 4)
+        # Keep the tip on the canvas.
+        for _ in range(6):
+            x1 = cx + ca * r1
+            y1 = cy + sa * r1
+            if 16 <= x1 <= limit and 16 <= y1 <= limit:
+                break
+            r1 *= 0.92
+        root = half * 0.35
+        draw.polygon((
+            (cx + ca * r0 + px * root, cy + sa * r0 + py * root),
+            (cx + ca * r1 + px * half, cy + sa * r1 + py * half),
+            (cx + ca * r1 - px * half, cy + sa * r1 - py * half),
+            (cx + ca * r0 - px * root, cy + sa * r0 - py * root),
+        ), fill=(12, 8, 14, 255))
+    canvas.alpha_composite(overlay)
+
+
+def paint_burst(canvas, outer, outer_key, inner, inner_key, fill, inner_c, dot_spacing, dot_radius, dot_angle, fringe=None):
     shadow = shift_mask(outer_key, 14, 20)
     paint(canvas, shadow, (0, 0, 0, 80))
     if fringe:
@@ -152,16 +196,17 @@ def paint_burst(canvas, outer, outer_key, inner, inner_key, fill, inner_c, dots,
         paint(canvas, shift_mask(outer, 16, -4), magenta)
     paint(canvas, outer_key, (8, 6, 10, 255))
     paint(canvas, outer, fill)
-    # Dots live on the outer ink only. The inner burst stays a flat second color.
+    # Darker dots of the outer color, in the ring the inner burst does not cover.
     hole = dilate(inner_key, 4)
     dot_mask = Image.fromarray(np.where((np.asarray(outer) > 128) & (np.asarray(hole) < 128), 255, 0).astype(np.uint8), "L")
-    canvas.alpha_composite(benday(dot_mask, dots, dot_spacing, dot_radius, dot_angle))
-    # A thin lighter lip just inside the black, so the contour reads as ink on paper.
+    canvas.alpha_composite(benday(dot_mask, darker(fill, 0.38), dot_spacing, dot_radius, dot_angle))
     lip = Image.fromarray(np.where((np.asarray(outer) > 128) & (np.asarray(erode(outer, 7)) < 128), 255, 0).astype(np.uint8), "L")
     lip_c = tuple(min(255, int(c + (255 - c) * 0.45)) for c in fill[:3]) + (255,)
     paint(canvas, lip, lip_c)
     paint(canvas, inner_key, (8, 6, 10, 255))
     paint(canvas, inner, inner_c)
+    # A second, obvious screen on the inner burst, in a darker shade of that color.
+    canvas.alpha_composite(benday(inner, darker(inner_c, 0.42), dot_spacing, max(6, dot_radius - 2), dot_angle + 18))
     return outer
 
 
@@ -232,6 +277,12 @@ def style_letter(mask, face_top, face_bot, side, highlight, stroke, depth):
     face = Image.new("L", canvas.size, 0)
     face.paste(face_m, (0, 0))
     paint(canvas, face_key, (6, 4, 8, 255))
+    # Thin white key just inside the black, then the color sits inside that.
+    white_px = max(4, stroke // 4)
+    color_m = erode(face_m, white_px)
+    paint(canvas, face, (255, 255, 255, 255))
+    face = Image.new("L", canvas.size, 0)
+    face.paste(color_m, (0, 0))
     # Vertical ink: bright cap, then a harder shadow in the lower third.
     fh, fw = np.asarray(face).shape
     fa = np.asarray(face)
@@ -260,11 +311,12 @@ def style_letter(mask, face_top, face_bot, side, highlight, stroke, depth):
     return canvas
 
 
-def arch_degrees(t, arch, width):
-    if width < 1:
-        return 0.0
-    slope = arch * (4.0 - 8.0 * t) / width
-    return -math.degrees(math.atan(slope))
+def clamp_rot(deg):
+    if deg > 6.0:
+        return 6.0
+    if deg < -6.0:
+        return -6.0
+    return deg
 
 
 def compose_word(ss, spec):
@@ -275,54 +327,50 @@ def compose_word(ss, spec):
     outer, outer_key, inner, inner_key = burst_masks(
         size, spec["outer"], spec["inner"], spec["ax"], spec["ay"],
         outline, inner_outline, spec["inner_scale"], spec["ox"] * ss, spec["oy"] * ss)
+    if spec.get("speed"):
+        paint_speed_lines(canvas, outer_key)
     paint_burst(
         canvas, outer, outer_key, inner, inner_key,
-        spec["fill"] + (255,), spec["inner_c"] + (255,), spec["dots"] + (255,),
-        34 * ss // 2, 8 * ss // 2, spec["dot_angle"], spec.get("fringe"))
-    # 34*ss/2 keeps the dot pitch in the same place if SS changes. At SS=2, spacing is 34.
+        spec["fill"] + (255,), spec["inner_c"] + (255,),
+        22 * ss, 8 * ss, spec["dot_angle"], spec.get("fringe"))
     font = ImageFont.truetype(FONT_PATH, int(spec["font"] * ss))
     text = spec["text"]
     scales = spec["scales"]
     rots = spec["rots"]
     n = len(text)
-    # Width pass, then a second pass so each letter rotates onto the arch.
-    rough = []
-    for i, ch in enumerate(text):
-        m = shear_mask(glyph_mask(font, ch, scales[i]), 0.26)
-        m = rotate_mask(m, rots[i])
-        rough.append(m)
-    gap = int(-0.045 * rough[0].height)
-    rough_w = sum(m.width for m in rough) + gap * (n - 1)
-    arch = int(rough_w * 0.16)
     styled = []
     for i, ch in enumerate(text):
-        t = 0.0 if n == 1 else i / (n - 1)
-        m = shear_mask(glyph_mask(font, ch, scales[i]), 0.26)
-        m = rotate_mask(m, rots[i] + arch_degrees(t, arch, rough_w))
-        stroke = max(8, int(m.height * 0.085))
-        depth = max(10, int(m.height * 0.13))
+        m = shear_mask(glyph_mask(font, ch, scales[i]), 0.22)
+        m = rotate_mask(m, clamp_rot(rots[i]))
+        stroke = max(8, int(m.height * 0.075))
+        depth = max(10, int(m.height * 0.11))
         styled.append(style_letter(m, spec["top"], spec["bot"], spec["side"] + (255,), spec["hi"] + (255,), stroke, depth))
+    # The same overlap on every pair, bang included, so the word reads as one hit.
+    avg_w = sum(im.width for im in styled) / float(n)
+    gap = int(round(-0.13 * avg_w))
     widths = [im.width for im in styled]
     heights = [im.height for im in styled]
     total = sum(widths) + gap * (n - 1)
-    max_w = int(size * 0.60)
-    if total > max_w:
-        s = max_w / float(total)
+    burst_box = outer_key.getbbox()
+    burst_w = (burst_box[2] - burst_box[0]) if burst_box else int(size * 0.8)
+    target = min(int(burst_w * 0.82), int(size * 0.80))
+    if total > 0 and abs(total - target) > 2:
+        s = target / float(total)
         styled = [im.resize((max(1, int(im.width * s)), max(1, int(im.height * s))), Image.Resampling.LANCZOS) for im in styled]
         widths = [im.width for im in styled]
         heights = [im.height for im in styled]
-        total = sum(widths) + gap * (len(styled) - 1)
-        arch = int(arch * s)
-    # Keep the ink inside the burst. If a letter would land on empty paper, shrink once.
-    body = np.asarray(erode(outer, 6))
+        gap = int(round(gap * s))
+        total = sum(widths) + gap * (n - 1)
+    arch = max(8, int(total * 0.055))
     placed = layout_positions(size, styled, widths, heights, gap, arch)
-    for _ in range(4):
-        if not sticks_out(body, placed):
+    for _ in range(5):
+        if not off_canvas(size, placed, 14):
             break
-        s = 0.92
+        s = 0.94
         styled = [im.resize((max(1, int(im.width * s)), max(1, int(im.height * s))), Image.Resampling.LANCZOS) for im in styled]
         widths = [im.width for im in styled]
         heights = [im.height for im in styled]
+        gap = int(round(gap * s))
         arch = int(arch * s)
         placed = layout_positions(size, styled, widths, heights, gap, arch)
     for im, x, y in placed:
@@ -336,17 +384,31 @@ def layout_positions(size, styled, widths, heights, gap, arch):
     n = len(styled)
     total = sum(widths) + gap * (n - 1)
     x = (size - total) // 2
-    # Sit the word on the burst center. The arch lifts the middle.
-    base = int(size * 0.50)
+    # One baseline for every letter, including the bang. The arc lifts the middle.
+    tall = max(heights) if heights else 0
+    baseline = int(size * 0.56 + tall * 0.08)
     positions = []
     cursor = x
     for i, im in enumerate(styled):
         t = 0.0 if n == 1 else i / (n - 1)
         lift = int(arch * (1.0 - (2.0 * t - 1.0) ** 2))
-        y = base - im.height // 2 - lift + int(arch * 0.45)
+        y = baseline - im.height - lift
         positions.append((im, cursor, y))
         cursor += im.width + gap
     return positions
+
+
+def off_canvas(size, placed, margin):
+    for im, x, y in placed:
+        a = np.asarray(im.split()[-1])
+        ys, xs = np.where(a > 32)
+        if len(xs) == 0:
+            continue
+        if x + int(xs.min()) < margin or y + int(ys.min()) < margin:
+            return True
+        if x + int(xs.max()) >= size - margin or y + int(ys.max()) >= size - margin:
+            return True
+    return False
 
 
 def sticks_out(body, placed):
@@ -552,25 +614,25 @@ WHAM_INNER = [
 
 WORDS = [
     dict(text="POP!", outer=POP_OUTER, inner=POP_INNER, ax=1.02, ay=0.96,
-         inner_scale=0.50, ox=18, oy=-16, dot_angle=18,
+         inner_scale=0.46, ox=18, oy=-16, dot_angle=18,
          fill=(255, 208, 0), inner_c=(24, 92, 255), dots=(196, 12, 36),
          top=(255, 72, 48), bot=(150, 8, 24), side=(92, 8, 16), hi=(255, 228, 214),
-         scales=(1.16, 0.94, 1.12, 0.70), rots=(-7, 5, -4, 13), font=196),
+         scales=(1.06, 0.98, 1.04, 0.92), rots=(-4, 3, -2, 5), font=230),
     dict(text="POW!", outer=POW_OUTER, inner=POW_INNER, ax=1.16, ay=0.84,
-         inner_scale=0.52, ox=-22, oy=10, dot_angle=72,
+         inner_scale=0.46, ox=-22, oy=10, dot_angle=72,
          fill=(255, 150, 0), inner_c=(186, 0, 32), dots=(104, 0, 110),
          top=(255, 252, 244), bot=(255, 214, 120), side=(110, 16, 0), hi=(255, 255, 255),
-         scales=(1.20, 0.90, 1.10, 0.72), rots=(-9, 6, -5, 14), font=204),
+         scales=(1.06, 0.97, 1.03, 0.92), rots=(-5, 4, -3, 6), font=236),
     dict(text="BAM!", outer=BAM_OUTER, inner=BAM_INNER, ax=0.90, ay=1.10,
-         inner_scale=0.50, ox=12, oy=-28, dot_angle=18,
+         inner_scale=0.46, ox=12, oy=-28, dot_angle=18, speed=True,
          fill=(214, 12, 36), inner_c=(255, 196, 0), dots=(255, 214, 48),
          top=(255, 250, 236), bot=(255, 196, 140), side=(110, 18, 8), hi=(255, 255, 255),
-         scales=(1.14, 0.92, 1.18, 0.68), rots=(-8, 4, -6, 12), font=200),
+         scales=(1.05, 0.98, 1.06, 0.92), rots=(-4, 2, -5, 5), font=232),
     dict(text="WHAM!", outer=WHAM_OUTER, inner=WHAM_INNER, ax=1.08, ay=0.94,
-         inner_scale=0.50, ox=24, oy=14, dot_angle=75,
+         inner_scale=0.46, ox=24, oy=14, dot_angle=75, speed=True,
          fill=(26, 64, 240), inner_c=(255, 36, 140), dots=(6, 16, 48),
          top=(255, 236, 80), bot=(255, 150, 0), side=(42, 0, 96), hi=(255, 255, 230),
-         scales=(1.10, 1.00, 0.88, 1.16, 0.62), rots=(-8, 4, -3, 6, 13), font=168,
+         scales=(1.04, 1.00, 0.97, 1.05, 0.90), rots=(-5, 3, -2, 4, 6), font=200,
          fringe=((0, 220, 255, 150), (255, 0, 140, 130))),
 ]
 
