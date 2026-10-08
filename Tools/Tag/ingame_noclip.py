@@ -46,6 +46,7 @@ def load_keys(path):
                 "footL": nums[21], "footR": nums[22], "drop": nums[23],
                 "elbYawL": nums[24] if len(nums) > 24 else 0.0,
                 "elbYawR": nums[25] if len(nums) > 25 else 0.0,
+                "headYaw": nums[26] if len(nums) > 26 else 0.0,
             })
     return frames
 
@@ -66,7 +67,7 @@ def apply_frame(arm, frame):
     clear_pose(arm)
     set_bone(arm, "Hips", frame["hip"], frame["hipYaw"], frame["lean"])
     set_bone(arm, "Spine", frame["spine"], frame["spineYaw"], 0.0)
-    set_bone(arm, "Head", frame["head"], 0.0, 0.0)
+    set_bone(arm, "Head", frame["head"], frame.get("headYaw", 0.0), 0.0)
     set_bone(arm, "UpperLeg_L", -frame["thL"], frame["yawL"], frame.get("thRollL", 0.0))
     set_bone(arm, "LowerLeg_L", -frame["knL"], frame.get("knYawL", 0.0), frame.get("knRollL", 0.0))
     set_bone(arm, "Foot_L", -frame["footL"], 0.0, 0.0)
