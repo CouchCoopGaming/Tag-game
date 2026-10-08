@@ -47,10 +47,18 @@ public static class GrappleRopeTellProof
             report.Fail("rope starts inside the capsule");
         if (GrappleRopeTell.HandHeight <= 1.05f || GrappleRopeTell.HandHeight >= cfg.standingHeight)
             report.Fail("rope does not leave the hands");
-        if (GrappleRopeTell.RopeStartWidth < 0.12f || GrappleRopeTell.RopeEndWidth < 0.08f)
-            report.Fail("rope is still a hairline");
+        if (GrappleRopeTell.RopeStartWidth < 0.010f || GrappleRopeTell.RopeStartWidth > 0.016f)
+            report.Fail("rope is not a thin cord");
+        if (Mathf.Abs(GrappleRopeTell.RopeEndWidth - GrappleRopeTell.RopeStartWidth) > 0.001f)
+            report.Fail("rope thickness changes along the cord");
+        if (GrappleRopeTell.CordSag(0f) > 0.001f)
+            report.Fail("a taut pull sags");
+        if (GrappleRopeTell.CordSag(1f) < 0.04f || GrappleRopeTell.CordSag(1f) > 0.10f)
+            report.Fail("a hold does not sag slightly");
         if (GrappleRopeTell.HaloWidth <= GrappleRopeTell.RopeStartWidth)
             report.Fail("rope has no wider halo");
+        if (GrappleRopeTell.HaloWidth > 0.03f)
+            report.Fail("rope halo is a pole");
         if (GrappleRopeTell.AimLength < 1.5f || GrappleRopeTell.AimLength > 4f)
             report.Fail("aim tell is not a short cast cue");
         if (GrappleRopeTell.AimWidth < 0.08f)

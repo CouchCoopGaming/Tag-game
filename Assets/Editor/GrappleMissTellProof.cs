@@ -45,9 +45,8 @@ public static class GrappleMissTellProof
             report.Fail("miss alpha is still up at 0.28s");
         if (GrappleMissTell.Alpha(0.12f) >= GrappleMissTell.MaxAlpha - 0.01f)
             report.Fail("miss cue does not fade");
-        if (GrappleMissTell.StubWidth < 0.03f || GrappleMissTell.StubWidth >= GrappleRopeTell.AimWidth
-            || GrappleMissTell.StubWidth >= GrappleRopeTell.RopeStartWidth)
-            report.Fail("miss stub is a hairline or as thick as the aim or the rope");
+        if (GrappleMissTell.StubWidth < 0.03f || GrappleMissTell.StubWidth >= GrappleRopeTell.AimWidth)
+            report.Fail("miss stub is a hairline or as thick as the aim");
         if (GrappleMissTell.StubLength < 0.40f || GrappleMissTell.StubLength >= GrappleRopeTell.AimLength * 0.6f)
             report.Fail("miss stub is a speck or long enough to cover the aim");
         if (GrappleMissTell.KnotSize < 0.12f || GrappleMissTell.KnotSize >= GrappleRopeTell.HookMarkerSize

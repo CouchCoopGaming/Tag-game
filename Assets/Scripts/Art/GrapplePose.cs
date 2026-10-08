@@ -50,14 +50,18 @@ namespace Tag.Art
                 s.ArmYawL -= ShoulderFlare;
             if (s.ArmYawR < 0f)
                 s.ArmYawR += ShoulderFlare;
-            // Both arms on the line. Pitch them further along that reach so the
-            // rope hand sits in front of the head. The extra eases off as the
-            // arm drops toward the fall. A miss keeps the other arm down, so
-            // this does not touch it.
-            if (s.ArmPitchL < -20f && s.ArmPitchR < -20f)
+            // Both arms on the line take extra pitch. Full once the higher arm
+            // is at −40°, and gone once that arm is out past −20°, so a yank
+            // with one arm to the side does not pop the rope hand. A miss
+            // keeps the other arm down, so this does not touch it.
+            float open = s.ArmPitchL > s.ArmPitchR ? s.ArmPitchL : s.ArmPitchR;
+            float gate = (-20f - open) / 20f;
+            if (gate < 0f) gate = 0f;
+            if (gate > 1f) gate = 1f;
+            if (gate > 0f)
             {
-                s.ArmPitchL += ForwardReach(s.ArmPitchL);
-                s.ArmPitchR += ForwardReach(s.ArmPitchR);
+                s.ArmPitchL += ForwardReach(s.ArmPitchL) * gate;
+                s.ArmPitchR += ForwardReach(s.ArmPitchR) * gate;
             }
             return s;
         }
@@ -133,25 +137,26 @@ namespace Tag.Art
         public const float LatchHip = 20f;
         public const float LatchHead = -18f;
 
-        public const float PullPitchL = -84f;
-        public const float PullPitchR = -78f;
-        public const float PullYawL = -32f;
-        public const float PullYawR = 32f;
-        public const float PullElbowL = -4f;
-        public const float PullElbowR = -2f;
-        public const float PullSpine = 42f;
-        public const float PullHip = 40f;
-        public const float PullHead = -20f;
+        /// <summary>Off arm, countering out to the side. The rope arm is the R sample.</summary>
+        public const float PullPitchL = -12f;
+        public const float PullPitchR = -118f;
+        public const float PullYawL = -68f;
+        public const float PullYawR = 28f;
+        public const float PullElbowL = -28f;
+        public const float PullElbowR = -46f;
+        public const float PullSpine = 4f;
+        public const float PullHip = 14f;
+        public const float PullHead = 18f;
         public const float HipYawShare = 0.40f;
         public const float HeadYawShare = 0.55f;
 
-        public const float StrideThighFwd = 20f;
-        public const float StrideThighBack = -30f;
-        public const float StrideKneeFwd = -32f;
-        public const float StrideKneeBack = -8f;
-        public const float TuckThigh = 32f;
-        public const float TuckKnee = -94f;
-        public const float TuckAlt = 7f;
+        public const float StrideThighFwd = 12f;
+        public const float StrideThighBack = 6f;
+        public const float StrideKneeFwd = -28f;
+        public const float StrideKneeBack = -18f;
+        public const float TuckThigh = 16f;
+        public const float TuckKnee = -36f;
+        public const float TuckAlt = 2f;
 
         public const float WhipPitchR = -106f;
         public const float WhipYawR = 18f;
@@ -374,8 +379,10 @@ namespace Tag.Art
         }
 
         /// <summary>
-        /// Both hands on the line. phaseSin +1 puts a small stride on the left leg.
-        /// Falling vertical speed tucks the trail. The lean is the planar yaw only.
+        /// Yank toward the anchor. The rope hand sits just above the head with
+        /// the elbow bent. The other arm counters out to the side. The chest
+        /// stays on the rope and the legs trail together. phaseSin swaps a
+        /// small stride. Falling vertical speed bends the knees a little more.
         /// </summary>
         public static Sample Pull(float phaseSin, float verticalSpeed, float leanYaw)
         {
@@ -607,17 +614,22 @@ namespace Tag.Art
 
             Sample stride = Pull(1f, 24.7f, 0f);
             Sample tuck = Pull(1f, -16f, 0f);
-            if (stride.ArmPitchL > -70f || stride.ArmPitchR > -70f) return false;
-            if (stride.ArmPitchL < -100f || stride.ArmPitchR < -100f) return false;
+            if (stride.ArmPitchR > -100f || stride.ArmPitchR < -140f) return false;
+            if (stride.ElbowR > -40f) return false;
+            if (stride.ArmPitchL < -40f || stride.ArmPitchL > 10f) return false;
+            if (stride.ArmYawL > -50f) return false;
             if (Mathf.Abs(stride.ArmPitchL - tuck.ArmPitchL) > 0.05f) return false;
             if (Mathf.Abs(stride.ArmPitchR - tuck.ArmPitchR) > 0.05f) return false;
-            if (stride.ArmPitchL - stride.ArmPitchR > 16f) return false;
+            if (stride.ArmPitchR >= stride.ArmPitchL) return false;
             if (stride.ThighL <= stride.ThighR) return false;
-            if (tuck.KneeL > -80f || tuck.KneeR > -80f) return false;
-            if (tuck.KneeL >= stride.KneeL - 40f) return false;
-            if (stride.Spine < LatchSpine || stride.Hip < LatchHip) return false;
+            if (Mathf.Abs(stride.ThighL - stride.ThighR) > 12f) return false;
+            if (tuck.KneeL > -24f || tuck.KneeR > -24f) return false;
+            if (tuck.KneeL >= stride.KneeL) return false;
+            if (stride.Hip + stride.Spine > 28f) return false;
+            if (stride.Head < 8f) return false;
             Sample strideOther = Pull(-1f, 24.7f, 0f);
             if (strideOther.ThighR <= strideOther.ThighL) return false;
+            if (Mathf.Abs(strideOther.ThighL - strideOther.ThighR) > 12f) return false;
             Sample leaned = Pull(0f, 0f, LeanYawMax);
             if (Mathf.Abs(leaned.SpineYaw - LeanYawMax) > 0.05f) return false;
 
@@ -703,7 +715,7 @@ namespace Tag.Art
                 + " snapSpine=" + snap.Spine.ToString("0")
                 + " snapZ=" + snapHand.z.ToString("0.00")
                 + " returnPitch=" + home.ArmPitchR.ToString("0")
-                + " pull=two-hand-line"
+                + " pull=yank"
                 + " pullPitch=" + pull.ArmPitchR.ToString("0") + "/" + pull.ArmPitchL.ToString("0")
                 + " pullChest=" + (pull.Hip + pull.Spine).ToString("0")
                 + " pullZ=" + pullR.z.ToString("0.00") + "/" + pullL.z.ToString("0.00")
@@ -743,21 +755,14 @@ namespace Tag.Art
             if (snapHand.z > 0.15f) return false;
 
             Sample pull = Pull(0f, 0f, 0f);
-            if (pull.ArmPitchL > -70f || pull.ArmPitchR > -70f) return false;
-            if (pull.ArmPitchL < -100f || pull.ArmPitchR < -100f) return false;
-            if (Mathf.Abs(pull.ArmPitchL - pull.ArmPitchR) > 14f) return false;
-            if (pull.ElbowL < -12f || pull.ElbowR < -12f) return false;
-            if (pull.Spine + pull.Hip < 80f) return false;
+            if (pull.ArmPitchR > -100f || pull.ArmPitchR < -140f) return false;
+            if (pull.ElbowR > -40f) return false;
+            if (pull.ArmPitchL < -40f || pull.ArmYawL > -50f) return false;
+            if (pull.Spine + pull.Hip > 28f || pull.Spine + pull.Hip < 8f) return false;
+            if (pull.Head < 8f) return false;
             if (pull.ArmPitchR >= VerbPoseClips.PunchStrikePitch) return false;
-            if (pull.Spine + pull.Hip <= VerbPoseClips.PunchHipPitch + VerbPoseClips.PunchSpinePitch + 40f) return false;
             if (snap.ArmPitchR <= VerbPoseClips.PunchRecoverPitch) return false;
             if (Mathf.Abs(whip.ElbowR - VerbPoseClips.PunchCockElbow) < 70f) return false;
-
-            Vector3 pullR = LeadHand(pull.Hip + pull.Spine, pull.ArmPitchR, pull.ArmYawR, pull.ElbowR);
-            Vector3 pullL = OffHand(pull.Hip + pull.Spine, pull.ArmPitchL, pull.ArmYawL, pull.ElbowL);
-            if (pullR.z < 0.35f || pullL.z < 0.35f) return false;
-            if (Mathf.Abs(pullR.z - pullL.z) > 0.22f) return false;
-            if (Mathf.Abs(pullR.y - pullL.y) > 0.28f) return false;
 
             if (ReadWeight(0f, true, 0f) < 0.94f) return false;
             if (ReadWeight(0f, false, 0f) > 0.001f) return false;

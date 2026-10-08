@@ -25,10 +25,10 @@ namespace Tag.Art
         /// </summary>
         public const float SwingArmRoll = -56f;
         public const float SwingElbow = VerbPoseClips.ElbowClear;
-        /// <summary>Knee spread on the rise. The tucked legs otherwise meet the spine.</summary>
-        public const float SwingThighRoll = 14f;
-        public const float SwingThigh = 42f;
-        public const float SwingKnee = -52f;
+        /// <summary>Knee spread on the rise. Enough to keep the thighs off the spine.</summary>
+        public const float SwingThighRoll = 8f;
+        public const float SwingThigh = 36f;
+        public const float SwingKnee = -84f;
         public const float SwingHip = 6f;
         public const float SwingSpine = -4f;
         public const float SwingHead = -10f;
@@ -85,11 +85,11 @@ namespace Tag.Art
             return new Sample
             {
                 ThighL = thigh,
-                ThighR = thigh - 4f * (1f - open),
+                ThighR = thigh,
                 ThighRollL = -thighRoll,
                 ThighRollR = thighRoll,
                 KneeL = knee,
-                KneeR = knee + 6f * (1f - open),
+                KneeR = knee,
                 ArmPitchL = pitch,
                 ArmPitchR = pitch,
                 ArmYawL = yaw,

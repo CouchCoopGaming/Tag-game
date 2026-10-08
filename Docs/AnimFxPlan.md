@@ -230,6 +230,38 @@ Side stills, grey scene, red only on the pose overlap: `Docs/AnimStills/pass21/`
 
 StrafeJumpSim exits 0. Gameplay lines match the post-merge sim. One animation token moved because the exit fit prints this body pitch: `exit-fit` `grapple=-78` → `grapple=-109`.
 
+## Pass 22 (yank, thin rope, launch 3/4)
+
+The pull the last pass left in the picture was a spider on a pole: hip 40 and spine 42, both arms nearly straight, head −20, and a tuck knee of −94 that still dangled at the hold's downward speed. `ShoulderFlare` stays 24. The reach is still there, but it now ramps in once the higher arm is past −20° and is full at −40°, so a one-arm yank does not pop the latch off the reach.
+
+The hold is a yank. Body rope arm pitch −118, yaw −28, elbow −46. The other arm sits at pitch −12, yaw +68, elbow −28, about 59 cm out to the side. Hip 14 and spine 4, so the chest is 18° off vertical and about 8° off the rope. Head 18, chin up toward the anchor. The rope hand is 10 cm in front of the face and 9 cm above the crown. Thighs 12° and 6°, knees −28° and −18°, feet 27 cm apart and 21 cm behind the hips. The old −94 tuck is −36, so the hold no longer folds both knees up behind the hips.
+
+The cord is 1.2 cm (`RopeDiameter` 0.012). It stays straight while slack is at most 0.08, then eases to a 6 cm vertical drop. The 16 cm bar is gone, and the latched rope no longer falls back to that cylinder. `VerbFxLook.RopeSag` is unchanged, so `fx-verbs` stays put. The side still bows that same 6 cm off the chord, because a vertical drop on a rope 9° off vertical is almost along the rope and does not read from the side.
+
+Launch arms stay the V (pitch −155, yaw 140, roll ±56, elbow −10). `risePitch` stays −155. The rise legs were a 72 cm split with the free foot 37 cm behind the hips. Both legs now drive together: thigh 36, knee −84, roll ±8. Feet are 49 cm apart, 4 cm behind the hips, and the soles sit at z 0.31.
+
+Per frame on the seven grapple and launch clips, absolute depth, 0.5 cm, joined pieces exempt inside 3 cm. World 0. Pose fails 0.
+
+`no-clip clips=7 frames=40 worldMax=0.00 poseMax=0.42 rigMax=3.40 poseFails=0 rigJoint=39`
+
+- Pull, 15 frames: pose 0.01–0.11 cm, rig up to 2.35 cm (hip/thigh). The rope elbow hinge is joined, so it stays in `rigJoint`.
+- Release, 4 frames: pose 0.06–0.11 cm. The hold and release stills with a 6 cm sag are world 0.
+- Miss is unchanged: worst pose 0.42 cm, rig 3.40 cm on the off-arm hinge.
+- Launch rise and mill: pose 0.24 cm. Rig on the rise is 0.73 cm.
+
+The full 40-clip set was not re-run. Exit clips sample this pull through `ForBody`, so their arm channels moved with the yank and were not measured again here.
+
+Stills, dark backdrop and mid-grey floor, key and rim: `Docs/AnimStills/pass22/`. Backdrop pixels are about (89, 94, 101). The floor is about (150, 149, 146). Near-white pixels are under 0.01%. The pull cord is 2 px across and straight. The old cord in the before frame is 8 px across. Hold and release bow about 5 px off that line. The launch 3/4 frame shows both arms. Red overlap pixels are 0 because these frames are already under 0.5 cm. Each PNG is 1024×576 and under 400 KB.
+
+StrafeJumpSim exits 0. Gameplay lines match the pass 21 sim. Animation lines that moved:
+
+- grapple pose: `pullPitch=-78/-84 pullYaw=32/-32 pullElbow=-2/-4 pullSpine=42 pullHip=40 pullHead=-20 strideThigh=20/-30 tuckKnee=-94 pullRead=-84` → `pullPitch=-118/-12 pullYaw=28/-68 pullElbow=-46/-28 pullSpine=4 pullHip=14 pullHead=18 strideThigh=12/6 tuckKnee=-36 pullRead=-12`
+- grapple-pose-polish: `pull=two-hand-line pullPitch=-78/-84 pullChest=82 pullZ=0.73/0.73` → `pull=yank pullPitch=-118/-12 pullChest=18 pullZ=0.18/0.02`
+- rope: `width=0.16 halo=0.30` → `width=0.01 halo=0.02` (the constants are 0.012 and 0.016; the line prints two decimals)
+- body-line: `rope=60.0>0.0` → `rope=4.0>0.0`
+- handoff2: `grappleOut=13.0>5.9` → `grappleOut=21.2>9.6`
+- exit-fit: `grapple=-109` → `grapple=-118`
+
 ## FX queue
 
 Running dust, the comic words, the verb layer, and the pass-5 effects are in.

@@ -271,7 +271,7 @@ namespace Tag.Art
             if (Mathf.Abs(WallArc(WallJumpPose.BeatSeconds + WallJumpPose.EaseSeconds) - 1f) > 0.001f) return false;
             if (WallStep(false) < 20f) return false;
             if (WallStep(true) > WallStep(false) * 0.65f) return false;
-            if (RopeKink(40f, false) < 40f) return false;
+            if (RopeKink(40f, false) > 12f) return false;
             if (RopeKink(40f, true) > 0.05f) return false;
             if (Mathf.Abs(LineFix(70f, 40f) - (-30f)) > 0.01f) return false;
             if (ZipMiss(false) < 40f || ZipMiss(true) > 0.05f) return false;

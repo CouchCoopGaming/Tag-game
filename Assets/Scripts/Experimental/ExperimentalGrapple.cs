@@ -248,30 +248,15 @@ namespace Tag.Experimental
                     return;
                 }
 
-                if (FxAmount.Show(GameSettings.Current))
-                {
-                    float dist = (end - hand).magnitude;
-                    float slack = 0f;
-                    if (_ropeLength > dist + 0.02f && _ropeLength > 0.05f)
-                        slack = (_ropeLength - dist) / _ropeLength;
-                    if (slack > 1f) slack = 1f;
-                    float tension = 1f - slack;
-                    if (_rope != null)
-                    {
-                        _rope.startWidth = GrappleRopeTell.RopeStartWidth;
-                        _rope.endWidth = GrappleRopeTell.RopeEndWidth;
-                    }
-                    if (_halo != null)
-                    {
-                        _halo.startWidth = GrappleRopeTell.HaloWidth;
-                        _halo.endWidth = GrappleRopeTell.RopeEndWidth;
-                    }
-                    VerbFxRope.Lay(_rope, hand, end, tension, slack, Time.time);
-                    VerbFxRope.Lay(_halo, hand, end, tension, slack, Time.time);
-                    if (_mesh != null) _mesh.gameObject.SetActive(false);
-                }
-                else
-                    PlaceSpan(_rope, _halo, _mesh, hand, end, GrappleRopeTell.RopeStartWidth, GrappleRopeTell.RopeEndWidth, GrappleRopeTell.HaloWidth);
+                float dist = (end - hand).magnitude;
+                float slack = 0f;
+                if (_ropeLength > dist + 0.02f && _ropeLength > 0.05f)
+                    slack = (_ropeLength - dist) / _ropeLength;
+                if (slack > 1f) slack = 1f;
+                LayCord(_rope, hand, end, slack, GrappleRopeTell.RopeDiameter);
+                if (_halo != null)
+                    LayCord(_halo, hand, end, slack, GrappleRopeTell.HaloWidth);
+                if (_mesh != null) _mesh.gameObject.SetActive(false);
                 HideSpan(_aim, null, _aimMesh);
                 PlaceKnot(end, GrappleRopeTell.HookMarkerSize);
                 TickLatchFlash(hand, end);
@@ -389,6 +374,24 @@ namespace Tag.Experimental
             _mesh = MakeBar("GrappleRopeMesh", _root, coreMat);
             _aimMesh = MakeBar("GrappleAimMesh", _root, aimMat);
             _knot = MakeKnot("GrappleHookKnot", _root, coreMat);
+        }
+
+        static void LayCord(LineRenderer line, Vector3 a, Vector3 b, float slack, float width)
+        {
+            if (line == null) return;
+            const int n = 8;
+            if (line.positionCount != n) line.positionCount = n;
+            line.startWidth = width;
+            line.endWidth = width;
+            line.enabled = true;
+            float sag = GrappleRopeTell.CordSag(slack);
+            Vector3 span = b - a;
+            for (int i = 0; i < n; i++)
+            {
+                float t = i / (float)(n - 1);
+                float bell = 4f * t * (1f - t);
+                line.SetPosition(i, a + span * t + Vector3.down * (sag * bell));
+            }
         }
 
         void PlaceSpan(LineRenderer core, LineRenderer halo, Transform mesh, Vector3 a, Vector3 b, float startWidth, float endWidth, float haloWidth)

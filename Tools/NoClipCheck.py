@@ -406,7 +406,24 @@ def place_solid(kind, pieces):
         if len(hand) == 0:
             return made
         origin = centroid(hand)
-        made.append(add_cyl("SolidRope", origin, origin + Vector((0.0, 0.4, 2.4)), 0.015))
+        end = origin + Vector((0.0, 0.4, 2.4))
+        # 1.2 cm cord. A taut pull is straight. Hold and release pass a mid sag.
+        sag = float(os.environ.get("NOCLIP_ROPE_SAG", "0") or 0)
+        radius = 0.006
+        if sag <= 0.001:
+            made.append(add_cyl("SolidRope", origin, end, radius))
+        else:
+            steps = 6
+            span = end - origin
+            for i in range(steps):
+                t0 = i / float(steps)
+                t1 = (i + 1) / float(steps)
+
+                def at(t, span=span, origin=origin, sag=sag):
+                    bell = 4.0 * t * (1.0 - t)
+                    return origin + span * t + Vector((0.0, 0.0, -sag * bell))
+
+                made.append(add_cyl("SolidRope%d" % i, at(t0), at(t1), radius))
     return made
 
 
@@ -702,6 +719,14 @@ def check_clip(arm, base, parent, clip):
             pose_pairs[wpair] = max(pose_pairs.get(wpair, 0.0), wdepth)
         for score, name in hits:
             pose_pairs[name] = max(pose_pairs.get(name, 0.0), score)
+        if os.environ.get("NOCLIP_PERFRAME") == "1":
+            print(
+                "FRAME", clip["name"],
+                "t", round(t, 3),
+                "pose", cm(pdepth), ppair,
+                "rig", cm(rdepth), rpair,
+                "world", cm(wdepth), wpair,
+            )
         if wdepth > world_max:
             world_max = wdepth
         if pdepth > pose_max:
