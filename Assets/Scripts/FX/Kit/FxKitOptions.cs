@@ -19,6 +19,12 @@ namespace Tag.FX
         public const int Count = 7;
 
         public static readonly bool[] On = new bool[Count];
+
+        /// <summary>
+        /// Speed lines on air dash and grapple pull. Off unless turned on,
+        /// so a 4-way split does not gain another moving layer. Not one of the seven rows.
+        /// </summary>
+        public static bool SpeedLines;
         static readonly string[] Keys =
         {
             "land", "grapple", "immune", "stagger", "launch", "wall", "tag"
@@ -46,7 +52,13 @@ namespace Tag.FX
         {
             for (int i = 0; i < Count; i++)
                 On[i] = true;
+            SpeedLines = false;
             Rebuild();
+        }
+
+        public static void ToggleSpeedLines()
+        {
+            SpeedLines = !SpeedLines;
         }
 
         public static bool Enabled(int slot)
@@ -79,6 +91,9 @@ namespace Tag.FX
                 text.Append(On[i] ? '1' : '0');
                 text.Append('\n');
             }
+            text.Append("lines=");
+            text.Append(SpeedLines ? '1' : '0');
+            text.Append('\n');
             return text.ToString();
         }
 
@@ -104,10 +119,23 @@ namespace Tag.FX
                     int slot = Match(blob, i, eq);
                     if (slot >= 0 && eq + 1 < nl)
                         On[slot] = blob[eq + 1] != '0';
+                    else if (SameKey(blob, i, eq, "lines") && eq + 1 < nl)
+                        SpeedLines = blob[eq + 1] != '0';
                 }
                 i = nl + 1;
             }
             Rebuild();
+        }
+
+        static bool SameKey(string blob, int start, int end, string key)
+        {
+            int len = end - start;
+            if (key.Length != len) return false;
+            for (int c = 0; c < len; c++)
+            {
+                if (blob[start + c] != key[c]) return false;
+            }
+            return true;
         }
 
         static int Match(string blob, int start, int end)

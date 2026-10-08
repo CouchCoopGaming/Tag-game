@@ -66,15 +66,17 @@ namespace Tag.FX
             float k = Strength(speed);
             var spec = new Spec();
             spec.Radius = 1.45f + k * 1.85f;
-            spec.Chunk = 0.34f + k * 0.22f;
+            // Chips stay grit-sized. Speed changes how many fly and how high, not how big.
+            spec.Chunk = 0.08f;
             int bits = BitsMin + (int)(k * 14f);
             if (bits < BitsMin) bits = BitsMin;
             if (bits > BitsMax) bits = BitsMax;
             spec.Bits = bits;
             spec.Life = LifeSeconds;
             spec.Opacity = 0.42f + k * 0.48f;
-            spec.HopLo = 0.30f + k * 0.25f;
-            spec.HopHi = 0.48f + k * 0.32f;
+            // A sprint slam stays near the ground. A hard land kicks 0.3–0.8 m.
+            spec.HopLo = 0.04f + k * 0.26f;
+            spec.HopHi = 0.10f + k * 0.70f;
             spec.Splinter = 0f;
             spec.Plumes = 0;
             // Pale grey concrete, green-brown grass, tan dirt, wood splinters plus dust.
@@ -100,9 +102,9 @@ namespace Tag.FX
             }
             else if (surface == (int)DustLook.Surface.Wood)
             {
-                spec.R = 0.40f;
-                spec.G = 0.22f;
-                spec.B = 0.08f;
+                spec.R = 0.62f;
+                spec.G = 0.48f;
+                spec.B = 0.28f;
                 spec.DustR = 0.80f;
                 spec.DustG = 0.70f;
                 spec.DustB = 0.52f;
@@ -130,9 +132,9 @@ namespace Tag.FX
             }
             else
             {
-                spec.R = 0.58f;
-                spec.G = 0.56f;
-                spec.B = 0.52f;
+                spec.R = 0.50f;
+                spec.G = 0.49f;
+                spec.B = 0.47f;
                 spec.DustR = 0.76f;
                 spec.DustG = 0.75f;
                 spec.DustB = 0.72f;
@@ -176,6 +178,7 @@ namespace Tag.FX
             public float G;
             public float B;
             public float Shape;
+            public float Settle;
             public byte On;
         }
 
@@ -339,7 +342,16 @@ namespace Tag.FX
                     if (n.y > 0.75f && pos.y < 0.03f)
                     {
                         pos.y = 0.03f;
-                        if (vel.y < 0f) vel.y = 0f;
+                        if (vel.y < 0f)
+                        {
+                            // One short bounce, then they stay down and fade. No pile.
+                            if (_piece[k].Settle < 0f && -vel.y > 0.8f)
+                                vel.y = -vel.y * 0.28f;
+                            else
+                                vel.y = 0f;
+                            if (_piece[k].Settle < 0f) _piece[k].Settle = 0f;
+                        }
+                        if (_piece[k].Settle >= 0f) _piece[k].Settle += dt;
                     }
                     _piece[k].Vel = vel;
                     _bit[k].localPosition = pos;
@@ -354,7 +366,13 @@ namespace Tag.FX
                     _bit[k].localScale = new Vector3(wide, tall, 1f);
                     Color c = new Color(_piece[k].R, _piece[k].G, _piece[k].B, 1f);
                     float a = fade;
-                    if (_piece[k].Shape < 0.5f) a *= 0.72f;
+                    if (_piece[k].Shape < 0.5f) a *= 0.62f;
+                    else if (_piece[k].Settle >= 0f)
+                    {
+                        float settled = _piece[k].Settle / 0.08f;
+                        if (settled > 1f) settled = 1f;
+                        a *= 1f - settled;
+                    }
                     c.a = a;
                     _bitMat[k].color = c;
                     _bitRend[k].enabled = true;
@@ -392,6 +410,7 @@ namespace Tag.FX
                 Piece piece = _piece[k];
                 piece.On = 0;
                 piece.Vel = Vector3.zero;
+                piece.Settle = -1f;
                 _bitRend[k].enabled = false;
                 if (b < n)
                 {
@@ -400,7 +419,8 @@ namespace Tag.FX
                     float ang = (b + h * 0.35f) * 6.2831855f / n;
                     float hop = Mathf.Lerp(spec.HopLo, spec.HopHi, h2);
                     float vy = Mathf.Sqrt(2f * Gravity * hop);
-                    float spread = spec.Radius * (1.6f + h * 3.2f);
+                    float pace = StrengthFromRadius(spec.Radius);
+                    float spread = (0.8f + pace * 2.2f) * (0.4f + h);
                     Vector3 radial = tangent * Mathf.Cos(ang) + bitangent * Mathf.Sin(ang);
                     Vector3 vel;
                     float start;
@@ -416,28 +436,41 @@ namespace Tag.FX
                         start = 0.35f;
                     }
                     piece.Vel = vel;
-                    piece.Size = spec.Chunk * (0.75f + h2 * 0.55f);
-                    piece.R = spec.R * (0.82f + h * 0.28f);
-                    piece.G = spec.G * (0.82f + h2 * 0.28f);
-                    piece.B = spec.B * (0.82f + h * 0.22f);
+                    // Most chips 2–4 cm. The square bias keeps the 8 cm ones rare.
+                    float span = h2 * h2;
+                    piece.Size = 0.02f + span * 0.06f;
+                    if (piece.Size > 0.08f) piece.Size = 0.08f;
+                    float shade = 0.82f + h * 0.28f;
+                    piece.R = spec.R * shade;
+                    piece.G = spec.G * shade;
+                    piece.B = spec.B * shade;
+                    piece.Settle = -1f;
                     bool grass = spec.Splinter > 1.5f;
-                    bool splinter = !grass && spec.Splinter > 0.5f && (b & 1) == 0;
-                    if (splinter)
+                    bool dirtClod = grass && (b % 4) == 0;
+                    bool splinter = !grass && spec.Splinter > 0.5f;
+                    if (dirtClod)
+                    {
+                        piece.Shape = ShapeChunk;
+                        piece.Aspect = 0.75f + h * 0.35f;
+                        piece.R = 0.42f * shade;
+                        piece.G = 0.26f * shade;
+                        piece.B = 0.12f * shade;
+                    }
+                    else if (splinter)
                     {
                         piece.Shape = ShapeSplinter;
-                        piece.Aspect = 0.28f;
-                        piece.Size *= 1.35f;
+                        piece.Aspect = 0.22f;
                     }
                     else if (grass)
                     {
                         piece.Shape = ShapeSplinter;
-                        piece.Aspect = 1.7f;
+                        piece.Aspect = 1.8f;
                         piece.Size *= 0.85f;
                     }
                     else
                     {
                         piece.Shape = ShapeChunk;
-                        piece.Aspect = 0.85f + h * 0.4f;
+                        piece.Aspect = 0.7f + h * 0.5f;
                     }
                     piece.On = 1;
                     _bit[k].localPosition = normal * start + radial * (0.08f + h * 0.16f);

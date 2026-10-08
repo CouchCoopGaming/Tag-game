@@ -72,6 +72,14 @@ namespace Tag.FX
         readonly float[] _streakAge = new float[FxKitLook.Streaks];
         readonly Vector3[] _streakA = new Vector3[FxKitLook.Streaks];
         readonly Vector3[] _streakB = new Vector3[FxKitLook.Streaks];
+        const int AirLines = 6;
+        const float AirLife = 0.16f;
+        readonly float[] _airAge = new float[AirLines];
+        readonly Vector3[] _airA = new Vector3[AirLines];
+        readonly Vector3[] _airB = new Vector3[AirLines];
+        int _airCursor;
+        float _airGap;
+        bool _airWas;
 
         Mote[] _dust;
         Mote[] _spark;
@@ -85,6 +93,7 @@ namespace Tag.FX
         LineRenderer _launchRing;
         LineRenderer[] _scuffLines;
         LineRenderer[] _streaks;
+        LineRenderer[] _air;
         Renderer _disc;
         Transform _discT;
 
@@ -129,6 +138,12 @@ namespace Tag.FX
             {
                 _streaks[i] = MakeLine("FxStreak");
                 _streakAge[i] = -1f;
+            }
+            _air = new LineRenderer[AirLines];
+            for (int i = 0; i < AirLines; i++)
+            {
+                _air[i] = MakeLine("FxAir");
+                _airAge[i] = -1f;
             }
             _discT = MakeQuad(root, "FxDisc", _sprite, out _disc);
             _discT.localRotation = Quaternion.Euler(90f, 0f, 0f);
@@ -182,6 +197,7 @@ namespace Tag.FX
             TickLaunch(dt, settings, density);
             TickWall(dt, settings, density);
             TickFlash(dt, settings);
+            TickAir(dt, settings);
             Remember();
         }
 
@@ -730,6 +746,18 @@ namespace Tag.FX
                 if (_stars[i] != null) _stars[i].enabled = false;
         }
 
+        void HideAir()
+        {
+            _airWas = false;
+            _airGap = 0f;
+            if (_air == null) return;
+            for (int i = 0; i < _air.Length; i++)
+            {
+                _airAge[i] = -1f;
+                if (_air[i] != null) _air[i].enabled = false;
+            }
+        }
+
         void HideStreaks()
         {
             if (_streaks == null) return;
@@ -745,6 +773,99 @@ namespace Tag.FX
             if (_bars == null) return;
             for (int i = 0; i < _bars.Length; i++)
                 if (_bars[i] != null) _bars[i].enabled = false;
+        }
+
+        /// <summary>
+        /// Short seat-tinted streaks behind an air dash or a grapple pull.
+        /// They sit behind the body and die in a fraction of a second.
+        /// SpeedLines defaults off so four split panes stay readable.
+        /// </summary>
+        void TickAir(float dt, GameSettings settings)
+        {
+            if (_air == null) return;
+            bool allow = FxKitOptions.SpeedLines && FxKitLook.Master(settings);
+            if (allow && settings != null && settings.AnyReduceFlash()) allow = false;
+            bool dash = allow && Motor != null && Motor.IsAirDashing;
+            bool pull = allow
+                && Grapple != null
+                && Grapple.IsPulling
+                && FxKitLook.Bursts(settings, FxKitOptions.Grapple);
+            if (dash || pull)
+            {
+                _airGap += dt;
+                if (!_airWas || _airGap >= 0.045f)
+                {
+                    _airGap = 0f;
+                    SpawnAir(dash);
+                }
+            }
+            else
+                _airGap = 0f;
+            _airWas = dash || pull;
+            for (int i = 0; i < _air.Length; i++)
+            {
+                if (_airAge[i] < 0f)
+                {
+                    if (_air[i] != null) _air[i].enabled = false;
+                    continue;
+                }
+                _airAge[i] += dt;
+                if (_airAge[i] > AirLife || _air[i] == null)
+                {
+                    _airAge[i] = -1f;
+                    if (_air[i] != null) _air[i].enabled = false;
+                    continue;
+                }
+                float u = 1f - _airAge[i] / AirLife;
+                _air[i].enabled = true;
+                _air[i].SetPosition(0, _airA[i]);
+                _air[i].SetPosition(1, _airB[i]);
+                _air[i].startWidth = 0.07f * u;
+                _air[i].endWidth = 0.018f * u;
+                float a = 0.42f * u;
+                var c = new Color(_cr * 0.5f + 0.5f, _cg * 0.5f + 0.5f, _cb * 0.5f + 0.5f, a);
+                _air[i].startColor = c;
+                c.a = 0.02f;
+                _air[i].endColor = c;
+            }
+        }
+
+        void SpawnAir(bool dash)
+        {
+            Vector3 origin = _root.position;
+            Vector3 dir;
+            if (dash)
+            {
+                dir = Motor.AirDashDirection;
+                dir.y = 0f;
+            }
+            else
+            {
+                Vector3 anchor;
+                float length;
+                float slack;
+                if (Grapple.TryGetRope(out anchor, out length, out slack))
+                    dir = origin - anchor;
+                else if (_root.forward.sqrMagnitude > 0.0001f)
+                    dir = -_root.forward;
+                else
+                    dir = Vector3.back;
+                dir.y *= 0.2f;
+            }
+            if (dir.sqrMagnitude < 0.0001f) dir = Vector3.forward;
+            dir.Normalize();
+            Vector3 side = Vector3.Cross(Vector3.up, dir);
+            if (side.sqrMagnitude < 0.0001f) side = Vector3.right;
+            else side.Normalize();
+            int slot = _airCursor % _air.Length;
+            _airCursor++;
+            float h = ((slot * 37) % 10) / 10f;
+            float height = 0.32f + (slot % 5) * 0.16f;
+            float len = 0.85f + h * 0.55f;
+            Vector3 start = origin + Vector3.up * height + side * ((h - 0.45f) * 0.5f) - dir * 0.22f;
+            _airA[slot] = start;
+            _airB[slot] = start - dir * len;
+            _airAge[slot] = 0.0001f;
         }
 
         void HideActive()
@@ -766,6 +887,7 @@ namespace Tag.FX
             }
             HideStars();
             HideStreaks();
+            HideAir();
             HideBars();
             if (_shock != null) _shock.enabled = false;
             if (_dustRing != null) _dustRing.enabled = false;
@@ -888,7 +1010,7 @@ namespace Tag.FX
             go.transform.SetParent(_root, false);
             var line = go.AddComponent<LineRenderer>();
             line.positionCount = name == "FxRopeShimmer" ? 8 : FxKitLook.RingSeg;
-            if (name == "FxScuff" || name == "FxStreak") line.positionCount = 2;
+            if (name == "FxScuff" || name == "FxStreak" || name == "FxAir") line.positionCount = 2;
             line.useWorldSpace = true;
             line.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
             line.receiveShadows = false;

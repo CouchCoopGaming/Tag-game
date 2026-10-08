@@ -76,9 +76,12 @@ Shader "Tag/FxKitSprite"
 
             float ChunkMask(float2 p)
             {
+                // Flat-sided chip. The sides are uneven, so it is not a round gem.
                 float ang = atan2(p.y, p.x);
-                float wob = 0.62 + 0.10 * sin(ang * 3.0) + 0.08 * sin(ang * 5.0 + 1.7);
-                return saturate(1.0 - smoothstep(wob - 0.05, wob + 0.02, length(p)));
+                float side = floor((ang + 3.14159265) * 0.95);
+                float wob = 0.48 + 0.18 * sin(side * 1.7 + 0.6) + 0.06 * sin(ang * 2.0 + 1.4);
+                float r = length(p * float2(1.25, 0.78));
+                return saturate(1.0 - smoothstep(wob - 0.03, wob + 0.04, r));
             }
 
             float SplinterMask(float2 p)
