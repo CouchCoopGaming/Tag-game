@@ -402,6 +402,10 @@ namespace TagArena.Movement
             v = ApplyZipRide(v, dt);
 
             _velocity = VerbIntegration.FiniteOrZero(v);
+            // Evasion is off unless the flag is set. Vertical stays the jump the button wrote.
+            if (Tag.Gameplay.EvasionMoves.Enabled)
+                _velocity = Tag.Gameplay.EvasionMoves.Gate(
+                    GetInstanceID(), _velocity, dt, cfg.groundAccel, cfg.sprintSpeed, transform.forward, transform.right);
             FitController(v.y, CeilingClose());
             CollisionFlags flags = CollisionFlags.None;
             if (_cc != null && _cc.enabled)

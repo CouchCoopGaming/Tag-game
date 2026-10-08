@@ -13,6 +13,21 @@ static class Program
             PoseKeyDump.Write(Console.Out);
             return 0;
         }
+        if (args != null && args.Length > 0 && args[0] == "--pose-keys-evasion")
+        {
+            Tag.Art.EvasionPose.WriteKeys(Console.Out);
+            return 0;
+        }
+        if (args != null && args.Length > 0 && args[0] == "--evasion")
+        {
+            Console.WriteLine(Tag.Gameplay.EvasionMoves.ProofLine());
+            if (!Tag.Gameplay.EvasionMoves.Holds())
+            {
+                Console.Error.WriteLine("evasion moves are not held");
+                return 1;
+            }
+            return 0;
+        }
         if (args != null && args.Length > 0 && args[0] == "--proofs")
         {
             Console.WriteLine(Tag.Art.AirFeel.ProofLine());
@@ -1102,6 +1117,13 @@ static class Program
         if (playAt < 0 || galleryAt < 0 || galleryAt < playAt)
         {
             Console.Error.WriteLine("motion gallery is not after Play in the build list");
+            return 1;
+        }
+
+        Console.WriteLine(Tag.Gameplay.EvasionMoves.ProofLine());
+        if (!Tag.Gameplay.EvasionMoves.Holds())
+        {
+            Console.Error.WriteLine("evasion moves are not held");
             return 1;
         }
 

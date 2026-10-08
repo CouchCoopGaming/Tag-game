@@ -1,0 +1,4 @@
+no-clip clips=6 frames=115 worldMax=0.34 rawSelfMax=7.74 rigJoint=7.72 pose=0.0 fails=0
+spinL	0.033	rigJoint	Mesh_Hips	Mesh_UpperLeg_L	0.0774
+dive	0.067	rigJoint	Mesh_Hips	Mesh_UpperLeg_R	0.0774
+stutter	0.067	rigJoint	Mesh_Hips	Mesh_UpperLeg_R	0.0774
