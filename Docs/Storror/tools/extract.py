@@ -166,11 +166,12 @@ def main(cid):
         if cand is None:
             r0 = ref if ref is not None else (np.array(seed) if seed else None)
             cands = []
-            if ref is None and seed and i < 3:   # start-up: look around the seed point first (small subject)
-                sx, sy, hh = seed[0]*w0, seed[1]*h0, 0.3*h0
+            if ref is None and seed and i < C.get('seed_frames', 3):   # start-up: look around the seed point first (small subject)
+                sx, sy, hh = seed[0]*w0, seed[1]*h0, C.get('seed_half', 0.3)*h0   # optional tighter seed crop for small subjects
                 cands = [c for c in run(fr, (sx-hh, sy-hh, sx+hh, sy+hh)) if np.linalg.norm(c[0][11:].mean(0) - r0) < 0.15]
-            if not cands: cands = run(fr, (0, 0, w0, h0))
-            if not cands:
+            strict = ref is None and seed and C.get('seed_strict') and i < C.get('seed_frames', 3)  # optional: only accept the seeded subject at start-up
+            if not cands and not strict: cands = run(fr, (0, 0, w0, h0))
+            if not cands and not strict:
                 for x0 in (0, w0/4, w0/2):
                     cands += run(fr, (x0, 0, x0 + w0/2, h0))
             cand = pick(cands, r0, rsize)

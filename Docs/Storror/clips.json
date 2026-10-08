@@ -151,5 +151,63 @@
    0.54,
    0.46
   ]
+ },
+ {
+  "id": "17_slide_slope_crouch",
+  "vid": "SqD-i_dTxws",
+  "t0": 13.3,
+  "t1": 14.9,
+  "move": "feet-first crouched slide down a steep concrete slope, hand trailing, push-off and drop to the ground",
+  "verb": "slide",
+  "view": "front 3/4 from below, handheld tilt (vertical Short)",
+  "seed": [
+   0.45,
+   0.22
+  ],
+  "portrait": true,
+  "seed_half": 0.1,
+  "seed_frames": 40,
+  "seed_strict": true
+ },
+ {
+  "id": "18_vertical_wallrun_back",
+  "vid": "JcEVTBq_T8k",
+  "t0": 36.05,
+  "t1": 38.45,
+  "move": "run in and run straight up a vertical brick wall face, reach high, start to slide back down",
+  "verb": "wallclimb (vertical wall run)",
+  "view": "from behind, handheld (vertical Short)",
+  "seed": [
+   0.47,
+   0.5
+  ],
+  "portrait": true
+ },
+ {
+  "id": "19_vertical_wallrun_side",
+  "vid": "JcEVTBq_T8k",
+  "t0": 48.0,
+  "t1": 50.4,
+  "move": "run in and run up a curved warped wall to the vertical top section",
+  "verb": "wallclimb (vertical wall run)",
+  "view": "side-on at run-in, swinging to 3/4 behind, handheld (vertical Short)",
+  "seed": [
+   0.35,
+   0.6
+  ],
+  "portrait": true
+ },
+ {
+  "id": "20_wallpop_180",
+  "vid": "QvvJ2t9iVyE",
+  "t0": 62.4,
+  "t1": 64.3,
+  "move": "run in along an alley, plant a foot on the brick wall, pop off and turn 180 to land crouched on the low wall opposite",
+  "verb": "turn180 (wall-pop 180)",
+  "view": "front 3/4, handheld fisheye",
+  "seed": [
+   0.43,
+   0.35
+  ]
  }
 ]
