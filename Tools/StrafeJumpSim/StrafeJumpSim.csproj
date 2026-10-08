@@ -64,6 +64,8 @@
     <Compile Include="../../Assets/Scripts/Art/GaitBlend.cs" />
     <Compile Include="../../Assets/Scripts/Art/LocomotionPolish.cs" />
     <Compile Include="../../Assets/Scripts/Art/BodyLife.cs" />
+    <Compile Include="../../Assets/Scripts/Art/UpperBody.cs" />
+    <Compile Include="../../Assets/Scripts/Art/HangMotion.cs" />
     <Compile Include="../../Assets/Scripts/Art/TransitionMatrix.cs" />
     <Compile Include="../../Assets/Scripts/Art/JumpPose.cs" />
     <Compile Include="../../Assets/Scripts/Art/AirStrafeLeanPose.cs" />

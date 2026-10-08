@@ -706,6 +706,18 @@ static class Program
             Console.Error.WriteLine("transition matrix is not held");
             return 1;
         }
+        Console.WriteLine(Tag.Art.UpperBody.ProofLine());
+        Console.WriteLine(Tag.Art.HangMotion.ProofLine());
+        if (!Tag.Art.UpperBody.Holds())
+        {
+            Console.Error.WriteLine("upper body is not held");
+            return 1;
+        }
+        if (!Tag.Art.HangMotion.Holds())
+        {
+            Console.Error.WriteLine("hang motion is not held");
+            return 1;
+        }
         if (!AssetHas("Assets/Scripts/Art/DummyLocomotor.cs",
                 "SmoothMotion.Smooth",
                 "SmoothMotion.SecondsForSlew",
@@ -728,7 +740,13 @@ static class Program
                 "BodyLife.EntryPlant",
                 "BodyLife.ModeBlend",
                 "BodyLife.ArmPump",
-                "BodyLife.FlinchWeight"))
+                "BodyLife.FlinchWeight",
+                "UpperBody.KeepLegs",
+                "UpperBody.AimTwist",
+                "HangMotion.LegTrail",
+                "HangMotion.SwayExtra",
+                "HangMotion.RopeSpine",
+                "HangMotion.Windmill"))
         {
             Console.Error.WriteLine("smooth motion is not on the locomotor");
             return 1;
@@ -773,6 +791,33 @@ static class Program
         Tag.Art.SmoothMotion.WriteLocomotionStills(Path.Combine(still3, "loco-air-ik.png"));
         string still4 = Path.Combine(RepoRoot(), "Docs", "SmoothStills", "pass4");
         Tag.Art.SmoothMotion.WritePass4Stills(Path.Combine(still4, "idle-wall-flinch.png"));
+        string still5 = Path.Combine(RepoRoot(), "Docs", "SmoothStills", "pass5");
+        Tag.Art.SmoothMotion.WritePass5Stills(Path.Combine(still5, "layer-hang.png"));
+        if (!File.Exists(Path.Combine(RepoRoot(), "Assets", "Scenes", "MotionGallery.unity")))
+        {
+            Console.Error.WriteLine("motion gallery scene is missing");
+            return 1;
+        }
+        if (!AssetHas("Assets/Editor/MotionGalleryMenu.cs", "Tag/Motion Gallery", "MotionGallery.unity"))
+        {
+            Console.Error.WriteLine("motion gallery menu is missing");
+            return 1;
+        }
+        if (!AssetHas("Assets/Scripts/Art/MotionGallery.cs",
+                "DefaultExecutionOrder(-300)",
+                "Time.timeScale"))
+        {
+            Console.Error.WriteLine("motion gallery driver is missing");
+            return 1;
+        }
+        string buildList = File.ReadAllText(Path.Combine(RepoRoot(), "ProjectSettings", "EditorBuildSettings.asset"));
+        int playAt = buildList.IndexOf("Assets/Scenes/Play.unity", StringComparison.Ordinal);
+        int galleryAt = buildList.IndexOf("Assets/Scenes/MotionGallery.unity", StringComparison.Ordinal);
+        if (playAt < 0 || galleryAt < 0 || galleryAt < playAt)
+        {
+            Console.Error.WriteLine("motion gallery is not after Play in the build list");
+            return 1;
+        }
 
         Console.WriteLine("solo grapple on; opponent and couch off; jet off; clips and locks held");
         return 0;

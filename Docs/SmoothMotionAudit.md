@@ -118,6 +118,19 @@ The largest root pair is mantle → ground (and vault → ground, the same exit 
 
 Stick figures from the joint angles are in `Docs/SmoothStills/pass4/idle-wall-flinch.png`. Twelve rows, eight frames. Idle, crouch, slide, slip, wall handoff, and flinch. Before, then after.
 
+## Pass 5
+
+The owner can watch every verb in one scene, and the upper body can play on top of a live stride.
+
+- `Assets/Scenes/MotionGallery.unity` is a row of Hier dummies. Each one runs the real motor and the real pose stack through one loop: run start, stop, and pivot; climb cycle and the top; wall run and wall jump; vault; mantle; slide; dash; punch and lunge; zip; pad; grapple pull and release; stagger and flinch; idle It beside an idle runner. A label sits over each dummy. The camera orbits the row. F switches to a free-fly camera. T sets `Time.timeScale` to 0.25 and the scene puts it back to 1 when it closes. Gameplay `slowMo` stays 0. The menu is Tag → Motion Gallery. Play stays the first enabled build scene. The gallery is listed after Boot and left disabled, so the smoke line stays `scenes=2`.
+- A punch, a lunge tell, and a grapple aim move the arms and twist the spine toward the aim. While the pawn is running, sliding, airborne, or wall-running, the legs keep that cycle. A stand can still take a full-body punch. The lunge burst still commits the legs. Measured: run, slide, air, and wall keep legs (`upper-body run=1 slide=1 air=1 wall=1 idle=0 twist=36`).
+- A zip hang adds sway and a leg trail that grow with ride speed and sit at 0 when the ride is stopped. At speed 14 the trail is −22° and the extra sway is 6°, on top of the authored sway of 7°. A grapple pull pitches the chest along the rope (18° when the rope is 40° up) and trails the legs (−16° at speed 14). A pad arc windmills the arms on the way up (28° at the launch rise) and the windmill is 0 on the way down. Zip speed, pull speed, and the pad arc are unchanged.
+- The transition matrix was run again. All 57 pairs stay under the pass-1 limits. Worst pose is still air → punch, 228.8° down to 17.4°. Worst root is still mantle → ground, 0.710 m down to 0.086 m. `over=0`. The response line is still 0/0 on every verb.
+
+Stick figures from the joint angles are in `Docs/SmoothStills/pass5/layer-hang.png`. Twelve rows, eight frames. Punch, lunge tell, grapple aim, zip hang, rope pull, and pad windmill. Before, then after.
+
+Items 2–9 below stay as they are. Exit poses, the landing roll, landing tiers, and particles stay with the anim-fx lane.
+
 ## TODO still open
 
 1. Done this pass. Small `LookRotation` steps ease. Large steps still snap with the mouse.
