@@ -17,7 +17,7 @@ namespace Tag.Art
 
         public struct Sample
         {
-            public float ThighL, ThighR, KneeL, KneeR, YawL, YawR;
+            public float ThighL, ThighR, KneeL, KneeR, YawL, YawR, ThighRollL, ThighRollR;
             public float ArmL, ArmR, ArmYawL, ArmYawR, RollL, RollR;
             public float ElbowL, ElbowR, ElbowYawL, ElbowYawR;
             public float Hip, Spine, Head, Lean, HipYaw, SpineYaw, HeadYaw;
@@ -44,11 +44,17 @@ namespace Tag.Art
             if (stutter.Drop > -0.14f || stutter.Drop < -0.21f) return false;
             if (stutter.Hip < 10f) return false;
             Sample dive = MovePose(EvasionMoves.Kind.Dive, 1, EvasionMoves.DiveFlight * 0.9f, EvasionMoves.MoveSeconds(EvasionMoves.Kind.Dive));
-            if (dive.Hip < 60f) return false;
-            if (dive.Drop > -0.35f) return false;
-            if (dive.Bank > 1f) return false;
+            if (dive.Hip < 45f) return false;
+            if (dive.Head > -18f) return false;
+            if (dive.ArmL > -20f || dive.Drop > -0.28f) return false;
+            if (dive.Bank > 0.01f || dive.Bank < -0.01f) return false;
             Sample roll = MovePose(EvasionMoves.Kind.Dive, 1, EvasionMoves.DiveFlight + EvasionMoves.DiveRecover * 0.55f, EvasionMoves.MoveSeconds(EvasionMoves.Kind.Dive));
-            if (roll.Bank < 70f) return false;
+            if (roll.KneeL > -70f || roll.KneeR > -70f) return false;
+            if (roll.Hip > 70f) return false;
+            Sample late = MovePose(EvasionMoves.Kind.Dive, 1, EvasionMoves.DiveFlight + EvasionMoves.DiveRecover * 0.92f, EvasionMoves.MoveSeconds(EvasionMoves.Kind.Dive));
+            if (late.KneeL > -45f || late.KneeR > -45f) return false;
+            if (late.ElbowL > -25f || late.ElbowR > -25f) return false;
+            if (late.ArmL > 24f || late.ArmR > 24f) return false;
             Sample exit = At(EvasionMoves.Kind.Stutter, 1, EvasionMoves.Duration(EvasionMoves.Kind.Stutter));
             if (Mathf.Abs(exit.Drop) > 0.02f) return false;
             return true;
@@ -90,7 +96,7 @@ namespace Tag.Art
             Sample end = MovePose(kind, sign, move, move);
             float u = exit > 0f ? (time - entry - move) / exit : 1f;
             Sample outBlend = Lerp(end, run, Smooth(u));
-            if (kind == EvasionMoves.Kind.Stutter || kind == EvasionMoves.Kind.Juke || kind == EvasionMoves.Kind.Dive)
+            if (kind == EvasionMoves.Kind.Stutter || kind == EvasionMoves.Kind.Juke || kind == EvasionMoves.Kind.Spin || kind == EvasionMoves.Kind.Dive)
             {
                 float up = u * 2.4f;
                 if (up > 1f) up = 1f;
@@ -98,6 +104,20 @@ namespace Tag.Art
                 float lift = kind == EvasionMoves.Kind.Dive ? end.Drop + 0.03f : end.Drop;
                 outBlend.Drop = Mathf.Lerp(lift, 0f, e);
                 outBlend.Seat = Mathf.Lerp(end.Seat, 0f, e);
+            }
+            if (kind == EvasionMoves.Kind.Spin)
+            {
+                // The exit arm blend walks an upper arm through the chest. The run arms are clear.
+                outBlend.ArmL = run.ArmL;
+                outBlend.ArmR = run.ArmR;
+                outBlend.ArmYawL = run.ArmYawL;
+                outBlend.ArmYawR = run.ArmYawR;
+                outBlend.RollL = run.RollL;
+                outBlend.RollR = run.RollR;
+                outBlend.ElbowL = run.ElbowL;
+                outBlend.ElbowR = run.ElbowR;
+                outBlend.ElbowYawL = run.ElbowYawL;
+                outBlend.ElbowYawR = run.ElbowYawR;
             }
             return outBlend;
         }
@@ -126,6 +146,7 @@ namespace Tag.Art
                 Field(w, c, s.ElbowYawL); Field(w, c, s.ElbowYawR);
                 Field(w, c, s.HeadYaw);
                 Field(w, c, s.Bank); Field(w, c, s.Seat);
+                Field(w, c, s.ThighRollL); Field(w, c, s.ThighRollR);
                 w.WriteLine();
                 if (t >= dur) break;
             }
@@ -200,8 +221,8 @@ namespace Tag.Art
             sample.ThighR = 6f - 6f * side;
             sample.KneeL = Mathf.Lerp(-68f, -50f, w);
             sample.KneeR = Mathf.Lerp(-50f, -68f, w);
-            sample.FootL = Mathf.Lerp(4f, 12f, w);
-            sample.FootR = Mathf.Lerp(12f, 4f, w);
+            sample.FootL = Mathf.Lerp(4f, 14f, w);
+            sample.FootR = Mathf.Lerp(14f, 4f, w);
             sample.ArmL = -20f * side;
             sample.ArmR = 20f * side;
             sample.ElbowL = -30f;
@@ -216,28 +237,32 @@ namespace Tag.Art
             if (u > 1f) u = 1f;
             float yaw = u >= 0.999f ? 360f * sign : 360f * u * sign;
             float lead = u < 0.40f ? 36f * (1f - u / 0.40f) : 0f;
-            float outDrive = u < 0.82f ? 0f : Smooth((u - 0.82f) / 0.18f);
             Sample s = new Sample();
             s.HipYaw = yaw;
             s.HeadYaw = lead * sign;
-            s.Head = -8f;
-            s.Hip = 8f;
-            s.Lean = Mathf.Lerp(13f, 4f, outDrive) * sign;
-            s.Drop = SpinDrop(local);
-            float side = Mathf.Abs(Mathf.Sin(yaw * sign * 0.5f * 0.0174533f));
-            // Left foot is the pivot. The free foot stays bent so only the pivot reaches.
-            s.ThighL = Mathf.Lerp(14f, 8f, outDrive);
-            s.ThighR = Mathf.Lerp(-4f, -8f, outDrive);
-            s.KneeL = Mathf.Lerp(-44f, -36f, outDrive);
-            s.KneeR = Mathf.Lerp(-82f - 8f * side, -48f, outDrive);
-            s.FootL = 10f;
+            s.Head = -12f;
+            s.Hip = 16f;
+            s.Spine = 8f;
+            s.Lean = 16f * sign;
+            s.Drop = -0.125f;
+            // Left foot is the pivot. The knee keeps that sole down while the hips stay low.
+            s.ThighL = 22f;
+            s.ThighR = 10f;
+            s.KneeL = SpinKnee(local);
+            s.KneeR = -96f;
+            s.FootL = 14f;
             s.FootR = 2f;
-            s.ArmL = 6f;
-            s.ArmR = 6f;
-            s.RollL = Mathf.Lerp(-42f, -8f, outDrive);
-            s.RollR = Mathf.Lerp(42f, 8f, outDrive);
-            s.ElbowL = Mathf.Lerp(-64f, -28f, outDrive);
-            s.ElbowR = Mathf.Lerp(-64f, -28f, outDrive);
+            // Inside arm folds across the chest. Outside arm stays close, elbow bent.
+            s.ArmL = -6f;
+            s.ArmR = 8f;
+            s.ArmYawL = 0f;
+            s.ArmYawR = -4f;
+            s.RollL = 10f;
+            s.RollR = 12f;
+            s.ElbowL = -70f;
+            s.ElbowR = -52f;
+            s.ElbowYawL = 8f;
+            s.ElbowYawR = -6f;
             if (sign < 0)
             {
                 float thigh = s.ThighL;
@@ -253,240 +278,263 @@ namespace Tag.Art
                 float armYaw = s.ArmYawL;
                 float roll = s.RollL;
                 float elbow = s.ElbowL;
+                float elbowYaw = s.ElbowYawL;
                 s.ArmL = s.ArmR;
                 s.ArmYawL = -s.ArmYawR;
                 s.RollL = -s.RollR;
                 s.ElbowL = s.ElbowR;
+                s.ElbowYawL = -s.ElbowYawR;
                 s.ArmR = arm;
                 s.ArmYawR = -armYaw;
                 s.RollR = -roll;
                 s.ElbowR = elbow;
+                s.ElbowYawR = -elbowYaw;
             }
             return s;
         }
 
         static Sample Juke(float local, float move)
         {
-            float u = move > 0f ? local / move : 1f;
-            if (u < 0f) u = 0f;
-            if (u > 1f) u = 1f;
-            float fake = 1f - Smooth(u);
-            float commit = Smooth(u);
+            // Head and trunk reach the new direction, then the hips follow one frame later.
+            float headDone = 0.12f;
+            float hipStart = 0.087f;
+            float headU = Smooth(headDone > 0f ? local / headDone : 1f);
+            float hipU = local <= hipStart ? 0f : Smooth((local - hipStart) / (move - hipStart));
             Sample s = new Sample();
-            s.Drop = JukeDrop(local);
-            s.Hip = Mathf.Lerp(14f, 20f, commit);
-            s.Lean = Mathf.Lerp(-10f, 14f, commit);
-            s.SpineYaw = -20f * fake + 12f * commit;
-            s.HeadYaw = -28f * fake + 12f * commit;
-            s.Head = -6f;
-            s.YawL = 12f;
-            s.YawR = -16f;
-            s.ThighL = 4f;
-            s.ThighR = 10f;
-            s.KneeL = -72f;
-            s.KneeR = -48f;
+            s.Drop = -0.1765f;
+            s.Hip = Mathf.Lerp(18f, 22f, hipU);
+            s.Spine = 6f;
+            s.Head = -8f;
+            s.Lean = Mathf.Lerp(12f, 18f, headU);
+            s.SpineYaw = Mathf.Lerp(-18f, 16f, headU);
+            s.HeadYaw = Mathf.Lerp(-24f, 18f, headU);
+            s.HipYaw = Mathf.Lerp(0f, 14f, hipU);
+            s.YawL = 6f;
+            s.YawR = -26f;
+            s.ThighRollL = -4f;
+            s.ThighRollR = 24f;
+            s.ThighL = -6f;
+            s.ThighR = 4f;
+            s.KneeL = -92f;
+            s.KneeR = JukeKnee(local);
             s.FootL = 2f;
-            s.FootR = 12f;
-            s.ArmL = 14f * fake - 4f * commit;
-            s.ArmR = -6f * fake - 14f * commit;
-            s.ElbowL = -24f;
-            s.ElbowR = -30f;
+            s.FootR = 14f;
+            s.ArmL = Mathf.Lerp(8f, -12f, headU);
+            s.ArmR = Mathf.Lerp(-4f, -18f, headU);
+            s.ElbowL = -30f;
+            s.ElbowR = -38f;
             return s;
         }
 
         static Sample Dive(float local)
         {
             float flight = EvasionMoves.DiveFlight;
-            Sample push = new Sample();
-            push.Drop = -0.10f;
-            push.Hip = 34f;
-            push.Head = -8f;
-            push.ThighL = 18f;
-            push.ThighR = 10f;
-            push.KneeL = -46f;
-            push.KneeR = -40f;
-            push.FootL = 10f;
-            push.FootR = 6f;
-            push.ArmL = 8f;
-            push.ArmR = 8f;
-            push.ElbowL = -18f;
-            push.ElbowR = -18f;
-            Sample palm = Palm();
-            if (local <= flight)
-            {
-                float u = Smooth(flight > 0f ? local / flight : 1f);
-                return Lerp(push, palm, u);
-            }
-            float recover = EvasionMoves.DiveRecover;
-            float ru = recover > 0f ? (local - flight) / recover : 1f;
-            if (ru < 0f) ru = 0f;
-            if (ru > 1f) ru = 1f;
-            // Hands stay on the floor, then the shoulder roll, then the feet.
-            if (ru < 0.14f)
-                return palm;
-            float rollU = (ru - 0.14f) / 0.86f;
-            if (rollU < 0f) rollU = 0f;
-            if (rollU > 1f) rollU = 1f;
-            return RollAt(rollU);
+            float handsAt = flight + 0.02f;
+            float tuckAt = flight + 0.12f;
+            float shoulderAt = flight + 0.24f;
+            float bridgeAt = flight + 0.35f;
+            float hipAt = flight + 0.42f;
+            float crouchAt = flight + 0.55f;
+            Sample reach = DiveReach();
+            Sample hands = DiveHands();
+            Sample tuck = DiveTuck();
+            Sample shoulder = DiveShoulder();
+            Sample bridge = DiveBridge();
+            Sample hip = DiveHip();
+            Sample crouch = DiveCrouch();
+            if (local <= handsAt)
+                return Lerp(reach, hands, Smooth(handsAt > 0f ? local / handsAt : 1f));
+            if (local <= tuckAt)
+                return Lerp(hands, tuck, Smooth((local - handsAt) / (tuckAt - handsAt)));
+            if (local <= shoulderAt)
+                return Lerp(tuck, shoulder, Smooth((local - tuckAt) / (shoulderAt - tuckAt)));
+            if (local <= bridgeAt)
+                return Lerp(shoulder, bridge, Smooth((local - shoulderAt) / (bridgeAt - shoulderAt)));
+            if (local <= hipAt)
+                return Lerp(bridge, hip, Smooth((local - bridgeAt) / (hipAt - bridgeAt)));
+            if (local <= crouchAt)
+                return Lerp(hip, crouch, Smooth((local - hipAt) / (crouchAt - hipAt)));
+            return crouch;
         }
 
-        /// <summary>Low dive. The fist's flat face is on the floor. An open palm turns the upper arm through the chest.</summary>
-        static Sample Palm()
+        static Sample DiveReach()
         {
             Sample s = new Sample();
-            s.Drop = -0.628f;
-            s.Hip = 74f;
-            s.Spine = 6f;
+            s.Drop = -0.16f;
+            s.Hip = 36f;
+            s.Spine = 4f;
             s.Head = -12f;
-            s.ThighL = 14f;
-            s.ThighR = 8f;
-            s.KneeL = -28f;
-            s.KneeR = -22f;
-            s.FootL = 8f;
-            s.FootR = 4f;
-            SetArms(ref s, -15f, 0f, -8f);
+            s.Lean = 4f;
+            s.ThighL = 16f;
+            s.ThighR = 12f;
+            s.KneeL = -42f;
+            s.KneeR = -36f;
+            s.FootL = 10f;
+            s.FootR = 8f;
+            s.ArmL = -22f;
+            s.ArmR = -22f;
+            s.ElbowL = -18f;
+            s.ElbowR = -18f;
             return s;
         }
 
-        /// <summary>
-        /// Landing-roll keys from the roll lane, banked on the right shoulder.
-        /// Peak bank is 135°, which puts the shoulder down and keeps the head up.
-        /// </summary>
-        static Sample RollAt(float u)
-        {
-            Sample tuck = RollBones(26f, 18f, -26f, 12f, 8f, -74f, -68f);
-            Sample sweep = RollBones(16f, 18f, -22f, 10f, 6f, -72f, -66f);
-            Sample hand = RollBones(12f, 16f, -22f, 10f, 6f, -70f, -64f);
-            Sample shoulder = RollBones(10f, 16f, -24f, 16f, 12f, -72f, -66f);
-            Sample legs = RollBones(-4f, -6f, -22f, 22f, 16f, -60f, -54f);
-            Sample plant = RollBones(12f, 8f, -8f, 20f, 12f, -32f, -18f);
-            Sample rise = RollBones(6f, 2f, -2f, 18f, 8f, -20f, -14f);
-            Sample s = Piece(u, tuck, sweep, hand, shoulder, legs, plant, rise);
-            s.Bank = BankDegrees(u * 360f);
-            s.Drop = -0.15f;
-            s.Seat = RollSeat(u);
-            return s;
-        }
-
-        static Sample RollBones(float hip, float spine, float head, float thL, float thR, float knL, float knR)
+        /// <summary>Forward reach. Hands meet the floor and the chin is in. The chest stays up.</summary>
+        static Sample DiveHands()
         {
             Sample s = new Sample();
-            s.Hip = hip;
-            s.Spine = spine;
-            s.Head = head;
-            s.ThighL = thL;
-            s.ThighR = thR;
-            s.KneeL = knL;
-            s.KneeR = knR;
+            s.Drop = -0.470f;
+            s.Hip = 58f;
+            s.Spine = 10f;
+            s.Head = -34f;
+            s.Lean = 8f;
+            s.ThighL = 30f;
+            s.ThighR = 22f;
+            s.KneeL = -72f;
+            s.KneeR = -64f;
             s.FootL = 6f;
             s.FootR = 4f;
-            // Same tuck that stays off the chest on the spin. The bank does the roll.
-            s.ArmL = 6f;
-            s.ArmR = 6f;
-            s.RollL = -40f;
-            s.RollR = 40f;
-            s.ElbowL = -62f;
-            s.ElbowR = -62f;
+            s.ArmL = -36f;
+            s.ArmR = -36f;
+            s.ElbowL = -16f;
+            s.ElbowR = -16f;
             return s;
         }
 
-        static Sample Piece(float u, Sample a, Sample b, Sample c, Sample d, Sample e, Sample f, Sample g)
+        /// <summary>Arms leave the floor before the shoulder takes the contact.</summary>
+        static Sample DiveTuck()
         {
-            if (u < 0.18f) return Lerp(a, b, Smooth(u / 0.18f));
-            if (u < 0.36f) return Lerp(b, c, Smooth((u - 0.18f) / 0.18f));
-            if (u < 0.52f) return Lerp(c, d, Smooth((u - 0.36f) / 0.16f));
-            if (u < 0.68f) return Lerp(d, e, Smooth((u - 0.52f) / 0.16f));
-            if (u < 0.84f) return Lerp(e, f, Smooth((u - 0.68f) / 0.16f));
-            return Lerp(f, g, Smooth((u - 0.84f) / 0.16f));
+            Sample s = new Sample();
+            s.Drop = -0.46f;
+            s.Hip = 78f;
+            s.Spine = 4f;
+            s.Head = -24f;
+            s.Lean = 22f;
+            s.ThighL = 12f;
+            s.ThighR = 8f;
+            s.KneeL = -140f;
+            s.KneeR = -132f;
+            s.FootL = 2f;
+            s.FootR = 0f;
+            s.ArmL = 70f;
+            s.ArmR = 60f;
+            s.ElbowL = 20f;
+            s.ElbowR = 16f;
+            return s;
         }
 
-        /// <summary>Same curve as the landing roll. 135° is the shoulder. Past that the head becomes the contact.</summary>
-        public static float BankDegrees(float spin)
+        /// <summary>Right shoulder on the floor. The hands stay up off it.</summary>
+        static Sample DiveShoulder()
         {
-            if (spin < 0f) spin = 0f;
-            if (spin > 360f) spin = 360f;
-            const float halfPi = 1.5707963f;
-            if (spin <= 110f)
-                return 135f * Mathf.Sin(spin / 110f * halfPi);
-            return 135f * Mathf.Sin((360f - spin) / 250f * halfPi);
+            Sample s = new Sample();
+            s.Drop = -0.808f;
+            s.Hip = 95f;
+            s.Spine = 2f;
+            s.Head = -16f;
+            s.Lean = 30f;
+            s.ThighL = 10f;
+            s.ThighR = 6f;
+            s.KneeL = -150f;
+            s.KneeR = -142f;
+            s.FootL = 2f;
+            s.FootR = 0f;
+            s.ArmL = 70f;
+            s.ArmR = 60f;
+            s.ElbowL = 20f;
+            s.ElbowR = 16f;
+            return s;
         }
 
-        public static Vector3 RollAxis()
+        /// <summary>Between the shoulder and the opposite hip. The drop keeps the thigh off the floor.</summary>
+        static Sample DiveBridge()
         {
-            Vector3 a = new Vector3(0.62f, -0.10f, 0.78f);
-            float m = Mathf.Sqrt(a.x * a.x + a.y * a.y + a.z * a.z);
-            return new Vector3(a.x / m, a.y / m, a.z / m);
+            Sample s = new Sample();
+            s.Drop = -0.510f;
+            s.Hip = 42f;
+            s.Spine = 2f;
+            s.Head = -12f;
+            s.Lean = -8f;
+            s.ThighL = 30f;
+            s.ThighR = 17f;
+            s.KneeL = -154f;
+            s.KneeR = -146f;
+            s.FootL = 2f;
+            s.FootR = 2f;
+            s.ArmL = 22f;
+            s.ArmR = 18f;
+            s.ElbowL = -32f;
+            s.ElbowR = -27f;
+            return s;
         }
 
-        public static Vector3 RollPivot()
+        /// <summary>Opposite hip. Both knees stay tucked so the thigh, not the foot, is down.</summary>
+        static Sample DiveHip()
         {
-            return new Vector3(0.30f, 1.15f, 0.12f);
+            Sample s = new Sample();
+            s.Drop = -0.481f;
+            s.Hip = 26f;
+            s.Spine = 2f;
+            s.Head = -10f;
+            s.Lean = -20f;
+            s.ThighL = 36f;
+            s.ThighR = 20f;
+            s.KneeL = -155f;
+            s.KneeR = -148f;
+            s.FootL = 4f;
+            s.FootR = 4f;
+            s.ArmL = 8f;
+            s.ArmR = 6f;
+            s.ElbowL = -48f;
+            s.ElbowR = -40f;
+            return s;
         }
 
-        /// <summary>Where the visual origin moves when it orbits the lead shoulder. Not capsule motion.</summary>
-        public static Vector3 OrbitDelta(float degrees)
+        static Sample DiveCrouch()
         {
-            Vector3 pivot = RollPivot();
-            Vector3 axis = RollAxis();
-            Vector3 v = new Vector3(-pivot.x, -pivot.y, -pivot.z);
-            float rad = degrees * 0.017453292f;
-            float c = Mathf.Cos(rad);
-            float s = Mathf.Sin(rad);
-            float dot = axis.x * v.x + axis.y * v.y + axis.z * v.z;
-            float cx = axis.y * v.z - axis.z * v.y;
-            float cy = axis.z * v.x - axis.x * v.z;
-            float cz = axis.x * v.y - axis.y * v.x;
-            float k = 1f - c;
-            return new Vector3(
-                pivot.x + v.x * c + cx * s + axis.x * dot * k,
-                pivot.y + v.y * c + cy * s + axis.y * dot * k,
-                pivot.z + v.z * c + cz * s + axis.z * dot * k);
+            Sample s = new Sample();
+            s.Drop = -0.30f;
+            s.Hip = 28f;
+            s.Spine = 8f;
+            s.Head = -8f;
+            s.Lean = 3f;
+            s.ThighL = 16f;
+            s.ThighR = 10f;
+            s.KneeL = -64f;
+            s.KneeR = -58f;
+            s.FootL = 14f;
+            s.FootR = 12f;
+            s.ArmL = 4f;
+            s.ArmR = 2f;
+            s.ElbowL = -38f;
+            s.ElbowR = -34f;
+            return s;
         }
 
-        static float RollSeat(float u)
+        static float SpinKnee(float local)
         {
-            // Measured on the banked mesh: extra root Y that puts the lowest vertex on the floor.
-            float[] at = { 0.061f, 0.127f, 0.191f, 0.255f, 0.321f, 0.385f, 0.449f, 0.515f, 0.579f, 0.643f, 0.709f, 0.772f, 0.836f, 0.902f, 0.966f, 1f };
-            float[] seat = { -0.228f, -0.697f, -0.932f, -0.971f, -0.975f, -0.967f, -0.952f, -0.932f, -0.893f, -0.843f, -0.839f, -0.580f, -0.248f, -0.009f, 0.123f, 0.140f };
-            return Table(u, at, seat);
+            // Second measure. The pivot knee keeps the sole down at a fixed hip height.
+            float[] at = { 0f, 0.033f, 0.067f, 0.100f, 0.133f, 0.167f, 0.200f, 0.233f, 0.267f, 0.300f, 0.350f };
+            float[] knee = { -40.9f, -51.6f, -63.5f, -69.2f, -67.2f, -59.5f, -50.8f, -43.8f, -38.7f, -36.0f, -36.8f };
+            return Table(local, at, knee);
         }
 
-        static float SpinDrop(float local)
+        static float JukeKnee(float local)
         {
-            // Pivot sole seated to 0.3 cm through the turn. Lean makes the gap move with yaw.
-            float[] at = { 0f, 0.033f, 0.067f, 0.100f, 0.133f, 0.167f, 0.200f, 0.233f, 0.267f, 0.300f, 0.333f, 0.350f };
-            float[] drop = { -0.110f, -0.083f, -0.054f, -0.036f, -0.034f, -0.048f, -0.074f, -0.103f, -0.124f, -0.123f, -0.073f, -0.050f };
-            return Table(local, at, drop);
-        }
-
-        static float JukeDrop(float local)
-        {
-            // Outside sole seated to 0.3 cm. The inside foot stays up.
+            // Outside knee. It lifts the sole as the trunk leans in, so the hip height can stay put.
             float[] at = { 0f, 0.033f, 0.067f, 0.100f, 0.133f, 0.167f, 0.200f, 0.220f };
-            float[] drop = { -0.166f, -0.161f, -0.151f, -0.143f, -0.144f, -0.151f, -0.159f, -0.163f };
-            return Table(local, at, drop);
+            float[] knee = { -43.9f, -45.1f, -47.9f, -50.0f, -50.6f, -50.6f, -50.5f, -50.4f };
+            return Table(local, at, knee);
         }
 
-        static float Table(float local, float[] at, float[] drop)
+        static float Table(float local, float[] at, float[] value)
         {
-            if (local <= at[0]) return drop[0];
+            if (local <= at[0]) return value[0];
             int last = at.Length - 1;
-            if (local >= at[last]) return drop[last];
+            if (local >= at[last]) return value[last];
             int i = 1;
             while (i < last && at[i] < local) i++;
             float span = at[i] - at[i - 1];
             float t = span > 0.0001f ? (local - at[i - 1]) / span : 0f;
-            return drop[i - 1] + (drop[i] - drop[i - 1]) * t;
-        }
-
-        static void SetArms(ref Sample s, float pitch, float yaw, float elbow)
-        {
-            s.ArmL = pitch;
-            s.ArmR = pitch;
-            s.ArmYawL = yaw;
-            s.ArmYawR = -yaw;
-            s.ElbowL = elbow;
-            s.ElbowR = elbow;
+            return value[i - 1] + (value[i] - value[i - 1]) * t;
         }
 
         static Sample Mirror(Sample s)
@@ -499,10 +547,13 @@ namespace Tag.Art
             s.KneeL = s.KneeR;
             s.FootL = s.FootR;
             s.YawL = -s.YawR;
+            float rollThigh = s.ThighRollL;
+            s.ThighRollL = -s.ThighRollR;
             s.ThighR = thigh;
             s.KneeR = knee;
             s.FootR = foot;
             s.YawR = -yaw;
+            s.ThighRollR = -rollThigh;
             float arm = s.ArmL;
             float armYaw = s.ArmYawL;
             float roll = s.RollL;
@@ -534,6 +585,8 @@ namespace Tag.Art
             s.KneeR = Mathf.Lerp(a.KneeR, b.KneeR, w);
             s.YawL = Mathf.Lerp(a.YawL, b.YawL, w);
             s.YawR = Mathf.Lerp(a.YawR, b.YawR, w);
+            s.ThighRollL = Mathf.Lerp(a.ThighRollL, b.ThighRollL, w);
+            s.ThighRollR = Mathf.Lerp(a.ThighRollR, b.ThighRollR, w);
             s.ArmL = Mathf.Lerp(a.ArmL, b.ArmL, w);
             s.ArmR = Mathf.Lerp(a.ArmR, b.ArmR, w);
             s.ArmYawL = Mathf.Lerp(a.ArmYawL, b.ArmYawL, w);

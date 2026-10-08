@@ -15567,8 +15567,8 @@ namespace Tag.Art
             if (_hips != null) _hips.localRotation = _hips0 * Quaternion.Euler(s.Hip, s.HipYaw, s.Lean);
             if (_spine != null) _spine.localRotation = _spine0 * Quaternion.Euler(s.Spine, s.SpineYaw, 0f);
             if (_head != null) _head.localRotation = _head0 * Quaternion.Euler(s.Head, s.HeadYaw, 0f);
-            if (_upperLegL != null) _upperLegL.localRotation = _ulL0 * Quaternion.Euler(s.ThighL, s.YawL, 0f);
-            if (_upperLegR != null) _upperLegR.localRotation = _ulR0 * Quaternion.Euler(s.ThighR, s.YawR, 0f);
+            if (_upperLegL != null) _upperLegL.localRotation = _ulL0 * Quaternion.Euler(s.ThighL, s.YawL, s.ThighRollL);
+            if (_upperLegR != null) _upperLegR.localRotation = _ulR0 * Quaternion.Euler(s.ThighR, s.YawR, s.ThighRollR);
             if (_lowerLegL != null) _lowerLegL.localRotation = _llL0 * Quaternion.Euler(s.KneeL, 0f, 0f);
             if (_lowerLegR != null) _lowerLegR.localRotation = _llR0 * Quaternion.Euler(s.KneeR, 0f, 0f);
             if (_footL != null) _footL.localRotation = _ftL0 * Quaternion.Euler(s.FootL, 0f, 0f);
@@ -19384,25 +19384,13 @@ namespace Tag.Art
         {
             Transform pivot = YawPivot();
             float evasion = 0f;
-            float seat = 0f;
-            float bank = 0f;
-            Vector3 orbit = Vector3.zero;
             if (Tag.Gameplay.EvasionMoves.Enabled && _motor != null)
             {
                 EvasionPose.Sample evasionPose;
                 if (Tag.Gameplay.EvasionMoves.TrySample(_motor.GetInstanceID(), out evasionPose))
-                {
                     evasion = evasionPose.Drop;
-                    seat = evasionPose.Seat;
-                    bank = evasionPose.Bank;
-                    if (bank > 0.01f || bank < -0.01f)
-                        orbit = EvasionPose.OrbitDelta(bank);
-                }
             }
-            Vector3 offset = new Vector3(orbit.x, bob + evasion + seat + orbit.y, orbit.z) + nudge + _visualLag + _chestLocal;
-            bool onMotor = _motor != null && pivot == _motor.transform;
-            if (!onMotor && pivot != null && (bank > 0.01f || bank < -0.01f))
-                pivot.localRotation = pivot.localRotation * Quaternion.AngleAxis(bank, EvasionPose.RollAxis());
+            Vector3 offset = new Vector3(0f, bob + evasion, 0f) + nudge + _visualLag + _chestLocal;
             if (pivot != null && pivot != transform)
             {
                 pivot.localPosition = _pivot0 + offset;

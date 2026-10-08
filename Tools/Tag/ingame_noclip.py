@@ -49,6 +49,8 @@ def load_keys(path):
                 "headYaw": nums[26] if len(nums) > 26 else 0.0,
                 "bank": nums[27] if len(nums) > 27 else 0.0,
                 "seat": nums[28] if len(nums) > 28 else 0.0,
+                "thRollL": nums[29] if len(nums) > 29 else 0.0,
+                "thRollR": nums[30] if len(nums) > 30 else 0.0,
             })
     return frames
 

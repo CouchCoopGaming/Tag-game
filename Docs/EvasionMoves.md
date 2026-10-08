@@ -29,10 +29,10 @@ Joined parent/child overlap is `rigJoint`, at any depth, and it belongs to the r
 
 | Clip | Read |
 |---|---|
-| `stutter` | Hips sit about 15 cm down, then about 22 cm on the burst. The plant knee is about 50° and the swing knee about 68°. The chops alternate. On 10 of the 12 move frames a support sole is within 0.34 cm of the floor. Two switches are airborne, about 10 cm, and they are short. Shoulders stay square. |
-| `spinL`, `spinR` | The pivot sole stays within 0.34 cm of the floor on every move frame. The free foot stays up. Hips drop with the lean so the pivot does not float as the body turns. The head still leads by up to 36°, the trunk leans 13°, and the forearms fold across the front. Upper arms stay off the chest. |
-| `jukeL`, `jukeR` | The outside sole is planted on every move frame, within 0.33 cm. The outside knee is about 48° so it can reach, and the inside knee is about 72° so that foot stays up. The head and spine still fake opposite the cut, then the trunk leans into the push. |
-| `dive` | A low launch brings the hips down to about 0.43 m. The hands meet the floor (0.3 cm) on the flat of the resting fist. Turning that fist so the back of the hand points straight up pulls the upper arm through the chest, so the palm plate is as flat as this reach allows: the bottom of the hand spans about 1.4 cm. The recovery then uses the landing-roll bank from the roll lane, peaking at 135° on the right shoulder. The shoulder and forearm are the contact, the head stays up, and the feet come back under the body into the run. The orbit and the seat are visual. The capsule stays on the motor. Flight is still 3.00 m and the recovery is still 0.60 s. |
+| `stutter` | Unchanged from the planted pass. Hips sit about 15 cm down, then about 22 cm on the burst. The plant knee is about 50° and the swing knee about 68°. On 9 of the 12 move frames a support sole is within 0.44 cm. Two switches are airborne, about 10 cm. One late plant sole is 0.52 cm up, just outside the band. The plant ankle is flatter, so the foot-box corner that was 0.42 cm through the floor is now 0.12 cm. Shoulders stay square. |
+| `spinL`, `spinR` | Hips stay 12.5 cm under the run for the whole turn. The pivot sole is planted on every move frame, within 0.43 cm, and the free foot stays up. The trunk leans 16° into the turn and the chest pitches over the pivot. The inside forearm folds across the front of the chest. The outside arm stays bent and close, a counterweight, not a straight wing. |
+| `jukeL`, `jukeR` | The outside foot plants about 70–75 cm from the inside foot, shoulder width plus about 25 cm. The head and spine reach 15–18° into the cut while the hips are still square, then the hips yaw. The hips sit about 18 cm down. The outside sole is within 0.47 cm on every move frame. A foot-box corner is 0.11 cm through the floor. |
+| `dive` | Bone rotations only. There is no visual-root bank. At 0.33 s the hands are on the floor (0.3 cm), the chin is tucked, and the hips are still 0.58 m up, so it is a reach and not a belly flop. The right upper arm is the low point by 0.57 s (0.8 cm). The left thigh is the low point at 0.70 s (0.1 cm). At 0.87 s the body is a crouch, knees bent, feet down, and the hands are 36 cm off the floor. Flight is still 3.00 m and the recovery is still 0.60 s. The resting fist is what meets the floor. An open palm still pulls the upper arm through the chest. |
 
 ## Proposed bindings
 
@@ -57,20 +57,20 @@ A modifier that is not a new button is the other pad option if the right-stick f
 
 No-clip, every 30 fps frame of the six clips. A pair that shares a joint is `rigJoint`. `pose` is non-adjacent pairs plus the floor, and it is 0 when every one of those is at or under 0.5 cm:
 
-`no-clip clips=6 frames=115 worldMax=0.42 rigJoint=7.93 pose=0.0 fails=0`
+`no-clip clips=6 frames=115 worldMax=0.12 rigJoint=7.96 pose=0.0 fails=0`
 
-`rigJoint` is the hip/thigh cuff, owned by the rig lane. `pose` is 0 because every non-adjacent pair and every floor contact is at or under 0.5 cm. The deepest of those is 0.43 cm, spine into a thigh during the dive roll. One stutter plant has a foot-box corner 0.42 cm into the floor while that sole patch is 0.20 cm up. The long foot box is what leaves the corner.
+`rigJoint` is the hip/thigh cuff, owned by the rig lane. `pose` is 0 because every non-adjacent pair and every floor contact is at or under 0.5 cm. The deepest of those is 0.42 cm, spine into a thigh on the dive. The deepest floor contact is 0.12 cm, a stutter foot-box corner. The juke plant corner is 0.11 cm. The ankle was re-keyed. The body was not lifted to hide either corner.
 
 Support soles, same band as the storror sole gap (within 0.5 cm). Planted frames and the max gap, in centimetres:
 
-`ground-contact stutter planted=10/12 maxGap=0.34 frames=0.133:L:0.19,0.167:L:0.19,0.200:R:0.19,0.233:R:0.19,0.267:L:0.19,0.300:L:0.16,0.333:R:0.05,0.367:R:0.09,0.433:L:0.20,0.467:L:0.34`
+`ground-contact stutter planted=9/12 maxGap=0.44 frames=0.133:L:0.44,0.167:L:0.44,0.200:R:0.44,0.233:R:0.44,0.267:L:0.44,0.300:L:0.40,0.333:R:0.29,0.367:R:0.31,0.433:L:0.39`
 
-`ground-contact spinL planted=11/11 maxGap=0.34 frames=0.100:R:0.34,0.133:R:0.26,0.167:R:0.29,0.200:R:0.25,0.233:R:0.26,0.267:R:0.33,0.300:R:0.32,0.333:R:0.26,0.367:R:0.30,0.400:R:0.31,0.433:R:0.25`
+`ground-contact spinL planted=11/11 maxGap=0.43 frames=0.100:R:0.43,0.133:R:0.30,0.167:R:0.14,0.200:R:0.25,0.233:R:0.33,0.267:R:0.33,0.300:R:0.30,0.333:R:0.28,0.367:R:0.19,0.400:R:0.18,0.433:R:0.04`
 
-`ground-contact spinR planted=11/11 maxGap=0.34 frames=0.100:L:0.34,0.133:L:0.26,0.167:L:0.29,0.200:L:0.25,0.233:L:0.26,0.267:L:0.33,0.300:L:0.32,0.333:L:0.26,0.367:L:0.30,0.400:L:0.31,0.433:L:0.25`
+`ground-contact spinR planted=11/11 maxGap=0.43 frames=0.100:L:0.43,0.133:L:0.30,0.167:L:0.14,0.200:L:0.25,0.233:L:0.33,0.267:L:0.33,0.300:L:0.30,0.333:L:0.28,0.367:L:0.19,0.400:L:0.18,0.433:L:0.04`
 
-`ground-contact jukeL planted=7/7 maxGap=0.33 frames=0.100:L:0.33,0.133:L:0.30,0.167:L:0.25,0.200:L:0.32,0.233:L:0.26,0.267:L:0.29,0.300:L:0.25`
+`ground-contact jukeL planted=7/7 maxGap=0.47 frames=0.100:L:0.40,0.133:L:0.33,0.167:L:0.42,0.200:L:0.44,0.233:L:0.47,0.267:L:0.44,0.300:L:0.44`
 
-`ground-contact jukeR planted=7/7 maxGap=0.33 frames=0.100:R:0.33,0.133:R:0.30,0.167:R:0.25,0.200:R:0.32,0.233:R:0.26,0.267:R:0.29,0.300:R:0.25`
+`ground-contact jukeR planted=7/7 maxGap=0.47 frames=0.100:R:0.40,0.133:R:0.33,0.167:R:0.42,0.200:R:0.44,0.233:R:0.47,0.267:R:0.44,0.300:R:0.44`
 
-Stills, side and three-quarter, seven frames each, are in `Docs/EvasionStills/pass3/`. The floor is mid-grey with a grid. Stutter and juke plant frames carry a 4× inset of the feet. Pass 2 is still in `Docs/EvasionStills/pass2/`. Pass 1 is still in `Docs/EvasionStills/pass1/`.
+Stills, side and three-quarter, seven frames each, are in `Docs/EvasionStills/pass4/`. The floor is mid-grey with a grid. Stutter and juke plant frames carry a 4× inset of the feet. Pass 3 is still in `Docs/EvasionStills/pass3/`. Pass 2 is still in `Docs/EvasionStills/pass2/`. Pass 1 is still in `Docs/EvasionStills/pass1/`.
