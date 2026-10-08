@@ -495,18 +495,18 @@ def _fascia(g, spec, lod):
     bev = 0.004 if lod == 0 else 0.0
     segs = 1 if lod == 0 else 0
     half = spec["width"] * 0.5
+    # The loft cap is the body-color nose. Lamps and the lower grille sit on that face.
     for sign in (-1.0, 1.0):
-        g.box((sign * spec["lamp_x"], spec["lamp_y"], z1 - 0.016), (0.30, 0.100, 0.018), "Lib_Black", bevel=bev, segs=segs)
-        g.box((sign * spec["lamp_x"], spec["lamp_y"], z1 - 0.006), (0.22, 0.064, 0.010), "Lib_Headlamp")
-        g.box((sign * spec["lamp_x"], spec["tail_y"], z0 + 0.016), (0.32, 0.110, 0.018), "Lib_Black", bevel=bev, segs=segs)
-        g.box((sign * spec["lamp_x"], spec["tail_y"], z0 + 0.006), (0.24, 0.070, 0.010), "Lib_Taillamp")
-    # Lower grille in the bumper. The nose between the lamps stays body color.
-    g.box((0.0, spec["grille_y"], z1 - 0.020), (spec["grille_w"], 0.16, 0.028), "Lib_Black")
+        g.box((sign * spec["lamp_x"], spec["lamp_y"], z1 + 0.004), (0.30, 0.100, 0.016), "Lib_Black", bevel=bev, segs=segs)
+        g.box((sign * spec["lamp_x"], spec["lamp_y"], z1 + 0.014), (0.22, 0.064, 0.010), "Lib_Headlamp")
+        g.box((sign * spec["lamp_x"], spec["tail_y"], z0 - 0.004), (0.32, 0.110, 0.016), "Lib_Black", bevel=bev, segs=segs)
+        g.box((sign * spec["lamp_x"], spec["tail_y"], z0 - 0.014), (0.24, 0.070, 0.010), "Lib_Taillamp")
+    g.box((0.0, spec["grille_y"], z1 + 0.002), (spec["grille_w"], 0.16, 0.024), "Lib_Black")
     slats = 4 if lod == 0 else 2
     for i in range(slats):
-        g.box((0.0, spec["grille_y"] - 0.055 + i * 0.032, z1 - 0.008), (spec["grille_w"] - 0.08, 0.008, 0.006), "Lib_SteelDark")
-    g.box((0.0, spec["bumper_y"], z1 - 0.045), (half * 1.70, 0.12, 0.08), "Lib_Black", bevel=bev, segs=segs)
-    g.box((0.0, spec["bumper_y"], z0 + 0.045), (half * 1.75, 0.14, 0.08), "Lib_Black", bevel=bev, segs=segs)
+        g.box((0.0, spec["grille_y"] - 0.055 + i * 0.032, z1 + 0.016), (spec["grille_w"] - 0.08, 0.008, 0.006), "Lib_SteelDark")
+    g.box((0.0, spec["bumper_y"], z1 + 0.008), (half * 1.70, 0.12, 0.070), "Lib_Black", bevel=bev, segs=segs)
+    g.box((0.0, spec["bumper_y"], z0 - 0.008), (half * 1.75, 0.14, 0.070), "Lib_Black", bevel=bev, segs=segs)
     for sign in (-1.0, 1.0):
         g.box((sign * (half * 0.78), spec["bumper_y"] + 0.01, z1 - 0.12), (0.12, 0.14, 0.22), "Lib_Black")
 
