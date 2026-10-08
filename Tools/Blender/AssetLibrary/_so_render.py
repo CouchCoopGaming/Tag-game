@@ -122,6 +122,9 @@ PASSES = {
         ("meter_single", "ParkingMeter_Single", 22.0, (-0.95, 0.0, 0.42), 200.0),
         ("meter_twin", "ParkingMeter_Twin", 18.0, (-1.15, 0.0, 0.50), 200.0),
     ),
+    16: (
+        ("newspaper_rack", "NewspaperRack", 18.0, (-1.55, 0.0, 0.70), 200.0),
+    ),
 }
 
 # Pass 15 sits the prop on a sidewalk panel. Low camera, aim below center,
@@ -133,6 +136,7 @@ _FRAME15 = {
     "hydrant_red": (0.58, 9.0, 50.0, 0.34, 0.44, 0.18, 3.40),
     "meter_single": (0.46, 14.0, 40.0, 0.36, 0.40, 0.22, 3.60),
     "meter_twin": (0.44, 14.0, 38.0, 0.36, 0.38, 0.22, 3.80),
+    "newspaper_rack": (0.62, 12.0, 42.0, 0.38, 0.48, 0.28, 3.60),
 }
 
 # Pass 11 frames the subject at about 70% and aims at the middle of the bounds.
@@ -200,6 +204,7 @@ def _load(names):
         "FireHydrant_Red": "sk_hydrant_red",
         "ParkingMeter_Single": "sk_meter_single",
         "ParkingMeter_Twin": "sk_meter_twin",
+        "NewspaperRack": "sk_newspaper_rack",
     }
     for name in names:
         module = importlib.import_module(stems[name])

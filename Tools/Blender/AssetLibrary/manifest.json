@@ -30314,34 +30314,34 @@
   {
     "name": "NewspaperRack",
     "category": "StreetFurniture",
-    "blurb": "Three honor boxes, 1.55 m overall, 0.92 m tall. Glass fronts and coin doors.",
+    "blurb": "Three honor boxes, 1.46 m overall, lid at 0.82 m. Glass doors and coin slots. No masthead.",
     "size": [
-      1.55,
-      0.92,
-      0.386
+      1.46,
+      0.825,
+      0.362
     ],
     "min": [
-      -0.775,
+      -0.73,
       0.0,
-      -0.19
+      -0.18
     ],
     "max": [
-      0.775,
-      0.92,
-      0.196
+      0.73,
+      0.825,
+      0.182
     ],
     "lods": [
       {
         "lod": 0,
-        "tris": 644,
+        "tris": 2319,
         "materials": [
           "Lib_SteelDark",
           "Lib_PaintBlue",
-          "Lib_Glass",
-          "Lib_Steel",
-          "Lib_PaintWhite",
-          "Lib_Brass",
+          "Lib_ShopGlass",
+          "Lib_PaintCream",
           "Lib_Black",
+          "Lib_PaintWhite",
+          "Lib_Steel",
           "Lib_PaintRed",
           "Lib_PaintGreen"
         ],
@@ -30350,13 +30350,14 @@
       },
       {
         "lod": 1,
-        "tris": 228,
+        "tris": 552,
         "materials": [
           "Lib_SteelDark",
           "Lib_PaintBlue",
-          "Lib_Glass",
+          "Lib_ShopGlass",
+          "Lib_PaintCream",
           "Lib_Steel",
-          "Lib_PaintWhite",
+          "Lib_Black",
           "Lib_PaintRed",
           "Lib_PaintGreen"
         ],
@@ -30366,36 +30367,17 @@
     ],
     "colliders": [
       {
-        "name": "Col_Rail",
-        "type": "box",
-        "center": [
-          0,
-          0.015,
-          0
-        ],
-        "size": [
-          1.5,
-          0.024,
-          0.06
-        ],
-        "euler": [
-          0,
-          0,
-          0
-        ]
-      },
-      {
         "name": "Col_Cab_0",
         "type": "box",
         "center": [
-          -0.5,
-          0.48,
-          0
+          -0.48,
+          0.44,
+          -0.02
         ],
         "size": [
-          0.4,
-          0.84,
-          0.32
+          0.26,
+          0.48,
+          0.16
         ],
         "euler": [
           0,
@@ -30404,17 +30386,17 @@
         ]
       },
       {
-        "name": "Col_Cap_0",
+        "name": "Col_Lid_0",
         "type": "box",
         "center": [
-          -0.5,
-          0.9,
-          0
+          -0.48,
+          0.808,
+          0.0
         ],
         "size": [
-          0.44,
-          0.03,
-          0.36
+          0.3,
+          0.016,
+          0.2
         ],
         "euler": [
           0,
@@ -30427,13 +30409,13 @@
         "type": "box",
         "center": [
           0.0,
-          0.48,
-          0
+          0.44,
+          -0.02
         ],
         "size": [
-          0.4,
-          0.84,
-          0.32
+          0.26,
+          0.48,
+          0.16
         ],
         "euler": [
           0,
@@ -30442,17 +30424,17 @@
         ]
       },
       {
-        "name": "Col_Cap_1",
+        "name": "Col_Lid_1",
         "type": "box",
         "center": [
           0.0,
-          0.9,
-          0
+          0.808,
+          0.0
         ],
         "size": [
-          0.44,
-          0.03,
-          0.36
+          0.3,
+          0.016,
+          0.2
         ],
         "euler": [
           0,
@@ -30464,14 +30446,14 @@
         "name": "Col_Cab_2",
         "type": "box",
         "center": [
-          0.5,
           0.48,
-          0
+          0.44,
+          -0.02
         ],
         "size": [
-          0.4,
-          0.84,
-          0.32
+          0.26,
+          0.48,
+          0.16
         ],
         "euler": [
           0,
@@ -30480,17 +30462,17 @@
         ]
       },
       {
-        "name": "Col_Cap_2",
+        "name": "Col_Lid_2",
         "type": "box",
         "center": [
-          0.5,
-          0.9,
-          0
+          0.48,
+          0.808,
+          0.0
         ],
         "size": [
-          0.44,
-          0.03,
-          0.36
+          0.3,
+          0.016,
+          0.2
         ],
         "euler": [
           0,
@@ -30510,7 +30492,7 @@
       "LOD0",
       "LOD1"
     ],
-    "slackCm": 0.55,
+    "slackCm": 0.0,
     "fbx": "Assets/Art/Props/Library/StreetFurniture/NewspaperRack.fbx"
   },
   {
