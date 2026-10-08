@@ -479,8 +479,10 @@ namespace Tag.Level
             float sox, float soy, float soz, float srx, float sry, float srz,
             float sux, float suy, float suz, float lsx, float lsy, float lsz, float half)
         {
-            float[] xs = { 56f, 68f, 82f, 98f };
-            float[] yaws = { 88f, 92f, 84f, 96f };
+            // A short broadside on the south straight. Spread them further and
+            // the outer two leave the frame before each one is tall enough.
+            float[] xs = { 75.45f, 77.15f, 78.85f, 80.55f };
+            float[] yaws = { 90f, 90f, 90f, 90f };
             var tris = new List<Tri>(park.Count + 256);
             tris.AddRange(park);
             for (int i = 0; i < 4; i++)
@@ -495,12 +497,14 @@ namespace Tag.Level
                 if (tris[t].A < 0.99f) continue;
                 ShadowTri(tris[t], seatShadow, 768, sox, soy, soz, srx, sry, srz, sux, suy, suz, lsx, lsy, lsz, half);
             }
-            // Down the south straight, so the four body colors read in a line.
+            // Raised, south of the straight, looking down onto the path. The rail
+            // and the crates sit under the frame instead of in front of it.
             ChasePng(tris, Path.Combine(folder, "pan_title.png"), 1920, 1080,
-                46f, 1.65f, 20.5f, 86f, 1.1f, 15.2f, seatShadow, sox, soy, soz, srx, sry, srz, sux, suy, suz, lsx, lsy, lsz, half, 38f);
-            // Same pass, yawed so the line sits left of the menu column.
+                78f, 7f, 4f, 78f, 1.4f, 16f, seatShadow, sox, soy, soz, srx, sry, srz, sux, suy, suz, lsx, lsy, lsz, half, 30f);
+            // Same eye height, stepped east and a touch wider, so the line sits
+            // in the open middle: right of the lockup, left of the buttons.
             ChasePng(tris, Path.Combine(folder, "pan_main.png"), 1920, 1080,
-                46f, 1.65f, 20.5f, 86f, 1.1f, 8f, seatShadow, sox, soy, soz, srx, sry, srz, sux, suy, suz, lsx, lsy, lsz, half, 38f);
+                86f, 7f, 4f, 78.4f, 2f, 16f, seatShadow, sox, soy, soz, srx, sry, srz, sux, suy, suz, lsx, lsy, lsz, half, 36f);
         }
 
         /// <summary>

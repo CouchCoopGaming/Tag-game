@@ -241,6 +241,10 @@ The match runner, the RESULTS figures, and the stat-card accent use the same col
 
 The first color is the body: limbs, torso, and head. The second color is the accent on the chest panel, the hands, and the feet. P1 reads red, P2 blue, P3 orange, and P4 lavender, so the four chase runners stay apart. A chip is gray when that first color is already taken. The title and the main menu are two frames of a pass along the south straight, with those four runners on the path. The lockup sits on that frame, and the main buttons keep an even gap. Mockups are in `Docs/UiStills/pass23/`.
 
+## Pass 24
+
+The title camera is raised south of the straight, so the fence and the crates sit under the frame. The four runners are mid-run on the path, each large enough to read, and the lockup sits above them. The main menu uses that same line, framed in the open middle, clear of the lockup and the buttons. P2's card uses the same opaque lit body as the other seats. The wide sky key had been treating that blue as sky and punching the torso out. The card border and the HUD pane edge are a quiet stroke. The seat color stays on the small P badge, so an orange runner is not boxed in yellow and a lavender runner is not boxed in green. Mockups are in `Docs/UiStills/pass24/`.
+
 ## Screens 2, pass 1
 
 Secondary screens pick up the park wash and a comic wipe under 0.4 s. Arena select is a three-card grid: Mega Park, Pocket Park, and Stack Yard, then Random and Back. Mode tiles are a 2 by 2. Right from the right-hand mode enters the rules. Left on a rule that cannot go lower returns to the modes. Up and down stay in a column. The rules list has a gold scrollbar.
@@ -253,7 +257,7 @@ Stills for this pass are layout drawings in `Docs/UiStills/screens2/pass1/`. Uni
 
 ## Later passes
 
-- A 2D focus grid on rules so Left from a rule row lands on a mode tile.
+- Left from a rule row returns to the modes even when that rule can still decrease. Right from the right-hand mode, and Left at the end of a rule, already move between the columns.
 - Per-player look, only if the settings blob grows a seat field. Do not invent it in the menu.
 - Replace `Docs/UiStills/pass3/` with the captures from a real Unity play session.
 - Online, when it exists. The main menu uses that row for Records until then.
