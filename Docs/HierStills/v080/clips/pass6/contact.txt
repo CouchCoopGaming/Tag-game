@@ -1,0 +1,130 @@
+Distances in cm, every frame. Wall-run soleL/soleR are the sole-to-wall gap (the plant is 0-1 cm, toes up). 180 soleL/soleR are the sole-to-top gap. Slide hand is the trail hand to the concrete.
+17_slide_slope_crouch
+  f=0 t=0.400 hand=25.11 extra_deg=-6 base_cm=29.3 short_cm=22.1 need_more_deg=32
+  f=1 t=0.433 hand=21.48 extra_deg=-6 base_cm=25.6 short_cm=18.5 need_more_deg=27
+  f=2 t=0.467 hand=17.24 extra_deg=-6 base_cm=21.4 short_cm=14.2 need_more_deg=20
+  f=3 t=0.500 hand=14.29 extra_deg=-6 base_cm=17.4 short_cm=11.3 need_more_deg=22
+  f=4 t=0.533 hand=10.59 extra_deg=-10 base_cm=15.8 short_cm=7.6 need_more_deg=14
+  f=5 t=0.567 hand=10.90 extra_deg=-10 base_cm=15.2 short_cm=7.9 need_more_deg=19
+  f=6 t=0.600 hand=13.02 extra_deg=-10 base_cm=17.0 short_cm=10.0 need_more_deg=25
+  f=7 t=0.633 hand=18.25 extra_deg=-6 base_cm=20.0 short_cm=15.3 need_more_deg=53
+  f=8 t=0.667 hand=22.74 extra_deg=-6 base_cm=23.3 short_cm=19.7 pitch_wont_close
+  f=9 t=0.700 hand=19.92 extra_deg=6 base_cm=22.6 short_cm=16.9 need_more_deg=39
+  f=10 t=0.733 hand=19.98 extra_deg=6 base_cm=23.9 short_cm=17.0 need_more_deg=26
+  f=11 t=0.767 hand=25.44 extra_deg=6 base_cm=29.1 short_cm=22.4 need_more_deg=37
+  f=12 t=0.800 hand=29.43 extra_deg=6 base_cm=32.1 short_cm=26.4 need_more_deg=60
+  f=13 t=0.833 hand=28.70 extra_deg=6 base_cm=30.3 short_cm=25.7 need_more_deg=97
+  f=14 t=0.867 hand=25.28 extra_deg=-6 base_cm=26.0 short_cm=22.3 pitch_wont_close
+  f=15 t=0.900 hand=19.37 extra_deg=-6 base_cm=20.4 short_cm=16.4 need_more_deg=91
+  f=16 t=0.933 hand=15.76 extra_deg=-6 base_cm=16.7 short_cm=12.8 pitch_wont_close
+  f=17 t=0.967 hand=18.16 extra_deg=6 base_cm=18.7 short_cm=15.2 pitch_wont_close
+  f=18 t=1.000 hand=20.47 extra_deg=-6 base_cm=21.0 short_cm=17.5 pitch_wont_close
+  f=19 t=1.033 hand=21.81 extra_deg=-6 base_cm=22.8 short_cm=18.8 need_more_deg=110
+  f=20 t=1.067 hand=22.56 extra_deg=-6 base_cm=24.0 short_cm=19.6 need_more_deg=79
+  f=21 t=1.100 hand=22.87 extra_deg=-6 base_cm=24.8 short_cm=19.9 need_more_deg=62
+  f=22 t=1.133 hand=22.78 extra_deg=-6 base_cm=25.0 short_cm=19.8 need_more_deg=55
+  f=23 t=1.167 hand=22.54 extra_deg=-6 base_cm=24.6 short_cm=19.5 need_more_deg=58
+  f=24 t=1.200 hand=25.38 extra_deg=-6 base_cm=26.9 short_cm=22.4 need_more_deg=90
+  f=25 t=1.233 hand=24.51 extra_deg=-10 base_cm=27.6 short_cm=21.5 need_more_deg=69
+  f=26 t=1.267 hand=19.51 extra_deg=-10 base_cm=25.4 short_cm=16.5 need_more_deg=28
+  f=27 t=1.300 hand=12.39 extra_deg=-10 base_cm=19.8 short_cm=9.4 need_more_deg=13
+  f=28 t=1.333 hand=13.01 extra_deg=-6 base_cm=16.2 short_cm=10.0 need_more_deg=19
+  f=29 t=1.367 hand=13.26 extra_deg=-10 base_cm=17.1 short_cm=10.3 need_more_deg=27
+  f=30 t=1.400 hand=13.90 extra_deg=-10 base_cm=20.0 short_cm=10.9 need_more_deg=18
+18_vertical_wallrun_back
+  f=0 t=0.250 soleL=0.50 soleR=33.40 hipZ=1.69 step=0 plant=L
+  f=1 t=0.283 soleL=0.50 soleR=28.79 hipZ=1.80 step=0 plant=L
+  f=2 t=0.317 soleL=0.50 soleR=32.83 hipZ=1.81 step=0 plant=L
+  f=3 t=0.350 soleL=0.50 soleR=39.90 hipZ=1.81 step=0 plant=L
+  f=4 t=0.383 soleL=0.50 soleR=46.16 hipZ=1.81 step=0 plant=L
+  f=5 t=0.417 soleL=0.50 soleR=51.37 hipZ=1.81 step=0 plant=L
+  f=6 t=0.450 soleL=0.50 soleR=25.05 hipZ=2.22 step=1 plant=L
+  f=7 t=0.483 soleL=15.03 soleR=0.50 hipZ=2.10 step=1 plant=R
+  f=8 t=0.517 soleL=34.99 soleR=0.50 hipZ=2.09 step=1 plant=R
+  f=9 t=0.550 soleL=48.12 soleR=0.50 hipZ=2.08 step=1 plant=R
+  f=10 t=0.583 soleL=47.38 soleR=0.50 hipZ=2.13 step=1 plant=R
+  f=11 t=0.617 soleL=8.79 soleR=0.50 hipZ=2.22 step=1 plant=R
+  f=12 t=0.650 soleL=2.25 soleR=0.50 hipZ=2.25 step=1 plant=R
+  f=13 t=0.683 soleL=13.95 soleR=0.50 hipZ=2.25 step=1 plant=R
+  f=14 t=0.717 soleL=16.98 soleR=0.50 hipZ=2.28 step=1 plant=R
+  f=15 t=0.750 soleL=16.68 soleR=0.50 hipZ=2.29 step=1 plant=R
+  f=16 t=0.783 soleL=18.56 soleR=0.50 hipZ=2.26 step=1 plant=R
+  f=17 t=0.817 soleL=23.02 soleR=0.50 hipZ=2.23 step=1 plant=R
+  f=18 t=0.850 soleL=0.50 soleR=51.92 hipZ=2.44 step=2 plant=L
+  f=19 t=0.883 soleL=0.50 soleR=55.92 hipZ=2.51 step=2 plant=L
+  f=20 t=0.917 soleL=0.50 soleR=39.14 hipZ=2.54 step=2 plant=L
+  f=21 t=0.950 soleL=0.50 soleR=13.12 hipZ=2.50 step=2 plant=L
+  f=22 t=0.983 soleL=0.50 soleR=14.13 hipZ=2.39 step=2 plant=L
+  f=23 t=1.017 soleL=0.50 soleR=20.57 hipZ=2.38 step=2 plant=L
+  f=24 t=1.050 soleL=0.50 soleR=24.08 hipZ=2.61 step=2 plant=L
+  f=25 t=1.083 soleL=49.55 soleR=0.50 hipZ=2.54 step=2 plant=R
+  f=26 t=1.117 soleL=19.52 soleR=0.50 hipZ=3.18 step=3 plant=R
+  f=27 t=1.150 soleL=0.50 soleR=23.02 hipZ=3.22 step=3 plant=L
+  f=28 t=1.183 soleL=0.50 soleR=29.75 hipZ=3.22 step=3 plant=L
+  f=29 t=1.217 soleL=0.50 soleR=32.86 hipZ=3.21 step=3 plant=L
+  f=30 t=1.250 soleL=0.50 soleR=40.97 hipZ=3.18 step=3 plant=L
+  f=31 t=1.283 soleL=0.50 soleR=50.52 hipZ=3.17 step=3 plant=L
+  f=32 t=1.317 soleL=0.50 soleR=52.51 hipZ=3.15 step=3 plant=L
+  f=33 t=1.350 soleL=0.50 soleR=52.85 hipZ=3.13 step=3 plant=L
+  f=34 t=1.383 soleL=0.50 soleR=50.84 hipZ=3.13 step=3 plant=L
+  f=35 t=1.417 soleL=0.50 soleR=46.88 hipZ=3.14 step=3 plant=L
+  f=36 t=1.450 soleL=0.50 soleR=41.95 hipZ=3.16 step=3 plant=L
+  f=37 t=1.483 soleL=0.50 soleR=36.61 hipZ=3.18 step=3 plant=L
+  f=38 t=1.517 soleL=0.50 soleR=51.28 hipZ=3.25 step=3 plant=L
+  f=39 t=1.550 soleL=0.50 soleR=53.56 hipZ=3.24 step=3 plant=L
+  f=40 t=1.583 soleL=0.50 soleR=55.57 hipZ=3.23 step=3 plant=L
+  f=41 t=1.617 soleL=0.50 soleR=57.20 hipZ=3.22 step=3 plant=L
+  f=42 t=1.650 soleL=0.50 soleR=19.54 hipZ=3.22 step=3 plant=L
+  f=43 t=1.683 soleL=0.50 soleR=20.56 hipZ=3.23 step=3 plant=L
+  f=44 t=1.717 soleL=0.50 soleR=21.94 hipZ=3.23 step=3 plant=L
+  f=45 t=1.750 soleL=0.50 soleR=62.04 hipZ=3.23 step=3 plant=L
+20_wallpop_180
+  f=0 t=0.150 soleL=-104.23 soleR=-81.68 phase=run
+  f=1 t=0.183 soleL=-104.90 soleR=-76.47 phase=run
+  f=2 t=0.217 soleL=-104.33 soleR=-66.81 phase=run
+  f=3 t=0.250 soleL=-102.69 soleR=-86.38 phase=run
+  f=4 t=0.283 soleL=-100.96 soleR=-81.70 phase=run
+  f=5 t=0.317 soleL=-99.59 soleR=-84.77 phase=run
+  f=6 t=0.350 soleL=-98.43 soleR=-93.07 phase=run
+  f=7 t=0.383 soleL=-97.39 soleR=-103.01 phase=run
+  f=8 t=0.417 soleL=-92.71 soleR=-106.59 phase=run
+  f=9 t=0.450 soleL=-91.60 soleR=-108.38 phase=run
+  f=10 t=0.483 soleL=-92.87 soleR=-109.09 phase=run
+  f=11 t=0.517 soleL=-93.11 soleR=-109.29 phase=run
+  f=12 t=0.550 soleL=-94.33 soleR=-109.33 phase=run
+  f=13 t=0.583 soleL=-94.42 soleR=-109.10 phase=run
+  f=14 t=0.617 soleL=-94.19 soleR=-108.37 phase=run
+  f=15 t=0.650 soleL=-94.12 soleR=-107.10 phase=run
+  f=16 t=0.683 soleL=-106.30 soleR=-109.28 phase=run
+  f=17 t=0.717 soleL=-108.75 soleR=-95.15 phase=run
+  f=18 t=0.750 soleL=-109.53 soleR=-95.68 phase=run
+  f=19 t=0.783 soleL=-109.84 soleR=-94.34 phase=run
+  f=20 t=0.817 soleL=-110.00 soleR=-94.84 phase=run
+  f=21 t=0.850 soleL=-110.00 soleR=-95.53 phase=run
+  f=22 t=0.883 soleL=-110.00 soleR=-94.29 phase=run
+  f=23 t=0.917 soleL=-110.00 soleR=-91.67 phase=run
+  f=24 t=0.950 soleL=-71.41 soleR=-52.48 phase=plant
+  f=25 t=0.983 soleL=-69.00 soleR=-46.04 phase=plant
+  f=26 t=1.017 soleL=-67.94 soleR=-40.96 phase=plant
+  f=27 t=1.050 soleL=-69.00 soleR=-39.04 phase=plant
+  f=28 t=1.083 soleL=-71.88 soleR=-39.83 phase=plant
+  f=29 t=1.117 soleL=-75.04 soleR=-32.77 phase=plant
+  f=30 t=1.150 soleL=-77.11 soleR=-24.29 phase=plant
+  f=31 t=1.183 soleL=-78.93 soleR=-28.61 phase=plant
+  f=32 t=1.217 soleL=-79.81 soleR=-33.88 phase=plant
+  f=33 t=1.250 soleL=-36.52 soleR=4.38 phase=air
+  f=34 t=1.283 soleL=8.16 soleR=40.91 phase=air
+  f=35 t=1.317 soleL=45.76 soleR=66.57 phase=air
+  f=36 t=1.350 soleL=72.58 soleR=80.74 phase=air
+  f=37 t=1.383 soleL=87.15 soleR=83.43 phase=air
+  f=38 t=1.417 soleL=89.57 soleR=75.99 phase=air
+  f=39 t=1.450 soleL=81.34 soleR=60.62 phase=air
+  f=40 t=1.483 soleL=0.69 soleR=0.60 drop_hip=-10 drop_knee=-18 phase=land
+  f=41 t=1.517 soleL=0.58 soleR=0.60 drop_hip=-10 drop_knee=-24 phase=land
+  f=42 t=1.550 soleL=0.51 soleR=0.60 drop_hip=-24 drop_knee=-10 phase=land
+  f=43 t=1.583 soleL=0.45 soleR=0.60 drop_hip=-16 drop_knee=-22 phase=land
+  f=44 t=1.617 soleL=0.39 soleR=0.60 drop_hip=-22 drop_knee=-12 phase=land
+  f=45 t=1.650 soleL=0.55 soleR=0.60 drop_hip=-20 drop_knee=16 phase=land
+  f=46 t=1.683 soleL=0.60 soleR=0.65 drop_hip=24 drop_knee=-22 phase=land
+  f=47 t=1.717 soleL=0.60 soleR=0.53 drop_hip=12 drop_knee=-26 phase=land
+  f=48 t=1.750 soleL=0.60 soleR=0.65 drop_hip=12 drop_knee=-28 phase=land
