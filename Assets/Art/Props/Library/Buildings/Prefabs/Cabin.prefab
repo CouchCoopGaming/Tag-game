@@ -83,6 +83,12 @@ Transform:
   - {fileID: 300461}
   - {fileID: 300471}
   - {fileID: 300481}
+  - {fileID: 300491}
+  - {fileID: 300501}
+  - {fileID: 300511}
+  - {fileID: 300521}
+  - {fileID: 300531}
+  - {fileID: 300541}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!205 &100002
@@ -93,8 +99,8 @@ LODGroup:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 100000}
   serializedVersion: 2
-  m_LocalReferencePoint: {x: 0, y: 2.105, z: 0.93}
-  m_Size: 5.96
+  m_LocalReferencePoint: {x: 0.48, y: 2.385, z: 0.93}
+  m_Size: 6.04
   m_FadeMode: 0
   m_AnimateCrossFading: 0
   m_LastLODIsBillboard: 0
@@ -125,7 +131,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Tag.Art.Library.LibraryPropMeta
   category: "Buildings"
-  summary: "Log cabin 4.6 x 3.6 m, walls 2.2 m, ridge at 3.45 m, porch on +Z. Round logs with per-course colour, grey-tan chinking, a vertical-board door with a Z-brace, and a cedar-shake roof with a ridge cap. The porch is a shed under the eave."
+  summary: "Log cabin 4.6 x 3.6 m, walls 2.2 m, ridge at 3.45 m, porch on +Z. Saddle-notched round logs, a vertical-board door, board-and-batten gables, and a side window on each wall. Weathered cedar shakes, a ridge cap, and a brick chimney on the +X gable from a ground footing past the ridge. The porch shed sits on a ledger outside the logs, under the eave."
   climbable: 1
   vaultable: 1
   vaultHeightMeters: 0.95
@@ -208,9 +214,8 @@ MeshRenderer:
   - {fileID: 2100000, guid: beb173626a35c30c1ff350a8ec04f0d1, type: 2}
   - {fileID: 2100000, guid: 3378749727762f35ade0a2e55dedd4ed, type: 2}
   - {fileID: 2100000, guid: 9a816b1d8e4f0105d2133b2d7031058c, type: 2}
-  - {fileID: 2100000, guid: 53ece5a73b8c687a91d45fbcd6fb37c3, type: 2}
-  - {fileID: 2100000, guid: cf85b31d4de195caa04850eebe9f8ab2, type: 2}
   - {fileID: 2100000, guid: 5416f652738bd1efcc5b621780aa931f, type: 2}
+  - {fileID: 2100000, guid: cf85b31d4de195caa04850eebe9f8ab2, type: 2}
   - {fileID: 2100000, guid: 039f45c8ec256a2c59edb56941405e17, type: 2}
   - {fileID: 2100000, guid: 1d3b255f6085b9c47ad0b917071efa3d, type: 2}
   - {fileID: 2100000, guid: 477b1e5cc8c79883ad4e15dfdc184039, type: 2}
@@ -463,7 +468,7 @@ Transform:
   m_GameObject: {fileID: 300000}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -1.63, y: 0.24, z: 1.648}
+  m_LocalPosition: {x: -1.63, y: 0.24, z: 1.64}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -516,7 +521,7 @@ Transform:
   m_GameObject: {fileID: 300010}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 1.43, y: 0.24, z: 1.648}
+  m_LocalPosition: {x: 1.43, y: 0.24, z: 1.64}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -569,7 +574,7 @@ Transform:
   m_GameObject: {fileID: 300020}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.24, z: -1.648}
+  m_LocalPosition: {x: 0, y: 0.24, z: -1.64}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -607,7 +612,7 @@ GameObject:
   - component: {fileID: 300031}
   - component: {fileID: 300032}
   m_Layer: 0
-  m_Name: Climb_SideL_0
+  m_Name: Climb_Side_0_0
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -622,7 +627,7 @@ Transform:
   m_GameObject: {fileID: 300030}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -2.148, y: 0.24, z: 0}
+  m_LocalPosition: {x: -2.14, y: 0.36, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -647,7 +652,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.08, y: 0.08, z: 2.2}
+  m_Size: {x: 0.06, y: 0.06, z: 0.46}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300040
 GameObject:
@@ -660,7 +665,7 @@ GameObject:
   - component: {fileID: 300041}
   - component: {fileID: 300042}
   m_Layer: 0
-  m_Name: Climb_SideR_0
+  m_Name: Climb_SideR_0_0
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -675,7 +680,7 @@ Transform:
   m_GameObject: {fileID: 300040}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 2.148, y: 0.24, z: 0}
+  m_LocalPosition: {x: 2.14, y: 0.36, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -700,7 +705,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.08, y: 0.08, z: 2.2}
+  m_Size: {x: 0.06, y: 0.06, z: 0.46}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300050
 GameObject:
@@ -728,7 +733,7 @@ Transform:
   m_GameObject: {fileID: 300050}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -1.464, y: 0.48, z: 1.648}
+  m_LocalPosition: {x: -1.46, y: 0.48, z: 1.64}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -781,7 +786,7 @@ Transform:
   m_GameObject: {fileID: 300060}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 1.264, y: 0.48, z: 1.648}
+  m_LocalPosition: {x: 1.26, y: 0.48, z: 1.64}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -834,7 +839,7 @@ Transform:
   m_GameObject: {fileID: 300070}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.48, z: -1.648}
+  m_LocalPosition: {x: 0, y: 0.48, z: -1.64}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -872,7 +877,7 @@ GameObject:
   - component: {fileID: 300081}
   - component: {fileID: 300082}
   m_Layer: 0
-  m_Name: Climb_SideL_1
+  m_Name: Climb_Side_1_0
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -887,7 +892,7 @@ Transform:
   m_GameObject: {fileID: 300080}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -2.148, y: 0.48, z: 0}
+  m_LocalPosition: {x: -2.14, y: 0.6, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -912,7 +917,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.08, y: 0.08, z: 2.2}
+  m_Size: {x: 0.06, y: 0.06, z: 0.46}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300090
 GameObject:
@@ -925,7 +930,7 @@ GameObject:
   - component: {fileID: 300091}
   - component: {fileID: 300092}
   m_Layer: 0
-  m_Name: Climb_SideR_1
+  m_Name: Climb_SideR_1_0
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -940,7 +945,7 @@ Transform:
   m_GameObject: {fileID: 300090}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 2.148, y: 0.48, z: 0}
+  m_LocalPosition: {x: 2.14, y: 0.6, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -965,7 +970,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.08, y: 0.08, z: 2.2}
+  m_Size: {x: 0.06, y: 0.06, z: 0.46}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300100
 GameObject:
@@ -993,7 +998,7 @@ Transform:
   m_GameObject: {fileID: 300100}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -1.63, y: 0.72, z: 1.648}
+  m_LocalPosition: {x: -1.63, y: 0.72, z: 1.64}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -1046,7 +1051,7 @@ Transform:
   m_GameObject: {fileID: 300110}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 1.43, y: 0.72, z: 1.648}
+  m_LocalPosition: {x: 1.43, y: 0.72, z: 1.64}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -1099,7 +1104,7 @@ Transform:
   m_GameObject: {fileID: 300120}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.72, z: -1.648}
+  m_LocalPosition: {x: 0, y: 0.72, z: -1.64}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -1137,7 +1142,7 @@ GameObject:
   - component: {fileID: 300131}
   - component: {fileID: 300132}
   m_Layer: 0
-  m_Name: Climb_SideL_2
+  m_Name: Climb_Side_2_0
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1152,7 +1157,7 @@ Transform:
   m_GameObject: {fileID: 300130}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -2.148, y: 0.72, z: 0}
+  m_LocalPosition: {x: -2.14, y: 0.84, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -1177,7 +1182,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.08, y: 0.08, z: 2.2}
+  m_Size: {x: 0.06, y: 0.06, z: 0.46}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300140
 GameObject:
@@ -1190,7 +1195,7 @@ GameObject:
   - component: {fileID: 300141}
   - component: {fileID: 300142}
   m_Layer: 0
-  m_Name: Climb_SideR_2
+  m_Name: Climb_SideR_2_0
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1205,7 +1210,7 @@ Transform:
   m_GameObject: {fileID: 300140}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 2.148, y: 0.72, z: 0}
+  m_LocalPosition: {x: 2.14, y: 0.84, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -1230,7 +1235,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.08, y: 0.08, z: 2.2}
+  m_Size: {x: 0.06, y: 0.06, z: 0.46}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300150
 GameObject:
@@ -1258,7 +1263,7 @@ Transform:
   m_GameObject: {fileID: 300150}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -1.464, y: 0.96, z: 1.648}
+  m_LocalPosition: {x: -1.46, y: 0.96, z: 1.64}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -1311,7 +1316,7 @@ Transform:
   m_GameObject: {fileID: 300160}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 1.264, y: 0.96, z: 1.648}
+  m_LocalPosition: {x: 1.26, y: 0.96, z: 1.64}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -1364,7 +1369,7 @@ Transform:
   m_GameObject: {fileID: 300170}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.96, z: -1.648}
+  m_LocalPosition: {x: 0, y: 0.96, z: -1.64}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -1402,7 +1407,7 @@ GameObject:
   - component: {fileID: 300181}
   - component: {fileID: 300182}
   m_Layer: 0
-  m_Name: Climb_SideL_3
+  m_Name: Climb_Side_3_-23
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1417,7 +1422,7 @@ Transform:
   m_GameObject: {fileID: 300180}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -2.148, y: 0.96, z: 0}
+  m_LocalPosition: {x: -2.14, y: 1.08, z: -0.815}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -1442,7 +1447,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.08, y: 0.08, z: 2.2}
+  m_Size: {x: 0.06, y: 0.06, z: 0.46}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300190
 GameObject:
@@ -1455,7 +1460,7 @@ GameObject:
   - component: {fileID: 300191}
   - component: {fileID: 300192}
   m_Layer: 0
-  m_Name: Climb_SideR_3
+  m_Name: Climb_SideR_3_-23
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1470,7 +1475,7 @@ Transform:
   m_GameObject: {fileID: 300190}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 2.148, y: 0.96, z: 0}
+  m_LocalPosition: {x: 2.14, y: 1.08, z: -0.815}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -1495,7 +1500,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.08, y: 0.08, z: 2.2}
+  m_Size: {x: 0.06, y: 0.06, z: 0.46}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300200
 GameObject:
@@ -1508,7 +1513,7 @@ GameObject:
   - component: {fileID: 300201}
   - component: {fileID: 300202}
   m_Layer: 0
-  m_Name: Climb_Front_4_-32
+  m_Name: Climb_Side_3_23
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1523,7 +1528,7 @@ Transform:
   m_GameObject: {fileID: 300200}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -1.63, y: 1.2, z: 1.648}
+  m_LocalPosition: {x: -2.14, y: 1.08, z: 0.815}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -1548,7 +1553,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.5, y: 0.06, z: 0.06}
+  m_Size: {x: 0.06, y: 0.06, z: 0.46}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300210
 GameObject:
@@ -1561,7 +1566,7 @@ GameObject:
   - component: {fileID: 300211}
   - component: {fileID: 300212}
   m_Layer: 0
-  m_Name: Climb_Back_4
+  m_Name: Climb_SideR_3_23
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1576,7 +1581,7 @@ Transform:
   m_GameObject: {fileID: 300210}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 1.2, z: -1.648}
+  m_LocalPosition: {x: 2.14, y: 1.08, z: 0.815}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -1601,7 +1606,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 3.4, y: 0.06, z: 0.06}
+  m_Size: {x: 0.06, y: 0.06, z: 0.46}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300220
 GameObject:
@@ -1614,7 +1619,7 @@ GameObject:
   - component: {fileID: 300221}
   - component: {fileID: 300222}
   m_Layer: 0
-  m_Name: Climb_SideL_4
+  m_Name: Climb_Front_4_-32
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1629,7 +1634,7 @@ Transform:
   m_GameObject: {fileID: 300220}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -2.148, y: 1.2, z: 0}
+  m_LocalPosition: {x: -1.63, y: 1.2, z: 1.64}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -1654,7 +1659,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.08, y: 0.08, z: 2.2}
+  m_Size: {x: 0.5, y: 0.06, z: 0.06}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300230
 GameObject:
@@ -1667,7 +1672,7 @@ GameObject:
   - component: {fileID: 300231}
   - component: {fileID: 300232}
   m_Layer: 0
-  m_Name: Climb_SideR_4
+  m_Name: Climb_Back_4
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1682,7 +1687,7 @@ Transform:
   m_GameObject: {fileID: 300230}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 2.148, y: 1.2, z: 0}
+  m_LocalPosition: {x: 0, y: 1.2, z: -1.64}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -1707,7 +1712,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.08, y: 0.08, z: 2.2}
+  m_Size: {x: 3.4, y: 0.06, z: 0.06}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300240
 GameObject:
@@ -1720,7 +1725,7 @@ GameObject:
   - component: {fileID: 300241}
   - component: {fileID: 300242}
   m_Layer: 0
-  m_Name: Climb_Front_5_-29
+  m_Name: Climb_Side_4_-20
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1735,7 +1740,7 @@ Transform:
   m_GameObject: {fileID: 300240}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -1.464, y: 1.44, z: 1.648}
+  m_LocalPosition: {x: -2.14, y: 1.32, z: -0.815}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -1760,7 +1765,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.5, y: 0.06, z: 0.06}
+  m_Size: {x: 0.06, y: 0.06, z: 0.46}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300250
 GameObject:
@@ -1773,7 +1778,7 @@ GameObject:
   - component: {fileID: 300251}
   - component: {fileID: 300252}
   m_Layer: 0
-  m_Name: Climb_Back_5
+  m_Name: Climb_SideR_4_-20
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1788,7 +1793,7 @@ Transform:
   m_GameObject: {fileID: 300250}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 1.44, z: -1.648}
+  m_LocalPosition: {x: 2.14, y: 1.32, z: -0.815}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -1813,7 +1818,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 3.4, y: 0.06, z: 0.06}
+  m_Size: {x: 0.06, y: 0.06, z: 0.46}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300260
 GameObject:
@@ -1826,7 +1831,7 @@ GameObject:
   - component: {fileID: 300261}
   - component: {fileID: 300262}
   m_Layer: 0
-  m_Name: Climb_SideL_5
+  m_Name: Climb_Side_4_20
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1841,7 +1846,7 @@ Transform:
   m_GameObject: {fileID: 300260}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -2.148, y: 1.44, z: 0}
+  m_LocalPosition: {x: -2.14, y: 1.32, z: 0.815}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -1866,7 +1871,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.08, y: 0.08, z: 2.2}
+  m_Size: {x: 0.06, y: 0.06, z: 0.46}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300270
 GameObject:
@@ -1879,7 +1884,7 @@ GameObject:
   - component: {fileID: 300271}
   - component: {fileID: 300272}
   m_Layer: 0
-  m_Name: Climb_SideR_5
+  m_Name: Climb_SideR_4_20
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1894,7 +1899,7 @@ Transform:
   m_GameObject: {fileID: 300270}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 2.148, y: 1.44, z: 0}
+  m_LocalPosition: {x: 2.14, y: 1.32, z: 0.815}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -1919,7 +1924,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.08, y: 0.08, z: 2.2}
+  m_Size: {x: 0.06, y: 0.06, z: 0.46}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300280
 GameObject:
@@ -1932,7 +1937,7 @@ GameObject:
   - component: {fileID: 300281}
   - component: {fileID: 300282}
   m_Layer: 0
-  m_Name: Climb_Front_6_-32
+  m_Name: Climb_Front_5_-29
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1947,7 +1952,7 @@ Transform:
   m_GameObject: {fileID: 300280}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -1.63, y: 1.68, z: 1.648}
+  m_LocalPosition: {x: -1.46, y: 1.44, z: 1.64}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -1985,7 +1990,7 @@ GameObject:
   - component: {fileID: 300291}
   - component: {fileID: 300292}
   m_Layer: 0
-  m_Name: Climb_Back_6
+  m_Name: Climb_Back_5
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2000,7 +2005,7 @@ Transform:
   m_GameObject: {fileID: 300290}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 1.68, z: -1.648}
+  m_LocalPosition: {x: 0, y: 1.44, z: -1.64}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -2038,7 +2043,7 @@ GameObject:
   - component: {fileID: 300301}
   - component: {fileID: 300302}
   m_Layer: 0
-  m_Name: Climb_SideL_6
+  m_Name: Climb_Side_5_-23
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2053,7 +2058,7 @@ Transform:
   m_GameObject: {fileID: 300300}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -2.148, y: 1.68, z: 0}
+  m_LocalPosition: {x: -2.14, y: 1.56, z: -0.815}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -2078,7 +2083,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.08, y: 0.08, z: 2.2}
+  m_Size: {x: 0.06, y: 0.06, z: 0.46}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300310
 GameObject:
@@ -2091,7 +2096,7 @@ GameObject:
   - component: {fileID: 300311}
   - component: {fileID: 300312}
   m_Layer: 0
-  m_Name: Climb_SideR_6
+  m_Name: Climb_SideR_5_-23
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2106,7 +2111,7 @@ Transform:
   m_GameObject: {fileID: 300310}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 2.148, y: 1.68, z: 0}
+  m_LocalPosition: {x: 2.14, y: 1.56, z: -0.815}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -2131,7 +2136,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.08, y: 0.08, z: 2.2}
+  m_Size: {x: 0.06, y: 0.06, z: 0.46}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300320
 GameObject:
@@ -2144,7 +2149,7 @@ GameObject:
   - component: {fileID: 300321}
   - component: {fileID: 300322}
   m_Layer: 0
-  m_Name: Climb_Front_7_-29
+  m_Name: Climb_Side_5_23
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2159,7 +2164,7 @@ Transform:
   m_GameObject: {fileID: 300320}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -1.464, y: 1.92, z: 1.648}
+  m_LocalPosition: {x: -2.14, y: 1.56, z: 0.815}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -2184,7 +2189,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.5, y: 0.06, z: 0.06}
+  m_Size: {x: 0.06, y: 0.06, z: 0.46}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300330
 GameObject:
@@ -2197,7 +2202,7 @@ GameObject:
   - component: {fileID: 300331}
   - component: {fileID: 300332}
   m_Layer: 0
-  m_Name: Climb_Back_7
+  m_Name: Climb_SideR_5_23
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2212,7 +2217,7 @@ Transform:
   m_GameObject: {fileID: 300330}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 1.92, z: -1.648}
+  m_LocalPosition: {x: 2.14, y: 1.56, z: 0.815}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -2237,7 +2242,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 3.4, y: 0.06, z: 0.06}
+  m_Size: {x: 0.06, y: 0.06, z: 0.46}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300340
 GameObject:
@@ -2250,7 +2255,7 @@ GameObject:
   - component: {fileID: 300341}
   - component: {fileID: 300342}
   m_Layer: 0
-  m_Name: Climb_SideL_7
+  m_Name: Climb_Front_6_-32
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2265,7 +2270,7 @@ Transform:
   m_GameObject: {fileID: 300340}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -2.148, y: 1.92, z: 0}
+  m_LocalPosition: {x: -1.63, y: 1.68, z: 1.64}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -2290,7 +2295,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.08, y: 0.08, z: 2.2}
+  m_Size: {x: 0.5, y: 0.06, z: 0.06}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300350
 GameObject:
@@ -2303,7 +2308,7 @@ GameObject:
   - component: {fileID: 300351}
   - component: {fileID: 300352}
   m_Layer: 0
-  m_Name: Climb_SideR_7
+  m_Name: Climb_Back_6
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2318,7 +2323,7 @@ Transform:
   m_GameObject: {fileID: 300350}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 2.148, y: 1.92, z: 0}
+  m_LocalPosition: {x: 0, y: 1.68, z: -1.64}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -2343,7 +2348,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.08, y: 0.08, z: 2.2}
+  m_Size: {x: 3.4, y: 0.06, z: 0.06}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300360
 GameObject:
@@ -2356,7 +2361,7 @@ GameObject:
   - component: {fileID: 300361}
   - component: {fileID: 300362}
   m_Layer: 0
-  m_Name: Climb_Front_8_-32
+  m_Name: Climb_Side_6_-20
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2371,7 +2376,7 @@ Transform:
   m_GameObject: {fileID: 300360}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -1.63, y: 2.16, z: 1.648}
+  m_LocalPosition: {x: -2.14, y: 1.8, z: -0.815}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -2396,7 +2401,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.5, y: 0.06, z: 0.06}
+  m_Size: {x: 0.06, y: 0.06, z: 0.46}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300370
 GameObject:
@@ -2409,7 +2414,7 @@ GameObject:
   - component: {fileID: 300371}
   - component: {fileID: 300372}
   m_Layer: 0
-  m_Name: Climb_Front_8_28
+  m_Name: Climb_SideR_6_-20
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2424,7 +2429,7 @@ Transform:
   m_GameObject: {fileID: 300370}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 1.43, y: 2.16, z: 1.648}
+  m_LocalPosition: {x: 2.14, y: 1.8, z: -0.815}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -2449,7 +2454,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.5, y: 0.06, z: 0.06}
+  m_Size: {x: 0.06, y: 0.06, z: 0.46}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300380
 GameObject:
@@ -2462,7 +2467,7 @@ GameObject:
   - component: {fileID: 300381}
   - component: {fileID: 300382}
   m_Layer: 0
-  m_Name: Climb_Back_8
+  m_Name: Climb_Side_6_20
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2477,7 +2482,7 @@ Transform:
   m_GameObject: {fileID: 300380}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 2.16, z: -1.648}
+  m_LocalPosition: {x: -2.14, y: 1.8, z: 0.815}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -2502,7 +2507,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 3.4, y: 0.06, z: 0.06}
+  m_Size: {x: 0.06, y: 0.06, z: 0.46}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300390
 GameObject:
@@ -2515,7 +2520,7 @@ GameObject:
   - component: {fileID: 300391}
   - component: {fileID: 300392}
   m_Layer: 0
-  m_Name: Climb_SideL_8
+  m_Name: Climb_SideR_6_20
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2530,7 +2535,7 @@ Transform:
   m_GameObject: {fileID: 300390}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -2.148, y: 2.16, z: 0}
+  m_LocalPosition: {x: 2.14, y: 1.8, z: 0.815}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -2555,7 +2560,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.08, y: 0.08, z: 2.2}
+  m_Size: {x: 0.06, y: 0.06, z: 0.46}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300400
 GameObject:
@@ -2568,7 +2573,7 @@ GameObject:
   - component: {fileID: 300401}
   - component: {fileID: 300402}
   m_Layer: 0
-  m_Name: Climb_SideR_8
+  m_Name: Climb_Front_7_-29
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2583,7 +2588,7 @@ Transform:
   m_GameObject: {fileID: 300400}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 2.148, y: 2.16, z: 0}
+  m_LocalPosition: {x: -1.46, y: 1.92, z: 1.64}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -2608,7 +2613,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.08, y: 0.08, z: 2.2}
+  m_Size: {x: 0.5, y: 0.06, z: 0.06}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300410
 GameObject:
@@ -2621,7 +2626,7 @@ GameObject:
   - component: {fileID: 300411}
   - component: {fileID: 300412}
   m_Layer: 0
-  m_Name: Col_Door
+  m_Name: Climb_Back_7
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2636,7 +2641,7 @@ Transform:
   m_GameObject: {fileID: 300410}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.2, y: 1.08, z: 1.648}
+  m_LocalPosition: {x: 0, y: 1.92, z: -1.64}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -2661,7 +2666,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.96, y: 1.94, z: 0.04}
+  m_Size: {x: 3.4, y: 0.06, z: 0.06}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300420
 GameObject:
@@ -2674,7 +2679,7 @@ GameObject:
   - component: {fileID: 300421}
   - component: {fileID: 300422}
   m_Layer: 0
-  m_Name: Col_StepLow
+  m_Name: Climb_Side_7_0
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2689,7 +2694,7 @@ Transform:
   m_GameObject: {fileID: 300420}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.05, z: 3.75}
+  m_LocalPosition: {x: -2.14, y: 2.04, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -2714,7 +2719,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 1, y: 0.05, z: 0.24}
+  m_Size: {x: 0.06, y: 0.06, z: 0.46}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300430
 GameObject:
@@ -2727,7 +2732,7 @@ GameObject:
   - component: {fileID: 300431}
   - component: {fileID: 300432}
   m_Layer: 0
-  m_Name: Col_StepHigh
+  m_Name: Climb_SideR_7_0
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2742,7 +2747,7 @@ Transform:
   m_GameObject: {fileID: 300430}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.15, z: 3.42}
+  m_LocalPosition: {x: 2.14, y: 2.04, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -2767,7 +2772,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 1.05, y: 0.06, z: 0.2}
+  m_Size: {x: 0.06, y: 0.06, z: 0.46}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300440
 GameObject:
@@ -2780,7 +2785,7 @@ GameObject:
   - component: {fileID: 300441}
   - component: {fileID: 300442}
   m_Layer: 0
-  m_Name: Col_Porch
+  m_Name: Climb_Front_8_-32
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2795,7 +2800,7 @@ Transform:
   m_GameObject: {fileID: 300440}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.12, z: 2.5}
+  m_LocalPosition: {x: -1.63, y: 2.16, z: 1.64}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -2820,7 +2825,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 3.2, y: 0.1, z: 1.3}
+  m_Size: {x: 0.5, y: 0.06, z: 0.06}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300450
 GameObject:
@@ -2833,7 +2838,7 @@ GameObject:
   - component: {fileID: 300451}
   - component: {fileID: 300452}
   m_Layer: 0
-  m_Name: Col_PorchRoof
+  m_Name: Climb_Front_8_28
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2847,8 +2852,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 300450}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.04409, y: 0, z: 0, w: 0.99903}
-  m_LocalPosition: {x: 0, y: 1.96917, z: 2.53678}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 1.43, y: 2.16, z: 1.64}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -2873,7 +2878,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 2.624, y: 0.0225, z: 1.03302}
+  m_Size: {x: 0.5, y: 0.06, z: 0.06}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300460
 GameObject:
@@ -2886,7 +2891,7 @@ GameObject:
   - component: {fileID: 300461}
   - component: {fileID: 300462}
   m_Layer: 0
-  m_Name: Vault_PorchRail
+  m_Name: Climb_Back_8
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2901,14 +2906,14 @@ Transform:
   m_GameObject: {fileID: 300460}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.95, z: 3.05}
+  m_LocalPosition: {x: 0, y: 2.16, z: -1.64}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   m_Father: {fileID: 100001}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!136 &300462
-CapsuleCollider:
+--- !u!65 &300462
+BoxCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -2925,9 +2930,8 @@ CapsuleCollider:
   m_IsTrigger: 0
   m_ProvidesContacts: 0
   m_Enabled: 1
-  m_Radius: 0.03
-  m_Height: 2.6
-  m_Direction: 0
+  serializedVersion: 3
+  m_Size: {x: 3.4, y: 0.06, z: 0.06}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300470
 GameObject:
@@ -2940,7 +2944,7 @@ GameObject:
   - component: {fileID: 300471}
   - component: {fileID: 300472}
   m_Layer: 0
-  m_Name: Col_RoofS
+  m_Name: Col_Door
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2954,8 +2958,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 300470}
   serializedVersion: 2
-  m_LocalRotation: {x: -0.27883, y: 0, z: 0, w: 0.96034}
-  m_LocalPosition: {x: 0, y: 2.7848, z: -1.01536}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0.2, y: 1.08, z: 1.648}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -2980,7 +2984,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 4.1, y: 0.02, z: 1.69921}
+  m_Size: {x: 0.96, y: 1.94, z: 0.04}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300480
 GameObject:
@@ -2993,7 +2997,7 @@ GameObject:
   - component: {fileID: 300481}
   - component: {fileID: 300482}
   m_Layer: 0
-  m_Name: Col_RoofN
+  m_Name: Col_StepLow
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3007,8 +3011,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 300480}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.27883, y: 0, z: 0, w: 0.96034}
-  m_LocalPosition: {x: 0, y: 2.7848, z: 1.01536}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0.05, z: 3.75}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -3021,6 +3025,325 @@ BoxCollider:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 300480}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 1, y: 0.05, z: 0.24}
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!1 &300490
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 300491}
+  - component: {fileID: 300492}
+  m_Layer: 0
+  m_Name: Col_StepHigh
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &300491
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 300490}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0.15, z: 3.42}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  m_Father: {fileID: 100001}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!65 &300492
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 300490}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 1.05, y: 0.06, z: 0.2}
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!1 &300500
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 300501}
+  - component: {fileID: 300502}
+  m_Layer: 0
+  m_Name: Col_Porch
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &300501
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 300500}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0.12, z: 2.5}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  m_Father: {fileID: 100001}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!65 &300502
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 300500}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 3.2, y: 0.1, z: 1.3}
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!1 &300510
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 300511}
+  - component: {fileID: 300512}
+  m_Layer: 0
+  m_Name: Col_PorchRoof
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &300511
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 300510}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0.02498, y: 0, z: 0, w: 0.99969}
+  m_LocalPosition: {x: 0, y: 1.94122, z: 2.57101}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  m_Father: {fileID: 100001}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!65 &300512
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 300510}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 2.624, y: 0.0225, z: 0.98122}
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!1 &300520
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 300521}
+  - component: {fileID: 300522}
+  m_Layer: 0
+  m_Name: Vault_PorchRail
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &300521
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 300520}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0.95, z: 3.05}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  m_Father: {fileID: 100001}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!136 &300522
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 300520}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  m_Radius: 0.03
+  m_Height: 2.6
+  m_Direction: 0
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!1 &300530
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 300531}
+  - component: {fileID: 300532}
+  m_Layer: 0
+  m_Name: Col_RoofS
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &300531
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 300530}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0.27883, y: 0, z: 0, w: 0.96034}
+  m_LocalPosition: {x: 0, y: 2.7848, z: -1.01536}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  m_Father: {fileID: 100001}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!65 &300532
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 300530}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 4.1, y: 0.02, z: 1.69921}
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!1 &300540
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 300541}
+  - component: {fileID: 300542}
+  m_Layer: 0
+  m_Name: Col_RoofN
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &300541
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 300540}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0.27883, y: 0, z: 0, w: 0.96034}
+  m_LocalPosition: {x: 0, y: 2.7848, z: 1.01536}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  m_Father: {fileID: 100001}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!65 &300542
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 300540}
   m_Material: {fileID: 0}
   m_IncludeLayers:
     serializedVersion: 2

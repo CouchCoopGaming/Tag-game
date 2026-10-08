@@ -1,9 +1,9 @@
 """Flush four-way intersection. Asphalt top matches Road_Straight.
 
 Each corner is one sidewalk: a 5 m curb return flowing into straight walks
-along both arms, with a curb ramp cut in at the crosswalk. The box is empty.
-Stop bars are white and cover the inbound lanes only. The double yellow ends
-at that bar and continues onto Road_Straight.
+along both arms, with an ADA-style curb ramp and a detectable-warning panel
+at the crosswalk. The zebra runs curb to curb. Stop bars are white and sit
+just before the zebra. The double yellow ends at that bar.
 """
 
 import math
@@ -26,13 +26,14 @@ GUTTER = 0.22
 # Air between the asphalt face and the gutter so the two shells are not coplanar.
 GAP = 0.004
 CURB = HALF + GUTTER
-RAMP_RUN = 1.20
+# Rise is 0.15 m. 1.70 m of run is about 1:11, as long as the 2 m walk allows.
+RAMP_RUN = 1.70
 # Zebra on the straight walk, just past the curb-return tangent.
 CROSS_0 = 8.30
 CROSS_1 = 9.80
-# White bar behind the zebra. Yellow starts on the far side of this bar.
-STOP_AT = 10.10
-STOP_T = 0.36
+# White bar just upstream of the zebra. Yellow starts on the far side of this bar.
+STOP_T = 0.42
+STOP_AT = CROSS_1 + 0.10 + STOP_T * 0.5
 # Paint is buried 2 cm into the asphalt and proud by 6 mm, then welded.
 PAINT_TOP = ROAD_TOP + 0.006
 PAINT_BOT = 0.10
@@ -45,8 +46,9 @@ def create():
         "Roads",
         "Flush asphalt intersection. Each corner is one sidewalk with a 5 m curb return "
         "into straight walks along both arms, and a curb ramp at each crosswalk. The box is clear. "
-        "A white stop bar covers the inbound lanes only. The double yellow is two 10 cm lines "
-        "with a 10 cm gap, and it ends at that bar. A concrete gutter sits flush with the asphalt. "
+        "The zebra runs curb to curb. A white stop bar sits just before it, on the inbound lanes. "
+        "The double yellow is two 10 cm lines with a 10 cm gap, and it ends at that bar. "
+        "Each ramp has a detectable-warning panel. A concrete gutter sits flush with the asphalt. "
         "Butt Road_Straight to the arm ends so the yellow and the sidewalk continue.",
     )
     a.climb_note = "Flat asphalt and sidewalk. The curb face is 0.15 m above the road."
@@ -208,39 +210,97 @@ def _sidewalks(g, lod):
 def _markings(g):
     y = (PAINT_TOP + PAINT_BOT) * 0.5
     h = PAINT_TOP - PAINT_BOT
-    bars = 6
-    span = 5.2
-    width = span / bars * 0.55
+    # Outer edge of the end stripes meets the asphalt edge. The gutter is the pan beyond that.
+    bars = 8
+    outer = HALF - 0.04
+    width = 0.42
+    gap = (outer * 2.0 - bars * width) / (bars - 1)
     deep = CROSS_1 - CROSS_0
     mid = (CROSS_0 + CROSS_1) * 0.5
     for i in range(bars):
-        t = -span * 0.5 + (i + 0.5) * span / bars
+        t = -outer + width * 0.5 + i * (width + gap)
         for sign in (-1, 1):
             cz = sign * mid
             g.box((t, y, cz), (width, h, deep), "Lib_PaintWhite")
             g.box((cz, y, t), (deep, h, width), "Lib_PaintWhite")
     # Inbound lane only. Right-hand traffic: the half on the driver's right.
-    half_w = 2.50
-    # Centre of the inbound half, 1.45 m off the crown, clear of the double yellow.
+    # Stops short of the edge line so the two paint shells do not overlap.
+    half_w = 2.40
+    # Inbound lanes, clear of the double yellow and of the edge line.
     for sign in (-1, 1):
         # North arm (+Z) inbound is -X. South arm inbound is +X.
         g.box((-sign * 1.45, y, sign * STOP_AT), (half_w, h, STOP_T), "Lib_PaintWhite")
         # East arm (+X) inbound is -Z. West arm inbound is +Z.
         g.box((sign * STOP_AT, y, -sign * 1.45), (STOP_T, h, half_w), "Lib_PaintWhite")
+    _warnings(g)
     _edges(g, y, h)
     _yellow(g, y, h)
 
 
+def _warnings(g):
+    """Detectable-warning panel on the low end of each ramp, 8 mm above the concrete."""
+    depth = 0.60
+    inset = 0.10
+    for sx in (-1, 1):
+        for sz in (-1, 1):
+            x0 = sx * (CURB + 0.05)
+            x1 = sx * (CURB + 0.05 + depth)
+            z0 = sz * (CROSS_0 + inset)
+            z1 = sz * (CROSS_1 - inset)
+            _warn_sheet(g, (
+                (x0, _ramp_y(abs(x0)) + 0.008, z0),
+                (x1, _ramp_y(abs(x1)) + 0.008, z0),
+                (x1, _ramp_y(abs(x1)) + 0.008, z1),
+                (x0, _ramp_y(abs(x0)) + 0.008, z1),
+            ))
+            z0r = sz * (CURB + 0.05)
+            z1r = sz * (CURB + 0.05 + depth)
+            x0r = sx * (CROSS_0 + inset)
+            x1r = sx * (CROSS_1 - inset)
+            _warn_sheet(g, (
+                (x0r, _ramp_y(abs(z0r)) + 0.008, z0r),
+                (x0r, _ramp_y(abs(z1r)) + 0.008, z1r),
+                (x1r, _ramp_y(abs(z1r)) + 0.008, z1r),
+                (x1r, _ramp_y(abs(z0r)) + 0.008, z0r),
+            ))
+
+
+def _ramp_y(dist):
+    t = max(0.0, min(1.0, (dist - CURB) / RAMP_RUN))
+    return ROAD_TOP + t * (WALK_TOP - ROAD_TOP)
+
+
+def _warn_sheet(g, corners):
+    thick = 0.012
+    verts = list(corners) + [(x, y + thick, z) for x, y, z in corners]
+    faces = [
+        (0, 1, 2, 3),
+        (4, 7, 6, 5),
+        (0, 3, 7, 4),
+        (1, 5, 6, 2),
+        (0, 4, 5, 1),
+        (3, 2, 6, 7),
+    ]
+    g.mesh(verts, faces, "Lib_Warn", uv_scale=1.0)
+
+
 def _edges(g, y, h):
+    """White edge lines, gapped through the zebra and the stop bar so the paint does not overlap."""
     edge = HALF - 0.18
-    z0 = HALF + 0.20
-    length = ARM - z0
-    mid = (z0 + ARM) * 0.5
+    runs = (
+        (HALF + 0.20, CROSS_0 - 0.06),
+        (STOP_AT + STOP_T * 0.5 + 0.06, ARM - 0.02),
+    )
     for sign in (-1, 1):
-        g.box((sign * edge, y, mid), (0.10, h, length), "Lib_PaintWhite")
-        g.box((sign * edge, y, -mid), (0.10, h, length), "Lib_PaintWhite")
-        g.box((mid, y, sign * edge), (length, h, 0.10), "Lib_PaintWhite")
-        g.box((-mid, y, sign * edge), (length, h, 0.10), "Lib_PaintWhite")
+        for z0, z1 in runs:
+            if z1 - z0 < 0.12:
+                continue
+            mid = (z0 + z1) * 0.5
+            length = z1 - z0
+            g.box((sign * edge, y, mid), (0.10, h, length), "Lib_PaintWhite")
+            g.box((sign * edge, y, -mid), (0.10, h, length), "Lib_PaintWhite")
+            g.box((mid, y, sign * edge), (length, h, 0.10), "Lib_PaintWhite")
+            g.box((-mid, y, sign * edge), (length, h, 0.10), "Lib_PaintWhite")
 
 
 def _yellow(g, y, h):
@@ -538,14 +598,14 @@ def _walk_colliders(asset):
             ramp_y = 0.17
             _box_in(
                 asset, "Col_Ramp_%d" % n,
-                sx * (CURB + 0.58), sz * (CROSS_0 + 0.10),
+                sx * (CURB + 0.74), sz * (CROSS_0 + 0.10),
                 sx * (CURB + RAMP_RUN - 0.08), sz * (CROSS_1 - 0.10),
                 ramp_y,
             )
             n += 1
             _box_in(
                 asset, "Col_Ramp_%d" % n,
-                sx * (CROSS_0 + 0.10), sz * (CURB + 0.58),
+                sx * (CROSS_0 + 0.10), sz * (CURB + 0.74),
                 sx * (CROSS_1 - 0.10), sz * (CURB + RAMP_RUN - 0.08),
                 ramp_y,
             )

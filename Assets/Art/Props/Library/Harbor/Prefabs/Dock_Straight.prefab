@@ -93,8 +93,8 @@ LODGroup:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 100000}
   serializedVersion: 2
-  m_LocalReferencePoint: {x: -0.074, y: -0.071, z: 0}
-  m_Size: 5.98
+  m_LocalReferencePoint: {x: -0.127, y: -0.096, z: 0}
+  m_Size: 5.972
   m_FadeMode: 0
   m_AnimateCrossFading: 0
   m_LastLODIsBillboard: 0
@@ -121,7 +121,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Tag.Art.Library.LibraryPropMeta
   category: "Harbor"
-  summary: "Dock module 6.0 m long and 3.0 m wide. Deck top is 0.62 m. Pilings run from about 1.15 m below the pivot up to the joists. Cleats on both sides, two bollards, a ladder on -X, a rope coil, and a line between the near cleats. Butt the next module on the Z ends (center to center 6.0 m)."
+  summary: "Dock module 6.0 m long and 3.0 m wide. Deck top is 0.62 m. 30 cm piles on a 2.4 m grid along both edges and mid-span, with stringers, joists, and cross-bracing. Planks are separate boards. A ladder on -X runs into the water. Cleats, two bollards, and a rope that lies on the deck. Butt the next module on the Z ends (center to center 6.0 m)."
   climbable: 0
   vaultable: 0
   vaultHeightMeters: 0
@@ -194,9 +194,9 @@ MeshRenderer:
   m_RendererPriority: 0
   m_Materials:
   - {fileID: 2100000, guid: 1d3b255f6085b9c47ad0b917071efa3d, type: 2}
-  - {fileID: 2100000, guid: beb173626a35c30c1ff350a8ec04f0d1, type: 2}
   - {fileID: 2100000, guid: 039f45c8ec256a2c59edb56941405e17, type: 2}
   - {fileID: 2100000, guid: 0df4df2b4a9836602081ed8671e1ec35, type: 2}
+  - {fileID: 2100000, guid: beb173626a35c30c1ff350a8ec04f0d1, type: 2}
   - {fileID: 2100000, guid: 3378749727762f35ade0a2e55dedd4ed, type: 2}
   - {fileID: 2100000, guid: e98dae535b65b6212e7de4fed88f27b6, type: 2}
   m_StaticBatchInfo:
@@ -340,7 +340,7 @@ Transform:
   m_GameObject: {fileID: 300000}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -1.15, y: -0.3, z: -2.4}
+  m_LocalPosition: {x: -1.15, y: -0.48, z: -2.4}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -364,8 +364,8 @@ CapsuleCollider:
   m_IsTrigger: 0
   m_ProvidesContacts: 0
   m_Enabled: 1
-  m_Radius: 0.09
-  m_Height: 1.48
+  m_Radius: 0.12
+  m_Height: 1.28
   m_Direction: 1
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300010
@@ -394,7 +394,7 @@ Transform:
   m_GameObject: {fileID: 300010}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 1.15, y: -0.3, z: -2.4}
+  m_LocalPosition: {x: -1.15, y: -0.48, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -418,8 +418,8 @@ CapsuleCollider:
   m_IsTrigger: 0
   m_ProvidesContacts: 0
   m_Enabled: 1
-  m_Radius: 0.09
-  m_Height: 1.48
+  m_Radius: 0.12
+  m_Height: 1.28
   m_Direction: 1
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300020
@@ -448,7 +448,7 @@ Transform:
   m_GameObject: {fileID: 300020}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -1.15, y: -0.3, z: 2.4}
+  m_LocalPosition: {x: -1.15, y: -0.48, z: 2.4}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -472,8 +472,8 @@ CapsuleCollider:
   m_IsTrigger: 0
   m_ProvidesContacts: 0
   m_Enabled: 1
-  m_Radius: 0.09
-  m_Height: 1.48
+  m_Radius: 0.12
+  m_Height: 1.28
   m_Direction: 1
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300030
@@ -502,7 +502,7 @@ Transform:
   m_GameObject: {fileID: 300030}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 1.15, y: -0.3, z: 2.4}
+  m_LocalPosition: {x: 0, y: -0.48, z: -2.4}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -526,8 +526,8 @@ CapsuleCollider:
   m_IsTrigger: 0
   m_ProvidesContacts: 0
   m_Enabled: 1
-  m_Radius: 0.09
-  m_Height: 1.48
+  m_Radius: 0.12
+  m_Height: 1.28
   m_Direction: 1
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300040
@@ -541,7 +541,7 @@ GameObject:
   - component: {fileID: 300041}
   - component: {fileID: 300042}
   m_Layer: 0
-  m_Name: Col_Stringer_0
+  m_Name: Col_Pile_4
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -556,14 +556,14 @@ Transform:
   m_GameObject: {fileID: 300040}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.95, y: 0.42, z: 0}
+  m_LocalPosition: {x: 0, y: -0.48, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   m_Father: {fileID: 100001}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!65 &300042
-BoxCollider:
+--- !u!136 &300042
+CapsuleCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -580,8 +580,9 @@ BoxCollider:
   m_IsTrigger: 0
   m_ProvidesContacts: 0
   m_Enabled: 1
-  serializedVersion: 3
-  m_Size: {x: 0.1, y: 0.16, z: 5.7}
+  m_Radius: 0.12
+  m_Height: 1.28
+  m_Direction: 1
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300050
 GameObject:
@@ -594,7 +595,7 @@ GameObject:
   - component: {fileID: 300051}
   - component: {fileID: 300052}
   m_Layer: 0
-  m_Name: Col_Stringer_1
+  m_Name: Col_Pile_5
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -609,14 +610,14 @@ Transform:
   m_GameObject: {fileID: 300050}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.95, y: 0.42, z: 0}
+  m_LocalPosition: {x: 0, y: -0.48, z: 2.4}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   m_Father: {fileID: 100001}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!65 &300052
-BoxCollider:
+--- !u!136 &300052
+CapsuleCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -633,8 +634,9 @@ BoxCollider:
   m_IsTrigger: 0
   m_ProvidesContacts: 0
   m_Enabled: 1
-  serializedVersion: 3
-  m_Size: {x: 0.1, y: 0.16, z: 5.7}
+  m_Radius: 0.12
+  m_Height: 1.28
+  m_Direction: 1
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300060
 GameObject:
@@ -647,7 +649,7 @@ GameObject:
   - component: {fileID: 300061}
   - component: {fileID: 300062}
   m_Layer: 0
-  m_Name: Col_Plank_0
+  m_Name: Col_Pile_6
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -662,14 +664,14 @@ Transform:
   m_GameObject: {fileID: 300060}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.602, z: -2.91667}
+  m_LocalPosition: {x: 1.15, y: -0.48, z: -2.4}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   m_Father: {fileID: 100001}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!65 &300062
-BoxCollider:
+--- !u!136 &300062
+CapsuleCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -686,8 +688,9 @@ BoxCollider:
   m_IsTrigger: 0
   m_ProvidesContacts: 0
   m_Enabled: 1
-  serializedVersion: 3
-  m_Size: {x: 2.88, y: 0.032, z: 0.14667}
+  m_Radius: 0.12
+  m_Height: 1.28
+  m_Direction: 1
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300070
 GameObject:
@@ -700,7 +703,7 @@ GameObject:
   - component: {fileID: 300071}
   - component: {fileID: 300072}
   m_Layer: 0
-  m_Name: Col_Plank_1
+  m_Name: Col_Pile_7
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -715,14 +718,14 @@ Transform:
   m_GameObject: {fileID: 300070}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.602, z: -2.75}
+  m_LocalPosition: {x: 1.15, y: -0.48, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   m_Father: {fileID: 100001}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!65 &300072
-BoxCollider:
+--- !u!136 &300072
+CapsuleCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -739,8 +742,9 @@ BoxCollider:
   m_IsTrigger: 0
   m_ProvidesContacts: 0
   m_Enabled: 1
-  serializedVersion: 3
-  m_Size: {x: 2.88, y: 0.032, z: 0.14667}
+  m_Radius: 0.12
+  m_Height: 1.28
+  m_Direction: 1
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300080
 GameObject:
@@ -753,7 +757,7 @@ GameObject:
   - component: {fileID: 300081}
   - component: {fileID: 300082}
   m_Layer: 0
-  m_Name: Col_Plank_2
+  m_Name: Col_Pile_8
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -768,14 +772,14 @@ Transform:
   m_GameObject: {fileID: 300080}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.602, z: -2.58333}
+  m_LocalPosition: {x: 1.15, y: -0.48, z: 2.4}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   m_Father: {fileID: 100001}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!65 &300082
-BoxCollider:
+--- !u!136 &300082
+CapsuleCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -792,8 +796,9 @@ BoxCollider:
   m_IsTrigger: 0
   m_ProvidesContacts: 0
   m_Enabled: 1
-  serializedVersion: 3
-  m_Size: {x: 2.88, y: 0.032, z: 0.14667}
+  m_Radius: 0.12
+  m_Height: 1.28
+  m_Direction: 1
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300090
 GameObject:
@@ -806,7 +811,7 @@ GameObject:
   - component: {fileID: 300091}
   - component: {fileID: 300092}
   m_Layer: 0
-  m_Name: Col_Plank_3
+  m_Name: Col_Stringer_0
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -821,7 +826,7 @@ Transform:
   m_GameObject: {fileID: 300090}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.602, z: -2.41667}
+  m_LocalPosition: {x: -1.15, y: 0.374, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -846,7 +851,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 2.88, y: 0.032, z: 0.14667}
+  m_Size: {x: 0.12, y: 0.18, z: 5.5}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300100
 GameObject:
@@ -859,7 +864,7 @@ GameObject:
   - component: {fileID: 300101}
   - component: {fileID: 300102}
   m_Layer: 0
-  m_Name: Col_Plank_4
+  m_Name: Col_Stringer_1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -874,7 +879,7 @@ Transform:
   m_GameObject: {fileID: 300100}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.602, z: -2.25}
+  m_LocalPosition: {x: 0, y: 0.374, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -899,7 +904,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 2.88, y: 0.032, z: 0.14667}
+  m_Size: {x: 0.12, y: 0.18, z: 5.5}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300110
 GameObject:
@@ -912,7 +917,7 @@ GameObject:
   - component: {fileID: 300111}
   - component: {fileID: 300112}
   m_Layer: 0
-  m_Name: Col_Plank_5
+  m_Name: Col_Stringer_2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -927,7 +932,7 @@ Transform:
   m_GameObject: {fileID: 300110}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.602, z: -2.08333}
+  m_LocalPosition: {x: 1.15, y: 0.374, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -952,7 +957,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 2.88, y: 0.032, z: 0.14667}
+  m_Size: {x: 0.12, y: 0.18, z: 5.5}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300120
 GameObject:
@@ -965,7 +970,7 @@ GameObject:
   - component: {fileID: 300121}
   - component: {fileID: 300122}
   m_Layer: 0
-  m_Name: Col_Plank_6
+  m_Name: Col_Plank_0
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -980,7 +985,7 @@ Transform:
   m_GameObject: {fileID: 300120}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.602, z: -1.91667}
+  m_LocalPosition: {x: 0, y: 0.602, z: -2.9}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -1005,7 +1010,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 2.88, y: 0.032, z: 0.14667}
+  m_Size: {x: 2.7, y: 0.0256, z: 0.1548}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300130
 GameObject:
@@ -1018,7 +1023,7 @@ GameObject:
   - component: {fileID: 300131}
   - component: {fileID: 300132}
   m_Layer: 0
-  m_Name: Col_Plank_7
+  m_Name: Col_Plank_1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1033,7 +1038,7 @@ Transform:
   m_GameObject: {fileID: 300130}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.602, z: -1.75}
+  m_LocalPosition: {x: 0, y: 0.602, z: -2.7}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -1058,7 +1063,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 2.88, y: 0.032, z: 0.14667}
+  m_Size: {x: 2.7, y: 0.0256, z: 0.1548}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300140
 GameObject:
@@ -1071,7 +1076,7 @@ GameObject:
   - component: {fileID: 300141}
   - component: {fileID: 300142}
   m_Layer: 0
-  m_Name: Col_Plank_8
+  m_Name: Col_Plank_2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1086,7 +1091,7 @@ Transform:
   m_GameObject: {fileID: 300140}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.602, z: -1.58333}
+  m_LocalPosition: {x: 0, y: 0.602, z: -2.5}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -1111,7 +1116,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 2.88, y: 0.032, z: 0.14667}
+  m_Size: {x: 2.7, y: 0.0256, z: 0.1548}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300150
 GameObject:
@@ -1124,7 +1129,7 @@ GameObject:
   - component: {fileID: 300151}
   - component: {fileID: 300152}
   m_Layer: 0
-  m_Name: Col_Plank_9
+  m_Name: Col_Plank_3
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1139,7 +1144,7 @@ Transform:
   m_GameObject: {fileID: 300150}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.602, z: -1.41667}
+  m_LocalPosition: {x: 0, y: 0.602, z: -2.3}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -1164,7 +1169,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 2.88, y: 0.032, z: 0.14667}
+  m_Size: {x: 2.7, y: 0.0256, z: 0.1548}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300160
 GameObject:
@@ -1177,7 +1182,7 @@ GameObject:
   - component: {fileID: 300161}
   - component: {fileID: 300162}
   m_Layer: 0
-  m_Name: Col_Plank_10
+  m_Name: Col_Plank_4
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1192,7 +1197,7 @@ Transform:
   m_GameObject: {fileID: 300160}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.602, z: -1.25}
+  m_LocalPosition: {x: 0, y: 0.602, z: -2.1}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -1217,7 +1222,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 2.88, y: 0.032, z: 0.14667}
+  m_Size: {x: 2.7, y: 0.0256, z: 0.1548}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300170
 GameObject:
@@ -1230,7 +1235,7 @@ GameObject:
   - component: {fileID: 300171}
   - component: {fileID: 300172}
   m_Layer: 0
-  m_Name: Col_Plank_11
+  m_Name: Col_Plank_5
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1245,7 +1250,7 @@ Transform:
   m_GameObject: {fileID: 300170}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.602, z: -1.08333}
+  m_LocalPosition: {x: 0, y: 0.602, z: -1.9}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -1270,7 +1275,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 2.88, y: 0.032, z: 0.14667}
+  m_Size: {x: 2.7, y: 0.0256, z: 0.1548}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300180
 GameObject:
@@ -1283,7 +1288,7 @@ GameObject:
   - component: {fileID: 300181}
   - component: {fileID: 300182}
   m_Layer: 0
-  m_Name: Col_Plank_12
+  m_Name: Col_Plank_6
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1298,7 +1303,7 @@ Transform:
   m_GameObject: {fileID: 300180}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.602, z: -0.91667}
+  m_LocalPosition: {x: 0, y: 0.602, z: -1.7}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -1323,7 +1328,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 2.88, y: 0.032, z: 0.14667}
+  m_Size: {x: 2.7, y: 0.0256, z: 0.1548}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300190
 GameObject:
@@ -1336,7 +1341,7 @@ GameObject:
   - component: {fileID: 300191}
   - component: {fileID: 300192}
   m_Layer: 0
-  m_Name: Col_Plank_13
+  m_Name: Col_Plank_7
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1351,7 +1356,7 @@ Transform:
   m_GameObject: {fileID: 300190}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.602, z: -0.75}
+  m_LocalPosition: {x: 0, y: 0.602, z: -1.5}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -1376,7 +1381,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 2.88, y: 0.032, z: 0.14667}
+  m_Size: {x: 2.7, y: 0.0256, z: 0.1548}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300200
 GameObject:
@@ -1389,7 +1394,7 @@ GameObject:
   - component: {fileID: 300201}
   - component: {fileID: 300202}
   m_Layer: 0
-  m_Name: Col_Plank_14
+  m_Name: Col_Plank_8
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1404,7 +1409,7 @@ Transform:
   m_GameObject: {fileID: 300200}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.602, z: -0.58333}
+  m_LocalPosition: {x: 0, y: 0.602, z: -1.3}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -1429,7 +1434,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 2.88, y: 0.032, z: 0.14667}
+  m_Size: {x: 2.7, y: 0.0256, z: 0.1548}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300210
 GameObject:
@@ -1442,7 +1447,7 @@ GameObject:
   - component: {fileID: 300211}
   - component: {fileID: 300212}
   m_Layer: 0
-  m_Name: Col_Plank_15
+  m_Name: Col_Plank_9
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1457,7 +1462,7 @@ Transform:
   m_GameObject: {fileID: 300210}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.602, z: -0.41667}
+  m_LocalPosition: {x: 0, y: 0.602, z: -1.1}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -1482,7 +1487,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 2.88, y: 0.032, z: 0.14667}
+  m_Size: {x: 2.7, y: 0.0256, z: 0.1548}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300220
 GameObject:
@@ -1495,7 +1500,7 @@ GameObject:
   - component: {fileID: 300221}
   - component: {fileID: 300222}
   m_Layer: 0
-  m_Name: Col_Plank_16
+  m_Name: Col_Plank_10
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1510,7 +1515,7 @@ Transform:
   m_GameObject: {fileID: 300220}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.602, z: -0.25}
+  m_LocalPosition: {x: 0, y: 0.602, z: -0.9}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -1535,7 +1540,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 2.88, y: 0.032, z: 0.14667}
+  m_Size: {x: 2.7, y: 0.0256, z: 0.1548}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300230
 GameObject:
@@ -1548,7 +1553,7 @@ GameObject:
   - component: {fileID: 300231}
   - component: {fileID: 300232}
   m_Layer: 0
-  m_Name: Col_Plank_17
+  m_Name: Col_Plank_11
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1563,7 +1568,7 @@ Transform:
   m_GameObject: {fileID: 300230}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.602, z: -0.08333}
+  m_LocalPosition: {x: 0, y: 0.602, z: -0.7}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -1588,7 +1593,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 2.88, y: 0.032, z: 0.14667}
+  m_Size: {x: 2.7, y: 0.0256, z: 0.1548}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300240
 GameObject:
@@ -1601,7 +1606,7 @@ GameObject:
   - component: {fileID: 300241}
   - component: {fileID: 300242}
   m_Layer: 0
-  m_Name: Col_Plank_18
+  m_Name: Col_Plank_12
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1616,7 +1621,7 @@ Transform:
   m_GameObject: {fileID: 300240}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.602, z: 0.08333}
+  m_LocalPosition: {x: 0, y: 0.602, z: -0.5}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -1641,7 +1646,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 2.88, y: 0.032, z: 0.14667}
+  m_Size: {x: 2.7, y: 0.0256, z: 0.1548}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300250
 GameObject:
@@ -1654,7 +1659,7 @@ GameObject:
   - component: {fileID: 300251}
   - component: {fileID: 300252}
   m_Layer: 0
-  m_Name: Col_Plank_19
+  m_Name: Col_Plank_13
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1669,7 +1674,7 @@ Transform:
   m_GameObject: {fileID: 300250}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.602, z: 0.25}
+  m_LocalPosition: {x: 0, y: 0.602, z: -0.3}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -1694,7 +1699,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 2.88, y: 0.032, z: 0.14667}
+  m_Size: {x: 2.7, y: 0.0256, z: 0.1548}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300260
 GameObject:
@@ -1707,7 +1712,7 @@ GameObject:
   - component: {fileID: 300261}
   - component: {fileID: 300262}
   m_Layer: 0
-  m_Name: Col_Plank_20
+  m_Name: Col_Plank_14
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1722,7 +1727,7 @@ Transform:
   m_GameObject: {fileID: 300260}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.602, z: 0.41667}
+  m_LocalPosition: {x: 0, y: 0.602, z: -0.1}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -1747,7 +1752,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 2.88, y: 0.032, z: 0.14667}
+  m_Size: {x: 2.7, y: 0.0256, z: 0.1548}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300270
 GameObject:
@@ -1760,7 +1765,7 @@ GameObject:
   - component: {fileID: 300271}
   - component: {fileID: 300272}
   m_Layer: 0
-  m_Name: Col_Plank_21
+  m_Name: Col_Plank_15
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1775,7 +1780,7 @@ Transform:
   m_GameObject: {fileID: 300270}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.602, z: 0.58333}
+  m_LocalPosition: {x: 0, y: 0.602, z: 0.1}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -1800,7 +1805,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 2.88, y: 0.032, z: 0.14667}
+  m_Size: {x: 2.7, y: 0.0256, z: 0.1548}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300280
 GameObject:
@@ -1813,7 +1818,7 @@ GameObject:
   - component: {fileID: 300281}
   - component: {fileID: 300282}
   m_Layer: 0
-  m_Name: Col_Plank_22
+  m_Name: Col_Plank_16
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1828,7 +1833,7 @@ Transform:
   m_GameObject: {fileID: 300280}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.602, z: 0.75}
+  m_LocalPosition: {x: 0, y: 0.602, z: 0.3}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -1853,7 +1858,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 2.88, y: 0.032, z: 0.14667}
+  m_Size: {x: 2.7, y: 0.0256, z: 0.1548}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300290
 GameObject:
@@ -1866,7 +1871,7 @@ GameObject:
   - component: {fileID: 300291}
   - component: {fileID: 300292}
   m_Layer: 0
-  m_Name: Col_Plank_23
+  m_Name: Col_Plank_17
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1881,7 +1886,7 @@ Transform:
   m_GameObject: {fileID: 300290}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.602, z: 0.91667}
+  m_LocalPosition: {x: 0, y: 0.602, z: 0.5}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -1906,7 +1911,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 2.88, y: 0.032, z: 0.14667}
+  m_Size: {x: 2.7, y: 0.0256, z: 0.1548}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300300
 GameObject:
@@ -1919,7 +1924,7 @@ GameObject:
   - component: {fileID: 300301}
   - component: {fileID: 300302}
   m_Layer: 0
-  m_Name: Col_Plank_24
+  m_Name: Col_Plank_18
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1934,7 +1939,7 @@ Transform:
   m_GameObject: {fileID: 300300}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.602, z: 1.08333}
+  m_LocalPosition: {x: 0, y: 0.602, z: 0.7}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -1959,7 +1964,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 2.88, y: 0.032, z: 0.14667}
+  m_Size: {x: 2.7, y: 0.0256, z: 0.1548}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300310
 GameObject:
@@ -1972,7 +1977,7 @@ GameObject:
   - component: {fileID: 300311}
   - component: {fileID: 300312}
   m_Layer: 0
-  m_Name: Col_Plank_25
+  m_Name: Col_Plank_19
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1987,7 +1992,7 @@ Transform:
   m_GameObject: {fileID: 300310}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.602, z: 1.25}
+  m_LocalPosition: {x: 0, y: 0.602, z: 0.9}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -2012,7 +2017,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 2.88, y: 0.032, z: 0.14667}
+  m_Size: {x: 2.7, y: 0.0256, z: 0.1548}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300320
 GameObject:
@@ -2025,7 +2030,7 @@ GameObject:
   - component: {fileID: 300321}
   - component: {fileID: 300322}
   m_Layer: 0
-  m_Name: Col_Plank_26
+  m_Name: Col_Plank_20
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2040,7 +2045,7 @@ Transform:
   m_GameObject: {fileID: 300320}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.602, z: 1.41667}
+  m_LocalPosition: {x: 0, y: 0.602, z: 1.1}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -2065,7 +2070,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 2.88, y: 0.032, z: 0.14667}
+  m_Size: {x: 2.7, y: 0.0256, z: 0.1548}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300330
 GameObject:
@@ -2078,7 +2083,7 @@ GameObject:
   - component: {fileID: 300331}
   - component: {fileID: 300332}
   m_Layer: 0
-  m_Name: Col_Plank_27
+  m_Name: Col_Plank_21
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2093,7 +2098,7 @@ Transform:
   m_GameObject: {fileID: 300330}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.602, z: 1.58333}
+  m_LocalPosition: {x: 0, y: 0.602, z: 1.3}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -2118,7 +2123,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 2.88, y: 0.032, z: 0.14667}
+  m_Size: {x: 2.7, y: 0.0256, z: 0.1548}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300340
 GameObject:
@@ -2131,7 +2136,7 @@ GameObject:
   - component: {fileID: 300341}
   - component: {fileID: 300342}
   m_Layer: 0
-  m_Name: Col_Plank_28
+  m_Name: Col_Plank_22
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2146,7 +2151,7 @@ Transform:
   m_GameObject: {fileID: 300340}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.602, z: 1.75}
+  m_LocalPosition: {x: 0, y: 0.602, z: 1.5}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -2171,7 +2176,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 2.88, y: 0.032, z: 0.14667}
+  m_Size: {x: 2.7, y: 0.0256, z: 0.1548}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300350
 GameObject:
@@ -2184,7 +2189,7 @@ GameObject:
   - component: {fileID: 300351}
   - component: {fileID: 300352}
   m_Layer: 0
-  m_Name: Col_Plank_29
+  m_Name: Col_Plank_23
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2199,7 +2204,7 @@ Transform:
   m_GameObject: {fileID: 300350}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.602, z: 1.91667}
+  m_LocalPosition: {x: 0, y: 0.602, z: 1.7}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -2224,7 +2229,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 2.88, y: 0.032, z: 0.14667}
+  m_Size: {x: 2.7, y: 0.0256, z: 0.1548}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300360
 GameObject:
@@ -2237,7 +2242,7 @@ GameObject:
   - component: {fileID: 300361}
   - component: {fileID: 300362}
   m_Layer: 0
-  m_Name: Col_Plank_30
+  m_Name: Col_Plank_24
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2252,7 +2257,7 @@ Transform:
   m_GameObject: {fileID: 300360}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.602, z: 2.08333}
+  m_LocalPosition: {x: 0, y: 0.602, z: 1.9}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -2277,7 +2282,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 2.88, y: 0.032, z: 0.14667}
+  m_Size: {x: 2.7, y: 0.0256, z: 0.1548}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300370
 GameObject:
@@ -2290,7 +2295,7 @@ GameObject:
   - component: {fileID: 300371}
   - component: {fileID: 300372}
   m_Layer: 0
-  m_Name: Col_Plank_31
+  m_Name: Col_Plank_25
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2305,7 +2310,7 @@ Transform:
   m_GameObject: {fileID: 300370}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.602, z: 2.25}
+  m_LocalPosition: {x: 0, y: 0.602, z: 2.1}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -2330,7 +2335,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 2.88, y: 0.032, z: 0.14667}
+  m_Size: {x: 2.7, y: 0.0256, z: 0.1548}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300380
 GameObject:
@@ -2343,7 +2348,7 @@ GameObject:
   - component: {fileID: 300381}
   - component: {fileID: 300382}
   m_Layer: 0
-  m_Name: Col_Plank_32
+  m_Name: Col_Plank_26
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2358,7 +2363,7 @@ Transform:
   m_GameObject: {fileID: 300380}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.602, z: 2.41667}
+  m_LocalPosition: {x: 0, y: 0.602, z: 2.3}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -2383,7 +2388,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 2.88, y: 0.032, z: 0.14667}
+  m_Size: {x: 2.7, y: 0.0256, z: 0.1548}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300390
 GameObject:
@@ -2396,7 +2401,7 @@ GameObject:
   - component: {fileID: 300391}
   - component: {fileID: 300392}
   m_Layer: 0
-  m_Name: Col_Plank_33
+  m_Name: Col_Plank_27
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2411,7 +2416,7 @@ Transform:
   m_GameObject: {fileID: 300390}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.602, z: 2.58333}
+  m_LocalPosition: {x: 0, y: 0.602, z: 2.5}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -2436,7 +2441,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 2.88, y: 0.032, z: 0.14667}
+  m_Size: {x: 2.7, y: 0.0256, z: 0.1548}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300400
 GameObject:
@@ -2449,7 +2454,7 @@ GameObject:
   - component: {fileID: 300401}
   - component: {fileID: 300402}
   m_Layer: 0
-  m_Name: Col_Plank_34
+  m_Name: Col_Plank_28
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2464,7 +2469,7 @@ Transform:
   m_GameObject: {fileID: 300400}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.602, z: 2.75}
+  m_LocalPosition: {x: 0, y: 0.602, z: 2.7}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -2489,7 +2494,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 2.88, y: 0.032, z: 0.14667}
+  m_Size: {x: 2.7, y: 0.0256, z: 0.1548}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300410
 GameObject:
@@ -2502,7 +2507,7 @@ GameObject:
   - component: {fileID: 300411}
   - component: {fileID: 300412}
   m_Layer: 0
-  m_Name: Col_Plank_35
+  m_Name: Col_Plank_29
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2517,7 +2522,7 @@ Transform:
   m_GameObject: {fileID: 300410}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.602, z: 2.91667}
+  m_LocalPosition: {x: 0, y: 0.602, z: 2.9}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -2542,7 +2547,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 2.88, y: 0.032, z: 0.14667}
+  m_Size: {x: 2.7, y: 0.0256, z: 0.1548}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300420
 GameObject:
@@ -2782,7 +2787,7 @@ Transform:
   m_GameObject: {fileID: 300460}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -1.35, y: 0.82, z: -2.15}
+  m_LocalPosition: {x: -0.55, y: 0.82, z: -1.85}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -2836,7 +2841,7 @@ Transform:
   m_GameObject: {fileID: 300470}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 1.35, y: 0.82, z: 2.15}
+  m_LocalPosition: {x: 0.85, y: 0.82, z: 1.7}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -2890,7 +2895,7 @@ Transform:
   m_GameObject: {fileID: 300480}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -1.62, y: 0.14, z: -0.145}
+  m_LocalPosition: {x: -1.74, y: -0.1, z: -0.16}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -2915,7 +2920,7 @@ CapsuleCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   m_Radius: 0.012
-  m_Height: 1.05
+  m_Height: 1.7
   m_Direction: 1
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300490
@@ -2944,7 +2949,7 @@ Transform:
   m_GameObject: {fileID: 300490}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -1.62, y: 0.14, z: 0.145}
+  m_LocalPosition: {x: -1.74, y: -0.1, z: 0.16}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -2969,6 +2974,6 @@ CapsuleCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   m_Radius: 0.012
-  m_Height: 1.05
+  m_Height: 1.7
   m_Direction: 1
   m_Center: {x: 0, y: 0, z: 0}

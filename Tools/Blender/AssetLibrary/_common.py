@@ -70,6 +70,8 @@ PALETTE = {
     "Lib_Soil": ((0.28, 0.18, 0.10), 0.0, 0.12),
     "Lib_Siding": ((0.78, 0.80, 0.78), 0.0, 0.30),
     "Lib_Roof": ((0.28, 0.30, 0.32), 0.05, 0.25),
+    # Truncated-dome panel. Yellow field, the domes are the normal.
+    "Lib_Warn": ((0.76, 0.52, 0.10), 0.0, 0.12),
     "Lib_Awning": ((0.55, 0.12, 0.16), 0.0, 0.28),
     "Lib_Court": ((0.16, 0.38, 0.62), 0.0, 0.30),
     "Lib_Lane": ((0.90, 0.82, 0.28), 0.0, 0.35),
@@ -113,12 +115,12 @@ EMISSIVE = {
 # Grayscale-or-color albedo multiplied is baked as full color. UV is meters.
 TEXTURED = (
     "Lib_Brick", "Lib_Asphalt", "Lib_Wood", "Lib_WoodDark", "Lib_Concrete",
-    "Lib_Siding", "Lib_Roof", "Lib_Soil", "Lib_Hydrant", "Lib_WoodWeather",
+    "Lib_Siding", "Lib_Roof", "Lib_Warn", "Lib_Soil", "Lib_Hydrant", "Lib_WoodWeather",
     "Lib_CourtDecal", "Lib_Bark", "Lib_MetalWorn", "Lib_ContainerRed", "Lib_ContainerBlue",
     "Lib_CraneYellow", "Lib_LogEnd",
 )
 NORMALS = (
-    "Lib_Brick", "Lib_Water", "Lib_Concrete", "Lib_Wood", "Lib_WoodDark",
+    "Lib_Brick", "Lib_Roof", "Lib_Warn", "Lib_Water", "Lib_Concrete", "Lib_Wood", "Lib_WoodDark",
     "Lib_Asphalt", "Lib_Bark", "Lib_MetalWorn", "Lib_ContainerRed", "Lib_ContainerBlue",
     "Lib_CraneYellow", "Lib_LogEnd",
     "Lib_Log0", "Lib_Log1", "Lib_Log2", "Lib_Log3", "Lib_Log4",
@@ -1173,29 +1175,105 @@ def _siding_pixel(x, y, w, h):
     return (base * shadow, base * shadow, base * 0.98 * shadow)
 
 
+def _shake_at(u, v):
+    """Irregular cedar course. Returns course index, height in the course, shake index, across-shake."""
+    courses = 5.2
+    course = v * courses
+    ci = int(math.floor(course))
+    fy = course - ci
+    # Each course starts at a different offset and uses its own widths, so it is not a brick grid.
+    u2 = u + (0.37 if ci % 2 else 0.08) + _hash01(3, ci, 4) * 0.21
+    cursor = -0.15
+    i = 0
+    si = 0
+    fx = 0.5
+    while cursor < u2 + 1.2 and i < 24:
+        width = 0.15 + _hash01(i, ci, 11) * 0.24
+        if _hash01(i, ci, 12) > 0.84:
+            width *= 0.62
+        nxt = cursor + width
+        if cursor <= u2 < nxt:
+            si = i
+            fx = (u2 - cursor) / width
+            break
+        cursor = nxt
+        i += 1
+        si = i
+    return ci, fy, si, fx
+
+
+def _roof_height(x, y, w, h):
+    """Low at the butt and the side joint, high on the face of the shake."""
+    _ci, fy, _si, fx = _shake_at(x / float(w), y / float(h))
+    side = min(fx, 1.0 - fx)
+    if fy < 0.10 or side < 0.035:
+        return 0.05
+    edge = min(fy - 0.10, side - 0.035, 0.22)
+    return 0.35 + 0.65 * max(0.0, min(1.0, edge * 8.0))
+
+
+def _roof_normal_pixel(x, y, w, h):
+    hx = _roof_height(x + 1, y, w, h) - _roof_height(x - 1, y, w, h)
+    hy = _roof_height(x, y + 1, w, h) - _roof_height(x, y - 1, w, h)
+    nx, ny, nz = -hx * 2.4, -hy * 2.4, 1.0
+    length = math.sqrt(nx * nx + ny * ny + nz * nz) or 1.0
+    return (nx / length * 0.5 + 0.5, ny / length * 0.5 + 0.5, nz / length * 0.5 + 0.5)
+
+
 def _roof_pixel(x, y, w, h):
-    """Cedar shakes. Courses are staggered, with a dark butt on each course."""
+    """Weathered cedar shakes. Widths change per course. The butt is a shadow line."""
     u = x / float(w)
     v = y / float(h)
-    courses = 8.0
-    shakes = 5.0
-    course = v * courses
-    ci = math.floor(course)
-    fy = course - ci
-    off = 0.5 if int(ci) % 2 else 0.0
-    u2 = (u + off) % 1.0
-    fx = (u2 * shakes) % 1.0
-    si = math.floor((u + off) * shakes)
-    n = _hash01(si, int(ci), 14)
-    grain = 0.90 + _value_noise(u * 4.0, v * 18.0 + ci * 0.2, 18) * 0.16
-    r = (0.40 + n * 0.12) * grain
-    g = (0.22 + n * 0.06) * grain
-    b = (0.11 + n * 0.03) * grain
-    if fy < 0.14:
-        shade = 0.42
-        r, g, b = r * shade, g * shade, b * shade
-    elif fx < 0.045 or fx > 0.965:
-        r, g, b = r * 0.72, g * 0.72, b * 0.72
+    ci, fy, si, fx = _shake_at(u, v)
+    n = _hash01(si, ci, 14)
+    weather = _hash01(si, ci, 15)
+    grain = 0.86 + _value_noise(u * 3.0, v * 28.0 + ci * 0.17, 18) * 0.22
+    # Grey-brown, some shakes silvered, none a uniform brick red.
+    brown = (0.38 + n * 0.10, 0.26 + n * 0.05, 0.15 + n * 0.03)
+    grey = (0.48 + n * 0.08, 0.45 + n * 0.06, 0.40 + n * 0.05)
+    t = 0.28 + weather * 0.62
+    r = (brown[0] * (1.0 - t) + grey[0] * t) * grain
+    g = (brown[1] * (1.0 - t) + grey[1] * t) * grain
+    b = (brown[2] * (1.0 - t) + grey[2] * t) * grain
+    if fy < 0.07:
+        shade = 0.22
+    elif fy < 0.15:
+        shade = 0.48
+    else:
+        shade = 1.0
+    if fx < 0.035 or fx > 0.965:
+        shade *= 0.40
+    return (r * shade, g * shade, b * shade)
+
+
+def _warn_height(x, y, w, h):
+    """Truncated domes on a 60 mm grid. One tile is one metre."""
+    u = (x / float(w)) % 1.0
+    v = (y / float(h)) % 1.0
+    pitch = 0.060
+    fx = (u % pitch) / pitch - 0.5
+    fy = (v % pitch) / pitch - 0.5
+    d = math.hypot(fx, fy)
+    if d > 0.30:
+        return 0.15
+    return 0.15 + 0.85 * (1.0 - d / 0.30)
+
+
+def _warn_normal_pixel(x, y, w, h):
+    hx = _warn_height(x + 1, y, w, h) - _warn_height(x - 1, y, w, h)
+    hy = _warn_height(x, y + 1, w, h) - _warn_height(x, y - 1, w, h)
+    nx, ny, nz = -hx * 1.6, -hy * 1.6, 1.0
+    length = math.sqrt(nx * nx + ny * ny + nz * nz) or 1.0
+    return (nx / length * 0.5 + 0.5, ny / length * 0.5 + 0.5, nz / length * 0.5 + 0.5)
+
+
+def _warn_pixel(x, y, w, h):
+    u = x / float(w)
+    v = y / float(h)
+    n = _value_noise(u * 8.0, v * 8.0, 27)
+    r = 0.72 + n * 0.06
+    g = 0.48 + n * 0.04
+    b = 0.08 + n * 0.02
     return (r, g, b)
 
 
@@ -1321,6 +1399,9 @@ def generate_textures():
     # worn metals are the node-baked sets from _bake_pbr.
     _save_image("Lib_Siding", w, h, _siding_pixel)
     _save_image("Lib_Roof", w, h, _roof_pixel)
+    _save_image("Lib_Roof_N", w, h, _roof_normal_pixel)
+    _save_image("Lib_Warn", w, h, _warn_pixel)
+    _save_image("Lib_Warn_N", w, h, _warn_normal_pixel)
     _save_image("Lib_Soil", w, h, _soil_pixel)
     _save_image("Lib_Hydrant", w, h, _hydrant_pixel)
     _save_image("Lib_Hydrant_R", w, h, _hydrant_rough_pixel)
@@ -1335,7 +1416,7 @@ def load_asset_modules():
     if ROOT not in sys.path:
         sys.path.insert(0, ROOT)
     skip = {
-        "_common", "build_all", "render_pass1", "render_pass2", "render_pass3", "render_pass4", "render_pass5", "render_pass6", "render_pass7", "render_pass8", "render_pass9", "render_pass10", "render_pass11", "render_pass12", "render_pass13", "render_pass14", "render_pass15", "render_pass16", "render_pass17", "render_pass18", "render_pass19", "render_pass20", "render_pass21",
+        "_common", "build_all", "render_pass1", "render_pass2", "render_pass3", "render_pass4", "render_pass5", "render_pass6", "render_pass7", "render_pass8", "render_pass9", "render_pass10", "render_pass11", "render_pass12", "render_pass13", "render_pass14", "render_pass15", "render_pass16", "render_pass17", "render_pass18", "render_pass19", "render_pass20", "render_pass21", "render_pass22",
         "write_unity", "_kit",
     }
     names = []
