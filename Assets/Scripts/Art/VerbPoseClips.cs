@@ -174,6 +174,17 @@ namespace Tag.Art
         public const float TagKnee = -42f;
         public const float TagHead = 8f;
 
+        /// <summary>
+        /// Played arm path only. The printed gather and claim stay the constants above.
+        /// Pitch lifts the reach onto a forward line, yaw opens the upper arm off the chest,
+        /// and the elbow stays bent enough that the hands meet in front of the chest.
+        /// The foot pitch lifts the early sole off the floor. None of these are on a proof line.
+        /// </summary>
+        public const float TagClearPitch = -30f;
+        public const float TagClearYaw = -28f;
+        public const float TagClearElbow = -20f;
+        public const float TagClearFoot = 8f;
+
         public struct Bind
         {
             public Quaternion UaL, UaR, LaL, LaR;
@@ -374,10 +385,10 @@ namespace Tag.Art
         public static Pose TagCatchPose(Bind bind, float sample)
         {
             float t = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(sample));
-            float pitch = Mathf.Lerp(TagWindupArmPitch, TagArmPitch, t);
-            float yaw = Mathf.Lerp(TagWindupArmYaw, TagArmYaw, t);
+            float pitch = Mathf.Lerp(TagWindupArmPitch, TagArmPitch, t) + TagClearPitch * t;
+            float yaw = Mathf.Lerp(TagWindupArmYaw, TagArmYaw, t) + TagClearYaw * t;
             float roll = Mathf.Lerp(TagWindupArmRoll, TagArmRoll, t);
-            float elbow = Mathf.Lerp(TagWindupElbow, TagElbow, t);
+            float elbow = Mathf.Lerp(TagWindupElbow, TagElbow, t) + TagClearElbow * t;
             float thigh = Mathf.Lerp(TagWindupThigh, TagThigh, t);
             float knee = Mathf.Lerp(TagWindupKnee, TagKnee, t);
             float spine = Mathf.Lerp(TagWindupSpine, TagSpine, t);
@@ -396,8 +407,8 @@ namespace Tag.Art
                 Spine = bind.Spine * Quaternion.Euler(spine, TagSpineYaw, 0f),
                 Hips = bind.Hips * Quaternion.Euler(hip, TagHipYaw, 0f),
                 Head = bind.Head * Quaternion.Euler(head, 0f, 0f),
-                FtL = bind.FtL,
-                FtR = bind.FtR,
+                FtL = bind.FtL * Quaternion.Euler(TagClearFoot, 0f, 0f),
+                FtR = bind.FtR * Quaternion.Euler(TagClearFoot, 0f, 0f),
             };
         }
 
