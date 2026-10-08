@@ -450,6 +450,7 @@ namespace Tag.Level
                 tris.AddRange(park);
                 if (hier) AddHier(tris, px, py, pz, yaw, sr[i], sg[i], sb[i]);
                 else AddRunner(tris, px, py, pz, sr[i], sg[i], sb[i]);
+                AddContact(tris, px, py, pz);
                 var seatShadow = (float[])shadow.Clone();
                 for (int t = park.Count; t < tris.Count; t++)
                 {
@@ -551,6 +552,51 @@ namespace Tag.Level
             cr = r; cg = g; cb = b;
         }
 
+        /// <summary>
+        /// Soft disc on the ground under the feet. The sun shadow map's bias
+        /// lifts the contact off the shoes, so the disc is what reads.
+        /// </summary>
+        static void AddContact(List<Tri> tris, float x, float y, float z)
+        {
+            int before = tris.Count;
+            const int seg = 16;
+            float y0 = y + 0.04f;
+            float ix = 0.26f;
+            float iz = 0.20f;
+            float ox = 0.70f;
+            float oz = 0.52f;
+            for (int i = 0; i < seg; i++)
+            {
+                float a0 = (float)(i * Math.PI * 2.0 / seg);
+                float a1 = (float)((i + 1) * Math.PI * 2.0 / seg);
+                float c0 = (float)Math.Cos(a0);
+                float s0 = (float)Math.Sin(a0);
+                float c1 = (float)Math.Cos(a1);
+                float s1 = (float)Math.Sin(a1);
+                // Wound so the normal points up. The chase camera sits above the feet.
+                AddTri(tris, x, y0, z,
+                    x + c1 * ix, y0, z + s1 * iz,
+                    x + c0 * ix, y0, z + s0 * iz,
+                    0.02f, 0.015f, 0.02f);
+                AddTri(tris,
+                    x + c1 * ix, y0, z + s1 * iz,
+                    x + c0 * ox, y0, z + s0 * oz,
+                    x + c0 * ix, y0, z + s0 * iz,
+                    0.02f, 0.015f, 0.02f);
+                AddTri(tris,
+                    x + c1 * ix, y0, z + s1 * iz,
+                    x + c1 * ox, y0, z + s1 * oz,
+                    x + c0 * ox, y0, z + s0 * oz,
+                    0.02f, 0.015f, 0.02f);
+            }
+            for (int i = before; i < tris.Count; i++)
+            {
+                Tri t = tris[i];
+                t.A = (i - before) < seg ? 0.58f : 0.26f;
+                tris[i] = t;
+            }
+        }
+
         static void AddRunner(List<Tri> tris, float x, float y, float z, float r, float g, float b)
         {
             AddBox(tris, x, y + 0.46f, z, 0.34f, 0.92f, 0.24f, 0.12f, 0.14f, 0.18f);
@@ -590,56 +636,7 @@ namespace Tag.Level
             var depth = new float[w * h];
             Paint(tris, rgb, depth, w, h, ex, ey, ez, tx, ty, tz, 70f, true,
                 shadow, 768, sox, soy, soz, srx, sry, srz, sux, suy, suz, lsx, lsy, lsz, half);
-            Daylook(rgb);
             WritePng(path, rgb, w, h);
-        }
-
-        /// <summary>
-        /// Chase-only grade. The swatches stay dark enough for the contrast
-        /// pairs. From the shoulder the ground fills the frame, so this lifts
-        /// that same afternoon sun into the read the overview already has.
-        /// </summary>
-        static void Daylook(byte[] rgb)
-        {
-            int n = rgb.Length / 3;
-            for (int i = 0; i < n; i++)
-            {
-                int p = i * 3;
-                int r = rgb[p];
-                int g = rgb[p + 1];
-                int b = rgb[p + 2];
-                if (b > r + 18 && b > g && b > 150) continue;
-                int mx = r > g ? r : g;
-                if (b > mx) mx = b;
-                int mn = r < g ? r : g;
-                if (b < mn) mn = b;
-                // Rubber joints stay dark. The ground is the warm chromatic plane.
-                bool rubber = mx - mn < 18 && mx < 96;
-                int sr = 255 - r;
-                int sg = 255 - g;
-                int sb = 255 - b;
-                int nr;
-                int ng;
-                int nb;
-                if (rubber)
-                {
-                    nr = r + sr / 8;
-                    ng = g + sg / 8;
-                    nb = b + sb / 8;
-                }
-                else
-                {
-                    nr = r + (sr * sr) / 620 + sr / 5;
-                    ng = g + (sg * sg) / 780 + sg / 7;
-                    nb = b + (sb * sb) / 1400 + sb / 16;
-                }
-                if (nr > 255) nr = 255;
-                if (ng > 255) ng = 255;
-                if (nb > 255) nb = 255;
-                rgb[p] = (byte)nr;
-                rgb[p + 1] = (byte)ng;
-                rgb[p + 2] = (byte)nb;
-            }
         }
     }
 }

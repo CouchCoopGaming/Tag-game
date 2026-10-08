@@ -221,6 +221,10 @@ Each seat in a match has its own chase view of Mega Park, with that seat's runne
 
 The chase runner is the Hier mannequin in that seat's tint, mid-run, with the foam, the panels, and the dark joints. The headless capture cannot open the Unity prefab, so it reads a posed bake of the Hier mesh. The same afternoon sun is lifted on the chase so the Mega Park ground reads warm, the way the arena overview does. A tag still puts YOU'RE IT on the tagged seat in the comic face. Screen changes are a three-frame comic wipe: menu to characters, loading to the match, and the match to RESULTS, each under 0.4 s. Mockups are in `Docs/UiStills/pass18/`.
 
+## Pass 19
+
+The chase drops the extra grade. Foliage stays green, concrete stays grey, the paths stay tan, and the sky stays blue, with only the afternoon sun. Each runner takes that sun on the foam and the panels, and a contact shadow sits under the feet. RESULTS keeps the raised hands inside the frame. The place words read 1st, 2nd, 3rd, and 4th, and the stat lines stay inside the cards. YOU'RE IT, the tagger flash, the seat tints, and the three wipes stay. Mockups are in `Docs/UiStills/pass19/`.
+
 ## Later passes
 
 - A 2D focus grid on rules so Left from a rule row lands on a mode tile.

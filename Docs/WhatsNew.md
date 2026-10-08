@@ -304,6 +304,8 @@ The seventeenth pass puts the match HUD on a chase view for each seat, in the tw
 
 The eighteenth pass puts the Hier mannequin on each chase, in that seat's color, in the middle of a run. The ground keeps the Mega Park materials and reads in the warm afternoon sun. When someone is tagged, that view says YOU'RE IT in the comic face, and the edge flash is the tagger's color. Menu to characters, loading to the match, and the match to RESULTS each play as a short comic wipe. Space still jumps. Mockups are in `Docs/UiStills/pass18/`.
 
+The nineteenth pass takes the yellow wash off the chase. Trees stay green, concrete stays grey, the paths stay tan, and the sky stays blue, with only a little warm sun. The runners are lit from that sun, and each one has a contact shadow under the feet. On RESULTS the raised hands stay in frame. The places read 1st, 2nd, 3rd, and 4th, and the stat lines stay on the cards. Space still jumps. Mockups are in `Docs/UiStills/pass19/`.
+
 ## Motion, ninth pass
 
 The wall jump, the rope, the zip, the launch pad, a landing, the dash flash, a hard turnaround, and a punch while you run all ease instead of snapping. Speeds, the jump, and the dash length are the same.
