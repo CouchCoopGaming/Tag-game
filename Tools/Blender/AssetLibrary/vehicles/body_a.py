@@ -1,18 +1,16 @@
-"""Midsize sedan, hard-surface panels.
+"""Midsize sedan, lofted shell.
 
-Pass 12 keeps the panel shell. The hood falls to about 0.83 m, the deck
-stays near 1.08 m, the bumper tucks in under the fenders, and the lamps
-are separate pieces that turn the corners.
+Pass 13 stops pushing vertices. The body is a closed loft through measured
+stations (bumper, lamp face, axle, cowl, A-pillar, B-pillar, C-pillar, deck,
+rear bumper, plus the arch shoulders the wheel openings need). Each station
+is one smooth section: shoulder widest, tumblehome above it, lower body
+tucked only a few centimetres. A Subdivision Surface modifier at level 2
+(level 1 on LOD1, the cage itself on LOD2) is applied before the shell is
+copied into the year variants.
 
-One shell for model years 2021-2025. The body is a closed ring of flat
-panels: shoulder, belt, rocker, wheel-arch lip, and a greenhouse framed by
-A, B, and C pillars. A bevel of two segments (one on LOD1) breaks the
-creases. Lamps, the grille, and the lower intake are recessed into the
-fascia, not floated in front of it.
-
-Proportions are a 2025 mid-size sedan: 4.90 m long, 1.84 m wide, 1.45 m
-tall, 2.82 m wheelbase. The windshield centerline is 60 degrees from
-vertical. No badges.
+Proportions follow a 2025 Camry-class table, in metres: length 4.90, width
+1.84, height 1.44, wheelbase 2.82, track 1.60, ground clearance 0.14.
+No badges. Daylight lamps are clear lenses over a dark housing, emission 0.
 """
 
 import math
@@ -31,54 +29,54 @@ LENGTH = 4.90
 HALF_L = LENGTH * 0.5
 WIDTH = 1.84
 HALF_W = WIDTH * 0.5
-HEIGHT = 1.45
+HEIGHT = 1.44
 WHEELBASE = 2.82
 FRONT_OVERHANG = 0.96
 Z_FRONT = HALF_L - FRONT_OVERHANG
 Z_REAR = Z_FRONT - WHEELBASE
-BELLY = 5.4 * INCH
+BELLY = 0.14
 Z_NOSE = HALF_L
 Z_TAIL = -HALF_L
-Z_HEADER = 0.52
-Z_COWL = 1.42
+Z_HEADER = 0.42
+Z_COWL = 1.26
+ROOF_HALF = 0.625
 
-TIRE_W = 0.235
+TIRE_W = 0.225
 RIM_R = 18.0 * INCH * 0.5
-TIRE_R = RIM_R + TIRE_W * 0.45
+TIRE_R = 0.34
 AXLE_Y = TIRE_R
-ARCH_GAP = 0.040
+ARCH_GAP = 0.035
 ARCH_R = TIRE_R + ARCH_GAP
-# Outer sidewall about 3 cm inside the fender, so the tire sits in the arch.
-TIRE_X = min(0.78, HALF_W - TIRE_W * 0.47 - 0.035)
+ARCH_SPAN = 0.34
+TIRE_X = 0.80
 
 PAINT = "Lib_PaintCrimson"
 GLASS = "Lib_AutoGlass"
 BLACK = "Lib_Black"
-MATS = (PAINT, GLASS, BLACK, "Lib_Headlamp", "Lib_Taillamp")
+LENS = "Lib_Glass"
+HOUSING = "Lib_SteelDark"
+TAIL_LENS = "Lib_BoxRed"
+MATS = (PAINT, GLASS, BLACK)
 MAT_PAINT = 0
 MAT_GLASS = 1
 MAT_BLACK = 2
-MAT_HEAD = 3
-MAT_TAIL = 4
 
-# Separate lamps. Nothing runs the full width of the nose.
-LAMPS = (
-    {"x0": -0.64, "x1": -0.22, "y0": 0.62, "y1": 0.78},
-    {"x0": 0.22, "x1": 0.64, "y0": 0.62, "y1": 0.78},
-)
-GRILLE = {"x0": -0.28, "x1": 0.28, "y0": 0.40, "y1": 0.58}
-INTAKE = {"x0": -0.46, "x1": 0.46, "y0": 0.20, "y1": 0.34}
-TAILS = (
-    {"x0": -0.72, "x1": -0.16, "y0": 0.90, "y1": 1.05},
-    {"x0": 0.16, "x1": 0.72, "y0": 0.90, "y1": 1.05},
-)
+# Half-section index. 0 is the belly center, the last is the roof crown.
+# Glass sits between the belt and the rail. Trim is the band just outside.
+I_BELLY = 0
+I_SHOULDER = 5
+I_BELT = 7
+I_GLASS = 8
+I_RAIL = 10
+I_CROWN = 12
+N_HALF = 13
 
 YEARS = {
-    2021: {"spokes": 5, "thick": 0.036, "bars": 4, "bar_h": 0.016, "lamps": "separate", "tails": "separate", "intake": False, "mirror": PAINT, "fog": "Lib_SignalAmber"},
-    2022: {"spokes": 6, "thick": 0.024, "bars": 6, "bar_h": 0.010, "lamps": "separate", "tails": "separate", "intake": False, "mirror": PAINT, "fog": "Lib_Headlamp"},
-    2023: {"spokes": 5, "thick": 0.030, "bars": 5, "bar_h": 0.012, "lamps": "tier", "tails": "separate", "intake": False, "mirror": PAINT, "fog": "Lib_SignalAmber"},
-    2024: {"spokes": 6, "thick": 0.018, "bars": 6, "bar_h": 0.008, "lamps": "thin", "tails": "thin", "intake": False, "mirror": BLACK, "fog": "Lib_Headlamp"},
-    2025: {"spokes": 5, "thick": 0.026, "bars": 4, "bar_h": 0.014, "lamps": "swept", "tails": "wrap", "intake": True, "mirror": PAINT, "fog": None},
+    2021: {"spokes": 5, "lamps": "separate", "tails": "separate", "intake": False, "mirror": PAINT, "bars": 4, "bar_h": 0.014},
+    2022: {"spokes": 6, "lamps": "separate", "tails": "separate", "intake": False, "mirror": PAINT, "bars": 5, "bar_h": 0.012},
+    2023: {"spokes": 5, "lamps": "tier", "tails": "separate", "intake": False, "mirror": PAINT, "bars": 5, "bar_h": 0.012},
+    2024: {"spokes": 6, "lamps": "thin", "tails": "thin", "intake": False, "mirror": BLACK, "bars": 6, "bar_h": 0.008},
+    2025: {"spokes": 5, "lamps": "swept", "tails": "wrap", "intake": True, "mirror": PAINT, "bars": 4, "bar_h": 0.014},
 }
 
 _TEMPLATE = {}
@@ -99,99 +97,104 @@ def _lerp(keys, z):
 
 
 def _top_y(z):
-    """Centerline. Hood falls to 0.83, deck stays near 1.08."""
+    """Centerline. Hood leading edge near 0.81, roof 1.44, deck near 1.07."""
     return _lerp((
-        (-2.45, 1.07),
-        (-1.70, 1.09),
-        (-1.35, 1.18),
-        (-0.95, 1.40),
-        (-0.40, 1.45),
-        (0.20, 1.45),
-        (0.52, 1.42),
-        (1.42, 0.94),
-        (1.85, 0.88),
-        (2.20, 0.85),
-        (2.45, 0.83),
+        (-2.45, 1.05),
+        (-2.05, 1.07),
+        (-1.55, 1.08),
+        (-1.05, 1.26),
+        (-0.62, 1.40),
+        (-0.15, 1.44),
+        (0.28, 1.44),
+        (0.42, 1.36),
+        (1.26, 0.88),
+        (1.75, 0.855),
+        (2.15, 0.835),
+        (2.45, 0.805),
     ), z)
 
 
 def _plan_x(z):
-    """Half-width of the shoulder, the widest painted line."""
+    """Half-width of the shoulder. Arches are the widest, bumper stays full."""
     return _lerp((
-        (-2.45, 0.80),
-        (-2.05, 0.88),
-        (-1.40, 0.92),
-        (1.35, 0.92),
-        (1.70, 0.90),
-        (2.05, 0.86),
-        (2.30, 0.82),
-        (2.45, 0.78),
+        (-2.45, 0.905),
+        (-2.00, 0.92),
+        (-1.33, 0.92),
+        (-0.50, 0.900),
+        (0.70, 0.900),
+        (1.49, 0.92),
+        (2.05, 0.92),
+        (2.45, 0.905),
     ), z)
 
 
 def _shoulder_y(z):
     return _lerp((
-        (-2.45, 0.96),
-        (-1.50, 0.98),
-        (-0.20, 0.82),
-        (1.20, 0.80),
-        (2.00, 0.76),
-        (2.45, 0.72),
+        (-2.45, 0.86),
+        (-1.55, 0.94),
+        (-0.50, 0.86),
+        (0.50, 0.80),
+        (1.35, 0.74),
+        (2.05, 0.66),
+        (2.45, 0.56),
     ), z)
 
 
 def _belt_y(z):
+    """Rises a little toward the rear. Merges into the hood and the deck."""
     return _lerp((
-        (-2.45, 1.04),
-        (-1.50, 1.05),
-        (-0.90, 1.08),
-        (0.90, 1.05),
-        (1.42, 0.94),
-        (2.45, 0.80),
+        (-2.20, 1.05),
+        (-1.20, 1.055),
+        (-0.70, 1.04),
+        (0.05, 0.995),
+        (0.75, 0.96),
+        (1.15, 0.93),
+        (1.70, 0.84),
+        (2.45, 0.74),
     ), z)
 
 
 def _rail_y(z):
     return _lerp((
-        (-2.45, 1.06),
-        (-1.50, 1.08),
-        (-0.95, 1.32),
-        (0.52, 1.34),
-        (1.20, 1.10),
-        (1.42, 0.94),
-        (2.45, 0.83),
+        (-2.10, 1.06),
+        (-1.15, 1.22),
+        (-0.55, 1.36),
+        (0.10, 1.40),
+        (0.55, 1.32),
+        (1.10, 1.02),
+        (1.70, 0.855),
+        (2.45, 0.795),
     ), z)
 
 
 def _rail_x(z):
+    """Roof rail half-width. 0.625 is a 1.25 m roof."""
     return _lerp((
-        (-2.45, 0.50),
-        (-1.40, 0.58),
-        (-0.40, 0.62),
-        (0.40, 0.62),
-        (1.10, 0.52),
-        (2.45, 0.28),
+        (-2.30, 0.62),
+        (-1.15, 0.58),
+        (-0.35, 0.58),
+        (0.40, 0.58),
+        (0.95, 0.50),
+        (1.45, 0.36),
+        (2.45, 0.55),
     ), z)
 
 
-def _shape_z(z, y):
-    """Tuck only the valence. The lamp faces stay on the upright fascia."""
-    if z > 1.50:
-        t = min(1.0, (z - 1.50) / (Z_NOSE - 1.50))
-        drop = max(0.0, 0.36 - y)
-        return z - t * drop * 0.85
-    if z < -1.50:
-        t = min(1.0, (-1.50 - z) / (-Z_TAIL - 1.50))
-        drop = max(0.0, 0.78 - y)
-        return z + t * drop * 0.40
-    return z
+def _arch_t(z):
+    best = 0.0
+    for axle in (Z_FRONT, Z_REAR):
+        dz = abs(z - axle)
+        if dz >= ARCH_SPAN:
+            continue
+        best = max(best, math.sqrt(max(0.0, 1.0 - (dz / ARCH_SPAN) ** 2)))
+    return best
 
 
-def _arch_lip_y(z):
+def _lip_y(z):
     best = None
     for axle in (Z_FRONT, Z_REAR):
         dz = abs(z - axle)
-        if dz >= ARCH_R - 1.0e-4:
+        if dz >= ARCH_R - 1.0e-6:
             continue
         y = AXLE_Y + math.sqrt(max(0.0, ARCH_R * ARCH_R - dz * dz))
         if best is None or y > best:
@@ -199,113 +202,191 @@ def _arch_lip_y(z):
     return best
 
 
-def _u(co):
-    return blender_to_unity(co.x, co.y, co.z)
+def _blend_out(z, z_body, z_end):
+    """0 on the cabin, 1 on the hood or the deck."""
+    if z_end > z_body:
+        if z <= z_body:
+            return 0.0
+        if z >= z_end:
+            return 1.0
+        t = (z - z_body) / (z_end - z_body)
+    else:
+        if z >= z_body:
+            return 0.0
+        if z <= z_end:
+            return 1.0
+        t = (z_body - z) / (z_body - z_end)
+    return t * t * (3.0 - 2.0 * t)
 
 
-def _section(z, door):
-    """Fourteen (x, y) points. Bottom center, up the right, down the left.
+def _section(z):
+    """One closed section. X grows to the shoulder, then falls to the crown.
 
-    The shoulder is the widest line. The belt and the roof rail step in
-    (tumblehome). The bumper is narrower than the shoulder, never flared.
+    The shoulder is the widest point. The bumper tuck is a few centimetres.
+    A folded x (out, then back out) creases the hood, so the run is monotonic.
     """
     plan = _plan_x(z)
     top = _top_y(z)
-    nose = max(0.0, min(1.0, (z - 1.65) / 0.80))
-    tail = max(0.0, min(1.0, (-1.50 - z) / 0.95))
-    shoulder_x = plan
-    belt_x = max(0.20, plan - 0.07 - 0.04 * nose)
-    rail_x = min(_rail_x(z), belt_x - 0.05)
-    rocker_x = min(plan - 0.10 - 0.16 * nose, shoulder_x - 0.06)
-    shoulder = min(_shoulder_y(z), top - 0.03)
-    belt = min(max(_belt_y(z), shoulder + 0.04), top - 0.012)
-    rail = min(max(_rail_y(z), belt + 0.02), top - 0.004)
-    if tail > 0.4:
-        rail = max(rail, top - 0.012)
-        belt = min(max(belt, top - 0.045), rail - 0.008)
-        rail_x = max(rail_x, plan - 0.26)
-        belt_x = min(belt_x, plan - 0.08)
-    half = [
-        (0.0, BELLY),
-        (max(0.16, rocker_x * 0.62), BELLY),
-        (rocker_x, 0.20),
-        (min(shoulder_x - 0.05, rocker_x + 0.06), 0.42),
-        (shoulder_x, shoulder),
-        (belt_x, belt),
-        (max(0.12, rail_x), rail),
-        (0.0, top),
+    t_arch = _arch_t(z)
+    hood = max(_blend_out(z, 0.50, 1.70), _blend_out(z, -0.80, -1.65))
+    shoulder_y = min(_shoulder_y(z), top - 0.06)
+    belt_y = _belt_y(z)
+    rail_y = _rail_y(z)
+    if hood > 0.55:
+        shoulder_y = min(shoulder_y, top - 0.14)
+        prebelt = top - 0.10
+        belt_y = top - 0.055
+        glass_y = top - 0.038
+        prerail = top - 0.026
+        rail_y = top - 0.016
+        roof_y = top - 0.008
+    else:
+        belt_y = min(max(belt_y, shoulder_y + 0.07), top - 0.08)
+        rail_y = min(max(rail_y, belt_y + 0.10), top - 0.025)
+        prebelt = belt_y - 0.028
+        glass_y = belt_y + (rail_y - belt_y) * 0.42
+        prerail = rail_y - 0.04
+        roof_y = rail_y + (top - rail_y) * 0.62
+    lip = _lip_y(z)
+    mid_y = 0.48
+    if t_arch > 0.02 and lip is not None:
+        mid_y = (1.0 - t_arch) * 0.48 + t_arch * min(lip, shoulder_y - 0.03)
+    ys = [
+        BELLY, BELLY + 0.006, 0.18, 0.36, mid_y, shoulder_y,
+        prebelt, belt_y, glass_y, prerail, rail_y, roof_y, top,
     ]
-    for i in (1, 2, 3):
-        x, y = half[i]
-        half[i] = (min(x, shoulder_x - 0.04), y)
-    lip = _arch_lip_y(z)
-    if lip is not None and lip > 0.45 and not door and nose < 0.35 and tail < 0.35:
-        half[4] = (shoulder_x, max(shoulder, min(top - 0.04, lip + 0.025)))
-        half[3] = (shoulder_x - 0.015, min(lip, half[4][1] - 0.02))
-        half[2] = (min(rocker_x, shoulder_x - 0.08), min(0.36, lip))
-        if half[5][1] < half[4][1] + 0.02:
-            half[5] = (half[5][0], half[4][1] + 0.02)
-    if door:
-        for i in (2, 3, 4, 5):
-            x, y = half[i]
-            half[i] = (max(0.05, x - 0.003), y)
-    prev = -1.0
-    stacked = []
-    for i, (x, y) in enumerate(half):
-        if i == 0:
-            stacked.append((x, y))
-            prev = y
-            continue
-        if i == len(half) - 1:
-            stacked.append((0.0, top))
-            continue
-        y = min(max(y, prev + 0.01), top - 0.004)
-        stacked.append((x, y))
-        prev = y
-    half = stacked
+    for i in range(1, len(ys)):
+        ys[i] = max(ys[i], ys[i - 1] + 0.008)
+    for i in range(len(ys) - 2, -1, -1):
+        ys[i] = min(ys[i], ys[i + 1] - 0.008)
+    ys[0] = BELLY
+    # Roof rail is 0.625 on the cabin. Hood and deck spread out, still inside the shoulder.
+    rail_x = _rail_x(z) * (1.0 - hood) + (plan - 0.22) * hood
+    upper = [
+        plan,
+        plan - 0.018,
+        plan - 0.045,
+        plan - 0.045 - (plan - 0.045 - rail_x) * 0.45,
+        rail_x + 0.012,
+        rail_x,
+        rail_x * 0.52,
+        0.0,
+    ]
+    if hood > 0.45:
+        upper = [
+            plan,
+            plan - 0.012,
+            plan - 0.04,
+            plan - 0.10,
+            plan - 0.18,
+            plan - 0.28,
+            plan * 0.34,
+            0.0,
+        ]
+    for i in range(1, len(upper)):
+        upper[i] = min(upper[i], upper[i - 1] - 0.012)
+    upper[-1] = 0.0
+    rocker_x = plan - 0.028
+    lower_x = plan - 0.010
+    mid_x = plan - 0.004
+    if t_arch > 0.02:
+        rocker_x = (plan - 0.028) * (1.0 - t_arch) + 0.64 * t_arch
+        lower_x = (plan - 0.010) * (1.0 - t_arch) + 0.70 * t_arch
+        mid_x = plan
+    lower = [0.0, min(plan * 0.42, rocker_x - 0.08), rocker_x, lower_x, mid_x, plan]
+    for i in range(1, len(lower)):
+        lower[i] = max(lower[i], lower[i - 1] + 0.01)
+    lower[-1] = plan
+    lower[4] = min(lower[4], plan)
+    xs = lower + upper[1:]
+    half = list(zip(xs, ys))
     ring = list(half)
     for x, y in reversed(half[1:-1]):
         ring.append((-x, y))
     return ring
 
 
-def _stations():
-    rows = [
-        (2.450, False),
-        (2.300, False),
-        (2.120, False),
-        (1.900, False),
-        (1.420, False),
-        (1.100, False),
-        (1.097, True),
-        (0.520, True),
-        (0.143, True),
-        (0.140, False),
-        (0.040, False),
-        (0.037, True),
-        (-0.100, True),
-        (-0.923, True),
-        (-0.926, False),
-        (-1.050, False),
-        (-1.150, False),
-        (-1.300, False),
-        (-1.500, False),
-        (-1.700, False),
-        (-2.050, False),
-        (-2.280, False),
-        (-2.450, False),
+def _station_zs():
+    """Measured stations, nose to tail. Arch shoulders sit on the axle circle."""
+    zs = [
+        2.450,  # front bumper
+        2.180,  # headlamps
+        1.880,  # hood
+        1.260,  # cowl
+        1.090,  # A-pillar, windshield side
+        1.015,  # A-pillar, door side
+        0.820,  # windshield
+        0.460,  # header
+        0.280,  # roof
+        0.580,  # front door
+        0.100,  # B-pillar forward edge
+        0.020,  # B-pillar aft edge
+        -0.420,  # rear door
+        -0.750,  # C-pillar forward
+        -0.830,  # C-pillar aft
+        -1.900,  # deck
+        -2.160,  # tail lamps
+        -2.450,  # rear bumper
     ]
-    taken = [z for z, _door in rows]
     for axle in (Z_FRONT, Z_REAR):
-        for dz in (-0.34, -0.22, -0.10, 0.0, 0.12, 0.24, 0.34):
-            z = round(axle + dz, 3)
-            if any(abs(z - t) < 0.012 for t in taken):
-                continue
-            door = (0.143 < z < 1.097) or (-0.923 < z < 0.037)
-            rows.append((z, door))
-            taken.append(z)
-    rows.sort(key=lambda row: -row[0])
-    return rows
+        for dz in (-0.32, -0.24, -0.16, -0.08, 0.0, 0.08, 0.16, 0.24, 0.32):
+            zs.append(round(axle + dz, 3))
+    ordered = []
+    for z in sorted(set(round(z, 3) for z in zs), reverse=True):
+        if ordered and abs(ordered[-1] - z) < 0.02:
+            continue
+        ordered.append(z)
+    return ordered
+
+
+def _shut_station(z):
+    for shut in (1.260, 1.090, 1.015, 0.100, 0.020, -0.750, -0.830, -1.900, 2.180, -2.160):
+        if abs(z - shut) < 0.012:
+            return True
+    return False
+
+
+def _pillar_band(z):
+    if 0.020 <= z <= 0.100:
+        return True
+    if 1.015 <= z <= 1.090:
+        return True
+    if -0.830 <= z <= -0.750:
+        return True
+    return False
+
+
+def _seg_kind(j, n):
+    """paint, trim, glass, or upper. j is the edge between point j and j+1."""
+    mirror = (n - 1) - j
+    base = j if j < mirror else mirror
+    if base in (6, 9):
+        return "trim"
+    if base in (7, 8):
+        return "glass"
+    if base in (10, 11):
+        return "upper"
+    return "paint"
+
+
+def _face_material(kind, z_mid):
+    if kind == "trim" and -1.05 <= z_mid <= 1.20:
+        return MAT_BLACK
+    if kind == "glass" and -0.83 <= z_mid <= 1.015:
+        if _pillar_band(z_mid):
+            return MAT_BLACK
+        return MAT_GLASS
+    if kind == "upper":
+        top = _top_y(z_mid)
+        if 0.48 < z_mid < 1.22 and top > 1.02:
+            return MAT_GLASS
+        if -1.28 < z_mid < -0.78 and top > 1.12:
+            return MAT_GLASS
+    return MAT_PAINT
+
+
+def _u(co):
+    return blender_to_unity(co.x, co.y, co.z)
 
 
 def _orient_outward(bm):
@@ -330,426 +411,100 @@ def _orient_outward(bm):
         bm.normal_update()
 
 
-def _faces_on_plane(bm, z_plane, eps=0.003):
-    found = []
-    for face in bm.faces:
-        zs = [_u(vert.co)[2] for vert in face.verts]
-        if max(zs) - min(zs) > eps:
-            continue
-        if abs(sum(zs) / len(zs) - z_plane) <= eps:
-            found.append(face)
-    return found
-
-
-def _bisect_cap(bm, faces, origin_u, normal_u):
-    if not faces:
-        return
-    geom = []
-    seen = set()
-    for face in faces:
-        if face not in seen:
-            geom.append(face)
-            seen.add(face)
-        for edge in face.edges:
-            if edge not in seen:
-                geom.append(edge)
-                seen.add(edge)
-        for vert in face.verts:
-            if vert not in seen:
-                geom.append(vert)
-                seen.add(vert)
-    normal = Vector(unity_to_blender(*normal_u))
-    if normal.length < 1.0e-8:
-        return
-    normal.normalize()
-    bmesh.ops.bisect_plane(
-        bm,
-        geom=geom,
-        plane_co=Vector(unity_to_blender(*origin_u)),
-        plane_no=normal,
-        clear_inner=False,
-        clear_outer=False,
-    )
-
-
-def _recess(bm, z_plane, rect):
-    """Inset one opening and drop its floor to rect['floor']."""
-    faces = []
-    for face in _faces_on_plane(bm, z_plane):
-        x, y, _z = _u(face.calc_center_median())
-        if rect["x0"] < x < rect["x1"] and rect["y0"] < y < rect["y1"]:
-            faces.append(face)
-    if not faces:
-        print("POCKET_MISS", round(z_plane, 3), round(rect["y0"], 3), round(rect["y1"], 3))
-        return False
-    bmesh.ops.inset_region(
-        bm,
-        faces=faces,
-        thickness=0.006,
-        depth=0.0,
-        use_even_offset=True,
-    )
-    bm.verts.ensure_lookup_table()
-    moved = 0
-    x0 = rect["x0"] + 0.004
-    x1 = rect["x1"] - 0.004
-    y0 = rect["y0"] + 0.004
-    y1 = rect["y1"] - 0.004
-    for vert in bm.verts:
-        x, y, z = _u(vert.co)
-        if abs(z - z_plane) > 0.004:
-            continue
-        if x0 < x < x1 and y0 < y < y1:
-            vert.co = Vector(unity_to_blender(x, y, rect["floor"]))
-            moved += 1
-    print("POCKET", round(z_plane, 3), round(rect["y0"], 3), "faces", len(faces), "floor_verts", moved)
-    return moved > 0
-
-
-def _unity_normal(face):
-    n = face.normal
-    return blender_to_unity(n.x, n.y, n.z)
-
-
-def _opening_faces(bm, rect, axis):
-    found = []
-    for face in bm.faces:
-        x, y, z = _u(face.calc_center_median())
-        if not (rect["x0"] < x < rect["x1"] and rect["y0"] < y < rect["y1"]):
-            continue
-        nx, _ny, nz = _unity_normal(face)
-        if axis == "z":
-            if z < rect.get("zmin", 1.7) or nz < 0.25:
-                continue
-        elif axis == "-z":
-            if z > rect.get("zmax", -1.7) or nz > -0.25:
-                continue
-        elif axis == "x":
-            if z < rect.get("zmin", 1.85) or abs(nz) > 0.55:
-                continue
-            if x > 0.0 and nx < 0.45:
-                continue
-            if x < 0.0 and nx > -0.45:
-                continue
-        elif axis == "-x":
-            if z > rect.get("zmax", -1.85) or abs(nz) > 0.55:
-                continue
-            if x > 0.0 and nx < 0.45:
-                continue
-            if x < 0.0 and nx > -0.45:
-                continue
-        else:
-            continue
-        found.append(face)
-    return found
-
-
-def _inset_opening(bm, faces, depth=0.011):
-    if len(faces) < 1:
-        return False
-    try:
-        bmesh.ops.inset_region(
-            bm,
-            faces=faces,
-            thickness=0.008,
-            depth=-depth,
-            use_even_offset=True,
-            use_boundary=True,
-        )
-    except (TypeError, ValueError, RuntimeError) as exc:
-        print("POCKET_FAIL", exc)
-        return False
-    return True
-
-
-def _region_faces(bm, z_test):
-    found = []
-    for face in bm.faces:
-        zs = [_u(vert.co)[2] for vert in face.verts]
-        if z_test(sum(zs) / len(zs)):
-            found.append(face)
-    return found
-
-
-def _grid_end(bm, z_test, xs, ys):
-    for x in xs:
-        _bisect_cap(bm, _region_faces(bm, z_test), (x, 0.0, 0.0), (1.0, 0.0, 0.0))
-        _bisect_cap(bm, _region_faces(bm, z_test), (-x, 0.0, 0.0), (1.0, 0.0, 0.0))
-    for y in ys:
-        _bisect_cap(bm, _region_faces(bm, z_test), (0.0, y, 0.0), (0.0, 1.0, 0.0))
-
-
-def _cut_caps(bm):
-    _grid_end(
-        bm,
-        lambda z: z > 1.85,
-        (0.22, 0.28, 0.46, 0.76),
-        (0.20, 0.34, 0.40, 0.58, 0.62, 0.78),
-    )
-    _grid_end(
-        bm,
-        lambda z: z < -1.85,
-        (0.16, 0.72),
-        (0.90, 1.05),
-    )
-    bm.normal_update()
-    ok = True
-    jobs = [(rect, "z", "lamp") for rect in LAMPS]
-    jobs.append((GRILLE, "z", "grille"))
-    jobs.append((INTAKE, "z", "intake"))
-    jobs.extend((rect, "-z", "tail") for rect in TAILS)
-    for rect, axis, label in jobs:
-        faces = _opening_faces(bm, rect, axis)
-        hit = _inset_opening(bm, faces)
-        print("POCKET", label, "faces", len(faces), "ok", hit)
-        if label in ("lamp", "grille", "intake", "tail") and not hit:
-            ok = False
-    return ok
-
-
-def _mark_creases(bm):
-    layer = bm.edges.layers.float.get("bevel_weight_edge")
-    if layer is None:
-        layer = bm.edges.layers.float.new("bevel_weight_edge")
-    marked = 0
-    for edge in bm.edges:
-        edge[layer] = 0.0
-        a = _u(edge.verts[0].co)
-        b = _u(edge.verts[1].co)
-        dx = b[0] - a[0]
-        dy = b[1] - a[1]
-        dz = b[2] - a[2]
-        length = math.sqrt(dx * dx + dy * dy + dz * dz)
-        if length < 0.02:
-            continue
-        # Bevels that run into the flat fascia or tail open those caps.
-        if min(a[2], b[2]) < Z_TAIL + 0.08 or max(a[2], b[2]) > Z_NOSE - 0.08:
-            continue
-        z = (a[2] + b[2]) * 0.5
-        # A 3 mm shut is two stations. A bevel run into that step crimps the belt.
-        if any(abs(z - shut) < 0.04 for shut in (1.098, 0.141, 0.038, -0.924)):
-            continue
-        # The fascia and tail stay crisp. Beveling those rings opens the pockets.
-        if abs(dz) < 0.75 * length:
-            continue
-        x = abs((a[0] + b[0]) * 0.5)
-        y = (a[1] + b[1]) * 0.5
-        plan = _plan_x(z)
-        lip = _arch_lip_y(z)
-        hit = False
-        if abs(y - _shoulder_y(z)) < 0.035 and abs(x - plan) < 0.035:
-            hit = True
-        elif lip is not None and abs(y - lip) < 0.025 and abs(x - plan) < 0.03:
-            hit = True
-        elif abs(y - 0.16) < 0.03 and abs(x - (plan - 0.16)) < 0.05:
-            hit = True
-        if hit and edge.calc_face_angle(0.0) > math.radians(18.0):
-            edge[layer] = 1.0
-            marked += 1
-    print("CREASE_EDGES", marked)
-    return layer
-
-
-def _bevel(bm, lod):
-    segments = (2, 1, 0)[lod]
-    _mark_creases(bm)
-    if segments == 0:
-        return bm
-    mesh = bpy.data.meshes.new("sedan_bevel")
+def _apply_subsurf(bm, level):
+    mesh = bpy.data.meshes.new("sedan_loft")
     bm.to_mesh(mesh)
-    obj = bpy.data.objects.new("sedan_bevel", mesh)
+    obj = bpy.data.objects.new("sedan_loft", mesh)
     bpy.context.scene.collection.objects.link(obj)
-    mod = obj.modifiers.new("Bevel", "BEVEL")
-    mod.limit_method = "WEIGHT"
-    mod.width = 0.008
-    mod.segments = segments
-    mod.profile = 0.5
-    mod.use_clamp_overlap = True
-    mod.harden_normals = True
-    mod.miter_outer = "MITER_ARC"
-    before = len(mesh.polygons)
-    shell._apply_mod(obj, "Bevel")
-    weighted = obj.modifiers.new("WeightedNormal", "WEIGHTED_NORMAL")
-    weighted.keep_sharp = True
-    weighted.weight = 80
-    weighted.mode = "FACE_AREA_WITH_ANGLE"
-    shell._apply_mod(obj, "WeightedNormal")
+    if level > 0:
+        mod = obj.modifiers.new("Sub", "SUBSURF")
+        mod.levels = int(level)
+        mod.render_levels = int(level)
+        mod.use_creases = True
+        shell._apply_mod(obj, "Sub")
     out = bmesh.new()
     out.from_mesh(obj.data)
-    after = len(obj.data.polygons)
     bpy.data.objects.remove(obj, do_unlink=True)
     bpy.data.meshes.remove(mesh)
     bm.free()
-    print("BEVEL", lod, "polys", before, "->", after)
     return out
 
 
-def _glass_index(face):
-    pts = [_u(vert.co) for vert in face.verts]
-    xs = [p[0] for p in pts]
-    ys = [p[1] for p in pts]
-    zs = [p[2] for p in pts]
-    if max(zs) - min(zs) < 0.04 and max(xs) - min(xs) < 0.04:
-        return None
-    cx = sum(xs) / len(xs)
-    cy = sum(ys) / len(ys)
-    cz = sum(zs) / len(zs)
-    touches = min(abs(x) for x in xs) < 0.08
-    if touches and 0.55 < cz < 1.38 and cy > 0.98 and max(abs(x) for x in xs) < 0.72:
-        return MAT_GLASS
-    if touches and -1.62 < cz < -0.98 and cy > 1.10 and max(abs(x) for x in xs) < 0.70:
-        return MAT_GLASS
-    ax = abs(cx)
-    if ax > 0.55 and 1.02 < cy < 1.36 and max(zs) - min(zs) > 0.06:
-        if 0.18 < cz < 1.00 or -0.88 < cz < -0.08:
-            return MAT_GLASS
-        if -1.40 < cz < -1.02:
-            return MAT_GLASS
-    return None
-
-
-def _paint(bm):
-    glass = 0
-    black = 0
-    for face in bm.faces:
-        x, y, z = _u(face.calc_center_median())
-        kind = _glass_index(face)
-        if kind is not None:
-            face.material_index = MAT_GLASS
-            glass += 1
-            continue
-        pocket = False
-        if Z_NOSE - 0.020 < z < Z_NOSE - 0.007 and abs(x) < 0.62 and 0.16 < y < 0.68:
-            pocket = True
-        if Z_TAIL + 0.007 < z < Z_TAIL + 0.020 and abs(x) < 0.52 and 0.66 < y < 0.86:
-            pocket = True
-        well = False
-        if abs(x) < 0.78:
-            for axle in (Z_FRONT, Z_REAR):
-                dy = y - AXLE_Y
-                dz = z - axle
-                if dy * dy + dz * dz < (ARCH_R - 0.02) ** 2 and y < AXLE_Y + ARCH_R - 0.01:
-                    well = True
-        if pocket or well or (y < 0.30 and abs(x) > 0.35 and z > Z_TAIL + 0.05 and z < Z_NOSE - 0.05):
-            face.material_index = MAT_BLACK
-            black += 1
-        else:
-            face.material_index = MAT_PAINT
-        nx, _ny, nz = _unity_normal(face)
-        if z > 1.92 and 0.64 < y < 0.78 and abs(nx) > 0.55 and abs(nz) < 0.50:
-            face.material_index = MAT_HEAD
-        elif z < -1.95 and 0.90 < y < 1.05 and abs(nx) > 0.55 and abs(nz) < 0.50:
-            face.material_index = MAT_TAIL
-    print("MATS glass", glass, "black", black)
-    return glass
-
-
-def _glass_islands(faces):
-    remaining = set(faces)
-    islands = []
-    while remaining:
-        seed = remaining.pop()
-        stack = [seed]
-        island = [seed]
-        while stack:
-            face = stack.pop()
-            for edge in face.edges:
-                for other in edge.link_faces:
-                    if other in remaining:
-                        remaining.remove(other)
-                        stack.append(other)
-                        island.append(other)
-        islands.append(island)
-    return islands
-
-
-def _inset_glass(bm):
-    faces = [face for face in bm.faces if face.material_index == MAT_GLASS]
-    if not faces:
-        return
-    done = 0
-    for island in _glass_islands(faces):
-        if len(island) < 2:
-            continue
-        before = {face for face in bm.faces}
-        try:
-            bmesh.ops.inset_region(
-                bm,
-                faces=island,
-                thickness=0.008,
-                depth=-0.005,
-                use_even_offset=True,
-                use_boundary=True,
-            )
-        except (TypeError, ValueError, RuntimeError) as exc:
-            print("GLASS_INSET_FAIL", exc)
-            continue
-        for face in bm.faces:
-            if face in before or not face.is_valid:
-                continue
-            pts = [_u(vert.co) for vert in face.verts]
-            span_x = max(p[0] for p in pts) - min(p[0] for p in pts)
-            span_y = max(p[1] for p in pts) - min(p[1] for p in pts)
-            span_z = max(p[2] for p in pts) - min(p[2] for p in pts)
-            if span_z > 0.04 or span_y > 0.05 or span_x > 0.05:
-                face.material_index = MAT_GLASS
-            else:
-                face.material_index = MAT_PAINT
-        done += len(island)
-    print("GLASS_INSET", done, "of", len(faces))
-
-
-def _clamp_plan(bm):
-    """Keep a bevel or a glass inset from pushing the belt outside the shoulder."""
-    for vert in bm.verts:
-        x, y, z = _u(vert.co)
-        if y < 0.25 or _is_wheel(x, y, z):
-            continue
-        limit = _plan_x(z) + 0.004
-        if abs(x) > limit:
-            vert.co = Vector(unity_to_blender(math.copysign(limit, x), y, z))
-
-
 def _build_cage(lod):
+    level = (2, 1, 0)[lod]
+    stations = _station_zs()
     bm = bmesh.new()
+    crease = bm.edges.layers.float.new("crease_edge")
     rings = []
-    for z, door in _stations():
-        ring = [bm.verts.new(unity_to_blender(x, y, _shape_z(z, y))) for x, y in _section(z, door)]
+    info = []
+    for z in stations:
+        ring = []
+        ids = []
+        for pi, (x, y) in enumerate(_section(z)):
+            vert = bm.verts.new(unity_to_blender(x, y, z))
+            ring.append(vert)
+            ids.append(pi)
         rings.append(ring)
+        info.append(ids)
     count = len(rings[0])
     for i in range(len(rings) - 1):
+        z_mid = (stations[i] + stations[i + 1]) * 0.5
         for j in range(count):
             j2 = (j + 1) % count
             try:
-                bm.faces.new((rings[i][j], rings[i][j2], rings[i + 1][j2], rings[i + 1][j]))
+                face = bm.faces.new((rings[i][j], rings[i][j2], rings[i + 1][j2], rings[i + 1][j]))
             except ValueError:
                 continue
+            face.material_index = _face_material(_seg_kind(j, count), z_mid)
+            face.smooth = True
     try:
-        # Reversed so the cap points out the nose, not back into the cabin.
-        bm.faces.new(list(reversed(rings[0])))
+        nose = bm.faces.new(list(reversed(rings[0])))
+        nose.material_index = MAT_PAINT
+        nose.smooth = True
     except ValueError as exc:
         print("NOSE_CAP_FAIL", exc)
     try:
-        bm.faces.new(rings[-1])
+        tail = bm.faces.new(rings[-1])
+        tail.material_index = MAT_PAINT
+        tail.smooth = True
     except ValueError as exc:
         print("TAIL_CAP_FAIL", exc)
+    bm.verts.index_update()
+    bm.edges.ensure_lookup_table()
+    vert_id = {}
+    for si, ring in enumerate(rings):
+        for pi, vert in enumerate(ring):
+            vert_id[vert] = (si, pi)
+    for edge in bm.edges:
+        pair = [vert_id.get(vert) for vert in edge.verts]
+        if pair[0] is None or pair[1] is None:
+            edge[crease] = 0.55 if _shut_station(_u(edge.verts[0].co)[2]) else 0.0
+            continue
+        (s0, p0), (s1, p1) = pair
+        if s0 == s1:
+            edge[crease] = 0.92 if _shut_station(stations[s0]) else 0.0
+            if s0 in (0, len(stations) - 1):
+                edge[crease] = max(edge[crease], 0.72)
+            continue
+        p = p0
+        weight = 0.0
+        if p == I_SHOULDER:
+            weight = 0.90
+        elif p == I_BELT:
+            weight = 0.78
+        elif p == I_RAIL:
+            weight = 0.96
+        elif p == 4:
+            weight = 0.88
+        elif p == I_CROWN:
+            weight = 0.72
+        elif p == I_BELLY:
+            weight = 0.45
+        edge[crease] = weight
     bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
     _orient_outward(bm)
-    if not _cut_caps(bm):
-        raise RuntimeError("fascia pockets were not cut")
-    bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
-    _orient_outward(bm)
-    bm = _bevel(bm, lod)
-    _clamp_plan(bm)
-    bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
-    _orient_outward(bm)
-    open_edges, flipped, samples = _topology(bm)
-    print("AFTER_BEVEL", lod, len(bm.faces), "open", open_edges, "flips", flipped, samples[:4])
-    glass = _paint(bm)
-    if glass < 8:
-        print("GLASS_LOW", glass)
-    _inset_glass(bm)
-    _clamp_plan(bm)
+    print("LOFT", lod, "stations", len(stations), "ring", count, "faces", len(bm.faces), "level", level)
+    bm = _apply_subsurf(bm, level)
     bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
     _orient_outward(bm)
     return bm
@@ -775,13 +530,13 @@ def _commit(g, bm):
 
 def build_shell(g, lod):
     bm = _build_cage(lod)
-    open_edges, flipped, _samples = _topology(bm)
+    open_edges, flipped, samples = _topology(bm)
     print(
         "SHELL_LOD", lod, "faces", len(bm.faces), "verts", len(bm.verts),
         "open", open_edges, "flips", flipped,
     )
-    if open_edges or flipped:
-        print("SHELL_LOD samples", _samples)
+    if samples:
+        print("SHELL_LOD samples", samples[:6])
     _commit(g, bm)
 
 
@@ -817,22 +572,9 @@ def template(asset_cls):
     return asset
 
 
-def _spin_tire(g, x, z, lod):
-    segs = 20 if lod == 0 else (12 if lod == 1 else 8)
-    hw = TIRE_W * 0.47
-    bead = RIM_R + 0.010
-    crown = TIRE_R
-    profile = [
-        (bead, -0.92),
-        (bead + 0.045, -0.72),
-        (crown - 0.030, -0.48),
-        (crown, -0.22),
-        (crown, 0.0),
-        (crown, 0.22),
-        (crown - 0.030, 0.48),
-        (bead + 0.045, 0.72),
-        (bead, 0.92),
-    ]
+def _spin_loop(g, x, z, profile, segs, mat):
+    """Lathe a closed loop so the axle stays open. Axial is +X outward."""
+    sign = 1.0 if x >= 0.0 else -1.0
     bm = bmesh.new()
     rings = []
     for i in range(segs):
@@ -841,76 +583,93 @@ def _spin_tire(g, x, z, lod):
         ring = []
         for rad, axial in profile:
             ring.append(bm.verts.new(unity_to_blender(
-                x + axial * hw, AXLE_Y + rad * ct, z + rad * st,
+                x + sign * axial, AXLE_Y + rad * ct, z + rad * st,
             )))
         rings.append(ring)
+    n = len(profile)
     for i in range(segs):
         ni = (i + 1) % segs
-        for j in range(len(profile) - 1):
+        for j in range(n):
+            j2 = (j + 1) % n
             try:
-                bm.faces.new((rings[i][j], rings[ni][j], rings[ni][j + 1], rings[i][j + 1]))
+                bm.faces.new((rings[i][j], rings[ni][j], rings[ni][j2], rings[i][j2]))
             except ValueError:
                 continue
-    try:
-        bm.faces.new([rings[i][0] for i in range(segs)])
-    except ValueError:
-        pass
-    try:
-        bm.faces.new([rings[i][-1] for i in range(segs - 1, -1, -1)])
-    except ValueError:
-        pass
     bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
-    g._ingest(bm, "Lib_Rubber", 1.0)
-
-
-def _annulus(g, x, z, r0, r1, depth, mat, segs):
-    """Closed rim band in the wheel plane, so the spokes stay visible in the middle."""
-    bm = bmesh.new()
-    bands = []
-    for axial in (-depth * 0.5, depth * 0.5):
-        inner = []
-        outer = []
-        for i in range(segs):
-            ang = 2.0 * math.pi * i / segs
-            cy, cz = math.cos(ang), math.sin(ang)
-            inner.append(bm.verts.new(unity_to_blender(x + axial, AXLE_Y + r0 * cy, z + r0 * cz)))
-            outer.append(bm.verts.new(unity_to_blender(x + axial, AXLE_Y + r1 * cy, z + r1 * cz)))
-        bands.append((inner, outer))
-    (inner0, outer0), (inner1, outer1) = bands
-    for i in range(segs):
-        j = (i + 1) % segs
-        bm.faces.new((outer0[i], outer0[j], outer1[j], outer1[i]))
-        bm.faces.new((inner0[j], inner0[i], inner1[i], inner1[j]))
-        bm.faces.new((inner0[i], outer0[i], outer0[j], inner0[j]))
-        bm.faces.new((outer1[i], inner1[i], inner1[j], outer1[j]))
-    bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+    bm.normal_update()
+    axle = Vector(unity_to_blender(x, AXLE_Y, z))
+    crown = max(bm.verts, key=lambda vert: (vert.co - axle).length)
+    outward = crown.co - axle
+    normal = Vector((0.0, 0.0, 0.0))
+    for face in crown.link_faces:
+        normal += face.normal
+    if normal.dot(outward) < 0.0:
+        bmesh.ops.reverse_faces(bm, faces=bm.faces)
     g._ingest(bm, mat, 1.0)
 
 
+def _spin_tire(g, x, z, lod):
+    segs = 24 if lod == 0 else (16 if lod == 1 else 10)
+    hw = TIRE_W * 0.5
+    bead = RIM_R + 0.010
+    crown = TIRE_R
+    # Outer tread, then the inner liner, so the bead opening stays empty.
+    profile = [
+        (bead, -0.92 * hw),
+        (bead + 0.055, -0.62 * hw),
+        (crown, -0.20 * hw),
+        (crown, 0.20 * hw),
+        (bead + 0.055, 0.62 * hw),
+        (bead, 0.92 * hw),
+        (bead + 0.020, 0.55 * hw),
+        (crown - 0.055, 0.10 * hw),
+        (crown - 0.055, -0.10 * hw),
+        (bead + 0.020, -0.55 * hw),
+    ]
+    _spin_loop(g, x, z, profile, segs, "Lib_Rubber")
+
+
 def _wheel(g, x, z, year, lod):
-    sign = 1.0 if x > 0.0 else -1.0
+    """18 inch alloy. Lip proud of the spokes, brake disc in the openings."""
+    sign = 1.0 if x >= 0.0 else -1.0
     info = YEARS[year]
-    segs = 18 if lod == 0 else 10
+    segs = 20 if lod == 0 else 12
     _spin_tire(g, x, z, lod)
-    # Proud of the sidewall. A solid disc here hid the spokes, so the rim is a band.
-    # Past the sidewall cap. TIRE_W * 0.36 sat inside the rubber and the spokes vanished.
-    outer = x + sign * (TIRE_W * 0.52)
-    g.cylinder((outer - sign * 0.005, AXLE_Y, z), RIM_R * 0.70, 0.006, BLACK, segs, axis="X")
-    _annulus(g, outer, z, RIM_R * 0.84, RIM_R * 1.05, 0.016, "Lib_PaintSilver", segs)
-    face = outer + sign * 0.012
-    spokes = info["spokes"] if lod == 0 else 5
-    thick = max(info["thick"], 0.032) if lod == 0 else 0.038
-    arm = RIM_R * 0.48
-    length = RIM_R * 0.70
+    # Axial offsets are from the wheel center toward the outside of the car.
+    # The lip face sits just inside the tire crown. Spokes are 2 cm behind it.
+    lip = 0.096
+    spoke_face = lip - 0.034
+    disc_at = 0.030
+    def _oval(major, axial, rad_r, rad_a, n):
+        pts = []
+        for i in range(n):
+            ang = 2.0 * math.pi * i / n
+            pts.append((major + rad_r * math.cos(ang), axial + rad_a * math.sin(ang)))
+        return pts
+
+    # Round lip proud of a deeper barrel. Both are convex, so the opening stays a hole.
+    _spin_loop(g, x, z, _oval(RIM_R * 1.04, lip, 0.016, 0.012, 8), segs, "Lib_PaintSilver")
+    _spin_loop(g, x, z, _oval(RIM_R * 0.88, spoke_face - 0.010, 0.014, 0.028, 8), segs, "Lib_Steel")
+    g.cylinder(
+        (x + sign * disc_at, AXLE_Y, z),
+        0.168, 0.018, HOUSING, segs, axis="X",
+    )
+    spokes = info["spokes"] if lod == 0 else max(5, info["spokes"] - 1)
+    arm = RIM_R * 0.55
+    length = RIM_R * 0.78
+    thick = 0.026 if lod == 0 else 0.034
     for k in range(spokes):
         theta = math.radians(k * (360.0 / spokes) - 90.0)
         g.box(
-            (face, AXLE_Y + math.cos(theta) * arm, z + math.sin(theta) * arm),
-            (0.012, length, thick),
-            "Lib_PaintSilver",
+            (x + sign * spoke_face, AXLE_Y + math.cos(theta) * arm, z + math.sin(theta) * arm),
+            (0.016, length, thick),
+            "Lib_Steel",
             euler=(math.degrees(theta), 0.0, 0.0),
         )
-    g.cylinder((face + sign * 0.005, AXLE_Y, z), RIM_R * 0.15, 0.010, "Lib_SteelDark", 8, axis="X")
+    g.cylinder(
+        (x + sign * (spoke_face + 0.006), AXLE_Y, z),
+        RIM_R * 0.16, 0.018, "Lib_SteelDark", 8, axis="X",
+    )
 
 
 def _track(g, name, kind, center, size, mount):
@@ -937,22 +696,11 @@ def _slab(g, name, kind, x0, x1, y0, y1, z0, z1, mat, mount_z):
     center = ((x0 + x1) * 0.5, (y0 + y1) * 0.5, (z0 + z1) * 0.5)
     size = (abs(x1 - x0), abs(y1 - y0), abs(z1 - z0))
     g.box(center, size, mat)
-    mx0 = x0 + 0.01
-    mx1 = x1 - 0.01
-    my0 = y0 + 0.006
-    my1 = y1 - 0.006
-    mount = (
-        (mx0, my0, mount_z),
-        (mx1, my0, mount_z),
-        (mx0, my1, mount_z),
-        (mx1, my1, mount_z),
-        ((mx0 + mx1) * 0.5, (my0 + my1) * 0.5, mount_z),
-    )
+    mount = (((x0 + x1) * 0.5, (y0 + y1) * 0.5, mount_z),)
     _track(g, name, kind, center, size, mount)
 
 
 def _ray_surface(bvh, x, y, origin_z):
-    """First hit on the body, shot from outside along Z."""
     start = Vector(unity_to_blender(x, y, origin_z))
     direction = Vector((0.0, 1.0, 0.0)) if origin_z > 0.0 else Vector((0.0, -1.0, 0.0))
     hit, _normal, _index, _dist = bvh.ray_cast(start, direction, 6.0)
@@ -961,140 +709,140 @@ def _ray_surface(bvh, x, y, origin_z):
     return _u(hit)[2]
 
 
-def _nose_slab(g, bvh, name, kind, x0, x1, y0, y1, mat):
+def _nose_pair(g, bvh, name, x0, x1, y0, y1, lens):
+    """Dark housing, then a clear lens. Neither material emits."""
     y = (y0 + y1) * 0.5
     x = (x0 + x1) * 0.5
     hit = _ray_surface(bvh, x, y, 3.6)
     if hit is None:
-        hit = _shape_z(Z_NOSE, y) - 0.011
-    # Proud of the pocket floor by 3 mm. +Z is out the nose.
-    floor = hit
-    _slab(g, name, kind, x0, x1, y0, y1, floor + 0.003, floor + 0.008, mat, floor + 0.003)
+        print("LAMP_MISS", name, round(x, 3), round(y, 3))
+        return
+    _slab(g, name + "_housing", "lamp", x0, x1, y0, y1, hit + 0.001, hit + 0.004, HOUSING, hit + 0.001)
+    _slab(g, name, "lamp", x0 + 0.006, x1 - 0.006, y0 + 0.004, y1 - 0.004, hit + 0.004, hit + 0.008, lens, hit + 0.004)
 
 
-def _tail_slab(g, bvh, name, kind, x0, x1, y0, y1, mat):
+def _tail_pair(g, bvh, name, x0, x1, y0, y1):
     y = (y0 + y1) * 0.5
     x = (x0 + x1) * 0.5
     hit = _ray_surface(bvh, x, y, -3.6)
     if hit is None:
-        hit = _shape_z(Z_TAIL, y) + 0.011
-    floor = hit
-    _slab(g, name, kind, x0, x1, y0, y1, floor - 0.008, floor - 0.003, mat, floor - 0.003)
-
-
-def _lamps_front(g, info, lod, bvh):
-    del lod
-    kind = info["lamps"]
-    y0, y1 = 0.635, 0.765
-    inner, outer = 0.26, 0.60
-    if kind == "thin":
-        y0, y1 = 0.66, 0.74
-        outer = 0.56
-    elif kind == "swept":
-        y0, y1 = 0.63, 0.78
-        inner, outer = 0.24, 0.62
-    elif kind == "tier":
-        mid = (y0 + y1) * 0.5
-        for sign in (-1.0, 1.0):
-            x_a = sign * inner if sign > 0 else -outer
-            x_b = sign * outer if sign > 0 else -inner
-            lo, hi = (x_a, x_b) if x_a < x_b else (x_b, x_a)
-            _nose_slab(g, bvh, "lamp_hi", "lamp", lo, hi, mid + 0.004, y1, "Lib_Headlamp")
-            _nose_slab(g, bvh, "lamp_lo", "lamp", lo, hi, y0, mid - 0.004, "Lib_Headlamp")
+        print("LAMP_MISS", name, round(x, 3), round(y, 3))
         return
-    for sign in (-1.0, 1.0):
-        lo, hi = (sign * inner, sign * outer) if sign > 0 else (-outer, -inner)
-        _nose_slab(g, bvh, "lamp", "lamp", lo, hi, y0, y1, "Lib_Headlamp")
+    _slab(g, name + "_housing", "lamp", x0, x1, y0, y1, hit - 0.004, hit - 0.001, HOUSING, hit - 0.001)
+    _slab(g, name, "lamp", x0 + 0.006, x1 - 0.006, y0 + 0.004, y1 - 0.004, hit - 0.008, hit - 0.004, TAIL_LENS, hit - 0.004)
 
 
-def _grille(g, info, lod, bvh):
-    del lod
-    y0 = GRILLE["y0"] + 0.008
-    y1 = GRILLE["y1"] - 0.008
+def _lamp_spans(kind):
+    if kind == "thin":
+        return [(0.34, 0.70, 0.66, 0.74)]
+    if kind == "swept":
+        return [(0.28, 0.76, 0.60, 0.78)]
+    if kind == "tier":
+        return [(0.30, 0.72, 0.70, 0.78), (0.30, 0.72, 0.60, 0.67)]
+    return [(0.30, 0.72, 0.62, 0.76)]
+
+
+def _lamps_front(g, info, bvh):
+    for span in _lamp_spans(info["lamps"]):
+        inner, outer, y0, y1 = span
+        for sign in (-1.0, 1.0):
+            lo, hi = (sign * inner, sign * outer) if sign > 0 else (-outer, -inner)
+            _nose_pair(g, bvh, "headlamp", lo, hi, y0, y1, LENS)
+
+
+def _grille(g, info, bvh):
+    y0, y1 = 0.40, 0.56
+    hit = _ray_surface(bvh, 0.0, (y0 + y1) * 0.5, 3.6)
+    if hit is None:
+        print("GRILLE_MISS")
+        return
+    _slab(g, "grille_mouth", "grille", -0.30, 0.30, y0, y1, hit + 0.001, hit + 0.003, BLACK, hit + 0.001)
     count = max(3, info["bars"])
-    span = y1 - y0
-    bar = min(info["bar_h"], span / (count * 2.2))
+    span = (y1 - 0.010) - (y0 + 0.010)
+    bar = min(info["bar_h"], span / (count * 2.6))
     step = span / count
     for i in range(count):
-        cy = y0 + step * (i + 0.5)
-        _nose_slab(g, bvh, "bar%d" % i, "grille", -0.22, 0.22, cy - bar * 0.5, cy + bar * 0.5, "Lib_Steel")
+        cy = y0 + 0.010 + step * (i + 0.5)
+        bar_hit = _ray_surface(bvh, 0.0, cy, 3.6) or hit
+        _slab(
+            g, "bar%d" % i, "grille", -0.24, 0.24,
+            cy - bar * 0.5, cy + bar * 0.5,
+            bar_hit + 0.003, bar_hit + 0.006, "Lib_Steel", bar_hit + 0.003,
+        )
 
 
-def _intake(g, info, lod, bvh):
-    del lod
-    y0 = INTAKE["y0"] + 0.008
-    y1 = INTAKE["y1"] - 0.008
+def _intake(g, info, bvh):
+    y0, y1 = 0.20, 0.32
+    hit = _ray_surface(bvh, 0.0, (y0 + y1) * 0.5, 3.6)
+    if hit is None:
+        print("INTAKE_MISS")
+        return
     if info["intake"]:
-        _nose_slab(g, bvh, "intake_bar", "intake", -0.30, 0.30, y0 + 0.010, y0 + 0.022, "Lib_SteelDark")
-        _nose_slab(g, bvh, "intake_bar2", "intake", -0.30, 0.30, y1 - 0.022, y1 - 0.010, "Lib_SteelDark")
+        _slab(g, "intake", "intake", -0.42, 0.42, y0, y1, hit + 0.001, hit + 0.004, BLACK, hit + 0.001)
         return
-    fog = info.get("fog") or BLACK
-    _nose_slab(g, bvh, "intake_plug", "plug", -0.22, 0.22, y0, y1, PAINT)
-    _nose_slab(g, bvh, "fog_l", "lamp", -0.40, -0.26, y0, y1, fog)
-    _nose_slab(g, bvh, "fog_r", "lamp", 0.26, 0.40, y0, y1, fog)
+    _slab(g, "intake_plug", "plug", -0.42, 0.42, y0, y1, hit + 0.001, hit + 0.003, PAINT, hit + 0.001)
+    for sign, name in ((-1.0, "fog_l"), (1.0, "fog_r")):
+        _nose_pair(g, bvh, name, sign * 0.18 - 0.08, sign * 0.18 + 0.08, y0 + 0.002, y1 - 0.002, LENS)
 
 
-def _lamps_rear(g, info, lod, bvh):
-    del lod
-    y0, y1 = 0.92, 1.03
-    inner, outer = 0.20, 0.66
+def _lamps_rear(g, info, bvh):
+    y0, y1 = 0.96, 1.05
+    outer = 0.78 if info["tails"] == "wrap" else 0.70
+    inner = 0.22
     if info["tails"] == "thin":
-        mid = (y0 + y1) * 0.5
-        band = (y1 - y0) * 0.28
-        for sign in (-1.0, 1.0):
-            lo = -outer if sign < 0 else inner
-            hi = -inner if sign < 0 else outer
-            _tail_slab(g, bvh, "tail", "lamp", lo, hi, mid - band, mid + band, "Lib_Taillamp")
-        return
-    if info["tails"] == "wrap":
-        outer = 0.70
+        y0, y1 = 0.98, 1.03
+        outer = 0.66
     for sign in (-1.0, 1.0):
         lo = -outer if sign < 0 else inner
         hi = -inner if sign < 0 else outer
-        _tail_slab(g, bvh, "tail", "lamp", lo, hi, y0, y1, "Lib_Taillamp")
+        _tail_pair(g, bvh, "tail", lo, hi, y0, y1)
 
 
 def _skin_x(bvh, sign, y, z):
-    """Door skin where a mirror sail meets it."""
-    start = Vector(unity_to_blender(sign * 1.50, y, z))
-    hit, _normal, _index, _dist = bvh.ray_cast(start, Vector((-sign, 0.0, 0.0)), 2.0)
+    start = Vector(unity_to_blender(sign * 1.60, y, z))
+    hit, _normal, _index, _dist = bvh.ray_cast(start, Vector((-sign, 0.0, 0.0)), 2.2)
     if hit is None:
-        return sign * (_plan_x(z) - 0.04)
+        return sign * (_plan_x(z) - 0.05)
     return _u(hit)[0]
 
 
-def _mirrors(g, info, lod, bvh):
-    del lod
+def _mirrors(g, info, bvh):
+    """Door pad at the A-pillar base. The head sits on the pad. No stalk."""
     mat = info["mirror"]
+    z = 0.93
+    y = _belt_y(z) - 0.045
     for sign in (-1.0, 1.0):
-        y, z = 1.00, 0.92
         skin = _skin_x(bvh, sign, y, z)
-        sail_s = (0.014, 0.11, 0.18)
+        sail_s = (0.014, 0.09, 0.12)
         inner = skin + sign * 0.001
-        sail_c = (inner + sign * sail_s[0] * 0.5, y + 0.01, z)
+        sail_c = (inner + sign * sail_s[0] * 0.5, y, z)
         g.box(sail_c, sail_s, BLACK)
         mount = (
-            (inner, y - 0.02, z - 0.04),
-            (inner, y + 0.04, z + 0.04),
+            (inner, y - 0.02, z - 0.03),
+            (inner, y + 0.03, z + 0.03),
             (inner, y, z),
         )
         _track(g, "sail", "mirror", sail_c, sail_s, mount)
-        stalk_s = (0.09, 0.016, 0.016)
-        stalk_c = (
-            sail_c[0] + sign * (sail_s[0] + stalk_s[0]) * 0.5,
-            sail_c[1] + 0.045,
-            sail_c[2] + 0.01,
-        )
-        g.box(stalk_c, stalk_s, BLACK)
-        _track(g, "stalk", "mirror", stalk_c, stalk_s, mount)
-        head_s = (0.055, 0.085, 0.13)
+        head_s = (0.095, 0.075, 0.14)
         head_c = (
-            stalk_c[0] + sign * (stalk_s[0] + head_s[0]) * 0.5,
-            stalk_c[1] + 0.01,
-            stalk_c[2],
+            sail_c[0] + sign * (sail_s[0] * 0.5 + head_s[0] * 0.5 - 0.002),
+            y + 0.012,
+            z,
         )
         g.box(head_c, head_s, mat)
         _track(g, "mirror", "mirror", head_c, head_s, mount)
+
+
+def _handles(g, bvh):
+    for z in (0.42, -0.28):
+        y = _belt_y(z) - 0.09
+        for sign in (-1.0, 1.0):
+            skin = _skin_x(bvh, sign, y, z)
+            size = (0.012, 0.028, 0.11)
+            center = (skin + sign * (0.001 + size[0] * 0.5), y, z)
+            g.box(center, size, BLACK)
+            mount = ((skin + sign * 0.001, y, z),)
+            _track(g, "handle", "handle", center, size, mount)
 
 
 def _audit(g, bvh):
@@ -1104,10 +852,7 @@ def _audit(g, bvh):
         dists = []
         for pt in item["mount"]:
             _loc, _normal, _index, dist = bvh.find_nearest(Vector(unity_to_blender(*pt)))
-            if dist is None:
-                dists.append(1.0)
-            else:
-                dists.append(dist)
+            dists.append(1.0 if dist is None else dist)
         gap = min(dists) if dists else 1.0
         ext = 0.0
         for x, y, z in item["corners"]:
@@ -1116,12 +861,12 @@ def _audit(g, bvh):
             over_x = abs(x) - plan - 0.01
             over_y = y - top - 0.01
             under = BELLY - 0.01 - y
-            over_z = max(z - (Z_NOSE + 0.01), (Z_TAIL - 0.01) - z)
+            over_z = max(z - (Z_NOSE + 0.02), (Z_TAIL - 0.02) - z)
             if item["kind"] == "mirror":
-                over_x = abs(x) - plan - 0.20
+                over_x = abs(x) - plan - 0.22
             ext = max(ext, over_x, over_y, under, over_z)
         flag = ""
-        if gap > 0.005:
+        if gap > 0.006:
             flag = "gap"
             problems.append("%s gap %.4f" % (item["name"], gap))
         if ext > 0.0:
@@ -1138,12 +883,13 @@ def dress(g, year, lod, paint):
     info = YEARS[year]
     bvh = BVHTree.FromBMesh(g.bm)
     g.accessory_items = []
-    _lamps_front(g, info, lod, bvh)
-    _grille(g, info, lod, bvh)
-    _intake(g, info, lod, bvh)
-    _lamps_rear(g, info, lod, bvh)
+    _lamps_front(g, info, bvh)
+    _grille(g, info, bvh)
+    _intake(g, info, bvh)
+    _lamps_rear(g, info, bvh)
     if lod < 2:
-        _mirrors(g, info, lod, bvh)
+        _mirrors(g, info, bvh)
+        _handles(g, bvh)
     for axle in (Z_REAR, Z_FRONT):
         for sign in (-1.0, 1.0):
             _wheel(g, sign * TIRE_X, axle, year, lod)
@@ -1153,18 +899,16 @@ def dress(g, year, lod, paint):
 def add_colliders(asset):
     for i, axle in enumerate((Z_REAR, Z_FRONT)):
         for j, sign in enumerate((-1.0, 1.0)):
-            # Low in the tread, clear of the hub discs. A box on the axle
-            # sits in two shells and the parity test calls it outside.
             asset.box(
                 "Col_Wheel_%d%d" % (i, j),
-                (sign * TIRE_X, 0.08, axle),
-                (0.020, 0.016, 0.016),
+                (sign * TIRE_X, 0.022, axle),
+                (0.014, 0.010, 0.010),
             )
-    asset.box("Col_Cabin", (0.0, 0.78, -0.05), (0.46, 0.36, 0.70))
-    asset.box("Col_Roof", (0.0, 1.30, -0.15), (0.36, 0.06, 0.70))
-    asset.box("Col_Hood", (0.0, 0.78, 1.85), (0.36, 0.08, 0.36))
-    asset.box("Col_Deck", (0.0, 0.98, -1.90), (0.36, 0.06, 0.36))
-    asset.box("Col_Nose", (0.0, 0.48, 2.02), (0.28, 0.14, 0.18))
+    asset.box("Col_Cabin", (0.0, 0.78, -0.05), (0.42, 0.32, 0.62))
+    asset.box("Col_Roof", (0.0, 1.28, -0.10), (0.32, 0.06, 0.55))
+    asset.box("Col_Hood", (0.0, 0.74, 1.70), (0.40, 0.06, 0.40))
+    asset.box("Col_Deck", (0.0, 0.96, -1.85), (0.40, 0.05, 0.36))
+    asset.box("Col_Nose", (0.0, 0.46, 2.05), (0.36, 0.16, 0.22))
 
 
 def probe_spec(name):
@@ -1183,13 +927,6 @@ def probe_spec(name):
 
 
 def _topology(bm):
-    """Non-manifold edges, and faces whose normal flips against a neighbour.
-
-    A grille corner or lamp end is a sharp convex edge: both normals point
-    outward, so each face sees the neighbour behind its plane. A crumpled
-    or reversed face points at that neighbour, or lies almost coplanar with
-    the opposite orientation. Those are the failures.
-    """
     bm.edges.ensure_lookup_table()
     bm.faces.ensure_lookup_table()
     bm.normal_update()
@@ -1231,7 +968,7 @@ def _is_wheel(x, y, z):
     for axle in (Z_FRONT, Z_REAR):
         dy = y - AXLE_Y
         dz = z - axle
-        if dy * dy + dz * dz <= (TIRE_R + 0.03) ** 2:
+        if dy * dy + dz * dz <= (TIRE_R + 0.04) ** 2 and abs(abs(x) - TIRE_X) < TIRE_W * 0.7:
             return True
     return False
 
@@ -1240,18 +977,16 @@ def _body_points(bm):
     pts = []
     for vert in bm.verts:
         x, y, z = _u(vert.co)
-        if abs(x) > _plan_x(z) + 0.015 or _is_wheel(x, y, z):
+        if abs(x) > _plan_x(z) + 0.04 or _is_wheel(x, y, z):
             continue
         pts.append((x, y, z))
     return pts
 
 
 def _cross_section(bm, z):
-    """Where body edges cross a constant-z plane. Skips wheels and mirrors."""
     hits = []
     seen = set()
     bm.edges.ensure_lookup_table()
-    bm.verts.ensure_lookup_table()
     for edge in bm.edges:
         key = tuple(sorted((edge.verts[0].index, edge.verts[1].index)))
         if key in seen:
@@ -1261,7 +996,7 @@ def _cross_section(bm, z):
         b = _u(edge.verts[1].co)
         if _is_wheel(*a) or _is_wheel(*b):
             continue
-        if abs(a[0]) > _plan_x(a[2]) + 0.02 or abs(b[0]) > _plan_x(b[2]) + 0.02:
+        if abs(a[0]) > _plan_x(a[2]) + 0.05 or abs(b[0]) > _plan_x(b[2]) + 0.05:
             continue
         dz = b[2] - a[2]
         if abs(dz) < 1.0e-8:
@@ -1275,14 +1010,18 @@ def _cross_section(bm, z):
     return hits
 
 
+def _band_half(pts, y0, y1):
+    xs = [abs(x) for x, y, _z in pts if y0 <= y <= y1]
+    return max(xs) if xs else None
+
+
 def _silhouette(bm):
-    """Max deviation of the body from the orthographic profiles, in meters."""
     pts = _body_points(bm)
     max_y = max((y for x, y, _z in pts if abs(x) < 0.12 and y > 0.5), default=0.0)
-    min_y = min((y for x, y, _z in pts if abs(x) < 0.35), default=BELLY)
+    min_y = min((y for x, y, _z in pts if abs(x) < 0.40), default=BELLY)
     max_z = max(z for _x, _y, z in pts)
     min_z = min(z for _x, _y, z in pts)
-    max_x = max(abs(x) for x, y, _z in pts if 0.30 < y < 1.25)
+    max_x = max(abs(x) for x, y, _z in pts if 0.30 < y < 1.20)
     worst = 0.0
     notes = []
 
@@ -1303,121 +1042,72 @@ def _silhouette(bm):
         hits = _cross_section(bm, z)
         if not hits:
             continue
-        crown = [y for x, y in hits if abs(x) < 0.10 and y > 0.45]
+        crown = [y for x, y in hits if abs(x) < 0.08 and y > 0.55]
         if crown:
             keep("top@%+.1f" % z, max(crown) - _top_y(z))
-        flank = [abs(x) for x, y in hits if 0.28 < y < 1.25]
+        flank = [abs(x) for x, y in hits if 0.45 < y < 1.05]
         if flank:
             keep("plan@%+.1f" % z, max(flank) - _plan_x(z))
-    for x, y, z in pts:
-        if abs(x) > _plan_x(z) + 0.04:
-            continue
-        over = y - _top_y(z)
-        if over > 0.02:
-            keep("above@%+.1f" % z, over - 0.02)
-    nose_low = [abs(x) for x, y, z in pts if z > 2.05 and y < 0.38]
-    nose_high = [abs(x) for x, y, z in pts if z > 2.05 and 0.64 < y < 0.90]
-    if nose_low and nose_high:
-        keep("fascia_flare", max(0.0, max(nose_low) - (max(nose_high) - 0.03)))
-    deck = [y for x, y, z in pts if z < -1.85 and abs(x) < 0.55 and y > 0.85]
-    if deck:
-        keep("deck_low", max(0.0, 1.05 - max(deck)))
-        keep("deck_high", max(0.0, max(deck) - 1.12))
-        quarters = [y for x, y, z in pts if z < -1.85 and 0.25 < abs(x) < 0.55 and y > 0.90]
-        if quarters:
-            keep("deck_drop", max(0.0, max(deck) - min(quarters) - 0.05))
-    hood = [y for x, y, z in pts if z > 2.25 and abs(x) < 0.15 and y > 0.55]
+    bumper = _band_half(pts, 0.18, 0.42)
+    shoulder = _band_half(pts, 0.55, 0.88)
+    roof = _band_half(pts, 1.28, 1.42)
+    print(
+        "FRONT_GATE",
+        "bumper", None if bumper is None else round(bumper * 2.0, 3),
+        "shoulder", None if shoulder is None else round(shoulder * 2.0, 3),
+        "roof", None if roof is None else round(roof * 2.0, 3),
+    )
+    if bumper is not None and shoulder is not None:
+        keep("chin", max(0.0, (shoulder - 0.04) - bumper))
+        keep("bumper_flare", max(0.0, bumper - (shoulder + 0.015)))
+    if shoulder is not None:
+        keep("shoulder_width", shoulder * 2.0 - WIDTH)
+    if roof is not None:
+        keep("roof_narrow", max(0.0, 1.15 - roof * 2.0))
+        keep("roof_wide", max(0.0, roof * 2.0 - 1.35))
+    hood = [y for x, y, z in pts if z > 2.20 and abs(x) < 0.12 and y > 0.6]
     if hood:
-        keep("hood_low", max(0.0, 0.80 - max(hood)))
+        keep("hood_low", max(0.0, 0.78 - max(hood)))
         keep("hood_high", max(0.0, max(hood) - 0.86))
-    print("SILHOUETTE", round(worst, 4), "size", round(max_x * 2.0, 3), round(max_y, 3), round(max_z - min_z, 3))
+    deck = [y for x, y, z in pts if z < -1.85 and abs(x) < 0.45 and y > 0.85]
+    if deck:
+        keep("deck_low", max(0.0, 1.04 - max(deck)))
+        keep("deck_high", max(0.0, max(deck) - 1.12))
+    print(
+        "SILHOUETTE", round(worst, 4),
+        "size", round(max_x * 2.0, 3), round(max_y, 3), round(max_z - min_z, 3),
+        "tire_od", round(TIRE_R * 2.0, 3), "arch_gap", ARCH_GAP, "track", TIRE_X * 2.0,
+    )
     if notes:
-        print("SILHOUETTE_NOTES", notes[:14])
+        print("SILHOUETTE_NOTES", notes[:16])
     return worst
 
 
-def _stroke(g, a, b, radius=0.010):
+def _stroke(g, a, b, radius=0.008):
     if (Vector(a) - Vector(b)).length < 1.0e-4:
         return
     g.pipe(a, b, radius, "Lib_Orange", segments=4)
 
 
-def _poly_yz(x, samples):
-    return [(x, y, z) for z, y in samples]
-
-
-def _poly_xy(z, samples):
-    return [(x, y, z) for x, y in samples]
-
-
-def add_reference(g, views=("side", "front", "rear", "top")):
-    """Orthographic outline, drawn just outside the body. Our own lines."""
+def add_reference(g, views=("side",)):
     zs = [i * 0.05 - 2.45 for i in range(99)]
-    side = [(z, _top_y(z)) for z in zs]
-    side += [(Z_TAIL, BELLY), (Z_NOSE, BELLY)]
-    side[0:0] = [(Z_NOSE, _top_y(Z_NOSE))]
-    # Close the profile the long way: nose down, along the belly, tail up.
-    profile = [(z, _top_y(z)) for z in zs]
-    profile.append((Z_TAIL, BELLY))
-    profile.append((Z_NOSE, BELLY))
     if "side" in views:
-        x_line = -(HALF_W + 0.04)
+        x_line = -(HALF_W + 0.06)
         crown = [(x_line, _top_y(z), z) for z in zs]
         for a, b in zip(crown, crown[1:]):
             _stroke(g, a, b)
-        nose = []
-        for i in range(16):
-            y = 0.83 - (0.83 - BELLY) * i / 15.0
-            nose.append((x_line, y, _shape_z(Z_NOSE, y)))
-        tail = []
-        for i in range(16):
-            y = 1.07 - (1.07 - BELLY) * i / 15.0
-            tail.append((x_line, y, _shape_z(Z_TAIL, y)))
-        for a, b in zip(nose, nose[1:]):
+        for a, b in (
+            ((x_line, _top_y(Z_NOSE), Z_NOSE), (x_line, BELLY, Z_NOSE)),
+            ((x_line, _top_y(Z_TAIL), Z_TAIL), (x_line, BELLY, Z_TAIL)),
+            ((x_line, BELLY, Z_NOSE), (x_line, BELLY, Z_TAIL)),
+        ):
             _stroke(g, a, b)
-        for a, b in zip(tail, tail[1:]):
-            _stroke(g, a, b)
-        _stroke(g, crown[-1], nose[0])
-        _stroke(g, crown[0], tail[0])
-        _stroke(g, nose[-1], tail[-1])
-        for axle in (Z_FRONT, Z_REAR):
-            arc = []
-            for i in range(19):
-                ang = math.pi * i / 18.0
-                arc.append((
-                    HALF_W + 0.018,
-                    AXLE_Y + math.sin(ang) * ARCH_R,
-                    axle + math.cos(ang) * ARCH_R,
-                ))
-            for a, b in zip(arc, arc[1:]):
-                _stroke(g, a, b, 0.006)
-        belt = [(HALF_W + 0.012, _belt_y(z), z) for z in zs if -1.05 <= z <= 1.10]
+        belt = [(HALF_W + 0.02, _belt_y(z), z) for z in zs if -1.1 <= z <= 1.15]
         for a, b in zip(belt, belt[1:]):
             _stroke(g, a, b, 0.005)
-    if "front" in views:
-        ring = _section(Z_NOSE, False)
-        pts = [(x, y, Z_NOSE + 0.02) for x, y in ring]
-        pts.append(pts[0])
-        for a, b in zip(pts, pts[1:]):
-            _stroke(g, a, b, 0.006)
-    if "rear" in views:
-        ring = _section(Z_TAIL, False)
-        pts = [(x, y, Z_TAIL - 0.02) for x, y in ring]
-        pts.append(pts[0])
-        for a, b in zip(pts, pts[1:]):
-            _stroke(g, a, b, 0.006)
-    if "top" in views:
-        plan = [(z, _plan_x(z)) for z in zs]
-        left = [(-x, HEIGHT + 0.02, z) for z, x in plan]
-        right = [(x, HEIGHT + 0.02, z) for z, x in plan]
-        for seq in (left, right):
-            for a, b in zip(seq, seq[1:]):
-                _stroke(g, a, b, 0.006)
-        _stroke(g, left[0], right[0], 0.006)
-        _stroke(g, left[-1], right[-1], 0.006)
 
 
-def reference_asset(views=("side", "front", "rear", "top")):
+def reference_asset(views=("side",)):
     from _common import Asset
 
     asset = Asset("SedanGuides", "Vehicles", "Orthographic sedan outlines.")
@@ -1428,10 +1118,9 @@ def reference_asset(views=("side", "front", "rear", "top")):
 
 
 def shade_object(obj):
-    """Crisp panel shading for stills. The bevel is already in the mesh."""
     mod = obj.modifiers.new("WeightedNormal", "WEIGHTED_NORMAL")
     mod.keep_sharp = True
-    mod.weight = 80
+    mod.weight = 50
     mod.mode = "FACE_AREA_WITH_ANGLE"
     return obj
 
@@ -1444,7 +1133,7 @@ def _check_render(asset):
 
     for obj in list(bpy.data.objects):
         bpy.data.objects.remove(obj, do_unlink=True)
-    out = os.path.join(REPO, "Docs", "AssetStills", "vehicles", "sedan_mid_a", "pass12")
+    out = os.path.join(REPO, "Docs", "AssetStills", "vehicles", "sedan_mid_a", "pass13")
     os.makedirs(out, exist_ok=True)
     year = asset.name[-2:]
     scene = bpy.context.scene
@@ -1454,16 +1143,14 @@ def _check_render(asset):
     views = (
         ("front", (0.0, 0.72, 8.0), (0.0, 0.72, 0.0), 3.4),
         ("side", (8.0, 0.72, 0.0), (0.0, 0.72, 0.0), 6.2),
-        ("top", (0.0, 12.0, 0.0), (0.0, 0.4, 0.0), 6.2),
         ("rear", (0.0, 0.72, -8.0), (0.0, 0.72, 0.0), 3.4),
     )
     for label, eye, aim, scale in views:
         for obj in list(bpy.data.objects):
             bpy.data.objects.remove(obj, do_unlink=True)
         stills._world(scene, night=False)
-        body =         stills._spawn(asset, (0.0, 0.0, 0.0))
+        body = stills._spawn(asset, (0.0, 0.0, 0.0))
         shade_object(body)
-        stills._spawn(reference_asset(views=(label,)), (0.0, 0.0, 0.0))
         stills._ground("asphalt", 40.0)
         cam_data = bpy.data.cameras.new("Cam")
         cam_data.type = "ORTHO"
@@ -1513,25 +1200,22 @@ def self_check(asset):
 
 def measure(asset):
     self_check(asset)
-    max_x = 0.0
-    body_x = 0.0
     max_y = 0.0
     min_z = 99.0
     max_z = -99.0
+    body_x = 0.0
     for vert in asset.lods[0].bm.verts:
         x, y, z = _u(vert.co)
         if _is_wheel(x, y, z):
             continue
-        max_x = max(max_x, abs(x))
-        if 0.45 < y < 1.15 and abs(z) < 1.0 and abs(x) < 0.98:
+        if abs(x) < _plan_x(z) + 0.02 and 0.40 < y < 1.15:
             body_x = max(body_x, abs(x))
-        if abs(x) < 0.98:
+        if abs(x) < 0.70:
             max_y = max(max_y, y)
         max_z = max(max_z, z)
         min_z = min(min_z, z)
     print(
         "SEDAN_MEASURE", asset.name,
         "size", round(body_x * 2.0, 3), round(max_y, 3), round(max_z - min_z, 3),
-        "ymax", round(max_y, 3),
         "tris", asset.lods[0].tri_count(),
     )

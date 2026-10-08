@@ -222,7 +222,8 @@ def _side_dims(fn, dims, path, eye, aim, lens, wide=False, shade=False, guides=N
     if shade:
         import body_a
         body_a.shade_object(obj)
-    r._spawn(dims, (0, 0, 0))
+    if dims is not None:
+        r._spawn(dims, (0, 0, 0))
     if guides is not None:
         r._spawn(guides, (0, 0, 0))
     r._ground("asphalt", 40.0)
@@ -328,30 +329,23 @@ def main():
     found = _load(only)
     if only is not None and "sedan_mid_a" in only:
         print("SHOT", "sedan_mid_a", shot or "all")
-        out = os.path.join(STILL_ROOT, "sedan_mid_a", "pass12")
+        out = os.path.join(STILL_ROOT, "sedan_mid_a", "pass13")
         os.makedirs(out, exist_ok=True)
-        import body_a
-        guides = body_a.reference_asset(views=("side",))
         if shot in (None, "hero"):
             _shot_az(found["Sedan_Mid_A_25"], os.path.join(out, "hero.png"), 48.0, elevation=11.0, fill=0.90, wide=True, shade=True)
-        # Hard-surface shell: 4.90 m, roof 1.45 m, wheelbase 2.82 m.
-        length = 4.90
-        height = 1.45
-        wheelbase = 2.82
-        z_front = length * 0.5 - 0.96
-        z_rear = z_front - wheelbase
+        # Clean profile so the belt and the window outline can be judged.
         if shot in (None, "side"):
             _side_dims(
                 found["Sedan_Mid_A_25"],
-                _dimensions(length, height, wheelbase, z_front, z_rear),
+                None,
                 os.path.join(out, "side.png"),
-                (13.5, 1.15, 0.0), (0.0, 0.78, 0.0), 82.0,
-                wide=True, shade=True, guides=guides,
+                (14.0, 0.82, 0.0), (0.0, 0.72, 0.0), 90.0,
+                wide=True, shade=True, guides=None,
             )
         if shot in (None, "front"):
-            _shot_az(found["Sedan_Mid_A_25"], os.path.join(out, "front.png"), 4.0, elevation=3.0, fill=0.90, wide=True, shade=True)
+            _shot_az(found["Sedan_Mid_A_25"], os.path.join(out, "front.png"), 0.0, elevation=2.0, fill=0.86, wide=True, shade=True)
         if shot in (None, "rear"):
-            _shot_az(found["Sedan_Mid_A_25"], os.path.join(out, "rear.png"), 184.0, elevation=6.0, fill=0.90, wide=True, shade=True)
+            _shot_az(found["Sedan_Mid_A_25"], os.path.join(out, "rear.png"), 180.0, elevation=4.0, fill=0.86, wide=True, shade=True)
         if shot in (None, "beside"):
             _beside(found["Sedan_Mid_A_25"], os.path.join(out, "beside.png"))
         if shot in (None, "scale"):
