@@ -812,8 +812,8 @@ namespace Tag.Ui.Menu
                 for (int rank = 0; rank < 4; rank++)
                 {
                     Slot(rank, out float sx, out float height);
-                    float wide = rank == 0 ? 1.16f : rank == 3 ? 1.28f : 1.06f;
-                    float deep = 1.02f;
+                    float wide = 0.92f;
+                    float deep = 0.70f;
                     Pose pose;
                     int poseId;
                     float hop = 0f;
@@ -823,9 +823,9 @@ namespace Tag.Ui.Menu
                     else { pose = Pump(t); poseId = 4; }
                     posed[rank].Place(pose, sx, height + 0.09f + hop, 0f);
                     solids[0] = Solid.Box("step", sx, height * 0.5f, 0f, wide * 0.5f, height * 0.5f, deep * 0.5f);
-                    solids[1] = Solid.Box("trim", sx, height + 0.025f, 0f, (wide + 0.10f) * 0.5f, 0.025f, (deep + 0.08f) * 0.5f);
-                    solids[2] = Solid.Cyl("shade", sx, height + 0.065f, 0f, 0.575f, 0.012f, 0.36f);
-                    solids[3] = Solid.Box("face", sx, -0.02f, deep * 0.5f + 0.72f, wide * 0.23f, 0.15f, 0.025f);
+                    solids[1] = Solid.Box("trim", sx, height + 0.025f, 0f, wide * 0.5f, 0.025f, deep * 0.5f);
+                    solids[2] = Solid.Cyl("shade", sx, height + 0.065f, 0f, 0.38f, 0.012f, 0.25f);
+                    solids[3] = Solid.Box("face", sx, -0.02f, deep * 0.5f + 0.03f, wide * 0.22f, 0.15f, 0.02f);
                     for (int c = 0; c < 18; c++)
                     {
                         float ang = c * 0.55f;
@@ -1151,8 +1151,8 @@ namespace Tag.Ui.Menu
             if (alive.IndexOf("RootPitch = 16f", StringComparison.Ordinal) < 0) return false;
             if (alive.IndexOf("HeadYaw = 12f * s", StringComparison.Ordinal) < 0) return false;
             if (cheer.IndexOf("height = 0.72f", StringComparison.Ordinal) < 0) return false;
-            if (cheer.IndexOf("x = -1.46f", StringComparison.Ordinal) < 0) return false;
-            if (cheer.IndexOf("x = 2.92f", StringComparison.Ordinal) < 0) return false;
+            if (cheer.IndexOf("x = -1.58f", StringComparison.Ordinal) < 0) return false;
+            if (cheer.IndexOf("x = 3.27f", StringComparison.Ordinal) < 0) return false;
             if (preview.IndexOf("new Vector3(0f, 0.08f, 0f)", StringComparison.Ordinal) < 0) return false;
             if (preview.IndexOf("new Vector3(0f, 0.12f, 0f)", StringComparison.Ordinal) < 0) return false;
             if (preview.IndexOf("new Vector3(0f, 0.04f, 0f)", StringComparison.Ordinal) < 0) return false;
@@ -1183,10 +1183,10 @@ namespace Tag.Ui.Menu
 
         static void Slot(int rank, out float x, out float height)
         {
-            if (rank <= 0) { x = 0.00f; height = 0.72f; return; }
-            if (rank == 1) { x = -1.46f; height = 0.50f; return; }
-            if (rank == 2) { x = 1.50f; height = 0.34f; return; }
-            x = 2.92f;
+            if (rank <= 0) { x = -0.06f; height = 0.72f; return; }
+            if (rank == 1) { x = -1.58f; height = 0.50f; return; }
+            if (rank == 2) { x = 1.55f; height = 0.34f; return; }
+            x = 3.27f;
             height = 0.20f;
         }
 

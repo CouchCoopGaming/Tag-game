@@ -342,6 +342,8 @@ The thirty-seventh pass lifts that V overhead, about 30° off vertical, with the
 
 The thirty-eighth pass puts each results card under its block, at one width, with a gap, and lifts the winner card. Third place drops the elbows and holds both fists in front of the chest, with a nod and a small knee bend. Fourth turns the head a little while the slump stays. A front three-quarter key and a soft rim light the face plate and the eye sockets. Look-sheet chips sit on the projected feet. The board reveal raises the blocks, settles the poses, then slides the cards in. The two-second check is `Docs/UiStills/pass38/results-reveal.gif`, with the six frames beside it. pose stays 0 and rigJoint stays 26. Space still jumps.
 
+The thirty-ninth pass gives the blocks one footprint, a gap, and a shared front edge. The heights stay second, first, third, fourth. The stat cards match that spacing, with equal gaps, and the row is centred under the blocks. The summary names who was It the least and who ran the longest chase. Second place bends the raised elbow so the fist shows. The check is `Docs/UiStills/pass39/results-reveal.gif`. pose stays 0 and rigJoint stays 26. Space still jumps.
+
 ## Motion, ninth pass
 
 The wall jump, the rope, the zip, the launch pad, a landing, the dash flash, a hard turnaround, and a punch while you run all ease instead of snapping. Speeds, the jump, and the dash length are the same.

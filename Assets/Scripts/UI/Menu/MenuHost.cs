@@ -2820,14 +2820,14 @@ namespace Tag.Ui.Menu
             if (_header != null) _header.text = "  " + headline;
             int n = FillRanks();
             float chase = n > 0 ? _rows[0].Chase : 0f;
-            string chaseWho = "";
+            string chaseWho = n > 0 ? _rows[0].ChaseName : "";
             if (mode != null)
             {
                 chase = mode.LongestChase;
                 chaseWho = mode.LongestChaseName;
             }
             if (_banner != null)
-                _banner.text = MenuCatalog.ModeName(modeId) + "    " + MenuPodium.ChaseLine(chase, chaseWho);
+                _banner.text = MenuPodium.Summary(modeId, _rows, n, chase, chaseWho);
             float span = UiFit.BodyW(UiFit.Current());
             float bodyH = UiFit.BodyH(UiFit.Current());
             float rankH = 168f;
@@ -2865,7 +2865,7 @@ namespace Tag.Ui.Menu
             var view = viewRt.gameObject.AddComponent<RawImage>();
             view.raycastTarget = false;
             if (_preview != null) _preview.ShowPodium(n, _rows, view);
-            float cardGutter = 28f;
+            float cardGutter = 40f;
             float leftPx = fitW;
             float rightPx = 0f;
             var blockPx = new float[n > 0 ? n : 1];

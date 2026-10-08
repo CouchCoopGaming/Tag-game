@@ -28,12 +28,17 @@ namespace Tag.Ui.Menu
         float _hop;
         float _born;
 
+        /// <summary>Shared footprint. Every block is this wide and this deep, so a gap stays between them.</summary>
+        public const float BlockWide = 0.92f;
+        public const float BlockDeep = 0.70f;
+
         public static void Slot(int rank, out float x, out float height)
         {
-            if (rank <= 0) { x = 0.00f; height = 0.72f; return; }
-            if (rank == 1) { x = -1.46f; height = 0.50f; return; }
-            if (rank == 2) { x = 1.50f; height = 0.34f; return; }
-            x = 2.92f;
+            // Heights: 2nd below 1st, then 3rd, then 4th. Centres are spread so the picture gaps match.
+            if (rank <= 0) { x = -0.06f; height = 0.72f; return; }
+            if (rank == 1) { x = -1.58f; height = 0.50f; return; }
+            if (rank == 2) { x = 1.55f; height = 0.34f; return; }
+            x = 3.27f;
             height = 0.20f;
         }
 

@@ -162,7 +162,7 @@ namespace Tag.Ui.Menu
             return a;
         }
 
-        /// <summary>Second place. One fist beside the head, the other arm down.</summary>
+        /// <summary>Second place. One fist beside the head, the other arm down. The raised elbow bends a little so the fist clears the forearm.</summary>
         public static Angles Pump(float t)
         {
             float s = Mathf.Sin(t * 4.2f);
@@ -176,7 +176,7 @@ namespace Tag.Ui.Menu
             a.ArmPitchR = -180f;
             a.ArmYawR = -80f;
             a.ArmRollR = 40f;
-            a.ElbowR = -60f;
+            a.ElbowR = 40f;
             return a;
         }
 

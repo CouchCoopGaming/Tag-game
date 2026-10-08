@@ -254,12 +254,12 @@ namespace Tag.Ui.Menu
         /// </summary>
         public static float BlockFraction(int rank)
         {
-            // Picture x of each block through the results camera.
-            // Left to right the stage is 2nd, 1st, 3rd, 4th.
-            if (rank <= 0) return 0.406f;
-            if (rank == 1) return 0.209f;
-            if (rank == 2) return 0.596f;
-            return 0.767f;
+            // Picture x of each block centre through the results camera.
+            // Equally spaced, and centred. Left to right: 2nd, 1st, 3rd, 4th.
+            if (rank <= 0) return 0.398f;
+            if (rank == 1) return 0.192f;
+            if (rank == 2) return 0.603f;
+            return 0.807f;
         }
 
         void SetRise(float e)
@@ -411,8 +411,8 @@ namespace Tag.Ui.Menu
                 var step = GameObject.CreatePrimitive(PrimitiveType.Cube);
                 step.name = "Step" + i.ToString();
                 step.transform.SetParent(_podiumRoot, false);
-                float wide = i == 0 ? 1.16f : i == 3 ? 1.28f : 1.06f;
-                float deep = 1.02f;
+                float wide = MenuCheer.BlockWide;
+                float deep = MenuCheer.BlockDeep;
                 step.transform.localPosition = new Vector3(xs[i], heights[i] * 0.5f, 0f);
                 step.transform.localScale = new Vector3(wide, heights[i], deep);
                 _stepH[i] = heights[i];
@@ -425,7 +425,7 @@ namespace Tag.Ui.Menu
                 trim.name = "Trim" + i.ToString();
                 trim.transform.SetParent(_podiumRoot, false);
                 trim.transform.localPosition = new Vector3(xs[i], heights[i] + 0.025f, 0f);
-                trim.transform.localScale = new Vector3(wide + 0.10f, 0.05f, deep + 0.08f);
+                trim.transform.localScale = new Vector3(wide, 0.05f, deep);
                 var trimCol = trim.GetComponent<Collider>();
                 if (trimCol != null) Destroy(trimCol);
                 _trim[i] = trim.transform;
@@ -437,8 +437,8 @@ namespace Tag.Ui.Menu
                 var face = GameObject.CreatePrimitive(PrimitiveType.Cube);
                 face.name = "Face" + i.ToString();
                 face.transform.SetParent(_podiumRoot, false);
-                face.transform.localPosition = new Vector3(xs[i], plateY, deep * 0.5f + 0.72f);
-                face.transform.localScale = new Vector3(wide * 0.46f, plateH, 0.05f);
+                face.transform.localPosition = new Vector3(xs[i], plateY, deep * 0.5f + 0.03f);
+                face.transform.localScale = new Vector3(wide * 0.44f, plateH, 0.04f);
                 var faceCol = face.GetComponent<Collider>();
                 if (faceCol != null) Destroy(faceCol);
                 var faceRend = face.GetComponent<Renderer>();
@@ -446,7 +446,7 @@ namespace Tag.Ui.Menu
                     faceRend.sharedMaterial = DummyPrimitiveFactory.MakeMat(new Color(0.98f, 0.96f, 0.90f, 1f), 0.4f, 0.02f);
                 var numGo = new GameObject("Num" + i.ToString());
                 numGo.transform.SetParent(_podiumRoot, false);
-                numGo.transform.localPosition = new Vector3(xs[i], plateY, deep * 0.5f + 0.78f);
+                numGo.transform.localPosition = new Vector3(xs[i], plateY, deep * 0.5f + 0.06f);
                 var num = numGo.AddComponent<TextMesh>();
                 num.text = (i + 1).ToString();
                 num.fontSize = 64;
@@ -461,7 +461,7 @@ namespace Tag.Ui.Menu
                 shade.name = "Shade" + i.ToString();
                 shade.transform.SetParent(stand.transform, false);
                 shade.transform.localPosition = new Vector3(0f, 0.015f, 0f);
-                shade.transform.localScale = new Vector3(1.15f, 0.012f, 0.72f);
+                shade.transform.localScale = new Vector3(0.76f, 0.012f, 0.50f);
                 var shadeCol = shade.GetComponent<Collider>();
                 if (shadeCol != null) Destroy(shadeCol);
                 var shadeRend = shade.GetComponent<Renderer>();

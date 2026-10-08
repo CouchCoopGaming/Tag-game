@@ -28,6 +28,7 @@ namespace Tag.Ui.Menu
             public int Hat;
             public int Seat;
             public float Chase;
+            public string ChaseName;
         }
 
         public static int Fill(Row[] rows)
@@ -74,13 +75,38 @@ namespace Tag.Ui.Menu
             TagModeId id = mode != null ? mode.SelectedMode : MenuSession.Mode;
             Sort(rows, n, id);
             float chase = mode != null ? mode.LongestChase : 0f;
+            string chaseName = mode != null ? mode.LongestChaseName : "";
             for (int i = 0; i < n; i++)
             {
                 Row row = rows[i];
                 row.Chase = chase;
+                row.ChaseName = i == 0 ? chaseName : "";
                 rows[i] = row;
             }
             return n;
+        }
+
+        /// <summary>
+        /// One results line. Names who led the mode, and who ran the longest chase.
+        /// </summary>
+        public static string Summary(TagModeId id, Row[] rows, int n, float seconds, string who)
+        {
+            string lead = Lead(id, rows, n);
+            string chase = "longest chase " + seconds.ToString("0.0") + "s";
+            if (!string.IsNullOrEmpty(who)) chase = chase + " (" + who + ")";
+            if (lead.Length == 0) return chase;
+            return lead + " · " + chase;
+        }
+
+        static string Lead(TagModeId id, Row[] rows, int n)
+        {
+            if (rows == null || n <= 0) return MenuCatalog.ModeName(id);
+            string name = rows[0].Name;
+            if (string.IsNullOrEmpty(name)) name = "P1";
+            if (id == TagModeId.HotPotato) return name + " won the rounds";
+            if (id == TagModeId.TrailTag) return name + " was last standing";
+            if (id == TagModeId.FreePlay) return name + " made the most tags";
+            return name + " was It the least";
         }
 
         public static string Detail(TagModeId id, Row row)
@@ -123,6 +149,7 @@ namespace Tag.Ui.Menu
                 row.Accent = (i + 1) % 4;
                 row.Seat = i;
                 row.Chase = 14.2f;
+                row.ChaseName = i == 0 ? "P2" : "";
                 rows[i] = row;
             }
             return n;

@@ -327,6 +327,12 @@ The results cards are one width. Each card is centred on its block in the result
 
 In `Docs/UiStills/pass38/` the figures are renders of `Dummy_Mannequin_Tan_Hier_Hi.fbx`. The cards, the chips, and the labels are composite. The BEFORE picture is the pass 37 results still. Each still is under 400 KB. The proof lines are unchanged.
 
+## Pass 39
+
+The four blocks share one footprint. A gap stays between them, the front edges sit on one line, and the heights stay second below first, then third, then fourth. The stat cards are one width, the gaps between them are equal, and the row is centred on the picture. Each card sits under its block. The summary line names the player: P1 was It the least, and the longest chase names P2. Second place bends the raised elbow a little so the fist clears the forearm. pose stays 0 and rigJoint stays 26.
+
+In `Docs/UiStills/pass39/` the figures are renders of `Dummy_Mannequin_Tan_Hier_Hi.fbx`. The cards, the summary, and the labels are composite. The BEFORE picture is the pass 38 results still. Each still is under 400 KB. The proof lines are unchanged.
+
 ## Later passes
 
 - A 2D focus grid on rules so Left from a rule row lands on a mode tile.
