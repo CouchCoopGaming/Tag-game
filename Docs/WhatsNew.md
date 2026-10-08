@@ -13,7 +13,8 @@ This map-lane branch is the converged test tip. Pressing Play in `Assets/Scenes/
 - A punch moves the right arm on the mannequin. Reach stays 1.55. Try it: Practice, dummy on, and punch.
 - A vault keeps the horizontal speed you had when you left the ground. It does not add a long launch. Slide is unchanged. Try it: sprint at a rail you can vault and see that you are not thrown across the park.
 - A slide uses the same drop and the same speed. The lead leg reaches along the floor with the sole on it, and the trail leg folds under instead of through the floor. Try it: sprint, then slide, and watch both feet stay on the ground.
-- A vault uses the same timing. Both hands plant on the obstacle, the legs swing out to the sides as the hips pass over, and the arms stay on that plant. Try it: sprint at a rail and vault.
+- A vault uses the same timing. Both hands plant on the obstacle, the hips sit back over the feet, the legs swing out to the sides as the hips pass over, and the arms stay on that plant. Try it: sprint at a rail and vault.
+- A landing roll tucks from the hips. The chin stays in, the back stays a little rounded, and the legs swing out to the sides. Try it: sprint off a drop high enough to roll.
 
 ## Speed retune
 

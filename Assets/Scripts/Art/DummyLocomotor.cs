@@ -16921,17 +16921,18 @@ namespace Tag.Art
             if (_landRoll)
             {
                 float w = HandoffFeel.RollWeight(u);
-                _ulLT = Quaternion.Slerp(_ulLT, _ulL0 * Quaternion.Euler(HandoffFeel.RollThigh, 0f, 0f), w);
-                _ulRT = Quaternion.Slerp(_ulRT, _ulR0 * Quaternion.Euler(HandoffFeel.RollThigh - 18f, 0f, 0f), w);
+                HandoffFeel.RollAdd add = HandoffFeel.RollClear(u);
+                _ulLT = Quaternion.Slerp(_ulLT * Quaternion.Euler(0f, add.YawL, 0f), _ulL0 * Quaternion.Euler(HandoffFeel.RollThigh, add.YawL, 0f), w);
+                _ulRT = Quaternion.Slerp(_ulRT * Quaternion.Euler(0f, add.YawR, 0f), _ulR0 * Quaternion.Euler(HandoffFeel.RollThigh - 18f, add.YawR, 0f), w);
                 _llLT = Quaternion.Slerp(_llLT, _llL0 * Quaternion.Euler(HandoffFeel.RollKnee, 0f, 0f), w);
                 _llRT = Quaternion.Slerp(_llRT, _llR0 * Quaternion.Euler(HandoffFeel.RollKnee + 20f, 0f, 0f), w);
-                _hipsT = Quaternion.Slerp(_hipsT, _hips0 * Quaternion.Euler(HandoffFeel.RollHip, 0f, 0f), w);
-                _spineT = Quaternion.Slerp(_spineT, _spine0 * Quaternion.Euler(HandoffFeel.RollSpine, 0f, 22f * w), w);
-                _headT = Quaternion.Slerp(_headT, _head0 * Quaternion.Euler(HandoffFeel.RollHead, 0f, 0f), w);
-                _uaLT = Quaternion.Slerp(_uaLT, _uaL0 * Quaternion.Euler(HandoffFeel.RollArm, 18f, armZ), w);
-                _uaRT = Quaternion.Slerp(_uaRT, _uaR0 * Quaternion.Euler(HandoffFeel.RollArm, -18f, -armZ), w);
-                _laLT = Quaternion.Slerp(_laLT, _laL0 * Quaternion.Euler(HandoffFeel.RollElbow, 0f, 0f), w);
-                _laRT = Quaternion.Slerp(_laRT, _laR0 * Quaternion.Euler(HandoffFeel.RollElbow + 16f, 0f, 0f), w);
+                _hipsT = Quaternion.Slerp(_hipsT * Quaternion.Euler(add.Hip, 0f, 0f), _hips0 * Quaternion.Euler(HandoffFeel.RollHip + add.Hip, 0f, 0f), w);
+                _spineT = Quaternion.Slerp(_spineT * Quaternion.Euler(add.Spine, 0f, 0f), _spine0 * Quaternion.Euler(HandoffFeel.RollSpine + add.Spine, 0f, 22f * w), w);
+                _headT = Quaternion.Slerp(_headT * Quaternion.Euler(add.Head, 0f, 0f), _head0 * Quaternion.Euler(HandoffFeel.RollHead + add.Head, 0f, 0f), w);
+                _uaLT = Quaternion.Slerp(_uaLT * Quaternion.Euler(add.ArmL, add.ArmYawL, 0f), _uaL0 * Quaternion.Euler(HandoffFeel.RollArm + add.ArmL, 18f + add.ArmYawL, armZ), w);
+                _uaRT = Quaternion.Slerp(_uaRT * Quaternion.Euler(add.ArmR, add.ArmYawR, 0f), _uaR0 * Quaternion.Euler(HandoffFeel.RollArm + add.ArmR, -18f + add.ArmYawR, -armZ), w);
+                _laLT = Quaternion.Slerp(_laLT * Quaternion.Euler(add.ElbL, 0f, 0f), _laL0 * Quaternion.Euler(HandoffFeel.RollElbow + add.ElbL, 0f, 0f), w);
+                _laRT = Quaternion.Slerp(_laRT * Quaternion.Euler(add.ElbR, 0f, 0f), _laR0 * Quaternion.Euler(HandoffFeel.RollElbow + 16f + add.ElbR, 0f, 0f), w);
                 if (_landSquash <= 0.02f) _landRoll = false;
                 return;
             }

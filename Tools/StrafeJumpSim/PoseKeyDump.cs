@@ -142,13 +142,14 @@ static class PoseKeyDump
             float hip = Mathf.Lerp(Mathf.Lerp(LandPose.HardHip, HandoffFeel.RunHip, u), HandoffFeel.RollHip, weight);
             float spine = Mathf.Lerp(Mathf.Lerp(LandPose.HardSpine, HandoffFeel.RunSpine, u), HandoffFeel.RollSpine, weight);
             float head = Mathf.Lerp(LandPose.HardHead, HandoffFeel.RollHead, weight);
-            Emit(w, c, "roll", t, thL, thR, knL, knR, 0f, 0f,
-                Mathf.Lerp(-36f, HandoffFeel.RollArm, weight),
-                Mathf.Lerp(28f, HandoffFeel.RollArm, weight),
-                0f, 0f, 0f, 0f,
-                Mathf.Lerp(-18f, HandoffFeel.RollElbow, weight),
-                Mathf.Lerp(-24f, HandoffFeel.RollElbow + 16f, weight),
-                hip, spine, head, 22f * weight, 0f, 0f, 0f, 0f, 0f);
+            HandoffFeel.RollAdd add = HandoffFeel.RollClear(u);
+            Emit(w, c, "roll", t, thL, thR, knL, knR, add.YawL, add.YawR,
+                Mathf.Lerp(-36f, HandoffFeel.RollArm, weight) + add.ArmL,
+                Mathf.Lerp(28f, HandoffFeel.RollArm, weight) + add.ArmR,
+                add.ArmYawL, add.ArmYawR, 0f, 0f,
+                Mathf.Lerp(-18f, HandoffFeel.RollElbow, weight) + add.ElbL,
+                Mathf.Lerp(-24f, HandoffFeel.RollElbow + 16f, weight) + add.ElbR,
+                hip + add.Hip, spine + add.Spine, head + add.Head, 22f * weight, 0f, 0f, 0f, 0f, 0f);
             if (t >= dur) break;
         }
     }
