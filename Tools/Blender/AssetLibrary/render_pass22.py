@@ -26,8 +26,8 @@ _CABIN = (32.0, (8.2, 5.5, 8.6), (0.3, 2.0, 0.2), 32.0, (0.34, 0.36, 0.32))
 _JUNCTION_CAM = ((6.4, 3.9, 15.4), (0.0, 0.20, 8.6), 36.0)
 _JUNCTION_GROUND = (0.16, 0.18, 0.14)
 _ROAD_AT = 13.0
-# Ladder side (-X) toward the camera, low enough to see piles and bracing.
-_DOCK = ((-5.2, 1.35, 4.6), (-0.3, 0.15, 0.2), 28.0, (0.22, 0.28, 0.26))
+# Low on the lit side so the pile row, stringers, ladder, and rope all read.
+_DOCK = ((-3.6, 0.38, 4.6), (0.2, 0.10, 0.0), 32.0, (0.22, 0.28, 0.26))
 
 
 def _jpg(scene, path):
@@ -172,7 +172,7 @@ def _shots(found):
         lambda c=cam, a=aim, g=gnd: _runner(
             found, [("Dock_Straight", (0.0, 0.0, 0.0), 0.0, 1.0)],
             (0.15, 0.62, 0.35), 40.0,
-            (-3.8, 1.25, 3.6), (-0.2, 0.25, 0.1), 32.0,
+            (-3.4, 0.95, 4.2), (0.15, 0.28, 0.1), 30.0,
             os.path.join(STILL_DIR, "dock_runner.jpg"),
             g,
             water=True,
