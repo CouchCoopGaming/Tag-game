@@ -51,6 +51,7 @@ namespace Tag.Ui.Hud
         public Text TimerRound;
         public Image ItPlate;
         public Text ItBig;
+        public Image SeatWell;
         public Image SeatMark;
         public Image SafeGlow;
         public CanvasGroup ItFrame;
@@ -317,7 +318,7 @@ namespace Tag.Ui.Hud
                 if (chip != null)
                 {
                     chip.enabled = true;
-                    chip.color = new Color(seat.r, seat.g, seat.b, a);
+                    chip.color = new Color(0.02f, 0.02f, 0.04f, a);
                 }
                 Image mark = pane.FeedMark[dest];
                 if (mark != null)
@@ -328,7 +329,7 @@ namespace Tag.Ui.Hud
                     {
                         Sprite sprite = SeatShape.For(from);
                         if (mark.sprite != sprite) mark.sprite = sprite;
-                        mark.color = new Color(MenuTheme.Cream.r, MenuTheme.Cream.g, MenuTheme.Cream.b, a);
+                        mark.color = new Color(seat.r, seat.g, seat.b, a);
                     }
                 }
             }
@@ -1720,12 +1721,16 @@ namespace Tag.Ui.Hud
         static void ShowSeatMark(HudPane pane, int seat)
         {
             if (pane.SeatMark == null) return;
-            bool on = SeatMarks();
-            pane.SeatMark.enabled = on;
-            if (!on) return;
+            Color seatColor = MenuTheme.Seat(seat);
+            if (pane.SeatWell != null)
+            {
+                pane.SeatWell.enabled = true;
+                pane.SeatWell.color = new Color(0.02f, 0.02f, 0.04f, 1f);
+            }
+            pane.SeatMark.enabled = true;
             Sprite sprite = SeatShape.For(seat);
             if (pane.SeatMark.sprite != sprite) pane.SeatMark.sprite = sprite;
-            pane.SeatMark.color = MenuTheme.Cream;
+            pane.SeatMark.color = seatColor;
         }
 
         static void ShowSafeGlow(HudPane pane, bool on)
@@ -1761,7 +1766,7 @@ namespace Tag.Ui.Hud
             if (pane.FeedChip[row] != null)
             {
                 pane.FeedChip[row].enabled = true;
-                pane.FeedChip[row].color = MenuTheme.Seat(from);
+                pane.FeedChip[row].color = new Color(0.02f, 0.02f, 0.04f, 1f);
             }
             if (pane.FeedMark[row] != null)
             {
@@ -1771,14 +1776,14 @@ namespace Tag.Ui.Hud
                 {
                     Sprite sprite = SeatShape.For(from);
                     if (pane.FeedMark[row].sprite != sprite) pane.FeedMark[row].sprite = sprite;
+                    pane.FeedMark[row].color = MenuTheme.Seat(from);
                 }
             }
         }
 
         static bool SeatMarks()
         {
-            GameSettings settings = GameSettings.Current;
-            return settings != null && settings.CvdSeats != SeatCvd.Off;
+            return true;
         }
 
         static void PlaceArrow(Image arrow, Camera cam, Vector3 world)

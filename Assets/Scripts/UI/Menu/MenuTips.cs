@@ -97,7 +97,20 @@ namespace Tag.Ui.Menu
             int n = (int)action;
             if (n < 0 || n >= binds.Keyboard.Length) return "";
             string token = pad ? binds.Gamepad[n] : binds.Keyboard[n];
-            return ActionBinds.Chip(token);
+            string chip = ActionBinds.Chip(token);
+            if (SharesMove(binds, action, pad, chip))
+                return ActionBinds.Show(token);
+            return chip;
+        }
+
+        static bool SharesMove(ActionBinds binds, PlayAction action, bool pad, string chip)
+        {
+            if (action == PlayAction.Move || action == PlayAction.Look) return false;
+            int move = (int)PlayAction.Move;
+            int look = (int)PlayAction.Look;
+            string moveToken = pad ? binds.Gamepad[move] : binds.Keyboard[move];
+            string lookToken = pad ? binds.Gamepad[look] : binds.Keyboard[look];
+            return chip == ActionBinds.Chip(moveToken) || chip == ActionBinds.Chip(lookToken);
         }
 
         public static bool Holds()
@@ -116,6 +129,30 @@ namespace Tag.Ui.Menu
             string slide = Later(PlayAction.Slide);
             if (slide.Length < 1 || Shown(1, 0).IndexOf(slide + " [", System.StringComparison.Ordinal) < 0) return false;
             if (Shown(0, 0).IndexOf(ActionBinds.Name(PlayAction.Jump) + " [", System.StringComparison.Ordinal) != 0) return false;
+            ActionBinds kb = ActionBinds.Defaults();
+            if (!MarkIsOwn(kb, false)) return false;
+            if (!MarkIsOwn(kb, true)) return false;
+            return true;
+        }
+
+        /// <summary>
+        /// Cling's short chip is the move control. The tip has to use the real hold.
+        /// </summary>
+        static bool MarkIsOwn(ActionBinds binds, bool pad)
+        {
+            string move = ActionBinds.Chip(pad ? binds.Gamepad[(int)PlayAction.Move] : binds.Keyboard[(int)PlayAction.Move]);
+            string cling = Mark(binds, PlayAction.Cling, pad);
+            if (cling == move) return false;
+            string token = pad ? binds.Gamepad[(int)PlayAction.Cling] : binds.Keyboard[(int)PlayAction.Cling];
+            if (cling != ActionBinds.Show(token)) return false;
+            string jump = Mark(binds, PlayAction.Jump, pad);
+            string sprint = Mark(binds, PlayAction.Sprint, pad);
+            string slide = Mark(binds, PlayAction.Slide, pad);
+            string air = Mark(binds, PlayAction.AirDash, pad);
+            string punch = Mark(binds, PlayAction.Punch, pad);
+            if (jump == move || sprint == move || slide == move || air == move || punch == move) return false;
+            string look = ActionBinds.Chip(pad ? binds.Gamepad[(int)PlayAction.Look] : binds.Keyboard[(int)PlayAction.Look]);
+            if (jump == look || cling == look || sprint == look || slide == look || air == look || punch == look) return false;
             return true;
         }
     }

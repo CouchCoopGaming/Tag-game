@@ -1,12 +1,11 @@
-using Tag.Settings;
 using UnityEngine;
 using UnityEngine.UI;
 
 namespace Tag.Ui.Menu
 {
     /// <summary>
-    /// Circle, triangle, square, diamond for seats 1–4. Drawn only when the
-    /// color-blind seat colors are on, so the default chips stay as they are.
+    /// Circle, triangle, square, diamond for seats 1–4. The shape sits with
+    /// the seat color wherever that color is the only mark.
     /// </summary>
     public static class SeatShape
     {
@@ -19,7 +18,7 @@ namespace Tag.Ui.Menu
 
         public static void Stamp(Transform parent, int seat, float x, float y, float size, Color ink)
         {
-            if (parent == null || GameSettings.Current == null || GameSettings.Current.CvdSeats == SeatCvd.Off)
+            if (parent == null)
                 return;
             RectTransform rt = MenuWidgets.Place(parent, "SeatShape", x, y, size, size);
             Image image = rt.gameObject.AddComponent<Image>();

@@ -127,10 +127,10 @@ namespace Tag.Ui.Menu
         readonly Text[] _loadTip = new Text[4];
         readonly Image[] _loadBar = new Image[4];
         // Unity uv origin is the bottom left. Left yard, chase yard, right yard, close path.
-        static readonly float[] LoadCamX = { 0.00f, 0.22f, 0.75f, 0.42f };
-        static readonly float[] LoadCamY = { 0.19f, 0.12f, 0.26f, 0.04f };
-        static readonly float[] LoadCamW = { 0.33f, 0.56f, 0.25f, 0.33f };
-        static readonly float[] LoadCamH = { 0.44f, 0.70f, 0.59f, 0.44f };
+        static readonly float[] LoadCamX = { 0.00f, 0.28f, 0.68f, 0.48f };
+        static readonly float[] LoadCamY = { 0.30f, 0.30f, 0.36f, 0.32f };
+        static readonly float[] LoadCamW = { 0.30f, 0.30f, 0.26f, 0.36f };
+        static readonly float[] LoadCamH = { 0.28f, 0.28f, 0.28f, 0.30f };
         int _loadStep = -1;
         int _tipBase;
         int _tipSpin = int.MinValue;
@@ -1126,21 +1126,19 @@ namespace Tag.Ui.Menu
             if (seat < 0) seat = 0;
             if (seat > 3) seat = 3;
             Color seatColor = MenuTheme.Seat(seat);
-            BadgePaint(seatColor, out Color plateColor, out Color ink);
-            bool marks = GameSettings.Current != null && GameSettings.Current.CvdSeats != SeatCvd.Off;
-            float tagW = marks ? 96f : 68f;
-            var rt = MenuWidgets.Place(parent, "SeatTag", x, y, tagW, 36f);
+            float tagW = 108f;
+            var rt = MenuWidgets.Place(parent, "SeatTag", x, y, tagW, 40f);
             var plate = rt.gameObject.AddComponent<Image>();
-            MenuArt.Plate(plate, plateColor, true);
+            MenuArt.Plate(plate, new Color(0.02f, 0.02f, 0.04f, 1f), true);
             plate.raycastTarget = false;
-            if (marks) SeatShape.Stamp(rt, seat, 4f, 6f, 24f, ink);
-            Text word = MenuWidgets.Words(rt, "P" + (seat + 1).ToString(), UiFit.FloorFont, TextAnchor.MiddleCenter, ink, Vector2.zero, Vector2.one);
+            SeatShape.Stamp(rt, seat, 6f, 6f, 28f, seatColor);
+            Text word = MenuWidgets.Words(rt, "P" + (seat + 1).ToString(), UiFit.FloorFont, TextAnchor.MiddleCenter, MenuTheme.Cream, Vector2.zero, Vector2.one);
             Snug(word);
             LockFit(word, UiFit.FloorFont);
-            if (marks && word != null)
+            if (word != null)
             {
                 Vector2 min = word.rectTransform.offsetMin;
-                if (min.x < 30f) min.x = 30f;
+                if (min.x < 36f) min.x = 36f;
                 word.rectTransform.offsetMin = min;
             }
         }
@@ -1195,20 +1193,19 @@ namespace Tag.Ui.Menu
             if (parent == null) return;
             if (seat < 0) seat = 0;
             if (seat > 3) seat = 3;
-            bool marks = GameSettings.Current != null && GameSettings.Current.CvdSeats != SeatCvd.Off;
-            float tagW = marks ? 96f : 68f;
-            var rt = MenuWidgets.Place(parent, "SeatTag", x, y, tagW, 36f);
+            float tagW = 108f;
+            var rt = MenuWidgets.Place(parent, "SeatTag", x, y, tagW, 40f);
             var plate = rt.gameObject.AddComponent<Image>();
-            MenuArt.Plate(plate, MenuTheme.Navy, true);
+            MenuArt.Plate(plate, new Color(0.02f, 0.02f, 0.04f, 1f), true);
             plate.raycastTarget = false;
-            if (marks) SeatShape.Stamp(rt, seat, 4f, 6f, 24f, MenuTheme.Cream);
+            SeatShape.Stamp(rt, seat, 6f, 6f, 28f, MenuTheme.Seat(seat));
             Text word = MenuWidgets.Words(rt, "P" + (seat + 1).ToString(), UiFit.FloorFont, TextAnchor.MiddleCenter, MenuTheme.Cream, Vector2.zero, Vector2.one);
             Snug(word);
             LockFit(word, UiFit.FloorFont);
-            if (marks && word != null)
+            if (word != null)
             {
                 Vector2 min = word.rectTransform.offsetMin;
-                if (min.x < 30f) min.x = 30f;
+                if (min.x < 36f) min.x = 36f;
                 word.rectTransform.offsetMin = min;
             }
         }
@@ -2089,6 +2086,11 @@ namespace Tag.Ui.Menu
                 MenuArt.Plate(plate, MenuTheme.Seat(s), true);
                 plate.raycastTarget = false;
                 _castPlate[s] = plate;
+                var castChip = MenuWidgets.Place(card, "CastChip", 16f, cardH - 78f, 56f, 56f);
+                Image castBack = castChip.gameObject.AddComponent<Image>();
+                castBack.color = new Color(0.02f, 0.02f, 0.04f, 1f);
+                castBack.raycastTarget = false;
+                SeatShape.Stamp(castChip, s, 6f, 6f, 44f, MenuTheme.Seat(s));
                 float nameH = UiFit.CastNameBand();
                 float statusH = UiFit.CastStatusBand();
                 float textH = nameH + statusH;
@@ -2507,7 +2509,7 @@ namespace Tag.Ui.Menu
                         Texture runners = MenuBackdrop.Chase;
                         if (runners != null)
                         {
-                            var runRt = MenuWidgets.Box(camRt, "LoadChase", new Vector2(0.11f, 0.16f), new Vector2(0.89f, 0.84f), new Vector2(0.5f, 0.5f));
+                            var runRt = MenuWidgets.Box(camRt, "LoadChase", new Vector2(0.08f, 0.50f), new Vector2(0.92f, 0.98f), new Vector2(0.5f, 0.5f));
                             RawImage run = runRt.gameObject.AddComponent<RawImage>();
                             run.texture = runners;
                             run.color = Color.white;
@@ -2523,11 +2525,22 @@ namespace Tag.Ui.Menu
                 Image plate = card.gameObject.AddComponent<Image>();
                 MenuArt.Plate(plate, new Color(0.04f, 0.07f, 0.16f, 0.82f), true);
                 plate.raycastTarget = false;
-                var edge = MenuWidgets.Box(card, "Seat", new Vector2(0f, 0.86f), new Vector2(0.018f, 1f), new Vector2(0f, 0.5f));
-                Image chip = edge.gameObject.AddComponent<Image>();
+                var well = MenuWidgets.Box(card, "Well", new Vector2(0.04f, 0.58f), new Vector2(0.20f, 0.96f), new Vector2(0.5f, 0.5f));
+                Image wellImage = well.gameObject.AddComponent<Image>();
+                wellImage.color = new Color(0.02f, 0.02f, 0.04f, 1f);
+                wellImage.raycastTarget = false;
+                var chipRt = MenuWidgets.Box(well, "Chip", new Vector2(0.12f, 0.12f), new Vector2(0.88f, 0.88f), new Vector2(0.5f, 0.5f));
+                Image chip = chipRt.gameObject.AddComponent<Image>();
                 chip.color = MenuTheme.Seat(i);
                 chip.raycastTarget = false;
-                MenuWidgets.Words(card, arena, 36, TextAnchor.MiddleLeft, MenuTheme.Gold, new Vector2(0.06f, 0.78f), new Vector2(0.94f, 0.96f));
+                var shapeRt = MenuWidgets.Box(chipRt, "SeatShape", new Vector2(0.16f, 0.16f), new Vector2(0.84f, 0.84f), new Vector2(0.5f, 0.5f));
+                Image shape = shapeRt.gameObject.AddComponent<Image>();
+                shape.sprite = SeatShape.For(i);
+                shape.preserveAspect = true;
+                shape.raycastTarget = false;
+                shape.color = MenuTheme.Seat(i);
+                chip.color = new Color(0.02f, 0.02f, 0.04f, 1f);
+                MenuWidgets.Words(card, arena, 36, TextAnchor.MiddleLeft, MenuTheme.Gold, new Vector2(0.24f, 0.78f), new Vector2(0.94f, 0.96f));
                 string who = i == 0 ? "P1" : i == 1 ? "P2" : i == 2 ? "P3" : "P4";
                 MenuWidgets.Words(card, who, UiFit.FloorFont, TextAnchor.MiddleLeft, MenuTheme.Cream, new Vector2(0.06f, 0.64f), new Vector2(0.40f, 0.78f));
                 var tipRt = MenuWidgets.Box(card, "TipPlate", new Vector2(0.05f, 0.34f), new Vector2(0.95f, 0.62f), new Vector2(0.5f, 0.5f));
@@ -2541,10 +2554,11 @@ namespace Tag.Ui.Menu
                 Image trackImage = track.gameObject.AddComponent<Image>();
                 MenuArt.Plate(trackImage, new Color(0.02f, 0.05f, 0.12f, 1f), true);
                 trackImage.raycastTarget = false;
-                var fill = MenuWidgets.Box(track, "Fill", new Vector2(0.01f, 0.18f), new Vector2(0.28f, 0.82f), new Vector2(0f, 0.5f));
+                var fill = MenuWidgets.Box(track, "Fill", new Vector2(0f, 0.42f), new Vector2(0f, 0.58f), new Vector2(0f, 0.5f));
                 Image fillImage = fill.gameObject.AddComponent<Image>();
-                MenuArt.Plate(fillImage, MenuTheme.Gold, true);
+                MenuArt.Plate(fillImage, new Color(1f, 0.84f, 0.35f, 0.38f), true);
                 fillImage.raycastTarget = false;
+                fillImage.enabled = false;
                 _loadBar[i] = fillImage;
                 Text word = MenuWidgets.Words(card, LoadCaption(false, false), UiFit.FloorFont, TextAnchor.MiddleCenter, MenuTheme.Cream, new Vector2(0.06f, 0.02f), new Vector2(0.94f, 0.15f));
                 if (i == 0)
@@ -3201,10 +3215,22 @@ namespace Tag.Ui.Menu
         void TickLoadDash()
         {
             if (_screen != MenuScreenId.Loading || _loadFill == null || _loadStep > 0) return;
-            float dash = 0.28f;
+            float dash = 0.10f;
             float u = MenuVideo.ReduceMotion ? 0.36f : Mathf.Repeat(Time.unscaledTime * 0.35f, 1f);
             float x = u * (1f - dash);
-            DriveLoadBars(x, x + dash, true);
+            Color shimmer = new Color(1f, 0.84f, 0.35f, 0.38f);
+            for (int i = 0; i < _loadBar.Length; i++)
+            {
+                Image bar = _loadBar[i];
+                if (bar == null) continue;
+                RectTransform rt = bar.rectTransform;
+                rt.anchorMin = new Vector2(x, 0.42f);
+                rt.anchorMax = new Vector2(x + dash, 0.58f);
+                rt.offsetMin = Vector2.zero;
+                rt.offsetMax = Vector2.zero;
+                bar.color = shimmer;
+                bar.enabled = true;
+            }
         }
 
         void DriveLoadBars(float x0, float x1, bool on)
@@ -3221,6 +3247,7 @@ namespace Tag.Ui.Menu
                 rt.anchorMax = new Vector2(x1, 0.85f);
                 rt.offsetMin = Vector2.zero;
                 rt.offsetMax = Vector2.zero;
+                bar.color = MenuTheme.Gold;
                 bar.enabled = on;
             }
         }

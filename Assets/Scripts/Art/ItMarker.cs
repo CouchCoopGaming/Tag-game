@@ -46,6 +46,7 @@ namespace Tag.Art
         Transform _plate;
         Renderer _plateRend;
         TextMesh _plateText;
+        TextMesh _shapeText;
         bool _plateBuilt;
 
         void Awake()
@@ -101,7 +102,8 @@ namespace Tag.Art
             markGo.transform.localPosition = new Vector3(0f, 2.2f, 0f);
             var mark = markGo.AddComponent<TextMesh>();
             mark.text = AccessibilityPalette.Glyph(_shape);
-            mark.characterSize = 0.28f;
+            mark.characterSize = 0.42f;
+            _shapeText = mark;
             mark.anchor = TextAnchor.MiddleCenter;
             mark.alignment = TextAlignment.Center;
             mark.color = Color.white;
@@ -204,9 +206,10 @@ namespace Tag.Art
             }
             if (_plateRend != null)
             {
-                Color plate = new Color(sr, sg, sb, 1f);
-                ApplyRuntimeColor(_plateRend, plate, 2.4f);
-                if (_plateText != null) _plateText.color = plate;
+                Color hue = new Color(sr, sg, sb, 1f);
+                ApplyRuntimeColor(_plateRend, new Color(0.02f, 0.02f, 0.04f, 1f), 0.35f);
+                if (_plateText != null) _plateText.color = hue;
+                if (_shapeText != null) _shapeText.color = hue;
             }
 
             // Hotter / brighter materials as fuse drains
@@ -365,23 +368,21 @@ namespace Tag.Art
             VerbHudLayout.PushMarker(Screen.width, Screen.height, ref x, ref y, mark, mark + 18f, ParkArena.IsPocket, ParkArena.IsStack);
 
             var prev = GUI.color;
-            GUI.color = new Color(0.05f, 0.07f, 0.1f, 0.85f);
+            GUI.color = new Color(0.02f, 0.02f, 0.04f, 0.92f);
             GUI.DrawTexture(new Rect(x, y, mark, mark), Texture2D.whiteTexture);
             // PaletteOf(_shape) is the player-color-set row, not this mark.
             float hud = 1f;
             if (GameSettings.Current != null)
                 hud = Tag.Profiles.LocalProfiles.TextScale(_shape);
             Tag.Couch.CouchPlay.Tint(_shape, out float sr, out float sg, out float sb);
-            AccessibilityPalette.Crown(sr, sg, sb, out float ir, out float ig, out float ib);
-            GUI.color = new Color(ir, ig, ib, 1f);
-            float inset = 5f;
-            GUI.DrawTexture(new Rect(x + inset, y + inset, mark - inset * 2f, mark - inset * 2f), Texture2D.whiteTexture);
             GUI.color = Color.white;
             if (_itStyle == null) return;
-            _itStyle.fontSize = (int)((Screen.height >= 1000 ? 14 : 12) * hud);
-            _itStyle.normal.textColor = new Color(0.08f, 0.08f, 0.1f, 1f);
-            GUI.Label(new Rect(x, y, mark, mark * 0.46f), AccessibilityPalette.ItGlyph, _itStyle);
-            GUI.Label(new Rect(x, y + mark * 0.40f, mark, mark * 0.60f), Tag.Profiles.LocalProfiles.ItLabel(_shape), _itStyle);
+            _itStyle.fontSize = (int)((Screen.height >= 1000 ? 13 : 11) * hud);
+            _itStyle.normal.textColor = new Color(1f, 0.98f, 0.92f, 1f);
+            GUI.Label(new Rect(x, y, mark, mark * 0.42f), AccessibilityPalette.ItGlyph, _itStyle);
+            _itStyle.fontSize = (int)((Screen.height >= 1000 ? 22 : 18) * hud);
+            _itStyle.normal.textColor = new Color(sr, sg, sb, 1f);
+            GUI.Label(new Rect(x, y + mark * 0.30f, mark, mark * 0.70f), AccessibilityPalette.Glyph(_shape), _itStyle);
             if (_plateName != null && _plateName.Length > 0)
             {
                 _itStyle.normal.textColor = new Color(sr, sg, sb, 1f);

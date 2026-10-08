@@ -66,9 +66,19 @@ namespace Tag.MatchStats
                 float cy = ay + row * (ch + gap);
                 int seat = i < AccessibilityPalette.Players ? i : 0;
                 CouchPlay.Tint(seat, out float r, out float g, out float b);
-                _style.normal.textColor = new Color(r, g, b, 1f);
+                GUI.color = Color.white;
                 GUI.Box(new Rect(cx, cy, cw, ch), "");
-                GUI.Label(new Rect(cx + 8f, cy + 6f, cw - 16f, ch - 10f), MatchBook.Card[i] ?? "", _style);
+                GUI.color = new Color(0.02f, 0.02f, 0.04f, 1f);
+                GUI.DrawTexture(new Rect(cx + 8f, cy + 8f, 36f, 36f), Texture2D.whiteTexture);
+                Color hue = new Color(r, g, b, 1f);
+                GUI.color = hue;
+                _style.normal.textColor = hue;
+                _style.alignment = TextAnchor.MiddleCenter;
+                GUI.Label(new Rect(cx + 8f, cy + 8f, 36f, 36f), AccessibilityPalette.Glyph(seat), _style);
+                _style.alignment = TextAnchor.UpperLeft;
+                _style.normal.textColor = Color.white;
+                GUI.color = Color.white;
+                GUI.Label(new Rect(cx + 52f, cy + 6f, cw - 64f, ch - 10f), MatchBook.Card[i] ?? "", _style);
             }
         }
 

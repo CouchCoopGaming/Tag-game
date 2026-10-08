@@ -132,12 +132,15 @@ namespace Tag.Ui.Menu
             {
                 QualityLine = ProveQuality();
                 SeatLine = SeatCvd.Line();
-                float protan = SeatCvd.Min(SeatCvd.Off, AccessibilityPalette.CvdProtanopia);
-                float deutan = SeatCvd.Min(SeatCvd.Off, AccessibilityPalette.CvdDeuteranopia);
-                float tritan = SeatCvd.Min(SeatCvd.Off, AccessibilityPalette.CvdTritanopia);
+                SeatCvd.Worst(SeatCvd.Off, AccessibilityPalette.CvdProtanopia, out float protan, out string protanPair);
+                SeatCvd.Worst(SeatCvd.Off, AccessibilityPalette.CvdDeuteranopia, out float deutan, out string deutanPair);
+                SeatCvd.Worst(SeatCvd.Off, AccessibilityPalette.CvdTritanopia, out float tritan, out string tritanPair);
                 CvdLine = "ui-cvd protan=" + protan.ToString("0.00", CultureInfo.InvariantCulture)
+                    + " " + protanPair
                     + " deutan=" + deutan.ToString("0.00", CultureInfo.InvariantCulture)
+                    + " " + deutanPair
                     + " tritan=" + tritan.ToString("0.00", CultureInfo.InvariantCulture)
+                    + " " + tritanPair
                     + " floor=" + AccessibilityPalette.MinPairDistance.ToString("0.00", CultureInfo.InvariantCulture);
                 GameSettings edited = GameSettings.Defaults();
                 edited.Master = 0.5f;

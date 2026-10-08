@@ -38,7 +38,7 @@ namespace Tag.Settings
             "Default", "Deuteranopia", "Protanopia", "Tritanopia", "High contrast"
         };
 
-        public static readonly string[] PlayerGlyph = { "●", "■", "▲", "◆" };
+        public static readonly string[] PlayerGlyph = { "●", "▲", "■", "◆" };
         public const string ItGlyph = "★";
 
         // Default (the first four) stays the measured mark palette: red, blue, yellow, green.
@@ -435,6 +435,36 @@ namespace Tag.Settings
                 + " pd=" + Trio(ProtanDeutan)
                 + " tritan=" + Trio(Tritan)
                 + " floor=" + AccessibilityPalette.MinPairDistance.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture);
+        }
+
+        public static void Worst(int mode, int cvd, out float distance, out string pair)
+        {
+            float worst = 99f;
+            pair = "";
+            distance = worst;
+            for (int a = 0; a < 4; a++)
+            {
+                Color(mode, a, out float ar, out float ag, out float ab);
+                for (int b = a + 1; b < 4; b++)
+                {
+                    Color(mode, b, out float br, out float bg, out float bb);
+                    float d = AccessibilityPalette.PairDistance(cvd, ar, ag, ab, br, bg, bb);
+                    if (d < worst)
+                    {
+                        worst = d;
+                        pair = SeatWord(a) + "/" + SeatWord(b);
+                    }
+                }
+            }
+            distance = worst;
+        }
+
+        static string SeatWord(int seat)
+        {
+            if (seat == 1) return "blue";
+            if (seat == 2) return "orange";
+            if (seat == 3) return "lavender";
+            return "red";
         }
 
         static string Trio(int mode)

@@ -43,11 +43,11 @@ namespace Tag.Ui.Menu
         {
             switch (Normalize(key))
             {
-                case "Blue": return new Color(0.42f, 0.68f, 0.92f, 1f);
+                case "Blue": return new Color(0.20f, 0.48f, 0.88f, 1f);
                 case "Mint": return new Color(0.42f, 0.82f, 0.70f, 1f);
-                case "Orange": return new Color(0.94f, 0.42f, 0.14f, 1f);
-                case "Lavender": return new Color(0.70f, 0.58f, 0.88f, 1f);
-                case "Red": return new Color(0.88f, 0.22f, 0.24f, 1f);
+                case "Orange": return new Color(1.00f, 0.62f, 0.18f, 1f);
+                case "Lavender": return new Color(0.90f, 0.82f, 1.00f, 1f);
+                case "Red": return new Color(0.90f, 0.18f, 0.20f, 1f);
                 default: return new Color(0.90f, 0.76f, 0.52f, 1f);
             }
         }

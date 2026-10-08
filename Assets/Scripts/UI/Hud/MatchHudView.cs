@@ -115,7 +115,12 @@ namespace Tag.Ui.Hud
             if (badgeEdge != null) badgeEdge.effectColor = new Color(1f, 0.98f, 0.9f, 0.9f);
 
             pane.Identity = MenuWidgets.Place(rt, "Identity", 136f, 12f, 480f, 128f);
-            RectTransform mark = MenuWidgets.Place(pane.Identity, "SeatMark", 8f, 86f, 36f, 36f);
+            RectTransform well = MenuWidgets.Place(pane.Identity, "SeatWell", 4f, 80f, 48f, 48f);
+            pane.SeatWell = well.gameObject.AddComponent<Image>();
+            pane.SeatWell.color = MenuTheme.Navy;
+            pane.SeatWell.raycastTarget = false;
+            pane.SeatWell.enabled = false;
+            RectTransform mark = MenuWidgets.Place(pane.Identity, "SeatMark", 10f, 86f, 36f, 36f);
             pane.SeatMark = mark.gameObject.AddComponent<Image>();
             pane.SeatMark.color = MenuTheme.Ink;
             pane.SeatMark.preserveAspect = true;
@@ -230,19 +235,19 @@ namespace Tag.Ui.Hud
                 plate.raycastTarget = false;
                 plate.enabled = false;
                 pane.FeedPlate[i] = plate;
-                RectTransform chip = MenuWidgets.Place(line, "Chip", 6f, 6f, 28f, 28f);
+                RectTransform chip = MenuWidgets.Place(line, "Chip", 4f, 2f, 36f, 36f);
                 Image chipImage = chip.gameObject.AddComponent<Image>();
                 chipImage.raycastTarget = false;
                 chipImage.enabled = false;
                 pane.FeedChip[i] = chipImage;
-                RectTransform shape = MenuWidgets.Place(line, "Mark", 40f, 6f, 28f, 28f);
+                RectTransform shape = MenuWidgets.Place(line, "Mark", 8f, 6f, 28f, 28f);
                 Image shapeImage = shape.gameObject.AddComponent<Image>();
                 shapeImage.color = MenuTheme.Cream;
                 shapeImage.preserveAspect = true;
                 shapeImage.raycastTarget = false;
                 shapeImage.enabled = false;
                 pane.FeedMark[i] = shapeImage;
-                RectTransform word = MenuWidgets.Place(line, "Word", 74f, 0f, 378f, 40f);
+                RectTransform word = MenuWidgets.Place(line, "Word", 46f, 0f, 406f, 40f);
                 Text text = word.gameObject.AddComponent<Text>();
                 text.font = MenuTheme.Font;
                 text.fontSize = UiFit.FloorFont;
