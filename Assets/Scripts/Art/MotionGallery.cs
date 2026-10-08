@@ -219,7 +219,10 @@ namespace Tag.Art
             }
             if (s.Kind == Climb)
             {
-                s.Input.SetExternalMove(new Vector2(0f, 1f), false, false, false, false);
+                // Forward climbs the wall. The last beat pulls back so the slip at 3.7 plays.
+                bool slip = t >= 3.15f && t < 4.05f;
+                float y = slip ? -1f : 1f;
+                s.Input.SetExternalMove(new Vector2(0f, y), false, false, false, false);
                 return;
             }
             if (s.Kind == Wall)

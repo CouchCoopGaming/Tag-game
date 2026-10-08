@@ -31,6 +31,14 @@ namespace Tag.Art
         Transform _upperArmL, _upperArmR, _lowerArmL, _lowerArmR;
         Transform _upperLegL, _upperLegR, _lowerLegL, _lowerLegR;
         Transform _footL, _footR;
+        Transform _handL, _handR;
+        Vector3 _handLPos0, _handRPos0;
+        bool _handPosBound;
+        bool _pinHandL, _pinHandR, _pinFootL, _pinFootR;
+        Vector3 _anchorHandL, _anchorHandR, _anchorFootL, _anchorFootR;
+        float _chestPush;
+        float _chestPushVel;
+        Vector3 _chestLocal;
         Quaternion _hips0, _spine0, _head0;
         Quaternion _uaL0, _uaR0, _laL0, _laR0;
         Quaternion _ulL0, _ulR0, _llL0, _llR0;
@@ -42,6 +50,11 @@ namespace Tag.Art
         float _lagVx, _lagVy, _lagVz;
         float _visualYaw;
         float _visualYawVel;
+        float _prevCapsuleYaw;
+        bool _hasCapsuleYaw;
+        Transform _yawPivot;
+        bool _yawPivotSet;
+        Vector3 _pivot0;
         Quaternion _yawBasis;
         bool _yawBasisSet;
         float _slewSp, _slewHp, _slewHd;
@@ -8302,6 +8315,22 @@ namespace Tag.Art
                     _solePitchL = strideLegs.FootL;
                     _solePitchR = strideLegs.FootR;
                 }
+                // A strafe or a backpedal shortens the swing. The planted foot keeps
+                // the full step so the sole stays with the ground. The slew is unchanged.
+                bool leftStance = Mathf.Cos(_cycle) <= 0f;
+                float flip = 1f;
+                if (strideLegs.ThighL * facingLegs.ThighL < 0f || strideLegs.ThighR * facingLegs.ThighR < 0f)
+                    flip = -1f;
+                if (leftStance)
+                {
+                    thighL = strideLegs.ThighL * flip;
+                    kneeL = strideLegs.KneeL;
+                }
+                if (!leftStance)
+                {
+                    thighR = strideLegs.ThighR * flip;
+                    kneeR = strideLegs.KneeR;
+                }
                 _ulLT = _ulL0 * Quaternion.Euler(thighL, 0f, 0f);
                 _ulRT = _ulR0 * Quaternion.Euler(thighR, 0f, 0f);
                 _llLT = _llL0 * Quaternion.Euler(kneeL, 0f, 0f);
@@ -15352,18 +15381,34 @@ namespace Tag.Art
             bool yawWall = wallRun || climb;
             EaseFacing(dt, yawWall, climb, sliding);
             AbsorbPop(dt);
-            transform.localPosition = _root0 + new Vector3(0f, bob, 0f) + WallJumpNudge() + _visualLag;
+            ApplyChestGap(climb || wallRun);
+            ApplyVisualRoot(bob, WallJumpNudge());
             bool secondaryYield = climb || wallRun || mantle || punching || lunging || dashing
                 || _aimTorsoW > 0.35f || _grappleFallHold || _grapplePose > 0.02f;
             ApplySecondaryMotion(dt, secondaryYield, secondaryYield || sliding);
             ApplyContactIk(grounded && !air && !sliding, wallRun || climb);
+            ApplyParkourContact(climb, wallRun, mantle);
             float squash = 1f - 0.14f * _landSquash;
             // Air-dash: strong stretch then brief squash; tag flinch compresses
             float dashStretch = airDashing ? 0.32f : 0.18f;
             float dashSquash = airDashing ? 0.16f : 0.1f;
             float stretchY = 1f + dashStretch * dashAmt - 0.16f * flinchAmt + 0.06f * claimAmt;
             float stretchXZ = 1f - dashSquash * dashAmt + 0.12f * flinchAmt;
-            transform.localScale = WallJumpPushScale(JumpLandScale(new Vector3(stretchXZ / squash, squash * stretchY, stretchXZ / squash)));
+            Vector3 bodyScale = WallJumpPushScale(JumpLandScale(new Vector3(stretchXZ / squash, squash * stretchY, stretchXZ / squash)));
+            float hide = _motor != null ? RespawnBlink.Hidden(_motor.VisualBlinkAge) : 0f;
+            float shown = 1f - hide;
+            if (shown < 0.02f) shown = 0.02f;
+            Vector3 blinkScale = new Vector3(bodyScale.x * shown, bodyScale.y * shown, bodyScale.z * shown);
+            Transform spun = YawPivot();
+            bool onCapsule = _motor != null && transform == _motor.transform;
+            if (spun != null && spun != transform)
+            {
+                if (onCapsule)
+                    transform.localScale = Vector3.one;
+                spun.localScale = blinkScale;
+            }
+            else if (!onCapsule)
+                transform.localScale = blinkScale;
             bool wallJumpSeed = false;
             if (_wallJumpHandoff)
             {
@@ -15546,6 +15591,12 @@ namespace Tag.Art
         {
             WallPose.Sample live = WallPose.Climb(phaseSin, vy);
             float slip = WallPose.SlipWeight(vy);
+            if (slip > 0.02f)
+            {
+                ClimbContact.Drag(_surfPhase, slip, out float dragL, out float dragR);
+                live.ArmPitchL += dragL;
+                live.ArmPitchR += dragR;
+            }
             if (slip > 0.35f)
             {
                 BodyLife.Scrabble(_surfPhase, slip, out float handL, out float handR, out float footL, out float footR);
@@ -15589,6 +15640,16 @@ namespace Tag.Art
         void ApplyWallSample(WallPose.Sample pose, float armZ)
         {
             pose = PresentedWall(pose);
+            float absLean = pose.LeanZ < 0f ? -pose.LeanZ : pose.LeanZ;
+            if (absLean > 19f && absLean < 21f)
+            {
+                float along = _motor != null ? _motor.HorizontalSpeed : WallPose.WallRunSpeedRef;
+                float sign = pose.LeanZ < 0f ? -1f : 1f;
+                float blend = ClimbContact.Grab(_surfIn);
+                if (_motor == null || _motor.State != MoveState.WallRun)
+                    blend *= 1f - ClimbContact.Grab(_wallDropIn);
+                pose.LeanZ = sign * ClimbContact.Tilt(along) * blend;
+            }
             ApplyWallLegs(pose);
             _uaLT = _uaL0 * Quaternion.Euler(pose.ArmPitchL, pose.ArmYawL, armZ);
             _uaRT = _uaR0 * Quaternion.Euler(pose.ArmPitchR, pose.ArmYawR, -armZ);
@@ -18868,7 +18929,25 @@ namespace Tag.Art
         /// </summary>
         void EaseFacing(float dt, bool wallRun, bool climb, bool sliding)
         {
-            if (_motor == null || transform == _motor.transform) return;
+            if (_motor == null) return;
+            Transform pivot = YawPivot();
+            // The capsule heading stays the camera yaw. A child visual eases a fast turn.
+            if (pivot == null || pivot == _motor.transform) return;
+            // The visual is parented to the capsule. A snapped heading would spin the
+            // mesh with it. Counter-rotate on that frame, then ease back to the facing.
+            float capsuleYaw = _motor.transform.eulerAngles.y;
+            if (!_hasCapsuleYaw)
+            {
+                _prevCapsuleYaw = capsuleYaw;
+                _hasCapsuleYaw = true;
+            }
+            else
+            {
+                _visualYaw -= Mathf.DeltaAngle(_prevCapsuleYaw, capsuleYaw);
+                _prevCapsuleYaw = capsuleYaw;
+                if (_visualYaw > 180f || _visualYaw < -180f)
+                    _visualYaw = Mathf.DeltaAngle(0f, _visualYaw);
+            }
             Vector3 fwd = _motor.transform.forward;
             Vector3 desired = fwd;
             Vector3 n = _motor.WallNormal;
@@ -18897,10 +18976,53 @@ namespace Tag.Art
             _visualYaw = SmoothMotion.Smooth(_visualYaw, target, ref _visualYawVel, SmoothMotion.YawSeconds, dt);
             if (!_yawBasisSet)
             {
-                _yawBasis = transform.localRotation;
+                _yawBasis = pivot.localRotation;
                 _yawBasisSet = true;
             }
-            transform.localRotation = _yawBasis * Quaternion.Euler(0f, _visualYaw, 0f);
+            pivot.localRotation = _yawBasis * Quaternion.Euler(0f, _visualYaw, 0f);
+        }
+
+        /// <summary>
+        /// Bob, lag, and the kill-box blink sit on the visual. A locomotor on the
+        /// capsule does not write the capsule position.
+        /// </summary>
+        void ApplyVisualRoot(float bob, Vector3 nudge)
+        {
+            Transform pivot = YawPivot();
+            Vector3 offset = new Vector3(0f, bob, 0f) + nudge + _visualLag + _chestLocal;
+            if (pivot != null && pivot != transform)
+            {
+                pivot.localPosition = _pivot0 + offset;
+                return;
+            }
+            if (_motor != null && transform == _motor.transform) return;
+            transform.localPosition = _root0 + offset;
+        }
+
+        Transform YawPivot()
+        {
+            if (_yawPivotSet) return _yawPivot;
+            _yawPivotSet = true;
+            _yawPivot = transform;
+            _pivot0 = _root0;
+            if (_motor == null || transform != _motor.transform) return _yawPivot;
+            int n = transform.childCount;
+            for (int i = 0; i < n; i++)
+            {
+                Transform c = transform.GetChild(i);
+                if (c != null && c.name.StartsWith("DummyVisual"))
+                {
+                    _yawPivot = c;
+                    _pivot0 = c.localPosition;
+                    return _yawPivot;
+                }
+            }
+            if (_hips != null && _hips.parent != null && _hips.parent != transform && _hips.parent != _motor.transform)
+            {
+                _yawPivot = _hips.parent;
+                _pivot0 = _yawPivot.localPosition;
+            }
+            return _yawPivot;
         }
 
         /// <summary>
@@ -19256,6 +19378,240 @@ namespace Tag.Art
         }
 
         /// <summary>
+        /// Pulls the chest to one distance from the wall. The capsule stays put.
+        /// </summary>
+        void ApplyChestGap(bool onWall)
+        {
+            _chestLocal = Vector3.zero;
+            if (!onWall || _motor == null) return;
+            Vector3 n = _motor.WallNormal;
+            if (n.sqrMagnitude < 0.0001f) return;
+            n.Normalize();
+            Vector3 origin = _spine != null ? _spine.position : _motor.transform.position + Vector3.up * 1.2f;
+            origin += n * 0.05f;
+            RaycastHit hit;
+            if (!Physics.Raycast(origin, -n, out hit, 1.4f) || OwnBody(hit.transform)) return;
+            float gap = hit.distance - 0.05f;
+            float err = gap - ClimbContact.ChestGap;
+            if (err > 0.12f) err = 0.12f;
+            if (err < -0.12f) err = -0.12f;
+            _chestPush = SmoothMotion.Smooth(_chestPush, err, ref _chestPushVel, SmoothMotion.PositionSeconds, Time.deltaTime);
+            Vector3 localN = _motor.transform.InverseTransformDirection(n);
+            _chestLocal = -localN * _chestPush;
+        }
+
+        /// <summary>
+        /// Hands and feet meet the wall, the lip, or the rail. The plant stays
+        /// where it landed. A grab eases onto that point. The capsule is not moved.
+        /// </summary>
+        void ApplyParkourContact(bool climb, bool wallRun, bool mantle)
+        {
+            if (_motor == null) return;
+            EnsureHandBind();
+            Vector3 n = _motor.WallNormal;
+            bool hasWall = n.sqrMagnitude > 0.0001f;
+            if (hasWall) n.Normalize();
+            float grab = ClimbContact.Grab(_surfIn);
+            float phase = Mathf.Sin(_surfPhase);
+            bool leftReaches = phase >= 0f;
+            float vy = _motor.Velocity.y;
+            bool slipping = climb && WallPose.SlipWeight(vy) > 0.35f;
+            if (climb && hasWall)
+            {
+                float handW = slipping ? 1f : grab;
+                if (_handPosBound)
+                {
+                    PlaceOnSurface(_handL, _handLPos0, !leftReaches && !slipping, n, handW, ref _pinHandL, ref _anchorHandL);
+                    PlaceOnSurface(_handR, _handRPos0, leftReaches && !slipping, n, handW, ref _pinHandR, ref _anchorHandR);
+                }
+                if (_footPosBound && !slipping)
+                {
+                    if (leftReaches)
+                    {
+                        _pinFootR = false;
+                        if (_footR != null) _footR.localPosition = _footRPos0;
+                        PlaceOnSurface(_footL, _footLPos0, true, n, grab, ref _pinFootL, ref _anchorFootL);
+                    }
+                    else
+                    {
+                        _pinFootL = false;
+                        if (_footL != null) _footL.localPosition = _footLPos0;
+                        PlaceOnSurface(_footR, _footRPos0, true, n, grab, ref _pinFootR, ref _anchorFootR);
+                    }
+                }
+                else if (slipping && _footPosBound)
+                {
+                    _pinFootL = false;
+                    _pinFootR = false;
+                    if (_footL != null) _footL.localPosition = _footLPos0;
+                    if (_footR != null) _footR.localPosition = _footRPos0;
+                }
+                return;
+            }
+            if (wallRun && hasWall)
+            {
+                bool innerLeft = _motor.WallLeft;
+                if (innerLeft)
+                {
+                    _pinFootR = false;
+                    _pinHandR = false;
+                    if (_footPosBound)
+                        PlaceOnSurface(_footL, _footLPos0, true, n, grab, ref _pinFootL, ref _anchorFootL);
+                    if (_handPosBound)
+                        PlaceOnSurface(_handL, _handLPos0, true, n, grab, ref _pinHandL, ref _anchorHandL);
+                }
+                else
+                {
+                    _pinFootL = false;
+                    _pinHandL = false;
+                    if (_footPosBound)
+                        PlaceOnSurface(_footR, _footRPos0, true, n, grab, ref _pinFootR, ref _anchorFootR);
+                    if (_handPosBound)
+                        PlaceOnSurface(_handR, _handRPos0, true, n, grab, ref _pinHandR, ref _anchorHandR);
+                }
+                return;
+            }
+            if (mantle)
+            {
+                _pinFootL = false;
+                _pinFootR = false;
+                PlaceOnLip();
+                return;
+            }
+            ReleaseParkour();
+        }
+
+        void EnsureHandBind()
+        {
+            if (_handPosBound) return;
+            if (_handL == null && _handR == null) return;
+            if (_handL != null) _handLPos0 = _handL.localPosition;
+            if (_handR != null) _handRPos0 = _handR.localPosition;
+            _handPosBound = true;
+        }
+
+        void ReleaseParkour()
+        {
+            _pinHandL = false;
+            _pinHandR = false;
+            if (_handPosBound)
+            {
+                if (_handL != null) _handL.localPosition = _handLPos0;
+                if (_handR != null) _handR.localPosition = _handRPos0;
+            }
+            if (_pinFootL || _pinFootR)
+            {
+                _pinFootL = false;
+                _pinFootR = false;
+                if (_footPosBound)
+                {
+                    if (_footL != null) _footL.localPosition = _footLPos0;
+                    if (_footR != null) _footR.localPosition = _footRPos0;
+                }
+            }
+        }
+
+        void PlaceOnSurface(Transform bone, Vector3 bind, bool plant, Vector3 normal, float weight, ref bool pin, ref Vector3 anchor)
+        {
+            if (bone == null) return;
+            bone.localPosition = bind;
+            if (weight < 0.02f) 
+            {
+                pin = false;
+                return;
+            }
+            Vector3 posed = bone.position;
+            Vector3 origin = posed + normal * 0.08f;
+            RaycastHit hit;
+            if (!Physics.Raycast(origin, -normal, out hit, 1.05f) || OwnBody(hit.transform))
+            {
+                pin = false;
+                return;
+            }
+            Vector3 surface = hit.point + normal * 0.02f;
+            Vector3 target;
+            if (!plant)
+            {
+                pin = false;
+                Vector3 depth = surface - posed;
+                float along = Vector3.Dot(depth, normal);
+                target = posed + normal * along;
+            }
+            else
+            {
+                if (!pin)
+                {
+                    anchor = surface;
+                    pin = true;
+                }
+                else
+                {
+                    float depthDelta = Vector3.Dot(surface - anchor, normal);
+                    anchor += normal * depthDelta;
+                }
+                target = anchor;
+            }
+            Vector3 delta = target - posed;
+            float mag = delta.magnitude;
+            float cap = ClimbContact.Palm(mag);
+            if (mag > 0.0001f) delta *= cap / mag;
+            bone.position = posed + delta * weight;
+        }
+
+        void PlaceOnLip()
+        {
+            float u = _motor.MantleProgress;
+            float arrive = u < MantlePose.PlantEnd ? ClimbContact.Grab(u / MantlePose.PlantEnd) : 1f;
+            float hold = 1f;
+            if (u > MantlePose.KneeEnd)
+            {
+                float span = 1f - MantlePose.KneeEnd;
+                float t = span > 0.0001f ? (u - MantlePose.KneeEnd) / span : 1f;
+                hold = 1f - WallPose.Ease(t);
+            }
+            float weight = arrive * hold;
+            Vector3 n = _motor.WallNormal;
+            if (n.sqrMagnitude < 0.0001f) n = _motor.transform.forward;
+            else n.Normalize();
+            MoveHandToLip(_handL, _handLPos0, n, weight);
+            MoveHandToLip(_handR, _handRPos0, n, weight);
+        }
+
+        void MoveHandToLip(Transform hand, Vector3 bind, Vector3 normal, float weight)
+        {
+            if (hand == null) return;
+            hand.localPosition = bind;
+            if (weight < 0.02f) return;
+            Vector3 posed = hand.position;
+            Vector3 lip;
+            if (!TryLip(posed, normal, out lip)) return;
+            Vector3 delta = lip - posed;
+            float mag = delta.magnitude;
+            float cap = ClimbContact.Palm(mag);
+            if (mag > 0.0001f) delta *= cap / mag;
+            hand.position = posed + delta * weight;
+        }
+
+        bool TryLip(Vector3 hand, Vector3 normal, out Vector3 lip)
+        {
+            lip = hand;
+            Vector3 origin = hand + Vector3.up * 0.55f - normal * 0.12f;
+            RaycastHit hit;
+            if (Physics.Raycast(origin, Vector3.down, out hit, 1.15f) && !OwnBody(hit.transform))
+            {
+                lip = hit.point + Vector3.up * 0.02f;
+                return true;
+            }
+            if (_motor.LedgeHit)
+            {
+                lip = _motor.LedgeStand - normal * 0.08f;
+                lip.y = _motor.LedgeStand.y;
+                return true;
+            }
+            return false;
+        }
+
+        /// <summary>
         /// Stance feet sit on stairs and slopes. Hands meet the wall on a climb or a wall run.
         /// Raycasts pose the bones. The capsule is not moved.
         /// </summary>
@@ -19335,6 +19691,8 @@ namespace Tag.Art
             _upperLegR = FindBone(root, "UpperLeg_R", "UpperLeg.R", "RightUpLeg", "RightUpperLeg", "mixamorig:RightUpLeg", "Thigh_R", "upperleg_r", "Upper_Leg_R");
             _lowerLegL = FindBone(root, "LowerLeg_L", "LowerLeg.L", "LeftLeg", "LeftLowerLeg", "mixamorig:LeftLeg", "Calf_L", "lowerleg_l", "Lower_Leg_L");
             _lowerLegR = FindBone(root, "LowerLeg_R", "LowerLeg.R", "RightLeg", "RightLowerLeg", "mixamorig:RightLeg", "Calf_R", "lowerleg_r", "Lower_Leg_R");
+            _handL = FindBone(root, "Hand_L", "Hand.L", "LeftHand", "mixamorig:LeftHand", "hand_l");
+            _handR = FindBone(root, "Hand_R", "Hand.R", "RightHand", "mixamorig:RightHand", "hand_r");
             _footL = FindBone(root, "Foot_L", "Foot.L", "LeftFoot", "mixamorig:LeftFoot", "foot_l");
             _footR = FindBone(root, "Foot_R", "Foot.R", "RightFoot", "mixamorig:RightFoot", "foot_r");
             _bound = _upperArmL != null || _upperLegL != null || _spine != null;
