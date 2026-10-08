@@ -10547,6 +10547,7 @@ namespace Tag.Art
                 _grapplePullW = w;
                 GrapplePose.Sample hung = GrapplePose.Latched(sinC, vyG, lean, _grapple.LatchAge);
                 BlendGrappleSample(hung, armZ, w, true, true);
+                ApplyRopeHang(w);
                 _grappleSlew = GrapplePose.ActiveSlew(latching, false, false, false);
             }
             else if (_grapplePose > 0.04f && poseGate)
@@ -15258,7 +15259,10 @@ namespace Tag.Art
                 if (caught < 0.999f)
                     hang = BlendZip(ZipPose.JumpDrop(), hang, caught);
                 float ride = _motor != null ? _motor.HorizontalSpeed : 0f;
-                hang.LeanZ = ZipPose.Sway(Time.time, ride);
+                hang.LeanZ = ZipPose.Sway(Time.time, ride) + HangMotion.SwayExtra(Time.time, ride);
+                float trail = HangMotion.LegTrail(ride);
+                hang.ThighL += trail;
+                hang.ThighR += trail;
                 float rideU = ZipPose.RideSpeed > 0.001f ? ride / ZipPose.RideSpeed : 0f;
                 if (rideU < 0f) rideU = 0f;
                 if (rideU > 1f) rideU = 1f;
@@ -15675,9 +15679,28 @@ namespace Tag.Art
         }
 
         /// <summary>
+        /// Chest pitches along the rope. Legs trail with planar speed.
+        /// The pull sample underneath is unchanged. No root motion.
+        /// </summary>
+        void ApplyRopeHang(float weight)
+        {
+            if (weight <= 0.02f || _grapple == null) return;
+            if (!_grapple.TryGetRope(out Vector3 anchor, out _, out _)) return;
+            Transform basis = _motor != null ? _motor.transform : transform;
+            Vector3 local = basis.InverseTransformDirection(anchor - basis.position);
+            float elev = GrapplePose.ElevDegrees(local.y, local.x, local.z);
+            float pitch = HangMotion.RopeSpine(elev);
+            float trail = HangMotion.RopeLeg(_motor != null ? _motor.HorizontalSpeed : 0f);
+            _spineT = Quaternion.Slerp(_spineT, _spineT * Quaternion.Euler(pitch, 0f, 0f), weight);
+            _ulLT = Quaternion.Slerp(_ulLT, _ulLT * Quaternion.Euler(trail, 0f, 0f), weight);
+            _ulRT = Quaternion.Slerp(_ulRT, _ulRT * Quaternion.Euler(trail, 0f, 0f), weight);
+        }
+
+        /// <summary>
         /// Procedural grapple. Weight below 1 leaves the pose already written.
         /// Legs stay on the gait during aim and the miss beat.
         /// yieldYaw lets AimTorso own the turn. A miss keeps its own twist.
+        /// Aim spine yaw goes through UpperBody.AimTwist.
         /// </summary>
         void BlendGrappleSample(GrapplePose.Sample pose, float armZ, float weight, bool legs, bool yieldYaw)
         {
@@ -15690,7 +15713,10 @@ namespace Tag.Art
             // Chest, head, and hip yaw yield to AimTorso so the turns do not stack.
             // A miss keeps the recoil twist. Pose pitch stays on this sample.
             float yawKeep = yieldYaw ? AimTorsoKeep() : 1f;
-            Quaternion spine = _spine0 * Quaternion.Euler(pose.Spine, pose.SpineYaw * yawKeep, 0f);
+            float spineYaw = pose.SpineYaw * yawKeep;
+            if (!legs)
+                spineYaw = UpperBody.AimTwist(spineYaw);
+            Quaternion spine = _spine0 * Quaternion.Euler(pose.Spine, spineYaw, 0f);
             Quaternion hips = _hips0 * Quaternion.Euler(pose.Hip, pose.HipYaw * yawKeep, 0f);
             Quaternion head = _head0 * Quaternion.Euler(pose.Head, pose.HeadYaw * yawKeep, 0f);
             if (weight >= 0.999f)
@@ -16151,7 +16177,7 @@ namespace Tag.Art
                 if (w > 0.001f)
                 {
                     _lungePoseOn = true;
-                    BlendLungeSample(LungePose.Telegraph(), w);
+                    BlendLungeSample(LungePose.Telegraph(), w, false);
                 }
                 return;
             }
@@ -16165,7 +16191,7 @@ namespace Tag.Art
             if (recover > 0.001f)
             {
                 _lungePoseOn = true;
-                BlendLungeSample(_lungeEaseBurst ? LungePose.Burst() : LungePose.Telegraph(), recover);
+                BlendLungeSample(_lungeEaseBurst ? LungePose.Burst() : LungePose.Telegraph(), recover, _lungeEaseBurst);
             }
             _lungeEaseAge += dt;
             if (_lungeEaseAge >= LungePose.RecoverSeconds || recover <= 0.001f)
@@ -16314,12 +16340,7 @@ namespace Tag.Art
             Quaternion tellUaR = _uaR0 * Quaternion.Euler(tell.ArmPitchR, tell.ArmYawR, tell.ArmRollR);
             Quaternion tellLaL = _laL0 * Quaternion.Euler(tell.ElbowL, 0f, 0f);
             Quaternion tellLaR = _laR0 * Quaternion.Euler(tell.ElbowR, 0f, 0f);
-            Quaternion tellUlL = _ulL0 * Quaternion.Euler(tell.ThighL, 0f, 0f);
-            Quaternion tellUlR = _ulR0 * Quaternion.Euler(tell.ThighR, 0f, 0f);
-            Quaternion tellLlL = _llL0 * Quaternion.Euler(tell.KneeL, 0f, 0f);
-            Quaternion tellLlR = _llR0 * Quaternion.Euler(tell.KneeR, 0f, 0f);
-            Quaternion tellSp = _spine0 * Quaternion.Euler(tell.Spine, tell.SpineYaw, 0f);
-            Quaternion tellHp = _hips0 * Quaternion.Euler(tell.Hip, tell.HipYaw, 0f);
+            Quaternion tellSp = _spine0 * Quaternion.Euler(tell.Spine, UpperBody.AimTwist(tell.SpineYaw), 0f);
             Quaternion tellHd = _head0 * Quaternion.Euler(tell.Head, tell.HeadYaw, 0f);
             Quaternion burstUaL = _uaL0 * Quaternion.Euler(burst.ArmPitchL, burst.ArmYawL, burst.ArmRollL);
             Quaternion burstUaR = _uaR0 * Quaternion.Euler(burst.ArmPitchR, burst.ArmYawR, burst.ArmRollR);
@@ -16336,27 +16357,24 @@ namespace Tag.Art
             _uaRT = Blend3(_uaRT, tellUaR, burstUaR, gaitW, tellW, burstW);
             _laLT = Blend3(_laLT, tellLaL, burstLaL, gaitW, tellW, burstW);
             _laRT = Blend3(_laRT, tellLaR, burstLaR, gaitW, tellW, burstW);
-            _ulLT = Blend3(_ulLT, tellUlL, burstUlL, gaitW, tellW, burstW);
-            _ulRT = Blend3(_ulRT, tellUlR, burstUlR, gaitW, tellW, burstW);
-            _llLT = Blend3(_llLT, tellLlL, burstLlL, gaitW, tellW, burstW);
-            _llRT = Blend3(_llRT, tellLlR, burstLlR, gaitW, tellW, burstW);
+            _ulLT = Blend3(_ulLT, _ulLT, burstUlL, gaitW, tellW, burstW);
+            _ulRT = Blend3(_ulRT, _ulRT, burstUlR, gaitW, tellW, burstW);
+            _llLT = Blend3(_llLT, _llLT, burstLlL, gaitW, tellW, burstW);
+            _llRT = Blend3(_llRT, _llRT, burstLlR, gaitW, tellW, burstW);
             _spineT = Blend3(_spineT, tellSp, burstSp, gaitW, tellW, burstW);
-            _hipsT = Blend3(_hipsT, tellHp, burstHp, gaitW, tellW, burstW);
+            _hipsT = Blend3(_hipsT, _hipsT, burstHp, gaitW, tellW, burstW);
             _headT = Blend3(_headT, tellHd, burstHd, gaitW, tellW, burstW);
         }
 
-        void BlendLungeSample(LungePose.Sample pose, float weight)
+        void BlendLungeSample(LungePose.Sample pose, float weight, bool legs)
         {
             if (weight <= 0.001f) return;
             Quaternion uaL = _uaL0 * Quaternion.Euler(pose.ArmPitchL, pose.ArmYawL, pose.ArmRollL);
             Quaternion uaR = _uaR0 * Quaternion.Euler(pose.ArmPitchR, pose.ArmYawR, pose.ArmRollR);
             Quaternion laL = _laL0 * Quaternion.Euler(pose.ElbowL, 0f, 0f);
             Quaternion laR = _laR0 * Quaternion.Euler(pose.ElbowR, 0f, 0f);
-            Quaternion ulL = _ulL0 * Quaternion.Euler(pose.ThighL, 0f, 0f);
-            Quaternion ulR = _ulR0 * Quaternion.Euler(pose.ThighR, 0f, 0f);
-            Quaternion llL = _llL0 * Quaternion.Euler(pose.KneeL, 0f, 0f);
-            Quaternion llR = _llR0 * Quaternion.Euler(pose.KneeR, 0f, 0f);
-            Quaternion spine = _spine0 * Quaternion.Euler(pose.Spine, pose.SpineYaw, 0f);
+            float spineYaw = legs ? pose.SpineYaw : UpperBody.AimTwist(pose.SpineYaw);
+            Quaternion spine = _spine0 * Quaternion.Euler(pose.Spine, spineYaw, 0f);
             Quaternion hips = _hips0 * Quaternion.Euler(pose.Hip, pose.HipYaw, 0f);
             Quaternion head = _head0 * Quaternion.Euler(pose.Head, pose.HeadYaw, 0f);
             if (weight >= 0.999f)
@@ -16365,13 +16383,16 @@ namespace Tag.Art
                 _uaRT = uaR;
                 _laLT = laL;
                 _laRT = laR;
-                _ulLT = ulL;
-                _ulRT = ulR;
-                _llLT = llL;
-                _llRT = llR;
                 _spineT = spine;
-                _hipsT = hips;
                 _headT = head;
+                if (legs)
+                {
+                    _ulLT = _ulL0 * Quaternion.Euler(pose.ThighL, 0f, 0f);
+                    _ulRT = _ulR0 * Quaternion.Euler(pose.ThighR, 0f, 0f);
+                    _llLT = _llL0 * Quaternion.Euler(pose.KneeL, 0f, 0f);
+                    _llRT = _llR0 * Quaternion.Euler(pose.KneeR, 0f, 0f);
+                    _hipsT = hips;
+                }
                 return;
             }
 
@@ -16379,13 +16400,14 @@ namespace Tag.Art
             _uaRT = Quaternion.Slerp(_uaRT, uaR, weight);
             _laLT = Quaternion.Slerp(_laLT, laL, weight);
             _laRT = Quaternion.Slerp(_laRT, laR, weight);
-            _ulLT = Quaternion.Slerp(_ulLT, ulL, weight);
-            _ulRT = Quaternion.Slerp(_ulRT, ulR, weight);
-            _llLT = Quaternion.Slerp(_llLT, llL, weight);
-            _llRT = Quaternion.Slerp(_llRT, llR, weight);
             _spineT = Quaternion.Slerp(_spineT, spine, weight);
-            _hipsT = Quaternion.Slerp(_hipsT, hips, weight);
             _headT = Quaternion.Slerp(_headT, head, weight);
+            if (!legs) return;
+            _ulLT = Quaternion.Slerp(_ulLT, _ulL0 * Quaternion.Euler(pose.ThighL, 0f, 0f), weight);
+            _ulRT = Quaternion.Slerp(_ulRT, _ulR0 * Quaternion.Euler(pose.ThighR, 0f, 0f), weight);
+            _llLT = Quaternion.Slerp(_llLT, _llL0 * Quaternion.Euler(pose.KneeL, 0f, 0f), weight);
+            _llRT = Quaternion.Slerp(_llRT, _llR0 * Quaternion.Euler(pose.KneeR, 0f, 0f), weight);
+            _hipsT = Quaternion.Slerp(_hipsT, hips, weight);
         }
 
         OpponentLungeTell LungeTellMark()
@@ -16519,8 +16541,9 @@ namespace Tag.Art
             _ulRT = _ulR0 * Quaternion.Euler(pose.ThighR, 0f, 0f);
             _llLT = _llL0 * Quaternion.Euler(pose.KneeL, 0f, 0f);
             _llRT = _llR0 * Quaternion.Euler(pose.KneeR, 0f, 0f);
-            _uaLT = _uaL0 * Quaternion.Euler(pose.ArmPitchL, pose.ArmYawL, 0f);
-            _uaRT = _uaR0 * Quaternion.Euler(pose.ArmPitchR, -pose.ArmYawR, 0f);
+            float mill = HangMotion.Windmill(Time.time, vy);
+            _uaLT = _uaL0 * Quaternion.Euler(pose.ArmPitchL + mill, pose.ArmYawL, 0f);
+            _uaRT = _uaR0 * Quaternion.Euler(pose.ArmPitchR - mill, -pose.ArmYawR, 0f);
             _laLT = _laL0 * Quaternion.Euler(pose.ElbowL, 0f, 0f);
             _laRT = _laR0 * Quaternion.Euler(pose.ElbowR, 0f, 0f);
             _spineT = _spine0 * Quaternion.Euler(pose.Spine, 0f, 0f);
@@ -19036,7 +19059,12 @@ namespace Tag.Art
                     VerbPoseClips.Pose pose = recover
                         ? VerbPoseClips.PunchRecoverPose(bind, punchProg)
                         : VerbPoseClips.PunchStrikePose(bind, punch.Sample);
-                    BlendVerb(pose, clipW);
+                    bool keepLegs = UpperBody.KeepLegs(
+                        sliding,
+                        _motor != null && !_motor.IsGrounded,
+                        _motor != null && _motor.IsWallRunning,
+                        _motor != null ? _motor.HorizontalSpeed : 0f);
+                    BlendVerb(pose, clipW, keepLegs);
                     VerbClip = VerbPoseClips.PunchStrike;
                     VerbState = punch.State;
                     return;
@@ -19107,20 +19135,21 @@ namespace Tag.Art
             }
         }
 
-        void BlendVerb(VerbPoseClips.Pose pose, float w)
+        void BlendVerb(VerbPoseClips.Pose pose, float w, bool keepLegs = false)
         {
             if (w <= 0.001f) return;
             _uaLT = Quaternion.Slerp(_uaLT, pose.UaL, w);
             _uaRT = Quaternion.Slerp(_uaRT, pose.UaR, w);
             _laLT = Quaternion.Slerp(_laLT, pose.LaL, w);
             _laRT = Quaternion.Slerp(_laRT, pose.LaR, w);
+            _spineT = Quaternion.Slerp(_spineT, pose.Spine, w);
+            _headT = Quaternion.Slerp(_headT, pose.Head, w);
+            if (keepLegs) return;
             _ulLT = Quaternion.Slerp(_ulLT, pose.UlL, w);
             _ulRT = Quaternion.Slerp(_ulRT, pose.UlR, w);
             _llLT = Quaternion.Slerp(_llLT, pose.LlL, w);
             _llRT = Quaternion.Slerp(_llRT, pose.LlR, w);
-            _spineT = Quaternion.Slerp(_spineT, pose.Spine, w);
             _hipsT = Quaternion.Slerp(_hipsT, pose.Hips, w);
-            _headT = Quaternion.Slerp(_headT, pose.Head, w);
         }
 
         void SlidePunchPose(PunchPhase phase, float punchProg, float armZ, out Quaternion uaL, out Quaternion uaR, out Quaternion laL, out Quaternion laR, out Quaternion hips, out Quaternion spine, out Quaternion head)

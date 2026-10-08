@@ -187,6 +187,15 @@ The body fills in the poses that were still a single shape, and the hard cuts be
 - Slipping on a wall scrabbles. A wall run plants the feet as it catches, and climb and wall run blend into each other. Try it: cling, let yourself slip, then wall-run into a climb.
 - The numbers are in `Docs/SmoothMotionAudit.md`. Stick figures are in `Docs/SmoothStills/pass4/idle-wall-flinch.png`.
 
+## Motion gallery, fifth pass
+
+You can watch every move in one scene, and a punch no longer freezes the legs.
+
+- Tag → Motion Gallery opens a row of dummies. Each one loops one move on the real body: run, climb, wall run, vault, mantle, slide, dash, punch, zip, pad, grapple, stagger, and idle It next to a runner. The camera orbits. F flies. T slows time in that scene only. A normal game still starts in the park, and slow motion in a match stays off. Try it: Tag → Motion Gallery, press Play, then press T.
+- Punching, winding up a lunge, or aiming the rope moves the arms and turns the chest. Running, sliding, jumping, and wall-running keep their legs. Try it: sprint and punch, then punch in the air.
+- Hanging on a zip sways and trails the legs harder as the ride hits 14. A grapple pull leans the chest along the rope and lets the legs trail. A launch pad windmills the arms on the way up and settles them on the way down. Try it: take a zip, pull the rope, then hit a pad.
+- The hard cuts between moves are the same as the fourth pass. A press is still the same frame. Stick figures are in `Docs/SmoothStills/pass5/layer-hang.png`.
+
 ## Animation exits and the landing roll
 
 Each move now has a short recovery you can see as it ends. The body eases back into the run, the idle, or the air pose. Jump, slide, punch, dash, or lunge peels that recovery off in about six hundredths of a second, and the new move shows the same frame. Nothing here changes speed, coyote, cling, or the slide.
