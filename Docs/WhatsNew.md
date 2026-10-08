@@ -270,3 +270,7 @@ A long fall keeps the chest up and a little forward. The knees bend under the hi
 ## Motion, fifteenth pass
 
 The fall is the same. A vault now plants the hands on a waist-high box and crosses it. A climb puts the hands on the top of a wall and the feet on the face. A slide stays low under a bar. A zip, a grapple, and a launch pad meet the hands or sit under the body. Try it: vault a box, climb a wall, slide under a bar, then take a zip, a grapple, and a pad.
+
+## Motion, sixteenth pass
+
+The vault hands sit on the box, the climb holds the lip with the chest and one foot on the wall, and the slide stays reclined under the bar with the lead leg straight. The fall is the same. Try it: vault a box, climb a wall, and slide under a bar.

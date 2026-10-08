@@ -372,3 +372,27 @@ Same stage and the same fall camera. Climb, vault, and slide are turned so that 
 Stills: `Docs/SmoothStills/pass15/stride.png`, `stop.png`, `turn.png`, `apex.png`, `fall.png`, `climb.png`, `vault.png`, `slide.png`, `zip.png`, `grapple.png`, `pad.png`.
 
 `loco-feel`, `body-line`, `climb-contact`, `response-latency`, and `stick-quality` are unchanged. Enemy, pocket, and stack AI lines are unchanged. Hot-path allocs stay 0. Frame budget stays steady=ok. `transition-matrix` stays `over=0`.
+
+## Pass 16
+
+The pass 15 contact table was not measuring the surfaces in the pictures. This mannequin is not skinned. There are no vertex groups and no armature modifier. Each piece is a rigid mesh parented to a bone, and the hand, foot, and head meshes sit on the bone head. Pass 15 snapped props to bone tails. It also scaled every cube by half, so a box whose top was meant to be 0.97 m rendered with its top at 0.73 m.
+
+On that old vault the hand meshes were at 0.92 m, 18.7 cm above the box the picture actually drew. The bone table compared them with 0.97 m and called the gap a few millimeters. The foot mesh is 31.5 cm from the foot-bone tail, so planting the tail on a wall leaves the shoe in the air. The head mesh extends 14.1 cm past the head bone, so a bar placed 7 cm above that bone cut 10.6 cm into the skull.
+
+The poses are rebuilt on the evaluated mesh, and each prop is fit to those vertices. An upright orthographic camera sits perpendicular to the motion. A 10 cm vertical pair measures 10.0 cm in that view. Red dots mark the hand, foot, and head vertices the gap is taken from. The pixel distance and the mesh distance match.
+
+Vault hands are 0.0 px / 0.0 cm on the box top. The hips are over the box and 32.6 px / 8.3 cm above it, and the feet are tucked 18 cm and 23 cm above the top. Climb hands are 0.0 px / 0.0 cm on the lip, the chest is 0.0 px / 0.0 cm on the face, and the lead foot is 2.1 px / 0.6 cm on the face. Slide head is 34.7 px / 7.0 cm under the bar. The lead foot is 6.0 px / 1.2 cm off the ground and the trail foot is 6.2 px / 1.3 cm, the hip joint is 32.3 cm up, and the lead knee is 2.5°. Zip hands are 0.0 px / 0.0 cm on the cable. The grapple hand is 1.2 px / 0.5 cm on the rope. The pad feet are 101.2 px / 38.3 cm and 95.8 px / 36.2 cm above the plate.
+
+The fall still and its camera stay. Fall fill is 63.7%, y 130–588. The fall bones stay torso 2.0° forward, knee flex 29.9°, thigh 16.6° off straight down, feet 2.9 cm ahead, knees 14.4 cm ahead, arm abduction 41.5° both sides, elbow 43.1°.
+
+`air-feel takeoff=24.8>12.5 tuck=3.7>1.6 fall=58.0>20.0 hop=22.1>4.9 strafe=18.0>1.8 coyote=24.8>10.9 clear=10.3cm gameplayDelay=0 rootMotion=0`
+
+`handoff run=7.6>3.2 roll=8.5>2.1 wall=81.0>8.8 cling=42.0>15.4 rollAt=36.5 gameplayDelay=0 rootMotion=0`
+
+`handoff2 climb=21.9>12.5 vault=20.2>13.6 vaultOut=14.0>8.4 slideIn=30.3>12.6 slideOut=30.3>12.6 zipGrab=33.1>11.9 zipDrop=53.2>7.9 grappleIn=72.0>10.4 grappleOut=25.0>11.3 padUp=30.6>11.9 padAir=14.2>10.8 gameplayDelay=0 rootMotion=0`
+
+Same stage and the same fall camera for the 3/4 stills. The ortho copies are the side views with the red dots.
+
+Stills: `Docs/SmoothStills/pass16/stride.png`, `stop.png`, `turn.png`, `apex.png`, `fall.png`, `climb.png`, `vault.png`, `slide.png`, `zip.png`, `grapple.png`, `pad.png`, and the ortho copies `climb-ortho.png`, `vault-ortho.png`, `slide-ortho.png`, `zip-ortho.png`, `grapple-ortho.png`, `pad-ortho.png`.
+
+`loco-feel`, `body-line`, `climb-contact`, `response-latency`, and `stick-quality` are unchanged. Enemy, pocket, and stack AI lines are unchanged. Hot-path allocs stay 0. Frame budget stays steady=ok. `transition-matrix` stays `over=0`.
