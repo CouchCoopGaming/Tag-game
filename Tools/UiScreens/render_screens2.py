@@ -12,7 +12,7 @@ import os
 from PIL import Image, ImageDraw, ImageFont, ImageFilter, ImageEnhance
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
-OUT = os.path.join(ROOT, "Docs", "UiStills", "screens2", "pass5")
+OUT = os.path.join(ROOT, "Docs", "UiStills", "screens2", "pass6")
 FIG = os.path.join(OUT, "figures")
 W, H = 1920, 1080
 
@@ -111,7 +111,7 @@ def button(base, box, title, sub, hot, bar=None, right=24):
     d = ImageDraw.Draw(base)
     fill = HOT if hot else PANEL
     rounded(d, box, 22, fill, GOLD if hot else STROKE, 6 if hot else 3)
-    d.rectangle((x0 + 16, y0 + 10, x1 - 16, y0 + 18), fill=GOLD if hot else (255, 255, 255, 70))
+    d.rectangle((x0 + 16, y0 + 8, x1 - 16, y0 + 16), fill=GOLD if hot else (255, 255, 255, 70))
     if bar is not None:
         d.rounded_rectangle((x0 + 14, y0 + 28, x0 + 26, y1 - 14), 4, fill=bar if not hot else INK)
     title_c = INK if hot else CREAM
@@ -121,20 +121,20 @@ def button(base, box, title, sub, hot, bar=None, right=24):
     if tw < 80:
         tw = 80
     box_h = y1 - y0
-    sub_size = 22 if box_h < 108 else 24
-    title_top = 12 if box_h < 108 else 18
-    title_max = 32 if sub and box_h < 112 else 40
-    tf = fit_text(d, title, FONT_D, tw, title_max, 22, title_c)
-    d.text((x0 + left, y0 + title_top), title, font=tf, fill=title_c)
+    # The stripe owns the top 16 px. The title sits under it at full size.
+    title_size = 40 if box_h >= 108 else 32
+    sub_size = 24 if box_h >= 108 else 20
+    title_y = y0 + 24 if box_h >= 108 else y0 + 20
+    tf = fit_text(d, title, FONT_D, tw, title_size, 26, title_c)
+    d.text((x0 + left, title_y), title, font=tf, fill=title_c)
     if sub:
         sf = font(FONT_B, sub_size)
-        yy = y0 + title_top + int(tf.size * 0.78) + 4
+        yy = title_y + title_size + 8
         lines = wrap(d, sub, sf, tw)
-        for line in lines[:2]:
-            if yy + sub_size > y1 - 6:
+        for line in lines[:1]:
+            if yy + sub_size > y1 - 8:
                 break
             d.text((x0 + left, yy), line, font=sf, fill=sub_c)
-            yy += sub_size + 2
     return contrast(title_c, fill)
 
 
@@ -390,8 +390,19 @@ def figure(seat):
                 maxy = y
     if maxx <= minx or maxy <= miny:
         return im
-    pad = 8
-    return im.crop((max(0, minx - pad), max(0, miny - pad), min(w, maxx + pad), min(h, maxy + pad)))
+    pad = 4
+    return im.crop((max(0, minx - pad), max(0, miny - pad), min(w, maxx + pad + 1), min(h, maxy + 1)))
+
+
+def foot_row(im):
+    px = im.load()
+    w, h = im.size
+    for y in range(h - 1, -1, -1):
+        for x in range(w):
+            r, g, b, a = px[x, y]
+            if a > 40 and r + g + b > 90:
+                return y
+    return h - 1
 
 
 def badge_paint(seat_color):
@@ -420,10 +431,10 @@ def results():
     card = (15, 31, 71)
     rank_w = 420
     x0 = 96
-    floor = 528
-    # Winner stands higher and larger. The block is a step, not a label.
-    step_h = [36, 72, 22, 12]
-    fig_box = [(200, 260), (250, 320), (180, 230), (160, 210)]
+    floor = 520
+    # Column order is 2nd, 1st, 3rd, 4th. The other steps descend.
+    step_h = [58, 86, 36, 18]
+    fig_box = [(200, 250), (230, 290), (180, 230), (160, 210)]
     step_fill = [(190, 198, 214), (232, 196, 92), (176, 112, 64), (28, 58, 110)]
     ratios = []
     for col, seat in enumerate(seats):
@@ -434,8 +445,9 @@ def results():
         rounded(d, (sx + 70, step_top, sx + rank_w - 70, floor + 8), 8, step_fill[col], GOLD if winner else STROKE, 4 if winner else 2)
         crop = figure(seat)
         crop.thumbnail(fig_box[col], Image.Resampling.LANCZOS)
+        feet = foot_row(crop)
         fx = sx + (rank_w - crop.size[0]) // 2
-        fy = step_top - crop.size[1] + 8
+        fy = step_top - feet
         img.alpha_composite(crop, (fx, fy))
         if winner:
             d = ImageDraw.Draw(img)
@@ -460,7 +472,7 @@ def results():
     actions = [("Rematch", "Same setup", True), ("Change mode", "", False), ("Character select", "", False), ("Main menu", "", False)]
     for i, (title, sub, hot) in enumerate(actions):
         x = x0 + i * (rank_w + 20)
-        ratios.append(button(img, (x, 790, x + rank_w, 900), title, sub, hot))
+        ratios.append(button(img, (x, 772, x + rank_w, 900), title, sub, hot))
     footer_both(img)
     return img, min(ratios)
 
@@ -553,14 +565,16 @@ def options(page):
     title, banner, rows, meters = pages[page]
     header(img, title, banner)
     ratios = []
-    y = 180
+    y = 156
+    row_h = 108
+    step = 116
     for i, (name, sub, hot) in enumerate(rows):
-        ratios.append(button(img, (280, y, 1640, y + 88), name, sub, hot))
+        ratios.append(button(img, (280, y, 1640, y + row_h), name, sub, hot))
         if i < len(meters):
             d = ImageDraw.Draw(img)
-            d.rounded_rectangle((980, y + 52, 1420, y + 68), 4, fill=(0, 0, 0, 90))
-            d.rounded_rectangle((980, y + 52, 980 + int(440 * meters[i]), y + 68), 4, fill=GOLD)
-        y += 96
+            d.rounded_rectangle((1080, y + 74, 1500, y + 90), 4, fill=(0, 0, 0, 90))
+            d.rounded_rectangle((1080, y + 74, 1080 + int(420 * meters[i]), y + 90), 4, fill=GOLD)
+        y += step
     if page == "access":
         d = ImageDraw.Draw(img)
         sw = [(199, 199, 0), (145, 252, 115), (255, 255, 255), (0, 214, 191)]

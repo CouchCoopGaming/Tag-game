@@ -281,6 +281,10 @@ The Move marks are the keyboard arrows and the pad stick, the same caps the HUD 
 
 The stills in `Docs/UiStills/screens2/pass5/` are software-raster composites. Every filename ends in `-composite`. Unity Editor is still not installed, so these are not play-mode captures. The runners are a front view of the Hier bake, facing the camera. The winner is larger and stands on a higher step. The gold frame stays on that card. The loading card keeps every rule row clear, then the tip, then a bar filled from the left. The options buttons show a grey sub-line. The red and blue P badges clear 4.5:1.
 
+## Screens 2, pass 6
+
+Options buttons and the RESULTS rematch row are tall enough for a full-size title under the stripe, then a grey sub-line on its own row. RESULTS bodies use the slot fallback from worker 1 tip `29b3dbdd`: red, blue, yellow, green. That tip's character-select costumes are still Red/Tan, Blue/Mint, Orange/Lavender, Lavender/Mint. The runners here follow the slot colors so the badge and the body match. Feet sit on the steps. The 2nd, 3rd, and 4th steps descend. Accessibility shows the comic-words switch. Stills are composites in `Docs/UiStills/screens2/pass6/`, and every filename ends in `-composite`.
+
 ## Later passes
 
 - Left from a rule row returns to the modes even when that rule can still decrease. Right from the right-hand mode, and Left at the end of a rule, already move between the columns.

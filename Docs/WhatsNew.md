@@ -326,6 +326,8 @@ The fourth pass renders the RESULTS runners from the posed Hier bake, body on th
 
 The fifth pass turns those runners to face the camera and stands the winner on a higher step, larger than the others. The loading card shows every rule, then the tip, then a bar filled from the left. Each options button has a grey sub-line. The red and blue P badges clear 4.5:1. The pictures are composites in `Docs/UiStills/screens2/pass5/`, and each filename ends in `-composite`. Space still jumps.
 
+The sixth pass gives the options buttons and the rematch row room for a full title under the stripe and a grey line under that. RESULTS bodies use the slot colors, red, blue, yellow, and green. Feet sit on the steps, and the other steps descend. Accessibility shows the comic-words switch. Composites are in `Docs/UiStills/screens2/pass6/`. Space still jumps.
+
 ## Motion, ninth pass
 
 The wall jump, the rope, the zip, the launch pad, a landing, the dash flash, a hard turnaround, and a punch while you run all ease instead of snapping. Speeds, the jump, and the dash length are the same.
