@@ -11,7 +11,11 @@ def _head(g, lod, z_sign, bev, bs, seg):
     z = 1.15 * z_sign
     g.pipe((0, 5.22, 0.06 * z_sign), (0, 5.28, z), 0.035, "Lib_SteelDark", max(6, seg // 2), bevel=bev, segs=bs)
     g.box((0, 5.36, z), (0.58, 0.14, 0.30), "Lib_SteelDark", bevel=max(bev, 0.006), segs=max(bs, 1))
-    g.box((0, 5.27, z), (0.42, 0.02, 0.18), "Lib_Glass")
+    g.box((0, 5.275, z), (0.40, 0.012, 0.16), "Lib_Lamp")
+    if lod == 0:
+        for i in range(3):
+            g.box((0, 5.268, z - 0.05 + i * 0.05), (0.36, 0.006, 0.008), "Lib_SteelDark")
+        g.cylinder((0, 5.455, z), 0.022, 0.028, "Lib_Black", 6)
     g.box((0, 5.44, z + 0.02 * z_sign), (0.62, 0.02, 0.34), "Lib_Steel")
 
 

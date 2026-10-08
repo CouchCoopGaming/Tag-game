@@ -59,4 +59,7 @@ def _planks(g, length, width, lod, bev):
     board = pitch * 0.88
     for i in range(count):
         z = -length * 0.5 + pitch * (i + 0.5)
-        g.box((0, 0.602, z), (width - 0.08, 0.032, board), "Lib_Wood", bevel=bev, segs=1 if lod == 0 else 0, uv_scale=1.2)
+        g.box((0, 0.602, z), (width - 0.08, 0.032, board), "Lib_WoodWeather", bevel=bev, segs=1 if lod == 0 else 0, uv_scale=1.2)
+        if lod == 0 and i % 2 == 0:
+            for x in (-0.72, 0.72):
+                g.cylinder((x, 0.624, z), 0.012, 0.01, "Lib_SteelDark", 6)

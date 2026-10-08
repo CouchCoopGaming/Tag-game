@@ -10,12 +10,19 @@ from _common import Asset, register, lod_pick
 
 
 def _window(g, x, y, z, w, h, lod, face="Z"):
+    bev = 0.004 if lod == 0 else 0
     if face == "Z":
-        g.box((x, y, z), (w, h, 0.08), "Lib_PaintWhite", bevel=0.004 if lod == 0 else 0, segs=1)
-        g.box((x, y, z + 0.02), (w - 0.08, h - 0.08, 0.02), "Lib_Glass")
+        g.box((x, y, z), (w, h, 0.08), "Lib_PaintWhite", bevel=bev, segs=1)
+        g.box((x, y, z + 0.03), (w - 0.10, h - 0.10, 0.015), "Lib_Window")
+        if lod == 0:
+            g.box((x, y, z + 0.04), (0.02, h - 0.16, 0.012), "Lib_PaintWhite")
+            g.box((x, y, z + 0.04), (w - 0.16, 0.02, 0.012), "Lib_PaintWhite")
     else:
-        g.box((x, y, z), (0.08, h, w), "Lib_PaintWhite")
-        g.box((x + 0.02, y, z), (0.02, h - 0.08, w - 0.08), "Lib_Glass")
+        g.box((x, y, z), (0.08, h, w), "Lib_PaintWhite", bevel=bev, segs=1)
+        g.box((x + 0.03, y, z), (0.015, h - 0.10, w - 0.10), "Lib_Window")
+        if lod == 0:
+            g.box((x + 0.04, y, z), (0.012, h - 0.16, 0.02), "Lib_PaintWhite")
+            g.box((x + 0.04, y, z), (0.012, 0.02, w - 0.16), "Lib_PaintWhite")
 
 
 @register
@@ -40,6 +47,14 @@ def create():
         g.box((-3.52, 1.38, 0), (0.16, 2.75, 5.1), "Lib_Siding", bevel=bev, segs=bs, uv_scale=1.0)
         g.box((3.52, 1.38, 0), (0.16, 2.75, 5.1), "Lib_Siding", bevel=bev, segs=bs, uv_scale=1.0)
         g.box((0, 0.10, 0), (7.4, 0.20, 5.6), "Lib_Concrete", uv_scale=0.6)
+        for x in (-3.64, 3.64):
+            for z in (-2.70, 2.70):
+                g.box((x, 1.45, z), (0.08, 2.70, 0.08), "Lib_PaintWhite", bevel=bev, segs=1)
+        if lod < 2:
+            g.pipe((-3.7, 2.58, -3.18), (3.7, 2.58, -3.18), 0.045, "Lib_SteelDark", 6)
+            g.pipe((3.55, 2.58, -3.18), (3.55, 0.20, -3.18), 0.035, "Lib_SteelDark", 6)
+            g.pipe((-3.7, 2.58, 3.12), (3.7, 2.58, 3.12), 0.045, "Lib_SteelDark", 6)
+        g.box((0, 0.02, 5.55), (1.35, 0.04, 2.0), "Lib_Concrete", uv_scale=0.8)
         if lod < 2:
             _window(g, -1.6, 1.55, 2.72, 1.1, 1.3, lod)
             _window(g, 1.8, 1.55, 2.72, 1.1, 1.3, lod)
@@ -63,6 +78,7 @@ def create():
     a.box("Col_GlassR", (1.8, 1.55, 2.74), (1.0, 1.2, 0.02))
     a.box("Climb_SideL", (-3.52, 1.38, 0), (0.16, 2.75, 5.1))
     a.box("Climb_SideR", (3.52, 1.38, 0), (0.16, 2.75, 5.1))
+    a.box("Col_Walk", (0, 0.02, 5.55), (1.30, 0.035, 1.90))
     a.box("Col_Porch", (0, 0.15, 3.65), (4.4, 0.30, 1.8))
     a.box("Col_PorchRoof", (0, 2.55, 3.7), (4.8, 0.08, 2.0))
     a.capsule("Vault_PorchRail", (0, 1.25, 4.4), 0.035, 3.6, 0)

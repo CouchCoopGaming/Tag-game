@@ -44,7 +44,7 @@ LODGroup:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 100000}
   serializedVersion: 2
-  m_LocalReferencePoint: {x: 0, y: 0.0635, z: 0}
+  m_LocalReferencePoint: {x: 0, y: 0.0645, z: 0}
   m_Size: 14
   m_FadeMode: 0
   m_AnimateCrossFading: 0
@@ -72,12 +72,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Tag.Art.Library.LibraryPropMeta
   category: "Park"
-  summary: "Street half-court 14 m long (Z) by 10 m wide. Baseline is -Z. Paint has no collider."
+  summary: "Street half-court, 14 m long by 10 m wide. Asphalt with a 3.66 m lane, 5.79 m free-throw, and a 6.25 m arc. Paint has no collider."
   climbable: 0
   vaultable: 0
   vaultHeightMeters: 0
   climbNote: "Flat slab, 0.12 m thick."
-  vaultNote: "No rail. Place Hoop just outside the -Z baseline."
+  vaultNote: "No rail. Place Hoop just outside the -Z baseline so the 3.05 m rim hangs inside the end line."
 --- !u!1 &200000
 GameObject:
   m_ObjectHideFlags: 0
@@ -144,6 +144,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
+  - {fileID: 2100000, guid: 3a513732d7a96e6b4713c7c1e0ed008e, type: 2}
   - {fileID: 2100000, guid: 0dd9daa587e6f6f55edfab0056506943, type: 2}
   - {fileID: 2100000, guid: b47c340ca201ae754a5835c14bb84ad8, type: 2}
   m_StaticBatchInfo:
@@ -235,6 +236,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
+  - {fileID: 2100000, guid: 3a513732d7a96e6b4713c7c1e0ed008e, type: 2}
   - {fileID: 2100000, guid: 0dd9daa587e6f6f55edfab0056506943, type: 2}
   - {fileID: 2100000, guid: b47c340ca201ae754a5835c14bb84ad8, type: 2}
   m_StaticBatchInfo:

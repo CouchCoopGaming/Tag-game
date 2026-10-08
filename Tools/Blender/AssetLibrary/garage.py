@@ -21,6 +21,16 @@ def create():
         g.box((-1.72, 1.25, 0), (0.16, 2.5, 5.9), "Lib_Siding", bevel=bev, segs=1, uv_scale=1.0)
         g.box((1.72, 1.25, 0), (0.16, 2.5, 5.9), "Lib_Siding", bevel=bev, segs=1, uv_scale=1.0)
         g.box((0, 2.35, 2.4), (2.4, 0.30, 0.16), "Lib_Siding")
+        g.box((-1.82, 1.55, -0.8), (0.06, 0.78, 1.05), "Lib_PaintWhite", bevel=bev, segs=1)
+        if lod < 2:
+            g.box((-1.86, 1.55, -0.8), (0.015, 0.58, 0.82), "Lib_Window")
+            if lod == 0:
+                g.box((-1.87, 1.55, -0.8), (0.01, 0.58, 0.02), "Lib_PaintWhite")
+                g.box((-1.87, 1.55, -0.8), (0.01, 0.02, 0.82), "Lib_PaintWhite")
+            g.pipe((-1.9, 2.42, -3.35), (1.9, 2.42, -3.35), 0.04, "Lib_SteelDark", 6)
+            g.pipe((1.7, 2.42, -3.35), (1.7, 0.15, -3.35), 0.03, "Lib_SteelDark", 6)
+        g.box((0, 0.02, 4.55), (2.7, 0.04, 2.5), "Lib_Concrete", uv_scale=0.7)
+        g.box((0, 2.28, 3.06), (2.45, 0.08, 0.06), "Lib_PaintWhite")
         # Door panels.
         panels = lod_pick(lod, 4, 3, 1)
         for i in range(panels):
@@ -40,5 +50,6 @@ def create():
         y = 0.28 + (i + 0.5) * (1.85 / panels)
         a.box("Col_Door_%d" % i, (0, y, 3.02), (2.15, 1.85 / panels * 0.80, 0.04))
     a.box("Col_Header", (0, 2.35, 2.4), (2.3, 0.26, 0.14))
+    a.box("Col_Apron", (0, 0.02, 4.55), (2.6, 0.035, 2.4))
     _add_roof(a, 4.0, -3.3, 2.5, 0.0, 3.6, 0.07)
     return a

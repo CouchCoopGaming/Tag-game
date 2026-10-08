@@ -60,10 +60,25 @@ PALETTE = {
     "Lib_Awning": ((0.55, 0.12, 0.16), 0.0, 0.28),
     "Lib_Court": ((0.16, 0.38, 0.62), 0.0, 0.30),
     "Lib_Lane": ((0.90, 0.82, 0.28), 0.0, 0.35),
+    "Lib_Hydrant": ((0.62, 0.10, 0.07), 0.0, 0.28),
+    "Lib_WoodWeather": ((0.45, 0.38, 0.28), 0.0, 0.18),
+    "Lib_Lamp": ((1.0, 0.86, 0.55), 0.0, 0.90),
+    "Lib_Window": ((0.55, 0.74, 0.82), 0.02, 0.90),
+}
+
+# Blender emission (color, strength). Unity gets the same color on _EmissionColor.
+EMISSIVE = {
+    "Lib_Lamp": ((1.0, 0.75, 0.38), 8.0),
+    "Lib_Window": ((0.62, 0.82, 0.95), 0.55),
 }
 
 # Grayscale-or-color albedo multiplied is baked as full color. UV is meters.
-TEXTURED = ("Lib_Brick", "Lib_Asphalt", "Lib_Wood", "Lib_WoodDark", "Lib_Concrete", "Lib_Siding", "Lib_Roof", "Lib_Soil")
+TEXTURED = (
+    "Lib_Brick", "Lib_Asphalt", "Lib_Wood", "Lib_WoodDark", "Lib_Concrete",
+    "Lib_Siding", "Lib_Roof", "Lib_Soil", "Lib_Hydrant", "Lib_WoodWeather",
+)
+NORMALS = ("Lib_Brick",)
+ROUGHNESS = ("Lib_Brick", "Lib_Hydrant", "Lib_WoodWeather", "Lib_Asphalt", "Lib_Wood")
 
 # Modular street kit. Straight tiles are ROAD_W wide and TILE_L long.
 # Tops: road 0.12 m, sidewalk 0.27 m (15 cm curb). Pivot is ground center.
@@ -729,8 +744,21 @@ def _reset_scene():
     bpy.ops.wm.read_factory_settings(use_empty=True)
 
 
+def _link_image(nt, bsdf, path, socket, non_color=False):
+    tex = nt.nodes.new("ShaderNodeTexImage")
+    tex.image = bpy.data.images.load(path)
+    tex.interpolation = "Smart"
+    if non_color:
+        try:
+            tex.image.colorspace_settings.name = "Non-Color"
+        except (TypeError, AttributeError):
+            pass
+    nt.links.new(tex.outputs["Color"], bsdf.inputs[socket])
+    return tex
+
+
 def _ensure_materials():
-    for name, (color, metal, rough) in PALETTE.items():
+    for name, (color, metal, smooth) in PALETTE.items():
         mat = bpy.data.materials.get(name)
         if mat is None:
             mat = bpy.data.materials.new(name)
@@ -742,13 +770,33 @@ def _ensure_materials():
             continue
         bsdf.inputs["Base Color"].default_value = (color[0], color[1], color[2], 1.0)
         bsdf.inputs["Metallic"].default_value = metal
-        bsdf.inputs["Roughness"].default_value = 1.0 - rough
+        bsdf.inputs["Roughness"].default_value = 1.0 - smooth
         img_path = os.path.join(TEX_DIR, name + ".png")
         if name in TEXTURED and os.path.isfile(img_path):
-            tex = nt.nodes.new("ShaderNodeTexImage")
-            tex.image = bpy.data.images.load(img_path)
-            tex.interpolation = "Smart"
-            nt.links.new(tex.outputs["Color"], bsdf.inputs["Base Color"])
+            _link_image(nt, bsdf, img_path, "Base Color")
+        rough_path = os.path.join(TEX_DIR, name + "_R.png")
+        if name in ROUGHNESS and os.path.isfile(rough_path):
+            _link_image(nt, bsdf, rough_path, "Roughness", non_color=True)
+        normal_path = os.path.join(TEX_DIR, name + "_N.png")
+        if name in NORMALS and os.path.isfile(normal_path):
+            tex = _link_image(nt, bsdf, normal_path, "Normal", non_color=True)
+            # _link_image wired Color into Normal; replace with a Normal Map node.
+            for link in list(nt.links):
+                if link.from_node == tex and link.to_socket == bsdf.inputs["Normal"]:
+                    nt.links.remove(link)
+            nmap = nt.nodes.new("ShaderNodeNormalMap")
+            nmap.inputs["Strength"].default_value = 1.2
+            nt.links.new(tex.outputs["Color"], nmap.inputs["Color"])
+            nt.links.new(nmap.outputs["Normal"], bsdf.inputs["Normal"])
+        if name in EMISSIVE:
+            emit, strength = EMISSIVE[name]
+            color_socket = "Emission Color" if "Emission Color" in bsdf.inputs else "Emission"
+            bsdf.inputs[color_socket].default_value = (emit[0], emit[1], emit[2], 1.0)
+            if "Emission Strength" in bsdf.inputs:
+                bsdf.inputs["Emission Strength"].default_value = strength
+        if name == "Lib_Window" and "Transmission Weight" in bsdf.inputs:
+            bsdf.inputs["Transmission Weight"].default_value = 0.55
+            bsdf.inputs["Roughness"].default_value = 0.06
 
 
 def _object_from_geo(geo, name):
@@ -932,11 +980,12 @@ def _brick_pixel(x, y, w, h):
     row_off = 0.5 if (ci % 2) else 0.0
     u2 = (u + row_off) % 1.0
     fx = (u2 * 4.0) % 1.0
-    mortar = fy < 0.12 or fy > 0.96 or fx < 0.06 or fx > 0.97
+    mortar = fy < 0.14 or fy > 0.97 or fx < 0.07 or fx > 0.97
     n = _value_noise(u * 6.0, v * 10.0, 3)
     if mortar:
-        base = 0.62 + n * 0.06
-        return (base, base * 0.98, base * 0.94)
+        # Recessed joint. Darker than the face so the bond reads without the normal map.
+        base = 0.38 + n * 0.05
+        return (base, base * 0.97, base * 0.92)
     tint = 0.78 + n * 0.28
     # warm brick, slight per-brick shift
     brick_n = _hash01(math.floor(u2 * 4.0), ci, 9)
@@ -1025,23 +1074,95 @@ def _soil_pixel(x, y, w, h):
     return (r, g, b)
 
 
+def _brick_height(px, py, w, h):
+    u = px / float(w)
+    v = py / float(h)
+    course = v * 8.0
+    ci = math.floor(course)
+    fy = course - ci
+    row_off = 0.5 if int(ci) % 2 else 0.0
+    u2 = (u + row_off) % 1.0
+    fx = (u2 * 4.0) % 1.0
+    if fy < 0.14 or fx < 0.07:
+        return 0.0
+    edge = min(fy - 0.14, 1.0 - fy, fx - 0.07, 1.0 - fx)
+    return 0.25 + 0.75 * max(0.0, min(1.0, edge * 10.0))
+
+
+def _brick_normal_pixel(x, y, w, h):
+    hx = _brick_height(x + 1, y, w, h) - _brick_height(x - 1, y, w, h)
+    hy = _brick_height(x, y + 1, w, h) - _brick_height(x, y - 1, w, h)
+    nx, ny, nz = -hx * 3.5, -hy * 3.5, 1.0
+    length = math.sqrt(nx * nx + ny * ny + nz * nz) or 1.0
+    return (nx / length * 0.5 + 0.5, ny / length * 0.5 + 0.5, nz / length * 0.5 + 0.5)
+
+
+def _hydrant_pixel(x, y, w, h):
+    u = x / float(w)
+    v = y / float(h)
+    n = _value_noise(u * 7.0, v * 9.0, 21)
+    scratch = _value_noise(u * 46.0, v * 5.0, 22)
+    grime = max(0.0, 0.28 - v) / 0.28
+    chip = 0.22 if scratch > 0.74 else 0.0
+    r = 0.58 + n * 0.10 - grime * 0.30 + chip
+    g = 0.07 + n * 0.03 - grime * 0.03 + chip * 0.7
+    b = 0.05 + chip * 0.4
+    return (max(0.02, min(1.0, r)), max(0.01, min(1.0, g)), max(0.01, min(1.0, b)))
+
+
+def _hydrant_rough_pixel(x, y, w, h):
+    u = x / float(w)
+    v = y / float(h)
+    grime = max(0.0, 0.28 - v) / 0.28
+    n = _value_noise(u * 12.0, v * 12.0, 23)
+    rough = 0.42 + grime * 0.40 + n * 0.12
+    return (rough, rough, rough)
+
+
+def _wood_weather_pixel(x, y, w, h):
+    u = x / float(w)
+    v = y / float(h)
+    grain = _value_noise(u * 2.2, v * 22.0, 31)
+    gray = _value_noise(u * 5.0, v * 3.0, 32)
+    nail = 0.35 if _hash01(int(u * 8), int(v * 14), 33) > 0.97 else 1.0
+    r = (0.42 + grain * 0.12) * (0.75 + gray * 0.35) * nail
+    g = (0.36 + grain * 0.08) * (0.78 + gray * 0.30) * nail
+    b = (0.28 + grain * 0.05) * (0.82 + gray * 0.25) * nail
+    return (r, g, b)
+
+
+def _generic_rough_pixel(x, y, w, h, salt, base):
+    n = _value_noise(x / float(w) * 10.0, y / float(h) * 10.0, salt)
+    rough = base + (n - 0.5) * 0.18
+    rough = max(0.05, min(0.95, rough))
+    return (rough, rough, rough)
+
+
 def generate_textures():
     _reset_scene()
     w = h = 256
     _save_image("Lib_Brick", w, h, _brick_pixel)
+    _save_image("Lib_Brick_N", w, h, _brick_normal_pixel)
+    _save_image("Lib_Brick_R", w, h, lambda x, y, W, H: _generic_rough_pixel(x, y, W, H, 41, 0.72))
     _save_image("Lib_Asphalt", w, h, _asphalt_pixel)
+    _save_image("Lib_Asphalt_R", w, h, lambda x, y, W, H: _generic_rough_pixel(x, y, W, H, 42, 0.84))
     _save_image("Lib_Wood", w, h, lambda x, y, W, H: _wood_pixel(x, y, W, H, False))
+    _save_image("Lib_Wood_R", w, h, lambda x, y, W, H: _generic_rough_pixel(x, y, W, H, 43, 0.62))
     _save_image("Lib_WoodDark", w, h, lambda x, y, W, H: _wood_pixel(x, y, W, H, True))
     _save_image("Lib_Concrete", w, h, _concrete_pixel)
     _save_image("Lib_Siding", w, h, _siding_pixel)
     _save_image("Lib_Roof", w, h, _roof_pixel)
     _save_image("Lib_Soil", w, h, _soil_pixel)
+    _save_image("Lib_Hydrant", w, h, _hydrant_pixel)
+    _save_image("Lib_Hydrant_R", w, h, _hydrant_rough_pixel)
+    _save_image("Lib_WoodWeather", w, h, _wood_weather_pixel)
+    _save_image("Lib_WoodWeather_R", w, h, lambda x, y, W, H: _generic_rough_pixel(x, y, W, H, 44, 0.78))
 
 
 def load_asset_modules():
     if ROOT not in sys.path:
         sys.path.insert(0, ROOT)
-    skip = {"_common", "build_all", "render_pass1", "write_unity", "_kit"}
+    skip = {"_common", "build_all", "render_pass1", "render_pass2", "write_unity", "_kit"}
     names = []
     for fn in sorted(os.listdir(ROOT)):
         if not fn.endswith(".py"):

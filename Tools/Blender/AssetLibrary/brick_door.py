@@ -32,7 +32,9 @@ def create():
         g.box((0, 1.12, 0.02), (0.92, 2.08, 0.05), "Lib_WoodDark", bevel=bev, segs=bs, uv_scale=1.2)
         if lod == 0:
             g.box((0.28, 1.05, 0.05), (0.04, 0.08, 0.03), "Lib_Brass")
-            g.box((0, 2.20, 0.18), (1.15, 0.06, 0.06), "Lib_Concrete")
+            g.box((0, 2.22, 0.20), (1.28, 0.14, 0.10), "Lib_Concrete", bevel=bev, segs=bs)
+            g.box((0, 1.55, 0.055), (0.62, 0.016, 0.012), "Lib_Wood")
+            g.box((0, 1.12, 0.055), (0.016, 1.6, 0.012), "Lib_Wood")
         a.end()
     a.box("Climb_PierL", (-1.25, 1.60, 0), (1.50, 3.04, T))
     a.box("Climb_PierR", (1.25, 1.60, 0), (1.50, 3.04, T))

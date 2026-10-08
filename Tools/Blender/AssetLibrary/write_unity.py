@@ -146,8 +146,8 @@ def scene_meta(path):
     write(path + ".meta", "fileFormatVersion: 2\nguid: %s\nDefaultImporter:\n  externalObjects: {}\n  userData: \n  assetBundleName: \n  assetBundleVariant: \n" % guid("scene", "AssetShowcase"))
 
 
-def texture_meta(path, key):
-    write(path + ".meta", """fileFormatVersion: 2
+def texture_meta(path, key, normal=False):
+    text = """fileFormatVersion: 2
 guid: %s
 TextureImporter:
   internalIDToNameTable: []
@@ -248,7 +248,12 @@ TextureImporter:
   userData: 
   assetBundleName: 
   assetBundleVariant: 
-""" % guid("tex", key))
+""" % guid("tex", key)
+    if normal:
+        text = text.replace("sRGBTexture: 1", "sRGBTexture: 0", 1)
+        text = text.replace("textureType: 0", "textureType: 1", 1)
+    write(path + ".meta", text)
+    return guid("tex", key)
 
 
 def write_materials(palette, textured):
@@ -268,6 +273,23 @@ def write_materials(palette, textured):
             tex = "{fileID: 2800000, guid: %s, type: 3}" % guid("tex", name)
             body = body.replace("_BaseMap:\n        m_Texture: {fileID: 0}", "_BaseMap:\n        m_Texture: " + tex)
             body = body.replace("_MainTex:\n        m_Texture: {fileID: 0}", "_MainTex:\n        m_Texture: " + tex)
+        if name == "Lib_Brick":
+            bump = "{fileID: 2800000, guid: %s, type: 3}" % guid("tex", "Lib_Brick_N")
+            body = body.replace("_BumpMap:\n        m_Texture: {fileID: 0}", "_BumpMap:\n        m_Texture: " + bump)
+            body = body.replace("m_ValidKeywords: []", "m_ValidKeywords:\n  - _NORMALMAP")
+            body = body.replace("- _BumpScale: 1", "- _BumpScale: 0.6")
+        if name == "Lib_Lamp":
+            body = body.replace(
+                "- _EmissionColor: {r: 0, g: 0, b: 0, a: 1}",
+                "- _EmissionColor: {r: 1, g: 0.75, b: 0.38, a: 1}",
+            )
+            body = body.replace("m_ValidKeywords: []", "m_ValidKeywords:\n  - _EMISSION")
+        if name == "Lib_Window":
+            body = body.replace(
+                "- _EmissionColor: {r: 0, g: 0, b: 0, a: 1}",
+                "- _EmissionColor: {r: 0.62, g: 0.82, b: 0.95, a: 1}",
+            )
+            body = body.replace("m_ValidKeywords: []", "m_ValidKeywords:\n  - _EMISSION")
         path = os.path.join(LIB, "Materials", name + ".mat")
         write(path, body if body.startswith("%YAML") else "%YAML 1.1\n%TAG !u! tag:unity3d.com,2011:\n" + body)
         write(path + ".meta", "fileFormatVersion: 2\nguid: %s\nNativeFormatImporter:\n  externalObjects: {}\n  mainObjectFileID: 2100000\n  userData: \n  assetBundleName: \n  assetBundleVariant: \n" % g)
@@ -520,18 +542,18 @@ def collider_summary(cols):
 
 def write_doc(entries):
     lines = []
-    lines.append("# Asset library, pass 1")
+    lines.append("# Asset library, pass 2")
     lines.append("")
     lines.append("Procedural props for the couch tag arenas. Real meters, +Y up, pivot at the ground contact (or the module origin called out in the notes). Players are about 1.8 m. Vault rails in the park kit sit at 0.90–1.05 m. Every mesh is rebuilt from `Tools/Blender/AssetLibrary/<asset>.py`.")
     lines.append("")
-    lines.append("No third-party textures. Albedo maps under `Assets/Art/Props/Library/Textures` are generated in `_common.py` (brick, asphalt, wood, concrete, siding, roof, soil).")
+    lines.append("No third-party textures. Albedo, roughness, and the brick normal are generated in `_common.py`. Brick mortar is a real recess in the normal map. Hydrant paint and dock planks carry wear. Window glass and street-light lenses emit.")
     lines.append("")
     lines.append("## Rebuild")
     lines.append("")
     lines.append("```")
     lines.append("blender --background --python Tools/Blender/AssetLibrary/build_all.py")
     lines.append("python3 Tools/Blender/AssetLibrary/write_unity.py")
-    lines.append("blender --background --python Tools/Blender/AssetLibrary/render_pass1.py")
+    lines.append("blender --background --python Tools/Blender/AssetLibrary/render_pass2.py -- --phase all")
     lines.append("```")
     lines.append("")
     lines.append("Blender 4.2 LTS is enough. `write_unity.py` does not need Blender. The showcase scene is `Assets/Scenes/AssetShowcase.unity`. It is not in the build settings and it does not touch the three arenas. `Tag/Asset Showcase` rebuilds that scene from the prefabs.")
@@ -572,20 +594,19 @@ def write_doc(entries):
     lines.append("- Brick bays are 4.0 m wide, 3.2 m tall, 0.30 m thick, exterior +Z. Corners turn the exterior onto -X and -Z. The parapet stacks on a wall at y = 3.2.")
     lines.append("- Dock modules share a deck at 0.62 m. `Dock_Straight` is 4 × 2 m. `Dock_Corner` is an L inside a 4 m square; its pivot is the center of that square.")
     lines.append("- Containers are external ISO sizes: 20 ft is 6.06 × 2.44 × 2.59 m, 40 ft is 12.19 × 2.44 × 2.59 m. Doors face +Z. Ribs stand about 2 cm proud of the collider.")
-    lines.append("- The court is 14 × 10 m. The hoop rim is 3.05 m and faces +Z. Fence the court with `ChainFence` and `ChainGate`; there is no separate cage mesh.")
+    lines.append("- The court is 14 × 10 m of asphalt. Lane is 3.66 m wide, free-throw is 5.79 m from the baseline, arc radius is 6.25 m. `CourtFence` shares the court pivot: baselines 3.05 m, sidelines 1.80 m, closed gate on +X. `Hoop` rim is 3.05 m and faces +Z.")
+    lines.append("- `DockRamp` is 4 × 2 m and falls from 0.62 m at -Z to 0.05 m at +Z. A dock centered at the origin meets a ramp centered at z = 4.")
+    lines.append("- `LaneArrow` and `StopBar` are paint. Place them on a road top (y = 0.12). They have no collider. `RaisedCrosswalk` replaces a 6 × 4 m road tile; the crown is 8 cm above the road and the collider follows that hump.")
+    lines.append("- `HarborWater` is a 16 × 12 m sheet with no collider. `Mooring` is a 3.2 m finger at 0.55 m with a cleat and rope. `Lib_Lamp` is the street-light lens. `Lib_Window` is the emissive glass on the house, garage, shop, cabin, and brick window.")
     lines.append("- No gazebo existed in the repo. `Pavilion` is the park shelter: 4.6 m square, rail 0.95 m above the deck, pyramid roof.")
     lines.append("- `Mannequin` is a 1.80 m scale figure for the showcase. It is not a gameplay character.")
     lines.append("")
     lines.append("## TODO")
     lines.append("")
-    lines.append("- Court perimeter as a placed kit (the fence panel and gate are individual bays).")
-    lines.append("- A dock ramp and a second straight length so a pier can change height.")
-    lines.append("- House and garage trim: gutters, downspouts, porch columns already exist on the house; the next pass adds window muntins and a driveway apron.")
-    lines.append("- Emissive window cards and a night variant of the street lights.")
-    lines.append("- Lane arrows, stop bars, and a raised crosswalk.")
     lines.append("- Interior dressing (shelves, bollard line, cafe tables) once the shell kit is in an arena.")
-    lines.append("- Harbor water shader and a mooring layout. The buoy, boat, and crane are props, not a sim.")
-    lines.append("- Another pass on the lighthouse lantern (glass rooms, fresnel) if it becomes a landmark.")
+    lines.append("- A second dock length is not a separate mesh; butt two `Dock_Straight` modules. The ramp is the height change.")
+    lines.append("- Lighthouse lantern: glass rooms and a fresnel, if it becomes a landmark.")
+    lines.append("- Animated water, night-only light cookies, and a second hoop pad color if a full court is dressed in an arena.")
     lines.append("")
     write(os.path.join(REPO, "Docs", "AssetLibrary.md"), "\n".join(lines) + "\n")
 
@@ -1039,6 +1060,18 @@ def main():
         png = os.path.join(LIB, "Textures", name + ".png")
         if os.path.isfile(png):
             texture_meta(png, name)
+    normal_png = os.path.join(LIB, "Textures", "Lib_Brick_N.png")
+    if os.path.isfile(normal_png):
+        texture_meta(normal_png, "Lib_Brick_N", normal=True)
+    tex_dir = os.path.join(LIB, "Textures")
+    if os.path.isdir(tex_dir):
+        for fn in sorted(os.listdir(tex_dir)):
+            if not fn.endswith(".png"):
+                continue
+            png = os.path.join(tex_dir, fn)
+            if os.path.isfile(png + ".meta"):
+                continue
+            texture_meta(png, fn[:-4], normal=fn.endswith("_N.png"))
     mat_guids = write_materials(palette, textured)
     script_guid = guid("script", "LibraryPropMeta")
     script_meta(os.path.join(LIB, "Scripts", "LibraryPropMeta.cs"), "LibraryPropMeta")

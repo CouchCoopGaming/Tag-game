@@ -31,10 +31,13 @@ def create():
         g.box((0, 0.56, 0), (1.16, 0.76, T), "Lib_Brick", bevel=bev, segs=bs)
         g.box((0, 2.78, 0), (1.16, 0.68, T), "Lib_Brick", bevel=bev, segs=bs)
         if lod < 2:
-            g.box((0, 1.68, 0), (1.08, 1.36, 0.012), "Lib_Glass")
+            g.box((0, 1.68, 0), (1.08, 1.36, 0.012), "Lib_Window")
             proud = T * 0.5 + 0.02
-            g.box((0, 0.96, proud), (1.28, 0.06, 0.06), "Lib_Concrete", bevel=bev, segs=bs)
-            g.box((0, 2.42, proud), (1.28, 0.05, 0.05), "Lib_SteelDark")
+            g.box((0, 0.94, proud), (1.36, 0.08, 0.08), "Lib_Concrete", bevel=bev, segs=bs)
+            g.box((0, 2.46, proud), (1.40, 0.12, 0.08), "Lib_Concrete", bevel=bev, segs=bs)
+            if lod == 0:
+                g.box((0, 1.68, proud + 0.02), (0.02, 1.28, 0.015), "Lib_PaintWhite")
+                g.box((0, 1.68, proud + 0.02), (1.00, 0.02, 0.015), "Lib_PaintWhite")
             g.box((-0.60, 1.68, proud), (0.05, 1.40, 0.05), "Lib_SteelDark")
             g.box((0.60, 1.68, proud), (0.05, 1.40, 0.05), "Lib_SteelDark")
         a.end()

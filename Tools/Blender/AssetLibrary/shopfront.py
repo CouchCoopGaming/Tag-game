@@ -23,7 +23,7 @@ def create():
         g.box((-1.55, 1.60, 0), (0.90, 3.2, 0.28), "Lib_Brick", bevel=bev, segs=1)
         g.box((1.55, 1.60, 0), (0.90, 3.2, 0.28), "Lib_Brick", bevel=bev, segs=1)
         g.box((0, 2.95, 0), (2.2, 0.50, 0.28), "Lib_Brick")
-        g.box((-0.55, 1.35, 0.02), (1.15, 2.15, 0.02), "Lib_Glass")
+        g.box((-0.55, 1.35, 0.02), (1.15, 2.15, 0.02), "Lib_Window")
         g.box((0.85, 1.15, 0.04), (0.85, 2.10, 0.05), "Lib_WoodDark", uv_scale=1.0)
         if lod < 2:
             # Awning: a shallow slope, high at the wall.

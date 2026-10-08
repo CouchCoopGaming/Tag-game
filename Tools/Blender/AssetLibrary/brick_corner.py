@@ -27,6 +27,8 @@ def create():
         g.box((-0.85, 1.60, 0.15), (0.30, 3.2, 1.70), "Lib_Brick", bevel=bev, segs=bs)
         g.box((0.0, 3.16, -0.85), (2.05, 0.08, 0.38), "Lib_Concrete", bevel=bev, segs=1)
         g.box((-0.85, 3.16, 0.15), (0.38, 0.08, 1.75), "Lib_Concrete", bevel=bev, segs=1)
+        g.box((0.0, 2.42, -1.02), (1.9, 0.10, 0.04), "Lib_Concrete")
+        g.box((-1.02, 2.42, 0.15), (0.04, 0.10, 1.6), "Lib_Concrete")
         a.end()
     a.box("Climb_LegX", (0.0, 1.60, -0.85), (2.0, 3.2, 0.30))
     a.box("Climb_LegZ", (-0.85, 1.60, 0.15), (0.30, 3.2, 1.70))

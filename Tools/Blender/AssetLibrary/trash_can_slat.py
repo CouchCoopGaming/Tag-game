@@ -20,6 +20,7 @@ def create():
         g.cylinder((0, 0.46, 0), 0.19, 0.84, "Lib_SteelDark", seg, cap_ends=False)
         g.cylinder((0, 0.045, 0), 0.19, 0.04, "Lib_SteelDark", seg)
         g.cylinder((0, 0.88, 0), 0.235, 0.045, "Lib_Steel", seg, bevel=0.004 if lod == 0 else 0, segs=1)
+        g.cylinder((0, 0.84, 0), 0.198, 0.05, "Lib_Rubber", seg)
         g.cylinder((0, 0.06, 0), 0.215, 0.05, "Lib_Steel", seg)
         for i in range(n):
             ang = 2.0 * math.pi * i / n

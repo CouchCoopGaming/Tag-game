@@ -45,8 +45,8 @@ LODGroup:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 100000}
   serializedVersion: 2
-  m_LocalReferencePoint: {x: 0, y: 1.315, z: 0.025}
-  m_Size: 12.24
+  m_LocalReferencePoint: {x: 0.043, y: 1.315, z: 0.029}
+  m_Size: 12.247
   m_FadeMode: 0
   m_AnimateCrossFading: 0
   m_LastLODIsBillboard: 0
@@ -154,6 +154,7 @@ MeshRenderer:
   - {fileID: 2100000, guid: 3378749727762f35ade0a2e55dedd4ed, type: 2}
   - {fileID: 2100000, guid: 3515f7b9728b10281c73c55a077c3fea, type: 2}
   - {fileID: 2100000, guid: 8a63964d15fa16988483419991831ff1, type: 2}
+  - {fileID: 2100000, guid: b47c340ca201ae754a5835c14bb84ad8, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0

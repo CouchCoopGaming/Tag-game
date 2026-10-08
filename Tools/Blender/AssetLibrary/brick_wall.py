@@ -26,6 +26,7 @@ def create():
         g.box((0, 0.09, 0), (W, 0.18, T + 0.06), "Lib_Brick", bevel=bev, segs=bs, uv_scale=1.0)
         g.box((0, 1.65, 0), (W, 2.94, T), "Lib_Brick", bevel=bev, segs=bs, uv_scale=1.0)
         g.box((0, 3.16, 0), (W, 0.08, T + 0.08), "Lib_Concrete", bevel=bev, segs=bs, uv_scale=0.8)
+        g.box((0, 2.42, T * 0.5 + 0.02), (W - 0.08, 0.10, 0.045), "Lib_Concrete")
         a.end()
     a.box("Climb_Wall", (0, 1.65, 0), (W, 2.94, T))
     a.box("Col_Plinth", (0, 0.09, 0), (W, 0.18, T + 0.06))

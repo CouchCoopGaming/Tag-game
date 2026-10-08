@@ -44,6 +44,7 @@ Transform:
   - {fileID: 300071}
   - {fileID: 300081}
   - {fileID: 300091}
+  - {fileID: 300101}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!205 &100002
@@ -54,8 +55,8 @@ LODGroup:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 100000}
   serializedVersion: 2
-  m_LocalReferencePoint: {x: 0, y: 1.833, z: 0}
-  m_Size: 6.644
+  m_LocalReferencePoint: {x: 0, y: 1.833, z: 1.2075}
+  m_Size: 9.185
   m_FadeMode: 0
   m_AnimateCrossFading: 0
   m_LastLODIsBillboard: 0
@@ -160,6 +161,9 @@ MeshRenderer:
   m_Materials:
   - {fileID: 2100000, guid: 6411c61a60092403762b1c1f8deb7296, type: 2}
   - {fileID: 2100000, guid: b47c340ca201ae754a5835c14bb84ad8, type: 2}
+  - {fileID: 2100000, guid: 3c701fb43fbe96f25d527f6e3fb06a33, type: 2}
+  - {fileID: 2100000, guid: beb173626a35c30c1ff350a8ec04f0d1, type: 2}
+  - {fileID: 2100000, guid: 5416f652738bd1efcc5b621780aa931f, type: 2}
   - {fileID: 2100000, guid: b0ae13624c44bb51920d1571b19a6d8d, type: 2}
   - {fileID: 2100000, guid: 477b1e5cc8c79883ad4e15dfdc184039, type: 2}
   m_StaticBatchInfo:
@@ -253,6 +257,9 @@ MeshRenderer:
   m_Materials:
   - {fileID: 2100000, guid: 6411c61a60092403762b1c1f8deb7296, type: 2}
   - {fileID: 2100000, guid: b47c340ca201ae754a5835c14bb84ad8, type: 2}
+  - {fileID: 2100000, guid: 3c701fb43fbe96f25d527f6e3fb06a33, type: 2}
+  - {fileID: 2100000, guid: beb173626a35c30c1ff350a8ec04f0d1, type: 2}
+  - {fileID: 2100000, guid: 5416f652738bd1efcc5b621780aa931f, type: 2}
   - {fileID: 2100000, guid: 477b1e5cc8c79883ad4e15dfdc184039, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
@@ -345,6 +352,7 @@ MeshRenderer:
   m_Materials:
   - {fileID: 2100000, guid: 6411c61a60092403762b1c1f8deb7296, type: 2}
   - {fileID: 2100000, guid: b47c340ca201ae754a5835c14bb84ad8, type: 2}
+  - {fileID: 2100000, guid: 5416f652738bd1efcc5b621780aa931f, type: 2}
   - {fileID: 2100000, guid: 477b1e5cc8c79883ad4e15dfdc184039, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
@@ -804,7 +812,7 @@ GameObject:
   - component: {fileID: 300081}
   - component: {fileID: 300082}
   m_Layer: 0
-  m_Name: Col_RoofS
+  m_Name: Col_Apron
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -818,8 +826,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 300080}
   serializedVersion: 2
-  m_LocalRotation: {x: -0.16018, y: 0, z: 0, w: 0.98709}
-  m_LocalPosition: {x: 0, y: 3.07988, z: -1.65996}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0.02, z: 4.55}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -844,7 +852,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 3.28, y: 0.035, z: 2.43495}
+  m_Size: {x: 2.6, y: 0.035, z: 2.4}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300090
 GameObject:
@@ -857,7 +865,7 @@ GameObject:
   - component: {fileID: 300091}
   - component: {fileID: 300092}
   m_Layer: 0
-  m_Name: Col_RoofN
+  m_Name: Col_RoofS
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -871,8 +879,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 300090}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.16018, y: 0, z: 0, w: 0.98709}
-  m_LocalPosition: {x: 0, y: 3.07988, z: 1.65996}
+  m_LocalRotation: {x: -0.16018, y: 0, z: 0, w: 0.98709}
+  m_LocalPosition: {x: 0, y: 3.07988, z: -1.65996}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -885,6 +893,59 @@ BoxCollider:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 300090}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 3.28, y: 0.035, z: 2.43495}
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!1 &300100
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 300101}
+  - component: {fileID: 300102}
+  m_Layer: 0
+  m_Name: Col_RoofN
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &300101
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 300100}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0.16018, y: 0, z: 0, w: 0.98709}
+  m_LocalPosition: {x: 0, y: 3.07988, z: 1.65996}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  m_Father: {fileID: 100001}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!65 &300102
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 300100}
   m_Material: {fileID: 0}
   m_IncludeLayers:
     serializedVersion: 2

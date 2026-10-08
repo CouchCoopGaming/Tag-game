@@ -45,7 +45,7 @@ def _leg(g, lod, bev, seg, along):
         board = pitch * 0.88
         for i in range(count):
             z = z0 + pitch * (i + 0.5)
-            g.box((-1.0, 0.602, z), (2.00, 0.032, board), "Lib_Wood", bevel=bev, segs=1 if lod == 0 else 0, uv_scale=1.2)
+            g.box((-1.0, 0.602, z), (2.00, 0.032, board), "Lib_WoodWeather", bevel=bev, segs=1 if lod == 0 else 0, uv_scale=1.2)
         g.box((-1.0, 0.42, 0), (0.12, 0.16, 3.7), "Lib_WoodDark", uv_scale=1.0)
         g.box((-1.95, 0.50, 0), (0.05, 0.18, 3.9), "Lib_WoodDark")
         g.box((-0.05, 0.50, 1.0), (0.05, 0.18, 1.9), "Lib_WoodDark")
@@ -55,7 +55,7 @@ def _leg(g, lod, bev, seg, along):
         board = pitch * 0.88
         for i in range(count):
             x = x0 + pitch * (i + 0.5)
-            g.box((x, 0.602, -1.0), (board, 0.032, 1.92), "Lib_Wood", bevel=bev, segs=1 if lod == 0 else 0, uv_scale=1.2)
+            g.box((x, 0.602, -1.0), (board, 0.032, 1.92), "Lib_WoodWeather", bevel=bev, segs=1 if lod == 0 else 0, uv_scale=1.2)
         g.box((1.0, 0.42, -1.0), (1.9, 0.16, 0.12), "Lib_WoodDark", uv_scale=1.0)
         g.box((1.0, 0.50, -1.95), (1.9, 0.18, 0.05), "Lib_WoodDark")
         g.box((1.0, 0.50, -0.05), (1.9, 0.18, 0.05), "Lib_WoodDark")

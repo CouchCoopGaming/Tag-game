@@ -18,6 +18,7 @@ def create():
         seg = lod_pick(lod, 20, 10)
         g.cylinder((0, 0.40, 0), 0.22, 0.76, "Lib_SteelDark", seg, bevel=0.003 if lod == 0 else 0, segs=1)
         g.cylinder((0, 0.80, 0), 0.24, 0.05, "Lib_Steel", seg)
+        g.cylinder((0, 0.77, 0), 0.205, 0.035, "Lib_Rubber", seg)
         g.cylinder((0, 0.04, 0), 0.24, 0.06, "Lib_Steel", seg)
         g.sphere((0, 0.90, 0), 0.20, "Lib_Steel", seg)
         g.cylinder((0, 1.02, 0), 0.03, 0.06, "Lib_SteelDark", 8)

@@ -174,7 +174,7 @@
     "size": [
       1.8,
       0.85,
-      0.556
+      0.591
     ],
     "min": [
       -0.9,
@@ -184,12 +184,12 @@
     "max": [
       0.9,
       0.85,
-      0.245
+      0.28
     ],
     "lods": [
       {
         "lod": 0,
-        "tris": 1776,
+        "tris": 2200,
         "materials": [
           "Lib_SteelDark",
           "Lib_Wood"
@@ -199,7 +199,7 @@
       },
       {
         "lod": 1,
-        "tris": 748,
+        "tris": 1044,
         "materials": [
           "Lib_SteelDark",
           "Lib_Wood"
@@ -797,8 +797,8 @@
     "blurb": "Log cabin 4.6 x 3.6 m, walls 2.15 m, ridge at 3.45 m, porch on +Z. Door is closed.",
     "size": [
       5.0,
-      3.501,
-      5.332
+      4.2,
+      5.992
     ],
     "min": [
       -2.5,
@@ -807,17 +807,20 @@
     ],
     "max": [
       2.5,
-      3.501,
-      3.25
+      4.2,
+      3.91
     ],
     "lods": [
       {
         "lod": 0,
-        "tris": 1556,
+        "tris": 2840,
         "materials": [
           "Lib_WoodDark",
           "Lib_Wood",
+          "Lib_Window",
           "Lib_Brass",
+          "Lib_Brick",
+          "Lib_Concrete",
           "Lib_Roof"
         ],
         "mesh": "LOD0",
@@ -825,10 +828,11 @@
       },
       {
         "lod": 1,
-        "tris": 732,
+        "tris": 816,
         "materials": [
           "Lib_WoodDark",
           "Lib_Wood",
+          "Lib_Window",
           "Lib_Roof"
         ],
         "mesh": "LOD1",
@@ -836,7 +840,7 @@
       },
       {
         "lod": 2,
-        "tris": 300,
+        "tris": 324,
         "materials": [
           "Lib_WoodDark",
           "Lib_Wood",
@@ -973,6 +977,44 @@
           0.9,
           1.85,
           0.06
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_StepLow",
+        "type": "box",
+        "center": [
+          0,
+          0.05,
+          3.75
+        ],
+        "size": [
+          1.0,
+          0.05,
+          0.24
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_StepHigh",
+        "type": "box",
+        "center": [
+          0,
+          0.15,
+          3.42
+        ],
+        "size": [
+          1.05,
+          0.06,
+          0.2
         ],
         "euler": [
           0,
@@ -1439,7 +1481,7 @@
     "lods": [
       {
         "lod": 0,
-        "tris": 176,
+        "tris": 200,
         "materials": [
           "Lib_Brick",
           "Lib_Concrete"
@@ -1449,7 +1491,7 @@
       },
       {
         "lod": 1,
-        "tris": 176,
+        "tris": 200,
         "materials": [
           "Lib_Brick",
           "Lib_Concrete"
@@ -1459,7 +1501,7 @@
       },
       {
         "lod": 2,
-        "tris": 48,
+        "tris": 72,
         "materials": [
           "Lib_Brick",
           "Lib_Concrete"
@@ -1545,12 +1587,13 @@
     "lods": [
       {
         "lod": 0,
-        "tris": 288,
+        "tris": 344,
         "materials": [
           "Lib_Concrete",
           "Lib_Brick",
           "Lib_WoodDark",
-          "Lib_Brass"
+          "Lib_Brass",
+          "Lib_Wood"
         ],
         "mesh": "LOD0",
         "fileID": -1633821710574564935
@@ -1822,7 +1865,7 @@
     "size": [
       4.0,
       3.2,
-      0.38
+      0.382
     ],
     "min": [
       -2.0,
@@ -1832,12 +1875,12 @@
     "max": [
       2.0,
       3.2,
-      0.19
+      0.192
     ],
     "lods": [
       {
         "lod": 0,
-        "tris": 324,
+        "tris": 336,
         "materials": [
           "Lib_Brick",
           "Lib_Concrete"
@@ -1847,7 +1890,7 @@
       },
       {
         "lod": 1,
-        "tris": 132,
+        "tris": 144,
         "materials": [
           "Lib_Brick",
           "Lib_Concrete"
@@ -1857,7 +1900,7 @@
       },
       {
         "lod": 2,
-        "tris": 36,
+        "tris": 48,
         "materials": [
           "Lib_Brick",
           "Lib_Concrete"
@@ -1947,7 +1990,7 @@
     "size": [
       4.0,
       3.2,
-      0.39
+      0.4
     ],
     "min": [
       -2.0,
@@ -1957,16 +2000,17 @@
     "max": [
       2.0,
       3.2,
-      0.2
+      0.21
     ],
     "lods": [
       {
         "lod": 0,
-        "tris": 356,
+        "tris": 412,
         "materials": [
           "Lib_Brick",
           "Lib_Concrete",
-          "Lib_Glass",
+          "Lib_Window",
+          "Lib_PaintWhite",
           "Lib_SteelDark"
         ],
         "mesh": "LOD0",
@@ -1974,11 +2018,11 @@
       },
       {
         "lod": 1,
-        "tris": 356,
+        "tris": 388,
         "materials": [
           "Lib_Brick",
           "Lib_Concrete",
-          "Lib_Glass",
+          "Lib_Window",
           "Lib_SteelDark"
         ],
         "mesh": "LOD1",
@@ -2161,7 +2205,7 @@
       "LOD1",
       "LOD2"
     ],
-    "slackCm": 0.8,
+    "slackCm": 0.96,
     "fbx": "Assets/Art/Props/Library/Buildings/Brick_Window.fbx"
   },
   {
@@ -2970,37 +3014,39 @@
     "category": "Harbor",
     "blurb": "20-foot container, 6.06 m long, 2.44 m wide, 2.59 m tall. Doors face +Z. Corrugation stands proud of the wall plate.",
     "size": [
-      2.489,
+      2.598,
       2.63,
-      6.11
+      6.118
     ],
     "min": [
-      -1.245,
+      -1.256,
       0.0,
       -3.03
     ],
     "max": [
-      1.245,
+      1.342,
       2.63,
-      3.08
+      3.088
     ],
     "lods": [
       {
         "lod": 0,
-        "tris": 1032,
+        "tris": 1868,
         "materials": [
           "Lib_ContainerRed",
           "Lib_SteelDark",
           "Lib_Steel",
           "Lib_Brass",
-          "Lib_PaintYellow"
+          "Lib_PaintYellow",
+          "Lib_PaintWhite",
+          "Lib_ContainerBlue"
         ],
         "mesh": "LOD0",
         "fileID": -1633821710574564935
       },
       {
         "lod": 1,
-        "tris": 420,
+        "tris": 432,
         "materials": [
           "Lib_ContainerRed",
           "Lib_SteelDark",
@@ -3062,37 +3108,38 @@
     "category": "Harbor",
     "blurb": "40-foot container, 12.19 m long, 2.44 m wide, 2.59 m tall. Doors face +Z.",
     "size": [
-      2.489,
+      2.598,
       2.63,
-      12.24
+      12.247
     ],
     "min": [
-      -1.245,
+      -1.256,
       0.0,
       -6.095
     ],
     "max": [
-      1.245,
+      1.342,
       2.63,
-      6.145
+      6.153
     ],
     "lods": [
       {
         "lod": 0,
-        "tris": 1452,
+        "tris": 2624,
         "materials": [
           "Lib_ContainerBlue",
           "Lib_SteelDark",
           "Lib_Steel",
           "Lib_Brass",
-          "Lib_PaintYellow"
+          "Lib_PaintYellow",
+          "Lib_PaintWhite"
         ],
         "mesh": "LOD0",
         "fileID": -1633821710574564935
       },
       {
         "lod": 1,
-        "tris": 600,
+        "tris": 612,
         "materials": [
           "Lib_ContainerBlue",
           "Lib_SteelDark",
@@ -3152,27 +3199,28 @@
   {
     "name": "Court",
     "category": "Park",
-    "blurb": "Street half-court 14 m long (Z) by 10 m wide. Baseline is -Z. Paint has no collider.",
+    "blurb": "Street half-court, 14 m long by 10 m wide. Asphalt with a 3.66 m lane, 5.79 m free-throw, and a 6.25 m arc. Paint has no collider.",
     "size": [
-      11.177,
-      0.127,
+      10.0,
+      0.129,
       14.0
     ],
     "min": [
-      -5.588,
+      -5.0,
       0.0,
       -7.0
     ],
     "max": [
-      5.588,
-      0.127,
+      5.0,
+      0.129,
       7.0
     ],
     "lods": [
       {
         "lod": 0,
-        "tris": 344,
+        "tris": 404,
         "materials": [
+          "Lib_Asphalt",
           "Lib_Court",
           "Lib_PaintWhite"
         ],
@@ -3181,8 +3229,9 @@
       },
       {
         "lod": 1,
-        "tris": 216,
+        "tris": 252,
         "materials": [
+          "Lib_Asphalt",
           "Lib_Court",
           "Lib_PaintWhite"
         ],
@@ -3215,15 +3264,254 @@
     "vaultable": false,
     "vaultHeight": 0.0,
     "climbNote": "Flat slab, 0.12 m thick.",
-    "vaultNote": "No rail. Place Hoop just outside the -Z baseline.",
+    "vaultNote": "No rail. Place Hoop just outside the -Z baseline so the 3.05 m rim hangs inside the end line.",
     "warnings": [],
     "fbxNames": [
       "LODBoxS",
       "LOD0",
       "LOD1"
     ],
-    "slackCm": 0.51,
+    "slackCm": 0.28,
     "fbx": "Assets/Art/Props/Library/Park/Court.fbx"
+  },
+  {
+    "name": "CourtFence",
+    "category": "Park",
+    "blurb": "Perimeter for the 14 x 10 m court. Same pivot as Court. Baselines 3.05 m, sidelines 1.80 m, closed gate on +X.",
+    "size": [
+      10.98,
+      3.095,
+      14.99
+    ],
+    "min": [
+      -5.49,
+      0.0,
+      -7.495
+    ],
+    "max": [
+      5.49,
+      3.095,
+      7.495
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 2440,
+        "materials": [
+          "Lib_SteelDark",
+          "Lib_Steel",
+          "Lib_Chain"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 1756,
+        "materials": [
+          "Lib_SteelDark",
+          "Lib_Steel",
+          "Lib_Chain"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      },
+      {
+        "lod": 2,
+        "tris": 1568,
+        "materials": [
+          "Lib_SteelDark",
+          "Lib_Steel",
+          "Lib_Chain"
+        ],
+        "mesh": "LOD2",
+        "fileID": 736115405485880582
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_Post_SW",
+        "type": "capsule",
+        "center": [
+          -5.45,
+          1.52,
+          -7.45
+        ],
+        "radius": 0.035,
+        "height": 3.05,
+        "direction": 1
+      },
+      {
+        "name": "Col_Post_SE",
+        "type": "capsule",
+        "center": [
+          5.45,
+          1.52,
+          -7.45
+        ],
+        "radius": 0.035,
+        "height": 3.05,
+        "direction": 1
+      },
+      {
+        "name": "Col_Post_NW",
+        "type": "capsule",
+        "center": [
+          -5.45,
+          1.52,
+          7.45
+        ],
+        "radius": 0.035,
+        "height": 3.05,
+        "direction": 1
+      },
+      {
+        "name": "Col_Post_NE",
+        "type": "capsule",
+        "center": [
+          5.45,
+          1.52,
+          7.45
+        ],
+        "radius": 0.035,
+        "height": 3.05,
+        "direction": 1
+      },
+      {
+        "name": "Col_Fabric_S",
+        "type": "box",
+        "center": [
+          0,
+          1.5,
+          -7.45
+        ],
+        "size": [
+          10.9,
+          2.9,
+          0.02
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ],
+        "approx": true
+      },
+      {
+        "name": "Col_Fabric_N",
+        "type": "box",
+        "center": [
+          0,
+          1.5,
+          7.45
+        ],
+        "size": [
+          10.9,
+          2.9,
+          0.02
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ],
+        "approx": true
+      },
+      {
+        "name": "Col_Fabric_W",
+        "type": "box",
+        "center": [
+          -5.45,
+          0.9,
+          0
+        ],
+        "size": [
+          0.02,
+          1.6,
+          14.9
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ],
+        "approx": true
+      },
+      {
+        "name": "Col_Fabric_E1",
+        "type": "box",
+        "center": [
+          5.45,
+          0.9,
+          -4.1
+        ],
+        "size": [
+          0.02,
+          1.6,
+          6.4
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ],
+        "approx": true
+      },
+      {
+        "name": "Col_Fabric_E2",
+        "type": "box",
+        "center": [
+          5.45,
+          0.9,
+          4.1
+        ],
+        "size": [
+          0.02,
+          1.6,
+          6.4
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ],
+        "approx": true
+      },
+      {
+        "name": "Col_Gate",
+        "type": "box",
+        "center": [
+          5.45,
+          0.9,
+          0
+        ],
+        "size": [
+          0.04,
+          1.6,
+          1.4
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ],
+        "approx": true
+      }
+    ],
+    "climbable": true,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "Posts, rails, and a wire-thick fabric slab. The diamonds are not a passage. The gate is closed.",
+    "vaultNote": "Sideline top is 1.80 m and the baselines are 3.05 m. Too high to vault from the court.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1",
+      "LOD2"
+    ],
+    "slackCm": 1.3,
+    "fbx": "Assets/Art/Props/Library/Park/CourtFence.fbx"
   },
   {
     "name": "HarborCrane",
@@ -3543,7 +3831,7 @@
         "lod": 0,
         "tris": 1444,
         "materials": [
-          "Lib_Wood",
+          "Lib_WoodWeather",
           "Lib_WoodDark"
         ],
         "mesh": "LOD0",
@@ -3553,7 +3841,7 @@
         "lod": 1,
         "tris": 364,
         "materials": [
-          "Lib_Wood",
+          "Lib_WoodWeather",
           "Lib_WoodDark"
         ],
         "mesh": "LOD1",
@@ -4169,6 +4457,353 @@
     "fbx": "Assets/Art/Props/Library/Harbor/Dock_Corner.fbx"
   },
   {
+    "name": "DockRamp",
+    "category": "Harbor",
+    "blurb": "Ramp 4.0 x 2.0 m. Deck falls from 0.62 m at -Z to 0.05 m at +Z. Matches Dock_Straight.",
+    "size": [
+      1.88,
+      0.631,
+      3.961
+    ],
+    "min": [
+      -0.94,
+      0.0,
+      -1.98
+    ],
+    "max": [
+      0.94,
+      0.631,
+      1.98
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 696,
+        "materials": [
+          "Lib_WoodWeather",
+          "Lib_WoodDark"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 160,
+        "materials": [
+          "Lib_WoodWeather",
+          "Lib_WoodDark"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_Plank_0",
+        "type": "box",
+        "center": [
+          0,
+          0.5996428571428571,
+          -1.8571428571428572
+        ],
+        "size": [
+          1.7,
+          0.022,
+          0.20571428571428568
+        ],
+        "euler": [
+          8.110047829419097,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Plank_1",
+        "type": "box",
+        "center": [
+          0,
+          0.5589285714285714,
+          -1.5714285714285714
+        ],
+        "size": [
+          1.7,
+          0.022,
+          0.20571428571428568
+        ],
+        "euler": [
+          8.110047829419097,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Plank_2",
+        "type": "box",
+        "center": [
+          0,
+          0.5182142857142857,
+          -1.2857142857142856
+        ],
+        "size": [
+          1.7,
+          0.022,
+          0.20571428571428568
+        ],
+        "euler": [
+          8.110047829419097,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Plank_3",
+        "type": "box",
+        "center": [
+          0,
+          0.47750000000000004,
+          -1.0
+        ],
+        "size": [
+          1.7,
+          0.022,
+          0.20571428571428568
+        ],
+        "euler": [
+          8.110047829419097,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Plank_4",
+        "type": "box",
+        "center": [
+          0,
+          0.4367857142857143,
+          -0.7142857142857142
+        ],
+        "size": [
+          1.7,
+          0.022,
+          0.20571428571428568
+        ],
+        "euler": [
+          8.110047829419097,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Plank_5",
+        "type": "box",
+        "center": [
+          0,
+          0.39607142857142863,
+          -0.4285714285714286
+        ],
+        "size": [
+          1.7,
+          0.022,
+          0.20571428571428568
+        ],
+        "euler": [
+          8.110047829419097,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Plank_6",
+        "type": "box",
+        "center": [
+          0,
+          0.35535714285714287,
+          -0.1428571428571428
+        ],
+        "size": [
+          1.7,
+          0.022,
+          0.20571428571428568
+        ],
+        "euler": [
+          8.110047829419097,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Plank_7",
+        "type": "box",
+        "center": [
+          0,
+          0.31464285714285717,
+          0.1428571428571428
+        ],
+        "size": [
+          1.7,
+          0.022,
+          0.20571428571428568
+        ],
+        "euler": [
+          8.110047829419097,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Plank_8",
+        "type": "box",
+        "center": [
+          0,
+          0.27392857142857147,
+          0.4285714285714284
+        ],
+        "size": [
+          1.7,
+          0.022,
+          0.20571428571428568
+        ],
+        "euler": [
+          8.110047829419097,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Plank_9",
+        "type": "box",
+        "center": [
+          0,
+          0.2332142857142857,
+          0.7142857142857144
+        ],
+        "size": [
+          1.7,
+          0.022,
+          0.20571428571428568
+        ],
+        "euler": [
+          8.110047829419097,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Plank_10",
+        "type": "box",
+        "center": [
+          0,
+          0.1925,
+          1.0
+        ],
+        "size": [
+          1.7,
+          0.022,
+          0.20571428571428568
+        ],
+        "euler": [
+          8.110047829419097,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Plank_11",
+        "type": "box",
+        "center": [
+          0,
+          0.15178571428571436,
+          1.2857142857142856
+        ],
+        "size": [
+          1.7,
+          0.022,
+          0.20571428571428568
+        ],
+        "euler": [
+          8.110047829419097,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Plank_12",
+        "type": "box",
+        "center": [
+          0,
+          0.1110714285714286,
+          1.5714285714285716
+        ],
+        "size": [
+          1.7,
+          0.022,
+          0.20571428571428568
+        ],
+        "euler": [
+          8.110047829419097,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Plank_13",
+        "type": "box",
+        "center": [
+          0,
+          0.0703571428571429,
+          1.8571428571428572
+        ],
+        "size": [
+          1.7,
+          0.022,
+          0.20571428571428568
+        ],
+        "euler": [
+          8.110047829419097,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_PileL",
+        "type": "capsule",
+        "center": [
+          -0.72,
+          0.28,
+          -1.55
+        ],
+        "radius": 0.1,
+        "height": 0.52,
+        "direction": 1
+      },
+      {
+        "name": "Col_PileR",
+        "type": "capsule",
+        "center": [
+          0.72,
+          0.28,
+          -1.55
+        ],
+        "radius": 0.1,
+        "height": 0.52,
+        "direction": 1
+      }
+    ],
+    "climbable": false,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "Walk the planks. Not a cling wall. Pivot is the center of the ramp, not the pile centroid.",
+    "vaultNote": "The high end is 0.62 m. Under the vault band.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1"
+    ],
+    "slackCm": 1.32,
+    "fbx": "Assets/Art/Props/Library/Harbor/DockRamp.fbx"
+  },
+  {
     "name": "Dock_Straight",
     "category": "Harbor",
     "blurb": "Dock module 4.0 m long and 2.0 m wide. Deck top is 0.62 m. Butt the next module on the Z ends (center to center 4.0 m).",
@@ -4190,11 +4825,12 @@
     "lods": [
       {
         "lod": 0,
-        "tris": 1928,
+        "tris": 2448,
         "materials": [
           "Lib_WoodDark",
           "Lib_SteelDark",
-          "Lib_Wood"
+          "Lib_Wood",
+          "Lib_WoodWeather"
         ],
         "mesh": "LOD0",
         "fileID": -1633821710574564935
@@ -4204,7 +4840,8 @@
         "tris": 344,
         "materials": [
           "Lib_WoodDark",
-          "Lib_Wood"
+          "Lib_Wood",
+          "Lib_WoodWeather"
         ],
         "mesh": "LOD1",
         "fileID": -179393741545503174
@@ -5290,41 +5927,42 @@
   {
     "name": "FireHydrant",
     "category": "StreetFurniture",
-    "blurb": "Dry-barrel hydrant, 0.78 m to the operating nut, two hose nozzles and one pumper nozzle.",
+    "blurb": "Dry-barrel hydrant, 0.76 m to the operating nut. Hose nozzles, pumper cap, chains, and flange bolts.",
     "size": [
-      0.428,
-      0.77,
-      0.39
+      0.4,
+      0.761,
+      0.395
     ],
     "min": [
-      -0.214,
+      -0.2,
       0.0,
-      -0.155
+      -0.165
     ],
     "max": [
-      0.214,
-      0.77,
-      0.235
+      0.2,
+      0.761,
+      0.23
     ],
     "lods": [
       {
         "lod": 0,
-        "tris": 1000,
+        "tris": 1104,
         "materials": [
           "Lib_SteelDark",
-          "Lib_PaintRed",
+          "Lib_Steel",
+          "Lib_Hydrant",
           "Lib_Brass",
-          "Lib_Steel"
+          "Lib_Chain"
         ],
         "mesh": "LOD0",
         "fileID": -1633821710574564935
       },
       {
         "lod": 1,
-        "tris": 348,
+        "tris": 356,
         "materials": [
           "Lib_SteelDark",
-          "Lib_PaintRed",
+          "Lib_Hydrant",
           "Lib_Brass"
         ],
         "mesh": "LOD1",
@@ -5333,28 +5971,16 @@
     ],
     "colliders": [
       {
-        "name": "Col_Barrel",
-        "type": "capsule",
-        "center": [
-          0,
-          0.4,
-          0
-        ],
-        "radius": 0.092,
-        "height": 0.7,
-        "direction": 1
-      },
-      {
         "name": "Col_Flange",
         "type": "box",
         "center": [
           0,
-          0.02,
+          0.028,
           0
         ],
         "size": [
           0.22,
-          0.04,
+          0.05,
           0.22
         ],
         "euler": [
@@ -5364,27 +5990,39 @@
         ]
       },
       {
+        "name": "Col_Barrel",
+        "type": "capsule",
+        "center": [
+          0,
+          0.36,
+          0
+        ],
+        "radius": 0.084,
+        "height": 0.5,
+        "direction": 1
+      },
+      {
         "name": "Col_Nozzle_L",
         "type": "capsule",
         "center": [
-          -0.145,
-          0.4,
+          -0.13,
+          0.42,
           0
         ],
-        "radius": 0.036,
-        "height": 0.12,
+        "radius": 0.032,
+        "height": 0.1,
         "direction": 0
       },
       {
         "name": "Col_Nozzle_R",
         "type": "capsule",
         "center": [
-          0.145,
-          0.4,
+          0.13,
+          0.42,
           0
         ],
-        "radius": 0.036,
-        "height": 0.12,
+        "radius": 0.032,
+        "height": 0.1,
         "direction": 0
       },
       {
@@ -5393,10 +6031,10 @@
         "center": [
           0,
           0.4,
-          0.155
+          0.15
         ],
-        "radius": 0.05,
-        "height": 0.14,
+        "radius": 0.046,
+        "height": 0.12,
         "direction": 2
       }
     ],
@@ -5511,25 +6149,28 @@
     "size": [
       4.0,
       3.666,
-      6.644
+      9.185
     ],
     "min": [
       -2.0,
       0.0,
-      -3.322
+      -3.385
     ],
     "max": [
       2.0,
       3.666,
-      3.322
+      5.8
     ],
     "lods": [
       {
         "lod": 0,
-        "tris": 356,
+        "tris": 500,
         "materials": [
           "Lib_Siding",
           "Lib_PaintWhite",
+          "Lib_Window",
+          "Lib_SteelDark",
+          "Lib_Concrete",
           "Lib_Black",
           "Lib_Roof"
         ],
@@ -5538,10 +6179,13 @@
       },
       {
         "lod": 1,
-        "tris": 108,
+        "tris": 196,
         "materials": [
           "Lib_Siding",
           "Lib_PaintWhite",
+          "Lib_Window",
+          "Lib_SteelDark",
+          "Lib_Concrete",
           "Lib_Roof"
         ],
         "mesh": "LOD1",
@@ -5549,10 +6193,11 @@
       },
       {
         "lod": 2,
-        "tris": 84,
+        "tris": 120,
         "materials": [
           "Lib_Siding",
           "Lib_PaintWhite",
+          "Lib_Concrete",
           "Lib_Roof"
         ],
         "mesh": "LOD2",
@@ -5705,6 +6350,25 @@
           2.3,
           0.26,
           0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Apron",
+        "type": "box",
+        "center": [
+          0,
+          0.02,
+          4.55
+        ],
+        "size": [
+          2.6,
+          0.035,
+          2.4
         ],
         "euler": [
           0,
@@ -5891,32 +6555,88 @@
     "fbx": "Assets/Art/Props/Library/Harbor/HarborRail.fbx"
   },
   {
-    "name": "Hoop",
-    "category": "Park",
-    "blurb": "Regulation rim height 3.05 m. Pole at the origin, backboard and rim toward +Z. Set the pole just outside the court baseline.",
+    "name": "HarborWater",
+    "category": "Harbor",
+    "blurb": "Water sheet 16 x 12 m, 2 cm thick. No collider. Set it at the waterline and let docks sit on their own pilings.",
     "size": [
-      1.4,
-      3.8,
-      1.312
+      16.0,
+      0.02,
+      12.0
     ],
     "min": [
-      -0.7,
+      -8.0,
       0.0,
-      -0.225
+      -6.0
     ],
     "max": [
-      0.7,
-      3.8,
-      1.087
+      8.0,
+      0.02,
+      6.0
     ],
     "lods": [
       {
         "lod": 0,
-        "tris": 444,
+        "tris": 12,
+        "materials": [
+          "Lib_Water"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 12,
+        "materials": [
+          "Lib_Water"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      }
+    ],
+    "colliders": [],
+    "climbable": false,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "Visual water. No collider, so it is not a floor and not a wall.",
+    "vaultNote": "No collider.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1"
+    ],
+    "slackCm": 0.0,
+    "fbx": "Assets/Art/Props/Library/Harbor/HarborWater.fbx"
+  },
+  {
+    "name": "Hoop",
+    "category": "Park",
+    "blurb": "Regulation rim at 3.05 m. 1.80 x 1.05 m backboard, net, pole pad, and base plate. Rim faces +Z.",
+    "size": [
+      1.84,
+      4.005,
+      1.327
+    ],
+    "min": [
+      -0.92,
+      0.0,
+      -0.23
+    ],
+    "max": [
+      0.92,
+      4.005,
+      1.097
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 1524,
         "materials": [
           "Lib_SteelDark",
           "Lib_Steel",
+          "Lib_PaintBlue",
           "Lib_PaintWhite",
+          "Lib_Black",
           "Lib_PaintRed",
           "Lib_Orange"
         ],
@@ -5925,11 +6645,13 @@
       },
       {
         "lod": 1,
-        "tris": 196,
+        "tris": 572,
         "materials": [
           "Lib_SteelDark",
           "Lib_Steel",
+          "Lib_PaintBlue",
           "Lib_PaintWhite",
+          "Lib_Black",
           "Lib_PaintRed",
           "Lib_Orange"
         ],
@@ -5947,9 +6669,9 @@
           0
         ],
         "size": [
-          0.45,
-          0.04,
-          0.45
+          0.5,
+          0.035,
+          0.4
         ],
         "euler": [
           0,
@@ -5962,11 +6684,11 @@
         "type": "capsule",
         "center": [
           0,
-          1.6,
+          1.55,
           0
         ],
-        "radius": 0.06,
-        "height": 3.15,
+        "radius": 0.05,
+        "height": 2.95,
         "direction": 1
       },
       {
@@ -5974,13 +6696,13 @@
         "type": "box",
         "center": [
           0,
-          3.35,
-          0.55
+          3.48,
+          0.52
         ],
         "size": [
-          1.4,
-          0.9,
-          0.05
+          1.72,
+          0.98,
+          0.03
         ],
         "euler": [
           0,
@@ -5993,13 +6715,13 @@
         "type": "box",
         "center": [
           0,
-          3.2,
-          0.35
+          3.35,
+          0.32
         ],
         "size": [
-          0.08,
-          0.08,
-          0.4
+          0.07,
+          0.07,
+          0.32
         ],
         "euler": [
           0,
@@ -6011,7 +6733,7 @@
     "climbable": false,
     "vaultable": false,
     "vaultHeight": 0.0,
-    "climbNote": "Pole is 12 cm. Not a cling wall.",
+    "climbNote": "Pole is 12 cm under the pad. Not a cling wall.",
     "vaultNote": "No rail. The rim is 3.05 m.",
     "warnings": [],
     "fbxNames": [
@@ -6019,7 +6741,7 @@
       "LOD0",
       "LOD1"
     ],
-    "slackCm": 0.7,
+    "slackCm": 2.0,
     "fbx": "Assets/Art/Props/Library/Park/Hoop.fbx"
   },
   {
@@ -6029,27 +6751,28 @@
     "size": [
       7.8,
       4.42,
-      7.788
+      9.769
     ],
     "min": [
       -3.9,
       0.0,
-      -3.088
+      -3.219
     ],
     "max": [
       3.9,
       4.42,
-      4.7
+      6.55
     ],
     "lods": [
       {
         "lod": 0,
-        "tris": 482,
+        "tris": 778,
         "materials": [
           "Lib_Siding",
           "Lib_Concrete",
           "Lib_PaintWhite",
-          "Lib_Glass",
+          "Lib_SteelDark",
+          "Lib_Window",
           "Lib_WoodDark",
           "Lib_Brass",
           "Lib_Wood",
@@ -6060,12 +6783,13 @@
       },
       {
         "lod": 1,
-        "tris": 406,
+        "tris": 654,
         "materials": [
           "Lib_Siding",
           "Lib_Concrete",
           "Lib_PaintWhite",
-          "Lib_Glass",
+          "Lib_SteelDark",
+          "Lib_Window",
           "Lib_WoodDark",
           "Lib_Wood",
           "Lib_Roof"
@@ -6075,12 +6799,12 @@
       },
       {
         "lod": 2,
-        "tris": 132,
+        "tris": 192,
         "materials": [
           "Lib_Siding",
           "Lib_Concrete",
-          "Lib_Wood",
           "Lib_PaintWhite",
+          "Lib_Wood",
           "Lib_Roof"
         ],
         "mesh": "LOD2",
@@ -6241,6 +6965,25 @@
         ]
       },
       {
+        "name": "Col_Walk",
+        "type": "box",
+        "center": [
+          0,
+          0.02,
+          5.55
+        ],
+        "size": [
+          1.3,
+          0.035,
+          1.9
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
         "name": "Col_Porch",
         "type": "box",
         "center": [
@@ -6341,8 +7084,62 @@
       "LOD1",
       "LOD2"
     ],
-    "slackCm": 1.0,
+    "slackCm": 0.8,
     "fbx": "Assets/Art/Props/Library/Buildings/House.fbx"
+  },
+  {
+    "name": "LaneArrow",
+    "category": "Roads",
+    "blurb": "White lane arrow, 2.0 m long. Visual only. Place it on a road top (y = 0.12), pointing +Z.",
+    "size": [
+      0.72,
+      0.008,
+      1.875
+    ],
+    "min": [
+      -0.36,
+      0.0,
+      -0.935
+    ],
+    "max": [
+      0.36,
+      0.008,
+      0.94
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 20,
+        "materials": [
+          "Lib_PaintWhite"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 20,
+        "materials": [
+          "Lib_PaintWhite"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      }
+    ],
+    "colliders": [],
+    "climbable": false,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "Decal. The road slab under it is the collider.",
+    "vaultNote": "No collider of its own, so it cannot become a lip.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1"
+    ],
+    "slackCm": 0.0,
+    "fbx": "Assets/Art/Props/Library/Roads/LaneArrow.fbx"
   },
   {
     "name": "LightPost_Single",
@@ -6350,7 +7147,7 @@
     "blurb": "Residential cobra head on a tapered steel pole. Lamp at 5.45 m.",
     "size": [
       0.62,
-      5.45,
+      5.469,
       1.53
     ],
     "min": [
@@ -6360,17 +7157,18 @@
     ],
     "max": [
       0.31,
-      5.45,
+      5.469,
       1.34
     ],
     "lods": [
       {
         "lod": 0,
-        "tris": 736,
+        "tris": 792,
         "materials": [
           "Lib_SteelDark",
           "Lib_Steel",
-          "Lib_Glass"
+          "Lib_Lamp",
+          "Lib_Black"
         ],
         "mesh": "LOD0",
         "fileID": -1633821710574564935
@@ -6381,7 +7179,7 @@
         "materials": [
           "Lib_SteelDark",
           "Lib_Steel",
-          "Lib_Glass"
+          "Lib_Lamp"
         ],
         "mesh": "LOD1",
         "fileID": -179393741545503174
@@ -6478,7 +7276,7 @@
     "blurb": "Two cobra heads on one tapered pole. Lamps at 5.45 m, arms along +Z and -Z.",
     "size": [
       0.62,
-      5.45,
+      5.469,
       2.68
     ],
     "min": [
@@ -6488,17 +7286,18 @@
     ],
     "max": [
       0.31,
-      5.45,
+      5.469,
       1.34
     ],
     "lods": [
       {
         "lod": 0,
-        "tris": 876,
+        "tris": 988,
         "materials": [
           "Lib_SteelDark",
           "Lib_Steel",
-          "Lib_Glass"
+          "Lib_Lamp",
+          "Lib_Black"
         ],
         "mesh": "LOD0",
         "fileID": -1633821710574564935
@@ -6509,7 +7308,7 @@
         "materials": [
           "Lib_SteelDark",
           "Lib_Steel",
-          "Lib_Glass"
+          "Lib_Lamp"
         ],
         "mesh": "LOD1",
         "fileID": -179393741545503174
@@ -7432,6 +8231,301 @@
     ],
     "slackCm": 1.2,
     "fbx": "Assets/Art/Props/Library/Roads/Median_Planter.fbx"
+  },
+  {
+    "name": "Mooring",
+    "category": "Harbor",
+    "blurb": "Mooring finger 3.2 x 1.4 m, deck at 0.55 m, cleat and rope on the +X edge. No water collider.",
+    "size": [
+      1.32,
+      0.665,
+      3.155
+    ],
+    "min": [
+      -0.66,
+      0.0,
+      -1.578
+    ],
+    "max": [
+      0.66,
+      0.665,
+      1.578
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 348,
+        "materials": [
+          "Lib_WoodWeather",
+          "Lib_WoodDark",
+          "Lib_SteelDark",
+          "Lib_Steel",
+          "Lib_Rust"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 172,
+        "materials": [
+          "Lib_WoodWeather",
+          "Lib_WoodDark",
+          "Lib_SteelDark",
+          "Lib_Steel"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_Plank_0",
+        "type": "box",
+        "center": [
+          0,
+          0.535,
+          -1.4400000000000002
+        ],
+        "size": [
+          1.2,
+          0.024,
+          0.24
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Plank_1",
+        "type": "box",
+        "center": [
+          0,
+          0.535,
+          -1.12
+        ],
+        "size": [
+          1.2,
+          0.024,
+          0.24
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Plank_2",
+        "type": "box",
+        "center": [
+          0,
+          0.535,
+          -0.8
+        ],
+        "size": [
+          1.2,
+          0.024,
+          0.24
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Plank_3",
+        "type": "box",
+        "center": [
+          0,
+          0.535,
+          -0.48
+        ],
+        "size": [
+          1.2,
+          0.024,
+          0.24
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Plank_4",
+        "type": "box",
+        "center": [
+          0,
+          0.535,
+          -0.16000000000000014
+        ],
+        "size": [
+          1.2,
+          0.024,
+          0.24
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Plank_5",
+        "type": "box",
+        "center": [
+          0,
+          0.535,
+          0.15999999999999992
+        ],
+        "size": [
+          1.2,
+          0.024,
+          0.24
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Plank_6",
+        "type": "box",
+        "center": [
+          0,
+          0.535,
+          0.48
+        ],
+        "size": [
+          1.2,
+          0.024,
+          0.24
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Plank_7",
+        "type": "box",
+        "center": [
+          0,
+          0.535,
+          0.7999999999999998
+        ],
+        "size": [
+          1.2,
+          0.024,
+          0.24
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Plank_8",
+        "type": "box",
+        "center": [
+          0,
+          0.535,
+          1.12
+        ],
+        "size": [
+          1.2,
+          0.024,
+          0.24
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Plank_9",
+        "type": "box",
+        "center": [
+          0,
+          0.535,
+          1.44
+        ],
+        "size": [
+          1.2,
+          0.024,
+          0.24
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_PileA",
+        "type": "capsule",
+        "center": [
+          -0.55,
+          0.26,
+          -1.2
+        ],
+        "radius": 0.08,
+        "height": 0.48,
+        "direction": 1
+      },
+      {
+        "name": "Col_PileB",
+        "type": "capsule",
+        "center": [
+          -0.55,
+          0.26,
+          1.2
+        ],
+        "radius": 0.08,
+        "height": 0.48,
+        "direction": 1
+      },
+      {
+        "name": "Col_Cleat",
+        "type": "box",
+        "center": [
+          0.55,
+          0.6,
+          0.2
+        ],
+        "size": [
+          0.12,
+          0.035,
+          0.05
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "climbable": false,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "Walk the deck. Pilings are round and sit on -X, so the pivot stays the deck center.",
+    "vaultNote": "Deck is 0.55 m. Under the vault band.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1"
+    ],
+    "slackCm": 1.25,
+    "fbx": "Assets/Art/Props/Library/Harbor/Mooring.fbx"
   },
   {
     "name": "NewspaperBox",
@@ -8801,6 +9895,139 @@
     "fbx": "Assets/Art/Props/Library/Park/Planter.fbx"
   },
   {
+    "name": "RaisedCrosswalk",
+    "category": "Roads",
+    "blurb": "Speed table, 6 m wide and 4 m long. Road top 0.12 m, crown 0.20 m, ramps 0.8 m. Stripes are paint.",
+    "size": [
+      6.0,
+      0.28,
+      4.014
+    ],
+    "min": [
+      -3.0,
+      0.0,
+      -2.007
+    ],
+    "max": [
+      3.0,
+      0.28,
+      2.007
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 120,
+        "materials": [
+          "Lib_Asphalt",
+          "Lib_PaintWhite"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 96,
+        "materials": [
+          "Lib_Asphalt",
+          "Lib_PaintWhite"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_Slab",
+        "type": "box",
+        "center": [
+          0,
+          0.06,
+          0
+        ],
+        "size": [
+          6.0,
+          0.12,
+          4.0
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Crown",
+        "type": "box",
+        "center": [
+          0,
+          0.16,
+          0
+        ],
+        "size": [
+          5.7,
+          0.07,
+          2.0
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_RampS",
+        "type": "box",
+        "center": [
+          0.0,
+          0.1958586150649367,
+          -1.5531874324502166
+        ],
+        "size": [
+          4.264,
+          0.04,
+          0.6324839918922849
+        ],
+        "euler": [
+          -5.079607860014572,
+          0.0,
+          0.0
+        ]
+      },
+      {
+        "name": "Col_RampN",
+        "type": "box",
+        "center": [
+          0.0,
+          0.1958586150649367,
+          1.5531874324502166
+        ],
+        "size": [
+          4.264,
+          0.04,
+          0.6324839918922849
+        ],
+        "euler": [
+          5.079607860014572,
+          0.0,
+          0.0
+        ]
+      }
+    ],
+    "climbable": false,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "The crown is 8 cm above the road. Walk it. Not a cling wall.",
+    "vaultNote": "8 cm rise. Not a vault.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1"
+    ],
+    "slackCm": 0.8,
+    "fbx": "Assets/Art/Props/Library/Roads/RaisedCrosswalk.fbx"
+  },
+  {
     "name": "Road_Cross",
     "category": "Roads",
     "blurb": "6 x 6 m intersection. Attach Road_Straight to any edge, centered, 4 m further out.",
@@ -9547,7 +10774,7 @@
         "tris": 388,
         "materials": [
           "Lib_Brick",
-          "Lib_Glass",
+          "Lib_Window",
           "Lib_WoodDark",
           "Lib_Awning",
           "Lib_SteelDark",
@@ -9561,7 +10788,7 @@
         "tris": 84,
         "materials": [
           "Lib_Brick",
-          "Lib_Glass",
+          "Lib_Window",
           "Lib_WoodDark",
           "Lib_Awning",
           "Lib_SteelDark"
@@ -9574,7 +10801,7 @@
         "tris": 60,
         "materials": [
           "Lib_Brick",
-          "Lib_Glass",
+          "Lib_Window",
           "Lib_WoodDark"
         ],
         "mesh": "LOD2",
@@ -10035,6 +11262,60 @@
     "fbx": "Assets/Art/Props/Library/StreetFurniture/Sign_Street.fbx"
   },
   {
+    "name": "StopBar",
+    "category": "Roads",
+    "blurb": "Stop bar 6.0 m across and 0.40 m deep. Visual only. Place it on a road top (y = 0.12).",
+    "size": [
+      5.6,
+      0.008,
+      0.4
+    ],
+    "min": [
+      -2.8,
+      0.0,
+      -0.2
+    ],
+    "max": [
+      2.8,
+      0.008,
+      0.2
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 12,
+        "materials": [
+          "Lib_PaintWhite"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 12,
+        "materials": [
+          "Lib_PaintWhite"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      }
+    ],
+    "colliders": [],
+    "climbable": false,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "Decal. The road slab under it is the collider.",
+    "vaultNote": "No collider of its own, so it cannot become a lip.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1"
+    ],
+    "slackCm": 0.0,
+    "fbx": "Assets/Art/Props/Library/Roads/StopBar.fbx"
+  },
+  {
     "name": "StormDrain",
     "category": "StreetFurniture",
     "blurb": "Curb grate 0.70 x 0.40 m, 4 cm thick. Bars leave 3 cm slots. Walkable envelope.",
@@ -10266,7 +11547,7 @@
     "lods": [
       {
         "lod": 0,
-        "tris": 872,
+        "tris": 948,
         "materials": [
           "Lib_SteelDark",
           "Lib_Steel",
@@ -10277,7 +11558,7 @@
       },
       {
         "lod": 1,
-        "tris": 240,
+        "tris": 276,
         "materials": [
           "Lib_SteelDark",
           "Lib_Steel",
@@ -10356,20 +11637,22 @@
     "lods": [
       {
         "lod": 0,
-        "tris": 1052,
+        "tris": 1128,
         "materials": [
           "Lib_SteelDark",
-          "Lib_Steel"
+          "Lib_Steel",
+          "Lib_Rubber"
         ],
         "mesh": "LOD0",
         "fileID": -1633821710574564935
       },
       {
         "lod": 1,
-        "tris": 224,
+        "tris": 260,
         "materials": [
           "Lib_SteelDark",
-          "Lib_Steel"
+          "Lib_Steel",
+          "Lib_Rubber"
         ],
         "mesh": "LOD1",
         "fileID": -179393741545503174
@@ -10427,37 +11710,39 @@
     "category": "Park",
     "blurb": "Shade tree, trunk to 1.8 m, canopy about 5.2 m tall and 3.4 m across.",
     "size": [
-      2.643,
-      4.72,
-      2.255
+      3.446,
+      4.541,
+      3.322
     ],
     "min": [
-      -1.25,
+      -1.659,
       0.0,
-      -1.106
+      -1.755
     ],
     "max": [
-      1.393,
-      4.72,
-      1.149
+      1.788,
+      4.541,
+      1.567
     ],
     "lods": [
       {
         "lod": 0,
-        "tris": 2260,
+        "tris": 1996,
         "materials": [
           "Lib_WoodDark",
-          "Lib_Foliage"
+          "Lib_Foliage",
+          "Lib_FoliageDark"
         ],
         "mesh": "LOD0",
         "fileID": -1633821710574564935
       },
       {
         "lod": 1,
-        "tris": 752,
+        "tris": 688,
         "materials": [
           "Lib_WoodDark",
-          "Lib_Foliage"
+          "Lib_Foliage",
+          "Lib_FoliageDark"
         ],
         "mesh": "LOD1",
         "fileID": -179393741545503174
@@ -10494,23 +11779,13 @@
         "radius": 0.07,
         "height": 1.2,
         "direction": 1
-      },
-      {
-        "name": "Col_Canopy",
-        "type": "sphere",
-        "center": [
-          0,
-          3.35,
-          0
-        ],
-        "radius": 0.72
       }
     ],
     "climbable": false,
     "vaultable": false,
     "vaultHeight": 0.0,
     "climbNote": "Trunk is round, 0.28 m at the flare. Not a flat cling wall.",
-    "vaultNote": "No rail. Canopy is visual.",
+    "vaultNote": "No rail. The canopy is visual; the trunk is the blocker.",
     "warnings": [],
     "fbxNames": [
       "LODBoxS",

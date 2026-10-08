@@ -43,9 +43,31 @@ def create():
             g.cylinder((0, y, -depth * 0.5 + 0.12), log_r, span_x, "Lib_Wood", seg, axis="X")
             g.cylinder((width * 0.5 - 0.12, y, 0), log_r, span_z, "Lib_Wood", seg, axis="Z")
             g.cylinder((-width * 0.5 + 0.12, y, 0), log_r, span_z, "Lib_Wood", seg, axis="Z")
-        g.box((0, 1.05, depth * 0.5 - 0.08), (0.90, 1.85, 0.06), "Lib_Wood", uv_scale=1.2)
+            # Cut ends proud of the corner posts, clear of the log cylinders.
+            if lod == 0:
+                for x in (-width * 0.5 - 0.08, width * 0.5 + 0.08):
+                    g.cylinder((x, y, -depth * 0.5 - 0.02), log_r * 0.96, 0.06, "Lib_Wood", max(6, seg // 2), axis="X")
+                for z in (-depth * 0.5 - 0.02, depth * 0.5 + 0.02):
+                    g.cylinder((-width * 0.5 - 0.08, y, z), log_r * 0.96, 0.06, "Lib_WoodDark", max(6, seg // 2), axis="Z")
+                    g.cylinder((width * 0.5 + 0.08, y, z), log_r * 0.96, 0.06, "Lib_Wood", max(6, seg // 2), axis="Z")
+        g.box((0, 1.05, depth * 0.5 - 0.08), (0.90, 1.85, 0.06), "Lib_WoodDark", uv_scale=1.2)
+        if lod < 2:
+            g.box((0, 1.42, depth * 0.5 - 0.045), (0.58, 0.48, 0.02), "Lib_Wood")
+            g.box((0, 0.68, depth * 0.5 - 0.045), (0.58, 0.62, 0.02), "Lib_Wood")
+            g.box((0, 1.48, depth * 0.5 - 0.032), (0.32, 0.28, 0.012), "Lib_Window")
+            g.box((0, 1.48, depth * 0.5 - 0.024), (0.32, 0.012, 0.012), "Lib_Wood")
+            g.box((0, 1.48, depth * 0.5 - 0.024), (0.012, 0.28, 0.012), "Lib_Wood")
         if lod == 0:
-            g.box((0.28, 1.00, depth * 0.5 - 0.04), (0.04, 0.08, 0.04), "Lib_Brass")
+            g.box((0.32, 1.00, depth * 0.5 - 0.02), (0.035, 0.07, 0.03), "Lib_Brass")
+            for x, sign in ((-width * 0.5 - 0.01, -1), (width * 0.5 + 0.01, 1)):
+                g.box((x, 1.35, 0.15), (0.05, 0.72, 0.62), "Lib_Wood")
+                g.box((x + sign * 0.02, 1.35, 0.15), (0.015, 0.48, 0.40), "Lib_Window")
+                g.box((x + sign * 0.028, 1.35, 0.15), (0.01, 0.48, 0.016), "Lib_Wood")
+                g.box((x + sign * 0.028, 1.35, 0.15), (0.01, 0.016, 0.40), "Lib_Wood")
+            g.box((1.15, 3.55, -0.35), (0.48, 1.15, 0.48), "Lib_Brick", uv_scale=1.0)
+            g.box((1.15, 4.16, -0.35), (0.58, 0.08, 0.58), "Lib_Concrete")
+        g.box((0, 0.05, depth * 0.5 + 1.95), (1.15, 0.08, 0.32), "Lib_Wood")
+        g.box((0, 0.14, depth * 0.5 + 1.62), (1.20, 0.10, 0.28), "Lib_Wood")
         # Porch deck and roof.
         g.box((0, 0.12, depth * 0.5 + 0.7), (3.2, 0.10, 1.3), "Lib_Wood", bevel=0.004 if lod == 0 else 0, segs=1, uv_scale=1.0)
         for x in (-1.3, 1.3):
@@ -64,6 +86,8 @@ def create():
     a.box("Climb_SideL", (-width * 0.5 + 0.12, 1.05, 0), (0.20, 1.9, depth - 0.5))
     a.box("Climb_SideR", (width * 0.5 - 0.12, 1.05, 0), (0.20, 1.9, depth - 0.5))
     a.box("Col_Door", (0, 1.05, depth * 0.5 - 0.08), (0.90, 1.85, 0.06))
+    a.box("Col_StepLow", (0, 0.05, depth * 0.5 + 1.95), (1.00, 0.05, 0.24))
+    a.box("Col_StepHigh", (0, 0.15, depth * 0.5 + 1.62), (1.05, 0.06, 0.20))
     a.box("Col_Porch", (0, 0.12, depth * 0.5 + 0.7), (3.2, 0.10, 1.3))
     a.box("Col_PorchRoof", (0, 2.25, depth * 0.5 + 0.7), (3.4, 0.08, 1.5))
     a.capsule("Vault_PorchRail", (0, 0.95, depth * 0.5 + 1.25), 0.03, 2.6, 0)
