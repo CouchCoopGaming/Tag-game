@@ -441,6 +441,28 @@ The title plate, the main-menu Red and Blue pair, and the pause card stay as acc
 
 `ui-flow screens=15 kb=15 pad=15 dead=0 focus=ok back=ok seats=4 drop=ok reclaim=ok min=ok keep=ok cues=9 text=ok hud=ok glyphs=ok feed=ok load=ok board=ok faces=ok rules=ok records=ok contrast=ok style=ok sheet=ok defaults-conflict=0`. `ui-apply master=ok sfx=ok ui=ok music=ok mute=ok res=ok full=ok vsync=ok quality=ok scale=ok motion=ok text=ok player=ok palette=ok comic=ok mouse=ok pad=ok invert=ok fov=ok reset=ok apply=ok persist=ok`. `hot-path allocs before=101 after=0`. Stills: `32-load.png` 383063, `32-main.png` 332883, `32-join.png` 242863. Unity is not installed, so the frames in `Docs/UiStills/screens2/pass32/` are the live plate with the menu drawn on it. The figures are a Blender render of the repo FBX.
 
+## Handoff to #121
+
+PR #126 stays a draft on `cursor/tag-ui-screens2` into `cursor/tag-ui-menu`. Do not mark it ready, merge it, or close it from this lane. #121 is draft PR #121, head `cursor/tag-ui-menu`. After pass 32 that branch owns every screen, including the ones listed here.
+
+Screens this lane last touched, and the live builders in `MenuHost.cs`: title `BuildTitle`, main `BuildMain`, drop-in `BuildJoin`, loading `BuildLoading` / `BuildLoadSeats`, pause `BuildPause`. Character select is `BuildCast`. Credits, records, and practice are `BuildCredits`, `BuildRecords`, `BuildPractice`. Arena (`BuildArena`), RESULTS (`BuildResults`), options (`BuildOptions`), controls (`BuildControls`), and rules (`BuildRules`) were left for #121 and were not edited in pass 32.
+
+Files that carry those screens: `MenuHost.cs`, `MenuWidgets.cs` (`JoinDress`, `HierSeat`), `MenuTips.cs`, `MenuBackdrop.cs` (`SeatIdle`, `SeatLoad`, `MegaGrade`, `MegaBlur`), `MenuIdle.cs`, `MenuPreview.cs`, `MenuSheet.cs`, `MenuMannequin.Colors.cs`, `LoadGate.cs`, `UiFlow.cs`. Art: `Assets/Resources/UI/Menu/SeatIdle.png` (main pair, guid `a91c4e7b2d8f4a0e9c3b6d15f7048e22`), `SeatLoad.png` (four-up atlas, guid `b7e2c91a4f6d4e0a8c5b1d37e90f6a44`), `MegaGrade.png`, `MegaBlur.png`. Seat colors are one table: P1 red circle, P2 blue triangle, P3 orange square, P4 lavender diamond. #121 `SeatMark` still maps P2 square and P3 triangle. Do not import that mapping over this one without a deliberate rebase.
+
+Render, from `/workspace`. Unity is not installed. Blender 4.0.2 is. Main pair: `blender --background --python Tools/UiScreens/render_mannequin.py` writes `SeatIdle.png`. Four loading and join figures: `blender --background --python Tools/UiScreens/render_seatload.py` writes `/tmp/seatload/seat0.png` through `seat3.png` (override with `SEATLOAD_OUT`). Then `python3 Tools/UiScreens/render_pass32.py` packs `SeatLoad.png` and writes `Docs/UiStills/screens2/pass32/32-load.png`, `32-main.png`, and `32-join.png`. Pass 31 title, main, and pause: `python3 Tools/UiScreens/render_pass31.py`. Stills must stay under 400000 bytes. Do not commit `Tools/UiScreens/__pycache__/`.
+
+Proof, from `/workspace`, with `PATH=/tmp/dotnet` and `DOTNET_CLI_TELEMETRY_OPTOUT=1`:
+
+`dotnet run --project Tools/StrafeJumpSim/StrafeJumpSim.csproj -c Release -- --ui-flow`
+
+`dotnet run --project Tools/StrafeJumpSim/StrafeJumpSim.csproj -c Release --no-build -- --alloc`
+
+The success lines must stay byte-identical except ui fields a pass was told to add. Pass 32 left them as: `ui-flow screens=15 kb=15 pad=15 dead=0 focus=ok back=ok seats=4 drop=ok reclaim=ok min=ok keep=ok cues=9 text=ok hud=ok glyphs=ok feed=ok load=ok board=ok faces=ok rules=ok records=ok contrast=ok style=ok sheet=ok defaults-conflict=0` and `hot-path allocs before=101 after=0 flags=dropped`. `MenuTips.Holds` and `MenuSheet.Holds` read source from disk. Keep `PlantY = 0.005f`, `HoldRest()`, `IdlePose.At(0f, 0f)`, `ShowMenuPair`, `MenuSheet.JoinBanner(`, no `MenuBackdrop.Chase` inside `BuildMain`, no `CouchPlay.Humans > 0` inside `BuildJoin`, `At(0)` equal to `Space jumps.`, and the grapple line going through `ActionBinds.Show`. Do not edit `ActionBinds.Show` or `ControlGlyphs.GlyphOf`. Feel locks stay: coyote 0.10, jump buffer 0.16, cling grace 0.08, jumpSpeed 24.7, terminal fall 56.16. `SettingsFile.Version` stays 2. `TagBackImmunity.DefaultSeconds` is 1.0. Grapple is not a new `PlayAction`. `enableGrapple` stays false. `FireButton` stays RMB.
+
+Open flaws: Hier arms are still the bind A-pose, because no idle clip lowers them. The world It marker is still a primitive. Least It wins stay 0. A controls swap can still mark two rows. Pad grapple's stored token is `leftTrigger`, and the tip must not invent a glyph. Couch-seat grapple is a gameplay bug; leave it. pngquant is what fits the stills under 400 KB, and it crushes figure colors. The Orange Hier FBX is a different skinned mesh, so the orange seat is the shared rig tinted. Title sky step 0.155 was accepted; do not re-blur it. Pause card was accepted.
+
+Next, if the work continues: capture these screens in play mode once Unity is available, and replace the composites. If a real idle clip lowers the arms, sample that clip only, then run a 30 fps check that reports arm euler as rig joint and root translation as pose, with pose staying 0 and the soles at an absolute 0.5 cm, and do not lift the root to fake the plant. Rebase onto #121 only after deciding the seat-shape table. Do not print a pad grapple glyph.
+
 ## Later passes
 
 - Left from a rule row returns to the modes even when that rule can still decrease. Right from the right-hand mode, and Left at the end of a rule, already move between the columns.
