@@ -11,10 +11,10 @@ namespace Tag.Ui.Menu
     {
         Transform _hips, _spine, _head;
         Transform _armL, _armR, _foreL, _foreR;
-        Transform _thighL, _thighR, _kneeL, _kneeR;
+        Transform _thighL, _thighR, _kneeL, _kneeR, _footL, _footR;
         Quaternion _hips0, _spine0, _head0;
         Quaternion _armL0, _armR0, _foreL0, _foreR0;
-        Quaternion _thighL0, _thighR0, _kneeL0, _kneeR0;
+        Quaternion _thighL0, _thighR0, _kneeL0, _kneeR0, _footL0, _footR0;
         bool _primitive;
         bool _ready;
         bool _hold;
@@ -50,6 +50,8 @@ namespace Tag.Ui.Menu
             _thighR = Find("UpperLeg_R", "UpperLeg.R");
             _kneeL = Find("LowerLeg_L", "LowerLeg.L");
             _kneeR = Find("LowerLeg_R", "LowerLeg.R");
+            _footL = Find("Foot_L", "Foot.L");
+            _footR = Find("Foot_R", "Foot.R");
             _hips0 = Rest(_hips);
             _spine0 = Rest(_spine);
             _head0 = Rest(_head);
@@ -61,6 +63,8 @@ namespace Tag.Ui.Menu
             _thighR0 = Rest(_thighR);
             _kneeL0 = Rest(_kneeL);
             _kneeR0 = Rest(_kneeR);
+            _footL0 = Rest(_footL);
+            _footR0 = Rest(_footR);
         }
 
         void Update()
@@ -104,6 +108,8 @@ namespace Tag.Ui.Menu
             Set(_thighR, _thighR0, s.ThighR * idle + (10f * ready), 0f, 0f);
             Set(_kneeL, _kneeL0, s.KneeL * idle + (16f * ready), 0f, 0f);
             Set(_kneeR, _kneeR0, s.KneeR * idle + (16f * ready), 0f, 0f);
+            Set(_footL, _footL0, s.FootL * idle, 0f, 0f);
+            Set(_footR, _footR0, s.FootR * idle, 0f, 0f);
         }
 
         static Quaternion Rest(Transform t)

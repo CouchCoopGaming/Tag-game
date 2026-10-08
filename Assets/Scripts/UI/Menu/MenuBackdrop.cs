@@ -16,6 +16,7 @@ namespace Tag.Ui.Menu
         static Texture2D _grade;
         static Texture2D _soft;
         static Texture2D _chase;
+        static Texture2D _idle;
         static Texture2D _lockup;
         static Texture2D _ready;
         static bool _tried;
@@ -70,6 +71,16 @@ namespace Tag.Ui.Menu
             }
         }
 
+        /// <summary>Hier idle pair. Blender render of the seat meshes, feet on the discs.</summary>
+        public static Texture2D SeatIdle
+        {
+            get
+            {
+                Load();
+                return _idle;
+            }
+        }
+
         public static Texture2D Lockup
         {
             get
@@ -97,6 +108,7 @@ namespace Tag.Ui.Menu
             _grade = Resources.Load<Texture2D>("UI/Menu/MegaGrade");
             _soft = Resources.Load<Texture2D>("UI/Menu/MegaBlur");
             _chase = Resources.Load<Texture2D>("UI/Menu/Chase");
+            _idle = Resources.Load<Texture2D>("UI/Menu/SeatIdle");
             _lockup = Resources.Load<Texture2D>("UI/Menu/TagLockup");
             _ready = Resources.Load<Texture2D>("UI/Menu/ReadyBurst");
         }

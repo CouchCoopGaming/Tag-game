@@ -505,6 +505,16 @@ namespace Tag.Ui.Menu
                 Renderer discRend = disc.GetComponent<Renderer>();
                 if (discRend != null)
                     discRend.sharedMaterial = DummyPrimitiveFactory.MakeMat(MenuTheme.Seat(i), 0.22f, 0.18f);
+                var shade = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+                shade.name = "Contact";
+                shade.transform.SetParent(stand.transform, false);
+                Collider shadeCol = shade.GetComponent<Collider>();
+                if (shadeCol != null) DestroyImmediate(shadeCol);
+                shade.transform.localScale = new Vector3(0.62f, 0.008f, 0.36f);
+                shade.transform.position = new Vector3(stand.transform.position.x, PlantY + 0.006f, stand.transform.position.z + 0.04f);
+                Renderer shadeRend = shade.GetComponent<Renderer>();
+                if (shadeRend != null)
+                    shadeRend.sharedMaterial = DummyPrimitiveFactory.MakeMat(new Color(0.04f, 0.05f, 0.08f, 1f), 0.95f, 0f);
                 GameObject body = MenuMannequin.Spawn(stand.transform, keys[i], keys[i], false);
                 if (body == null) continue;
                 MenuIdle idle = body.GetComponent<MenuIdle>();
@@ -514,6 +524,7 @@ namespace Tag.Ui.Menu
                 bp.y += PlantY - sole;
                 body.transform.position = bp;
                 ChestMark(body.transform, i);
+                stand.transform.localRotation = Quaternion.Euler(0f, i == 0 ? -28f : 28f, 0f);
             }
             var camGo = new GameObject("PairCam");
             camGo.transform.SetParent(transform, false);

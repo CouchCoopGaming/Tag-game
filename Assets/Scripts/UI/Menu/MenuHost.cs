@@ -1841,26 +1841,32 @@ namespace Tag.Ui.Menu
 
         void FitMainLabel()
         {
+            FitLabel("Menu", 280f);
+        }
+
+        void FitLabel(string word, float width)
+        {
             if (_header == null) return;
-            _header.text = "Menu";
+            _header.text = word;
             _header.alignment = TextAnchor.MiddleCenter;
             RectTransform headerRt = _header.rectTransform;
             headerRt.anchorMin = new Vector2(0f, 1f);
             headerRt.anchorMax = new Vector2(0f, 1f);
             headerRt.pivot = new Vector2(0f, 1f);
             headerRt.anchoredPosition = new Vector2(UiFit.SafeX, -12f);
-            headerRt.sizeDelta = new Vector2(280f, 80f);
+            headerRt.sizeDelta = new Vector2(width, 80f);
             if (_menuChip == null)
             {
                 Transform parent = _header.transform.parent;
                 var chip = MenuWidgets.Box(parent, "MenuChip", new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(0f, 1f));
-                chip.anchoredPosition = new Vector2(UiFit.SafeX, -12f);
-                chip.sizeDelta = new Vector2(280f, 80f);
                 _menuChip = chip.gameObject.AddComponent<Image>();
                 MenuArt.Plate(_menuChip, MenuTheme.Navy, true);
                 _menuChip.raycastTarget = false;
                 chip.SetSiblingIndex(_header.transform.GetSiblingIndex());
             }
+            RectTransform chipRt = _menuChip.rectTransform;
+            chipRt.anchoredPosition = new Vector2(UiFit.SafeX, -12f);
+            chipRt.sizeDelta = new Vector2(width, 80f);
             _menuChip.enabled = true;
         }
 
@@ -1885,7 +1891,7 @@ namespace Tag.Ui.Menu
         static Texture2D TitleWashTex()
         {
             if (_washTex != null) return _washTex;
-            const int n = 128;
+            const int n = 512;
             var tex = new Texture2D(n, n, TextureFormat.RGBA32, false);
             tex.wrapMode = TextureWrapMode.Clamp;
             tex.filterMode = FilterMode.Bilinear;
@@ -1897,11 +1903,11 @@ namespace Tag.Ui.Menu
                     float dx = (x - cx) / cx;
                     float dy = (y - cx) / cx;
                     float r = Mathf.Sqrt(dx * dx + dy * dy);
-                    float t = (r - 0.35f) / 0.95f;
+                    float t = (r - 0.20f) / 1.20f;
                     if (t < 0f) t = 0f;
                     if (t > 1f) t = 1f;
-                    t = t * t;
-                    tex.SetPixel(x, y, new Color(0f, 0f, 0f, t * 0.42f));
+                    t = t * t * (3f - 2f * t);
+                    tex.SetPixel(x, y, new Color(0f, 0f, 0f, t * 0.30f));
                 }
             }
             tex.Apply(false, true);
@@ -2613,7 +2619,7 @@ namespace Tag.Ui.Menu
             if (_dim != null) _dim.color = new Color(0f, 0f, 0f, 0f);
             string name = MenuSession.RandomArena ? "Random" : ParkArena.NameOf(MenuSession.Arena);
             if (_loadPractice) name = PracticeSession.ArenaName();
-            if (_header != null) _header.text = "  Loading";
+            FitLabel("Loading", 320f);
             int fly = MenuSession.Arena;
             if (fly < 0 || fly >= ParkArena.Count) fly = 0;
             ShowPark(fly, 1f);
@@ -2654,7 +2660,13 @@ namespace Tag.Ui.Menu
                     cam.uvRect = new Rect(LoadCamX[i], LoadCamY[i], LoadCamW[i], LoadCamH[i]);
                     if (i == 1)
                     {
-                        Texture runners = MenuBackdrop.Chase;
+                        Texture runners = MenuBackdrop.SeatIdle;
+                        Rect uv = new Rect(0.5f, 0f, 0.5f, 1f);
+                        if (runners == null)
+                        {
+                            runners = MenuBackdrop.Chase;
+                            uv = new Rect(0.16f, 0.19f, 0.67f, 0.74f);
+                        }
                         if (runners != null)
                         {
                             var runRt = MenuWidgets.Box(camRt, "LoadChase", new Vector2(0.08f, 0.42f), new Vector2(0.92f, 0.94f), new Vector2(0.5f, 0.5f));
@@ -2662,7 +2674,7 @@ namespace Tag.Ui.Menu
                             run.texture = runners;
                             run.color = Color.white;
                             run.raycastTarget = false;
-                            run.uvRect = new Rect(0.16f, 0.19f, 0.67f, 0.74f);
+                            run.uvRect = uv;
                         }
                     }
                 }
@@ -2744,7 +2756,7 @@ namespace Tag.Ui.Menu
             if (GameSettings.Current != null) opener = GameSettings.Current.AccessSeat;
             bool preview = MenuSplitPause.Preview > 0;
             string who = MenuSplitPause.SeatLabel(opener, preview);
-            if (_header != null) _header.text = "  Paused by " + who;
+            FitLabel("Paused by " + who, 520f);
             if (_banner != null) _banner.text = PausePlace();
             int n = MenuSplitPause.Fill(_cards);
             for (int c = 0; c < n; c++)
