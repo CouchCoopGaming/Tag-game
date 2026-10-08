@@ -143,3 +143,26 @@ These five were approved before PR #92. They are on this branch and were not giv
 - The It crown uses a different color from the seated player's swatch, so the crown still reads when the body is the same hue. Try it: look at the It hat against that pawn's color.
 - Saving settings replaces the file in one step, so a crash mid-save does not leave a half-written `tag-settings.json`.
 - Rebinding one profile does not change another profile's keyboard or pad table. Try it: two seated profiles, rebind Jump on one, and check the other seat.
+
+## Animation exits and the landing roll
+
+Each move now has a short recovery you can see as it ends. The body eases back into the run, the idle, or the air pose. Jump, slide, punch, dash, or lunge peels that recovery off in about six hundredths of a second, and the new move shows the same frame. Nothing here changes speed, coyote, cling, or the slide.
+
+- Wall-run: a push off the wall, or a foot reaching down if you are already dropping.
+- Wall jump: a tuck, then the body opens.
+- Climb top-out: a hand plant, the lead knee up, then a stand. A climb that goes into a mantle waits until the mantle finishes, then plays this.
+- Cling drop: the hands open and the body falls off the wall.
+- Vault: the trail leg sweeps through and you land in stride. This is a fast mantle.
+- Mantle: both hands press the lip and the chest comes up. Slower than the vault, and not the climb top-out.
+- Slide: a pop-up into the run. The slide itself is unchanged.
+- Air dash: the stretch settles back to center.
+- Punch: the right arm folds back and the weight sits back.
+- Lunge: the reach collapses, weight back, then the stride.
+- Zip drop: the hands leave the cable.
+- Launch pad: knees take the landing, then you stand. A fall that is fast enough to roll uses the roll instead.
+- Grapple: the left hand leads as you arrive, and it opens when you let go.
+- Stagger: the stumble catches a step.
+- Tag-back: the flinch shakes off when the one-second window ends.
+- Ordinary landings: a knee bend that gets deeper as the fall gets faster.
+
+A fall that reaches 65% of terminal speed (36.50 m/s down, a drop of about 18.69 m from a dead stop at the current fall gravity) plays a shoulder roll along your travel. Standing almost still at that speed is a short crouch instead. You keep your speed. There is no extra stun. The camera does not roll. A small dust puff and the hard-land sound mark the shoulder. Try it: fall from high enough that the drop is about 19 meters, land while running, then land again with no stick. Jump during the roll and the jump should win immediately.

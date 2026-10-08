@@ -50,6 +50,7 @@ These are not extra hooks. They use the same voice pool.
 | --- | --- | --- |
 | climb scuff | About every 0.30 s while climbing | Short mid grit. `sfx_climb_scuff` |
 | wall-run patter | About every 0.16 s while wall-running | Lighter, higher scrape. `sfx_wallrun` |
+| landing roll | Feet hit at or above 65% of terminal fall speed | `AudioBus.Hook.LandingRoll`. No new clip: it plays the hard-land body (`sfx_land_hard`). The roll itself does not change speed. |
 
 ## UI
 

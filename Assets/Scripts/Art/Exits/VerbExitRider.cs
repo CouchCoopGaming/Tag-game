@@ -1,0 +1,473 @@
+using Tag.Audio;
+using Tag.Experimental;
+using Tag.FX;
+using Tag.Gameplay;
+using TagArena.Movement;
+using UnityEngine;
+
+namespace Tag.Art
+{
+    /// <summary>
+    /// Plays a verb exit after DummyLocomotor has written the next pose.
+    /// The exit peels off on jump, slide, punch, dash, or lunge.
+    /// No second CharacterController move. No root motion on the motor.
+    /// </summary>
+    [DefaultExecutionOrder(8000)]
+    public sealed class VerbExitRider : MonoBehaviour
+    {
+        const float GrappleCatch = 1.35f;
+
+        PlayerMotor _motor;
+        PlayerInputReader _input;
+        PunchHitbox _punch;
+        ExperimentalGrapple _grapple;
+        ItController _it;
+        FxBurstPool _fx;
+
+        Transform _hips, _spine, _head;
+        Transform _uaL, _uaR, _laL, _laR;
+        Transform _ulL, _ulR, _llL, _llR;
+        Transform _ftL, _ftR;
+        Quaternion _hips0, _spine0, _head0;
+        Quaternion _uaL0, _uaR0, _laL0, _laR0;
+        Quaternion _ulL0, _ulR0, _llL0, _llR0;
+        Quaternion _ftL0, _ftR0;
+        bool _bones;
+
+        VerbExitId _id;
+        float _age;
+        float _cancel;
+        float _fallScale;
+        bool _stepDown;
+        bool _shoulderLeft;
+        float _travelYaw;
+        bool _dusted;
+
+        bool _primed;
+        MoveState _prevState;
+        bool _prevGrounded;
+        bool _prevDash;
+        bool _prevLunge;
+        bool _prevZip;
+        bool _prevLaunch;
+        bool _prevStagger;
+        bool _prevPull;
+        bool _prevPunch;
+        float _prevTagBack;
+        bool _mantleFromClimb;
+        float _mantlePlanar;
+        bool _launchPending;
+        bool _arriveSent;
+
+        public static void Ensure(GameObject host)
+        {
+            if (host == null) return;
+            if (host.GetComponent<VerbExitRider>() != null) return;
+            host.AddComponent<VerbExitRider>();
+        }
+
+        /// <summary>Exit currently showing. None when the gait owns the body.</summary>
+        public VerbExitId Active => _id;
+
+        void Awake()
+        {
+            CacheBones();
+            _motor = GetComponentInParent<PlayerMotor>();
+            _input = GetComponentInParent<PlayerInputReader>();
+            _punch = GetComponentInParent<PunchHitbox>();
+            _grapple = GetComponentInParent<ExperimentalGrapple>();
+            _it = GetComponentInParent<ItController>();
+            Transform host = _motor != null ? _motor.transform : transform;
+            _fx = FxBurstPool.Ensure(host);
+            _cancel = -1f;
+        }
+
+        void LateUpdate()
+        {
+            float dt = Time.deltaTime;
+            if (dt < 0f) dt = 0f;
+            if (!_primed)
+            {
+                Remember();
+                _primed = true;
+                return;
+            }
+
+            VerbExitId before = _id;
+            VerbExitId next = Detect();
+            if (next != VerbExitId.None)
+                Begin(next);
+
+            bool jump = _input != null && _input.JumpPressed;
+            bool slide = _input != null && _input.CrouchPressed;
+            bool punch = _input != null && _input.PunchPressed;
+            bool dash = _input != null && _input.AirDashPressed;
+            bool lunge = _input != null && _input.LungePressed;
+            if (VerbExitPick.Cancels(_id, jump, slide, punch, dash, lunge))
+                ArmCancel();
+            if (before == _id && VerbExitPick.CancelsState(_id, EnteredSlide(), EnteredWall(), EnteredMantle(), EnteredDash(), EnteredLunge(), EnteredPunch()))
+                ArmCancel();
+
+            if (_id != VerbExitId.None)
+            {
+                _age += dt;
+                if (_cancel >= 0f) _cancel += dt;
+                float dur = VerbExitClock.Duration(_id);
+                float w = VerbExitClock.Weight(_age, dur, _cancel);
+                bool done = w <= 0.001f && (_age >= dur || _cancel >= VerbExitClock.CancelSeconds);
+                if (done)
+                    Clear();
+                else
+                    Apply(w);
+            }
+
+            Remember();
+        }
+
+        VerbExitId Detect()
+        {
+            if (_motor == null) return VerbExitId.None;
+            MoveState st = _motor.State;
+            bool grounded = _motor.IsGrounded;
+            float vy = _motor.Velocity.y;
+            VerbExitId pick = VerbExitId.None;
+
+            bool wasWall = _prevState == MoveState.WallRun || _prevState == MoveState.WallClimb;
+            if (wasWall && st != _prevState)
+            {
+                VerbExitId wall = VerbExitPick.WallLeave(
+                    _prevState == MoveState.WallRun,
+                    _prevState == MoveState.WallClimb,
+                    st == MoveState.Mantle,
+                    st == MoveState.Air || st == MoveState.Jet,
+                    vy);
+                if (wall != VerbExitId.None)
+                {
+                    _stepDown = VerbExitPick.StepDown(grounded, vy);
+                    pick = wall;
+                }
+            }
+
+            if (st == MoveState.Mantle && _prevState != MoveState.Mantle)
+            {
+                _mantleFromClimb = _prevState == MoveState.WallClimb;
+                _mantlePlanar = _motor.HorizontalSpeed;
+            }
+            if (_prevState == MoveState.Mantle && st != MoveState.Mantle)
+                pick = VerbExitPick.MantleLeave(_mantleFromClimb, _mantlePlanar);
+
+            if (_prevState == MoveState.Slide && st != MoveState.Slide)
+            {
+                bool intoAir = st == MoveState.Air || st == MoveState.Jet;
+                if (VerbExitPick.PlaySlideExit(intoAir, vy))
+                    pick = VerbExitId.Slide;
+            }
+
+            if (_prevDash && !_motor.IsAirDashing)
+                pick = VerbExitId.AirDash;
+            if (_prevLunge && !_motor.IsLunging)
+                pick = VerbExitId.Lunge;
+            if (_prevPunch && !Punching())
+                pick = VerbExitId.Punch;
+            if (_prevZip && !_motor.ZipRiding)
+                pick = VerbExitId.ZipDrop;
+            if (_prevStagger && !_motor.IsPunchStaggered)
+                pick = VerbExitId.Stagger;
+
+            float tagBack = _it != null ? _it.TagBackRemaining : 0f;
+            if (_prevTagBack > 0.001f && tagBack <= 0.001f)
+                pick = VerbExitId.TagBackEnd;
+
+            NoteGrapple(ref pick);
+
+            if (_prevLaunch && !_motor.LaunchArc)
+                _launchPending = true;
+
+            if (grounded && !_prevGrounded)
+            {
+                float impact = _motor.LastLandImpactSpeed;
+                float planar = Planar();
+                if (LandingRollPose.Triggered(impact))
+                {
+                    bool still = LandingRollPose.Stationary(planar);
+                    _shoulderLeft = !still && ShoulderLeft();
+                    _travelYaw = still ? 0f : TravelYaw();
+                    _fallScale = 1f;
+                    _stepDown = false;
+                    pick = still ? VerbExitId.RollAbsorb : VerbExitId.Roll;
+                    _launchPending = false;
+                }
+                else if (_launchPending)
+                {
+                    _fallScale = 1f;
+                    _travelYaw = 0f;
+                    _shoulderLeft = false;
+                    pick = VerbExitId.LaunchLand;
+                    _launchPending = false;
+                }
+                else if (impact >= LandingRollPose.SoftFloor)
+                {
+                    _fallScale = LandingRollPose.SoftScale(impact);
+                    _travelYaw = 0f;
+                    _shoulderLeft = false;
+                    pick = VerbExitId.SoftLand;
+                }
+                else
+                    _launchPending = false;
+            }
+
+            return pick;
+        }
+
+        void NoteGrapple(ref VerbExitId pick)
+        {
+            if (_grapple == null) return;
+            bool pulling = _grapple.Pulling;
+            bool attached = _grapple.IsPulling;
+            if (pulling && !_arriveSent && CloseToAnchor())
+            {
+                pick = VerbExitId.GrappleArrive;
+                _arriveSent = true;
+            }
+            if (_prevPull && !attached)
+            {
+                pick = VerbExitId.GrappleRelease;
+                _arriveSent = false;
+            }
+            if (!attached)
+                _arriveSent = false;
+        }
+
+        bool CloseToAnchor()
+        {
+            if (_motor == null || _grapple == null) return false;
+            Vector3 anchor;
+            float length;
+            float slack;
+            if (!_grapple.TryGetRope(out anchor, out length, out slack)) return false;
+            Vector3 d = anchor - _motor.transform.position;
+            return d.sqrMagnitude <= GrappleCatch * GrappleCatch;
+        }
+
+        void Begin(VerbExitId id)
+        {
+            if (id == VerbExitId.None) return;
+            _id = id;
+            _age = 0f;
+            _cancel = -1f;
+            _dusted = false;
+            if (id != VerbExitId.SoftLand && id != VerbExitId.Roll && id != VerbExitId.RollAbsorb)
+                _fallScale = 1f;
+            if (id != VerbExitId.Roll)
+            {
+                _travelYaw = 0f;
+                _shoulderLeft = false;
+            }
+        }
+
+        void ArmCancel()
+        {
+            if (_id == VerbExitId.None) return;
+            if (_cancel < 0f) _cancel = 0f;
+        }
+
+        void Clear()
+        {
+            _id = VerbExitId.None;
+            _age = 0f;
+            _cancel = -1f;
+            _dusted = false;
+        }
+
+        void Apply(float w)
+        {
+            if (w <= 0.001f)
+                return;
+            VerbExitSample s = VerbExitClips.At(_id, Unit(_age), _fallScale, _stepDown, _shoulderLeft);
+            Blend(_hips, _hips0, s.Hip, s.HipYaw, s.HipRoll, w);
+            Blend(_spine, _spine0, s.Spine, s.SpineYaw, s.SpineRoll, w);
+            Blend(_head, _head0, s.Head, s.HeadYaw, 0f, w);
+            Blend(_uaL, _uaL0, s.ArmPitchL, s.ArmYawL, s.ArmRollL, w);
+            Blend(_uaR, _uaR0, s.ArmPitchR, s.ArmYawR, s.ArmRollR, w);
+            Blend(_laL, _laL0, s.ElbowL, 0f, 0f, w);
+            Blend(_laR, _laR0, s.ElbowR, 0f, 0f, w);
+            Blend(_ulL, _ulL0, s.ThighL, s.ThighYawL, 0f, w);
+            Blend(_ulR, _ulR0, s.ThighR, s.ThighYawR, 0f, w);
+            Blend(_llL, _llL0, s.KneeL, 0f, 0f, w);
+            Blend(_llR, _llR0, s.KneeR, 0f, 0f, w);
+            Blend(_ftL, _ftL0, s.FootL, 0f, 0f, w);
+            Blend(_ftR, _ftR0, s.FootR, 0f, 0f, w);
+            // EaseFacing already wrote the yaw this frame. Pitch, roll, and the
+            // roll's travel yaw sit on top of it for this frame only.
+            transform.localRotation = transform.localRotation
+                * Quaternion.Euler(s.RootPitch * w, _travelYaw * w, s.RootRoll * w);
+            if (s.Drop > 0f)
+            {
+                Vector3 p = transform.localPosition;
+                p.y -= s.Drop * w;
+                transform.localPosition = p;
+            }
+            MaybeDust(s);
+        }
+
+        void MaybeDust(VerbExitSample s)
+        {
+            if (_dusted) return;
+            if (_id != VerbExitId.Roll && _id != VerbExitId.RollAbsorb) return;
+            if (_age < LandingRollPose.DustAt) return;
+            _dusted = true;
+            Vector3 pos = _motor != null ? _motor.transform.position : transform.position;
+            pos.y += 0.08f;
+            if (_fx != null)
+                _fx.Play(FxBurstKind.Roll, pos);
+            AudioBus.Raise(AudioBus.Hook.LandingRoll, pos);
+        }
+
+        float Unit(float age)
+        {
+            float dur = VerbExitClock.Duration(_id);
+            if (dur <= 0.0001f) return 1f;
+            float u = age / dur;
+            if (u < 0f) return 0f;
+            if (u > 1f) return 1f;
+            return u;
+        }
+
+        static void Blend(Transform bone, Quaternion rest, float pitch, float yaw, float roll, float w)
+        {
+            if (bone == null) return;
+            Quaternion goal = rest * Quaternion.Euler(pitch, yaw, roll);
+            bone.localRotation = Quaternion.Slerp(bone.localRotation, goal, w);
+        }
+
+        void Remember()
+        {
+            if (_motor == null) return;
+            _prevState = _motor.State;
+            _prevGrounded = _motor.IsGrounded;
+            _prevDash = _motor.IsAirDashing;
+            _prevLunge = _motor.IsLunging;
+            _prevZip = _motor.ZipRiding;
+            _prevLaunch = _motor.LaunchArc;
+            _prevStagger = _motor.IsPunchStaggered;
+            _prevPull = _grapple != null && _grapple.IsPulling;
+            _prevPunch = Punching();
+            _prevTagBack = _it != null ? _it.TagBackRemaining : 0f;
+        }
+
+        bool Punching()
+        {
+            return _punch != null && _punch.Phase != PunchPhase.Idle;
+        }
+
+        bool EnteredSlide()
+        {
+            return _motor != null && _motor.State == MoveState.Slide && _prevState != MoveState.Slide;
+        }
+
+        bool EnteredWall()
+        {
+            if (_motor == null) return false;
+            MoveState st = _motor.State;
+            bool wall = st == MoveState.WallRun || st == MoveState.WallClimb;
+            bool was = _prevState == MoveState.WallRun || _prevState == MoveState.WallClimb;
+            return wall && !was;
+        }
+
+        bool EnteredMantle()
+        {
+            return _motor != null && _motor.State == MoveState.Mantle && _prevState != MoveState.Mantle;
+        }
+
+        bool EnteredDash()
+        {
+            return _motor != null && _motor.IsAirDashing && !_prevDash;
+        }
+
+        bool EnteredLunge()
+        {
+            return _motor != null && _motor.IsLunging && !_prevLunge;
+        }
+
+        bool EnteredPunch()
+        {
+            return Punching() && !_prevPunch;
+        }
+
+        float Planar()
+        {
+            Vector3 v = _motor.Velocity;
+            return Mathf.Sqrt(v.x * v.x + v.z * v.z);
+        }
+
+        float TravelYaw()
+        {
+            Vector3 v = _motor.Velocity;
+            v.y = 0f;
+            if (v.sqrMagnitude < 0.04f) return 0f;
+            Vector3 f = _motor.transform.forward;
+            f.y = 0f;
+            float fl = Mathf.Sqrt(f.x * f.x + f.z * f.z);
+            float vl = Mathf.Sqrt(v.x * v.x + v.z * v.z);
+            if (fl < 0.0001f || vl < 0.0001f) return 0f;
+            float dot = (f.x * v.x + f.z * v.z) / (fl * vl);
+            float cross = (f.z * v.x - f.x * v.z) / (fl * vl);
+            return Mathf.Atan2(cross, dot) * Mathf.Rad2Deg;
+        }
+
+        bool ShoulderLeft()
+        {
+            Vector3 v = _motor.Velocity;
+            Vector3 r = _motor.transform.right;
+            return v.x * r.x + v.z * r.z < -0.35f;
+        }
+
+        void CacheBones()
+        {
+            Transform[] all = GetComponentsInChildren<Transform>(true);
+            _hips = Find(all, "Hips", "Pelvis");
+            _spine = Find(all, "Spine", "Torso", "Spine1", "Chest");
+            _head = Find(all, "Head");
+            _uaL = Find(all, "UpperArm_L", "LeftArm", "LeftUpperArm", "Arm_L");
+            _uaR = Find(all, "UpperArm_R", "RightArm", "RightUpperArm", "Arm_R");
+            _laL = Find(all, "LowerArm_L", "LeftForeArm", "LeftLowerArm", "ForeArm_L");
+            _laR = Find(all, "LowerArm_R", "RightForeArm", "RightLowerArm", "ForeArm_R");
+            _ulL = Find(all, "UpperLeg_L", "LeftUpLeg", "LeftUpperLeg", "Thigh_L");
+            _ulR = Find(all, "UpperLeg_R", "RightUpLeg", "RightUpperLeg", "Thigh_R");
+            _llL = Find(all, "LowerLeg_L", "LeftLeg", "LeftLowerLeg", "Calf_L");
+            _llR = Find(all, "LowerLeg_R", "RightLeg", "RightLowerLeg", "Calf_R");
+            _ftL = Find(all, "Foot_L", "LeftFoot");
+            _ftR = Find(all, "Foot_R", "RightFoot");
+            _bones = _hips != null || _uaL != null || _ulL != null;
+            if (!_bones) return;
+            if (_hips) _hips0 = _hips.localRotation;
+            if (_spine) _spine0 = _spine.localRotation;
+            if (_head) _head0 = _head.localRotation;
+            if (_uaL) _uaL0 = _uaL.localRotation;
+            if (_uaR) _uaR0 = _uaR.localRotation;
+            if (_laL) _laL0 = _laL.localRotation;
+            if (_laR) _laR0 = _laR.localRotation;
+            if (_ulL) _ulL0 = _ulL.localRotation;
+            if (_ulR) _ulR0 = _ulR.localRotation;
+            if (_llL) _llL0 = _llL.localRotation;
+            if (_llR) _llR0 = _llR.localRotation;
+            if (_ftL) _ftL0 = _ftL.localRotation;
+            if (_ftR) _ftR0 = _ftR.localRotation;
+        }
+
+        static Transform Find(Transform[] all, params string[] names)
+        {
+            if (all == null || names == null) return null;
+            for (int n = 0; n < names.Length; n++)
+            {
+                string want = names[n];
+                if (string.IsNullOrEmpty(want)) continue;
+                for (int i = 0; i < all.Length; i++)
+                {
+                    if (all[i] != null && all[i].name == want) return all[i];
+                }
+            }
+            return null;
+        }
+    }
+}

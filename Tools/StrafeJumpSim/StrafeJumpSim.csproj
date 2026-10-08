@@ -78,6 +78,13 @@
     <Compile Include="../../Assets/Scripts/Art/PoseHandoff.cs" />
     <Compile Include="../../Assets/Scripts/Art/AirDashPose.cs" />
     <Compile Include="../../Assets/Scripts/Art/LandPose.cs" />
+    <Compile Include="../../Assets/Scripts/Art/LandingRollPose.cs" />
+    <Compile Include="../../Assets/Scripts/Art/Exits/VerbExitId.cs" />
+    <Compile Include="../../Assets/Scripts/Art/Exits/VerbExitSample.cs" />
+    <Compile Include="../../Assets/Scripts/Art/Exits/VerbExitClips.cs" />
+    <Compile Include="../../Assets/Scripts/Art/Exits/VerbExitClock.cs" />
+    <Compile Include="../../Assets/Scripts/Art/Exits/VerbExitPick.cs" />
+    <Compile Include="../../Assets/Scripts/Art/Exits/VerbExitProof.cs" />
     <Compile Include="../../Assets/Scripts/Art/MechPoseProof.cs" />
     <Compile Include="../../Assets/Scripts/Art/CrouchPose.cs" />
     <Compile Include="../../Assets/Scripts/Art/MantlePose.cs" />

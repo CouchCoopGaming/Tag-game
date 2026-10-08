@@ -1126,6 +1126,7 @@ namespace Tag.Art
             _punch = punch;
             _root0 = transform.localPosition;
             Cache(visualRoot);
+            VerbExitRider.Ensure(gameObject);
             if (!_bound && !_loggedBindFail)
             {
                 _loggedBindFail = true;

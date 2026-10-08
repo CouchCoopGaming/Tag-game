@@ -677,6 +677,20 @@ static class Program
             return 1;
         }
 
+        Console.WriteLine(Tag.Art.VerbExitProof.ProofLine());
+        if (!Tag.Art.VerbExitProof.Holds())
+        {
+            Console.Error.WriteLine("verb exits are not held");
+            return 1;
+        }
+
+        Console.WriteLine(Tag.Art.LandingRollPose.ProofLine());
+        if (!Tag.Art.LandingRollPose.Holds())
+        {
+            Console.Error.WriteLine("landing roll is not held");
+            return 1;
+        }
+
         Console.WriteLine("solo grapple on; opponent and couch off; jet off; clips and locks held");
         return 0;
     }
