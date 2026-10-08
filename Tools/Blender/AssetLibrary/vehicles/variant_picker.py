@@ -11,16 +11,16 @@ import random
 # Extra colors are the 2025 body only. Names stay generic.
 VARIANTS = (
     {"name": "Sedan_Mid_A_21", "year": 2021, "color": "crimson", "fascia": "separate", "wheel": "five_spoke_18"},
-    {"name": "Sedan_Mid_A_22", "year": 2022, "color": "crimson", "fascia": "separate", "wheel": "ten_spoke_18"},
-    {"name": "Sedan_Mid_A_23", "year": 2023, "color": "crimson", "fascia": "tier", "wheel": "seven_spoke_18"},
-    {"name": "Sedan_Mid_A_24", "year": 2024, "color": "crimson", "fascia": "thin", "wheel": "twelve_spoke_18"},
-    {"name": "Sedan_Mid_A_25", "year": 2025, "color": "crimson", "fascia": "bar", "wheel": "fifteen_spoke_18"},
-    {"name": "Sedan_Mid_A_25_White", "year": 2025, "color": "white", "fascia": "bar", "wheel": "fifteen_spoke_18"},
-    {"name": "Sedan_Mid_A_25_Black", "year": 2025, "color": "black", "fascia": "bar", "wheel": "fifteen_spoke_18"},
-    {"name": "Sedan_Mid_A_25_Grey", "year": 2025, "color": "grey", "fascia": "bar", "wheel": "fifteen_spoke_18"},
-    {"name": "Sedan_Mid_A_25_Silver", "year": 2025, "color": "silver", "fascia": "bar", "wheel": "fifteen_spoke_18"},
-    {"name": "Sedan_Mid_A_25_Navy", "year": 2025, "color": "navy", "fascia": "bar", "wheel": "fifteen_spoke_18"},
-    {"name": "Sedan_Mid_A_25_Ocean", "year": 2025, "color": "ocean", "fascia": "bar", "wheel": "fifteen_spoke_18"},
+    {"name": "Sedan_Mid_A_22", "year": 2022, "color": "crimson", "fascia": "separate", "wheel": "six_spoke_18"},
+    {"name": "Sedan_Mid_A_23", "year": 2023, "color": "crimson", "fascia": "tier", "wheel": "five_spoke_18"},
+    {"name": "Sedan_Mid_A_24", "year": 2024, "color": "crimson", "fascia": "thin", "wheel": "six_spoke_18"},
+    {"name": "Sedan_Mid_A_25", "year": 2025, "color": "crimson", "fascia": "bar", "wheel": "five_spoke_18"},
+    {"name": "Sedan_Mid_A_25_White", "year": 2025, "color": "white", "fascia": "bar", "wheel": "five_spoke_18"},
+    {"name": "Sedan_Mid_A_25_Black", "year": 2025, "color": "black", "fascia": "bar", "wheel": "five_spoke_18"},
+    {"name": "Sedan_Mid_A_25_Grey", "year": 2025, "color": "grey", "fascia": "bar", "wheel": "five_spoke_18"},
+    {"name": "Sedan_Mid_A_25_Silver", "year": 2025, "color": "silver", "fascia": "bar", "wheel": "five_spoke_18"},
+    {"name": "Sedan_Mid_A_25_Navy", "year": 2025, "color": "navy", "fascia": "bar", "wheel": "five_spoke_18"},
+    {"name": "Sedan_Mid_A_25_Ocean", "year": 2025, "color": "ocean", "fascia": "bar", "wheel": "five_spoke_18"},
 )
 
 

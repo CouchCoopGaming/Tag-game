@@ -114,10 +114,10 @@ def _close(fn, path, eye, aim, lens):
     _fit(path)
 
 
-def _with_figure(found, prop, path, prop_pos, prop_yaw, fig_pos, fill=0.78):
+def _with_figure(found, prop, path, prop_pos, prop_yaw, fig_pos, fill=0.78, wide=False, shade=False):
     r._reset_scene()
     scene = bpy.context.scene
-    r._engine(scene, wide=False)
+    r._engine(scene, wide=wide)
     scene.cycles.samples = 24
     r._ensure_materials()
     r._world(scene, night=False)
@@ -125,6 +125,9 @@ def _with_figure(found, prop, path, prop_pos, prop_yaw, fig_pos, fill=0.78):
         r._spawn(found["Mannequin"](), fig_pos, 200),
         r._spawn(found[prop](), prop_pos, prop_yaw),
     ]
+    if shade:
+        import body_a
+        body_a.shade_object(objs[1])
     r._ground("asphalt", 30.0)
     r._frame(scene, objs, fill=fill, elevation=12.0, azimuth=28.0)
     r._render(scene, path)
@@ -164,14 +167,17 @@ def _close_pair(found, prop, path, prop_pos, prop_yaw, fig_pos, fig_yaw, eye, ai
     _fit(path)
 
 
-def _shot_az(fn, path, azimuth, elevation=14.0, fill=0.84):
+def _shot_az(fn, path, azimuth, elevation=14.0, fill=0.84, wide=False, shade=False):
     r._reset_scene()
     scene = bpy.context.scene
-    r._engine(scene, wide=False)
+    r._engine(scene, wide=wide)
     scene.cycles.samples = 28
     r._ensure_materials()
     r._world(scene, night=False)
     obj = r._spawn(fn(), (0, 0, 0))
+    if shade:
+        import body_a
+        body_a.shade_object(obj)
     r._ground("asphalt", 80.0)
     r._frame(scene, [obj], fill=fill, elevation=elevation, azimuth=azimuth)
     r._render(scene, path)
@@ -205,15 +211,20 @@ def _dimensions(length, height, wheelbase, z_front, z_rear):
     return asset
 
 
-def _side_dims(fn, dims, path, eye, aim, lens):
+def _side_dims(fn, dims, path, eye, aim, lens, wide=False, shade=False, guides=None):
     r._reset_scene()
     scene = bpy.context.scene
-    r._engine(scene, wide=False)
+    r._engine(scene, wide=wide)
     scene.cycles.samples = 28
     r._ensure_materials()
     r._world(scene, night=False)
-    r._spawn(fn(), (0, 0, 0))
+    obj = r._spawn(fn(), (0, 0, 0))
+    if shade:
+        import body_a
+        body_a.shade_object(obj)
     r._spawn(dims, (0, 0, 0))
+    if guides is not None:
+        r._spawn(guides, (0, 0, 0))
     r._ground("asphalt", 40.0)
     _look(scene, eye, aim, lens)
     r._render(scene, path)
@@ -238,11 +249,11 @@ def _lineup(found, names, path, azimuth=36.0, elevation=12.0, fill=0.90):
     _fit(path)
 
 
-def _lineup_side(found, names, path):
+def _lineup_side(found, names, path, wide=False, shade=False):
     """Five cars in profile, nose to image-left, opened just enough to see the fascia."""
     r._reset_scene()
     scene = bpy.context.scene
-    r._engine(scene, wide=False)
+    r._engine(scene, wide=wide)
     scene.cycles.samples = 16
     r._ensure_materials()
     r._world(scene, night=False)
@@ -250,7 +261,11 @@ def _lineup_side(found, names, path):
     span = 6.55
     origin = (len(names) - 1) * span * 0.5
     for i, name in enumerate(names):
-        objs.append(r._spawn(found[name](), (0.0, 0.0, i * span - origin), 0.0))
+        obj = r._spawn(found[name](), (0.0, 0.0, i * span - origin), 0.0)
+        if shade:
+            import body_a
+            body_a.shade_object(obj)
+        objs.append(obj)
     r._ground("asphalt", 90.0)
     # Azimuth 90 is pure side from +X, and that puts the nose on the left.
     # 74 degrees swings the camera toward the nose so the grille and lamps show.
@@ -284,13 +299,15 @@ def main():
     found = _load(only)
     if only is not None and "sedan_mid_a" in only:
         print("SHOT", "sedan_mid_a", shot or "all")
-        out = os.path.join(STILL_ROOT, "sedan_mid_a", "pass10")
+        out = os.path.join(STILL_ROOT, "sedan_mid_a", "pass11")
         os.makedirs(out, exist_ok=True)
+        import body_a
+        guides = body_a.reference_asset()
         if shot in (None, "hero"):
-            _shot_az(found["Sedan_Mid_A_25"], os.path.join(out, "hero.png"), 48.0, elevation=11.0, fill=0.90)
-        # Built shell, not the brochure inches: 4.90 m, roof 1.44 m, wheelbase 2.82 m.
+            _shot_az(found["Sedan_Mid_A_25"], os.path.join(out, "hero.png"), 48.0, elevation=11.0, fill=0.90, wide=True, shade=True)
+        # Hard-surface shell: 4.90 m, roof 1.45 m, wheelbase 2.82 m.
         length = 4.90
-        height = 1.44
+        height = 1.45
         wheelbase = 2.82
         z_front = length * 0.5 - 0.96
         z_rear = z_front - wheelbase
@@ -300,15 +317,17 @@ def main():
                 _dimensions(length, height, wheelbase, z_front, z_rear),
                 os.path.join(out, "side.png"),
                 (13.5, 1.15, 0.0), (0.0, 0.78, 0.0), 82.0,
+                wide=True, shade=True, guides=guides,
             )
         if shot in (None, "front"):
-            _shot_az(found["Sedan_Mid_A_25"], os.path.join(out, "front.png"), 4.0, elevation=3.0, fill=0.90)
+            _shot_az(found["Sedan_Mid_A_25"], os.path.join(out, "front.png"), 4.0, elevation=3.0, fill=0.90, wide=True, shade=True)
         if shot in (None, "rear"):
-            _shot_az(found["Sedan_Mid_A_25"], os.path.join(out, "rear.png"), 228.0, elevation=11.0, fill=0.90)
+            _shot_az(found["Sedan_Mid_A_25"], os.path.join(out, "rear.png"), 184.0, elevation=6.0, fill=0.90, wide=True, shade=True)
         if shot in (None, "scale"):
             _with_figure(
                 found, "Sedan_Mid_A_25", os.path.join(out, "scale.png"),
                 (0.4, 0.0, 0.0), 18, (-1.7, 0.0, 1.55), fill=0.88,
+                wide=True, shade=True,
             )
         if shot in (None, "lineup"):
             _lineup_side(
@@ -321,6 +340,7 @@ def main():
                     "Sedan_Mid_A_25",
                 ),
                 os.path.join(out, "lineup.png"),
+                wide=True, shade=True,
             )
         return
     if only is None or "midsize" in only or "sedan_midsize" in only:

@@ -36,7 +36,7 @@ _BUILT = {}
 
 def _blurb(year, color):
     return (
-        "Midsize sedan, %d fascia, 4.90 m long, 1.84 m wide, roof 1.44 m. "
+        "Midsize sedan, %d fascia, 4.90 m long, 1.84 m wide, roof 1.45 m. "
         "Raked windshield, fastback pillar, 18 inch alloys. Color %s."
         % (year, color)
     )
