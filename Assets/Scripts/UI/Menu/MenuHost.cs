@@ -1044,6 +1044,16 @@ namespace Tag.Ui.Menu
             rt.offsetMax = new Vector2(-8f, -2f);
         }
 
+        static void LockFit(Text label, int size)
+        {
+            if (label == null || UiFit.IdentityText()) return;
+            int px = UiFit.TextPx(size);
+            label.resizeTextForBestFit = false;
+            label.fontSize = px;
+            label.resizeTextMinSize = px;
+            label.resizeTextMaxSize = px;
+        }
+
         static void Pull(Text label, float x)
         {
             if (label == null) return;
@@ -1060,12 +1070,22 @@ namespace Tag.Ui.Menu
             if (seat > 3) seat = 3;
             Color seatColor = MenuTheme.Seat(seat);
             BadgePaint(seatColor, out Color plateColor, out Color ink);
-            var rt = MenuWidgets.Place(parent, "SeatTag", x, y, 68f, 36f);
+            bool marks = GameSettings.Current != null && GameSettings.Current.CvdSeats != SeatCvd.Off;
+            float tagW = marks ? 96f : 68f;
+            var rt = MenuWidgets.Place(parent, "SeatTag", x, y, tagW, 36f);
             var plate = rt.gameObject.AddComponent<Image>();
             MenuArt.Plate(plate, plateColor, true);
             plate.raycastTarget = false;
+            if (marks) SeatShape.Stamp(rt, seat, 4f, 6f, 24f, ink);
             Text word = MenuWidgets.Words(rt, "P" + (seat + 1).ToString(), UiFit.FloorFont, TextAnchor.MiddleCenter, ink, Vector2.zero, Vector2.one);
             Snug(word);
+            LockFit(word, UiFit.FloorFont);
+            if (marks && word != null)
+            {
+                Vector2 min = word.rectTransform.offsetMin;
+                if (min.x < 30f) min.x = 30f;
+                word.rectTransform.offsetMin = min;
+            }
         }
 
         static void BadgePaint(Color seat, out Color plate, out Color ink)
@@ -1118,12 +1138,22 @@ namespace Tag.Ui.Menu
             if (parent == null) return;
             if (seat < 0) seat = 0;
             if (seat > 3) seat = 3;
-            var rt = MenuWidgets.Place(parent, "SeatTag", x, y, 68f, 36f);
+            bool marks = GameSettings.Current != null && GameSettings.Current.CvdSeats != SeatCvd.Off;
+            float tagW = marks ? 96f : 68f;
+            var rt = MenuWidgets.Place(parent, "SeatTag", x, y, tagW, 36f);
             var plate = rt.gameObject.AddComponent<Image>();
             MenuArt.Plate(plate, MenuTheme.Navy, true);
             plate.raycastTarget = false;
+            if (marks) SeatShape.Stamp(rt, seat, 4f, 6f, 24f, MenuTheme.Cream);
             Text word = MenuWidgets.Words(rt, "P" + (seat + 1).ToString(), UiFit.FloorFont, TextAnchor.MiddleCenter, MenuTheme.Cream, Vector2.zero, Vector2.one);
             Snug(word);
+            LockFit(word, UiFit.FloorFont);
+            if (marks && word != null)
+            {
+                Vector2 min = word.rectTransform.offsetMin;
+                if (min.x < 30f) min.x = 30f;
+                word.rectTransform.offsetMin = min;
+            }
         }
 
         void Animate()
@@ -1650,7 +1680,7 @@ namespace Tag.Ui.Menu
                 {
                     _focus = next;
                     MenuAudio.Move();
-                    int span = UiFit.Window(UiFit.Current(), 128f, 8f);
+                    int span = UiFit.Window(UiFit.Current(), UiFit.RowStep(128f, 120f), 8f);
                     if (_focus < _window || _focus >= _window + span)
                         PaintRecords();
                     else
@@ -1807,16 +1837,18 @@ namespace Tag.Ui.Menu
             MenuWidgets.Words(tipRt, MenuTips.At(0), UiFit.FloorFont, TextAnchor.MiddleLeft, MenuTheme.Cream, new Vector2(0.04f, 0.52f), new Vector2(0.96f, 0.74f));
             MenuWidgets.Words(tipRt, MenuTips.At(2), UiFit.FloorFont, TextAnchor.MiddleLeft, MenuTheme.Cream, new Vector2(0.04f, 0.28f), new Vector2(0.96f, 0.50f));
             MenuWidgets.Words(tipRt, MenuTips.At(7), UiFit.FloorFont, TextAnchor.MiddleLeft, MenuTheme.Cream, new Vector2(0.04f, 0.02f), new Vector2(0.96f, 0.26f));
+            float rowH = UiFit.RowH(96f);
+            float step = UiFit.RowStep(108f, 96f);
             float y = 8f;
-            AddTile(tileX, y, tileW, 96f, 0, "Play", "Local couch", true); y += 108f;
-            AddTile(tileX, y, tileW, 96f, 1, "Practice", "Free run any arena, no tagger", true); y += 108f;
-            AddTile(tileX, y, tileW, 96f, 2, "Options", "Sound, picture, access", true); y += 108f;
-            AddTile(tileX, y, tileW, 96f, 3, "Controls", "Binds. Space still jumps.", true); y += 108f;
+            AddTile(tileX, y, tileW, rowH, 0, "Play", "Local couch", true); y += step;
+            AddTile(tileX, y, tileW, rowH, 1, "Practice", "Free run any arena, no tagger", true); y += step;
+            AddTile(tileX, y, tileW, rowH, 2, "Options", "Sound, picture, access", true); y += step;
+            AddTile(tileX, y, tileW, rowH, 3, "Controls", "Binds. Space still jumps.", true); y += step;
             float gap = 12f;
             float btn = (tileW - gap * 2f) / 3f;
-            AddTile(tileX, y, btn, 96f, 4, "Credits", "", true);
-            AddTile(tileX + btn + gap, y, btn, 96f, 6, "Records", "Profiles", true);
-            AddTile(tileX + (btn + gap) * 2f, y, btn, 96f, 5, "Quit", "", true);
+            AddTile(tileX, y, btn, rowH, 4, "Credits", "", true);
+            AddTile(tileX + btn + gap, y, btn, rowH, 6, "Records", "Profiles", true);
+            AddTile(tileX + (btn + gap) * 2f, y, btn, rowH, 5, "Quit", "", true);
             MenuWidgets.Mark(TileAt(0), MenuIcons.Play, MenuIcons.PlayTint, 72f);
             MenuWidgets.Mark(TileAt(1), MenuIcons.Cone, MenuIcons.PracticeTint, 72f);
             MenuWidgets.Mark(TileAt(2), MenuIcons.Gear, MenuIcons.OptionsTint, 72f);
@@ -1935,7 +1967,9 @@ namespace Tag.Ui.Menu
                 MenuArt.Plate(plate, MenuTheme.Seat(s), true);
                 plate.raycastTarget = false;
                 _castPlate[s] = plate;
-                float textH = UiFit.CastNameH + UiFit.CastStatusH;
+                float nameH = UiFit.CastNameBand();
+                float statusH = UiFit.CastStatusBand();
+                float textH = nameH + statusH;
                 float swH = 26f;
                 float textY = cardH - 8f - textH;
                 if (textY < 80f) textY = 80f;
@@ -1982,23 +2016,25 @@ namespace Tag.Ui.Menu
                 glyphImage.raycastTarget = false;
                 glyphImage.enabled = false;
                 _castGlyph[s] = glyphImage;
-                var nameRt = MenuWidgets.Place(card, "NameLine", 4f, textY, cardW - 8f, UiFit.CastNameH);
+                var nameRt = MenuWidgets.Place(card, "NameLine", 4f, textY, cardW - 8f, nameH);
                 var namePlate = nameRt.gameObject.AddComponent<Image>();
                 MenuArt.Plate(namePlate, MenuTheme.Navy, true);
                 namePlate.raycastTarget = false;
                 _castName[s] = MenuWidgets.Words(nameRt, "", UiFit.FloorFont, TextAnchor.MiddleLeft, MenuTheme.Cream, Vector2.zero, Vector2.one);
                 Snug(_castName[s]);
+                LockFit(_castName[s], UiFit.FloorFont);
                 if (_castName[s] != null)
                 {
                     _castName[s].rectTransform.offsetMin = new Vector2(12f, 6f);
                     _castName[s].rectTransform.offsetMax = new Vector2(-12f, -6f);
                 }
-                var statRt = MenuWidgets.Place(card, "StatusLine", 4f, textY + UiFit.CastNameH, cardW - 8f, UiFit.CastStatusH);
+                var statRt = MenuWidgets.Place(card, "StatusLine", 4f, textY + nameH, cardW - 8f, statusH);
                 var statPlate = statRt.gameObject.AddComponent<Image>();
                 MenuArt.Plate(statPlate, MenuTheme.Navy, true);
                 statPlate.raycastTarget = false;
                 _castReady[s] = MenuWidgets.Words(statRt, "", UiFit.FloorFont, TextAnchor.MiddleLeft, MenuTheme.Cream, Vector2.zero, Vector2.one);
                 Snug(_castReady[s]);
+                LockFit(_castReady[s], UiFit.FloorFont);
                 if (_castReady[s] != null)
                 {
                     _castReady[s].rectTransform.offsetMin = new Vector2(12f, 8f);
@@ -2069,6 +2105,7 @@ namespace Tag.Ui.Menu
             MenuArt.Plate(back, MenuTheme.Navy, true);
             back.raycastTarget = false;
             _nameWord = MenuWidgets.Words(_keys, "", UiFit.FloorFont, TextAnchor.MiddleLeft, MenuTheme.Gold, new Vector2(0f, 0.86f), new Vector2(1f, 1f));
+            LockFit(_nameWord, UiFit.FloorFont);
             float cellW = (span - 48f) / LocalProfiles.Cols;
             if (cellW > 150f) cellW = 150f;
             float cellH = (height - 56f) / LocalProfiles.Rows;
@@ -2086,6 +2123,7 @@ namespace Tag.Ui.Menu
                 plate.raycastTarget = false;
                 _keyPlate[i] = plate;
                 _keyWord[i] = MenuWidgets.Words(rt, word, UiFit.FloorFont, TextAnchor.MiddleCenter, MenuTheme.Cream, Vector2.zero, Vector2.one);
+                LockFit(_keyWord[i], UiFit.FloorFont);
             }
             _keys.gameObject.SetActive(false);
         }
@@ -2109,7 +2147,9 @@ namespace Tag.Ui.Menu
                 int col = i % 2;
                 int row = i / 2;
                 string mark = MenuSession.Mode == id ? "Selected" : " ";
-                AddTile(leftX + col * (colW + 12f), 12f + row * 168f, colW, 152f, i, MenuCatalog.ModeName(id), MenuCatalog.ModeBlurb(id) + "\n" + mark, true);
+                float modeH = UiFit.BlockH(152f, 2);
+                float modeStep = UiFit.IdentityText() ? 168f : modeH + 16f;
+                AddTile(leftX + col * (colW + 12f), 12f + row * modeStep, colW, modeH, i, MenuCatalog.ModeName(id), MenuCatalog.ModeBlurb(id) + "\n" + mark, true);
             }
             MenuWidgets.Mark(TileAt(0), MenuIcons.Play, MenuIcons.PlayTint, 56f);
             MenuWidgets.Mark(TileAt(1), MenuIcons.Star, MenuIcons.CreditsTint, 56f);
@@ -2131,12 +2171,14 @@ namespace Tag.Ui.Menu
             ClampRuleWindow();
             GameSettings s = GameSettings.Current ?? GameSettings.Defaults();
             UiFit.Columns(UiFit.Current(), out _, out _, out float rightX, out float rightW);
-            int win = UiFit.Window(UiFit.Current(), 84f, 12f);
+            float ruleH = UiFit.RowH(80f);
+            float ruleStep = UiFit.RowStep(84f, 80f);
+            int win = UiFit.Window(UiFit.Current(), ruleStep, 12f);
             int shown = 0;
             for (int index = 4; index < RuleBook.Count; index++)
             {
                 if (index < 4 + _window || index >= 4 + _window + win) continue;
-                AddTile(rightX, 12f + shown * 84f, rightW, 80f, index, RuleBook.Title(index), RuleBook.Detail(s, index), true);
+                AddTile(rightX, 12f + shown * ruleStep, rightW, ruleH, index, RuleBook.Title(index), RuleBook.Detail(s, index), true);
                 shown++;
             }
             _count = RuleBook.Count;
@@ -2215,7 +2257,7 @@ namespace Tag.Ui.Menu
             float rowW = cardW * 3f + gap * 2f;
             float x0 = (span - rowW) * 0.5f;
             if (x0 < 8f) x0 = 8f;
-            float btnH = 100f;
+            float btnH = UiFit.RowH(100f);
             float cardH = bodyH - btnH - 36f;
             if (cardH > 620f) cardH = 620f;
             if (cardH < 240f) cardH = 240f;
@@ -2418,6 +2460,11 @@ namespace Tag.Ui.Menu
                 float bh = (card.H - edge * 2f - gap * (MenuSplitPause.Items - 1)) / MenuSplitPause.Items;
                 if (bh > 108f) bh = 108f;
                 if (bh < 58f) bh = 58f;
+                if (!UiFit.IdentityText())
+                {
+                    float need = UiFit.RowH(108f);
+                    if (bh < need) bh = need;
+                }
                 float stack = MenuSplitPause.Items * bh + (MenuSplitPause.Items - 1) * gap;
                 float bw = card.W - 72f;
                 if (bw > 760f) bw = 760f;
@@ -2529,9 +2576,14 @@ namespace Tag.Ui.Menu
             if (_header != null) _header.text = "  " + MenuDepth.Header();
             if (_banner != null) _banner.text = MenuDepth.Banner();
             int win = OptionWindow();
-            if (_focus < _window) _window = _focus;
-            if (_focus >= _window + win) _window = _focus - (win - 1);
-            int max = _count - win;
+            int pinned = MenuDepth.Page == MenuDepth.Access ? 1 : 0;
+            int scrollRows = _count - pinned;
+            int scrollFocus = _focus;
+            if (pinned > 0 && scrollFocus >= scrollRows) scrollFocus = scrollRows - 1;
+            if (scrollFocus < 0) scrollFocus = 0;
+            if (scrollFocus < _window) _window = scrollFocus;
+            if (scrollFocus >= _window + win) _window = scrollFocus - (win - 1);
+            int max = scrollRows - win;
             if (max < 0) max = 0;
             if (_window > max) _window = max;
             if (_window < 0) _window = 0;
@@ -2539,7 +2591,7 @@ namespace Tag.Ui.Menu
             for (int v = 0; v < win; v++)
             {
                 int index = _window + v;
-                if (index >= _count) break;
+                if (index >= scrollRows) break;
                 UiFit.RowBox(UiFit.Current(), 1120f, out float rowX, out float rowW);
                 if (MenuDepth.Page == MenuDepth.Hub && index == MenuDepth.Count - 1)
                 {
@@ -2554,11 +2606,18 @@ namespace Tag.Ui.Menu
                 if (tile != null && MenuDepth.Page == MenuDepth.Access)
                 {
                     if (index == 0) MenuWidgets.Toggle(tile, MenuVideo.ReduceMotion);
-                    else if (index == 4) MenuWidgets.Toggle(tile, Tag.Ui.Hud.MatchHudText.ComicWords);
+                    else if (index == 5) MenuWidgets.Toggle(tile, Tag.Ui.Hud.MatchHudText.ComicWords);
                 }
                 float meter = MenuDepth.Meter(index);
                 if (tile != null && meter >= 0f)
                     PaintMeter(tile.transform, meter);
+            }
+            if (MenuDepth.Page == MenuDepth.Access)
+            {
+                UiFit.RowBox(UiFit.Current(), 1120f, out float barX, out float barW);
+                float barY = UiFit.BodyH(UiFit.Current()) - MenuDepth.BarBlock;
+                if (barY < 8f) barY = 8f;
+                PaintPromptBar(barX, barY, barW, MenuDepth.Access);
             }
             MenuDepth.PaintSwatches(_body);
             _count = MenuDepth.Count;
@@ -2658,8 +2717,9 @@ namespace Tag.Ui.Menu
                     detail = _conflict ?? "";
                 }
                 UiFit.RowBox(UiFit.Current(), 1680f, out float rowX, out float rowW);
-                MenuTile row = AddTile(rowX, 8f + v * UiFit.OptStep, rowW, UiFit.OptRow, index, title, detail, true);
-                if (row != null && row.Detail != null && detail != null && detail.Length > 48)
+                UiFit.OptionSpan(out float rowH, out float step);
+                MenuTile row = AddTile(rowX, 8f + v * step, rowW, rowH, index, title, detail, true);
+                if (UiFit.IdentityText() && row != null && row.Detail != null && detail != null && detail.Length > 48)
                 {
                     row.Detail.resizeTextForBestFit = true;
                     row.Detail.resizeTextMinSize = 18;
@@ -2676,7 +2736,8 @@ namespace Tag.Ui.Menu
         {
             if (win < 1) win = 1;
             UiFit.RowBox(UiFit.Current(), 1680f, out float rowX, out float rowW);
-            float trackH = win * UiFit.OptStep - 16f;
+            UiFit.OptionSpan(out _, out float step);
+            float trackH = win * step - 16f;
             if (trackH < 120f) trackH = 120f;
             float trackX = rowX + rowW + 8f;
             var track = MenuWidgets.Place(_body, "ScrollTrack", trackX, 12f, 14f, trackH);
@@ -2701,7 +2762,7 @@ namespace Tag.Ui.Menu
         {
             float top = 8f;
             if (MenuDepth.Page == MenuDepth.Access)
-                top += MenuDepth.SwatchReserve;
+                top += MenuDepth.SwatchReserve + MenuDepth.BarBlock;
             UiFit.OptionSpan(out _, out float step);
             int n = UiFit.Window(UiFit.Current(), step, top);
             if (n > OptWindow) n = OptWindow;
@@ -2710,6 +2771,11 @@ namespace Tag.Ui.Menu
         }
 
         void PaintHubBar(float x, float y, float w)
+        {
+            PaintPromptBar(x, y, w, MenuDepth.Hub);
+        }
+
+        void PaintPromptBar(float x, float y, float w, int page)
         {
             ActionBinds binds = ActionBinds.Defaults();
             string confirmKey = binds.Keyboard[(int)PlayAction.Jump];
@@ -2720,11 +2786,12 @@ namespace Tag.Ui.Menu
             float chipW = (w - gap) * 0.5f;
             if (chipW < 180f) chipW = 180f;
             bool onBar = _focus == MenuDepth.Count - 1;
-            bool armed = OptionApply.ArmedRow(MenuDepth.Hub, MenuDepth.Count - 1);
+            bool armed = OptionApply.ArmedRow(page, MenuDepth.Count - 1);
             string resetWord = armed ? "Reset?" : "Reset";
-            string backWord = _pauseChild ? "Pause" : "Back";
-            HubChip(x, y, chipW, 72f, MenuDepth.BarReset, resetWord, confirmKey, confirmPad, onBar && MenuDepth.Bar == MenuDepth.BarReset);
-            HubChip(x + chipW + gap, y, chipW, 72f, MenuDepth.BarBack, backWord, backKey, backPad, onBar && MenuDepth.Bar == MenuDepth.BarBack);
+            string backWord = page == MenuDepth.Hub && _pauseChild ? "Pause" : "Back";
+            float chipH = UiFit.IdentityText() ? 72f : UiFit.LineH(72f);
+            HubChip(x, y, chipW, chipH, MenuDepth.BarReset, resetWord, confirmKey, confirmPad, onBar && MenuDepth.Bar == MenuDepth.BarReset);
+            HubChip(x + chipW + gap, y, chipW, chipH, MenuDepth.BarBack, backWord, backKey, backPad, onBar && MenuDepth.Bar == MenuDepth.BarBack);
         }
 
         void HubChip(float x, float y, float w, float h, int chip, string word, string keyToken, string padToken, bool hot)
@@ -2760,7 +2827,8 @@ namespace Tag.Ui.Menu
 
         int ControlWindow()
         {
-            int n = UiFit.Window(UiFit.Current(), UiFit.OptStep, 8f);
+            UiFit.OptionSpan(out _, out float step);
+            int n = UiFit.Window(UiFit.Current(), step, 8f);
             if (n > OptWindow) n = OptWindow;
             return n;
         }
@@ -2843,9 +2911,10 @@ namespace Tag.Ui.Menu
             credits.verticalOverflow = VerticalWrapMode.Truncate;
             float body = UiFit.BodyH(UiFit.Current());
             UiFit.RowBox(UiFit.Current(), 480f, out float backX, out float backW);
-            float backY = body - 100f;
+            float backH = UiFit.RowH(80f);
+            float backY = body - 20f - backH;
             if (backY < 120f) backY = 120f;
-            AddTile(backX, backY, backW, 80f, 0, "Back", "", true);
+            AddTile(backX, backY, backW, backH, 0, "Back", "", true);
         }
 
         void BuildPractice()
@@ -2865,6 +2934,7 @@ namespace Tag.Ui.Menu
             float rowH = 90f;
             float body = UiFit.BodyH(UiFit.Current());
             if (12f + PracticeSession.Rows * 100f > body) rowH = 72f;
+            if (!UiFit.IdentityText()) rowH = UiFit.LineH(rowH);
             for (int i = 0; i < PracticeSession.Rows; i++)
                 AddTile(rowX, 12f + i * (rowH + 8f), rowW, rowH, i, PracticeSession.RowLabel(i), "", true);
             _count = PracticeSession.Rows;
@@ -3251,7 +3321,8 @@ namespace Tag.Ui.Menu
             if (_screen == MenuScreenId.Options)
             {
                 int span = OptionWindow();
-                bool hubBar = MenuDepth.Page == MenuDepth.Hub && (previous == _count - 1 || _focus == _count - 1);
+                bool hubBar = (MenuDepth.Page == MenuDepth.Hub || MenuDepth.Page == MenuDepth.Access)
+                    && (previous == _count - 1 || _focus == _count - 1);
                 if (armed || hubBar || _focus < _window || _focus >= _window + span || before != _window)
                     PaintOptions();
                 else
@@ -3467,7 +3538,9 @@ namespace Tag.Ui.Menu
             for (int i = 0; i < LocalProfiles.Max; i++)
                 if (LocalProfiles.SlotId(i) > 0) filled++;
             _count = filled == 0 ? 2 : filled + 1;
-            int win = UiFit.Window(UiFit.Current(), 128f, 8f);
+            float recH = UiFit.RowH(120f);
+            float recStep = UiFit.RowStep(128f, 120f);
+            int win = UiFit.Window(UiFit.Current(), recStep, 8f);
             if (_focus >= _count) _focus = _count - 1;
             if (_focus < 0) _focus = 0;
             if (_focus < _window) _window = _focus;
@@ -3487,18 +3560,18 @@ namespace Tag.Ui.Menu
                     if (card.Label != null)
                     {
                         card.Label.resizeTextForBestFit = false;
-                        card.Label.fontSize = 40;
+                        card.Label.fontSize = UiFit.TextPx(40);
                     }
                     if (card.Detail != null)
                     {
                         card.Detail.resizeTextForBestFit = false;
-                        card.Detail.fontSize = UiFit.FloorFont;
+                        card.Detail.fontSize = UiFit.TextPx(UiFit.FloorFont);
                     }
                     MenuWidgets.SeatLine(card.Label, 280f, 78f, 48f, 190f);
                     MenuWidgets.SeatLine(card.Detail, 280f, 136f, 40f, 190f);
                     MenuWidgets.EmptyMark(card.transform, 36f, 78f, 140f);
                 }
-                AddTile(x, 320f, w, UiFit.OptRow, 1, "Back", "", true);
+                AddTile(x, 320f, w, UiFit.RowH(UiFit.OptRow), 1, "Back", "", true);
                 RefreshFocus();
                 return;
             }
@@ -3516,11 +3589,11 @@ namespace Tag.Ui.Menu
                 string lead = title + "\n";
                 if (!string.IsNullOrEmpty(detail) && detail.StartsWith(lead))
                     detail = detail.Substring(lead.Length);
-                AddTile(x, 8f + v * 128f, w, 120f, index, title, detail, true);
+                AddTile(x, 8f + v * recStep, w, recH, index, title, detail, true);
             }
             int back = filled;
             if (back >= _window && back < _window + win)
-                AddTile(x, 8f + (back - _window) * 128f, w, 120f, back, "Back", "", true);
+                AddTile(x, 8f + (back - _window) * recStep, w, recH, back, "Back", "", true);
             RefreshFocus();
         }
 

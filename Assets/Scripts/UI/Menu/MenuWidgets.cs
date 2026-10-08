@@ -116,8 +116,7 @@ namespace Tag.Ui.Menu
             int detailPx = UiFit.TextPx(UiFit.FloorFont);
             bool identityType = titlePx == 40 && detailPx == UiFit.FloorFont;
             bool typedRow = h >= UiFit.OptRow && h <= UiFit.RematchH && identityType;
-            bool grownRow = !identityType && h + 0.5f >= 24f + titlePx + 6f + detailPx + 8f;
-            if (typedRow || grownRow)
+            if (typedRow)
             {
                 title.resizeTextForBestFit = false;
                 title.fontSize = titlePx;
@@ -126,6 +125,23 @@ namespace Tag.Ui.Menu
                 sub.fontSize = detailPx;
                 sub.resizeTextMaxSize = detailPx;
                 sub.resizeTextMinSize = detailPx;
+            }
+            else if (!identityType)
+            {
+                if (titleH + 1f >= titlePx)
+                {
+                    title.resizeTextForBestFit = false;
+                    title.fontSize = titlePx;
+                    title.resizeTextMaxSize = titlePx;
+                    title.resizeTextMinSize = titlePx;
+                }
+                if (!two || detailH + 1f >= detailPx)
+                {
+                    sub.resizeTextForBestFit = false;
+                    sub.fontSize = detailPx;
+                    sub.resizeTextMaxSize = detailPx;
+                    sub.resizeTextMinSize = detailPx;
+                }
             }
             Band(title, h, titleFromTop, titleH);
             Band(sub, h, detailFromTop, detailH);

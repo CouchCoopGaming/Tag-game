@@ -198,6 +198,13 @@ namespace Tag.Ui.Menu
             if (view < 180f) view = 180f;
             rankH = 180f;
             btnH = RematchH;
+            if (!IdentityText())
+            {
+                float rankNeed = BlockH(180f, 3);
+                if (rankNeed > rankH) rankH = rankNeed;
+                float btnNeed = RowH(RematchH);
+                if (btnNeed > btnH) btnH = btnNeed;
+            }
             rankY = view + 10f;
             btnY = rankY + rankH + 10f;
             if (btnY + btnH > h)
@@ -220,6 +227,11 @@ namespace Tag.Ui.Menu
             float h = BodyH(scale);
             gridH = 100f;
             gridStep = 108f;
+            if (!IdentityText())
+            {
+                gridH = RowH(100f);
+                gridStep = gridH + 8f;
+            }
             float keys = 216f;
             cardH = h - keys - 12f;
             if (cardH > 560f) cardH = 560f;
@@ -261,6 +273,57 @@ namespace Tag.Ui.Menu
         /// <summary>Options and Accessibility rows. Title is 40 px under the stripe. The sub-line is its own row.</summary>
         public const float OptRow = 108f;
         public const float OptStep = 116f;
+
+        public static bool IdentityText()
+        {
+            return TextPx(40) == 40 && TextPx(FloorFont) == FloorFont;
+        }
+
+        /// <summary>At 1.00 the height is unchanged. Above that a title and one detail line fit.</summary>
+        public static float RowH(float baseH)
+        {
+            if (IdentityText()) return baseH;
+            float need = 24f + TextPx(40) + 6f + TextPx(FloorFont) + 12f;
+            return need > baseH ? need : baseH;
+        }
+
+        public static float RowStep(float baseStep, float baseRow)
+        {
+            if (IdentityText()) return baseStep;
+            float gap = baseStep - baseRow;
+            if (gap < 8f) gap = 8f;
+            return RowH(baseRow) + gap;
+        }
+
+        public static float BlockH(float baseH, int detailLines)
+        {
+            if (IdentityText()) return baseH;
+            if (detailLines < 1) detailLines = 1;
+            float need = 24f + TextPx(40) + 6f + TextPx(FloorFont) * detailLines + 12f;
+            return need > baseH ? need : baseH;
+        }
+
+        /// <summary>One title, no detail. Practice and other single-line rows.</summary>
+        public static float LineH(float baseH)
+        {
+            if (IdentityText()) return baseH;
+            float need = StripeClear() + TextPx(40) + 16f;
+            return need > baseH ? need : baseH;
+        }
+
+        public static float CastNameBand()
+        {
+            if (IdentityText()) return CastNameH;
+            float need = 12f + TextPx(FloorFont) * 2f + 8f;
+            return need > CastNameH ? need : CastNameH;
+        }
+
+        public static float CastStatusBand()
+        {
+            if (IdentityText()) return CastStatusH;
+            float need = 16f + TextPx(FloorFont);
+            return need > CastStatusH ? need : CastStatusH;
+        }
 
         /// <summary>Options row. At text size 1.00 this is the 108/116 pair. Above that the row grows so the type fits.</summary>
         public static void OptionSpan(out float row, out float step)
@@ -329,7 +392,8 @@ namespace Tag.Ui.Menu
                 titleFromTop = 24f;
                 titleH = titlePx;
                 detailFromTop = 24f + titlePx + 6f;
-                detailH = detailPx;
+                detailH = h - detailFromTop - 8f;
+                if (detailH < detailPx) detailH = detailPx;
                 return;
             }
             float titleBand = FloorFont + 4f;

@@ -18,6 +18,10 @@ static class Program
                 Console.WriteLine(Tag.Ui.Menu.OptionApply.BusLine);
             if (!string.IsNullOrEmpty(Tag.Ui.Menu.OptionApply.CvdLine))
                 Console.WriteLine(Tag.Ui.Menu.OptionApply.CvdLine);
+            if (!string.IsNullOrEmpty(Tag.Ui.Menu.OptionApply.QualityLine))
+                Console.WriteLine(Tag.Ui.Menu.OptionApply.QualityLine);
+            if (!string.IsNullOrEmpty(Tag.Ui.Menu.OptionApply.SeatLine))
+                Console.WriteLine(Tag.Ui.Menu.OptionApply.SeatLine);
             return only.Ok ? 0 : 1;
         }
         if (args != null && args.Length > 0 && args[0] == "--place-figures")
@@ -1012,6 +1016,10 @@ static class Program
             Console.WriteLine(Tag.Ui.Menu.OptionApply.BusLine);
         if (!string.IsNullOrEmpty(Tag.Ui.Menu.OptionApply.CvdLine))
             Console.WriteLine(Tag.Ui.Menu.OptionApply.CvdLine);
+        if (!string.IsNullOrEmpty(Tag.Ui.Menu.OptionApply.QualityLine))
+            Console.WriteLine(Tag.Ui.Menu.OptionApply.QualityLine);
+        if (!string.IsNullOrEmpty(Tag.Ui.Menu.OptionApply.SeatLine))
+            Console.WriteLine(Tag.Ui.Menu.OptionApply.SeatLine);
         if (!flow.Ok)
         {
             Console.Error.WriteLine(flow.Failure);

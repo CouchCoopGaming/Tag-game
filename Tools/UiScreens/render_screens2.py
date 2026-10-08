@@ -12,7 +12,7 @@ import os
 from PIL import Image, ImageDraw, ImageFont, ImageFilter, ImageEnhance
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
-OUT = os.path.join(ROOT, "Docs", "UiStills", "screens2", "pass14")
+OUT = os.path.join(ROOT, "Docs", "UiStills", "screens2", "pass15")
 FIG = os.path.join(OUT, "figures")
 W, H = 1920, 1080
 
@@ -283,7 +283,7 @@ def save(img, name, notes):
     if size > 390000:
         # Seat yellow sits next to the gold accent. A plain palette merge
         # turns that swatch gold, so those colors are painted back on.
-        protect = list(SEAT) + [GOLD, CREAM, INK, HOT, PANEL, NAVY, MUTE, STROKE, (13, 20, 41)]
+        protect = list(SEAT) + list(PD_RGB) + list(TR_RGB) + [GOLD, CREAM, INK, HOT, PANEL, NAVY, MUTE, STROKE, (13, 20, 41)]
         pinned = None
         for colors in (256, 224, 192, 160):
             pinned = pin_colors(rgb, protect, colors)
@@ -591,7 +591,9 @@ def pause():
     return img, min(ratios)
 
 
-def options(page, quality="Medium", hub="bar", access="tiles", mute=False, levels=True):
+def options(page, quality="Medium", hub="bar", access="tiles", mute=False, levels=True, seats="off"):
+    if page == "access" and access != "strip":
+        return access_page(seats)
     img = screen(0.5)
     picture_detail = "Low, Medium, High, Ultra" if levels else "Left / Right"
     sound_rows = [
@@ -702,6 +704,27 @@ SEAT_F = (
     (1.00, 0.86, 0.12),
     (0.16, 0.82, 0.28),
 )
+# Okabe-Ito blue, vermillion, sky, yellow. Tritan is the second measured set.
+PD_F = (
+    (0 / 255, 114 / 255, 178 / 255),
+    (213 / 255, 94 / 255, 0 / 255),
+    (86 / 255, 180 / 255, 233 / 255),
+    (240 / 255, 228 / 255, 66 / 255),
+)
+TR_F = (
+    (0.90, 0.20, 0.25),
+    (0.10, 0.78, 0.82),
+    (0.98, 0.62, 0.12),
+    (0.22, 0.12, 0.58),
+)
+
+
+def rgb_of(cols):
+    return [tuple(int(round(c * 255)) for c in rgb) for rgb in cols]
+
+
+PD_RGB = rgb_of(PD_F)
+TR_RGB = rgb_of(TR_F)
 
 
 def simulate_cvd(kind, rgb):
@@ -721,8 +744,9 @@ def simulate_cvd(kind, rgb):
     return tuple(max(0.0, min(1.0, c)) for c in o)
 
 
-def pair_distance(kind):
-    cols = [simulate_cvd(kind, c) for c in SEAT_F]
+def pair_distance(kind, colors=None):
+    src = SEAT_F if colors is None else colors
+    cols = [simulate_cvd(kind, c) for c in src]
     worst = 99.0
     for i in range(4):
         for j in range(i + 1, 4):
@@ -732,17 +756,34 @@ def pair_distance(kind):
     return worst
 
 
-def swatch_band(img, y):
+def seat_mark(d, kind, box, ink):
+    x0, y0, x1, y1 = box
+    if kind == 0:
+        d.ellipse(box, fill=ink)
+    elif kind == 1:
+        d.polygon((((x0 + x1) / 2, y0 + 1), (x0 + 1, y1 - 1), (x1 - 1, y1 - 1)), fill=ink)
+    elif kind == 2:
+        d.rectangle((x0 + 1, y0 + 1, x1 - 1, y1 - 1), fill=ink)
+    else:
+        cx, cy = (x0 + x1) / 2, (y0 + y1) / 2
+        d.polygon(((cx, y0), (x1, cy), (cx, y1), (x0, cy)), fill=ink)
+
+
+def swatch_band(img, y, colors=None, title="Default", marks=False, sw_h=78, row_pitch=40):
     d = ImageDraw.Draw(img)
     ratios = []
-    d.text((300, y), "Default", font=font(FONT_B, 28), fill=CREAM)
+    src = SEAT_F if colors is None else colors
+    d.text((300, y), title, font=font(FONT_B, 28), fill=CREAM)
     ratios.append(contrast(CREAM, (8, 22, 58)))
-    tiles = y + 36
-    sw_h = 78
-    for i, rgb in enumerate(SEAT_F):
+    tiles = y + 32
+    for i, rgb in enumerate(src):
         c = tuple(int(round(ch * 255)) for ch in rgb)
         x = 620 + i * 150
         rounded(d, (x, tiles, x + 120, tiles + sw_h), 12, c)
+        if marks:
+            luma = 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2]
+            ink = INK if luma > 140 else CREAM
+            seat_mark(d, i, (x + 8, tiles + 22, x + 36, tiles + 54), ink)
         cap = (x, tiles + sw_h + 4, x + 120, tiles + sw_h + 40)
         rounded(d, cap, 8, NAVY)
         label = "P%d" % (i + 1)
@@ -750,17 +791,52 @@ def swatch_band(img, y):
         d.text((x + (120 - tw) / 2, tiles + sw_h + 6), label, font=font(FONT_B, 28), fill=CREAM)
         ratios.append(contrast(CREAM, NAVY))
     row_y = tiles + sw_h + 48
-    for kind, title in (("protan", "Protan"), ("deutan", "Deutan"), ("tritan", "Tritan")):
-        dist = pair_distance(kind)
-        d.text((300, row_y + 2), "%s  %.2f" % (title, dist), font=font(FONT_B, 24), fill=CREAM)
+    for kind, name in (("protan", "Protan"), ("deutan", "Deutan"), ("tritan", "Tritan")):
+        dist = pair_distance(kind, src)
+        d.text((300, row_y + 2), "%s  %.2f" % (name, dist), font=font(FONT_B, 24), fill=CREAM)
         ratios.append(contrast(CREAM, (8, 22, 58)))
-        cols = [simulate_cvd(kind, c) for c in SEAT_F]
+        cols = [simulate_cvd(kind, c) for c in src]
         for i, rgb in enumerate(cols):
             c = tuple(int(round(ch * 255)) for ch in rgb)
             x = 620 + i * 150
             rounded(d, (x, row_y, x + 120, row_y + 32), 8, c)
-        row_y += 40
+        row_y += row_pitch
     return ratios
+
+
+def access_page(seats="off"):
+    """Accessibility. Reset and Back stay on the bottom row, outside the scroll."""
+    img = screen(0.5)
+    header(img, "Accessibility", "Motion, text size, seat colours, and comic words.")
+    if seats == "pd":
+        seat_name, colors, head = "Protan/Deutan", PD_F, "Protan/Deutan"
+    elif seats == "tritan":
+        seat_name, colors, head = "Tritan", TR_F, "Tritan"
+    else:
+        seat_name, colors, head = "Off", SEAT_F, "Default"
+    rows = [
+        ("Player  P1", "Left / Right", False),
+        ("Colorblind palette  Default", "Left / Right", False),
+        ("Colour-blind seat palette  " + seat_name, "Off, Protan/Deutan, or Tritan", seats != "off"),
+        ("Comic words  On", "Verb words during a match.", False),
+    ]
+    ratios = []
+    y = 160
+    row_h = 108
+    for i, (name, sub, hot) in enumerate(rows):
+        ratios.append(button(img, (280, y, 1640, y + row_h), name, sub, hot))
+        if i == 3:
+            d = ImageDraw.Draw(img)
+            draw_switch(d, 1640 - 96 - 28, y + 34, True)
+        y += 112
+    d = ImageDraw.Draw(img)
+    d.rounded_rectangle((1660, 172, 1674, 560), 4, fill=(0, 0, 0, 140))
+    d.rounded_rectangle((1662, 360, 1672, 548), 3, fill=GOLD)
+    ratios.extend(swatch_band(img, y + 8, colors, head, marks=seats != "off", sw_h=64, row_pitch=34))
+    ratios.append(prompt_bar(img, 900, 280, 1360, hot="back"))
+    ratios.append(contrast(GOLD, NAVY))
+    footer_both(img)
+    return img, min(ratios)
 
 
 # ActionBinds.Show, plus Xbox face names from ActionBinds.PadWord.
@@ -1397,6 +1473,292 @@ def match_hud(scale):
     return img, min(ratios)
 
 
+def type_px(base, scale):
+    if abs(scale - 1.0) < 0.02:
+        return base
+    return int(round(base * scale))
+
+
+def wrap_words(d, text, face, width):
+    if not text:
+        return []
+    words = text.split()
+    lines = []
+    cur = ""
+    for word in words:
+        trial = word if not cur else cur + " " + word
+        if d.textlength(trial, font=face) <= width or not cur:
+            cur = trial
+        else:
+            lines.append(cur)
+            cur = word
+    if cur:
+        lines.append(cur)
+    return lines
+
+
+def shrink_into(d, title, lines, title_px, sub_px, width, height):
+    while title_px > 16 or sub_px > 14:
+        tf = font(FONT_D, title_px)
+        sf = font(FONT_B, sub_px)
+        title_lines = wrap_words(d, title, tf, width)
+        need = len(title_lines) * (title_px + 2) + 4
+        wide = False
+        for line in title_lines:
+            if d.textlength(line, font=tf) > width + 1:
+                wide = True
+        for line in lines:
+            if not line:
+                continue
+            need += sub_px + 2
+            if d.textlength(line, font=sf) > width + 1:
+                wide = True
+        if need <= height and not wide:
+            return title_px, sub_px
+        if title_px > 16:
+            title_px -= 2
+        if sub_px > 14:
+            sub_px -= 2
+    return max(16, title_px), max(14, sub_px)
+
+
+def paint_lines(img, box, title, lines, scale, hot, grown):
+    """Grown rows keep TextPx. The before pane shrinks into the old height."""
+    x0, y0, x1, y1 = box
+    shadow(img, box)
+    d = ImageDraw.Draw(img)
+    fill = HOT if hot else PANEL
+    rounded(d, box, 18, fill, GOLD if hot else STROKE, 5 if hot else 3)
+    d.rectangle((x0 + 12, y0 + 6, x1 - 12, y0 + 12), fill=GOLD if hot else (255, 255, 255, 70))
+    title_c = INK if hot else CREAM
+    sub_c = INK if hot else MUTE
+    title_px = type_px(40, scale)
+    sub_px = type_px(30, scale)
+    left = x0 + 18
+    right = x1 - 14
+    width = right - left
+    height = (y1 - 10) - (y0 + 16)
+    if not grown:
+        title_px, sub_px = shrink_into(d, title, lines, title_px, sub_px, width, height)
+    tf = font(FONT_D, title_px)
+    sf = font(FONT_B, sub_px)
+    title_lines = wrap_words(d, title, tf, width)
+    yy = y0 + 18
+    well = (left - 2, y0 + 14, right + 2, y1 - 6)
+    for line in title_lines:
+        d.text((left, yy), line, font=tf, fill=title_c)
+        ok, bb = text_inside(d, (left, yy), line, tf, well)
+        if grown and not ok:
+            raise SystemExit("row title clip %s %s well %s" % (line, bb, well))
+        yy += title_px + 2
+    for line in lines:
+        if not line:
+            continue
+        d.text((left, yy), line, font=sf, fill=sub_c)
+        ok, bb = text_inside(d, (left, yy), line, sf, well)
+        if grown and not ok:
+            raise SystemExit("row sub clip %s %s well %s" % (line, bb, well))
+        yy += sub_px + 2
+    return contrast(title_c, fill), title_px, sub_px
+
+
+def board_main(scale, grown):
+    img = screen(0.45)
+    header(img, "Menu", "Text size  %.2f" % scale)
+    plate(img, (70, 168, 920, 900), (8, 28, 70, 230))
+    d = ImageDraw.Draw(img)
+    d.text((96, 190), "Local couch. One keyboard, four pads.", font=font(FONT_B, type_px(30, scale) if grown else 30), fill=CREAM)
+    rows = [
+        ("Play", ["Local couch"], True),
+        ("Practice", ["Free run any arena, no tagger"], False),
+        ("Options", ["Sound, picture, access"], False),
+        ("Controls", ["Binds. Space still jumps."], False),
+    ]
+    title_px = type_px(40, scale)
+    sub_px = type_px(30, scale)
+    h = 96 if not grown else max(96, 24 + title_px + 6 + sub_px + 12)
+    step = 108 if not grown else h + 12
+    y = 168
+    ratios = []
+    locked = []
+    for title, lines, hot in rows:
+        ratio, tp, sp = paint_lines(img, (980, y, 1800, y + h), title, lines, scale, hot, grown)
+        ratios.append(ratio)
+        locked.append((tp, sp))
+        y += step
+    bw = (1800 - 980 - 24) // 3
+    x = 980
+    for title, lines in (("Credits", []), ("Records", ["Profiles"]), ("Quit", [])):
+        ratio, tp, sp = paint_lines(img, (x, y, x + bw, y + h), title, lines, scale, False, grown)
+        ratios.append(ratio)
+        locked.append((tp, sp))
+        x += bw + 12
+    return img, min(ratios), locked
+
+
+def board_cast(scale, grown):
+    img = screen(0.5)
+    header(img, "Characters", "Text size  %.2f" % scale)
+    name_px = type_px(30, scale)
+    name_h = 78 if not grown else max(78, 12 + name_px * 2 + 8)
+    status_h = 52 if not grown else max(52, 16 + name_px)
+    card_w = 420
+    card_h = 400 if not grown else 430
+    ratios = []
+    y0 = 168
+    for s in range(4):
+        x = 48 + s * (card_w + 16)
+        d = ImageDraw.Draw(img)
+        rounded(d, (x, y0, x + card_w, y0 + card_h), 18, SEAT[s], STROKE, 3)
+        rounded(d, (x + 36, y0 + 16, x + card_w - 36, y0 + card_h - name_h - status_h - 24), 12, NAVY)
+        name_box = (x + 12, y0 + card_h - name_h - status_h - 8, x + card_w - 12, y0 + card_h - status_h - 8)
+        stat_box = (x + 12, name_box[3], x + card_w - 12, name_box[3] + status_h)
+        rounded(d, name_box, 8, NAVY)
+        rounded(d, stat_box, 8, NAVY)
+        face_px = name_px if grown else 28
+        nf = font(FONT_B, face_px)
+        d.text((name_box[0] + 12, name_box[1] + 6), "P%d" % (s + 1), font=nf, fill=CREAM)
+        d.text((name_box[0] + 12, name_box[1] + 8 + face_px), "Red / Red", font=nf, fill=CREAM)
+        d.text((stat_box[0] + 12, stat_box[1] + 8), "Hat off    Not ready", font=nf, fill=CREAM)
+        if grown:
+            for word, xy, box in (
+                ("P%d" % (s + 1), (name_box[0] + 12, name_box[1] + 6), name_box),
+                ("Red / Red", (name_box[0] + 12, name_box[1] + 8 + face_px), name_box),
+                ("Hat off    Not ready", (stat_box[0] + 12, stat_box[1] + 8), stat_box),
+            ):
+                ok, bb = text_inside(d, xy, word, nf, (box[0] + 4, box[1] + 2, box[2] - 4, box[3] - 2))
+                if not ok:
+                    raise SystemExit("cast clip %s %s" % (word, bb))
+        ratios.append(contrast(CREAM, NAVY))
+    title_px = type_px(40, scale)
+    sub_px = type_px(30, scale)
+    grid_h = 100 if not grown else max(100, 24 + title_px + 6 + sub_px + 12)
+    grid_step = 108 if not grown else grid_h + 8
+    names = ["RED", "BLUE", "ORANGE", "LAVENDER", "TAN", "MINT"]
+    grid_y = y0 + card_h + 16
+    locked = []
+    col_w = 280
+    x0 = (W - (col_w * 3 + 16)) // 2
+    for i, name in enumerate(names):
+        col, row = i % 3, i // 3
+        x = x0 + col * (col_w + 8)
+        y = grid_y + row * grid_step
+        ratio, tp, sp = paint_lines(img, (x, y, x + col_w, y + grid_h), name, [" "], scale, i == 0, grown)
+        ratios.append(ratio)
+        locked.append((tp, sp))
+    return img, min(ratios), locked
+
+
+def board_rules(scale, grown):
+    img = screen(0.5)
+    header(img, "Mode and rules", "Text size  %.2f" % scale)
+    title_px = type_px(40, scale)
+    sub_px = type_px(30, scale)
+    mode_h = 152 if not grown else max(152, 24 + title_px + 6 + sub_px * 2 + 12)
+    mode_step = 168 if not grown else mode_h + 16
+    rule_h = 80 if not grown else max(80, 24 + title_px + 6 + sub_px + 12)
+    rule_step = 84 if not grown else rule_h + 8
+    modes = [
+        ("Hot Potato", ["First to 2.", "Fuse 45 / 40 / 35s."], False),
+        ("Least It", ["Least time as It.", "Selected"], True),
+        ("Trail Tag", ["Ribbons eliminate.", "Last standing."], False),
+        ("Free play", ["Punch transfers It.", "No timer."], False),
+    ]
+    ratios = []
+    locked = []
+    for i, (name, lines, hot) in enumerate(modes):
+        col, row = i % 2, i // 2
+        x = 64 + col * 400
+        y = 168 + row * mode_step
+        ratio, tp, sp = paint_lines(img, (x, y, x + 380, y + mode_h), name, lines, scale, hot, grown)
+        ratios.append(ratio)
+        locked.append((tp, sp))
+    rules = [
+        ("Round length", ["120 s"]),
+        ("Rounds", ["1"]),
+        ("Win target", ["2"]),
+        ("Starting It", ["Random"]),
+    ]
+    for i, (title, lines) in enumerate(rules):
+        y = 168 + i * rule_step
+        ratio, tp, sp = paint_lines(img, (900, y, 1800, y + rule_h), title, lines, scale, False, grown)
+        ratios.append(ratio)
+        locked.append((tp, sp))
+    return img, min(ratios), locked
+
+
+def board_results(scale, grown):
+    img = screen(0.85)
+    header(img, "RESULTS", "Least It  ·  Red / Tan")
+    title_px = type_px(40, scale)
+    sub_px = type_px(30, scale)
+    rank_h = 180 if not grown else max(180, 24 + title_px + 6 + sub_px * 3 + 12)
+    btn_h = 128 if not grown else max(128, 24 + title_px + 6 + sub_px + 12)
+    places = [
+        ("2nd  P2", ["5 tags", "14.7s as It", "1 round win"], 1),
+        ("1st  P1", ["WIN  6 tags", "8.5s as It", "2 round wins"], 0),
+        ("3rd  P3", ["4 tags", "20.9s as It", "0 round wins"], 2),
+        ("4th  P4", ["3 tags", "27.1s as It", "0 round wins"], 3),
+    ]
+    rank_w = 430
+    x0 = 70
+    rank_y = 200
+    ratios = []
+    locked = []
+    for i, (title, lines, seat) in enumerate(places):
+        x = x0 + i * (rank_w + 16)
+        ratio, tp, sp = paint_lines(img, (x, rank_y, x + rank_w, rank_y + rank_h), title, lines, scale, i == 1, grown)
+        ratios.append(ratio)
+        locked.append((tp, sp))
+        d = ImageDraw.Draw(img)
+        badge, ink = badge_paint(SEAT[seat])
+        d.rounded_rectangle((x + rank_w - 108, rank_y + 18, x + rank_w - 22, rank_y + 56), 8, fill=badge)
+        d.text((x + rank_w - 88, rank_y + 24), "P%d" % (seat + 1), font=font(FONT_B, 22), fill=ink)
+        ratios.append(contrast(ink, badge))
+    actions = [("Rematch", ["Same setup"], True), ("Change mode", [], False), ("Character select", [], False), ("Main menu", [], False)]
+    btn_y = rank_y + rank_h + 16
+    for i, (title, lines, hot) in enumerate(actions):
+        x = x0 + i * (rank_w + 16)
+        ratio, tp, sp = paint_lines(img, (x, btn_y, x + rank_w, btn_y + btn_h), title, lines, scale, hot, grown)
+        ratios.append(ratio)
+        locked.append((tp, sp))
+    return img, min(ratios), locked
+
+
+def quad_split(scale, grown):
+    boards = [
+        ("Main menu", board_main),
+        ("Character select", board_cast),
+        ("Mode and rules", board_rules),
+        ("RESULTS", board_results),
+    ]
+    full = type_px(40, scale)
+    floor = type_px(30, scale)
+    shots = []
+    worst = 99.0
+    for label, fn in boards:
+        img, ratio, locked = fn(scale, grown)
+        worst = min(worst, ratio)
+        if grown:
+            for tp, sp in locked:
+                if tp != full or sp != floor:
+                    raise SystemExit("best-fit shrink %s title %s sub %s" % (label, tp, sp))
+        shots.append((label, img))
+    canvas = Image.new("RGB", (W, H), (8, 14, 32))
+    d = ImageDraw.Draw(canvas)
+    note = "Text size 1.50, rows grown" if grown else "Text size 1.50, old row height"
+    d.text((24, 6), note, font=font(FONT_B, 22), fill=GOLD)
+    pw, ph = W // 2 - 16, H // 2 - 40
+    for i, (label, img) in enumerate(shots):
+        thumb = img.convert("RGB").resize((pw, ph), Image.Resampling.LANCZOS)
+        x = 8 + (i % 2) * (W // 2)
+        y = 40 + (i // 2) * (H // 2)
+        canvas.paste(thumb, (x, y))
+        d.rectangle((x, y, x + 320, y + 28), fill=NAVY)
+        d.text((x + 8, y + 3), "%s  1.50" % label, font=font(FONT_B, 20), fill=CREAM)
+    return canvas, worst
+
+
 def main():
     notes = []
     jobs = [
@@ -1417,6 +1779,10 @@ def main():
         ("09-quality-ultra-composite.png", options("picture", quality="Ultra")),
         ("09-access-composite.png", options("access")),
         ("09-access-before-composite.png", options("access", access="strip")),
+        ("15-seats-pd-composite.png", options("access", seats="pd")),
+        ("15-seats-tritan-composite.png", options("access", seats="tritan")),
+        ("15-rows-before-composite.png", quad_split(1.5, False)),
+        ("15-rows-after-composite.png", quad_split(1.5, True)),
         ("09-menu-text-100-composite.png", menu_text(1.0)),
         ("09-menu-text-150-composite.png", menu_text(1.5)),
         ("03-hud-text-100-composite.png", match_hud(1.0)),

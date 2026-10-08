@@ -327,12 +327,95 @@ namespace Tag.Settings
             return (float)Math.Sqrt(dr * dr + dg * dg + db * db);
         }
 
+        public static float PairDistance(int cvd, float ar, float ag, float ab, float br, float bg, float bb)
+        {
+            Simulate(cvd, ar, ag, ab, out float ar2, out float ag2, out float ab2);
+            Simulate(cvd, br, bg, bb, out float br2, out float bg2, out float bb2);
+            return Distance(ar2, ag2, ab2, br2, bg2, bb2);
+        }
+
         static int Index(int palette, int slot)
         {
             if (palette < 0 || palette >= Count) palette = 0;
             if (slot < 0) slot = 0;
             if (slot >= Players) slot = Players - 1;
             return palette * Players + slot;
+        }
+    }
+
+    /// <summary>
+    /// Optional seat colours. Off keeps the default four. The other two sets
+    /// clear the 0.35 pair floor under protan, deutan, and tritan.
+    /// </summary>
+    public static class SeatCvd
+    {
+        public const int Off = 0;
+        public const int ProtanDeutan = 1;
+        public const int Tritan = 2;
+        public const int Count = 3;
+
+        // Okabe-Ito: blue #0072B2, vermillion #D55E00, sky #56B4E9, yellow #F0E442.
+        static readonly float[] PdR = { 0f, 213f / 255f, 86f / 255f, 240f / 255f };
+        static readonly float[] PdG = { 114f / 255f, 94f / 255f, 180f / 255f, 228f / 255f };
+        static readonly float[] PdB = { 178f / 255f, 0f, 233f / 255f, 66f / 255f };
+
+        static readonly float[] TrR = { 0.90f, 0.10f, 0.98f, 0.22f };
+        static readonly float[] TrG = { 0.20f, 0.78f, 0.62f, 0.12f };
+        static readonly float[] TrB = { 0.25f, 0.82f, 0.12f, 0.58f };
+
+        public static void Color(int mode, int seat, out float r, out float g, out float b)
+        {
+            int i = seat;
+            if (i < 0) i = 0;
+            if (i > 3) i = 3;
+            if (mode == ProtanDeutan)
+            {
+                r = PdR[i];
+                g = PdG[i];
+                b = PdB[i];
+                return;
+            }
+            if (mode == Tritan)
+            {
+                r = TrR[i];
+                g = TrG[i];
+                b = TrB[i];
+                return;
+            }
+            AccessibilityPalette.Player(AccessibilityPalette.Default, i, out r, out g, out b);
+        }
+
+        public static float Min(int mode, int cvd)
+        {
+            float worst = 99f;
+            for (int a = 0; a < 4; a++)
+            {
+                Color(mode, a, out float ar, out float ag, out float ab);
+                for (int b = a + 1; b < 4; b++)
+                {
+                    Color(mode, b, out float br, out float bg, out float bb);
+                    float d = AccessibilityPalette.PairDistance(cvd, ar, ag, ab, br, bg, bb);
+                    if (d < worst) worst = d;
+                }
+            }
+            return worst;
+        }
+
+        public static string Line()
+        {
+            return "ui-seat off=" + Trio(Off)
+                + " pd=" + Trio(ProtanDeutan)
+                + " tritan=" + Trio(Tritan)
+                + " floor=" + AccessibilityPalette.MinPairDistance.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture);
+        }
+
+        static string Trio(int mode)
+        {
+            var culture = System.Globalization.CultureInfo.InvariantCulture;
+            float p = Min(mode, AccessibilityPalette.CvdProtanopia);
+            float d = Min(mode, AccessibilityPalette.CvdDeuteranopia);
+            float t = Min(mode, AccessibilityPalette.CvdTritanopia);
+            return p.ToString("0.00", culture) + "/" + d.ToString("0.00", culture) + "/" + t.ToString("0.00", culture);
         }
     }
 

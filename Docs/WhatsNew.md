@@ -344,6 +344,8 @@ The thirteenth pass makes the options rows do what they say. Volumes reach the l
 
 The fourteenth pass adds Low, High, and Ultra beside Medium. Medium is still the level the game starts on. The options hub keeps Reset and Back on one row at the bottom. Accessibility shows a full tile for P1 through P4, and the same four colors as protan, deutan, and tritan. Text size offers 0.85, 1.00, 1.25, and 1.50. 1.00 is the size the menus already used. Mute still drives the listener, and the headless run prints that. Composites are in `Docs/UiStills/screens2/pass14/`. Space still jumps.
 
+The fifteenth pass keeps an old picture setting on Medium. A save that has no quality version and stored 0 loads Medium. A new save writes the version, so Low stays Low. Accessibility can switch the seat colours to Protan/Deutan or Tritan, and those seats also show a circle, triangle, square, or diamond. Off leaves the colours as they were. Text size 1.50 makes the menu rows taller, including the main menu, character select, mode and rules, and RESULTS. Reset and Back on Accessibility stay on the bottom row. Composites are in `Docs/UiStills/screens2/pass15/`. Space still jumps.
+
 ## Motion, ninth pass
 
 The wall jump, the rope, the zip, the launch pad, a landing, the dash flash, a hard turnaround, and a punch while you run all ease instead of snapping. Speeds, the jump, and the dash length are the same.

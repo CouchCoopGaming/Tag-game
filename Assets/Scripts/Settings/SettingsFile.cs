@@ -38,10 +38,13 @@ namespace Tag.Settings
             Line(text, "comic", s.ComicWords ? 1f : 0f);
             Line(text, "motion", s.ReduceMotion ? 1f : 0f);
             Line(text, "quality", s.PictureQuality);
+            // Picture index space. Missing qv means quality 0 was the only level, Medium.
+            Line(text, "qv", QualityVersion);
             Line(text, "res", s.ResIndex);
             Line(text, "full", s.Fullscreen ? 1f : 0f);
             Line(text, "vsync", s.VSync ? 1f : 0f);
             Line(text, "colorblind", s.Colorblind ? 1f : 0f);
+            Line(text, "cvdSeats", s.CvdSeats);
             Line(text, "minimap", s.Minimap ? 1f : 0f);
             Line(text, "accessSeat", s.AccessSeat);
             for (int i = 0; i < GameSettings.SeatCount; i++)
@@ -92,6 +95,8 @@ namespace Tag.Settings
         }
 
         public const int Version = 2;
+        /// <summary>Picture-quality index space. Blobs without qv stored 0 for Medium.</summary>
+        public const int QualityVersion = 1;
 
         /// <summary>
         /// Write a temp file, read it back, then replace the destination.
@@ -139,11 +144,23 @@ namespace Tag.Settings
 
         public static void Read(string blob, GameSettings settings, ActionBinds binds)
         {
+            Read(blob, settings, binds, true);
+        }
+
+        /// <summary>
+        /// touchProfiles false still runs the quality migration. It skips the profile rewrite
+        /// so a probe blob does not create a Player row beside the live lobby.
+        /// </summary>
+        public static void Read(string blob, GameSettings settings, ActionBinds binds, bool touchProfiles)
+        {
             if (settings == null || binds == null || string.IsNullOrEmpty(blob)) return;
             string[] lines = blob.Split('\n');
             int version = -1;
             bool badVersion = false;
             bool known = false;
+            bool sawQv = false;
+            bool sawQuality = false;
+            int storedQuality = -1;
             for (int i = 0; i < lines.Length; i++)
             {
                 if (!Split(lines[i], out string key, out string value)) continue;
@@ -153,6 +170,13 @@ namespace Tag.Settings
                         badVersion = true;
                     continue;
                 }
+                if (key == "qv") sawQv = true;
+                if (key == "quality")
+                {
+                    sawQuality = true;
+                    if (int.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out int q))
+                        storedQuality = q;
+                }
                 if (Known(key)) known = true;
             }
             // A newer or unreadable version is not applied in part. Reset.
@@ -161,23 +185,33 @@ namespace Tag.Settings
             {
                 settings.ResetToDefaults();
                 binds.ResetToDefaults();
-                LocalProfiles.Clear();
-                MenuSession.Reset();
+                if (touchProfiles)
+                {
+                    LocalProfiles.Clear();
+                    MenuSession.Reset();
+                }
                 return;
             }
-            PracticeBests.Clear();
-            PracticeGhost.ClearSaved();
-            LocalProfiles.BeginRead();
+            if (touchProfiles)
+            {
+                PracticeBests.Clear();
+                PracticeGhost.ClearSaved();
+                LocalProfiles.BeginRead();
+            }
             for (int i = 0; i < lines.Length; i++)
             {
                 if (!Split(lines[i], out string key, out string value)) continue;
-                if (key == "v") continue;
+                if (key == "v" || key == "qv") continue;
                 Apply(settings, binds, key, value);
             }
             if (settings.Colorblind && blob.IndexOf("palette=", StringComparison.Ordinal) < 0)
                 settings.Palette[0] = AccessibilityPalette.Deuteranopia;
+            // Version-less and older blobs stored 0 when Medium was the only level.
+            if (!sawQv && sawQuality && storedQuality == GameSettings.QualityLow)
+                settings.PictureQuality = GameSettings.QualityMedium;
             settings.Clamp();
-            LocalProfiles.EndRead(version, settings, binds);
+            if (touchProfiles)
+                LocalProfiles.EndRead(version, settings, binds);
         }
 
         static bool Split(string raw, out string key, out string value)
@@ -200,7 +234,8 @@ namespace Tag.Settings
             if (key == "stickInner" || key == "stickOuter" || key == "stickCurve" || key == "lookAccel") return true;
             if (key == "master" || key == "sfx" || key == "ui" || key == "music" || key == "mute") return true;
             if (key == "hud" || key == "uiScale" || key == "colorblind" || key == "minimap" || key == "accessSeat") return true;
-            if (key == "comic" || key == "motion" || key == "quality" || key == "res" || key == "full" || key == "vsync") return true;
+            if (key == "comic" || key == "motion" || key == "quality" || key == "qv" || key == "res" || key == "full" || key == "vsync") return true;
+            if (key == "cvdSeats") return true;
             if (key == "arena" || key == "ai" || key == "diff" || key == "roundLen" || key == "rounds") return true;
             if (key == "split" || key == "listen") return true;
             if (key == "startIt" || key == "startSeat" || key == "winTarget" || key == "pads" || key == "zips") return true;
@@ -245,6 +280,7 @@ namespace Tag.Settings
             else if (key == "full") settings.Fullscreen = Flag(value);
             else if (key == "vsync") settings.VSync = Flag(value);
             else if (key == "colorblind") settings.Colorblind = Flag(value);
+            else if (key == "cvdSeats") settings.CvdSeats = (int)Num(value, settings.CvdSeats);
             else if (key == "minimap") settings.Minimap = Flag(value);
             else if (key == "accessSeat") settings.AccessSeat = (int)Num(value, settings.AccessSeat);
             else if (SeatKey(key, "palette", out int paletteSeat)) settings.Palette[paletteSeat] = (int)Num(value, settings.Palette[paletteSeat]);

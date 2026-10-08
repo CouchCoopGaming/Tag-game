@@ -28,11 +28,14 @@ namespace Tag.Ui.Menu
         public static int Armed = -1;
         public static string BusLine = "";
         public static string CvdLine = "";
+        public static string QualityLine = "";
+        public static string SeatLine = "";
 
         public static bool IsResetRow(int page, int index)
         {
             if (page == Hub && index == 6) return true;
-            if ((page == Audio || page == Display || page == Access) && index == 5) return true;
+            if (page == Access && index == 6) return true;
+            if ((page == Audio || page == Display) && index == 5) return true;
             if (page == Look && index == 4) return true;
             return false;
         }
@@ -127,6 +130,8 @@ namespace Tag.Ui.Menu
             bool reset = false, apply = false, persist = false;
             try
             {
+                QualityLine = ProveQuality();
+                SeatLine = SeatCvd.Line();
                 float protan = AccessibilityPalette.MinPlayerDistance(AccessibilityPalette.Default, AccessibilityPalette.CvdProtanopia);
                 float deutan = AccessibilityPalette.MinPlayerDistance(AccessibilityPalette.Default, AccessibilityPalette.CvdDeuteranopia);
                 float tritan = AccessibilityPalette.MinPlayerDistance(AccessibilityPalette.Default, AccessibilityPalette.CvdTritanopia);
@@ -274,6 +279,25 @@ namespace Tag.Ui.Menu
                 + " apply=" + Bit(apply)
                 + " persist=" + Bit(persist);
             return line;
+        }
+
+        static string ProveQuality()
+        {
+            GameSettings bare = GameSettings.Defaults();
+            SettingsFile.Read("quality=0\n", bare, ActionBinds.Defaults(), false);
+            GameSettings legacy = GameSettings.Defaults();
+            SettingsFile.Read("v=2\nquality=0\n", legacy, ActionBinds.Defaults(), false);
+            bool oldMedium = bare.PictureQuality == GameSettings.QualityMedium
+                && legacy.PictureQuality == GameSettings.QualityMedium;
+            GameSettings low = GameSettings.Defaults();
+            low.PictureQuality = GameSettings.QualityLow;
+            string written = SettingsFile.Write(low, ActionBinds.Defaults());
+            GameSettings back = GameSettings.Defaults();
+            SettingsFile.Read(written, back, ActionBinds.Defaults(), false);
+            bool lowStays = back.PictureQuality == GameSettings.QualityLow
+                && written.IndexOf("qv=1", System.StringComparison.Ordinal) >= 0;
+            return "ui-quality old=" + (oldMedium ? "medium" : "fail")
+                + " low=" + (lowStays ? "low" : "fail");
         }
 
         static string Bit(bool ok)

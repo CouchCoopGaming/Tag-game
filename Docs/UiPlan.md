@@ -317,6 +317,10 @@ Sound, Picture, Accessibility, and Look apply when you step a row, and the setti
 
 Picture quality is Low, Medium, High, and Ultra. Medium stays the level the game boots on, with the same shadows, antialiasing, and LOD bias as before. The Picture row steps through all four. The options hub puts Reset and Back on one bottom row, with the confirm and back glyphs from the default binds. Accessibility shows full P1–P4 tiles and a protan, deutan, and tritan preview of those four colors, with the pair distance beside each row. Text size steps are 0.85, 1.00, 1.25, and 1.50, and 1.00 is still the size the screens already used. The mute path prints `ui-bus` from the headless run. Stills are composites in `Docs/UiStills/screens2/pass14/`.
 
+## Screens 2, pass 15
+
+A settings blob without `qv` still means the old single picture level. Stored quality 0 loads Medium. New saves write `qv=1`, so Low stays Low. The headless run prints `ui-quality`. Accessibility can switch the four seat colours to a Protan/Deutan set or a Tritan set. Both clear the 0.35 pair floor under protan, deutan, and tritan. Off keeps the original colours. Seat chips gain a circle, triangle, square, or diamond only while that option is on. Text size 1.50 grows every menu row and leaves the type at that size. Reset and Back on Accessibility sit on the bottom row, outside the scroll. Stills are composites in `Docs/UiStills/screens2/pass15/`.
+
 ## Later passes
 
 - Left from a rule row returns to the modes even when that rule can still decrease. Right from the right-hand mode, and Left at the end of a rule, already move between the columns.

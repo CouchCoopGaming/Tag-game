@@ -97,6 +97,8 @@ namespace Tag.Settings
         public bool Fullscreen = true;
         public bool VSync = true;
         public bool Colorblind;
+        /// <summary>0 off (default seats). 1 Protan/Deutan. 2 Tritan. Missing from an old blob stays off.</summary>
+        public int CvdSeats;
         public bool Minimap = true;
         public int Arena;
 
@@ -186,6 +188,7 @@ namespace Tag.Settings
             Fullscreen = other.Fullscreen;
             VSync = other.VSync;
             Colorblind = other.Colorblind;
+            CvdSeats = other.CvdSeats;
             Minimap = other.Minimap;
             Arena = other.Arena;
             AccessSeat = other.AccessSeat;
@@ -235,6 +238,7 @@ namespace Tag.Settings
             HudScale = d.HudScale;
             AccessSeat = d.AccessSeat;
             Colorblind = d.Colorblind;
+            CvdSeats = d.CvdSeats;
             ComicWords = d.ComicWords;
             for (int i = 0; i < SeatCount; i++)
                 Palette[i] = 0;
@@ -292,6 +296,8 @@ namespace Tag.Settings
             if (WinTarget > WinTargetMax) WinTarget = WinTargetMax;
             if (AccessSeat < 0) AccessSeat = 0;
             if (AccessSeat >= SeatCount) AccessSeat = SeatCount - 1;
+            if (CvdSeats < SeatCvd.Off) CvdSeats = SeatCvd.Off;
+            if (CvdSeats > SeatCvd.Tritan) CvdSeats = SeatCvd.Tritan;
             for (int i = 0; i < SeatCount; i++)
             {
                 if (Palette[i] < 0) Palette[i] = 0;
@@ -509,6 +515,21 @@ namespace Tag.Settings
             if (Math.Abs(br - yr) < 0.2f && Math.Abs(bg - yg) < 0.2f && Math.Abs(bb - yb) < 0.2f)
                 return false;
             return true;
+        }
+
+        public void CycleCvdSeats(int dir)
+        {
+            int next = CvdSeats + (dir < 0 ? -1 : 1);
+            if (next < SeatCvd.Off) next = SeatCvd.Tritan;
+            if (next > SeatCvd.Tritan) next = SeatCvd.Off;
+            CvdSeats = next;
+        }
+
+        public string CvdSeatWord()
+        {
+            if (CvdSeats == SeatCvd.ProtanDeutan) return "Protan/Deutan";
+            if (CvdSeats == SeatCvd.Tritan) return "Tritan";
+            return "Off";
         }
 
         void CyclePalette(int dir)

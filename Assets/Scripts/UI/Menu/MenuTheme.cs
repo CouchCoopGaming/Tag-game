@@ -67,6 +67,11 @@ namespace Tag.Ui.Menu
             int i = seat;
             if (i < 0) i = 0;
             if (i > 3) i = 3;
+            if (Tag.Settings.GameSettings.Current != null && Tag.Settings.GameSettings.Current.CvdSeats != Tag.Settings.SeatCvd.Off)
+            {
+                Tag.Settings.SeatCvd.Color(Tag.Settings.GameSettings.Current.CvdSeats, i, out float r, out float g, out float b);
+                return new Color(r, g, b, 1f);
+            }
             if (CouchPlay.HumanAt(i) || LocalProfiles.SeatColor(i) >= 0)
             {
                 CouchPlay.Tint(i, out float r, out float g, out float b);

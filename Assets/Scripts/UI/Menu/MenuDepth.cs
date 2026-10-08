@@ -30,6 +30,8 @@ namespace Tag.Ui.Menu
         public static int Bar = BarBack;
         /// <summary>Room kept under the accessibility rows for the full swatches and the CVD preview.</summary>
         public const float SwatchReserve = 276f;
+        /// <summary>Pinned Reset and Back row. It sits under the swatches, outside the scroll window.</summary>
+        public const float BarBlock = 84f;
 
         public static void Reset()
         {
@@ -75,7 +77,7 @@ namespace Tag.Ui.Menu
         {
             if (Page == Audio) return "Sliders step the volumes you already have.";
             if (Page == Display) return "Resolution, fullscreen, vsync, and the couch UI scale.";
-            if (Page == Access) return "Reduce motion, text size, player colors, and comic words.";
+            if (Page == Access) return "Motion, text size, seat colours, and comic words.";
             if (Page == Look) return "Look is shared by the couch.";
             return "Sound, picture, accessibility, controls, look, and credits.";
         }
@@ -118,7 +120,9 @@ namespace Tag.Ui.Menu
                 if (index == 1) return "Text size  " + s.HudScale.ToString("0.00", CultureInfo.InvariantCulture);
                 if (index == 2) return s.RowLabel(GameSettings.RowPlayer);
                 if (index == 3) return s.RowLabel(GameSettings.RowColorblind);
-                return "Comic words  " + (Tag.Ui.Hud.MatchHudText.ComicWords ? "On" : "Off");
+                if (index == 4) return "Colour-blind seat palette  " + s.CvdSeatWord();
+                if (index == 5) return "Comic words  " + (Tag.Ui.Hud.MatchHudText.ComicWords ? "On" : "Off");
+                return "Back";
             }
             if (index == 0) return s.RowLabel(GameSettings.RowMouse);
             if (index == 1) return s.RowLabel(GameSettings.RowPad);
@@ -149,7 +153,8 @@ namespace Tag.Ui.Menu
             if (Page == Access && index == 0) return "Menu slides and the title pulse only";
             if (Page == Access && index == 1) return "0.85, 1.00, 1.25, 1.50";
             if (Page == Display && index == 3) return "Low, Medium, High, Ultra";
-            if (Page == Access && index == 4) return "Verb words during a match.";
+            if (Page == Access && index == 4) return "Off, Protan/Deutan, or Tritan";
+            if (Page == Access && index == 5) return "Verb words during a match.";
             if (Page == Display && index == 4) return "80% to 130%, for a couch TV";
             if (Page == Audio && index < 4) return "Left / Right";
             return "Left / Right";
@@ -190,7 +195,7 @@ namespace Tag.Ui.Menu
             {
                 if (index == 0) { Page = Audio; return Rebuild; }
                 if (index == 1) { Page = Display; return Rebuild; }
-                if (index == 2) { Page = Access; return Rebuild; }
+                if (index == 2) { Page = Access; Bar = BarBack; return Rebuild; }
                 if (index == 3) return OpenControls;
                 if (index == 4) { Page = Look; return Rebuild; }
                 if (index == 5) return OpenCredits;
@@ -202,6 +207,19 @@ namespace Tag.Ui.Menu
                     return Stay;
                 }
                 return Leave;
+            }
+            if (Page == Access && index == Count - 1)
+            {
+                if (Bar == BarReset && OptionApply.IsResetRow(Page, index))
+                {
+                    GameSettings access = GameSettings.Current ?? GameSettings.Defaults();
+                    GameSettings.Current = access;
+                    OptionApply.ConfirmReset(Page, index, access);
+                    return Stay;
+                }
+                Page = Hub;
+                Bar = BarBack;
+                return Rebuild;
             }
             if (OptionApply.IsResetRow(Page, index))
             {
@@ -222,7 +240,7 @@ namespace Tag.Ui.Menu
 
         public static bool Step(int index, int dir)
         {
-            if (Page == Hub && index == Count - 1)
+            if ((Page == Hub || Page == Access) && index == Count - 1)
             {
                 int chip = Bar + (dir < 0 ? -1 : 1);
                 if (chip < BarReset) chip = BarReset;
@@ -265,7 +283,8 @@ namespace Tag.Ui.Menu
                 else if (index == 1) s.Nudge(GameSettings.RowHud, dir);
                 else if (index == 2) s.Nudge(GameSettings.RowPlayer, dir);
                 else if (index == 3) s.Nudge(GameSettings.RowColorblind, dir);
-                else
+                else if (index == 4) s.CycleCvdSeats(dir);
+                else if (index == 5)
                 {
                     s.ComicWords = !s.ComicWords;
                     Tag.Ui.Hud.MatchHudText.ComicWords = s.ComicWords;
@@ -289,20 +308,25 @@ namespace Tag.Ui.Menu
             if (Page != Access || body == null) return;
             GameSettings s = GameSettings.Current ?? GameSettings.Defaults();
             int pal = s.PaletteOf(s.AccessSeat);
-            float y = UiFit.BodyH(UiFit.Current()) - SwatchReserve;
+            bool marks = s.CvdSeats != SeatCvd.Off;
+            float y = UiFit.BodyH(UiFit.Current()) - BarBlock - 8f - SwatchReserve;
             if (y < 8f) y = 8f;
             float swH = 78f;
             float capH = 40f;
-            Caption(body, AccessibilityPalette.Name(pal), 40f, y, 300f, 32f, TextAnchor.MiddleLeft);
+            string head = marks ? s.CvdSeatWord() : AccessibilityPalette.Name(pal);
+            Caption(body, head, 40f, y, 300f, 32f, TextAnchor.MiddleLeft);
             float tiles = y + 36f;
             for (int i = 0; i < 4; i++)
             {
-                AccessibilityPalette.Player(pal, i, out float r, out float g, out float b);
+                float r, g, b;
+                if (marks) SeatCvd.Color(s.CvdSeats, i, out r, out g, out b);
+                else AccessibilityPalette.Player(pal, i, out r, out g, out b);
                 float x = 360f + i * 150f;
                 RectTransform rt = MenuWidgets.Place(body, "Swatch", x, tiles, 120f, swH);
                 Image image = rt.gameObject.AddComponent<Image>();
                 MenuArt.Plate(image, new Color(r, g, b, 1f), true);
                 image.raycastTarget = false;
+                if (marks) SeatShape.Stamp(rt, i, 8f, (swH - 28f) * 0.5f, 28f, SeatInk(r, g, b));
                 RectTransform cap = MenuWidgets.Place(body, "SwatchName", x, tiles + swH + 4f, 120f, capH);
                 Image capPlate = cap.gameObject.AddComponent<Image>();
                 MenuArt.Plate(capPlate, MenuTheme.Navy, true);
@@ -315,12 +339,14 @@ namespace Tag.Ui.Menu
             string[] cvdName = { "Protan", "Deutan", "Tritan" };
             for (int c = 0; c < cvd.Length; c++)
             {
-                float d = AccessibilityPalette.MinPlayerDistance(pal, cvd[c]);
+                float d = marks ? SeatCvd.Min(s.CvdSeats, cvd[c]) : AccessibilityPalette.MinPlayerDistance(pal, cvd[c]);
                 string row = cvdName[c] + "  " + d.ToString("0.00", CultureInfo.InvariantCulture);
                 Caption(body, row, 40f, rowY, 300f, 32f, TextAnchor.MiddleLeft);
                 for (int i = 0; i < 4; i++)
                 {
-                    AccessibilityPalette.Player(pal, i, out float r, out float g, out float b);
+                    float r, g, b;
+                    if (marks) SeatCvd.Color(s.CvdSeats, i, out r, out g, out b);
+                    else AccessibilityPalette.Player(pal, i, out r, out g, out b);
                     AccessibilityPalette.Simulate(cvd[c], r, g, b, out float oR, out float oG, out float oB);
                     RectTransform chip = MenuWidgets.Place(body, "Cvd", 360f + i * 150f, rowY, 120f, 32f);
                     Image chipImage = chip.gameObject.AddComponent<Image>();
@@ -329,6 +355,12 @@ namespace Tag.Ui.Menu
                 }
                 rowY += 40f;
             }
+        }
+
+        static Color SeatInk(float r, float g, float b)
+        {
+            float luma = 0.2126f * r + 0.7152f * g + 0.0722f * b;
+            return luma > 0.55f ? MenuTheme.Ink : MenuTheme.Cream;
         }
 
         static void Caption(Transform parent, string text, float x, float y, float w, float h, TextAnchor align)
