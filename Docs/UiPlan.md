@@ -229,6 +229,10 @@ The chase drops the extra grade. Foliage stays green, concrete stays grey, the p
 
 The chase path is a light warm tan, about #C8A878, and the concrete that shows is a lighter grey. The swatches the contrast proof uses stay dark. That lift is only on the upward path in the chase stills. RESULTS keeps the place plates on the steps. The extra pills under the figures are gone, because the cards already say 1st, 2nd, 3rd, and 4th. The 4th figure stands on a step. Character select shows the four Hier runners in the seat colors, with the same sun and a contact shadow, each in its own idle. READY stays on the seats that locked in. The arena line sits on the same row as the other screens, and the RESULTS actions line up with the cards. Mockups are in `Docs/UiStills/pass20/`.
 
+## Pass 21
+
+Character select draws each runner from the color pair on its card. The chest is the first color, the body is the second, and the gold ring sits on that same first swatch. The card is a dark navy panel with a seat-colored border, so the runner does not sink into the card. The runners fill about half the card, and the joints are charcoal so the tint reads. The thin aslate lip beside the P2 path is a grey concrete curb. The tan path and the RESULTS cards stay. Mockups are in `Docs/UiStills/pass21/`.
+
 ## Later passes
 
 - A 2D focus grid on rules so Left from a rule row lands on a mode tile.

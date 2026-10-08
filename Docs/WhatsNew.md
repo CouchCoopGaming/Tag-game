@@ -308,6 +308,8 @@ The nineteenth pass takes the yellow wash off the chase. Trees stay green, concr
 
 The twentieth pass makes the chase path a light warm tan, and the concrete a lighter grey. On RESULTS the place stays on the step, and the cards keep 1st, 2nd, 3rd, and 4th. The 4th figure stands on a step. Character select shows the four Hier runners in the seat colors, each standing a different way, with READY on the seats that locked in. Space still jumps. Mockups are in `Docs/UiStills/pass20/`.
 
+The twenty-first pass keeps the tan chase path and the RESULTS cards. On character select the runner uses the two colors named on the card. The chest is the first, the body is the second, and the highlighted swatch is that first color. The card is a dark navy panel with a seat-colored border. The runners stand larger, and the joints are charcoal. The purple lip on the P2 path is a grey concrete curb. Space still jumps. Mockups are in `Docs/UiStills/pass21/`.
+
 ## Motion, ninth pass
 
 The wall jump, the rope, the zip, the launch pad, a landing, the dash flash, a hard turnaround, and a punch while you run all ease instead of snapping. Speeds, the jump, and the dash length are the same.

@@ -465,7 +465,7 @@ namespace Tag.Level
                 ChasePng(tris, Path.Combine(folder, "chase4_" + i.ToString() + ".png"), 960, 540,
                     ex, ey, ez, tx, ty, tz, seatShadow, sox, soy, soz, srx, sry, srz, sux, suy, suz, lsx, lsy, lsz, half);
             }
-            int idles = WriteIdlePortraits(folder, sr, sg, sb);
+            int idles = WriteIdlePortraits(folder);
             string posed = hier ? "hier=posed" : "hier=missing";
             return "hud-chases " + folder + " " + posed + " idle=" + idles.ToString();
         }
@@ -474,7 +474,8 @@ namespace Tag.Level
         /// Chase cameras sit on the dark zone paint, so the path reads maroon.
         /// The locked swatches stay put for the contrast proof. Only upward
         /// dirt and concrete in these stills move: tan about #C8A878, and a
-        /// lighter grey.
+        /// lighter grey. The thin aslate border sits on that path and reads
+        /// as a purple lip, so those low faces become the same grey curb.
         /// </summary>
         static void LiftChaseGround(List<Tri> tris)
         {
@@ -487,15 +488,19 @@ namespace Tag.Level
             for (int i = 0; i < tris.Count; i++)
             {
                 Tri t = tris[i];
-                if (t.Ny < 0.72f) continue;
                 float y = (t.Y0 + t.Y1 + t.Y2) / 3f;
                 if (y > 0.55f || y < -0.8f) continue;
-                if (DirtPath(t.R, t.G, t.B))
+                if (t.Ny >= 0.72f && DirtPath(t.R, t.G, t.B))
                 {
                     t.R = tanR; t.G = tanG; t.B = tanB;
                     tris[i] = t;
                 }
-                else if (SameInk(t.R, t.G, t.B, 46f / 255f, 52f / 255f, 58f / 255f))
+                else if (t.Ny >= 0.72f && SameInk(t.R, t.G, t.B, 46f / 255f, 52f / 255f, 58f / 255f))
+                {
+                    t.R = greyR; t.G = greyG; t.B = greyB;
+                    tris[i] = t;
+                }
+                else if (y < 0.22f && y > -0.05f && SameInk(t.R, t.G, t.B, 72f / 255f, 66f / 255f, 86f / 255f))
                 {
                     t.R = greyR; t.G = greyG; t.B = greyB;
                     tris[i] = t;
@@ -525,18 +530,30 @@ namespace Tag.Level
             return dr * dr + dg * dg + db * db < 0.0004f;
         }
 
-        static int WriteIdlePortraits(string folder, float[] sr, float[] sg, float[] sb)
+        /// <summary>
+        /// Character-card portraits. The chest shell is the first palette
+        /// color and the body is the second, matching the card label. Joints
+        /// stay charcoal so the pair reads. HUD chases keep the seat tint.
+        /// </summary>
+        static int WriteIdlePortraits(string folder)
         {
             int n = 0;
             string docs = RepoDocs();
             if (docs == null) return 0;
+            // Red/Tan, Blue/Mint, Orange/Lavender, Tan/Red. Same order as the cards.
+            float[] br = { 224f / 255f, 107f / 255f, 240f / 255f, 230f / 255f };
+            float[] bg = { 56f / 255f, 173f / 255f, 107f / 255f, 194f / 255f };
+            float[] bb = { 61f / 255f, 235f / 255f, 36f / 255f, 133f / 255f };
+            float[] pr = { 230f / 255f, 107f / 255f, 178f / 255f, 224f / 255f };
+            float[] pg = { 194f / 255f, 209f / 255f, 148f / 255f, 56f / 255f };
+            float[] pb = { 133f / 255f, 178f / 255f, 224f / 255f, 61f / 255f };
             for (int i = 0; i < 4; i++)
             {
                 string src = Path.Combine(docs, "UiStills", "hier-idle-" + i.ToString() + ".tris");
                 if (!LoadHierFile(src)) continue;
                 var tris = new List<Tri>(8);
                 AddBox(tris, 0f, -0.04f, 0f, 2.6f, 0.08f, 2.6f, 183f / 255f, 164f / 255f, 114f / 255f);
-                AddHier(tris, 0f, 0f, 0f, 16f, sr[i], sg[i], sb[i]);
+                AddHier(tris, 0f, 0f, 0f, 16f, pr[i], pg[i], pb[i], br[i], bg[i], bb[i], true);
                 AddContact(tris, 0f, 0f, 0f);
                 var shadow = new float[16 * 16];
                 for (int s = 0; s < shadow.Length; s++) shadow[s] = -1e20f;
@@ -608,6 +625,12 @@ namespace Tag.Level
 
         static void AddHier(List<Tri> tris, float x, float y, float z, float yawDeg, float r, float g, float b)
         {
+            AddHier(tris, x, y, z, yawDeg, r, g, b, r * 0.55f, g * 0.55f, b * 0.55f, false);
+        }
+
+        static void AddHier(List<Tri> tris, float x, float y, float z, float yawDeg,
+            float r, float g, float b, float pr, float pg, float pb, bool softJoints)
+        {
             if (_hier == null) return;
             float yaw = yawDeg * (float)(Math.PI / 180.0);
             float fx = (float)Math.Sin(yaw);
@@ -617,7 +640,7 @@ namespace Tag.Level
             for (int i = 0; i < _hier.Length; i++)
             {
                 HierTri h = _hier[i];
-                HierTint(h.Mat, r, g, b, out float cr, out float cg, out float cb);
+                HierTint(h.Mat, r, g, b, pr, pg, pb, softJoints, out float cr, out float cg, out float cb);
                 AddTri(tris,
                     x + rx * h.X0 + fx * h.Z0, y + h.Y0, z + rz * h.X0 + fz * h.Z0,
                     x + rx * h.X1 + fx * h.Z1, y + h.Y1, z + rz * h.X1 + fz * h.Z1,
@@ -626,21 +649,36 @@ namespace Tag.Level
             }
         }
 
-        static void HierTint(byte mat, float r, float g, float b, out float cr, out float cg, out float cb)
+        static void HierTint(byte mat, float r, float g, float b, float pr, float pg, float pb, bool softJoints,
+            out float cr, out float cg, out float cb)
         {
             if (mat == 2)
             {
-                cr = 0.10f; cg = 0.10f; cb = 0.12f;
+                if (softJoints)
+                {
+                    cr = 0.34f; cg = 0.33f; cb = 0.32f;
+                }
+                else
+                {
+                    cr = 0.10f; cg = 0.10f; cb = 0.12f;
+                }
                 return;
             }
             if (mat == 3)
             {
-                cr = 0.02f; cg = 0.02f; cb = 0.02f;
+                if (softJoints)
+                {
+                    cr = 0.20f; cg = 0.19f; cb = 0.20f;
+                }
+                else
+                {
+                    cr = 0.02f; cg = 0.02f; cb = 0.02f;
+                }
                 return;
             }
             if (mat == 1)
             {
-                cr = r * 0.55f; cg = g * 0.55f; cb = b * 0.55f;
+                cr = pr; cg = pg; cb = pb;
                 return;
             }
             cr = r; cg = g; cb = b;
