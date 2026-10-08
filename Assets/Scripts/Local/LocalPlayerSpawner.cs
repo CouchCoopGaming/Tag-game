@@ -17,7 +17,7 @@ namespace Tag.Local
     /// </summary>
     public class LocalPlayerSpawner : MonoBehaviour
     {
-        /// <summary>Solo human. Couch clones and the campus opponent do not get a rope.</summary>
+        /// <summary>Solo human name. Couch humans get the same rope. The opponent does not.</summary>
         public const string SoloPawnName = SoloGrappleGate.SoloPawnName;
         /// <summary>Solo campus opponent. Couch play turns this pawn off.</summary>
         public const string OpponentPawnName = SoloGrappleGate.OpponentPawnName;
@@ -270,7 +270,8 @@ namespace Tag.Local
             if (ai && go.GetComponent<DummyPatrol>() == null)
                 go.AddComponent<DummyPatrol>();
 
-            // Rope is the solo human only. Jet stays off, so RMB hooks and does not jet.
+            // Rope is every human seat. Jet stays off. Keyboard RMB and pad LT hook.
+            // SoloGrappleGate.EnableFor stays the solo tell. Couch seats use CouchRope.
             ApplySoloGrapple(go, index, ai);
             // The opponent uses the same RMB rope. The solo gate stays closed.
             if (ai && EnemyAi.AllowRope(true, go.name))
@@ -408,13 +409,15 @@ namespace Tag.Local
 
         static void ApplySoloGrapple(GameObject go, int index, bool ai)
         {
-            bool on = SoloGrappleGate.EnableFor(LocalPlayerRoster.IsCouch, ai, index, go.name);
+            bool on = SoloGrappleGate.EnableFor(LocalPlayerRoster.IsCouch, ai, index, go.name)
+                || CouchRope.ForCouchHuman(LocalPlayerRoster.IsCouch, ai, index, go.name);
             var rope = go.GetComponent<ExperimentalGrapple>();
             if (on)
             {
                 if (rope == null)
                     rope = go.AddComponent<ExperimentalGrapple>();
                 rope.enableGrapple = true;
+                rope.useJetHeldAsFire = true;
                 return;
             }
 

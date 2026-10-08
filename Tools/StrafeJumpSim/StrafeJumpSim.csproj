@@ -113,6 +113,8 @@
     <Compile Include="../../Assets/Scripts/Art/WallJumpPushTell.cs" />
     <Compile Include="../../Assets/Scripts/Art/TagLandTell.cs" />
     <Compile Include="../../Assets/Scripts/Local/SoloGrappleGate.cs" />
+    <Compile Include="../../Assets/Scripts/Local/CouchRope.cs" />
+    <Compile Include="../../Assets/Scripts/Experimental/GrappleClick.cs" />
     <Compile Include="../../Assets/Scripts/Tag/PunchTagTuning.cs" />
     <Compile Include="../../Assets/TagArenaMovement/Scripts/Core/MovementConfig.cs" />
     <Compile Include="../../Assets/TagArenaMovement/Scripts/Core/SameWallLimit.cs" />

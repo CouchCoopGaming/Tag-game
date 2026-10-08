@@ -573,11 +573,13 @@ Vault is the 0.40 s mantle, from the reach to the plant to the landing. Slide is
 
 `no-clip clips=14 frames=472 worldMax=0.38 selfMax=0.4 fails=0`
 
-No clip puts a body part more than 0.5 cm inside a solid or inside another part. The check walks every 30 fps frame of vault, climb, slide, wall run into wall jump, roll, pad, zip, grapple, punch, tag, stagger, idle, and both locomotion cycles. Joined neighbours (upper arm and forearm, thigh and shin, and the same for the other joints) are exempt only inside 3 cm of the shared joint. The mannequin shells are relieved from the bind mesh on each frame, visual only, so a cuff that the rigid pieces overlap by more than that ball is pressed out to 0.40 cm. That relief is not subtracted from a rest pose: the rest hip-in-thigh overlap is about 7.7 cm and would fail on its own. Solids are the ground and the props for that clip. The deepest solid hit after the settle is 0.38 cm. Gameplay timers are unchanged.
+Those three numbers are proposed, not in game. They come from a render-only shell settle. The 0.40 cm figure is the relief clamp, not a measurement of the clips the Unity build plays. The rest hip-in-thigh overlap is rig joint, about 7.7 cm, and it is not a pose fail. Pose overlap on the in-game keys is still open on this branch. The rig is not edited here.
+
+The check walks every 30 fps frame of vault, climb, slide, wall run into wall jump, roll, pad, zip, grapple, punch, tag, stagger, idle, and both locomotion cycles. Joined neighbours (upper arm and forearm, thigh and shin, and the same for the other joints) are exempt only inside 3 cm of the shared joint. Gameplay timers are unchanged.
 
 The climb lip keeps the chest on the face and the lead foot in front of it. The forearm cuff still crossed the face by about 6 cm with the hands on the lip, so that shell is pressed onto the wall. The root does not step back, and the 30 fps table above is the settled pose. Later passes keep this check by importing `Tools/Tag/noclip_check.py`.
 
-Worst frame of each clip, all of them the 0.40 cm self cuff:
+Worst frame of each clip from that render settle, proposed, not in game. Every row is the 0.40 cm clamp:
 
 | Clip | Frame | Time | Pieces | Kind | cm |
 |---|---|---|---|---|---|
