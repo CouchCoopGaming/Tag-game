@@ -1,17 +1,21 @@
 """Modern midsize sedan shell. One loft for every model year.
 
-The side, plan, and section curves are built from the published inch sheet
-(length 193.5, width 72.4, height 56.9, wheelbase 111.2, clearance 5.4,
-front overhang 39.0) and from the silhouette a current family sedan has:
-a long low hood, a windshield about 27 degrees from horizontal, a roof arc,
-and a fastback pillar into a short deck. Nothing here is traced from a drawing.
+The cage is a closed cross-section loft. Each station is a smooth half-section
+(rocker, door bulge, belt shoulder, greenhouse) and the greenhouse is the top
+of that same section, not a box added on the hood. The windshield is the run
+of stations from the cowl at 1.0 m up to the header, about 26 degrees from
+horizontal. Glass, the grille cavity, and the lamp cavities are insets in
+that skin. Years only change what sits in the cavities.
 
-The cage is subdivided (level 2 on LOD0) and the creases are applied before
-the glass, lamp, and panel-gap cuts. Years share that shell and only change
-the fascia, lamps, wheels, and mirror color.
+Sheet inches, family-sedan exterior page: length 193.5, width 72.4, height
+56.9, wheelbase 111.2, clearance 5.4, front overhang 39.0. The hood height
+(0.95 m) and deck height (1.0 m) are the class profile those inches describe.
+Nothing here is traced from a drawing.
 """
 
 import math
+
+import bmesh
 
 import shell
 from _common import blender_to_unity
@@ -33,42 +37,68 @@ RIM_R = 18.0 * INCH * 0.5
 TIRE_R = RIM_R + TIRE_W * 0.45
 AXLE_Y = TIRE_R
 ARCH_R = TIRE_R + 0.020
-# Tuck the 235 section inside the published body so the fender still covers it.
 TIRE_X = min(63.0 * INCH * 0.5, HALF_W - TIRE_W * 0.5 - 0.015)
 
 Z_NOSE = HALF_L
-Z_LIP = 2.26
-Z_COWL = 1.28
-Z_HEADER = 0.50
-Z_PEAK = -0.08
-Z_ROOF_R = -0.78
-Z_DECK = -1.40
-Z_DECK_R = -2.02
 Z_TAIL = -HALF_L
+Z_DECK = -1.30
+Z_ROOF_R = -0.72
+Z_PEAK = -0.05
+Z_HEADER = 0.38
+Z_COWL = 1.10
 
-Y_LIP = 0.73
-Y_COWL = 0.92
-Y_HEADER = 1.40
-Y_PEAK = HEIGHT + 0.084
-Y_ROOF_R = 1.355
-Y_DECK = 1.09
-Y_DECK_R = 1.03
-Y_NOSE = 0.50
-Y_TAIL = 0.50
+# Nose cap is the fascia. 0.84 m is tall enough for a grille and a lamp
+# slot on the forward face. The hood then rises to 0.95 m and the cowl to 1.0 m.
+CROWN = (
+    (Z_TAIL, 0.90),
+    (-2.20, 0.93),
+    (-1.95, 0.98),
+    (Z_DECK, 1.00),
+    (-1.00, 1.16),
+    (Z_ROOF_R, 1.34),
+    (-0.40, 1.42),
+    (Z_PEAK, HEIGHT),
+    (0.12, 1.42),
+    (Z_HEADER, 1.35),
+    (Z_COWL, 1.00),
+    (1.55, 0.95),
+    (2.05, 0.88),
+    (2.25, 0.85),
+    (Z_NOSE, 0.84),
+)
+
+SILL = (
+    (Z_DECK, 0.97),
+    (-0.40, 0.94),
+    (0.55, 0.91),
+    (Z_COWL + 0.4, 0.90),
+)
+
+# Half-width as a fraction of the published half-width.
+PLAN = (
+    (Z_TAIL, 0.64),
+    (-1.90, 0.86),
+    (-1.15, 0.95),
+    (0.15, 0.985),
+    (Z_COWL, 0.94),
+    (1.70, 0.86),
+    (2.20, 0.78),
+    (Z_NOSE, 0.72),
+)
+
+HALF_N = 12
+IDX_BULGE = 4
+IDX_BELT = 6
+TUMBLE = math.tan(math.radians(11.0))
 
 PAINT = "Lib_PaintCrimson"
 GLASS = "Lib_AutoGlass"
 
-_SLAB = [
-    (0, 1, 2, 3),
-    (4, 7, 6, 5),
-    (0, 4, 5, 1),
-    (1, 5, 6, 2),
-    (2, 6, 7, 3),
-    (3, 7, 4, 0),
-]
+# Inserts sit behind the creased cap, in the flat middle of the nose.
+# The plan curves back at the corners, so a full-width bar would poke out.
+NOSE_Z = Z_NOSE - 0.016
+TAIL_Z = Z_TAIL + 0.016
 
-# Spokes, spoke thickness (local Z), grille, lamps, mirror material.
 YEARS = {
     2021: {"spokes": 5, "thick": 0.036, "grille": "slat4", "lamps": "separate", "tails": "separate", "mirror": PAINT, "fog": "Lib_SignalAmber"},
     2022: {"spokes": 10, "thick": 0.014, "grille": "slat8", "lamps": "separate", "tails": "separate", "mirror": PAINT, "fog": "Lib_Headlamp"},
@@ -80,155 +110,105 @@ YEARS = {
 _TEMPLATE = {}
 
 
-def _ss(t):
-    t = max(0.0, min(1.0, t))
-    return t * t * (3.0 - 2.0 * t)
-
-
-def _lerp_x(keys, z):
+def _lerp(keys, z):
     if z <= keys[0][0]:
         return keys[0][1]
     if z >= keys[-1][0]:
         return keys[-1][1]
     for i in range(len(keys) - 1):
-        z0, x0 = keys[i]
-        z1, x1 = keys[i + 1]
+        z0, y0 = keys[i]
+        z1, y1 = keys[i + 1]
         if z0 <= z <= z1:
             t = (z - z0) / (z1 - z0 or 1.0)
-            return x0 + (x1 - x0) * t
+            return y0 + (y1 - y0) * t
     return keys[-1][1]
 
 
 def y_crown(z):
-    """Centerline of the body, nose to tail. Windshield is a straight 27 degree run."""
-    if z >= Z_LIP:
-        return Y_LIP + (Y_NOSE - Y_LIP) * _ss((z - Z_LIP) / (Z_NOSE - Z_LIP))
-    if z >= Z_COWL:
-        t = (Z_LIP - z) / (Z_LIP - Z_COWL)
-        return Y_LIP + (Y_COWL - Y_LIP) * t
-    if z >= Z_HEADER:
-        t = (Z_COWL - z) / (Z_COWL - Z_HEADER)
-        return Y_COWL + (Y_HEADER - Y_COWL) * t
-    if z >= Z_ROOF_R:
-        span = Z_HEADER - Z_ROOF_R
-        t = (Z_HEADER - z) / span
-        base = Y_HEADER + (Y_ROOF_R - Y_HEADER) * t
-        t_peak = (Z_HEADER - Z_PEAK) / span
-        shape = math.sin(math.pi * t)
-        shape_peak = math.sin(math.pi * t_peak) or 1.0
-        base_peak = Y_HEADER + (Y_ROOF_R - Y_HEADER) * t_peak
-        return base + (Y_PEAK - base_peak) * (shape / shape_peak)
-    if z >= Z_DECK:
-        t = (Z_ROOF_R - z) / (Z_ROOF_R - Z_DECK)
-        return Y_ROOF_R + (Y_DECK - Y_ROOF_R) * t
-    if z >= Z_DECK_R:
-        t = (Z_DECK - z) / (Z_DECK - Z_DECK_R)
-        return Y_DECK + (Y_DECK_R - Y_DECK) * t
-    t = (Z_DECK_R - z) / (Z_DECK_R - Z_TAIL or 1.0)
-    return Y_DECK_R + (Y_TAIL - Y_DECK_R) * _ss(t)
+    return _lerp(CROWN, z)
 
 
-def y_belt(z):
-    """Sill rises from the cowl toward the deck."""
-    t = _ss((Z_COWL - z) / (Z_COWL - Z_DECK))
-    return 0.78 + 0.20 * t
+def y_sill(z):
+    return _lerp(SILL, z)
 
 
-def y_char(z):
-    if z >= Z_COWL:
-        return y_crown(z) - 0.055
-    t = _ss((Z_COWL - z) / (Z_COWL - Z_DECK))
-    return 0.56 + 0.14 * t
-
-
-def x_plan(z):
-    """Half-width. The arch is the widest point and stays inside the published width."""
-    door = HALF_W - 0.034
-    keys = [
-        (Z_TAIL, HALF_W * 0.68),
-        (Z_DECK_R, HALF_W * 0.86),
-        (Z_DECK, HALF_W * 0.93),
-        (Z_REAR - 0.15, door - 0.01),
-        (0.0, door),
-        (Z_FRONT + 0.15, door - 0.012),
-        (Z_COWL, HALF_W * 0.90),
-        (Z_LIP, HALF_W * 0.80),
-        (Z_NOSE, HALF_W * 0.70),
-    ]
-    x = _lerp_x(keys, z)
-    reach = ARCH_R + 0.10
+def x_body(z):
+    x = _lerp(PLAN, z) * HALF_W
+    reach = ARCH_R + 0.08
     for axle in (Z_REAR, Z_FRONT):
         dz = abs(z - axle)
         if dz < reach:
-            x += 0.055 * math.cos((dz / reach) * math.pi * 0.5)
-    return min(HALF_W, x)
+            x += 0.030 * math.cos((dz / reach) * math.pi * 0.5)
+    return min(HALF_W - 0.004, x)
 
 
-def _half_raw(z, mode):
-    yc = y_crown(z)
-    x = x_plan(z)
-    yb = y_belt(z)
-    yk = y_char(z)
-    poke = 0.015 if mode == "cabin" else 0.002
-    pts = [
-        (0.0, BELLY),
-        (min(0.40, x * 0.46), BELLY + 0.014),
-        (x * 0.80, 0.24),
-    ]
-    if mode == "cabin":
-        pts.extend((
-            (x * 0.985, max(0.40, yk - 0.15)),
-            (min(HALF_W, x + poke), yk),
-            (x * 0.97, yk + 0.09),
-            (x * 0.945, yb),
-            (x * 0.76, yb + 0.20),
-            (x * 0.44, min(yc - 0.045, yb + 0.40)),
-            (0.0, yc),
-        ))
-    else:
-        shoulder = min(yc - 0.045, max(yk, yc - 0.06))
-        pts.extend((
-            (x * 0.97, max(0.36, shoulder - 0.10)),
-            (min(HALF_W, x + poke), shoulder),
-            (x * 0.90, shoulder + 0.018),
-            (x * 0.72, min(yc - 0.016, shoulder + 0.04)),
-            (x * 0.46, min(yc - 0.008, shoulder + 0.055)),
-            (x * 0.18, min(yc - 0.003, shoulder + 0.065)),
-            (0.0, yc),
-        ))
-    return pts
+def _arch_lip(z):
+    lip = 0.20
+    for axle in (Z_REAR, Z_FRONT):
+        dz = abs(z - axle)
+        if dz < ARCH_R:
+            rise = math.sqrt(max(0.0, ARCH_R * ARCH_R - dz * dz))
+            lip = max(lip, AXLE_Y + rise * 0.90)
+    return lip
 
 
-def _mix(a, b, w):
-    return [(a[i][0] + (b[i][0] - a[i][0]) * w, a[i][1] + (b[i][1] - a[i][1]) * w) for i in range(len(a))]
-
-
-def _monotonic(pts):
-    out = []
-    prev = -1.0
-    last = len(pts) - 1
-    for i, (x, y) in enumerate(pts):
-        y = max(y, prev + 0.005)
-        x = 0.0 if i == last else max(0.0, min(HALF_W, x))
-        out.append((x, y))
-        prev = y
-    return out
+def _greenhouse_weight(z):
+    room = y_crown(z) - y_sill(z)
+    return max(0.0, min(1.0, (room - 0.05) / 0.16))
 
 
 def half_at(z):
-    hood = _half_raw(z, "hood")
-    cabin = _half_raw(z, "cabin")
-    if z >= Z_COWL:
-        w = 0.0
-    elif z <= Z_COWL - 0.18:
-        w = 1.0
-    else:
-        w = _ss((Z_COWL - z) / 0.18)
-    if z <= Z_DECK:
-        w = 0.0
-    elif z < Z_DECK + 0.20:
-        w *= _ss((z - Z_DECK) / 0.20)
-    return _monotonic(_mix(hood, cabin, w))
+    """Twelve-point half section. Y climbs from the belly to the crown.
+
+    The belt is a shoulder. Above it the side falls inward about 11 degrees
+    when there is a real greenhouse, then the roof turns in to the crown.
+    On the hood and the deck the greenhouse collapses onto the crown so the
+    section stays a rounded panel instead of a fin.
+    """
+    yc = y_crown(z)
+    xb = x_body(z)
+    w = _greenhouse_weight(z)
+    yb = (1.0 - w) * (yc - 0.050) + w * min(y_sill(z), yc - 0.10)
+    yb = min(max(yb, BELLY + 0.20), yc - 0.040)
+    lip = min(_arch_lip(z), yb - 0.10)
+    y_rock = min(max(lip, BELLY + 0.06), yb - 0.10)
+
+    ys = [0.0] * HALF_N
+    ys[0] = BELLY
+    ys[1] = BELLY + (y_rock - BELLY) * 0.42
+    ys[2] = y_rock
+    ys[3] = y_rock + (yb - y_rock) * 0.40
+    ys[IDX_BULGE] = y_rock + (yb - y_rock) * 0.68
+    ys[5] = y_rock + (yb - y_rock) * 0.86
+    ys[IDX_BELT] = yb
+    span = yc - yb
+    for i, frac in ((7, 0.30), (8, 0.55), (9, 0.76), (10, 0.93)):
+        ys[i] = yb + span * frac
+    ys[-1] = yc
+    for i in range(1, HALF_N):
+        if ys[i] < ys[i - 1] + 0.006:
+            ys[i] = ys[i - 1] + 0.006
+    if ys[-1] > yc:
+        # Collapsed crown: pack the last points under the real crown height.
+        ys[-1] = yc
+        for i in range(HALF_N - 2, IDX_BELT, -1):
+            ys[i] = min(ys[i], ys[i + 1] - 0.006)
+
+    xs = [0.0] * HALF_N
+    xs[1] = xb * 0.46
+    xs[2] = xb * 0.84
+    xs[3] = xb * 0.95
+    xs[IDX_BULGE] = xb
+    xs[5] = xb * 0.985
+    xs[IDX_BELT] = xb * 0.955
+    pull = TUMBLE if w > 0.45 else (0.55 * xs[IDX_BELT] / max(span, 0.05))
+    for i in (7, 8, 9):
+        xs[i] = xs[IDX_BELT] - (ys[i] - yb) * pull
+    xs[9] = max(0.06, min(xs[9], xs[IDX_BELT] - 0.02))
+    xs[10] = max(0.03, xs[9] * 0.40)
+    for i in range(1, HALF_N - 1):
+        xs[i] = max(0.02, min(HALF_W - 0.002, xs[i]))
+    return list(zip(xs, ys))
 
 
 def skin_x(z, y):
@@ -236,56 +216,52 @@ def skin_x(z, y):
     if y <= half[0][1]:
         return half[1][0]
     if y >= half[-1][1]:
-        return half[-2][0]
+        return 0.0
     for i in range(len(half) - 1):
         y0, y1 = half[i][1], half[i + 1][1]
         if y0 <= y <= y1 and y1 > y0:
             t = (y - y0) / (y1 - y0)
             return half[i][0] + (half[i + 1][0] - half[i][0]) * t
-    return half[4][0]
+    return half[IDX_BELT][0]
 
 
-def _stations(step):
-    zs = []
-    z = Z_TAIL
-    while z < Z_NOSE - 1e-6:
-        zs.append(z)
-        z += step
-    zs.append(Z_NOSE)
-    extras = (
-        Z_LIP, Z_COWL, Z_COWL - 0.18, Z_HEADER, Z_PEAK, Z_ROOF_R,
-        Z_DECK, Z_DECK + 0.20, Z_DECK_R, Z_REAR, Z_FRONT,
-        Z_REAR - ARCH_R, Z_REAR + ARCH_R, Z_FRONT - ARCH_R, Z_FRONT + ARCH_R,
-    )
-    for extra in extras:
-        if Z_TAIL < extra < Z_NOSE:
-            zs.append(extra)
-    zs = sorted(set(round(v, 4) for v in zs))
-    out = [zs[0]]
+def _stations(lod):
+    raw = [z for z, _y in CROWN]
+    raw.append((Z_HEADER + Z_COWL) * 0.5)
+    raw.append(Z_REAR)
+    raw.append(Z_FRONT)
+    if lod == 0:
+        for axle in (Z_REAR, Z_FRONT):
+            raw.append(axle - 0.26)
+            raw.append(axle + 0.26)
+    zs = sorted(set(round(z, 4) for z in raw if Z_TAIL - 1e-4 <= z <= Z_NOSE + 1e-4))
+    kept = [zs[0]]
+    gap = 0.05 if lod == 0 else (0.12 if lod == 1 else 0.22)
     for z in zs[1:]:
-        if z - out[-1] < 0.045:
-            if abs(z - Z_NOSE) < 1e-6:
-                out[-1] = z
+        if z - kept[-1] < gap and abs(z - Z_NOSE) > 1e-4:
             continue
-        out.append(z)
-    if abs(out[-1] - Z_NOSE) > 1e-6:
-        out.append(Z_NOSE)
-    if abs(out[0] - Z_TAIL) > 1e-6:
-        out[0] = Z_TAIL
-    return out
+        kept.append(z)
+    if abs(kept[0] - Z_TAIL) > 1e-4:
+        kept[0] = Z_TAIL
+    if abs(kept[-1] - Z_NOSE) > 1e-4:
+        kept.append(Z_NOSE)
+    if lod >= 2 and len(kept) > 10:
+        core = {round(Z_TAIL, 3), round(Z_NOSE, 3), round(Z_COWL, 3), round(Z_HEADER, 3), round(Z_PEAK, 3), round(Z_DECK, 3)}
+        slim = [z for z in kept if round(z, 3) in core or z in (Z_REAR, Z_FRONT)]
+        if len(slim) >= 8:
+            kept = slim
+    return kept
 
 
 def _hard(rings):
-    """Character line through the cabin, plus crisp nose and tail caps."""
+    """Crisp nose and tail caps, and the belt line through the cabin."""
     count = len(rings[0])
-    # Right character is section point 4. Left mirror is count - 4.
-    char = (4, count - 4)
     pairs = []
+    belt_ids = (IDX_BELT, count - IDX_BELT)
     for i in range(len(rings) - 1):
         z0 = rings[i][0][2]
-        z1 = rings[i + 1][0][2]
-        if Z_DECK + 0.12 < min(z0, z1) and max(z0, z1) < Z_COWL - 0.10:
-            for idx in char:
+        if Z_DECK + 0.05 < z0 < Z_COWL - 0.02:
+            for idx in belt_ids:
                 pairs.append((i * count + idx, (i + 1) * count + idx))
     n = len(rings)
     for ring_i in (0, n - 1):
@@ -296,7 +272,6 @@ def _hard(rings):
         ob = other * count
         for i in range(count):
             pairs.append((base + i, ob + i))
-    # Cap hubs added by the loft, in this order: nose ring, then tail ring.
     nose_hub = n * count
     tail_hub = nose_hub + 1
     for i in range(count):
@@ -305,219 +280,246 @@ def _hard(rings):
     return pairs
 
 
-def _doors():
-    front_jamb = Z_FRONT - ARCH_R - 0.05
-    rear_jamb = Z_REAR + ARCH_R + 0.06
-    b_pillar = (Z_FRONT + Z_REAR) * 0.5
-    return (
-        (b_pillar + 0.006, front_jamb),
-        (rear_jamb, b_pillar - 0.006),
-    )
-
-
-def _panel_pockets():
-    """4 mm grooves. Cut after subdivision so the line stays a line."""
-    pockets = []
-    for z0, z1 in _doors():
-        zmid = (z0 + z1) * 0.5
-        span = abs(z1 - z0)
-        y_top = y_belt(zmid)
-        y_bot = 0.30
-        x0 = x_plan(z0) - 0.004
-        x1 = x_plan(z1) - 0.004
-        xm = x_plan(zmid) - 0.004
-        for sign in (1.0, -1.0):
-            pockets.append(((sign * x0, (y_top + y_bot) * 0.5, z0), (0.020, y_top - y_bot, 0.006)))
-            pockets.append(((sign * x1, (y_top + y_bot) * 0.5, z1), (0.020, y_top - y_bot, 0.006)))
-            pockets.append(((sign * xm, y_top, zmid), (0.020, 0.006, span)))
-            pockets.append(((sign * xm, y_bot, zmid), (0.020, 0.006, span)))
-    # Hood shut at the cowl, trunk shut at the deck.
-    pockets.append(((0.0, Y_COWL - 0.04, Z_COWL), (1.40, 0.10, 0.007)))
-    pockets.append(((0.0, Y_DECK - 0.02, Z_DECK), (1.20, 0.10, 0.007)))
-    return pockets
-
-
-def _lamp_pockets():
-    pockets = []
-    # Wide lower grille, slim upper bar, thin full-width lamp, fender wraps, fogs.
-    pockets.append(((0.0, 0.40, Z_NOSE - 0.06), (1.48, 0.32, 0.16)))
-    pockets.append(((0.0, 0.62, Z_NOSE - 0.05), (1.16, 0.042, 0.12)))
-    pockets.append(((0.0, 0.735, Z_NOSE - 0.07), (1.72, 0.062, 0.16)))
-    for sign in (1.0, -1.0):
-        pockets.append(((sign * 0.78, 0.70, Z_NOSE - 0.28), (0.26, 0.055, 0.34)))
-        pockets.append(((sign * 0.55, 0.24, Z_NOSE - 0.05), (0.26, 0.09, 0.10)))
-    # High tail lamps under the deck edge, plus corner wraps and a plate bite.
-    pockets.append(((0.0, 0.99, Z_DECK_R - 0.02), (1.46, 0.070, 0.12)))
-    for sign in (1.0, -1.0):
-        pockets.append(((sign * 0.74, 0.96, Z_DECK_R + 0.08), (0.22, 0.06, 0.26)))
-    pockets.append(((0.0, 0.42, Z_TAIL + 0.05), (0.34, 0.12, 0.08)))
-    pockets.append(((0.0, 0.28, Z_NOSE - 0.04), (0.32, 0.10, 0.08)))
-    return pockets
-
-
 def _wells():
-    length = 0.26
-    # Shift the cutter toward the fender. sign is the side, TIRE_X is positive.
-    return [((sign * (TIRE_X + 0.04), AXLE_Y, axle), ARCH_R, length) for axle in (Z_REAR, Z_FRONT) for sign in (-1.0, 1.0)]
+    length = 0.24
+    return [
+        ((sign * (TIRE_X + 0.045), AXLE_Y, axle), ARCH_R - 0.01, length)
+        for axle in (Z_REAR, Z_FRONT)
+        for sign in (-1.0, 1.0)
+    ]
 
 
-def _glass_prisms():
-    prisms = []
-    span = math.hypot(Z_COWL - Z_HEADER, Y_COWL - Y_HEADER) or 1.0
-    uy = (Y_COWL - Y_HEADER) / span
-    uz = (Z_COWL - Z_HEADER) / span
-    margin = 0.055
-    y0 = Y_HEADER + uy * margin
-    z0 = Z_HEADER + uz * margin
-    y1 = Y_COWL - uy * margin
-    z1 = Z_COWL - uz * margin
-    ny, nz = shell._rake_normal(y0, z0, y1, z1)
-    hx0, hx1 = 0.58, 0.76
-    prisms.append((shell._prism_from_rake(y0, z0, y1, z1, hx0, hx1, ny, nz, 0.07, 0.48), _SLAB))
-    span_b = math.hypot(Z_DECK - Z_ROOF_R, Y_DECK - Y_ROOF_R) or 1.0
-    by = (Y_DECK - Y_ROOF_R) / span_b
-    bz = (Z_DECK - Z_ROOF_R) / span_b
-    by0 = Y_ROOF_R + by * 0.06
-    bz0 = Z_ROOF_R + bz * 0.06
-    by1 = Y_DECK - by * 0.05
-    bz1 = Z_DECK - bz * 0.05
-    nby, nbz = shell._rake_normal(by0, bz0, by1, bz1)
-    prisms.append((shell._prism_from_rake(by0, bz0, by1, bz1, 0.50, 0.64, nby, nbz, 0.06, 0.36), _SLAB))
-
-    def side(corners):
-        for sign in (1.0, -1.0):
-            outer = []
-            inner = []
-            for z, y in corners:
-                xs = sign * skin_x(z, y)
-                outer.append((xs + sign * 0.05, y, z))
-                inner.append((-sign * 0.04, y, z))
-            prisms.append((outer + inner, _SLAB))
-
-    yb = y_belt(0.95) + 0.04
-    run = (1.16 - yb) / math.tan(math.radians(29.0))
-    side((
-        (0.96, yb),
-        (0.16, y_belt(0.16) + 0.04),
-        (0.08, 1.14),
-        (0.96 - run, 1.16),
-    ))
-    yb_r = y_belt(-0.05) + 0.04
-    side((
-        (-0.02, yb_r),
-        (-0.72, y_belt(-0.72) + 0.045),
-        (-0.92, 1.16),
-        (-0.06, 1.16),
-    ))
-    return prisms, (y0, z0, y1, z1, ny, nz, hx0, hx1), (by0, bz0, by1, bz1, nby, nbz)
+def _u_co(co):
+    return blender_to_unity(co.x, co.y, co.z)
 
 
-def _gap_lines(g):
-    for z0, z1 in _doors():
-        zmid = (z0 + z1) * 0.5
-        span = abs(z1 - z0)
-        y_top = y_belt(zmid)
-        y_bot = 0.30
-        for sign in (1.0, -1.0):
-            xm = sign * (x_plan(zmid) - 0.008)
-            g.box((sign * (x_plan(z0) - 0.008), (y_top + y_bot) * 0.5, z0), (0.008, y_top - y_bot, 0.004), "Lib_Black")
-            g.box((sign * (x_plan(z1) - 0.008), (y_top + y_bot) * 0.5, z1), (0.008, y_top - y_bot, 0.004), "Lib_Black")
-            g.box((xm, y_top, zmid), (0.008, 0.004, span), "Lib_Black")
-            g.box((xm, y_bot, zmid), (0.008, 0.004, span), "Lib_Black")
-    g.box((0.0, Y_COWL - 0.02, Z_COWL), (1.28, 0.004, 0.004), "Lib_Black")
-    g.box((0.0, Y_DECK, Z_DECK), (1.05, 0.004, 0.004), "Lib_Black")
+def _u_n(normal):
+    return (normal.x, normal.z, -normal.y)
 
 
-def _glass_panes(g, ws, bl):
-    y0, z0, y1, z1, ny, nz, hx0, hx1 = ws
-    shell._pane(
-        g,
-        [(-hx0 * 0.92, y0, z0), (hx0 * 0.92, y0, z0), (hx1 * 0.92, y1, z1), (-hx1 * 0.92, y1, z1)],
-        ny, nz, 0.042, 0.008, GLASS,
+def _islands(bm):
+    seen = set()
+    islands = []
+    bm.faces.ensure_lookup_table()
+    for face in bm.faces:
+        if face in seen:
+            continue
+        stack = [face]
+        seen.add(face)
+        group = [face]
+        while stack:
+            current = stack.pop()
+            for edge in current.edges:
+                for other in edge.link_faces:
+                    if other in seen:
+                        continue
+                    seen.add(other)
+                    stack.append(other)
+                    group.append(other)
+        islands.append(group)
+    return islands
+
+
+def _hold_crown(bm):
+    """Put the smoothed centerline back on the published profile.
+
+    Subdivision pulls the crown down toward the roof shoulders, which flattens
+    the windshield. Lift falls off toward the sides so the tumble stays.
+    """
+    for vert in bm.verts:
+        x, y, z = blender_to_unity(vert.co.x, vert.co.y, vert.co.z)
+        target = y_crown(z)
+        if y < 0.60 or y > target - 0.002:
+            continue
+        band = 0.42
+        if abs(x) >= band:
+            continue
+        influence = (1.0 - abs(x) / band) ** 2
+        short = target - y
+        if short < 0.004 or influence < 0.04:
+            continue
+        vert.co.z += short * influence
+
+
+def _drop_specks(bm, limit=16):
+    islands = _islands(bm)
+    if len(islands) < 2:
+        return 0
+    islands.sort(key=len)
+    dropped = 0
+    kill = []
+    for group in islands[:-1]:
+        if len(group) <= limit:
+            kill.extend(group)
+            dropped += 1
+    if kill:
+        bmesh.ops.delete(bm, geom=kill, context="FACES")
+    return dropped
+
+
+def _in_greenhouse(y, z):
+    """Above the belt and below the roof skin. This is the window band."""
+    sill = y_sill(z)
+    crown = y_crown(z)
+    if crown - sill < 0.12:
+        return False
+    top = sill + (crown - sill) * 0.80
+    return sill + 0.02 < y < top
+
+
+def _pick_faces(bm):
+    bm.faces.ensure_lookup_table()
+    bm.normal_update()
+    groups = {name: [] for name in (
+        "windshield", "front_door", "rear_door", "quarter", "backlight",
+        "grille", "lamp", "tail",
+    )}
+    debug = []
+    for face in bm.faces:
+        x, y, z = _u_co(face.calc_center_median())
+        nx, ny, nz = _u_n(face.normal)
+        if z > 1.70 and nz > 0.62 and 0.28 < y < 0.50 and abs(x) < 0.58:
+            groups["grille"].append(face)
+            continue
+        if z > 1.70 and nz > 0.55 and 0.60 < y < 0.78 and abs(x) < 0.70:
+            groups["lamp"].append(face)
+            continue
+        if z < -1.70 and nz < -0.55 and 0.68 < y < 0.86 and abs(x) < 0.62:
+            groups["tail"].append(face)
+            continue
+        # Windshield: the raked center of the greenhouse, joined to the roof.
+        if (
+            Z_HEADER + 0.02 < z < Z_COWL - 0.03
+            and abs(x) < 0.64
+            and ny > 0.25 and nz > 0.08
+            and y > max(1.00, y_sill(z) + 0.03)
+            and y < y_crown(z) - 0.012
+        ):
+            groups["windshield"].append(face)
+            continue
+        if (
+            Z_DECK + 0.06 < z < Z_ROOF_R - 0.04
+            and abs(x) < 0.55
+            and ny > 0.25 and nz < -0.08
+            and y > 1.04
+        ):
+            groups["backlight"].append(face)
+            continue
+        # Side glass by position, so the whole opening above the belt is glass.
+        # Outward normal keeps the wheel-well interior out of the set.
+        outward = nx * (1.0 if x >= 0.0 else -1.0)
+        if abs(x) > 0.28 and outward > 0.20 and _in_greenhouse(y, z):
+            if 0.12 < z < 0.92:
+                groups["front_door"].append(face)
+            elif -0.66 < z < -0.04:
+                groups["rear_door"].append(face)
+            elif -1.08 < z < -0.76:
+                groups["quarter"].append(face)
+        elif Z_HEADER < z < Z_COWL and y > 1.05 and len(debug) < 6:
+            debug.append((round(x, 2), round(y, 2), round(z, 2), round(nx, 2), round(ny, 2), round(nz, 2)))
+    return groups, debug
+
+
+def _inset(bm, faces, thickness, depth):
+    if len(faces) < 4:
+        return []
+    result = bmesh.ops.inset_region(
+        bm,
+        faces=faces,
+        thickness=thickness,
+        depth=depth,
+        use_boundary=True,
+        use_even_offset=True,
+        use_interpolate=True,
     )
-    by0, bz0, by1, bz1, nby, nbz = bl
-    shell._pane(
-        g,
-        [(-0.42, by0, bz0), (0.42, by0, bz0), (0.52, by1, bz1), (-0.52, by1, bz1)],
-        nby, nbz, 0.042, 0.008, GLASS,
+    return [face for face in result.get("faces", []) if face.is_valid]
+
+
+def _paint_inset(bm, faces, glass_idx, black_idx, glass):
+    """Inset a region.
+
+    inset_region returns the new border faces. The faces passed in stay, shrunk,
+    as the recessed inner panel. Glass (or the lamp cavity) is that inner panel.
+    The border is the black surround.
+    """
+    if len(faces) < 4:
+        return 0
+    depth = -0.012 if glass else -0.016
+    border = _inset(bm, faces, 0.016 if glass else 0.012, depth)
+    target = glass_idx if glass else black_idx
+    for face in faces:
+        if face.is_valid:
+            face.material_index = target
+    for face in border:
+        if face.is_valid:
+            face.material_index = black_idx
+    return len(faces)
+
+
+def _inset_openings(g, lod):
+    bm = g.bm
+    groups, debug = _pick_faces(bm)
+    counts = {name: len(faces) for name, faces in groups.items()}
+    print("GLASS_PICK", "lod", lod, counts)
+    if lod == 0 and counts["windshield"] < 8:
+        print("WINDSHIELD_DEBUG", debug)
+        raise RuntimeError("windshield inset found %d faces" % counts["windshield"])
+    glass_idx = g.slot(GLASS)
+    black_idx = g.slot("Lib_Black")
+    for name in ("windshield", "front_door", "rear_door", "quarter", "backlight"):
+        _paint_inset(bm, groups[name], glass_idx, black_idx, glass=True)
+    for name in ("grille", "lamp", "tail"):
+        _paint_inset(bm, groups[name], glass_idx, black_idx, glass=False)
+    for face in bm.faces:
+        face.smooth = True
+    bm.normal_update()
+    if lod == 0 and counts["lamp"] < 4:
+        print("LAMP_PICK_LOW", counts["lamp"])
+    if lod == 0 and counts["grille"] < 4:
+        print("GRILLE_PICK_LOW", counts["grille"])
+
+
+def _section_report(zs):
+    rake = math.degrees(math.atan2(1.35 - 1.00, Z_COWL - Z_HEADER))
+    print("BODY_A_STATIONS", len(zs), "RAKE_DEG", round(rake, 2))
+    half = half_at(0.0)
+    belt = half[IDX_BELT]
+    upper = half[9]
+    dy = upper[1] - belt[1]
+    dx = belt[0] - upper[0]
+    tumble = math.degrees(math.atan2(dx, dy)) if dy > 0.02 else 0.0
+    print(
+        "BODY_A_TUMBLE_DEG", round(tumble, 2),
+        "belt", tuple(round(v, 3) for v in belt),
+        "rail", tuple(round(v, 3) for v in upper),
+        "crown", round(half[-1][1], 3),
     )
-
-    def pane(corners):
-        for sign in (1.0, -1.0):
-            front = []
-            back = []
-            for z, y in corners:
-                xs = sign * (skin_x(z, y) - 0.016)
-                front.append((xs, y, z))
-                back.append((xs - sign * 0.008, y, z))
-            g.mesh(front + back, _SLAB, GLASS)
-
-    yb = y_belt(0.95) + 0.055
-    run = (1.14 - yb) / math.tan(math.radians(29.0))
-    pane((
-        (0.90, yb),
-        (0.20, y_belt(0.20) + 0.055),
-        (0.12, 1.12),
-        (0.90 - run, 1.14),
-    ))
-    pane((
-        (0.02, y_belt(0.0) + 0.055),
-        (-0.66, y_belt(-0.66) + 0.06),
-        (-0.84, 1.13),
-        (-0.02, 1.13),
-    ))
-
-
-def _wipers(g):
-    theta = math.atan2(Y_HEADER - Y_COWL, Z_COWL - Z_HEADER)
-    dy = 0.30
-    dz = -dy / math.tan(theta)
-    y = Y_COWL + 0.01
-    z = Z_COWL - 0.03
-    g.pipe((-0.04, y, z), (-0.34, y + dy, z + dz), 0.005, "Lib_Black", segments=5)
-    g.pipe((0.12, y, z), (0.46, y + dy * 0.92, z + dz * 0.92), 0.005, "Lib_Black", segments=5)
-
-
-def _cabin(g):
-    """Seats and a dash in the greenhouse cavity, above the lower body collider."""
-    for x in (-0.32, 0.32):
-        g.box((x, 0.98, 0.28), (0.28, 0.14, 0.30), "Lib_Interior")
-        g.box((x, 1.10, 0.10), (0.26, 0.20, 0.07), "Lib_Interior")
-        g.box((x, 1.20, 0.08), (0.14, 0.07, 0.06), "Lib_Black")
-    g.box((0.0, 0.97, 0.70), (0.78, 0.08, 0.20), "Lib_Black")
-    g.box((0.0, 1.02, -0.32), (0.72, 0.16, 0.08), "Lib_Interior")
+    for z in (Z_NOSE, 1.55, Z_COWL, (Z_HEADER + Z_COWL) * 0.5, Z_HEADER, 0.0, Z_ROOF_R, Z_DECK, Z_TAIL):
+        sec = half_at(z)
+        print(
+            "BODY_A_SEC z=%.3f crown=%.3f belt=%.3f xbelt=%.3f bulge=%.3f" % (
+                z, sec[-1][1], sec[IDX_BELT][1], sec[IDX_BELT][0], sec[IDX_BULGE][0],
+            )
+        )
 
 
 def build_shell(g, lod):
-    step = 0.22 if lod == 0 else (0.40 if lod == 1 else 0.58)
-    zs = _stations(step)
+    zs = _stations(lod)
+    if lod == 0:
+        _section_report(zs)
+        if len(zs) < 14:
+            raise RuntimeError("expected at least 14 stations, got %d" % len(zs))
     rings = [shell._ring(half_at(z), z) for z in zs]
-    if lod == 0:
-        print("BODY_A_STATIONS", len(zs), "RING", len(rings[0]))
-        for z in (Z_NOSE, 1.90, Z_COWL, Z_HEADER, 0.0, Z_ROOF_R, Z_DECK, Z_TAIL):
-            half = half_at(z)
-            print(
-                "BODY_A_SEC z=%.3f crown=%.3f char=%.3f x=%.3f belt=%.3f" % (
-                    z, half[-1][1], half[4][1], half[4][0], half[6][1],
-                )
-            )
-        rake = math.degrees(math.atan2(Y_HEADER - Y_COWL, Z_COWL - Z_HEADER))
-        print("BODY_A_RAKE_DEG", round(rake, 2))
-    level = 2 if lod == 0 else 0
+    level = 2 if lod == 0 else (1 if lod == 1 else 0)
     hard = _hard(rings) if level else ()
-    prisms, ws, bl = _glass_prisms()
-    pockets = _panel_pockets() + _lamp_pockets()
-    # Coarse LODs keep the openings and drop the 4 mm grooves.
-    if lod == 2:
-        pockets = _lamp_pockets()
-    shell._loft(g, rings, PAINT, level, _wells(), pockets, prisms, 82.0, hard, joined=True)
+    shell._loft(g, rings, PAINT, level, _wells(), [], [], 70.0, hard, joined=False)
+    if level:
+        _hold_crown(g.bm)
+    specks = _drop_specks(g.bm)
+    if specks:
+        print("BODY_A_SPECKS", "lod", lod, specks)
     if lod < 2:
-        _glass_panes(g, ws, bl)
-        _gap_lines(g)
-    if lod == 0:
-        _wipers(g)
-    if lod < 2:
-        _cabin(g)
+        _inset_openings(g, lod)
 
 
 def _copy_open(src, asset, lod):
@@ -593,142 +595,270 @@ def _wheel(g, x, z, year, lod):
             )
 
 
+def _limit(z, y, margin):
+    """Half-width that stays on the flat cap, inside the curved corners."""
+    return max(0.16, skin_x(z, y) * 0.72 - margin)
+
+
 def _grille(g, year, lod):
     kind = YEARS[year]["grille"]
-    z = Z_NOSE - 0.012
-    w, h, y = 1.28, 0.24, 0.40
+    y = 0.39
+    h = 0.14
+    z = NOSE_Z - 0.002
+    w = _limit(Z_NOSE, y, 0.02) * 2.0
     if kind == "slat4":
-        count = 4
-        for i in range(count):
-            yy = y - h * 0.38 + i * (h * 0.22)
-            g.box((0.0, yy, z), (w, 0.012, 0.008), "Lib_SteelDark")
+        for i in range(4):
+            yy = y - h * 0.36 + i * (h * 0.24)
+            g.box((0.0, yy, z), (w, 0.008, 0.004), "Lib_SteelDark")
     elif kind == "slat8":
         count = 6 if lod == 0 else 3
         for i in range(count):
-            yy = y - h * 0.40 + i * (h * 0.14)
-            g.box((0.0, yy, z), (w - 0.06, 0.006, 0.006), "Lib_Steel")
+            yy = y - h * 0.38 + i * (h * 0.15)
+            g.box((0.0, yy, z), (w - 0.04, 0.005, 0.004), "Lib_Steel")
     else:
-        rows = 4 if lod == 0 else 2
-        cols = 8 if lod == 0 else 3
+        rows = 3 if lod == 0 else 2
+        cols = 6 if lod == 0 else 3
         for i in range(rows):
-            yy = y - h * 0.36 + i * (h * 0.20)
-            g.box((0.0, yy, z), (w, 0.005, 0.005), "Lib_Black")
+            yy = y - h * 0.30 + i * (h * 0.30)
+            g.box((0.0, yy, z), (w, 0.004, 0.003), "Lib_Black")
         for i in range(cols):
-            xx = -w * 0.42 + i * (w * 0.84 / max(1, cols - 1))
-            g.box((xx, y, z), (0.005, h * 0.80, 0.005), "Lib_Black")
-    # Slim upper bar. 2024 is black trim; the others are bright metal.
-    trim = "Lib_Black" if year == 2024 else "Lib_Steel"
-    g.box((0.0, 0.62, z), (1.05, 0.018, 0.008), trim)
+            xx = -w * 0.40 + i * (w * 0.80 / max(1, cols - 1))
+            g.box((xx, y, z), (0.004, h * 0.72, 0.003), "Lib_Black")
 
 
-def _lamps_front(g, year, paint):
+def _lamps_front(g, year):
     kind = YEARS[year]["lamps"]
-    z_face = Z_NOSE - 0.016
-    y = 0.735
+    y = 0.69
+    z = NOSE_Z
+    limit = _limit(Z_NOSE, y, 0.02)
     if kind == "bar":
-        g.box((0.0, y, z_face - 0.006), (1.58, 0.050, 0.010), "Lib_Black")
-        g.box((0.0, y, z_face), (1.50, 0.028, 0.008), "Lib_Headlamp")
-        for sign in (1.0, -1.0):
-            g.box((sign * 0.78, 0.70, Z_NOSE - 0.20), (0.18, 0.032, 0.22), "Lib_Headlamp")
+        g.box((0.0, y, z), (limit * 2.0, 0.022, 0.005), "Lib_Headlamp")
         return
-    # 2021-2024: body-color shut in the middle of the shared slot, separate lamps outside.
-    g.box((0.0, y, z_face), (0.62, 0.050, 0.016), paint)
-    if kind == "tier":
-        for sign in (1.0, -1.0):
-            g.box((sign * 0.58, y + 0.008, z_face), (0.42, 0.016, 0.010), "Lib_Headlamp")
-            g.box((sign * 0.52, y - 0.016, z_face - 0.004), (0.34, 0.012, 0.008), "Lib_Headlamp")
-    elif kind == "thin":
-        for sign in (1.0, -1.0):
-            g.box((sign * 0.62, y, z_face), (0.46, 0.020, 0.008), "Lib_Headlamp")
-    else:
-        for sign in (1.0, -1.0):
-            g.box((sign * 0.58, y, z_face - 0.004), (0.40, 0.046, 0.012), "Lib_Black")
-            g.box((sign * 0.58, y, z_face), (0.32, 0.026, 0.008), "Lib_Headlamp")
-            g.box((sign * 0.78, 0.70, Z_NOSE - 0.16), (0.10, 0.022, 0.12), "Lib_Headlamp")
-
-
-def _lamps_rear(g, year, paint):
-    kind = YEARS[year]["tails"]
-    z_face = Z_DECK_R + 0.012
-    y = 0.99
-    if kind == "bar":
-        g.box((0.0, y, z_face + 0.004), (1.40, 0.055, 0.010), "Lib_Black")
-        g.box((0.0, y, z_face), (1.32, 0.030, 0.008), "Lib_Taillamp")
-        for sign in (1.0, -1.0):
-            g.box((sign * 0.74, 0.96, Z_DECK_R + 0.10), (0.14, 0.028, 0.16), "Lib_Taillamp")
-        return
-    g.box((0.0, y, z_face), (0.50, 0.055, 0.014), paint)
-    tall = 0.040 if kind == "separate" else 0.020
+    span = 0.36 if kind != "thin" else 0.40
+    tall = 0.038 if kind == "separate" else 0.016
+    x = min(0.48, limit - span * 0.5 - 0.02)
     for sign in (1.0, -1.0):
-        g.box((sign * 0.52, y, z_face), (0.36, tall, 0.008), "Lib_Taillamp")
+        if kind == "tier":
+            g.box((sign * x, y + 0.008, z), (span, 0.012, 0.005), "Lib_Headlamp")
+            g.box((sign * x, y - 0.010, z - 0.001), (span * 0.82, 0.010, 0.005), "Lib_Headlamp")
+        else:
+            g.box((sign * x, y, z - 0.002), (span + 0.02, tall + 0.010, 0.004), "Lib_Black")
+            g.box((sign * x, y, z), (span, tall, 0.005), "Lib_Headlamp")
+
+
+def _lamps_rear(g, year):
+    kind = YEARS[year]["tails"]
+    y = 0.78
+    z = TAIL_Z
+    limit = _limit(Z_TAIL, y, 0.05)
+    if kind == "bar":
+        g.box((0.0, y, z), (limit * 2.0, 0.024, 0.005), "Lib_Taillamp")
+        return
+    span = 0.30 if kind != "thin" else 0.34
+    tall = 0.034 if kind == "separate" else 0.016
+    x = min(0.46, limit - span * 0.5 - 0.02)
+    for sign in (1.0, -1.0):
+        g.box((sign * x, y, z), (span, tall, 0.006), "Lib_Taillamp")
 
 
 def _mirrors(g, year, lod):
     mat = YEARS[year]["mirror"]
-    z0, z1 = _doors()[0]
-    z = z1 - 0.16
-    y = y_belt(z) + 0.02
+    z = 0.72
+    y = y_sill(z) + 0.015
     x_skin = skin_x(z, y)
-    bev = 0.006 if lod == 0 else 0.0
+    bev = 0.004 if lod == 0 else 0.0
     segs = 1 if lod == 0 else 0
     for sign in (1.0, -1.0):
-        g.cylinder((sign * (x_skin + 0.035), y, z), 0.012, 0.07, mat, 8, axis="X")
-        cap_x = x_skin + 0.055 + 0.055
-        g.box((sign * cap_x, y, z), (0.11, 0.15, 0.25), mat, bevel=bev, segs=segs)
-        g.box((sign * (cap_x + 0.05), y, z + 0.01), (0.008, 0.09, 0.16), "Lib_SteelDark")
+        g.cylinder((sign * (x_skin + 0.03), y, z), 0.010, 0.06, mat, 8, axis="X")
+        cap_x = x_skin + 0.045 + 0.045
+        g.box((sign * cap_x, y, z), (0.09, 0.11, 0.16), mat, bevel=bev, segs=segs)
+        g.box((sign * (cap_x + 0.04), y, z + 0.01), (0.006, 0.07, 0.11), "Lib_SteelDark")
 
 
 def _fogs(g, year):
     mat = YEARS[year]["fog"]
+    y = 0.27
+    limit = _limit(Z_NOSE, y, 0.05)
+    x = min(0.46, limit - 0.10)
     for sign in (1.0, -1.0):
-        g.box((sign * 0.55, 0.24, Z_NOSE - 0.012), (0.16, 0.045, 0.008), mat)
+        g.box((sign * x, y, NOSE_Z), (0.14, 0.032, 0.005), mat)
 
 
 def dress(g, year, lod, paint):
+    del paint
     for axle in (Z_REAR, Z_FRONT):
         for sign in (-1.0, 1.0):
             _wheel(g, sign * TIRE_X, axle, year, lod)
     _grille(g, year, lod)
-    _lamps_front(g, year, paint)
-    _lamps_rear(g, year, paint)
+    _lamps_front(g, year)
+    _lamps_rear(g, year)
     _fogs(g, year)
-    g.box((0.0, 0.28, Z_NOSE - 0.010), (0.26, 0.07, 0.006), "Lib_SteelDark")
-    g.box((0.0, 0.42, Z_TAIL + 0.012), (0.26, 0.09, 0.006), "Lib_SteelDark")
     if lod < 2:
         _mirrors(g, year, lod)
 
 
 def add_colliders(asset):
-    yz = TIRE_R * 0.56
+    # Kept in the carcass. A wider box reaches the wheel-well opening and
+    # the parity test calls that outside.
+    yz = TIRE_R * 0.22
     for i, axle in enumerate((Z_REAR, Z_FRONT)):
         for j, sign in enumerate((-1.0, 1.0)):
             asset.box(
                 "Col_Wheel_%d%d" % (i, j),
                 (sign * TIRE_X, AXLE_Y, axle),
-                (0.018, yz, yz),
+                (0.008, yz, yz),
             )
-    asset.box("Col_Cabin", (0.0, 0.50, 0.05), (0.86, 0.46, 1.15))
-    asset.box("Col_Roof", (0.0, 1.348, -0.10), (0.38, 0.026, 0.42))
-    asset.box("Col_Hood", (0.0, 0.62, 1.78), (0.70, 0.14, 0.72))
-    asset.box("Col_Deck", (0.0, 0.82, -1.72), (0.72, 0.14, 0.50))
+    asset.box("Col_Cabin", (0.0, 0.46, -0.05), (0.62, 0.32, 0.90))
+    asset.box("Col_Roof", (0.0, 1.28, -0.05), (0.36, 0.06, 0.48))
+    asset.box("Col_Hood", (0.0, 0.70, 1.62), (0.55, 0.16, 0.48))
+    asset.box("Col_Deck", (0.0, 0.76, -1.62), (0.55, 0.14, 0.36))
 
 
 def probe_spec(name):
-    ny, nz = shell._rake_normal(Y_HEADER, Z_HEADER, Y_COWL, Z_COWL)
-    y = (Y_HEADER + Y_COWL) * 0.5
+    ny, nz = shell._rake_normal(1.35, Z_HEADER, 1.00, Z_COWL)
+    y = (1.35 + 1.00) * 0.5
     z = (Z_HEADER + Z_COWL) * 0.5
     return {
         "name": name,
         "glass_tests": [
-            (0.0, y - ny * 0.028, z - nz * 0.028),
-            (skin_x(0.55, y_belt(0.55) + 0.12) - 0.010, y_belt(0.55) + 0.12, 0.55),
-            (-(skin_x(-0.40, 1.05) - 0.010), 1.05, -0.40),
+            (0.0, y + ny * 0.04, z + nz * 0.04),
+            (0.0, y - ny * 0.05, z - nz * 0.05),
         ],
     }
 
 
+def _centroid(faces):
+    acc = [0.0, 0.0, 0.0]
+    for face in faces:
+        x, y, z = _u_co(face.calc_center_median())
+        acc[0] += x
+        acc[1] += y
+        acc[2] += z
+    n = float(len(faces) or 1)
+    return (acc[0] / n, acc[1] / n, acc[2] / n)
+
+
+def _near_wheel(center):
+    x, y, z = center
+    if abs(abs(x) - TIRE_X) > 0.22:
+        return False
+    for axle in (Z_REAR, Z_FRONT):
+        if math.hypot(y - AXLE_Y, z - axle) < TIRE_R + 0.08:
+            return True
+    return False
+
+
+def _near_mirror(center):
+    x, y, z = center
+    return abs(x) > 0.85 and 0.75 < y < 1.20 and 0.35 < z < 1.15
+
+
+def _near_fascia(center):
+    _x, y, z = center
+    return (z > 1.45 and y < 1.05) or (z < -1.45 and y < 1.05)
+
+
+def self_check(asset):
+    """Print roof clearance, island classes, and side-silhouette deviation."""
+    bm = asset.lods[0].bm
+    mats = asset.lods[0].mats
+    over = []
+    for vert in bm.verts:
+        x, y, z = blender_to_unity(vert.co.x, vert.co.y, vert.co.z)
+        if abs(x) > x_body(z) + 0.03:
+            continue
+        limit = y_crown(z) + 0.035
+        if y > limit and y > 1.02:
+            over.append((round(x, 3), round(y, 3), round(z, 3), round(y - y_crown(z), 3)))
+    over.sort(key=lambda row: -row[3])
+    print("SHELL_CHECK faces_above_roof", len(over), "worst", over[:6])
+
+    islands = _islands(bm)
+    islands.sort(key=len, reverse=True)
+    counts = {"body": 0, "wheel": 0, "mirror": 0, "lamp": 0, "glass": 0, "extra": 0}
+    extras = []
+    for index, group in enumerate(islands):
+        center = _centroid(group)
+        names = set()
+        for face in group:
+            if 0 <= face.material_index < len(mats):
+                names.add(mats[face.material_index])
+        if index == 0:
+            kind = "body"
+        elif _near_wheel(center) or "Lib_Rubber" in names:
+            kind = "wheel"
+        elif _near_mirror(center):
+            kind = "mirror"
+        elif _near_fascia(center) or names & {"Lib_Headlamp", "Lib_Taillamp", "Lib_SignalAmber"}:
+            kind = "lamp"
+        elif names <= {GLASS}:
+            kind = "glass"
+        else:
+            kind = "extra"
+            extras.append((len(group), tuple(round(v, 3) for v in center), sorted(names)))
+        counts[kind] += 1
+    print(
+        "SHELL_CHECK islands body=%d wheels=%d mirrors=%d lamps=%d glass=%d extra=%d" % (
+            counts["body"], counts["wheel"], counts["mirror"], counts["lamp"], counts["glass"], counts["extra"],
+        )
+    )
+    if extras:
+        print("SHELL_CHECK extra_detail", extras[:12])
+
+    best = {}
+    max_z = Z_TAIL
+    min_z = Z_NOSE
+    for vert in bm.verts:
+        x, y, z = blender_to_unity(vert.co.x, vert.co.y, vert.co.z)
+        max_z = max(max_z, z)
+        min_z = min(min_z, z)
+        if abs(x) > 0.22:
+            continue
+        bucket = round(z * 20.0) / 20.0
+        prev = best.get(bucket)
+        if prev is None or y > prev:
+            best[bucket] = y
+    worst = (0.0, 0.0, 0.0, 0.0)
+    rows = []
+    z = Z_TAIL
+    while z <= Z_NOSE + 1e-6:
+        bucket = round(z * 20.0) / 20.0
+        mesh_y = best.get(bucket)
+        target = y_crown(z)
+        if mesh_y is not None:
+            delta_cm = (mesh_y - target) * 100.0
+            if abs(delta_cm) >= abs(worst[0]):
+                worst = (delta_cm, z, mesh_y, target)
+            if abs((z * 4.0) - round(z * 4.0)) < 0.04:
+                rows.append("%+.2f: mesh %.3f target %.3f d %+.1fcm" % (z, mesh_y, target, delta_cm))
+        z += 0.05
+    print("SHELL_CHECK silhouette max_dev_cm %.2f at z=%.2f mesh=%.3f target=%.3f" % worst)
+    print("SHELL_CHECK profile")
+    for row in rows:
+        print("  ", row)
+    print(
+        "SHELL_CHECK ends max_z=%.3f nose=%.3f min_z=%.3f tail=%.3f" % (
+            max_z, Z_NOSE, min_z, Z_TAIL,
+        )
+    )
+    problems = []
+    if over:
+        problems.append("faces above the roof")
+    if counts["body"] != 1:
+        problems.append("body islands %d" % counts["body"])
+    if counts["extra"]:
+        problems.append("extra islands %d" % counts["extra"])
+    if abs(worst[0]) > 8.0:
+        problems.append("silhouette deviation %.1f cm" % worst[0])
+    if max_z > Z_NOSE + 0.012 or min_z < Z_TAIL - 0.012:
+        problems.append("fascia past the cap")
+    if problems:
+        raise RuntimeError("shell check failed: " + "; ".join(problems))
+    print("SHELL_CHECK ok")
+
+
 def measure(asset):
-    """Side-view outline. Glass holes drop the centerline, so this is max Y at each Z."""
+    self_check(asset)
     best = {}
     max_x = 0.0
     max_y = 0.0
@@ -742,6 +872,8 @@ def measure(asset):
         min_y = min(min_y, y)
         max_z = max(max_z, z)
         min_z = min(min_z, z)
+        if abs(x) > 0.15:
+            continue
         bucket = round(z * 10.0) / 10.0
         prev = best.get(bucket)
         if prev is None or y > prev[1]:
@@ -750,7 +882,7 @@ def measure(asset):
     def near(z_target):
         pick = None
         for _bucket, (z, y) in best.items():
-            if abs(z - z_target) < 0.12 and (pick is None or y > pick[1]):
+            if abs(z - z_target) < 0.08 and (pick is None or abs(z - z_target) < abs(pick[0] - z_target)):
                 pick = (z, y)
         return pick
 
@@ -759,14 +891,12 @@ def measure(asset):
     angle = None
     if header and cowl and abs(cowl[0] - header[0]) > 0.05:
         angle = math.degrees(math.atan2(header[1] - cowl[1], cowl[0] - header[0]))
-    outline = " ".join("%+.1f:%.2f" % (z, y) for z, y in (best[k] for k in sorted(best)[::2]))
     print(
         "BODY_A_MEASURE", asset.name,
         "rake", None if angle is None else round(angle, 1),
         "header", None if header is None else tuple(round(v, 3) for v in header),
         "cowl", None if cowl is None else tuple(round(v, 3) for v in cowl),
         "size", round(max_x * 2.0, 3), round(max_y - min_y, 3), round(max_z - min_z, 3),
-        "ymax", round(max_y, 3), "ymin", round(min_y, 3),
+        "ymax", round(max_y, 3),
     )
-    print("BODY_A_OUTLINE", outline)
     return angle

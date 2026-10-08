@@ -967,7 +967,7 @@ def _ensure_materials():
             if "IOR" in bsdf.inputs:
                 bsdf.inputs["IOR"].default_value = 1.45
         if name == "Lib_AutoGlass" and "Transmission Weight" in bsdf.inputs:
-            bsdf.inputs["Transmission Weight"].default_value = 0.32
+            bsdf.inputs["Transmission Weight"].default_value = 0.14
             bsdf.inputs["Roughness"].default_value = 0.02
             if "IOR" in bsdf.inputs:
                 bsdf.inputs["IOR"].default_value = 1.52

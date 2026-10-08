@@ -190,17 +190,17 @@ def _dimensions(length, height, wheelbase, z_front, z_rear):
     g.box((x, y_len, 0.0), (0.04, 0.028, length), "Lib_Lane")
     g.box((x, y_len - 0.10, length * 0.5), (0.04, 0.20, 0.028), "Lib_Lane")
     g.box((x, y_len - 0.10, -length * 0.5), (0.04, 0.20, 0.028), "Lib_Lane")
-    g.text("%d mm" % int(round(length * 1000)), (x, y_len + 0.14, 0.0), 0.16, "Lib_Lane", extrude=0.012, yaw=-90.0, font=FONT)
+    g.text("%d mm" % int(round(length * 1000)), (x, y_len + 0.14, 0.0), 0.16, "Lib_Lane", extrude=0.012, yaw=90.0, font=FONT)
     z = -length * 0.5 - 0.28
     g.box((x, height * 0.5, z), (0.04, height, 0.028), "Lib_Lane")
     g.box((x, 0.02, z), (0.04, 0.02, 0.22), "Lib_Lane")
     g.box((x, height, z), (0.04, 0.02, 0.22), "Lib_Lane")
-    g.text("%d mm" % int(round(height * 1000)), (x, height * 0.45, z - 0.28), 0.12, "Lib_Lane", extrude=0.012, yaw=-90.0, font=FONT)
+    g.text("%d mm" % int(round(height * 1000)), (x, height * 0.45, z - 0.28), 0.12, "Lib_Lane", extrude=0.012, yaw=90.0, font=FONT)
     mid = (z_front + z_rear) * 0.5
     g.box((x, 0.42, mid), (0.03, 0.022, wheelbase), "Lib_Lane")
     g.box((x, 0.42, z_front), (0.03, 0.16, 0.022), "Lib_Lane")
     g.box((x, 0.42, z_rear), (0.03, 0.16, 0.022), "Lib_Lane")
-    g.text("%d mm" % int(round(wheelbase * 1000)), (x, 0.62, mid), 0.12, "Lib_Lane", extrude=0.012, yaw=-90.0, font=FONT)
+    g.text("%d mm" % int(round(wheelbase * 1000)), (x, 0.62, mid), 0.12, "Lib_Lane", extrude=0.012, yaw=90.0, font=FONT)
     asset.end()
     return asset
 
@@ -231,7 +231,7 @@ def _lineup(found, names, path, azimuth=36.0, elevation=12.0, fill=0.90):
     span = 3.55
     origin = (len(names) - 1) * span * 0.5
     for i, name in enumerate(names):
-        objs.append(r._spawn(found[name](), (i * span - origin, 0.0, 0.0), 28.0))
+        objs.append(r._spawn(found[name](), (i * span - origin, 0.0, 0.0), 0.0))
     r._ground("asphalt", 80.0)
     r._frame(scene, objs, fill=fill, elevation=elevation, azimuth=azimuth)
     r._render(scene, path)
@@ -266,7 +266,7 @@ def main():
         out = os.path.join(STILL_ROOT, "sedan_mid_a")
         os.makedirs(out, exist_ok=True)
         if shot in (None, "hero"):
-            _shot_az(found["Sedan_Mid_A_25"], os.path.join(out, "hero.png"), 50.0, elevation=9.0, fill=0.92)
+            _shot_az(found["Sedan_Mid_A_25"], os.path.join(out, "hero.png"), 48.0, elevation=11.0, fill=0.90)
         # 2025 sheet: 193.5 x 56.9 in, wheelbase 111.2. Axles from the 39.0 in front overhang.
         length = 193.5 * 0.0254
         height = 56.9 * 0.0254
@@ -278,10 +278,12 @@ def main():
                 found["Sedan_Mid_A_25"],
                 _dimensions(length, height, wheelbase, z_front, z_rear),
                 os.path.join(out, "side.png"),
-                (11.5, 1.20, 0.0), (0.0, 0.82, 0.0), 78.0,
+                (13.5, 1.15, 0.0), (0.0, 0.78, 0.0), 82.0,
             )
+        if shot in (None, "front"):
+            _shot_az(found["Sedan_Mid_A_25"], os.path.join(out, "front.png"), 4.0, elevation=3.0, fill=0.90)
         if shot in (None, "rear"):
-            _shot_az(found["Sedan_Mid_A_25"], os.path.join(out, "rear.png"), 230.0, elevation=10.0, fill=0.90)
+            _shot_az(found["Sedan_Mid_A_25"], os.path.join(out, "rear.png"), 228.0, elevation=11.0, fill=0.90)
         if shot in (None, "scale"):
             _with_figure(
                 found, "Sedan_Mid_A_25", os.path.join(out, "scale.png"),
@@ -298,7 +300,7 @@ def main():
                     "Sedan_Mid_A_25",
                 ),
                 os.path.join(out, "lineup.png"),
-                azimuth=48.0, elevation=8.0, fill=0.92,
+                azimuth=34.0, elevation=8.0, fill=0.90,
             )
         return
     if only is None or "midsize" in only or "sedan_midsize" in only:
