@@ -384,6 +384,14 @@ The effect pictures were taken again. Speed, the roll timer, and the camera in p
 - A punch puts a small POW! on the fist. A tag is still the bigger burst with no letters. Try it: punch the dummy, then tag.
 - A zip still sparks off the hand, a slide still leaves two scrape ribbons, and a grapple shows the sagging rope and the hook. Try it: take a zip, slide, then fire the rope.
 
+## A punch that lands, and a slide that stays feet-first
+
+The effect pictures were taken again. Speed, the roll timer, and the camera in play stay as they were.
+
+- A punch reaches the other runner. The fist is out, the POW! sits on the contact, and a tag is still the bigger burst with no letters. Try it: punch the dummy.
+- A slide stays feet-first: chest tipped back, one leg tucked, a hand trailing, sparks at the heel. Try it: slide on the grass.
+- A zip is a side view of the whole body hanging from the handle, with the sparks on the trolley. A grapple rope comes out of the left hand. Try it: take a zip, then fire the rope.
+
 ## Motion, thirteenth pass
 
 A long fall now bends the knees, sets the feet a little ahead, and opens the arms. Climbing onto a ledge, vaulting, sliding, grabbing and leaving a zip, arriving and letting go of a grapple, and leaving a launch pad no longer pop a bone in one frame. Speeds and the timers you feel are the same. Try it: fall from high up and watch the knees, then climb, vault, slide, zip, grapple, and hit a launch pad.

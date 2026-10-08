@@ -106,6 +106,15 @@ Pass 1 is the exit poses and the terminal landing roll. Pass 2 deepens those pos
 - The launch pad, the zip sparks, and the slide scrape are the same reads as pass 11, shot in the park. A grapple still shows the sagging rope, the hook, and two chips.
 - Stills are in `Docs/AnimStills/pass12/`. The live dust numbers, the 0.52 s roll, and the 65% gate stay.
 
+## Pass 13 (this branch)
+
+- The planted landing, the POW size, and the lighter dirt dust stay as in pass 12.
+- The punch is an extended jab. The fist meets the chest (about 5 cm of mesh gap) and POW! is centered on that contact. The letters are about 13% of the frame height. The tag burst stays the larger letter-free one.
+- The slide is feet-first. Hips tip back, the lead heel stays low, the other leg tucks, and one hand trails behind the hip. Scrape sparks and a dust streak sit on the lead heel. The old root pitch that put the head on the ground is gone.
+- The zip is a clear side view. The whole body hangs from the handle. The cable is one line, and the eight sparks sit on the trolley.
+- The grapple rope starts on the left hand bone, sags, and ends at the hook. The camera is a side view with no tree in front of the body.
+- Stills are in `Docs/AnimStills/pass13/`. The live dust numbers, the 0.52 s roll, and the 65% gate stay.
+
 Pass 3 mockups stay in `Docs/AnimStills/pass3/`.
 
 ## FX queue
