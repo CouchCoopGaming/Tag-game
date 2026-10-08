@@ -16,7 +16,7 @@ def section(half, keel, sheer, t=0.5):
     ]
 
 
-def solid_hull(g, z0, z1, count, profile, top_at, mat, bow_extra=0.14, section_fn=None):
+def solid_hull(g, z0, z1, count, profile, top_at, mat, bow_extra=0.14, section_fn=None, bevel_stern=0.0):
     """Loft a closed solid. top_at(t, half, sheer) returns samples, gunwale to gunwale."""
     section_fn = section_fn or section
     verts = []
@@ -40,9 +40,27 @@ def solid_hull(g, z0, z1, count, profile, top_at, mat, bow_extra=0.14, section_f
             idxs.append(len(verts))
             verts.append((-x, y, z))
         rings.append(idxs)
+    if bevel_stern > 0.0:
+        # Pull the last station forward and add a smaller ring at the
+        # original stern plane, so the transom corner is a bevel.
+        last = rings[-1]
+        cx = sum(verts[i][0] for i in last) / float(len(last))
+        cy = sum(verts[i][1] for i in last) / float(len(last))
+        cz = verts[last[0]][2]
+        moved = []
+        for i in last:
+            x, y, z = verts[i]
+            verts[i] = (x, y, z - bevel_stern)
+            moved.append((x, y))
+        scale = 0.78
+        inner = []
+        for x, y in moved:
+            inner.append(len(verts))
+            verts.append((cx + (x - cx) * scale, cy + (y - cy) * scale, cz))
+        rings.append(inner)
     n = len(rings[0])
     faces = []
-    for s in range(count - 1):
+    for s in range(len(rings) - 1):
         a = rings[s]
         b = rings[s + 1]
         for i in range(n):

@@ -49,7 +49,7 @@ LODGroup:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 100000}
   serializedVersion: 2
-  m_LocalReferencePoint: {x: 0, y: 0.39, z: 0}
+  m_LocalReferencePoint: {x: 0, y: 0.3535, z: 0}
   m_Size: 4.06
   m_FadeMode: 0
   m_AnimateCrossFading: 0
@@ -77,7 +77,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Tag.Art.Library.LibraryPropMeta
   category: "Roads"
-  summary: "4.0 x 1.05 m median, 0.40 m concrete coping closed on all four sides, soil and a clipped shrub."
+  summary: "4.0 x 1.05 m median, 0.40 m concrete coping closed on all four sides, soil and a clipped hedge."
   climbable: 0
   vaultable: 0
   vaultHeightMeters: 0
@@ -152,8 +152,6 @@ MeshRenderer:
   - {fileID: 2100000, guid: 5416f652738bd1efcc5b621780aa931f, type: 2}
   - {fileID: 2100000, guid: 0baa520692498e3a8de98ae20b5bc2a7, type: 2}
   - {fileID: 2100000, guid: de7167446ef05ac0976c9c0c1db0ddf3, type: 2}
-  - {fileID: 2100000, guid: 554928ac8205abf94b8cb69c3279f2b0, type: 2}
-  - {fileID: 2100000, guid: d701dfb2aa2c6528ef392f63aadf8bb1, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -246,7 +244,6 @@ MeshRenderer:
   - {fileID: 2100000, guid: 5416f652738bd1efcc5b621780aa931f, type: 2}
   - {fileID: 2100000, guid: 0baa520692498e3a8de98ae20b5bc2a7, type: 2}
   - {fileID: 2100000, guid: de7167446ef05ac0976c9c0c1db0ddf3, type: 2}
-  - {fileID: 2100000, guid: 554928ac8205abf94b8cb69c3279f2b0, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -561,7 +558,7 @@ Transform:
   m_GameObject: {fileID: 300050}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.55, z: 0}
+  m_LocalPosition: {x: 0, y: 0.52, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -585,5 +582,5 @@ SphereCollider:
   m_IsTrigger: 0
   m_ProvidesContacts: 0
   m_Enabled: 1
-  m_Radius: 0.16
+  m_Radius: 0.14
   m_Center: {x: 0, y: 0, z: 0}
