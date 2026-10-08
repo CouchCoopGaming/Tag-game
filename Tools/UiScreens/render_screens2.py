@@ -12,7 +12,7 @@ import os
 from PIL import Image, ImageDraw, ImageFont, ImageFilter, ImageEnhance
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
-OUT = os.path.join(ROOT, "Docs", "UiStills", "screens2", "pass10")
+OUT = os.path.join(ROOT, "Docs", "UiStills", "screens2", "pass11")
 FIG = os.path.join(OUT, "figures")
 W, H = 1920, 1080
 
@@ -135,12 +135,13 @@ def button(base, box, title, sub, hot, bar=None, right=24, inset=0):
     tf = fit_text(d, title, FONT_D, tw, title_size, 26, title_c)
     d.text((x0 + left, title_y), title, font=tf, fill=title_c)
     if sub:
-        sf = font(FONT_B, sub_size)
-        lines = wrap(d, sub, sf, tw)
-        for line in lines[:1]:
-            if sub_y + sub_size > y1 - 8:
-                break
-            d.text((x0 + left, sub_y), line, font=sf, fill=sub_c)
+        size = sub_size
+        sf = font(FONT_B, size)
+        while size > 18 and d.textlength(sub, font=sf) > tw:
+            size -= 1
+            sf = font(FONT_B, size)
+        if sub_y + size <= y1 - 4:
+            d.text((x0 + left, sub_y), sub, font=sf, fill=sub_c)
     return contrast(title_c, fill)
 
 
@@ -180,25 +181,39 @@ def header(img, title, banner):
         bf = font(FONT_B, 28)
         tw = d.textlength(banner, font=bf)
         pad = 18
+        marks = banner == "Everyone Ready? Press Start"
+        extra = 140 if marks else 0
         bx0 = 300
-        rounded(d, (bx0, 94, bx0 + tw + pad * 2, 132), 10, NAVY)
-        d.text((bx0 + pad, 96), banner, font=bf, fill=CREAM)
+        rounded(d, (bx0, 94, bx0 + tw + pad * 2 + extra, 132), 10, NAVY)
+        d.text((bx0 + pad, 96), banner, font=bf, fill=GOLD)
+        if marks:
+            gx = bx0 + pad + int(tw) + 12
+            draw_glyph(d, "space", gx, 98)
+            draw_glyph(d, "start", gx + 70, 100)
     d.rectangle((64, 148, W - 64, 154), fill=GOLD)
 
 
-def footer(img, words):
+def footer(img, words=None):
+    # Keyboard glyph and pad glyph together. Words are PadGlyph.Line for each.
     d = ImageDraw.Draw(img)
-    labels = words
-    glyphs = ["arrows", "space", "esc"]
-    total = 3 * 280 + 2 * 24
+    labels = [
+        "Arrows / Stick   move",
+        "Space / A   confirm",
+        "Esc / B   back",
+    ]
+    pairs = [("arrows", "stick"), ("space", "a"), ("esc", "b")]
+    chip_w = 500
+    gap = 16
+    total = 3 * chip_w + 2 * gap
     x = (W - total) // 2
     y = H - 92
-    for i, (g, word) in enumerate(zip(glyphs, labels)):
-        box = (x, y, x + 280, y + 64)
-        rounded(d, box, 14, (20, 46, 92), GOLD, 2)
-        draw_glyph(d, g, x + 16, y + 10)
-        d.text((x + 78, y + 16), word, font=font(FONT_B, 26), fill=CREAM)
-        x += 304
+    for (g0, g1), word in zip(pairs, labels):
+        box = (x, y, x + chip_w, y + 64)
+        rounded(d, box, 14, (20, 41, 92), GOLD, 2)
+        draw_glyph(d, g0, x + 12, y + 8)
+        draw_glyph(d, g1, x + 78, y + 8)
+        d.text((x + 136, y + 16), word, font=font(FONT_B, 22), fill=CREAM)
+        x += chip_w + gap
 
 
 def draw_glyph(d, kind, x, y):
@@ -231,6 +246,20 @@ def draw_glyph(d, kind, x, y):
     elif kind == "b":
         d.ellipse((x, y + 2, x + 44, y + 46), fill=(210, 48, 52))
         d.text((x + 12, y + 6), "B", font=font(FONT_D, 28), fill=CREAM)
+    elif kind == "keys":
+        rounded(d, (x, y + 8, x + 46, y + 40), 6, CREAM, INK, 2)
+        for row in range(2):
+            for col in range(3):
+                d.rectangle((x + 6 + col * 12, y + 14 + row * 10, x + 14 + col * 12, y + 20 + row * 10), fill=INK)
+    elif kind == "pad":
+        rounded(d, (x + 2, y + 10, x + 48, y + 40), 8, CREAM, INK, 2)
+        d.ellipse((x + 28, y + 18, x + 36, y + 26), fill=(242, 56, 71))
+        d.ellipse((x + 36, y + 26, x + 44, y + 34), fill=(41, 115, 255))
+    elif kind == "start":
+        rounded(d, (x, y + 4, x + 44, y + 36), 8, CREAM, INK, 2)
+        d.rectangle((x + 8, y + 12, x + 36, y + 15), fill=INK)
+        d.rectangle((x + 8, y + 19, x + 36, y + 22), fill=INK)
+        d.rectangle((x + 8, y + 26, x + 36, y + 29), fill=INK)
 
 
 def draw_switch(d, x, y, on):
@@ -242,7 +271,7 @@ def draw_switch(d, x, y, on):
 
 
 def footer_both(img):
-    footer(img, ["Move", "Space  confirm", "Esc  back"])
+    footer(img)
 
 
 def save(img, name, notes):
@@ -555,6 +584,7 @@ def pause():
     for title, sub, hot in items:
         ratios.append(button(img, (x, y, x + 880, y + 108), title, sub, hot))
         y += 120
+    ratios.append(contrast(GOLD, NAVY))
     footer_both(img)
     return img, min(ratios)
 
@@ -570,7 +600,7 @@ def options(page):
             ("Look", "One sensitivity for the couch.", False),
             ("Credits", "Team, the font, and the tools.", False),
             ("Back", "Main menu", False),
-        ], []),
+        ], {}),
         "sound": ("Sound", "Sliders step the volumes you already have.", [
             ("Master  0.80", "Left / Right", True),
             ("SFX  1.00", "Left / Right", False),
@@ -578,15 +608,15 @@ def options(page):
             ("Music  0.35", "Left / Right", False),
             ("Mute  (Comma)", "Left / Right", False),
             ("Back", "", False),
-        ], [0.80, 1.0, 1.0, 0.35]),
+        ], {0: 0.80, 1: 1.0, 2: 1.0, 3: 0.35}),
         "picture": ("Picture", "Resolution, fullscreen, vsync, and the couch UI scale.", [
             ("Resolution  1920 x 1080", "Left / Right", True),
             ("Fullscreen  On", "Left / Right", False),
             ("VSync  On", "Left / Right", False),
-            ("Quality  Default", "Left / Right", False),
+            ("Quality  Medium", "Left / Right", False),
             ("UI scale  100%", "80% to 130%, for a couch TV", False),
             ("Back", "", False),
-        ], []),
+        ], {4: 0.40}),
         "access": ("Accessibility", "Reduce motion, text size, player colors, and comic words.", [
             ("Reduce motion  Off", "Menu slides and the title pulse only", True),
             ("Text size  1.00", "Menu and HUD text", False),
@@ -594,7 +624,7 @@ def options(page):
             ("Colorblind palette  Default", "Left / Right", False),
             ("Comic words  On", "Verb words during a match.", False),
             ("Back", "", False),
-        ], []),
+        ], {1: 0.333}),
     }
     title, banner, rows, meters = pages[page]
     header(img, title, banner)
@@ -607,8 +637,9 @@ def options(page):
         ratios.append(button(img, (280, y, 1640, y + row_h), name, sub, hot, inset=inset))
         if inset:
             d = ImageDraw.Draw(img)
-            d.rounded_rectangle((294, y + 26, 350, y + 82), 12, fill=(255, 255, 255, 70))
-        if i < len(meters):
+            tints = ((64, 158, 255), GOLD, (242, 56, 71), (51, 209, 97), (255, 140, 31), GOLD)
+            d.rounded_rectangle((294, y + 26, 350, y + 82), 12, fill=tints[i])
+        if i in meters:
             d = ImageDraw.Draw(img)
             d.rounded_rectangle((1080, y + 74, 1500, y + 90), 4, fill=(0, 0, 0, 90))
             d.rounded_rectangle((1080, y + 74, 1080 + int(420 * meters[i]), y + 90), 4, fill=GOLD)
@@ -625,6 +656,7 @@ def options(page):
             rounded(d, (x, y + 8, x + 140, y + 78), 12, c)
             d.text((x + 46, y + 84), "P" + str(i + 1), font=font(FONT_B, 28), fill=CREAM)
             ratios.append(contrast(CREAM, (8, 22, 58)))
+    ratios.append(contrast(GOLD, NAVY))
     footer_both(img)
     return img, min(ratios)
 
@@ -635,37 +667,35 @@ def controls(bottom=False):
     # Same 108 px rows as options. At 100% the window is 7, so the rest scroll.
     if not bottom:
         rows = [
-            ("Move", "WASD    /    Left stick"),
-            ("Look", "Mouse    /    Right stick"),
-            ("Jump", "Space    /    South"),
-            ("Cling hold", "Hold into wall    /    Left stick hold. Wall climb and wall run need this hold."),
-            ("Slide", "Ctrl or C    /    East"),
-            ("Air dash", "Q or Alt    /    RB"),
-            ("Punch / tag", "LMB or E    /    West"),
+            ("Move", "WASD    /    Left stick", "arrows", "stick"),
+            ("Look", "Mouse    /    Right stick", "arrows", "stick"),
+            ("Jump", "Space    /    South", "space", "a"),
+            ("Cling hold", "Hold into wall / Left stick hold. Wall climb and wall run need this hold. Wall jump is this hold plus Jump.", "keys", "pad"),
+            ("Slide", "Ctrl or C    /    East", "keys", "pad"),
+            ("Air dash", "Q or Alt    /    RB", "keys", "pad"),
+            ("Punch / tag", "LMB or E    /    West", "keys", "a"),
         ]
     else:
         rows = [
-            ("Gamepad look accel  0.00", "Left / Right"),
-            ("P1 confirm", "Auto"),
-            ("P2 confirm", "Auto"),
-            ("P3 confirm", "Auto"),
-            ("P4 confirm", "Auto"),
-            ("Reset bindings", "Back to the defaults. Jump is Space."),
-            ("Back", ""),
+            ("Gamepad look accel  0.00", "Left / Right", "", ""),
+            ("P1 confirm", "Auto", "", ""),
+            ("P2 confirm", "Auto", "", ""),
+            ("P3 confirm", "Auto", "", ""),
+            ("P4 confirm", "Auto", "", ""),
+            ("Reset bindings", "Back to the defaults. Jump is Space.", "", ""),
+            ("Back", "", "", ""),
         ]
     ratios = []
     y = 156
     row_h = 108
     step = 116
     d = ImageDraw.Draw(img)
-    for i, (title, sub) in enumerate(rows):
-        hot = i == (2 if not bottom else 0)
-        ratios.append(button(img, (120, y, 1760, y + row_h), title, sub, hot, right=300))
-        if not bottom:
-            kb = "space" if i == 2 else "arrows"
-            pad = "a" if i == 2 else "b" if i == 4 else "stick"
-            draw_glyph(d, kb, 1588, y + 30)
-            draw_glyph(d, pad, 1668, y + 28)
+    for i, (title, sub, kb, pad) in enumerate(rows):
+        hot = i == 0
+        ratios.append(button(img, (120, y, 1760, y + row_h), title, sub, hot, right=220))
+        if kb:
+            draw_glyph(d, kb, 1560, y + 30)
+            draw_glyph(d, pad, 1630, y + 28)
         y += step
     track_top = 168
     track_bot = 156 + 6 * step + row_h
@@ -677,27 +707,81 @@ def controls(bottom=False):
         d.rounded_rectangle((1786, track_bot - thumb, 1796, track_bot - 2), 3, fill=GOLD)
     else:
         d.rounded_rectangle((1786, track_top + 2, 1796, track_top + thumb), 3, fill=GOLD)
+    ratios.append(contrast(GOLD, NAVY))
     footer_both(img)
     return img, min(ratios)
 
 
-def draw_bust(d, x, y, w, h, color):
-    # MenuWidgets.Bust: head, torso, and legs, centered in the bust box.
-    head = int(h * 0.28)
-    if head > int(w * 0.62):
-        head = int(w * 0.62)
-    hx = x + (w - head) // 2
-    d.ellipse((hx, y, hx + head, y + head), fill=color)
-    torso_w = int(w * 0.72)
-    torso_h = int(h * 0.34)
-    torso_y = y + int(head * 0.82)
-    tx = x + (w - torso_w) // 2
-    rounded(d, (tx, torso_y, tx + torso_w, torso_y + torso_h), 16, color)
-    leg_w = max(12, int(w * 0.22))
-    leg_h = int(h * 0.28)
-    leg_y = torso_y + torso_h - 4
-    rounded(d, (x + int(w * 0.22), leg_y, x + int(w * 0.22) + leg_w, leg_y + leg_h), 8, color)
-    rounded(d, (x + int(w * 0.56), leg_y, x + int(w * 0.56) + leg_w, leg_y + leg_h), 8, color)
+_BUST = None
+
+
+def bust_mask():
+    # Front projection of hier-idle-0, costume mats only. Same outline as MenuIcons.HierBust.
+    global _BUST
+    if _BUST is not None:
+        return _BUST
+    import struct
+    path = os.path.join(ROOT, "Docs", "UiStills", "hier-idle-0.tris")
+    xyzs = []
+    with open(path, "rb") as f:
+        magic, n = struct.unpack("<ii", f.read(8))
+        if magic != 0x52454948:
+            raise SystemExit("hier idle")
+        for _ in range(n):
+            mat = struct.unpack("<B", f.read(1))[0]
+            xyz = struct.unpack("<9f", f.read(36))
+            if mat < 2:
+                xyzs.append(xyz)
+    xs = [xyz[k * 3] for xyz in xyzs for k in range(3)]
+    ys = [xyz[k * 3 + 1] for xyz in xyzs for k in range(3)]
+    xmin, xmax = min(xs), max(xs)
+    ymin, ymax = min(ys), max(ys)
+    mw, mh = 96, 192
+    mask = Image.new("L", (mw, mh), 0)
+    pix = mask.load()
+
+    def mx(v):
+        return int((v - xmin) / (xmax - xmin) * (mw - 1))
+
+    def my(v):
+        return int((ymax - v) / (ymax - ymin) * (mh - 1))
+
+    def fill_tri(p0, p1, p2):
+        minx = max(min(p0[0], p1[0], p2[0]), 0)
+        maxx = min(max(p0[0], p1[0], p2[0]), mw - 1)
+        miny = max(min(p0[1], p1[1], p2[1]), 0)
+        maxy = min(max(p0[1], p1[1], p2[1]), mh - 1)
+        x0, y0 = p0
+        x1, y1 = p1
+        x2, y2 = p2
+        den = (y1 - y2) * (x0 - x2) + (x2 - x1) * (y0 - y2)
+        if abs(den) < 1e-8:
+            return
+        for y in range(miny, maxy + 1):
+            for x in range(minx, maxx + 1):
+                a = ((y1 - y2) * (x - x2) + (x2 - x1) * (y - y2)) / den
+                b = ((y2 - y0) * (x - x2) + (x0 - x2) * (y - y2)) / den
+                c = 1 - a - b
+                if a >= -0.02 and b >= -0.02 and c >= -0.02:
+                    pix[x, y] = 255
+
+    for xyz in xyzs:
+        fill_tri(*[(mx(xyz[k * 3]), my(xyz[k * 3 + 1])) for k in range(3)])
+    _BUST = mask
+    return mask
+
+
+def draw_bust(base, x, y, w, h, color):
+    mask = bust_mask()
+    mw, mh = mask.size
+    scale = min(w / mw, h / mh)
+    dw, dh = max(1, int(mw * scale)), max(1, int(mh * scale))
+    sized = mask.resize((dw, dh), Image.Resampling.NEAREST)
+    sprite = Image.new("RGBA", (dw, dh), color + (0,))
+    sprite.putalpha(sized)
+    ox = x + (w - dw) // 2
+    oy = y + (h - dh) // 2
+    base.alpha_composite(sprite, (ox, oy))
 
 
 def card_y(top, card_h, runtime_y, runtime_h=420.0):
@@ -730,10 +814,10 @@ def drop_in():
     header(img, "Who's playing", "Everyone Ready? Press Start")
     # Joined seats: keyboard shows Space / Enter, a pad shows A. Both show Y Ready.
     cards = [
-        (True, 0, True, "P1", "Space / Enter"),
-        (True, 1, False, "P2", "A"),
-        (False, 2, False, "", ""),
-        (False, 3, False, "", ""),
+        (True, 0, True, "P1", True),
+        (True, 1, False, "P2", False),
+        (False, 2, False, "", False),
+        (False, 3, False, "", False),
     ]
     ratios = []
     top, card_h, card_w = 200, 700, 420
@@ -752,7 +836,8 @@ def drop_in():
             bust_w = int(bust_h * 0.72)
             if bust_w > int(card_w * 0.78):
                 bust_w = int(card_w * 0.78)
-            draw_bust(d, x + (card_w - bust_w) // 2, card_y(top, card_h, 62), bust_w, bust_h, SEAT[seat])
+            draw_bust(img, x + (card_w - bust_w) // 2, card_y(top, card_h, 62), bust_w, bust_h, SEAT[seat])
+            d = ImageDraw.Draw(img)
             name = "<  %s  >" % profile
             nf = font(FONT_B, 32)
             nw = d.textlength(name, font=nf)
@@ -761,9 +846,14 @@ def drop_in():
             hf = font(FONT_B, 24)
             hw = d.textlength(hint, font=hf)
             d.text((x + (card_w - hw) / 2, card_y(top, card_h, 298)), hint, font=hf, fill=MUTE)
-            df = font(FONT_B, 28)
-            dw = d.textlength(device, font=df)
-            d.text((x + (card_w - dw) / 2, card_y(top, card_h, 328)), device, font=df, fill=CREAM)
+            word = "Keyboard" if device else "Gamepad"
+            df = font(FONT_B, 26)
+            dw = d.textlength(word, font=df)
+            group = 40 + 8 + dw
+            gx = x + (card_w - group) / 2
+            gy = card_y(top, card_h, 328)
+            draw_glyph(d, "keys" if device else "pad", int(gx), gy)
+            d.text((gx + 44, gy + 6), word, font=df, fill=CREAM)
             chip_h = int(40 / 420.0 * card_h)
             chip_w = 176
             chip_y = card_y(top, card_h, 366)
@@ -782,6 +872,7 @@ def drop_in():
             draw_join_glyph(d, "a", x + 240, gy)
         ratios.append(contrast(CREAM, fill))
         ratios.append(contrast(MUTE, fill))
+    ratios.append(contrast(GOLD, NAVY))
     footer_both(img)
     return img, min(ratios)
 
@@ -804,6 +895,7 @@ def credits():
         "Tools\n"
         "Unity, the input system already in the project, and the audio bus.\n"
         "Menu sounds are clips that were already here.\n"
+        "One-shots under Assets/Audio are original synthesis.\n\n"
         "Space still jumps. Online play is not in this build."
     )
     d = ImageDraw.Draw(img)

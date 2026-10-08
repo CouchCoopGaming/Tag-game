@@ -301,6 +301,10 @@ Drop-in cards keep the seat tint and the seat stripe when they are selected. The
 
 The drop-in banner reads `Everyone Ready? Press Start`. A keyboard seat's card says `Space / Enter`. A pad seat says `A`. Each joined card shows `Y  Ready`. The bust is 40% of the card and sits under the seat name. The profile name, with left and right arrows, sits under the bust. The device line sits above the Ready or Joined chip. Empty seats still say `Press Space or A to join`. The empty records mark is a cup: a rim, a bowl, two handles, a stem, and a base. The headless walk counts Records as one card plus Back when no profile is saved, and as each saved profile plus Back otherwise. OpenSetup uses the same async scene load as quit. Stills are composites in `Docs/UiStills/screens2/pass10/`.
 
+## Screens 2, pass 11
+
+A joined card labels the device with a keyboard icon and the word Keyboard, or a pad icon and the word Gamepad. The ready banner keeps `Everyone Ready? Press Start` and draws the Space key beside a Start button. The footer shows the keyboard glyph and the pad glyph on each hint: Arrows / Stick move, Space / A confirm, Esc / B back. The bust is the front idle outline of the Hier bake: a round head, a neck gap, a tapered chest, arms off the torso, and two legs, tinted with the seat color. Pause opens on Resume. Options from pause labels Back as Pause. Picture quality reads Medium. The text-size and UI-scale rows draw a meter. Controls opens on Move, and the cling line includes the wall jump. Credits includes the one-shot synthesis line. Stills are composites in `Docs/UiStills/screens2/pass11/`.
+
 ## Later passes
 
 - Left from a rule row returns to the modes even when that rule can still decrease. Right from the right-hand mode, and Left at the end of a rule, already move between the columns.

@@ -32,6 +32,8 @@ namespace Tag.Ui.Menu
         static Sprite _circle;
         static Sprite _switchB;
         static Sprite _switchA;
+        static Sprite _start;
+        static Sprite _bust;
 
         public static Sprite Play => _play ??= Runner();
         public static Sprite Cone => _cone ??= TrafficCone();
@@ -51,6 +53,8 @@ namespace Tag.Ui.Menu
         public static Sprite Circle => _circle ??= CircleMark();
         public static Sprite SwitchSouth => _switchB ??= FaceCap(new Color(0.95f, 0.78f, 0.16f, 1f), LetterB());
         public static Sprite SwitchEast => _switchA ??= FaceCap(new Color(0.90f, 0.22f, 0.28f, 1f), LetterA());
+        public static Sprite StartButton => _start ??= StartCap();
+        public static Sprite HierBust => _bust ??= HierSilhouette();
 
         public static Sprite Slot(int family, int slot)
         {
@@ -336,6 +340,69 @@ namespace Tag.Ui.Menu
             Disc(px, n, 58, 48, 4, MenuTheme.Gold);
             return Bake(px, n, n);
         }
+
+        static Sprite StartCap()
+        {
+            const int w = 64;
+            const int h = 48;
+            Color[] px = Clear(w, h);
+            RoundBox(px, w, h, 2, 4, 62, 44, 10, Color.white);
+            Fill(px, w, h, 14, 12, 50, 16, new Color(0.08f, 0.12f, 0.22f, 1f));
+            Fill(px, w, h, 14, 22, 50, 26, new Color(0.08f, 0.12f, 0.22f, 1f));
+            Fill(px, w, h, 14, 32, 50, 36, new Color(0.08f, 0.12f, 0.22f, 1f));
+            return Bake(px, w, h);
+        }
+
+        /// <summary>
+        /// Front idle of the Hier bake, body and costume only. Head, neck gap,
+        /// tapered chest, arms held off the torso, and two legs.
+        /// </summary>
+        static Sprite HierSilhouette()
+        {
+            const int w = 48;
+            const int h = 96;
+            Color[] px = Clear(w, h);
+            Color ink = Color.white;
+            for (int row = 0; row < h; row++)
+            {
+                ulong bits = HierRows[row];
+                int ty = h - 1 - row;
+                for (int col = 0; col < w; col++)
+                {
+                    if ((bits & (1UL << (w - 1 - col))) == 0) continue;
+                    Plot(px, w, h, col, ty, ink);
+                }
+            }
+            return Bake(px, w, h);
+        }
+
+        static readonly ulong[] HierRows =
+        {
+            0x00000FC00000, 0x00001FE00000, 0x00001FF00000, 0x00003FF00000,
+            0x00003FF80000, 0x00003FF80000, 0x00007FFC0000, 0x00007FFC0000,
+            0x00007FFC0000, 0x00007FFC0000, 0x00007FFC0000, 0x00007FFC0000,
+            0x00007FFC0000, 0x00007FFC0000, 0x00003FF80000, 0x00003FF80000,
+            0x00001FF80000, 0x00001FF00000, 0x00000FF00000, 0x000007E00000,
+            0x000000000000, 0x000000000000, 0x000007C00000, 0x00000FE00000,
+            0x00003FF80000, 0x00307FFC1800, 0x007C7FFC7C00, 0x007E7FFCFC00,
+            0x007E7FFCFC00, 0x007F7FFDFC00, 0x00FFFFFFFE00, 0x00FFFFFFFE00,
+            0x01FFFFFFFF00, 0x01F7FFFFDF00, 0x01F77FFDDF00, 0x03F77FFDDF80,
+            0x03F77FFDDF80, 0x03E73FF9CF80, 0x07E73FF9CFC0, 0x07C73FF9C7C0,
+            0x0FC63FF8C7E0, 0x0FC03FF807E0, 0x0F803FF803E0, 0x0F803FF803E0,
+            0x0F801FF003E0, 0x1E000FE000F0, 0x1E00000000F0, 0x1E00000000F0,
+            0x3C0000000078, 0x3C0000000078, 0x3C00FC7E0078, 0x3C00FC7E0078,
+            0x7C00FC7E007C, 0x7800FC7E003C, 0x7800FC7E003C, 0xF800FC7E003E,
+            0xF800FC7E003E, 0xF800FC7E003E, 0xF000FC7E001E, 0xF000FC7E001E,
+            0xF000FC7E001E, 0x0000FC7E0000, 0x0000FC7E0000, 0x0000FC7E0000,
+            0x0000FC7E0000, 0x0000FC7E0000, 0x0000FC7E0000, 0x0000FC7E0000,
+            0x0000FC7E0000, 0x0000FC7E0000, 0x0000FC7E0000, 0x0000FC7E0000,
+            0x0000FC7E0000, 0x0000FC7E0000, 0x00007C7C0000, 0x00007C7C0000,
+            0x00007C7C0000, 0x00007C7C0000, 0x00007C7C0000, 0x00007C7C0000,
+            0x00007C7C0000, 0x00007C7C0000, 0x00007C7C0000, 0x00007C7C0000,
+            0x00007C7C0000, 0x00007C7C0000, 0x00007C7C0000, 0x00007C7C0000,
+            0x00007C7C0000, 0x00007C7C0000, 0x00007C7C0000, 0x00007C7C0000,
+            0x00007C7C0000, 0x00007C7C0000, 0x00007C7C0000, 0x000010100000
+        };
 
         static Sprite Keyboard()
         {

@@ -336,6 +336,8 @@ The ninth pass keeps each drop-in card on its seat color. The selected card gets
 
 The tenth pass on these screens asks `Everyone Ready? Press Start`. A keyboard seat shows Space / Enter. A pad seat shows A. Each joined card has a Y Ready hint, a larger bust, the profile name between arrows, and the device line above the chip. The empty records picture is a cup with two handles. Composites are in `Docs/UiStills/screens2/pass10/`. Space still jumps.
 
+The eleventh pass labels a joined seat Keyboard or Gamepad, and the ready line shows the Space key and a Start button. The footer shows both devices. The bust follows the front outline of the runner. Pause, options, controls, and credits use the same words as the menu. Composites are in `Docs/UiStills/screens2/pass11/`. Space still jumps.
+
 ## Motion, ninth pass
 
 The wall jump, the rope, the zip, the launch pad, a landing, the dash flash, a hard turnaround, and a punch while you run all ease instead of snapping. Speeds, the jump, and the dash length are the same.

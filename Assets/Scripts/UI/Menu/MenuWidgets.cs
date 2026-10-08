@@ -243,8 +243,7 @@ namespace Tag.Ui.Menu
             float chipY = h - chipH - 14f;
             var hint = Place(tile.transform, "ReadyHint", 16f, chipY - 68f, w - 32f, 26f);
             Words(hint, "Y  Ready", 22, TextAnchor.MiddleCenter, MenuTheme.Mute, Vector2.zero, Vector2.one);
-            var device = Place(tile.transform, "DeviceLine", 16f, chipY - 38f, w - 32f, 32f);
-            Words(device, deviceLine ?? "", 26, TextAnchor.MiddleCenter, MenuTheme.Cream, Vector2.zero, Vector2.one);
+            DeviceLine(tile.transform, w, chipY - 38f, deviceLine);
             string word = ready ? "Ready" : "Joined";
             Color plate = ready ? MenuTheme.Gold : MenuTheme.Navy;
             Color ink = ready ? MenuTheme.Ink : MenuTheme.Cream;
@@ -262,31 +261,32 @@ namespace Tag.Ui.Menu
         public static void Bust(Transform parent, float x, float y, float w, float h, Color body)
         {
             if (parent == null || w < 8f || h < 8f) return;
-            float head = h * 0.28f;
-            if (head > w * 0.62f) head = w * 0.62f;
-            var headRt = Place(parent, "BustHead", x + (w - head) * 0.5f, y, head, head);
-            var headImage = headRt.gameObject.AddComponent<Image>();
-            headImage.sprite = MenuArt.Soft;
-            headImage.color = body;
-            headImage.raycastTarget = false;
-            float torsoW = w * 0.72f;
-            float torsoH = h * 0.34f;
-            float torsoY = y + head * 0.82f;
-            var torso = Place(parent, "BustTorso", x + (w - torsoW) * 0.5f, torsoY, torsoW, torsoH);
-            var torsoImage = torso.gameObject.AddComponent<Image>();
-            MenuArt.Plate(torsoImage, body, true);
-            torsoImage.raycastTarget = false;
-            float legW = w * 0.22f;
-            float legH = h * 0.28f;
-            float legY = torsoY + torsoH - 4f;
-            var left = Place(parent, "BustLeg", x + w * 0.22f, legY, legW, legH);
-            var right = Place(parent, "BustLeg", x + w * 0.56f, legY, legW, legH);
-            var leftImage = left.gameObject.AddComponent<Image>();
-            var rightImage = right.gameObject.AddComponent<Image>();
-            MenuArt.Plate(leftImage, body, true);
-            MenuArt.Plate(rightImage, body, true);
-            leftImage.raycastTarget = false;
-            rightImage.raycastTarget = false;
+            var rt = Place(parent, "Bust", x, y, w, h);
+            var image = rt.gameObject.AddComponent<Image>();
+            image.sprite = MenuIcons.HierBust;
+            image.color = body;
+            image.preserveAspect = true;
+            image.raycastTarget = false;
+        }
+
+        static void DeviceLine(Transform parent, float w, float y, string word)
+        {
+            if (parent == null || string.IsNullOrEmpty(word)) return;
+            bool keyboard = word == "Keyboard";
+            float icon = 26f;
+            float textW = keyboard ? 132f : 124f;
+            float gap = 8f;
+            float group = icon + gap + textW;
+            float x = (w - group) * 0.5f;
+            if (x < 8f) x = 8f;
+            var iconRt = Place(parent, "DeviceIcon", x, y + 3f, icon, icon);
+            var iconImage = iconRt.gameObject.AddComponent<Image>();
+            iconImage.sprite = keyboard ? MenuIcons.Keys : MenuIcons.Pad;
+            iconImage.color = MenuTheme.Cream;
+            iconImage.preserveAspect = true;
+            iconImage.raycastTarget = false;
+            var text = Place(parent, "DeviceLine", x + icon + gap, y, textW, 32f);
+            Words(text, word, 26, TextAnchor.MiddleLeft, MenuTheme.Cream, Vector2.zero, Vector2.one);
         }
 
         /// <summary>Empty records card. A pedestal and a gold cup, not a stack of blank rows.</summary>

@@ -94,6 +94,8 @@ namespace Tag.Ui.Menu
         Text _footer;
         Text _banner;
         Image _bannerPlate;
+        Image _bannerSpace;
+        Image _bannerStart;
         Image _startGlyph;
         CanvasGroup _startPrompt;
         Text _promptWord;
@@ -142,6 +144,7 @@ namespace Tag.Ui.Menu
         Text _arenaShotBlurb;
         readonly Image[] _glyphChip = new Image[3];
         readonly Image[] _glyphIcon = new Image[3];
+        readonly Image[] _glyphMate = new Image[3];
         readonly Text[] _glyphWord = new Text[3];
         float _actAt;
         readonly RectTransform[] _readyBurst = new RectTransform[4];
@@ -331,6 +334,7 @@ namespace Tag.Ui.Menu
                 _bannerPlate.enabled = MenuSheet.WantsPark((int)id) && _banner != null && _banner.text.Length > 0;
             RefreshFocus();
             PaintFooter();
+            SyncStartMarks();
             bool title = id == MenuScreenId.Title;
             bool photo = title || id == MenuScreenId.Main;
             if (_vignette != null) _vignette.SetActive(photo);
@@ -904,14 +908,20 @@ namespace Tag.Ui.Menu
                 MenuArt.Plate(image, MenuTheme.Navy, true);
                 image.raycastTarget = false;
                 _glyphChip[i] = image;
-                var iconRt = MenuWidgets.Place(chip, "Icon", 8f, 6f, 72f, 40f);
+                var iconRt = MenuWidgets.Place(chip, "Icon", 8f, 14f, 36f, 36f);
                 var icon = iconRt.gameObject.AddComponent<Image>();
                 icon.sprite = MenuIcons.Keys;
                 icon.preserveAspect = true;
                 icon.raycastTarget = false;
                 _glyphIcon[i] = icon;
-                _glyphWord[i] = MenuWidgets.Words(chip, words[i], UiFit.FloorFont, TextAnchor.MiddleCenter, MenuTheme.Cream, Vector2.zero, Vector2.one);
-                _glyphWord[i].rectTransform.offsetMin = new Vector2(86f, 4f);
+                var mateRt = MenuWidgets.Place(chip, "Mate", 48f, 14f, 36f, 36f);
+                var mate = mateRt.gameObject.AddComponent<Image>();
+                mate.sprite = MenuIcons.Pad;
+                mate.preserveAspect = true;
+                mate.raycastTarget = false;
+                _glyphMate[i] = mate;
+                _glyphWord[i] = MenuWidgets.Words(chip, words[i], UiFit.FloorFont, TextAnchor.MiddleLeft, MenuTheme.Cream, Vector2.zero, Vector2.one);
+                _glyphWord[i].rectTransform.offsetMin = new Vector2(92f, 4f);
             }
             PlaceGlyphs();
         }
@@ -958,17 +968,17 @@ namespace Tag.Ui.Menu
             else
                 device = CouchPlay.DeviceKeyboard;
             int face = FaceFor(device, family);
+            int padFamily = family == PadGlyph.Keyboard ? PadGlyph.Xbox : family;
+            int padFace = family == PadGlyph.Keyboard ? FaceMap.DefaultOf(PadGlyph.Xbox) : face;
             _footer.text = "";
             bool hints = _screen != MenuScreenId.Title && _screen != MenuScreenId.Loading;
-            Color chip = family == PadGlyph.Keyboard
-                ? new Color(0.08f, 0.18f, 0.36f, 1f)
-                : new Color(0.10f, 0.22f, 0.55f, 1f);
+            Color chip = new Color(0.08f, 0.16f, 0.36f, 1f);
             for (int i = 0; i < 3; i++)
             {
                 if (_glyphWord[i] != null)
                 {
                     _glyphWord[i].enabled = hints;
-                    if (hints) _glyphWord[i].text = PadGlyph.Line(family, i, face);
+                    if (hints) _glyphWord[i].text = FooterLine(i, padFamily, padFace);
                 }
                 if (_glyphChip[i] != null)
                 {
@@ -978,7 +988,12 @@ namespace Tag.Ui.Menu
                 if (_glyphIcon[i] != null)
                 {
                     _glyphIcon[i].enabled = hints;
-                    if (hints) _glyphIcon[i].sprite = MenuIcons.Slot(family, i, face);
+                    if (hints) _glyphIcon[i].sprite = MenuIcons.Slot(PadGlyph.Keyboard, i, FaceMap.DefaultOf(PadGlyph.Keyboard));
+                }
+                if (_glyphMate[i] != null)
+                {
+                    _glyphMate[i].enabled = hints;
+                    if (hints) _glyphMate[i].sprite = MenuIcons.Slot(padFamily, i, padFace);
                 }
             }
             bool keyboard = family == PadGlyph.Keyboard;
@@ -1827,7 +1842,7 @@ namespace Tag.Ui.Menu
                 string profile = human ? LocalProfiles.SeatName(s) : "";
                 if (human && string.IsNullOrEmpty(profile)) profile = CouchPlay.Name(s);
                 int device = human ? CouchPlay.DeviceOf(s) : -1;
-                string deviceLine = device <= CouchPlay.DeviceKeyboard ? "Space / Enter" : "A";
+                string deviceLine = device <= CouchPlay.DeviceKeyboard ? "Keyboard" : "Gamepad";
                 float span = UiFit.BodyW(UiFit.Current());
                 float cardW = (span - 16f * 5f) / 4f;
                 if (cardW > 428f) cardW = 428f;
@@ -1859,6 +1874,46 @@ namespace Tag.Ui.Menu
                     ? "Everyone Ready? Press Start"
                     : "Anyone can join";
             }
+            SyncStartMarks();
+        }
+
+        void SyncStartMarks()
+        {
+            bool show = _banner != null && _banner.text == "Everyone Ready? Press Start";
+            if (show && _bannerSpace == null) BuildStartMarks();
+            if (_bannerSpace != null) _bannerSpace.enabled = show;
+            if (_bannerStart != null) _bannerStart.enabled = show;
+        }
+
+        void BuildStartMarks()
+        {
+            if (_banner == null) return;
+            _bannerSpace = BannerMark("BannerSpace", MenuIcons.KeySpace, 236f);
+            _bannerStart = BannerMark("BannerStart", MenuIcons.StartButton, 284f);
+        }
+
+        Image BannerMark(string name, Sprite sprite, float x)
+        {
+            var rt = MenuWidgets.Box(_banner.transform, name, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, 0.5f));
+            rt.anchoredPosition = new Vector2(x, 0f);
+            rt.sizeDelta = new Vector2(40f, 32f);
+            var image = rt.gameObject.AddComponent<Image>();
+            image.sprite = sprite;
+            image.preserveAspect = true;
+            image.raycastTarget = false;
+            return image;
+        }
+
+        static string FooterLine(int slot, int padFamily, int padFace)
+        {
+            string kb = PadGlyph.Line(PadGlyph.Keyboard, slot, FaceMap.DefaultOf(PadGlyph.Keyboard));
+            string pad = PadGlyph.Line(padFamily, slot, padFace);
+            int kbCut = kb.LastIndexOf("   ", System.StringComparison.Ordinal);
+            int padCut = pad.LastIndexOf("   ", System.StringComparison.Ordinal);
+            string kbName = kbCut >= 0 ? kb.Substring(0, kbCut) : kb;
+            string padName = padCut >= 0 ? pad.Substring(0, padCut) : pad;
+            string verb = kbCut >= 0 ? kb.Substring(kbCut) : "";
+            return kbName + " / " + padName + verb;
         }
 
         void BuildCast()
@@ -2488,6 +2543,8 @@ namespace Tag.Ui.Menu
                 MenuTile tile = AddTile(rowX, 8f + v * UiFit.OptStep, rowW, UiFit.OptRow, index, MenuDepth.Title(index), MenuDepth.Detail(index), true);
                 if (MenuDepth.Page == MenuDepth.Hub)
                     MarkOption(tile, index);
+                if (_pauseChild && MenuDepth.Page == MenuDepth.Hub && index == MenuDepth.Count - 1 && tile != null && tile.Detail != null)
+                    tile.Detail.text = "Pause";
                 if (tile != null && MenuDepth.Page == MenuDepth.Access)
                 {
                     if (index == 0) MenuWidgets.Toggle(tile, MenuVideo.ReduceMotion);
@@ -2595,6 +2652,12 @@ namespace Tag.Ui.Menu
                 }
                 UiFit.RowBox(UiFit.Current(), 1680f, out float rowX, out float rowW);
                 MenuTile row = AddTile(rowX, 8f + v * UiFit.OptStep, rowW, UiFit.OptRow, index, title, detail, true);
+                if (row != null && row.Detail != null && detail != null && detail.Length > 48)
+                {
+                    row.Detail.resizeTextForBestFit = true;
+                    row.Detail.resizeTextMinSize = 18;
+                    row.Detail.resizeTextMaxSize = UiFit.FloorFont;
+                }
                 if (index < actions && row != null)
                     MenuBindRow.Stamp(row, index);
             }
