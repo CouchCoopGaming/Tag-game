@@ -377,6 +377,12 @@ Arena row cards show the size again. Mega Park is 160 x 100 m, Pocket Park is 80
 
 `Docs/UiStills/pass46/arena.png`, `options-controls.png`, and `options-sound.png` are the checks. Each is under 400 KB. pose stays 0 and rigJoint stays 26. The proof lines are unchanged.
 
+## Pass 47
+
+Left Alt is air dash only. Sprint is Left Shift on the keyboard and LB on the pad. The Alt markers and the header warning are gone. The defaults conflict check reads the keys `PlayerInputReader` samples. Putting Alt back on the sprint line fails that check. The binds table alone still would not. Mega Park, Pocket Park, and Stack Yard show their launch pad and zip counts on the detail panel. Random does not. Mega Park is 5 pads and 5 zips, Pocket Park is 2 and 2, and Stack Yard is 3 and 3. Every controls row keeps the keyboard words on the left and the pad mark in one column: A, B, and X chips, LB and RB shoulder chips, and stick words for Move, Look, and Cling. Mode and rules lists the rules that already exist. Round length, rounds, the It handicap, and pads and zips on or off are on that page. Handicap rows use MenuMannequin.Shape: circle, triangle, square, diamond. Title, the main menu, join, and pause are unchanged.
+
+`Docs/UiStills/pass47/arena.png`, `options-controls.png`, and `rules.png` are the checks. Each is under 400 KB. pose stays 0 and rigJoint stays 26. The gameplay proof lines are unchanged.
+
 ## Later passes
 
 - A 2D focus grid on rules so Left from a rule row lands on a mode tile.

@@ -2587,12 +2587,15 @@ namespace Tag.Ui.Menu
             ClampRuleWindow();
             GameSettings s = GameSettings.Current ?? GameSettings.Defaults();
             UiFit.Columns(UiFit.Current(), out _, out _, out float rightX, out float rightW);
-            int win = UiFit.Window(UiFit.Current(), 84f, 12f);
+            const float step = 72f;
+            const float rowH = 68f;
+            int win = RuleWindow(step);
             int shown = 0;
             for (int index = 4; index < RuleBook.Count; index++)
             {
                 if (index < 4 + _window || index >= 4 + _window + win) continue;
-                AddTile(rightX, 12f + shown * 84f, rightW, 80f, index, RuleBook.Title(index), RuleBook.Detail(s, index), true);
+                MenuTile row = AddTile(rightX, 12f + shown * step, rightW, rowH, index, RuleBook.Title(index), RuleBook.Detail(s, index), true);
+                DressRule(row, index, rightW, rowH);
                 shown++;
             }
             _count = RuleBook.Count;
@@ -2600,10 +2603,21 @@ namespace Tag.Ui.Menu
             RefreshFocus();
         }
 
+        static int RuleWindow(float step)
+        {
+            if (step < 1f) step = 1f;
+            float body = UiFit.BodyH(UiFit.Current());
+            int n = (int)((body - 12f) / step);
+            if (n < 4) n = 4;
+            int rows = RuleBook.Count - 4;
+            if (n > rows) n = rows;
+            return n;
+        }
+
         void ClampRuleWindow()
         {
             if (_focus < 4) return;
-            int win = UiFit.Window(UiFit.Current(), 84f, 12f);
+            int win = RuleWindow(72f);
             int right = _focus - 4;
             int rows = RuleBook.Count - 4;
             if (right < _window) _window = right;
@@ -2612,6 +2626,53 @@ namespace Tag.Ui.Menu
             if (max < 0) max = 0;
             if (_window > max) _window = max;
             if (_window < 0) _window = 0;
+        }
+
+        static void DressRule(MenuTile row, int index, float rowW, float rowH)
+        {
+            if (row == null) return;
+            float valueW = 200f;
+            if (row.Label != null)
+            {
+                RectTransform rt = row.Label.rectTransform;
+                rt.anchorMin = new Vector2(0f, 0f);
+                rt.anchorMax = new Vector2(0f, 1f);
+                rt.pivot = new Vector2(0f, 0.5f);
+                rt.anchoredPosition = new Vector2(22f, 0f);
+                rt.sizeDelta = new Vector2(rowW - valueW - 88f, rowH - 12f);
+                row.Label.alignment = TextAnchor.MiddleLeft;
+            }
+            if (row.Detail != null)
+            {
+                RectTransform rt = row.Detail.rectTransform;
+                rt.anchorMin = new Vector2(1f, 0f);
+                rt.anchorMax = new Vector2(1f, 1f);
+                rt.pivot = new Vector2(1f, 0.5f);
+                rt.anchoredPosition = new Vector2(-18f, 0f);
+                rt.sizeDelta = new Vector2(valueW, rowH - 12f);
+                row.Detail.alignment = TextAnchor.MiddleRight;
+                row.Detail.color = MenuTheme.Cream;
+            }
+            if (index >= RuleBook.Hand0 && index < RuleBook.Hand0 + GameSettings.SeatCount)
+            {
+                int seat = index - RuleBook.Hand0;
+                var shapeRt = MenuWidgets.Place(row.transform, "SeatShape", rowW - valueW - 64f, (rowH - 36f) * 0.5f, 36f, 36f);
+                var shapeImg = shapeRt.gameObject.AddComponent<Image>();
+                shapeImg.sprite = SeatMark.For(seat);
+                shapeImg.color = MenuTheme.SeatBand(seat);
+                shapeImg.raycastTarget = false;
+            }
+            else if (index == RuleBook.Pads || index == RuleBook.Zips)
+            {
+                bool zip = index == RuleBook.Zips;
+                float iconH = zip ? 8f : 22f;
+                float iconY = (rowH - iconH) * 0.5f;
+                var iconRt = MenuWidgets.Place(row.transform, zip ? "ZipIcon" : "PadIcon", rowW - valueW - 52f, iconY, 22f, iconH);
+                var icon = iconRt.gameObject.AddComponent<Image>();
+                if (!zip) icon.sprite = MenuArt.Round;
+                icon.color = MenuTheme.Gold;
+                icon.raycastTarget = false;
+            }
         }
 
         void ShowHow()
@@ -2661,13 +2722,11 @@ namespace Tag.Ui.Menu
             MenuArt.Plate(frame, MenuTheme.Navy, true);
             frame.raycastTarget = false;
             const float pad = 16f;
-            float foot = 132f;
+            const float nameH = 48f;
+            const float sizeH = 36f;
+            const float factsH = 48f;
+            float foot = nameH + sizeH + factsH + 18f;
             float viewH = shotH - pad * 2f - foot;
-            if (viewH < 140f)
-            {
-                foot = 112f;
-                viewH = shotH - pad * 2f - foot;
-            }
             if (viewH < 100f) viewH = 100f;
             var view = MenuWidgets.Place(shot, "Shot", pad, pad, shotW - pad * 2f, viewH);
             _arenaShot = view.gameObject.AddComponent<RawImage>();
@@ -2687,13 +2746,18 @@ namespace Tag.Ui.Menu
             float mapInset = viewH > 180f ? 108f : 84f;
             MenuArenaCard.PaintAt(view, 0, shotW - pad * 2f - mapInset - 8f, 8f, mapInset, mapInset * 0.62f);
             float nameY = pad + viewH + 6f;
-            var nameHold = MenuWidgets.Place(shot, "Name", pad, nameY, shotW - pad * 2f, 48f);
+            var nameHold = MenuWidgets.Place(shot, "Name", pad, nameY, shotW - pad * 2f, nameH);
             _arenaShotName = MenuWidgets.Heading(nameHold, "", 44, TextAnchor.MiddleLeft, MenuTheme.Gold, Vector2.zero, Vector2.one);
-            var sizeHold = MenuWidgets.Place(shot, "Size", pad, nameY + 48f, shotW - pad * 2f, 32f);
+            var sizeHold = MenuWidgets.Place(shot, "Size", pad, nameY + nameH, shotW - pad * 2f, sizeH);
             _arenaSize = MenuWidgets.Words(sizeHold, "", UiFit.FloorFont, TextAnchor.MiddleLeft, MenuTheme.Cream, Vector2.zero, Vector2.one);
-            float iconY = nameY + 82f;
-            if (iconY + 36f > shotH - 8f) iconY = shotH - 44f;
-            var padHold = MenuWidgets.Place(shot, "Pads", pad, iconY, 150f, 36f);
+            if (_arenaSize != null)
+            {
+                _arenaSize.rectTransform.offsetMin = new Vector2(0f, 0f);
+                _arenaSize.rectTransform.offsetMax = new Vector2(-8f, 0f);
+            }
+            float iconY = nameY + nameH + sizeH + 4f;
+            if (iconY + factsH > shotH - 8f) iconY = shotH - factsH - 8f;
+            var padHold = MenuWidgets.Place(shot, "Pads", pad, iconY, 180f, factsH);
             _arenaPadHold = padHold;
             var padIcon = MenuWidgets.Place(padHold, "PadIcon", 0f, 4f, 28f, 28f);
             var padImage = padIcon.gameObject.AddComponent<Image>();
@@ -2703,23 +2767,23 @@ namespace Tag.Ui.Menu
             _arenaPads = MenuWidgets.Words(padHold, "", UiFit.FloorFont, TextAnchor.MiddleLeft, MenuTheme.Cream, Vector2.zero, Vector2.one);
             if (_arenaPads != null)
             {
-                Vector2 min = _arenaPads.rectTransform.offsetMin;
-                min.x = 34f;
-                _arenaPads.rectTransform.offsetMin = min;
+                _arenaPads.rectTransform.offsetMin = new Vector2(36f, 2f);
+                _arenaPads.rectTransform.offsetMax = new Vector2(-8f, -2f);
             }
-            var zipHold = MenuWidgets.Place(shot, "Zips", pad + 160f, iconY, 170f, 36f);
+            var zipHold = MenuWidgets.Place(shot, "Zips", pad + 196f, iconY, 200f, factsH);
             _arenaZipHold = zipHold;
-            var zipIcon = MenuWidgets.Place(zipHold, "ZipIcon", 0f, 14f, 28f, 8f);
+            var zipIcon = MenuWidgets.Place(zipHold, "ZipIcon", 0f, 20f, 28f, 8f);
             var zipImage = zipIcon.gameObject.AddComponent<Image>();
             zipImage.color = MenuTheme.Gold;
             zipImage.raycastTarget = false;
             _arenaZips = MenuWidgets.Words(zipHold, "", UiFit.FloorFont, TextAnchor.MiddleLeft, MenuTheme.Cream, Vector2.zero, Vector2.one);
             if (_arenaZips != null)
             {
-                Vector2 min = _arenaZips.rectTransform.offsetMin;
-                min.x = 34f;
-                _arenaZips.rectTransform.offsetMin = min;
+                _arenaZips.rectTransform.offsetMin = new Vector2(36f, 2f);
+                _arenaZips.rectTransform.offsetMax = new Vector2(-8f, -2f);
             }
+            padHold.SetAsLastSibling();
+            zipHold.SetAsLastSibling();
             _arenaShotBlurb = null;
             for (int s = 0; s < 4; s++)
             {
@@ -3430,7 +3494,7 @@ namespace Tag.Ui.Menu
             _cols = 1;
             _window = 0;
             TitleBar("  Controls");
-            if (_banner != null) _banner.text = "Alt is on Air dash and Sprint. Space always jumps.";
+            if (_banner != null) _banner.text = "Space always jumps.";
             if (_dim != null) _dim.color = MenuTheme.Veil;
             PaintControls();
         }
@@ -3494,15 +3558,11 @@ namespace Tag.Ui.Menu
                 MenuTile row = AddTile(rowX, listTop + v * 96f, rowW, 88f, index, title, detail, true);
                 if (actionIndex >= 0 && row != null)
                 {
-                    var action = (PlayAction)actionIndex;
                     MenuWidgets.Mark(row, MenuIcons.ForToken(PadGlyph.Keyboard, binds.Keyboard[actionIndex]), MenuTheme.Gold, 56f);
-                    if (FaceToken(binds.Gamepad[actionIndex]))
-                        PaintPadChip(row.transform, rowW, binds.Gamepad[actionIndex]);
-                    if (action == PlayAction.AirDash || action == PlayAction.Sprint)
-                        PaintAltClash(row.transform, rowW);
+                    PaintPadColumn(row, rowW, binds.Gamepad[actionIndex]);
                 }
                 else if (note == 0 && row != null)
-                    PaintPadChip(row.transform, rowW, "mouseRight");
+                    PaintPadColumn(row, rowW, "");
                 else if (index >= confirmAt && index < resetAt && row != null)
                 {
                     int seat = index - confirmAt;
@@ -4454,12 +4514,8 @@ namespace Tag.Ui.Menu
         {
             int i = (int)action;
             string kb = binds.Keyboard[i];
-            string pad = ActionBinds.Show(binds.Gamepad[i]);
             if (action == PlayAction.Cling)
-            {
-                return ActionBinds.Show(kb) + " / " + pad
-                    + ". Wall climb and wall run need this hold. Wall jump is this hold plus Jump.";
-            }
+                return "Hold into wall. Wall climb and wall run need this hold. Wall jump is this hold plus Jump.";
             string key = ActionBinds.Show(kb);
             if (action == PlayAction.Slide && kb == "leftCtrl")
                 key = "Ctrl or C";
@@ -4467,10 +4523,7 @@ namespace Tag.Ui.Menu
                 key = ActionBinds.Show(kb) + " or Alt";
             else if (action == PlayAction.Punch && kb != "e")
                 key = ActionBinds.Show(kb) + " or E";
-            else if (action == PlayAction.Sprint && kb == "leftShift")
-                key = "Shift or Alt";
-            if (FaceToken(binds.Gamepad[i])) return key;
-            return key + "    /    " + pad;
+            return key;
         }
 
         /// <summary>
@@ -4529,35 +4582,65 @@ namespace Tag.Ui.Menu
             return PadGlyph.Xbox;
         }
 
-        static void PaintPadChip(Transform row, float rowW, string token)
+        const float PadColW = 248f;
+
+        static void PaintPadColumn(MenuTile row, float rowW, string token)
         {
             if (row == null) return;
-            var plate = MenuWidgets.Place(row, "FaceChip", rowW - 78f, 18f, 52f, 52f);
-            var plateImage = plate.gameObject.AddComponent<Image>();
-            MenuArt.Plate(plateImage, MenuTheme.Gold, true);
-            plateImage.raycastTarget = false;
-            if (FaceToken(token))
+            float colX = rowW - 16f - PadColW;
+            if (colX < 80f) colX = 80f;
+            PullText(row.Label, PadColW + 24f);
+            PullText(row.Detail, PadColW + 24f);
+            if (FaceToken(token) || ShoulderToken(token))
             {
-                var iconRt = MenuWidgets.Place(plate, "Glyph", 6f, 6f, 40f, 40f);
-                var icon = iconRt.gameObject.AddComponent<Image>();
-                icon.sprite = MenuIcons.ForToken(PadFaceFamily(), token);
-                icon.preserveAspect = true;
-                icon.raycastTarget = false;
+                float chipW = ShoulderToken(token) ? 72f : 52f;
+                float chipH = 52f;
+                var plate = MenuWidgets.Place(row.transform, "PadCol", colX + PadColW - chipW, 18f, chipW, chipH);
+                var plateImage = plate.gameObject.AddComponent<Image>();
+                MenuArt.Plate(plateImage, MenuTheme.Gold, true);
+                plateImage.raycastTarget = false;
+                if (FaceToken(token))
+                {
+                    var iconRt = MenuWidgets.Place(plate, "Glyph", 6f, 6f, 40f, 40f);
+                    var icon = iconRt.gameObject.AddComponent<Image>();
+                    icon.sprite = MenuIcons.ForToken(PadFaceFamily(), token);
+                    icon.preserveAspect = true;
+                    icon.raycastTarget = false;
+                    return;
+                }
+                string word = token == "leftShoulder" ? "LB" : "RB";
+                Text label = MenuWidgets.Words(plate, word, UiFit.FloorFont, TextAnchor.MiddleCenter, MenuTheme.Ink, Vector2.zero, Vector2.one);
+                if (label != null)
+                {
+                    label.raycastTarget = false;
+                    label.rectTransform.offsetMin = new Vector2(4f, 2f);
+                    label.rectTransform.offsetMax = new Vector2(-4f, -2f);
+                }
                 return;
             }
-            Text label = MenuWidgets.Words(plate, "RMB", 18, TextAnchor.MiddleCenter, MenuTheme.Ink, Vector2.zero, Vector2.one);
-            if (label != null) label.raycastTarget = false;
+            string pad = string.IsNullOrEmpty(token) ? "No pad" : ActionBinds.Show(token);
+            var hold = MenuWidgets.Place(row.transform, "PadCol", colX, 18f, PadColW, 52f);
+            Text text = MenuWidgets.Words(hold, pad, UiFit.FloorFont, TextAnchor.MiddleRight, MenuTheme.Cream, Vector2.zero, Vector2.one);
+            if (text != null)
+            {
+                text.raycastTarget = false;
+                text.rectTransform.offsetMin = new Vector2(4f, 2f);
+                text.rectTransform.offsetMax = new Vector2(-4f, -2f);
+            }
         }
 
-        static void PaintAltClash(Transform row, float rowW)
+        static void PullText(Text label, float right)
         {
-            if (row == null) return;
-            var plate = MenuWidgets.Place(row, "AltClash", rowW - 156f, 22f, 68f, 44f);
-            var plateImage = plate.gameObject.AddComponent<Image>();
-            MenuArt.Plate(plateImage, new Color(0.85f, 0.20f, 0.22f, 1f), true);
-            plateImage.raycastTarget = false;
-            Text label = MenuWidgets.Words(plate, "Alt", 22, TextAnchor.MiddleCenter, MenuTheme.Cream, Vector2.zero, Vector2.one);
-            if (label != null) label.raycastTarget = false;
+            if (label == null) return;
+            RectTransform rt = label.rectTransform;
+            Vector2 max = rt.offsetMax;
+            if (max.x > -right) max.x = -right;
+            rt.offsetMax = max;
+        }
+
+        static bool ShoulderToken(string token)
+        {
+            return token == "leftShoulder" || token == "rightShoulder";
         }
 
         static string NoteTitle(int note)

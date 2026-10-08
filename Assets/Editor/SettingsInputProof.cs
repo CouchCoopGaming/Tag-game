@@ -128,6 +128,7 @@ public static class SettingsInputProof
         ActionBinds binds = ActionBinds.Defaults();
         if (binds.AnyConflict(out _, out _))
             report.Fail("default binds conflict");
+        CheckReaderConflicts(report);
         if (binds.Keyboard[(int)PlayAction.Jump] != "space")
             report.Fail("jump default is not space");
         if (binds.Gamepad[(int)PlayAction.Jump] != "buttonSouth")
@@ -421,6 +422,135 @@ public static class SettingsInputProof
             report.Fail("a rejected ledge move was added");
         if (motor.IndexOf("AddForce", StringComparison.Ordinal) >= 0)
             report.Fail("motor gained a rigidbody force");
+    }
+
+    /// <summary>
+    /// Counts a physical key the solo reader samples for two actions.
+    /// The binds table can stay clean while PlayerInputReader still ORs a key.
+    /// </summary>
+    static void CheckReaderConflicts(SettingsInputReport report)
+    {
+        string source = Read(ReaderPath());
+        if (source == null)
+        {
+            report.Fail("player input reader is missing");
+            return;
+        }
+        int clean = DefaultConflicts(source);
+        const string sprint = "bool sprintPhys = Input.GetKey(KeyCode.LeftShift);";
+        const string spikedLine = "bool sprintPhys = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.LeftAlt);";
+        if (source.IndexOf(sprint, StringComparison.Ordinal) < 0)
+        {
+            report.Fail("sprint sample line moved");
+            return;
+        }
+        string spiked = source.Replace(sprint, spikedLine);
+        int dirty = DefaultConflicts(spiked);
+        if (clean != 0)
+            report.Fail("reader physical defaults conflict");
+        if (dirty < 1)
+            report.Fail("alt on sprint did not fail the reader conflict check");
+        if (Environment.GetEnvironmentVariable("TAG_SHOW_CONFLICT") == "1")
+        {
+            Console.WriteLine("defaults-conflict clean=" + clean.ToString(CultureInfo.InvariantCulture));
+            Console.WriteLine("defaults-conflict alt-on-sprint=" + dirty.ToString(CultureInfo.InvariantCulture)
+                + (dirty > 0 ? " FAIL leftAlt sprint+airdash" : " MISS"));
+        }
+    }
+
+    static string ReaderPath()
+    {
+        const string rel = "Assets/TagArenaMovement/Scripts/Input/PlayerInputReader.cs";
+        if (File.Exists(rel)) return rel;
+        string up = Path.GetFullPath(Path.Combine(Directory.GetCurrentDirectory(), "..", "..", rel));
+        if (File.Exists(up)) return up;
+        return rel;
+    }
+
+    /// <summary>
+    /// Keys sampled on the solo pawn. Cling's W shares Move and does not count.
+    /// </summary>
+    public static int DefaultConflicts(string source)
+    {
+        if (string.IsNullOrEmpty(source)) return 1;
+        var owners = new Dictionary<string, int>();
+        Note(source, "sprintPhys", 1, owners);
+        Note(source, "SprintHeld", 1, owners);
+        Note(source, "AirDashPressed", 2, owners);
+        Note(source, "PunchPressed", 4, owners);
+        Note(source, "CrouchHeld", 8, owners);
+        Note(source, "CrouchPressed", 8, owners);
+        Note(source, "JumpHeld", 16, owners);
+        Note(source, "JumpPressed", 16, owners);
+        Note(source, "jumpPhys", 16, owners);
+        int conflicts = 0;
+        foreach (var pair in owners)
+        {
+            int bits = pair.Value;
+            int n = 0;
+            while (bits != 0)
+            {
+                n += bits & 1;
+                bits >>= 1;
+            }
+            if (n >= 2) conflicts++;
+        }
+        return conflicts;
+    }
+
+    static void Note(string source, string field, int bit, Dictionary<string, int> owners)
+    {
+        int from = 0;
+        while (from < source.Length)
+        {
+            int at = source.IndexOf(field, from, StringComparison.Ordinal);
+            if (at < 0) return;
+            from = at + field.Length;
+            if (at > 0 && Word(source[at - 1])) continue;
+            int i = at + field.Length;
+            while (i < source.Length && (source[i] == ' ' || source[i] == '\t' || source[i] == '\r' || source[i] == '\n'))
+                i++;
+            if (i >= source.Length || source[i] != '=') continue;
+            if (i + 1 < source.Length && source[i + 1] == '=') continue;
+            int end = source.IndexOf(';', i);
+            if (end < 0) end = source.Length;
+            string span = source.Substring(i, end - i);
+            if (field == "AirDashPressed" && span.IndexOf("airDashKey", StringComparison.Ordinal) >= 0)
+                Own(owners, "Q", bit);
+            if (field == "PunchPressed" && span.IndexOf("punchKey", StringComparison.Ordinal) >= 0)
+                Own(owners, "Mouse0", bit);
+            if ((field == "CrouchHeld" || field == "CrouchPressed") && span.IndexOf("crouchKey", StringComparison.Ordinal) >= 0)
+                Own(owners, "C", bit);
+            if ((field == "JumpHeld" || field == "JumpPressed" || field == "jumpPhys")
+                && span.IndexOf("SpaceHeld", StringComparison.Ordinal) >= 0)
+                Own(owners, "Space", bit);
+            const string mark = "KeyCode.";
+            int k = 0;
+            while (k < span.Length)
+            {
+                int hit = span.IndexOf(mark, k, StringComparison.Ordinal);
+                if (hit < 0) break;
+                int name = hit + mark.Length;
+                int stop = name;
+                while (stop < span.Length && Word(span[stop])) stop++;
+                if (stop > name)
+                    Own(owners, span.Substring(name, stop - name), bit);
+                k = stop;
+            }
+        }
+    }
+
+    static void Own(Dictionary<string, int> owners, string key, int bit)
+    {
+        if (key == "W") return;
+        int have;
+        owners.TryGetValue(key, out have);
+        owners[key] = have | bit;
+    }
+
+    static bool Word(char c)
+    {
+        return (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') || c == '_';
     }
 
     static string Read(string path)

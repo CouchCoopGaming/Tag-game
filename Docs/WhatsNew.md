@@ -360,6 +360,8 @@ The forty-fifth pass keeps that Random card, and the big plate matches it: three
 
 The forty-sixth pass puts the size back on the arena cards, and the vote shape with its count. Random still has no size. Air dash and Sprint both read Alt because the solo reader samples Left Alt for each of them. The stored defaults stay Q and Shift, so a conflict count of the binds table stays 0. Grapple is listed with the verbs: RMB, left hand, click to pull, second click within 0.28 s to release. Tag is the punch button. Pad faces are A, B, and X chips. The pictures are `Docs/UiStills/pass46/arena.png`, `options-controls.png`, and `options-sound.png`. pose stays 0 and rigJoint stays 26. Space still jumps.
 
+The forty-seventh pass keeps Left Alt on air dash and takes it off sprint. Sprint is Left Shift, and LB on a pad. The red Alt marks are gone. A check now reads the keys the solo reader samples, so Alt on both sprint and air dash fails it. Mega Park, Pocket Park, and Stack Yard show pad and zip counts again. Random still has none. Each controls row puts the keyboard words on the left and the pad mark in the same column, with LB and RB as shoulder chips. Mode and rules shows round length, rounds, the It handicap, and pads and zips on or off. Those handicaps use the seat shapes. The pictures are `Docs/UiStills/pass47/arena.png`, `options-controls.png`, and `rules.png`. pose stays 0 and rigJoint stays 26. Space still jumps.
+
 ## Motion, ninth pass
 
 The wall jump, the rope, the zip, the launch pad, a landing, the dash flash, a hard turnaround, and a punch while you run all ease instead of snapping. Speeds, the jump, and the dash length are the same.
