@@ -37,9 +37,10 @@ namespace Tag.Ui.Menu
             AudioBus.RaiseMenu(AudioBus.MenuHook.Error);
         }
 
-        public static void Ready()
+        public static void Ready(int seat)
         {
             AudioBus.RaiseMenu(AudioBus.MenuHook.Ready);
+            MenuJuice.Pulse(seat, PadRumble.TagClaim);
         }
 
         public static void StartMatch()

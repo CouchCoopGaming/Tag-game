@@ -22,6 +22,11 @@ namespace Tag.Ui.Menu
             _digit = 0;
         }
 
+        public static int Digit
+        {
+            get { return _digit; }
+        }
+
         public static bool Advance(bool allReady, Text banner)
         {
             if (!allReady)

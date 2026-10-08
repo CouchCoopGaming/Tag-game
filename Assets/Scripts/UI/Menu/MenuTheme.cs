@@ -35,6 +35,7 @@ namespace Tag.Ui.Menu
         };
 
         static Font _font;
+        static Font _display;
 
         public static Font Font
         {
@@ -47,6 +48,17 @@ namespace Tag.Ui.Menu
                 if (_font == null)
                     _font = Resources.GetBuiltinResource<Font>("Arial.ttf");
                 return _font;
+            }
+        }
+
+        public static Font Display
+        {
+            get
+            {
+                if (_display != null) return _display;
+                _display = Resources.Load<Font>(MenuPolish.DisplayResource);
+                if (_display == null) _display = Font;
+                return _display;
             }
         }
 

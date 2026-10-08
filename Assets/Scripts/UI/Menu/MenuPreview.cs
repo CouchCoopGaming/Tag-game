@@ -14,6 +14,10 @@ namespace Tag.Ui.Menu
         const int Slots = 4;
 
         readonly Transform[] _anchor = new Transform[Slots];
+        readonly Transform[] _figure = new Transform[Slots];
+        readonly Transform[] _disc = new Transform[Slots];
+        readonly bool[] _ready = new bool[Slots];
+        readonly float[] _hop = new float[Slots];
         readonly Camera[] _cam = new Camera[Slots];
         readonly RenderTexture[] _rt = new RenderTexture[Slots];
         readonly int[] _hier = { -1, -1, -1, -1 };
@@ -42,7 +46,7 @@ namespace Tag.Ui.Menu
                 camGo.transform.SetParent(transform, false);
                 var cam = camGo.AddComponent<Camera>();
                 cam.clearFlags = CameraClearFlags.SolidColor;
-                cam.backgroundColor = new Color(0.07f, 0.11f, 0.20f, 1f);
+                cam.backgroundColor = new Color(0.12f, 0.36f, 0.74f, 1f);
                 cam.fieldOfView = 26f;
                 cam.nearClipPlane = 0.05f;
                 cam.farClipPlane = 20f;
@@ -112,15 +116,42 @@ namespace Tag.Ui.Menu
                 view.texture = _rt[seat];
                 view.color = Color.white;
             }
-            if (_hier[seat] == hier && _accent[seat] == accent && _hat[seat] == hat && _anchor[seat].childCount > 0)
-                return;
-            _hier[seat] = hier;
-            _accent[seat] = accent;
-            _hat[seat] = hat;
-            for (int c = _anchor[seat].childCount - 1; c >= 0; c--)
-                DestroyImmediate(_anchor[seat].GetChild(c).gameObject);
-            MenuMannequin.Spawn(_anchor[seat], MenuMannequin.NameOf(hier), MenuMannequin.NameOf(accent), hat != 0);
-            Aim(seat);
+            bool same = _hier[seat] == hier && _accent[seat] == accent && _hat[seat] == hat && _figure[seat] != null;
+            if (!same)
+            {
+                _hier[seat] = hier;
+                _accent[seat] = accent;
+                _hat[seat] = hat;
+                for (int c = _anchor[seat].childCount - 1; c >= 0; c--)
+                {
+                    Transform child = _anchor[seat].GetChild(c);
+                    if (child != null && child.name == "Pedestal") continue;
+                    DestroyImmediate(child.gameObject);
+                }
+                GameObject body = MenuMannequin.Spawn(_anchor[seat], MenuMannequin.NameOf(hier), MenuMannequin.NameOf(accent), hat != 0);
+                _figure[seat] = body != null ? body.transform : null;
+                if (_figure[seat] != null)
+                    _figure[seat].localPosition = new Vector3(0f, 0.02f, 0f);
+                Aim(seat);
+            }
+            EnsureDisc(seat);
+            if (_figure[seat] != null)
+            {
+                MenuIdle idle = _figure[seat].GetComponent<MenuIdle>();
+                if (idle != null) idle.SetReady(_ready[seat]);
+            }
+        }
+
+        public void SetReady(int seat, bool ready)
+        {
+            if (seat < 0 || seat >= Slots) return;
+            bool edge = _ready[seat] != ready;
+            _ready[seat] = ready;
+            if (edge && ready && !MenuVideo.ReduceMotion) _hop[seat] = 1f;
+            if (!ready) _hop[seat] = 0f;
+            if (_figure[seat] == null) return;
+            MenuIdle idle = _figure[seat].GetComponent<MenuIdle>();
+            if (idle != null) idle.SetReady(ready);
         }
 
         public void ShowPodium(int count, MenuPodium.Row[] rows, RawImage view)
@@ -172,15 +203,44 @@ namespace Tag.Ui.Menu
             }
         }
 
+        void EnsureDisc(int seat)
+        {
+            if (_anchor[seat] == null || _disc[seat] != null) return;
+            var go = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+            go.name = "Pedestal";
+            go.transform.SetParent(_anchor[seat], false);
+            Collider col = go.GetComponent<Collider>();
+            if (col != null) DestroyImmediate(col);
+            go.transform.localScale = new Vector3(1.25f, 0.06f, 1.25f);
+            go.transform.localPosition = new Vector3(0f, 0.02f, 0f);
+            Renderer rend = go.GetComponent<Renderer>();
+            if (rend != null)
+                rend.sharedMaterial = DummyPrimitiveFactory.MakeMat(MenuTheme.Seat(seat), 0.22f, 0.18f);
+            _disc[seat] = go.transform;
+        }
+
         void Update()
         {
-            if (MenuVideo.ReduceMotion) return;
+            float dt = Time.unscaledDeltaTime;
+            if (dt > 0.05f) dt = 0.05f;
+            bool still = MenuVideo.ReduceMotion;
             float t = Time.unscaledTime;
             for (int i = 0; i < Slots; i++)
             {
                 if (_anchor[i] == null) continue;
-                _anchor[i].localRotation = Quaternion.Euler(0f, t * 18f + i * 40f, 0f);
+                if (!still)
+                    _anchor[i].localRotation = Quaternion.Euler(0f, t * 18f + i * 40f, 0f);
+                if (_hop[i] > 0f)
+                {
+                    _hop[i] -= dt / 0.36f;
+                    if (_hop[i] < 0f) _hop[i] = 0f;
+                }
+                if (_figure[i] == null) continue;
+                Vector3 p = _figure[i].localPosition;
+                p.y = 0.02f + (still ? 0f : MenuPolish.Hop(_hop[i]));
+                _figure[i].localPosition = p;
             }
+            if (still) return;
             for (int i = 0; i < _confetti.Length; i++)
             {
                 Transform bit = _confetti[i];

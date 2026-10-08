@@ -78,6 +78,7 @@ namespace Tag.Ui.Menu
             bool rules = RuleBook.Holds();
             bool records = RecordsHold();
             bool contrast = UiSweep.Holds();
+            bool style = MenuPolish.Holds(Root());
             if (!text) Fail(ref report, "text floor");
             if (!hud) Fail(ref report, "hud corner");
             if (!glyphs) Fail(ref report, "glyphs");
@@ -88,6 +89,7 @@ namespace Tag.Ui.Menu
             if (!rules) Fail(ref report, "rules");
             if (!records) Fail(ref report, "records");
             if (!contrast) Fail(ref report, "contrast");
+            if (!style) Fail(ref report, "style");
             CouchPlay.Release();
             report.Line = "ui-flow screens=15 kb=" + kb.ToString()
                 + " pad=" + pad.ToString()
@@ -102,7 +104,8 @@ namespace Tag.Ui.Menu
                 + " faces=" + (faces ? "ok" : "no")
                 + " rules=" + (rules ? "ok" : "no")
                 + " records=" + (records ? "ok" : "no")
-                + " contrast=" + (contrast ? "ok" : "no");
+                + " contrast=" + (contrast ? "ok" : "no")
+                + " style=" + (style ? "ok" : "no");
             if (!report.Ok)
                 report.Line += " FAIL " + report.Failure;
             return report;

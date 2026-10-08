@@ -284,6 +284,10 @@ On character select, Down on the bottom color opens a keyboard you can drive wit
 
 Highlighted text is dark on the bright tile. A gold ring marks the control you are on. At 130% the words stay inside the panels. Mockups are in `Docs/UiStills/pass9/`.
 
+The tenth pass is the look. Tiles have a bevel, a gloss band, and a soft shadow. The background is a layered sky with the four player colors drifting behind it, and a slow Mega Park photo on the title, the main menu, arena select, and the loading screen. Headings use Bangers. The rest of the words stay Liberation Sans Bold. Both licenses are next to the fonts, and Credits names them.
+
+Each character stands on a turning disc, idles, and hops when that player hits Ready. The READY stamp, the 3-2-1, and GO all punch. Move, confirm, back, ready, and start still play through the menu sounds. Confirm and ready can buzz the pad when rumble is on. The gold ring and the couch type size stay. Mockups are in `Docs/UiStills/pass10/`.
+
 ## Motion, ninth pass
 
 The wall jump, the rope, the zip, the launch pad, a landing, the dash flash, a hard turnaround, and a punch while you run all ease instead of snapping. Speeds, the jump, and the dash length are the same.

@@ -163,6 +163,16 @@ Credits names the team, Liberation Sans Bold and the SIL Open Font License, and 
 
 Text that sits on a highlighted tile is ink, so it stays readable. Seat colors are mixed down before they sit behind words. Every control keeps a gold ring. At 130% the lists reflow inside the safe area, including the rules window, the name keys, and the records card. Mockups are in `Docs/UiStills/pass9/`.
 
+## Pass 10
+
+Tiles are beveled. A soft shadow sits under each one, and a gloss band sits across the top. The sky is a three-stop gradient. Four soft orbs, in the player colors, drift behind the page. Title, the main menu, arena select, and loading also lay a slow Mega Park photo under that.
+
+Headings use Bangers. Body text stays Liberation Sans Bold. Both are SIL OFL. The license files sit next to the fonts. Credits names them.
+
+On character select each seat stands on a disc that turns. The figure idles. Ready lifts the arms and hops once. The READY stamp and the 3-2-1 count punch in. GO punches in the match. Move, confirm, back, ready, and start still use the menu bus. Confirm and ready also buzz the pad when that seat's rumble is on.
+
+The gold ring, the ink-on-highlight contrast, and the 80% to 130% scale stay. Mockups are in `Docs/UiStills/pass10/`.
+
 ## Later passes
 
 - A 2D focus grid on rules so Left from a rule row lands on a mode tile.

@@ -611,15 +611,31 @@ namespace Tag.Ui.Hud
             CenterCall.enabled = on;
             Set(CenterCall, word);
             if (!on) return;
-            if (MenuVideo.ReduceMotion || phase != MatchPhase.Countdown)
+            if (MenuVideo.ReduceMotion)
+            {
+                CenterCall.rectTransform.localScale = Vector3.one;
+                return;
+            }
+            if (word == MatchHudText.Go)
+            {
+                float span = 0.8f;
+                float left = _goUntil - now;
+                float u = 1f - left / span;
+                if (u < 0f) u = 0f;
+                if (u > 1f) u = 1f;
+                float pop = u < 0.22f ? Mathf.Lerp(1.28f, 1f, u / 0.22f) : 1f;
+                CenterCall.rectTransform.localScale = new Vector3(pop, pop, 1f);
+                return;
+            }
+            if (phase != MatchPhase.Countdown)
             {
                 CenterCall.rectTransform.localScale = Vector3.one;
                 return;
             }
             float frac = modes.PhaseSeconds - (int)modes.PhaseSeconds;
             if (frac < 0f) frac = 0f;
-            float pop = 1f + 0.18f * frac;
-            CenterCall.rectTransform.localScale = new Vector3(pop, pop, 1f);
+            float beat = frac > 0.78f ? Mathf.Lerp(1.24f, 1f, (1f - frac) / 0.22f) : 1f;
+            CenterCall.rectTransform.localScale = new Vector3(beat, beat, 1f);
         }
 
         void PaintArrow(TagModeController modes, int index)

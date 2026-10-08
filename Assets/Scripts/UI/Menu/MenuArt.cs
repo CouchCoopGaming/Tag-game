@@ -11,6 +11,8 @@ namespace Tag.Ui.Menu
         static Sprite _round;
         static Sprite _sky;
         static Sprite _chip;
+        static Sprite _soft;
+        static Sprite _sheen;
         static Texture2D _chevron;
 
         public static Sprite Round
@@ -27,7 +29,14 @@ namespace Tag.Ui.Menu
                     for (int x = 0; x < n; x++)
                     {
                         float a = Cover(x + 0.5f, y + 0.5f, n, n, r);
-                        tex.SetPixel(x, y, new Color(1f, 1f, 1f, a));
+                        float shade = 0.58f + 0.42f * (y / (n - 1f));
+                        float gx = (x - n * 0.5f) / (n * 0.48f);
+                        float gy = (y - n * 0.74f) / (n * 0.2f);
+                        float g = 1f - (gx * gx + gy * gy);
+                        if (g < 0f) g = 0f;
+                        float v = shade + g * 0.34f;
+                        if (v > 1f) v = 1f;
+                        tex.SetPixel(x, y, new Color(v, v, v, a));
                     }
                 }
                 tex.Apply();
@@ -47,7 +56,10 @@ namespace Tag.Ui.Menu
                 for (int y = 0; y < h; y++)
                 {
                     float t = y / (h - 1f);
-                    Color c = Color.Lerp(MenuTheme.SkyBot, MenuTheme.SkyTop, t);
+                    Color mid = new Color(0.10f, 0.42f, 0.92f, 1f);
+                    Color c = t < 0.45f
+                        ? Color.Lerp(MenuTheme.SkyBot, mid, t / 0.45f)
+                        : Color.Lerp(mid, MenuTheme.SkyTop, (t - 0.45f) / 0.55f);
                     for (int x = 0; x < 4; x++) tex.SetPixel(x, y, c);
                 }
                 tex.Apply();
@@ -76,6 +88,56 @@ namespace Tag.Ui.Menu
                 tex.Apply();
                 _chip = Sprite.Create(tex, new Rect(0f, 0f, n, n), new Vector2(0.5f, 0.5f), n, 0, SpriteMeshType.FullRect, new Vector4(10f, 10f, 10f, 10f));
                 return _chip;
+            }
+        }
+
+        public static Sprite Soft
+        {
+            get
+            {
+                if (_soft != null) return _soft;
+                const int n = 64;
+                var tex = new Texture2D(n, n, TextureFormat.RGBA32, false);
+                tex.wrapMode = TextureWrapMode.Clamp;
+                for (int y = 0; y < n; y++)
+                {
+                    for (int x = 0; x < n; x++)
+                    {
+                        float dx = (x + 0.5f - n * 0.5f) / (n * 0.42f);
+                        float dy = (y + 0.5f - n * 0.5f) / (n * 0.42f);
+                        float d = Mathf.Sqrt(dx * dx + dy * dy);
+                        float a = d >= 1f ? 0f : (1f - d) * (1f - d);
+                        tex.SetPixel(x, y, new Color(1f, 1f, 1f, a));
+                    }
+                }
+                tex.Apply();
+                _soft = Sprite.Create(tex, new Rect(0f, 0f, n, n), new Vector2(0.5f, 0.5f), n);
+                return _soft;
+            }
+        }
+
+        public static Sprite Sheen
+        {
+            get
+            {
+                if (_sheen != null) return _sheen;
+                const int w = 64;
+                const int h = 32;
+                var tex = new Texture2D(w, h, TextureFormat.RGBA32, false);
+                tex.wrapMode = TextureWrapMode.Clamp;
+                for (int y = 0; y < h; y++)
+                {
+                    float band = 1f - Mathf.Abs(y - h * 0.62f) / (h * 0.55f);
+                    if (band < 0f) band = 0f;
+                    for (int x = 0; x < w; x++)
+                    {
+                        float edge = Cover(x + 0.5f, y + 0.5f, w, h, 10f);
+                        tex.SetPixel(x, y, new Color(1f, 1f, 1f, edge * band));
+                    }
+                }
+                tex.Apply();
+                _sheen = Sprite.Create(tex, new Rect(0f, 0f, w, h), new Vector2(0.5f, 0.5f), 64f);
+                return _sheen;
             }
         }
 

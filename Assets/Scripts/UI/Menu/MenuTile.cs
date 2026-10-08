@@ -24,6 +24,7 @@ namespace Tag.Ui.Menu
         bool _hot;
         float _punch;
         float _confirm;
+        float _vel;
         Color _base;
         Color _hotColor;
         Vector2 _rest;
@@ -86,10 +87,11 @@ namespace Tag.Ui.Menu
 
         void Update()
         {
-            float target = _hot ? 1.05f : 1f;
+            float target = _hot ? MenuPolish.HotScale : 1f;
             RectTransform rt = transform as RectTransform;
             if (MenuVideo.ReduceMotion)
             {
+                _vel = 0f;
                 transform.localScale = new Vector3(target, target, 1f);
                 if (rt != null && _restSet) rt.anchoredPosition = _rest;
                 HideSweep();
@@ -112,8 +114,8 @@ namespace Tag.Ui.Menu
                     : Mathf.Lerp(1.1f, 1f, (t - 0.35f) / 0.65f);
                 target *= kick;
             }
-            Vector3 scale = transform.localScale;
-            float next = Mathf.Lerp(scale.x, target, 1f - Mathf.Exp(-14f * Time.unscaledDeltaTime));
+            float next = transform.localScale.x;
+            MenuPolish.Spring(ref next, ref _vel, target, Time.unscaledDeltaTime);
             transform.localScale = new Vector3(next, next, 1f);
             if (rt != null && _restSet)
             {

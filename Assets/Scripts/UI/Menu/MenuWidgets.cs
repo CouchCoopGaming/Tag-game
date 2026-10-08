@@ -61,14 +61,22 @@ namespace Tag.Ui.Menu
             return label;
         }
 
+        public static Text Heading(Transform parent, string text, int size, TextAnchor align, Color color, Vector2 anchorMin, Vector2 anchorMax)
+        {
+            Text label = Words(parent, text, size, align, color, anchorMin, anchorMax);
+            label.font = MenuTheme.Display;
+            return label;
+        }
+
         public static MenuTile Tile(Transform parent, float x, float y, float w, float h, int index, string label, string detail, bool allow, Action<int> hover, Action<int> press)
         {
             var rt = Place(parent, "Tile" + index.ToString(), x, y, w, h);
             rt.pivot = new Vector2(0.5f, 0.5f);
             rt.anchoredPosition = new Vector2(x + w * 0.5f, -y - h * 0.5f);
-            var shadow = Place(rt, "Shadow", 10f, 12f, w, h);
+            var shadow = Place(rt, "Shadow", -8f, 10f, w + 16f, h + 28f);
             var shadowImage = shadow.gameObject.AddComponent<Image>();
-            MenuArt.Plate(shadowImage, MenuTheme.Shadow, true);
+            shadowImage.sprite = MenuArt.Soft;
+            shadowImage.color = new Color(0f, 0f, 0f, 0.42f);
             shadowImage.raycastTarget = false;
 
             var strokeRt = Place(rt, "Stroke", -5f, -5f, w + 10f, h + 10f);
@@ -79,6 +87,13 @@ namespace Tag.Ui.Menu
             var fill = Place(rt, "Fill", 0f, 0f, w, h);
             var plate = fill.gameObject.AddComponent<Image>();
             MenuArt.Plate(plate, allow ? MenuTheme.Panel : MenuTheme.Off, true);
+            float sheenH = h * 0.42f;
+            if (sheenH < 18f) sheenH = 18f;
+            var sheen = Place(rt, "Sheen", 8f, 6f, w - 16f, sheenH);
+            var sheenImage = sheen.gameObject.AddComponent<Image>();
+            sheenImage.sprite = MenuArt.Sheen;
+            sheenImage.color = new Color(1f, 1f, 1f, 0.34f);
+            sheenImage.raycastTarget = false;
             var button = rt.gameObject.AddComponent<Button>();
             button.targetGraphic = plate;
             button.transition = Selectable.Transition.None;
@@ -225,11 +240,11 @@ namespace Tag.Ui.Menu
             int[] oy = { 0, 0, -7, 7, -5, -5, 5, 5 };
             for (int i = 0; i < ox.Length; i++)
             {
-                Text edge = Words(root, "TAG", size, TextAnchor.MiddleCenter, MenuTheme.Stroke, Vector2.zero, Vector2.one);
+                Text edge = Heading(root, "TAG", size, TextAnchor.MiddleCenter, MenuTheme.Stroke, Vector2.zero, Vector2.one);
                 edge.alignment = TextAnchor.MiddleCenter;
                 edge.rectTransform.anchoredPosition = new Vector2(ox[i], oy[i]);
             }
-            Text fill = Words(root, "TAG", size, TextAnchor.MiddleCenter, MenuTheme.Gold, Vector2.zero, Vector2.one);
+            Text fill = Heading(root, "TAG", size, TextAnchor.MiddleCenter, MenuTheme.Gold, Vector2.zero, Vector2.one);
             fill.alignment = TextAnchor.MiddleCenter;
             return root;
         }

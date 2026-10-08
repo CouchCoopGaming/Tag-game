@@ -16,8 +16,15 @@ namespace Tag.Ui.Menu
         Quaternion _armL0, _armR0, _foreL0, _foreR0;
         Quaternion _thighL0, _thighR0, _kneeL0, _kneeR0;
         bool _primitive;
+        bool _ready;
+        float _blend;
         float _shift;
         float _breath;
+
+        public void SetReady(bool ready)
+        {
+            _ready = ready;
+        }
 
         public void Capture(bool primitive)
         {
@@ -48,33 +55,40 @@ namespace Tag.Ui.Menu
 
         void Update()
         {
+            float dt = Time.unscaledDeltaTime;
+            float goal = _ready ? 1f : 0f;
             if (MenuVideo.ReduceMotion)
             {
-                Apply(IdlePose.At(0f, 0f));
+                _blend = goal;
+                Apply(IdlePose.At(0f, 0f), _blend);
                 return;
             }
-            float dt = Time.unscaledDeltaTime;
+            if (dt > 0.05f) dt = 0.05f;
+            _blend = Mathf.MoveTowards(_blend, goal, dt / 0.18f);
             _shift += IdlePose.ShiftRate * dt;
             _breath += IdlePose.BreathRate * dt;
-            Apply(IdlePose.At(_shift, _breath));
+            Apply(IdlePose.At(_shift, _breath), _blend);
         }
 
-        void Apply(IdlePose.Sample s)
+        void Apply(IdlePose.Sample s, float ready)
         {
-            Set(_hips, _hips0, 0f, 0f, s.HipRoll);
-            Set(_spine, _spine0, s.ChestPitch, 0f, s.ChestRoll);
-            Set(_head, _head0, s.HeadPitch, 0f, 0f);
+            if (ready < 0f) ready = 0f;
+            if (ready > 1f) ready = 1f;
+            float idle = 1f - ready;
+            Set(_hips, _hips0, 0f, 0f, s.HipRoll * idle);
+            Set(_spine, _spine0, s.ChestPitch * idle + (-8f * ready), 0f, s.ChestRoll * idle);
+            Set(_head, _head0, s.HeadPitch * idle + (-4f * ready), 0f, 0f);
             float hang = _primitive ? VerbPoseClips.IdleArmPitch : 0f;
             float yaw = _primitive ? VerbPoseClips.IdleArmYaw : 0f;
             float elbow = _primitive ? VerbPoseClips.IdleElbow : 0f;
-            Set(_armL, _armL0, hang + s.Shoulder, yaw, 0f);
-            Set(_armR, _armR0, hang + s.Shoulder, -yaw, 0f);
-            Set(_foreL, _foreL0, elbow, 0f, 0f);
-            Set(_foreR, _foreR0, elbow, 0f, 0f);
-            Set(_thighL, _thighL0, s.ThighL, 0f, 0f);
-            Set(_thighR, _thighR0, s.ThighR, 0f, 0f);
-            Set(_kneeL, _kneeL0, s.KneeL, 0f, 0f);
-            Set(_kneeR, _kneeR0, s.KneeR, 0f, 0f);
+            Set(_armL, _armL0, (hang + s.Shoulder) * idle + (-58f * ready), yaw * idle, 0f);
+            Set(_armR, _armR0, (hang + s.Shoulder) * idle + (-58f * ready), -yaw * idle, 0f);
+            Set(_foreL, _foreL0, elbow * idle + (42f * ready), 0f, 0f);
+            Set(_foreR, _foreR0, elbow * idle + (42f * ready), 0f, 0f);
+            Set(_thighL, _thighL0, s.ThighL * idle + (10f * ready), 0f, 0f);
+            Set(_thighR, _thighR0, s.ThighR * idle + (10f * ready), 0f, 0f);
+            Set(_kneeL, _kneeL0, s.KneeL * idle + (16f * ready), 0f, 0f);
+            Set(_kneeR, _kneeR0, s.KneeR * idle + (16f * ready), 0f, 0f);
         }
 
         static Quaternion Rest(Transform t)
