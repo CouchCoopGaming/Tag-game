@@ -33,8 +33,10 @@ WALL_TOP_Z = 4.0
 WALL_FACE_X = 0.0
 WALL_BACK_X = -0.24
 WALL_Y_HALF = 2.6
-# Climb hip stays on this line. The mantle then carries it onto the slab.
-HIP_RAIL_X = 0.72
+# Climb hip stays on this line, close to the face. A 0.72 m rail left the
+# plant hip half a metre off the brick, so the shin read as a kick. Plants
+# seat the sole and land near this x. The mantle then carries it onto the slab.
+HIP_RAIL_X = 0.46
 
 # Parent, child. The shared joint is the child bone's head.
 NEIGHBORS = (
@@ -1680,6 +1682,11 @@ def _wall_reach(arm, ch, side, facing):
     return best
 
 
+def _shin_wall_deg(shin):
+    """Angle between the shin and the vertical wall. 0 is straight up the face."""
+    return math.degrees(math.acos(max(-1.0, min(1.0, abs(float(shin.z))))))
+
+
 def _shin_world(arm, side):
     """Unit shin, knee to ankle, plus the sole-patch centre."""
     from mathutils import Vector
@@ -1929,13 +1936,11 @@ def _chest_over_edge(arm):
 
 
 def _pose_wall_step(arm, ch, side, phase, local, lean_deg=-14.0, reach_top=False):
-    """One step: drive the knee up, plant near 90°, then extend and push.
+    """One step: swing the knee up, plant the sole on the face, push up.
 
-    Thigh and shin are 0.456 m. The plant aims are perpendicular, so the knee
-    is 90° and the foot sits at hip height. The push aims drop the foot about
-    0.40 m below the hip and add about 0.10 m of reach, which is the body
-    going up and slightly away. The behind-camera reference is more upright.
-    That excess is measured afterwards, not posed away.
+    Thigh and shin are 0.456 m. The plant shin sits about 38° off the
+    vertical face, toes up the brick, sole on the wall. The hip stays close
+    enough for that angle. The push does not open into a horizontal kick.
     """
     from mathutils import Vector, Euler
     other = "R" if side == "L" else "L"
@@ -1953,12 +1958,17 @@ def _pose_wall_step(arm, ch, side, phase, local, lean_deg=-14.0, reach_top=False
     # lead starts here and the legs do not pop when they swap.
     sw_th = Vector((-0.45, plat, 0.82))
     sw_sh = Vector((-0.38, 0.0, -0.80))
-    # Unit thigh (−0.71, 0, 0.71) · unit shin (−0.71, 0, −0.71) = 0 → 90°.
-    pl_th = Vector((-0.71, plat, 0.71))
-    pl_sh = Vector((-0.71, 0.0, -0.71))
-    # Knee stays near 45°. Not a locked straight kick.
-    pu_th = Vector((-0.64, plat, -0.77))
-    pu_sh = Vector((-0.99, 0.0, -0.11))
+    # Shin about 38° off the vertical face, toes up the brick. The thigh
+    # stays steep and a little wide of the chest, so the hip sits near the
+    # wall instead of half a metre out. A 90° knee with the foot at hip
+    # height is what held the pelvis at x ≈ 0.66.
+    plant_lat = 0.24 if side == "L" else -0.24
+    pl_th = Vector((-0.38, plant_lat, 0.92))
+    pl_sh = Vector((-0.62, 0.0, -0.78))
+    # The push keeps that shin. Opening into a horizontal kick is what
+    # shoved the last step off the face.
+    pu_th = Vector((-0.32, plant_lat, 0.88))
+    pu_sh = Vector((-0.60, 0.0, -0.80))
     hang_th = Vector((0.48, olat, -0.82))
     hang_sh = Vector((0.18, olat * 0.4, -0.94))
     pu_trail_th = Vector((-0.64, olat, -0.77))
@@ -1997,12 +2007,13 @@ def _pose_wall_step(arm, ch, side, phase, local, lean_deg=-14.0, reach_top=False
         thigh = pl_th
         shin = pl_sh
         # Free knee drives up beside the hip, on the outside of the brick.
-        trail_th = Vector((0.25, olat, 0.92))
-        trail_sh = Vector((0.10, olat * 0.4, -0.92))
+        trail_lat = 0.22 if other == "L" else -0.22
+        trail_th = Vector((0.25, trail_lat, 0.92))
+        trail_sh = Vector((0.10, trail_lat * 0.4, -0.92))
     else:
-        # A full extension shoves the hip about 22 cm off the plant. Keep
-        # most of the plant's reach so the trail stays nearly straight.
-        t = _clamp((local - 0.72) / 0.28, 0.0, 1.0) * 0.40
+        # Stay on the plant's reach. A full extension shoved the hip out
+        # and left the sole kicking air.
+        t = _clamp((local - 0.72) / 0.28, 0.0, 1.0) * 0.35
         thigh = pl_th.lerp(pu_th, t)
         shin = pl_sh.lerp(pu_sh, t)
         trail_th = hang_th.lerp(next_th, t)
@@ -2359,6 +2370,52 @@ def _hip_above_soles(arm):
     return hip.z - low
 
 
+def _drive_mantle_knee(arm, side):
+    """Near knee up toward the chest, foot tucked under it on the near side."""
+    sign = 1.0 if side == "L" else -1.0
+    _aim_bone_axis(arm, f"UpperLeg_{side}", (0.0, 1.0, 0.0), (-0.08, 0.22 * sign, 0.97))
+    _aim_bone_axis(arm, f"LowerLeg_{side}", (0.0, 1.0, 0.0), (0.28, 0.10 * sign, -0.88))
+    _orient_sole(arm, side, (0.10, 0.0, 0.96), (0.75, 0.0, -0.20))
+
+
+def _hang_mantle_leg(arm, side, off_edge=False):
+    """Other leg bent under the body, or dropped off the lip. Not an arabesque."""
+    sign = 1.0 if side == "L" else -1.0
+    if off_edge:
+        # Hip is over the slab. The thigh drops off the near edge and the
+        # shin folds so the foot hangs below the lip, in the open.
+        _aim_bone_axis(arm, f"UpperLeg_{side}", (0.0, 1.0, 0.0), (0.42, 0.28 * sign, -0.82))
+        _aim_bone_axis(arm, f"LowerLeg_{side}", (0.0, 1.0, 0.0), (0.05, 0.58 * sign, -0.62))
+        _orient_sole(arm, side, (0.10, 0.0, -0.20), (0.25, 0.0, -0.92))
+        return
+    # Still in front of the wall. Knee tucks up under the hip. A thigh aimed
+    # back along +X is the horizontal trail the mantle must not have.
+    _aim_bone_axis(arm, f"UpperLeg_{side}", (0.0, 1.0, 0.0), (0.06, 0.34 * sign, -0.92))
+    _aim_bone_axis(arm, f"LowerLeg_{side}", (0.0, 1.0, 0.0), (0.12, 0.42 * sign, 0.72))
+    _orient_sole(arm, side, (0.05, 0.0, 0.85), (0.55, 0.0, -0.35))
+
+
+def _keep_leg_bent_clear(arm, side, margin=0.03):
+    """Nudge a leg out of the brick without locking the knee straight."""
+    from mathutils import Vector
+    for _step in range(5):
+        xs = []
+        for token in (f"UpperLeg_{side}", f"LowerLeg_{side}", f"Foot_{side}"):
+            xs.extend(v.x for v in p5._verts(token))
+        if not xs or min(xs) >= margin:
+            return
+        th = Vector(_bone_world_axis(arm, f"UpperLeg_{side}", (0.0, 1.0, 0.0)))
+        sh = Vector(_bone_world_axis(arm, f"LowerLeg_{side}", (0.0, 1.0, 0.0)))
+        _aim_bone_axis(
+            arm, f"UpperLeg_{side}", (0.0, 1.0, 0.0),
+            Vector((th.x + 0.16, th.y, th.z)),
+        )
+        _aim_bone_axis(
+            arm, f"LowerLeg_{side}", (0.0, 1.0, 0.0),
+            Vector((sh.x + 0.10, sh.y, sh.z)),
+        )
+
+
 def _hook_knee(arm, side, knee_z=None):
     """Lay one knee on the wall top. The foot stays above the slab."""
     from mathutils import Vector
@@ -2589,7 +2646,13 @@ def solve_wallrun(arm, samples, times):
                 )
                 _seat_sole(arm, other, (0.0, 0.0, 0.0), (0.0, 0.0, 1.0), clearance=0.006)
             hip = p5._head_w(arm, "Hips")
-            arm.location.x += HIP_RAIL_X - hip.x
+            dx = HIP_RAIL_X - hip.x
+            foot_vs = p5._verts(f"Foot_{other}")
+            foot_min = min((v.x for v in foot_vs), default=1.0)
+            # A closer rail must not drag the drive sole into the brick.
+            if foot_min + dx < 0.04:
+                dx = 0.04 - foot_min
+            arm.location.x += dx
             arm.location.y -= hip.y
             bpy_update()
             _seat_sole(arm, other, (0.0, 0.0, 0.0), (0.0, 0.0, 1.0), clearance=0.006)
@@ -2621,7 +2684,7 @@ def solve_wallrun(arm, samples, times):
         hip_now_early = p5._head_w(arm, "Hips")
         row["hip_x"] = float(hip_now_early.x)
         row["hip_y"] = float(hip_now_early.y)
-        row["shin_deg"] = math.degrees(math.asin(max(-1.0, min(1.0, abs(shin.z)))))
+        row["shin_deg"] = _shin_wall_deg(shin)
         row["foot_below_hip"] = body["hip_z"] - sole_c.z
         row["sole_L_cm"] = _sole_gap(arm, "L", wall_o, normal) * 100.0
         row["sole_R_cm"] = _sole_gap(arm, "R", wall_o, normal) * 100.0
@@ -2658,7 +2721,7 @@ def solve_wallrun(arm, samples, times):
         lead_cm = row["sole_L_cm"] if side == "L" else row["sole_R_cm"]
         trail_cm = row["sole_R_cm"] if side == "L" else row["sole_L_cm"]
         bad_sole = (on and lead_cm > 1.05) or ((not on) and lead_cm <= 1.05) or trail_cm <= 1.05
-        if bad_sole or dipped or i % 4 == 0 or i == n - 1:
+        if bad_sole or dipped or phase == "plant" or i % 4 == 0 or i == n - 1:
             chest_x = min((v.x for v in p5._verts("Chest")), default=0.0)
             deep_name, deep_x = "", 1.0
             for token in (
@@ -2677,7 +2740,7 @@ def solve_wallrun(arm, samples, times):
                 f"soleL={row['sole_L_cm']:.2f} soleR={row['sole_R_cm']:.2f} "
                 f"hipX={row['hip_x']:.3f} hipY={row['hip_y']:.3f} hipZ={body['hip_z']:.3f} "
                 f"footZ={sole_c.z:.3f} "
-                f"chestX={chest_x:.3f} shin={row['shin_deg']:.0f} "
+                f"chestX={chest_x:.3f} shinWall={row['shin_deg']:.0f} "
                 f"below={row['foot_below_hip']:.2f} faceX={face_z.x:.2f} "
                 f"knee={body['knee_L']:.0f}/{body['knee_R']:.0f} "
                 f"elb={row['elbow_L']:.0f}/{row['elbow_R']:.0f} "
@@ -2736,14 +2799,13 @@ def solve_wallrun(arm, samples, times):
             _place_hip_at(arm, hx, 0.0, hz)
             gap_l = gap_r = xl = xr = 0.0
             if phase in ("palms", "press"):
-                # Feet stay on the near side of the face so the shins do not
-                # enter the slab while the hands take the top.
-                for s, lat in ((side, 0.14), (other, -0.18)):
-                    _aim_bone_axis(arm, f"UpperLeg_{s}", (0.0, 1.0, 0.0), (0.62, lat, 0.45))
-                    _aim_bone_axis(arm, f"LowerLeg_{s}", (0.0, 1.0, 0.0), (0.72, lat * 0.3, 0.05))
+                # Near knee drives up toward the chest. The other leg hangs
+                # bent below the lip. Both palms stay on the slab.
+                _drive_mantle_knee(arm, side)
+                _hang_mantle_leg(arm, other)
                 _place_hip_at(arm, hx, 0.0, hz)
-                _keep_foot_off_wall(arm, side, margin=0.05)
-                _keep_foot_off_wall(arm, other, margin=0.05)
+                _keep_leg_bent_clear(arm, side, margin=0.04)
+                _keep_leg_bent_clear(arm, other, margin=0.04)
                 _place_hip_at(arm, hx, 0.0, hz)
                 gap_l, gap_r, xl, xr = _place_palms_on_top(arm)
                 _place_hip_at(arm, hx, 0.0, hz)
@@ -2752,25 +2814,23 @@ def solve_wallrun(arm, samples, times):
                 # too high to keep the palms down, so the arms stay wide
                 # instead of folding back through the chest. Hooking while the
                 # hips are still in front of the lip drives the thigh through
-                # the top corner, so those frames only rise.
+                # the top corner, so those frames only rise, knee still up.
                 knee_z = WALL_TOP_Z + 0.012
                 ready = hz >= 4.24 and hx <= 0.08
                 if not ready:
                     hz = max(hz, (prev_hip or hz) + 0.14)
                     hx = max(hx, 0.16)
-                    for s, lat in ((side, 0.16), (other, -0.16)):
-                        _aim_bone_axis(arm, f"UpperLeg_{s}", (0.0, 1.0, 0.0), (0.70, lat, 0.42))
-                        _aim_bone_axis(arm, f"LowerLeg_{s}", (0.0, 1.0, 0.0), (0.76, lat * 0.3, 0.08))
+                    _drive_mantle_knee(arm, side)
+                    _hang_mantle_leg(arm, other)
                     _place_hip_at(arm, hx, 0.0, hz)
-                    _keep_foot_off_wall(arm, side, margin=0.06)
-                    _keep_foot_off_wall(arm, other, margin=0.06)
+                    _keep_leg_bent_clear(arm, side, margin=0.05)
+                    _keep_leg_bent_clear(arm, other, margin=0.05)
                     _place_hip_at(arm, hx, 0.0, hz)
                     _arms_wide_of_chest(arm)
                     _place_hip_at(arm, hx, 0.0, hz)
                 else:
                     _hook_knee(arm, side, knee_z=knee_z)
-                    _aim_bone_axis(arm, f"UpperLeg_{other}", (0.0, 1.0, 0.0), (0.72, -0.18, 0.40))
-                    _aim_bone_axis(arm, f"LowerLeg_{other}", (0.0, 1.0, 0.0), (0.78, -0.08, 0.15))
+                    _hang_mantle_leg(arm, other, off_edge=True)
                     _place_hip_at(arm, hx, 0.0, hz)
                     for _nudge in range(6):
                         kz, kx = _knee_on_slab(arm, side)
@@ -2794,8 +2854,7 @@ def solve_wallrun(arm, samples, times):
                         hz = max(hz, (prev_hip or hz) + 0.012)
                         _place_hip_at(arm, hx, 0.0, hz)
                         _hook_knee(arm, side, knee_z=knee_z)
-                        _aim_bone_axis(arm, f"UpperLeg_{other}", (0.0, 1.0, 0.0), (0.72, -0.18, 0.40))
-                        _aim_bone_axis(arm, f"LowerLeg_{other}", (0.0, 1.0, 0.0), (0.78, -0.08, 0.15))
+                        _hang_mantle_leg(arm, other, off_edge=True)
                     for _over in range(12):
                         over_now, _cx, _cz = _chest_over_edge(arm)
                         if over_now and _body_world_pen() <= 0.004:
@@ -2804,20 +2863,22 @@ def solve_wallrun(arm, samples, times):
                         hz = max(hz + 0.018, (prev_hip or hz) + 0.012)
                         _place_hip_at(arm, hx, 0.0, hz)
                         _hook_knee(arm, side, knee_z=knee_z)
-                        _aim_bone_axis(arm, f"UpperLeg_{other}", (0.0, 1.0, 0.0), (0.72, -0.18, 0.40))
-                        _aim_bone_axis(arm, f"LowerLeg_{other}", (0.0, 1.0, 0.0), (0.78, -0.08, 0.15))
-                        _keep_foot_off_wall(arm, other, margin=0.08)
+                        _hang_mantle_leg(arm, other, off_edge=True)
+                        _keep_leg_bent_clear(arm, other, margin=0.04)
                         if _body_world_pen() > 0.004:
                             hz += 0.03
                             _place_hip_at(arm, hx, 0.0, hz)
                             _hook_knee(arm, side, knee_z=knee_z)
+                            _hang_mantle_leg(arm, other, off_edge=True)
                             if _body_world_pen() > 0.004:
                                 hx = min(0.16, hx + 0.025)
                                 _place_hip_at(arm, hx, 0.0, hz)
                                 _hook_knee(arm, side, knee_z=knee_z)
+                                _hang_mantle_leg(arm, other, off_edge=True)
                                 break
                     _arms_wide_of_chest(arm)
                     _place_hip_at(arm, hx, 0.0, hz)
+                    _hang_mantle_leg(arm, other, off_edge=True)
             else:
                 _stand_legs(arm)
                 hz = WALL_TOP_Z + 0.010 + _hip_above_soles(arm)
@@ -2843,7 +2904,7 @@ def solve_wallrun(arm, samples, times):
             row["hip_z"] = body["hip_z"]
             row["hip_x"] = float(hip_now.x)
             row["hip_y"] = float(hip_now.y)
-            row["shin_deg"] = math.degrees(math.asin(max(-1.0, min(1.0, abs(shin.z)))))
+            row["shin_deg"] = _shin_wall_deg(shin)
             row["foot_below_hip"] = body["hip_z"] - sole_c.z
             row["sole_L_cm"] = _sole_gap(arm, "L", wall_o, normal) * 100.0
             row["sole_R_cm"] = _sole_gap(arm, "R", wall_o, normal) * 100.0
@@ -2940,10 +3001,12 @@ def solve_wallrun(arm, samples, times):
     sheet_lines = []
     for s, idx in enumerate(sheet):
         r = rows[idx]
+        lead_sole = r.get("sole_L_cm", 0.0) if r.get("plant") == "L" else r.get("sole_R_cm", 0.0)
         sheet_lines.append(
             f"  cell {s + 1} f={idx} t={r['t']:.2f}s phase={r['phase']} "
             f"lean={r['lean']:+.1f} hip=({r.get('hip_x', 0):.2f},"
-            f"{r.get('hip_y', 0):.2f},{r['hip_z']:.2f})"
+            f"{r.get('hip_y', 0):.2f},{r['hip_z']:.2f}) "
+            f"shinWall={r.get('shin_deg', 0):.0f} sole={lead_sole:.2f}"
         )
         print("SHEET" + sheet_lines[-1], flush=True)
     return {
@@ -2954,13 +3017,14 @@ def solve_wallrun(arm, samples, times):
         "world": {"kind": "wall", "top_z": WALL_TOP_Z},
         "note": (
             "The source window is the climb, 0.60–2.00 s, filmed from behind. "
-            "The clip opens on the last run-in stride. The hip stays on a straight "
-            "rail through the climb (no swing wobble) and then moves one way onto "
-            "the slab. Trunk lean is the measured chest angle toward the wall, "
-            "positive into the face, including the last push and the mantle. The "
-            "free arm swings out, opposite the plant leg. After the reach the "
-            "palms plant, the chest comes over the edge, one knee lands on the "
-            "slab, and the clip ends standing. No new verb. "
+            "The clip opens on the last run-in stride. The hip rail sits close "
+            "to the face so each plant shin is about 30–45° off the wall, sole "
+            "at 0.5 cm, toes up the brick. The drawn trail is a 3-frame average "
+            "of that measured path; the dots are the raw samples. Trunk lean is "
+            "the measured chest angle toward the wall, positive into the face. "
+            "After the reach the near knee drives up, both palms stay on the "
+            "slab through the press, the other leg hangs bent below the lip, "
+            "then one knee lands and the clip ends standing. No new verb. "
             "No side-on view of this vertical plant is in the downloaded set. "
             "Clip 19 is not posed. The slide was not re-posed."
         ),
@@ -3841,11 +3905,29 @@ def pose_from_key(arm, solved, i, spec):
     _show_for(spec, arm, solved)
 
 
-def _set_hip_ghost(path, show):
-    """A ribbon of the hip path, in front of the body. Hidden for the slide and the 180.
+def _moving_average(path, window=3):
+    """Centered moving average. The stored path stays raw."""
+    n = len(path)
+    half = window // 2
+    out = []
+    for i in range(n):
+        acc = [0.0, 0.0, 0.0]
+        count = 0
+        for j in range(max(0, i - half), min(n, i + half + 1)):
+            acc[0] += path[j][0]
+            acc[1] += path[j][1]
+            acc[2] += path[j][2]
+            count += 1
+        out.append((acc[0] / count, acc[1] / count, acc[2] / count))
+    return out
 
-    A beveled curve disappeared into the brick in the upper cells. A camera-facing
-    mesh with a flat emission shader stays visible on the wall.
+
+def _set_hip_ghost(path, show):
+    """Smoothed hip ribbon plus a dot on every raw sample.
+
+    The line is a 3-frame average so the climb reads. The dots are the
+    measured samples, so a sideways wobble stays visible. Hidden for the
+    slide and the 180. Workbench draws the viewport colour, not emission.
     """
     import bpy
     import bmesh
@@ -3865,11 +3947,8 @@ def _set_hip_ghost(path, show):
         bpy.context.scene.collection.objects.link(ob)
         mat = bpy.data.materials.new(name + "Mat")
         mat.use_nodes = True
-        # Workbench (this build has no classic EEVEE) draws the viewport
-        # colour, not the emission shader. Both have to be the same cyan.
         mat.diffuse_color = (0.05, 0.85, 1.0, 1.0)
         nodes = mat.node_tree.nodes
-        links = mat.node_tree.links
         bsdf = nodes.get("Principled BSDF")
         if bsdf is not None and "Base Color" in bsdf.inputs:
             bsdf.inputs["Base Color"].default_value = (0.05, 0.85, 1.0, 1.0)
@@ -3878,17 +3957,30 @@ def _set_hip_ghost(path, show):
             if "Emission Strength" in bsdf.inputs:
                 bsdf.inputs["Emission Strength"].default_value = 4.0
         ob.data.materials.append(mat)
-    # 7 cm wide, on the camera side of the body, so the brick cannot hide it.
-    half = 0.035
+    smooth = _moving_average(path, 3)
+    half = 0.028
     y = -1.20
+    y_dot = -1.34
     bm = bmesh.new()
     verts = []
-    for p in path:
+    for p in smooth:
         verts.append(bm.verts.new((p[0] - half, y, p[2])))
         verts.append(bm.verts.new((p[0] + half, y, p[2])))
     bm.verts.ensure_lookup_table()
-    for i in range(len(path) - 1):
+    for i in range(len(smooth) - 1):
         bm.faces.new((verts[2 * i], verts[2 * i + 1], verts[2 * i + 3], verts[2 * i + 2]))
+    # Raw samples. A disc in the side-view plane, in front of the ribbon.
+    dot_r = 0.026
+    for p in path:
+        ring = []
+        for k in range(8):
+            ang = k / 8.0 * math.tau
+            ring.append(bm.verts.new((
+                p[0] + dot_r * math.cos(ang),
+                y_dot,
+                p[2] + dot_r * math.sin(ang),
+            )))
+        bm.faces.new(ring)
     bm.to_mesh(ob.data)
     bm.free()
     ob.data.update()
@@ -4002,6 +4094,82 @@ def _body_bounds():
     )
 
 
+def _wall_body_frame(arm):
+    """Focus and ortho scale so the figure is about 70% of a portrait cell.
+
+    The wall face stays in frame. The lip is included once the body is near it.
+    Returns focus xyz, ortho scale (world height), and figure/frame fraction.
+    """
+    from mathutils import Vector
+    mn, mx = _body_bounds()
+    head = Vector(p5._head_w(arm, "Head"))
+    head_top = head.z + float(arm.pose.bones["Head"].length)
+    foot_z = mx.z
+    for side in ("L", "R"):
+        vs = p5._verts(f"Foot_{side}")
+        if vs:
+            foot_z = min(foot_z, min(v.z for v in vs))
+    top = max(head_top, mx.z)
+    bot = min(foot_z, mn.z)
+    figure_h = max(1.05, top - bot)
+    scale = figure_h / 0.70
+    aspect = 394.0 / 500.0
+    z0 = bot - 0.08
+    z1 = top + 0.10
+    # The lip comes into frame once the body is up at it. A wide arm does
+    # not zoom the figure out: the cell stays on the body.
+    if top >= WALL_TOP_Z - 0.75:
+        lip = WALL_TOP_Z + 0.14
+        if (lip - (bot - 0.06)) <= figure_h / 0.64:
+            z1 = max(z1, lip)
+    if bot <= 0.35:
+        z0 = min(z0, -0.02)
+    need_h = z1 - z0
+    if need_h > scale and need_h <= figure_h / 0.64:
+        scale = need_h
+    x0 = WALL_BACK_X - 0.05
+    x1 = mx.x + 0.08
+    half_h = scale * 0.5
+    half_w = scale * aspect * 0.5
+    cz = (bot + top) * 0.5
+    cx = (mn.x + mx.x) * 0.5
+    if cz - half_h > z0:
+        cz = z0 + half_h
+    if cz + half_h < z1:
+        cz = z1 - half_h
+    if cx - half_w > x0:
+        cx = x0 + half_w
+    if cx + half_w < x1:
+        cx = x1 - half_w
+    frac = figure_h / scale if scale else 0.0
+    return (cx, 0.0, cz), scale, frac
+
+
+def _plant_inset_camera(arm, main_scale):
+    """Edge-on close-up of the planted sole and the wall, at 4× the cell.
+
+    Displayed at 176 px inside a 500 px cell. Ortho scale is the world height
+    of that inset, so a pixel there covers one quarter of a cell pixel.
+    """
+    from mathutils import Vector
+    best = None
+    for side in ("L", "R"):
+        _n, patch = _sole_patch(arm, side)
+        if not patch:
+            continue
+        cx = min(v.x for v in patch)
+        cz = sum(v.z for v in patch) / len(patch)
+        if best is None or cx < best[0]:
+            best = (cx, cz)
+    sole_x, sole_z = (0.02, 1.5) if best is None else best
+    disp = 176.0
+    world_h = disp * float(main_scale) / (4.0 * 500.0)
+    world_h = max(world_h, 0.16)
+    focus = ((sole_x + WALL_FACE_X) * 0.45, 0.0, sole_z + 0.035)
+    loc = (focus[0], -6.0, focus[2])
+    return loc, focus, world_h
+
+
 def _shot_for(spec, arm):
     """Perspective framed on the pelvis, wide enough for the whole body and the prop."""
     from mathutils import Vector
@@ -4015,15 +4183,15 @@ def _shot_for(spec, arm):
     if spec["verb"] == "slide":
         direction = Vector((0.45, -0.8, 0.28)).normalized()
     elif spec["verb"] == "wallrun_vertical":
-        # Locked. The old focus followed the pelvis, so a higher body sat
-        # lower in the cell and the climb looked like a dip.
-        # Far enough that the near top corner of the 4 m wall, and the
-        # catch hands, stay inside the portrait frame with ground below.
-        # High enough that a figure standing on the 4 m wall stays in frame.
-        focus = Vector((0.05, 0.0, 3.15))
+        # Each cell is framed on the body. Vertical FOV at 48 mm with a
+        # vertical sensor fit is about 28°, so distance ≈ 2.0 × the world
+        # height that should fill the cell.
+        focus, scale, frac = _wall_body_frame(arm)
         direction = Vector((0.85, 0.55, 0.0)).normalized()
-        loc = focus + direction * 19.5
-        return (loc.x, loc.y, loc.z), (focus.x, focus.y, focus.z)
+        dist = scale * 2.05
+        loc = Vector(focus) + direction * dist
+        print(f"  cam3/4 scale={scale:.2f} fig={frac:.2f} focus={focus}", flush=True)
+        return (loc.x, loc.y, loc.z), focus
     else:
         direction = Vector((0.7, -0.65, 0.25)).normalized()
     loc = Vector(focus) + direction * dist
@@ -4047,13 +4215,15 @@ def _side_shot(spec, arm):
         loc = (focus[0] + 6.0, focus[1], focus[2])
         return loc, focus, scale, "Y"
     if spec["verb"] == "wallrun_vertical":
-        # One world frame for every cell. Look exactly along +Y so the brick
-        # is a vertical edge. 5.2 m centred at 2.05 m shows the ground, the
-        # full 4 m wall, the labelled ticks and the top.
-        # Ground, the full wall, the top, and a standing figure on the slab.
-        scale = 7.1
-        focus = (0.10, 0.0, 3.15)
-        loc = (0.10, -8.0, 3.15)
+        # Look exactly along +Y so the brick is a vertical edge. The frame
+        # follows the body: the figure is about 70% of the cell, with the
+        # wall face in view and the lip once the body is up at it.
+        focus, scale, frac = _wall_body_frame(arm)
+        loc = (focus[0], -8.0, focus[2])
+        print(
+            f"  camSide scale={scale:.2f} fig={frac:.2f} focus=({focus[0]:.2f},{focus[2]:.2f})",
+            flush=True,
+        )
         return loc, focus, scale, "Z"
     span_y = (mx.y - mn.y) + 1.4
     span_z = (mx.z - mn.z) + 0.8
@@ -4171,12 +4341,32 @@ def render_beats(arm, solved_all):
             i = _beat_index(solved, s)
             pose_from_key(arm, solved, i, spec)
             loc, look = _shot_for(spec, arm)
-            rh._shot(os.path.join(PREV, f"{spec['verb']}_{s}.png"), loc, look)
+            rh._shot(
+                os.path.join(PREV, f"{spec['verb']}_{s}.png"),
+                loc, look, sensor_fit=fit,
+            )
             sloc, slook, scale, up = _side_shot(spec, arm)
             rh._shot(
                 os.path.join(PREV, f"{spec['verb']}_side_{s}.png"),
                 sloc, slook, ortho=scale, up=up, sensor_fit=fit,
             )
+            errs = solved.get("errors") or []
+            phase = errs[i].get("phase") if i < len(errs) else ""
+            if spec["verb"] == "wallrun_vertical" and phase == "plant":
+                iloc, ilook, iscale = _plant_inset_camera(arm, scale)
+                scene = bpy.context.scene
+                scene.render.resolution_x = 256
+                scene.render.resolution_y = 256
+                rh._shot(
+                    os.path.join(PREV, f"{spec['verb']}_side_{s}_inset.png"),
+                    iloc, ilook, ortho=iscale, up="Z", sensor_fit="VERTICAL",
+                )
+                scene.render.resolution_x = 394
+                scene.render.resolution_y = 500
+                print(
+                    f"  inset {s} ortho={iscale:.3f} focus=({ilook[0]:.3f},{ilook[2]:.3f})",
+                    flush=True,
+                )
             print(f"still {spec['id']} {s} frame={i} t={solved['times'][i]:.2f}", flush=True)
         wi = int(solved.get("worst_i", n // 2))
         pose_from_key(arm, solved, wi, spec)
@@ -4217,6 +4407,19 @@ def _grid(frames, solved, spec, title):
         y = r * (fh + gap)
         grid.paste(fr, (x, y))
         i = _beat_index(solved, s)
+        errs = solved.get("errors") or []
+        phase = errs[i].get("phase") if 0 <= i < len(errs) else ""
+        if spec["verb"] == "wallrun_vertical" and phase == "plant":
+            inset_path = os.path.join(PREV, f"{spec['verb']}_side_{s}_inset.png")
+            if os.path.isfile(inset_path):
+                inset = Image.open(inset_path).convert("RGB")
+                box = 176
+                inset = inset.resize((box, box), Image.Resampling.LANCZOS)
+                ix = x + fw - box - 12
+                iy = y + 30
+                draw.rectangle((ix - 4, iy - 4, ix + box + 3, iy + box + 3), fill=(12, 18, 22))
+                grid.paste(inset, (ix, iy))
+                draw.text((ix + 6, iy + 4), "4x foot", fill=(220, 245, 255), font=font)
         tag = f"{s + 1}  {solved['times'][i]:.2f}s"
         errs = solved.get("errors") or []
         if spec["verb"] == "wallrun_vertical" and 0 <= i < len(errs) and "lean" in errs[i]:
@@ -4432,7 +4635,7 @@ def _write_reports(solved_all, noclip_line):
                 if "lean" in r:
                     sole += f" lean={r['lean']:+.1f}"
                 if "shin_deg" in r:
-                    sole += f" shin={r['shin_deg']:.0f} below={r['foot_below_hip']:.2f}"
+                    sole += f" shinWall={r['shin_deg']:.0f} below={r['foot_below_hip']:.2f}"
                 if "land_hip_deg" in r:
                     sole += (
                         f" drop_hip={r['land_hip_deg']:.0f} drop_knee={r['land_knee_deg']:.0f}"
