@@ -1,0 +1,109 @@
+PASS14 APPLIED
+clip 12_tictac_slanted_wall
+Spine and chest are the pass-12 reference curl. A frame may leave that curl by at most 10°.
+The thigh twist opens the abdomen. The torso is not straightened to rest.
+Pass-13 capsule drops that seated soles are removed. The preview path is the pass-12 capsule.
+Bridged ranges replace a garbage stick. Their capsule is the anchor path, not a sole drop.
+Contact soles are seated with the knee, the hip and the ankle. The capsule is not moved.
+BRIDGE f=16-16 t=0.53-0.53s anchors 15,17 (stick jump)
+BRIDGE f=26-27 t=0.87-0.90s anchors 25,28 (stick jump)
+BRIDGE f=29-33 t=0.97-1.10s anchors 28,34 (stick jump)
+BRIDGE f=38-38 t=1.27-1.27s anchors 37,39 (stick jump)
+BRIDGE f=40-41 t=1.33-1.37s anchors 39,42 (stick jump)
+BRIDGE f=47-51 t=1.57-1.70s anchors 46,52 (stick jump)
+BRIDGE f=60-61 t=2.00-2.04s anchors 59,62 (stick jump)
+BRIDGE f=63-63 t=2.10-2.10s anchors 62,64 (stick jump)
+BRIDGE f=65-67 t=2.17-2.24s anchors 64,68 (stick jump)
+BRIDGE f=99-100 t=3.30-3.34s anchors 98,101 (stick jump)
+BRIDGE f=107-107 t=3.57-3.57s anchors 106,108 (stick jump)
+BRIDGE f=114-116 t=3.80-3.87s anchors 113,117 (stick jump)
+BRIDGE f=158-159 t=5.27-5.31s anchors 157,160 (stick jump)
+BRIDGE f=162-163 t=5.41-5.44s anchors 161,164 (stick jump)
+BRIDGE f=167-167 t=5.57-5.57s anchors 166,168 (stick jump)
+BRIDGE f=0-11 t=0.00-0.37s into the approach run. Frame 0 is the stride at 0.73 s. The 0.00 s stick is a forward crash and is not retargeted.
+REKEY f=15 t=0.50s support thigh -18° and knee +14° so the stick's deep crouch is not a straight leg.
+BRIDGE f=118-155 t=3.94-5.17s into the landing crouch at 3.67 s, then up to the recovery at 5.21 s. The 4.84 s stick is a prone heap and is not retargeted.
+SPINE flex is the local Spine euler versus the reference curl. World pitch is the neck-hip angle from vertical.
+f=0 t=0.00s spine=20.0,3.0,-1.4 ref=20.0,3.0,8.6 dLocal=10.0° world=9.2° stick=49.1° dWorld=-39.9°
+f=15 t=0.50s spine=0.0,-0.2,-3.2 ref=0.0,-0.2,6.8 dLocal=10.0° world=16.8° stick=18.1° dWorld=-1.3°
+f=34 t=1.13s spine=-10.0,17.9,1.9 ref=0.0,17.9,11.8 dLocal=10.0° world=5.4° stick=6.6° dWorld=-1.1°
+f=76 t=2.54s spine=0.0,-6.5,16.5 ref=0.0,-6.5,6.5 dLocal=10.0° world=63.3° stick=57.4° dWorld=+5.9°
+f=106 t=3.54s spine=-10.0,3.3,3.0 ref=-10.0,3.3,13.0 dLocal=10.0° world=32.1° stick=31.6° dWorld=+0.4°
+f=110 t=3.67s spine=0.0,1.4,0.5 ref=0.0,1.4,10.5 dLocal=10.0° world=42.0° stick=41.7° dWorld=+0.3°
+f=145 t=4.84s spine=0.0,1.4,0.5 ref=0.0,1.4,10.5 dLocal=10.0° world=42.0° stick=128.1° dWorld=-86.1°
+f=152 t=5.07s spine=0.0,1.4,0.5 ref=0.0,1.4,10.5 dLocal=10.0° world=42.0° stick=91.2° dWorld=-49.2°
+WALL f=34 soleLead=-8.42cm gapToFace=8.12cm chestBehindHip=4.6cm
+SOLE misses (contact sole not within 1.5 cm without moving the capsule):
+f=1 L sole=2.1cm low=1.5cm
+f=6 L sole=2.8cm low=2.2cm
+f=7 L sole=2.8cm low=1.8cm
+f=8 L sole=3.3cm low=2.8cm
+f=9 L sole=3.6cm low=2.9cm
+f=10 L sole=3.8cm low=2.9cm
+f=11 L sole=3.3cm low=2.0cm
+f=15 L sole=1.9cm low=1.0cm
+f=16 L sole=3.7cm low=1.8cm
+f=26 R sole=4.2cm low=3.2cm
+f=27 R sole=1.8cm low=1.2cm
+f=37 R sole=7.4cm low=5.6cm
+f=38 R sole=3.9cm low=2.3cm
+f=40 L sole=1.7cm low=1.0cm
+f=56 L sole=1.5cm low=0.9cm
+f=60 L sole=4.2cm low=3.1cm
+f=69 L sole=2.0cm low=1.3cm
+f=79 L sole=1.8cm low=1.1cm
+f=80 L sole=1.8cm low=1.2cm
+f=86 L sole=4.5cm low=3.7cm
+f=88 L sole=2.1cm low=1.6cm
+f=92 R sole=1.5cm low=1.0cm
+f=99 R sole=-0.6cm low=-1.7cm
+f=100 R sole=-0.1cm low=-1.3cm
+f=107 R sole=1.5cm low=0.8cm
+f=108 R sole=0.1cm low=-0.6cm
+f=109 L sole=2.6cm low=1.9cm
+f=109 R sole=0.6cm low=-0.5cm
+f=110 L sole=-0.2cm low=-1.0cm
+f=111 L sole=1.5cm low=0.8cm
+f=112 L sole=4.0cm low=0.7cm
+f=113 L sole=-6.6cm low=-8.1cm
+f=114 L sole=2.1cm low=-0.1cm
+f=115 L sole=1.5cm low=0.9cm
+f=117 L sole=2.1cm low=0.2cm
+f=118 L sole=-0.2cm low=-1.0cm
+f=119 L sole=-0.2cm low=-1.0cm
+f=120 L sole=-0.2cm low=-1.0cm
+f=121 L sole=-0.2cm low=-1.0cm
+f=122 L sole=-0.2cm low=-1.0cm
+f=123 L sole=-0.2cm low=-1.0cm
+f=124 L sole=-0.2cm low=-1.0cm
+f=125 L sole=-0.2cm low=-1.0cm
+f=126 L sole=-0.2cm low=-1.0cm
+f=127 L sole=-0.2cm low=-1.0cm
+f=128 L sole=-0.2cm low=-1.0cm
+f=129 L sole=-0.2cm low=-1.0cm
+f=130 L sole=-0.2cm low=-1.0cm
+f=131 L sole=-0.2cm low=-1.0cm
+f=132 L sole=-0.2cm low=-1.0cm
+f=133 L sole=-0.2cm low=-1.0cm
+f=134 L sole=-0.2cm low=-1.0cm
+f=135 L sole=-0.2cm low=-1.0cm
+f=136 L sole=-0.2cm low=-1.0cm
+f=137 L sole=-0.2cm low=-1.0cm
+f=138 L sole=-0.2cm low=-1.0cm
+f=139 L sole=-0.2cm low=-1.0cm
+f=140 L sole=-0.2cm low=-1.0cm
+f=141 L sole=-0.2cm low=-1.0cm
+f=142 L sole=-0.2cm low=-1.0cm
+f=143 L sole=-0.2cm low=-1.0cm
+f=144 L sole=-0.2cm low=-1.0cm
+f=145 L sole=-0.2cm low=-1.0cm
+f=146 L sole=-0.2cm low=-1.0cm
+f=147 L sole=-0.2cm low=-1.0cm
+f=148 L sole=-0.2cm low=-1.0cm
+f=149 L sole=-0.2cm low=-1.0cm
+f=150 L sole=-0.2cm low=-1.0cm
+f=151 L sole=-0.2cm low=-1.0cm
+f=152 L sole=-0.2cm low=-1.0cm
+f=154 L sole=9.0cm low=6.4cm
+The clear thigh leaves the kick sole 8.4 cm short of the wall. The planted kick below is the one that sits on the face. The plate depth is the residual.
+WALL2 f=34 soleLead=-0.20cm plate=1.22cm kickZ=29.4cm supportSole=0.5cm shoulderBehindHip=4.6cm
