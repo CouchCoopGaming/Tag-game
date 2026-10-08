@@ -70,8 +70,8 @@ def create():
         a.box("Col_Cleat_%d" % i, (x, 0.706, z), (0.18, 0.020, 0.036))
     for i, (x, z) in enumerate(((-0.55, -1.85), (0.85, 1.70))):
         a.capsule("Col_Bollard_%d" % i, (x, 0.82, z), 0.05, 0.26, 1)
-    for i, dz in enumerate((-0.16, 0.16)):
-        a.capsule("Col_Ladder_%d" % i, (-1.74, -0.10, dz), 0.012, 1.70, 1)
+    for i, dz in enumerate((-0.18, 0.18)):
+        a.capsule("Col_Ladder_%d" % i, (-1.74, -0.10, dz), 0.016, 1.70, 1)
     return a
 
 
@@ -83,10 +83,9 @@ def _frame(g, lod):
     for i in range(count):
         z = -2.40 + (4.80 * i / (count - 1))
         g.box((0.0, 0.530, z), (2.55, 0.10, 0.08), "Lib_Wood", uv_scale=1.0)
+    # End caps only. The long side fascia hid the plank gaps, so the near face read as a wall.
     g.box((0.0, 0.42, -2.94), (2.70, 0.20, 0.05), "Lib_WoodDark", uv_scale=1.0)
     g.box((0.0, 0.42, 2.94), (2.70, 0.20, 0.05), "Lib_WoodDark", uv_scale=1.0)
-    for x in (-1.48, 1.48):
-        g.box((x, 0.42, 0.0), (0.04, 0.20, 5.80), "Lib_WoodDark", uv_scale=1.0)
 
 
 def _braces(g):
@@ -126,17 +125,17 @@ def _bollard(g, x, z, seg):
 
 
 def _ladder(g):
-    """Side ladder on -X. Rails and rungs continue well below the waterline."""
+    """Round rails and rungs on -X. Several rungs sit below the waterline."""
     x = -1.74
     y0, y1 = -1.05, 0.86
-    for dz in (-0.16, 0.16):
-        g.cylinder((x, (y0 + y1) * 0.5, dz), 0.016, y1 - y0, "Lib_Steel", 6)
-    rung = -0.88
-    while rung < 0.62:
-        g.cylinder((x, rung, 0.0), 0.012, 0.276, "Lib_Steel", 6, axis="Z")
+    for dz in (-0.18, 0.18):
+        g.cylinder((x, (y0 + y1) * 0.5, dz), 0.024, y1 - y0, "Lib_SteelDark", 8)
+    rung = -0.90
+    while rung < 0.64:
+        g.cylinder((x, rung, 0.0), 0.014, 0.30, "Lib_Steel", 8, axis="Z")
         rung += 0.28
-    for dz in (-0.16, 0.16):
-        g.box((-1.55, 0.80, dz), (0.30, 0.016, 0.026), "Lib_Steel")
+    for dz in (-0.18, 0.18):
+        g.cylinder((-1.58, 0.80, dz), 0.014, 0.26, "Lib_SteelDark", 8, axis="X")
 
 
 def _cleat(g, x, z):

@@ -2,7 +2,7 @@
 
 Logs are round and saddle-notched at the corners. The door is vertical boards.
 The porch shed sits on a ledger outside the logs, under the main eave. A brick
-chimney stands on the +X gable, from a ground footing past the ridge.
+chimney rises through the ridge, with stepped flashing, a concrete cap, and a flue.
 """
 
 import math
@@ -33,6 +33,13 @@ _SHED_Z0 = _LEDGER_Z0 + _LEDGER_D + 0.004
 _SHED_Y0 = _LEDGER_Y + 0.056
 _SHED_Z1 = 3.27
 _SHED_Y1 = 1.886
+# Chimney through the ridge. The roof hole is wider than the brick so flashing fits.
+_CH_X = 0.70
+_CH_Z = 0.0
+_CH_SX = 0.66
+_CH_SZ = 0.56
+_HOLE_X = _CH_SX * 0.5 + 0.12
+_HOLE_Z = _CH_SZ * 0.5 + 0.12
 
 
 @register
@@ -43,19 +50,19 @@ def create():
         "Log cabin 4.6 x 3.6 m, walls 2.2 m, ridge at 3.45 m, porch on +Z. "
         "Saddle-notched round logs, a vertical-board door, board-and-batten gables, "
         "and a side window on each wall. Weathered cedar shakes, a ridge cap, and a "
-        "brick chimney on the +X gable from a ground footing past the ridge. "
-        "The porch shed sits on a ledger outside the logs, under the eave.",
+        "brick chimney through the ridge with stepped flashing, a concrete cap, and a flue. "
+        "The porch has a top rail and a mid rail between the posts.",
     )
     a.climbable = True
     a.climb_note = "Log walls are cling. Door is closed. Roof slopes are landings."
-    a.vault_note = "Porch rail is 0.95 m above the porch deck (deck at 0.25 m, rail top at 1.20 m)."
+    a.vault_note = "Porch top rail is 1.20 m. The deck top is 0.17 m."
     a.vaultable = True
-    a.vault_height = 0.95
+    a.vault_height = 1.02
     width, depth = 4.6, 3.6
     for lod in (0, 1, 2):
         g = a.begin(lod)
         courses = lod_pick(lod, 9, 6, 4)
-        seg = lod_pick(lod, 10, 8, 6)
+        seg = lod_pick(lod, 8, 6, 6)
         step = (_Y1 - _Y0) / max(1, courses - 1)
         radius = max(0.132, step * 0.5 + 0.02)
         _walls(g, lod, courses, radius, step, seg)
@@ -75,9 +82,10 @@ def create():
         # Ledger outside the logs, under the main eave. It does not enter the wall.
         g.box((0, _LEDGER_Y, _LEDGER_Z0 + _LEDGER_D * 0.5), (3.20, 0.10, _LEDGER_D), "Lib_WoodDark", grain=1.0)
         if lod < 2:
-            g.pipe((-1.3, 0.95, depth * 0.5 + 1.25), (1.3, 0.95, depth * 0.5 + 1.25), 0.03, "Lib_WoodDark", 6, grain=1.0)
-            for x in (-0.86, -0.43, 0.0, 0.43, 0.86):
-                g.box((x, 0.58, depth * 0.5 + 1.25), (0.035, 0.66, 0.028), "Lib_Wood")
+            # Top rail and one mid rail between the posts, clear of the posts and the beam.
+            rail_z = depth * 0.5 + 1.22
+            g.box((0, 1.16, rail_z), (2.44, 0.07, 0.045), "Lib_WoodDark", grain=1.0)
+            g.box((0, 0.72, rail_z), (2.44, 0.055, 0.040), "Lib_Wood", grain=1.0)
         _roof(g, width + 0.4, lod)
         a.end()
     a.loose_pivot = True
@@ -89,8 +97,11 @@ def create():
     a.box("Col_Porch", (0, 0.12, depth * 0.5 + 0.7), (3.2, 0.10, 1.3))
     center, size, euler = _roof_box(_SHED_Z0, _SHED_Y0, _SHED_Z1, _SHED_Y1, 0.045, 3.2)
     a.box("Col_PorchRoof", center, size, euler=euler)
-    a.capsule("Vault_PorchRail", (0, 0.95, depth * 0.5 + 1.25), 0.03, 2.6, 0)
+    a.capsule("Vault_PorchRail", (0, 1.16, depth * 0.5 + 1.22), 0.018, 2.20, 0)
     _add_roof(a, width + 0.4, -2.05, 2.15, 0.0, 3.45, 0.04)
+    # Footing and shaft block a runner. They do not overlap each other or the roof boxes.
+    a.box("Col_ChimneyFoot", (_CH_X, 0.14, _CH_Z), (0.76, 0.22, 0.66))
+    a.box("Col_Chimney", (_CH_X, 2.16, _CH_Z), (0.50, 3.48, 0.42))
     return a
 
 
@@ -204,42 +215,74 @@ def _chink_sides(g, y, radius, valley):
 
 
 def _end_disc(g, center, axis, radius, sign):
-    """Closed puck. Rings are a texture on the cut face, so the shell stays small."""
-    steps = 6
+    """Closed end. Two growth ridges stand proud of the cut so it is not a flat disc."""
+    steps = 4
+    # Fraction of the radius, then extra metres proud of the cut. Two ridges.
+    profile = (
+        (0.16, 0.000),
+        (0.34, 0.014),
+        (0.50, 0.000),
+        (0.72, 0.014),
+        (1.00, 0.000),
+    )
     bm = bmesh.new()
     uv_layer = bm.loops.layers.uv.new("UVMap")
-    # Proud of the log cap by 4 mm, 8 mm thick, so the ray sees a closed shell.
-    outer = sign * 0.006
-    inner = sign * -0.002
-    def point(along, ca, sa):
+    # Entirely outside the log cap, so the two closed shells do not overlap.
+    base = sign * 0.008
+    inner = sign * 0.003
+
+    def point(along, frac, ca, sa):
+        rad = radius * frac
         if axis == "X":
-            return (center[0] + along, center[1] + radius * ca, center[2] + radius * sa)
-        return (center[0] + radius * ca, center[1] + radius * sa, center[2] + along)
-    outer_ring = []
-    inner_ring = []
+            return (center[0] + along, center[1] + rad * ca, center[2] + rad * sa)
+        return (center[0] + rad * ca, center[1] + rad * sa, center[2] + along)
+
+    rings = []
     uvs = []
+    for frac, proud in profile:
+        ring = []
+        uv_ring = []
+        along = base + sign * proud
+        for i in range(steps):
+            ang = 2.0 * math.pi * i / steps
+            ca, sa = math.cos(ang), math.sin(ang)
+            ring.append(bm.verts.new(unity_to_blender(*point(along, frac, ca, sa))))
+            uv_ring.append((0.5 + 0.48 * frac * ca, 0.5 + 0.48 * frac * sa))
+        rings.append(ring)
+        uvs.append(uv_ring)
+    hub = bm.verts.new(unity_to_blender(*point(base, 0.0, 0.0, 0.0)))
+    inner_ring = []
     for i in range(steps):
         ang = 2.0 * math.pi * i / steps
         ca, sa = math.cos(ang), math.sin(ang)
-        outer_ring.append(bm.verts.new(unity_to_blender(*point(outer, ca, sa))))
-        inner_ring.append(bm.verts.new(unity_to_blender(*point(inner, ca, sa))))
-        uvs.append((0.5 + 0.48 * ca, 0.5 + 0.48 * sa))
-    hub_o = bm.verts.new(unity_to_blender(*point(outer, 0.0, 0.0)))
-    hub_i = bm.verts.new(unity_to_blender(*point(inner, 0.0, 0.0)))
+        inner_ring.append(bm.verts.new(unity_to_blender(*point(inner, 1.0, ca, sa))))
+    hub_i = bm.verts.new(unity_to_blender(*point(inner, 0.0, 0.0, 0.0)))
     for i in range(steps):
         j = (i + 1) % steps
         if sign > 0:
-            face = bm.faces.new((hub_o, outer_ring[i], outer_ring[j]))
-            order = ((0.5, 0.5), uvs[i], uvs[j])
+            face = bm.faces.new((hub, rings[0][i], rings[0][j]))
+            order = ((0.5, 0.5), uvs[0][i], uvs[0][j])
+            for loop, uv in zip(face.loops, order):
+                loop[uv_layer].uv = uv
+            for a in range(len(profile) - 1):
+                face = bm.faces.new((rings[a][i], rings[a][j], rings[a + 1][j], rings[a + 1][i]))
+                order = (uvs[a][i], uvs[a][j], uvs[a + 1][j], uvs[a + 1][i])
+                for loop, uv in zip(face.loops, order):
+                    loop[uv_layer].uv = uv
             bm.faces.new((hub_i, inner_ring[j], inner_ring[i]))
-            bm.faces.new((outer_ring[i], inner_ring[i], inner_ring[j], outer_ring[j]))
+            bm.faces.new((rings[-1][i], inner_ring[i], inner_ring[j], rings[-1][j]))
         else:
-            face = bm.faces.new((hub_o, outer_ring[j], outer_ring[i]))
-            order = ((0.5, 0.5), uvs[j], uvs[i])
+            face = bm.faces.new((hub, rings[0][j], rings[0][i]))
+            order = ((0.5, 0.5), uvs[0][j], uvs[0][i])
+            for loop, uv in zip(face.loops, order):
+                loop[uv_layer].uv = uv
+            for a in range(len(profile) - 1):
+                face = bm.faces.new((rings[a][j], rings[a][i], rings[a + 1][i], rings[a + 1][j]))
+                order = (uvs[a][j], uvs[a][i], uvs[a + 1][i], uvs[a + 1][j])
+                for loop, uv in zip(face.loops, order):
+                    loop[uv_layer].uv = uv
             bm.faces.new((hub_i, inner_ring[i], inner_ring[j]))
-            bm.faces.new((outer_ring[j], inner_ring[j], inner_ring[i], outer_ring[i]))
-        for loop, uv in zip(face.loops, order):
-            loop[uv_layer].uv = uv
+            bm.faces.new((rings[-1][j], inner_ring[j], inner_ring[i], rings[-1][i]))
     g._ingest(bm, "Lib_LogEnd", -1.0)
 
 
@@ -335,7 +378,7 @@ def _gable_boards(g, sign, base):
     """One closed panel under the roof, with battens over the seams."""
     x = sign * (_OUT_X - 0.06)
     _gable_panel(g, x, base, 0.020, "Lib_Log2")
-    for z in (-1.05, -0.55, -0.05, 0.45, 0.95):
+    for z in (-1.05, -0.50, 0.50, 0.95):
         top = _roof_y(z) - 0.10
         if top > base + 0.12:
             _trap(g, x + sign * 0.020, z, z + 0.045, base, top, top, 0.010, "Lib_Batten")
@@ -391,24 +434,50 @@ def _trap(g, x, z0, z1, y0, y1a, y1b, thick, mat):
 
 
 def _chimney(g):
-    """Exterior chimney on the +X gable. Footing on the ground, stack past the ridge."""
-    x = 3.04
-    # Footing, shaft, and cap overlap a few centimetres so the joint is not a slit.
-    # Nothing here is a collider, and none of it enters the roof or the log tails.
-    g.box((x, 0.17, 0.0), (0.92, 0.34, 1.24), "Lib_Concrete", uv_scale=0.7)
-    g.box((x, 2.40, 0.0), (0.70, 4.20, 0.96), "Lib_Brick", uv_scale=0.65)
-    g.box((x, 4.52, 0.0), (0.86, 0.12, 1.12), "Lib_Concrete")
-    g.box((x, 4.66, 0.0), (0.26, 0.22, 0.26), "Lib_Brick", uv_scale=0.5)
-    _flashing(g, x - 0.35)
+    """Brick shaft through the ridge. Footing, cap, flue, and a stepped flashing ring."""
+    x, z = _CH_X, _CH_Z
+    sx, sz = _CH_SX, _CH_SZ
+    # Footing and shaft overlap a few centimetres. Their colliders do not.
+    g.box((x, 0.17, z), (sx + 0.26, 0.34, sz + 0.24), "Lib_Concrete", uv_scale=0.7)
+    g.box((x, 2.16, z), (sx, 3.72, sz), "Lib_Brick", uv_scale=0.65)
+    _flashing(g)
+    # Concrete cap clear of the shaft, then a dark flue opening on top.
+    g.box((x, 4.085, z), (sx + 0.16, 0.12, sz + 0.14), "Lib_Concrete")
+    g.box((x, 4.190, z), (0.22, 0.08, 0.20), "Lib_Black")
 
 
-def _flashing(g, face):
-    """Apron on the roof, then a turned-up leg a few millimetres off the brick."""
-    for z0, z1 in ((-1.55, -0.10), (0.10, 1.55)):
-        y0 = _roof_y(z0) + 0.010
-        y1 = _roof_y(z1) + 0.010
-        _apron(g, 2.36, face - 0.020, z0, y0, z1, y1, 0.008)
-        _apron(g, face - 0.014, face - 0.006, z0, y0 + 0.016, z1, y1 + 0.016, 0.11)
+def _flashing(g):
+    """Aprons on the shingles, then two stepped bands up the brick."""
+    x, z = _CH_X, _CH_Z
+    sx, sz = _CH_SX, _CH_SZ
+    y_edge = _roof_y(_HOLE_Z) + 0.012
+    # South and north aprons sit in the gap between the roof edge and the brick.
+    for sign in (-1, 1):
+        z_brick = z + sign * (sz * 0.5 + 0.008)
+        z_out = z + sign * (_HOLE_Z - 0.012)
+        z0, z1 = (z_out, z_brick) if sign < 0 else (z_brick, z_out)
+        y0 = _roof_y(z0) + 0.012
+        y1 = _roof_y(z1) + 0.012
+        _apron(g, x - sx * 0.5 + 0.02, x + sx * 0.5 - 0.02, z0, y0, z1, y1, 0.008)
+    # Side aprons along the ridge, clear of the gable pieces beside the hole.
+    # Two bands around the shaft, each closer to the brick than the one below.
+    _band(g, y_edge + 0.08, 0.10, 0.016)
+    _band(g, y_edge + 0.20, 0.09, 0.006)
+
+
+def _band(g, y, height, gap):
+    """Four plates around the shaft. Corners stay apart so the plates do not overlap."""
+    x, z = _CH_X, _CH_Z
+    sx, sz = _CH_SX, _CH_SZ
+    thick = 0.008
+    zf = z - sz * 0.5 - gap - thick * 0.5
+    zb = z + sz * 0.5 + gap + thick * 0.5
+    g.box((x, y, zf), (sx - 0.04, height, thick), "Lib_MetalWorn")
+    g.box((x, y, zb), (sx - 0.04, height, thick), "Lib_MetalWorn")
+    xf = x - sx * 0.5 - gap - thick * 0.5
+    xb = x + sx * 0.5 + gap + thick * 0.5
+    g.box((xf, y, z), (thick, height, sz - 0.04), "Lib_MetalWorn")
+    g.box((xb, y, z), (thick, height, sz - 0.04), "Lib_MetalWorn")
 
 
 def _apron(g, x0, x1, z0, y0, z1, y1, thick):
@@ -416,7 +485,7 @@ def _apron(g, x0, x1, z0, y0, z1, y1, thick):
         (x0, y0, z0), (x0, y1, z1), (x1, y0, z0), (x1, y1, z1),
         (x0, y0 + thick, z0), (x0, y1 + thick, z1), (x1, y0 + thick, z0), (x1, y1 + thick, z1),
     ]
-    g.mesh(verts, _prism_faces(), "Lib_Steel", uv_scale=1.0)
+    g.mesh(verts, _prism_faces(), "Lib_MetalWorn", uv_scale=1.0)
 
 
 def _log_climb(asset):
@@ -432,15 +501,19 @@ def _log_climb(asset):
         holes = _front_holes(y, radius)
         reach = _OUT_X + (_TAIL if i % 2 == 0 else -radius)
         for x0, x1 in _spans(-reach, reach, holes):
-            length = min(0.50, (x1 - x0) - 0.80)
-            if length < 0.36:
+            # Near the +X end, outer half of the log. A sample further back
+            # drifts into the saddle and the ray count flips.
+            x_hi = x1 - 0.22
+            x_lo = max(x0 + 0.15, x_hi - 0.40)
+            length = x_hi - x_lo
+            if length < 0.28:
                 continue
             asset.box(
                 "Climb_Front_%d_%d" % (i, int((x0 + x1) * 10)),
-                ((x0 + x1) * 0.5, y, z_front),
-                (length, 0.06, 0.06),
+                ((x_lo + x_hi) * 0.5, y, z_front + 0.07),
+                (length, 0.03, 0.03),
             )
-        asset.box("Climb_Back_%d" % i, (0.0, y, z_back), (3.40, 0.06, 0.06))
+        asset.box("Climb_Back_%d" % i, (0.0, y, z_back - 0.07), (3.40, 0.03, 0.03))
         y_side = y + step * 0.5
         if y_side > _Y1 - step * 0.15:
             continue
@@ -465,23 +538,46 @@ def _log_climb(asset):
 
 
 def _roof(g, width, lod):
-    """One closed gable so the ridge is a normal edge, plus a cap and the porch shed."""
-    _gable(g, width * 0.5, -2.05, 2.15, 2.05, 2.15, 3.45, 0.055, "Lib_Roof")
-    _ridge_cap(g, width * 0.5)
-    # Shed starts on the ledger, outside the logs, and lands on the porch beam.
+    """Closed gable split around the chimney, plus the porch shed."""
+    hx = width * 0.5
+    gap = 0.006
+    x_w = _CH_X - _HOLE_X - gap
+    x_e = _CH_X + _HOLE_X + gap
+    _gable(g, -hx, x_w, -2.05, 2.15, 2.05, 2.15, 3.45, 0.055, "Lib_Roof")
+    _gable(g, x_e, hx, -2.05, 2.15, 2.05, 2.15, 3.45, 0.055, "Lib_Roof")
+    skirt0 = x_w + gap
+    skirt1 = x_e - gap
+    z_h = _HOLE_Z
+    _slope_span(g, skirt0, skirt1, -2.05, 2.15, -z_h, _roof_y(z_h), 0.055, "Lib_Roof")
+    _slope_span(g, skirt0, skirt1, z_h, _roof_y(z_h), 2.05, 2.15, 0.055, "Lib_Roof")
+    _ridge_cap(g, -hx - 0.04, x_w)
+    _ridge_cap(g, x_e, hx + 0.04)
     _one_slope(g, 1.60, _SHED_Z0, _SHED_Y0, _SHED_Z1, _SHED_Y1, 0.045, "Lib_Roof")
     del lod
 
 
 def _add_roof(asset, width, z0, y0, z1, y1, thick):
-    # The gable line is the top surface. The box sits inside the thickness.
-    center, size, euler = _roof_box(z0, y0, z1, y1, thick, width, below=True)
-    asset.box("Col_RoofS", center, size, euler=euler)
-    center, size, euler = _roof_box(-z0, y0, -z1 if z1 else 0.0, y1, thick, width, below=True)
-    asset.box("Col_RoofN", center, size, euler=euler)
+    # Boxes stay on the shingles and clear of the chimney shaft.
+    hx = width * 0.5
+    x_w = _CH_X - _HOLE_X - 0.05
+    x_e = _CH_X + _HOLE_X + 0.05
+    parts = (("W", -hx + 0.2, x_w), ("E", x_e, hx - 0.2))
+    for name, a, b in parts:
+        span = b - a
+        xc = (a + b) * 0.5
+        center, size, euler = _roof_box(z0, y0, z1, y1, thick, span, below=True, x=xc)
+        asset.box("Col_RoofS" + name, center, size, euler=euler)
+        center, size, euler = _roof_box(-z0, y0, -z1 if z1 else 0.0, y1, thick, span, below=True, x=xc)
+        asset.box("Col_RoofN" + name, center, size, euler=euler)
+    span = (_HOLE_X * 2.0) - 0.04
+    z_h = _HOLE_Z + 0.06
+    center, size, euler = _roof_box(-2.05, 2.15, -z_h, _roof_y(z_h), thick, span, below=True, x=_CH_X)
+    asset.box("Col_RoofSM", center, size, euler=euler)
+    center, size, euler = _roof_box(z_h, _roof_y(z_h), 2.05, 2.15, thick, span, below=True, x=_CH_X)
+    asset.box("Col_RoofNM", center, size, euler=euler)
 
 
-def _gable(g, hx, zs, ys, zn, yn, ridge_y, thick, mat):
+def _gable(g, x0, x1, zs, ys, zn, yn, ridge_y, thick, mat):
     """Closed gable. The two slopes share the ridge, so that edge has two faces."""
     def normal(z_eave, y_eave):
         dy = y_eave - ridge_y
@@ -500,7 +596,7 @@ def _gable(g, hx, zs, ys, zn, yn, ridge_y, thick, mat):
             return (x, y - ny * thick, z - nz * thick)
         return (x, y, z)
 
-    xs = (-hx, hx)
+    xs = (x0, x1)
     verts = []
     for x in xs:
         verts.append(put(x, ys, zs, nsy, nsz, False))
@@ -534,16 +630,37 @@ def _gable(g, hx, zs, ys, zn, yn, ridge_y, thick, mat):
     g.mesh(verts, faces, mat, uv_scale=1.0)
 
 
-def _ridge_cap(g, hx):
+def _ridge_cap(g, x0, x1):
     """Small cap above the ridge. It does not share the roof's ridge edge."""
-    _gable(g, hx + 0.04, -0.28, 3.30, 0.28, 3.30, 3.48, 0.016, "Lib_Roof")
+    _gable(g, x0, x1, -0.28, 3.30, 0.28, 3.30, 3.48, 0.016, "Lib_Roof")
+
+
+def _slope_span(g, x0, x1, z0, y0, z1, y1, thick, mat):
+    """Closed slope. The given line is the top, matching the main gable."""
+    dz, dy = (z1 - z0), (y1 - y0)
+    length = math.hypot(dz, dy) or 1.0
+    ny, nz = -dz, dy
+    if ny < 0:
+        ny, nz = -ny, -nz
+    length = math.hypot(ny, nz) or 1.0
+    ny /= length
+    nz /= length
+    xs = (x0, x1)
+    verts = []
+    for x in xs:
+        for z, y in ((z0, y0), (z1, y1)):
+            verts.append((x, y, z))
+    for x in xs:
+        for z, y in ((z0, y0), (z1, y1)):
+            verts.append((x, y - ny * thick, z - nz * thick))
+    g.mesh(verts, _prism_faces(), mat, uv_scale=1.0)
 
 
 def _one_slope(g, hx, z0, y0, z1, y1, thick, mat):
     g.mesh(_prism(hx * 2.0, z0, y0, z1, y1, thick), _prism_faces(), mat, uv_scale=1.0)
 
 
-def _roof_box(z0, y0, z1, y1, thick, width, below=False):
+def _roof_box(z0, y0, z1, y1, thick, width, below=False, x=0.0):
     dz, dy = (z1 - z0), (y1 - y0)
     length = math.hypot(dz, dy) or 1.0
     nz, ny = -dy / length, dz / length
@@ -554,7 +671,7 @@ def _roof_box(z0, y0, z1, y1, thick, width, below=False):
     cy = (y0 + y1) * 0.5 + ny * thick * 0.45 * sign
     angle = math.degrees(math.atan2(abs(dy), abs(dz)))
     pitch = -angle if dz * dy > 0 else angle
-    return (0.0, cy, cz), (width * 0.82, thick * 0.5, length * 0.70), (pitch, 0.0, 0.0)
+    return (x, cy, cz), (width * 0.74, thick * 0.45, length * 0.60), (pitch, 0.0, 0.0)
 
 
 def _prism(width, z0, y0, z1, y1, thick):
