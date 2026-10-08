@@ -125,6 +125,9 @@ PASSES = {
     16: (
         ("newspaper_rack", "NewspaperRack", 18.0, (-1.55, 0.0, 0.70), 200.0),
     ),
+    17: (
+        ("newspaper_rack", "NewspaperRack", 200.0, (1.85, 0.0, 0.55), 30.0),
+    ),
 }
 
 # Pass 15 sits the prop on a sidewalk panel. Low camera, aim below center,
@@ -136,7 +139,7 @@ _FRAME15 = {
     "hydrant_red": (0.58, 9.0, 50.0, 0.34, 0.44, 0.18, 3.40),
     "meter_single": (0.46, 14.0, 40.0, 0.36, 0.40, 0.22, 3.60),
     "meter_twin": (0.44, 14.0, 38.0, 0.36, 0.38, 0.22, 3.80),
-    "newspaper_rack": (0.62, 12.0, 42.0, 0.38, 0.48, 0.28, 3.60),
+    "newspaper_rack": (0.62, 16.0, 148.0, 0.36, 0.44, 0.32, 6.80),
 }
 
 # Pass 11 frames the subject at about 70% and aims at the middle of the bounds.
@@ -397,7 +400,7 @@ def main():
             kind=kind,
             fill=scale_fill,
             elevation=elevation if PASS >= 11 else 12.0,
-            azimuth=36.0 if PASS >= 11 else 32.0,
+            azimuth=azimuth if tuned15 else (36.0 if PASS >= 11 else 32.0),
             aim_frac=scale_aim,
             slab=slab,
         )

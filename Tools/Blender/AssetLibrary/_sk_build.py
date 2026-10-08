@@ -147,13 +147,12 @@ def _cutout_assets():
     """Write the alpha-cutout material and its texture importer. Other materials stay put."""
     png = os.path.join(ROOT, "..", "..", "..", "Assets", "Art", "Props", "Library", "Textures", "Lib_ChainMesh.png")
     png = os.path.normpath(png)
-    if not os.path.isfile(png):
-        return
-    write_unity.texture_meta(png, "Lib_ChainMesh", size=512, cutout=True)
+    names = {"Lib_HonorGlass"}
+    if os.path.isfile(png):
+        write_unity.texture_meta(png, "Lib_ChainMesh", size=512, cutout=True)
+        names.update(("Lib_ChainMesh", "Lib_SignGreen"))
     palette, textured, normals, ao_names, emissive = write_unity.load_palette()
-    write_unity.write_materials(
-        palette, textured, normals, ao_names, emissive, only={"Lib_ChainMesh", "Lib_SignGreen"},
-    )
+    write_unity.write_materials(palette, textured, normals, ao_names, emissive, only=names)
 
 
 def _prefabs(entries):

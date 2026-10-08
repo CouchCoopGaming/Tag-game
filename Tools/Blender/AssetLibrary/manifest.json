@@ -30314,52 +30314,59 @@
   {
     "name": "NewspaperRack",
     "category": "StreetFurniture",
-    "blurb": "Three honor boxes, 1.46 m overall, lid at 0.82 m. Glass doors and coin slots. No masthead.",
+    "blurb": "Three honor boxes, 0.50 m wide, lids from 1.05 m to 1.14 m, chained to a pole. No masthead.",
     "size": [
-      1.46,
-      0.825,
-      0.362
+      2.57,
+      1.535,
+      0.492
     ],
     "min": [
-      -0.73,
+      -1.29,
       0.0,
-      -0.18
+      -0.25
     ],
     "max": [
-      0.73,
-      0.825,
-      0.182
+      1.28,
+      1.535,
+      0.242
     ],
     "lods": [
       {
         "lod": 0,
-        "tris": 2319,
+        "tris": 2668,
         "materials": [
           "Lib_SteelDark",
+          "Lib_Steel",
           "Lib_PaintBlue",
-          "Lib_ShopGlass",
+          "Lib_HonorGlass",
+          "Lib_PaintWhite",
           "Lib_PaintCream",
           "Lib_Black",
-          "Lib_PaintWhite",
-          "Lib_Steel",
+          "Lib_Brass",
+          "Lib_MetalWorn",
           "Lib_PaintRed",
-          "Lib_PaintGreen"
+          "Lib_Rust",
+          "Lib_PaintTeal",
+          "Lib_PaintGreen",
+          "Lib_Orange",
+          "Lib_Chain"
         ],
         "mesh": "LOD0",
         "fileID": -1633821710574564935
       },
       {
         "lod": 1,
-        "tris": 552,
+        "tris": 1200,
         "materials": [
           "Lib_SteelDark",
-          "Lib_PaintBlue",
-          "Lib_ShopGlass",
-          "Lib_PaintCream",
           "Lib_Steel",
-          "Lib_Black",
+          "Lib_PaintBlue",
+          "Lib_HonorGlass",
+          "Lib_PaintWhite",
+          "Lib_PaintCream",
           "Lib_PaintRed",
-          "Lib_PaintGreen"
+          "Lib_PaintGreen",
+          "Lib_Chain"
         ],
         "mesh": "LOD1",
         "fileID": -179393741545503174
@@ -30367,17 +30374,17 @@
     ],
     "colliders": [
       {
-        "name": "Col_Cab_0",
+        "name": "Col_Foot_A_0",
         "type": "box",
         "center": [
-          -0.48,
-          0.44,
-          -0.02
+          -0.8,
+          0.01,
+          -0.14
         ],
         "size": [
-          0.26,
-          0.48,
-          0.16
+          0.05,
+          0.016,
+          0.05
         ],
         "euler": [
           0,
@@ -30386,16 +30393,149 @@
         ]
       },
       {
-        "name": "Col_Lid_0",
+        "name": "Col_Leg_A_0",
         "type": "box",
         "center": [
-          -0.48,
-          0.808,
-          0.0
+          -0.8,
+          0.085,
+          -0.14
         ],
         "size": [
-          0.3,
+          0.02,
+          0.09,
+          0.02
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Foot_A_1",
+        "type": "box",
+        "center": [
+          -0.8,
+          0.01,
+          0.1
+        ],
+        "size": [
+          0.05,
           0.016,
+          0.05
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Leg_A_1",
+        "type": "box",
+        "center": [
+          -0.8,
+          0.085,
+          0.1
+        ],
+        "size": [
+          0.02,
+          0.09,
+          0.02
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Foot_A_2",
+        "type": "box",
+        "center": [
+          -0.44,
+          0.01,
+          -0.14
+        ],
+        "size": [
+          0.05,
+          0.016,
+          0.05
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Leg_A_2",
+        "type": "box",
+        "center": [
+          -0.44,
+          0.085,
+          -0.14
+        ],
+        "size": [
+          0.02,
+          0.09,
+          0.02
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Foot_A_3",
+        "type": "box",
+        "center": [
+          -0.44,
+          0.01,
+          0.1
+        ],
+        "size": [
+          0.05,
+          0.016,
+          0.05
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Leg_A_3",
+        "type": "box",
+        "center": [
+          -0.44,
+          0.085,
+          0.1
+        ],
+        "size": [
+          0.02,
+          0.09,
+          0.02
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Cab_A",
+        "type": "box",
+        "center": [
+          -0.62,
+          0.46,
+          -0.06
+        ],
+        "size": [
+          0.32,
+          0.48,
           0.2
         ],
         "euler": [
@@ -30405,17 +30545,17 @@
         ]
       },
       {
-        "name": "Col_Cab_1",
+        "name": "Col_Foot_C_0",
         "type": "box",
         "center": [
-          0.0,
-          0.44,
-          -0.02
+          0.8400000000000001,
+          0.01,
+          -0.14
         ],
         "size": [
-          0.26,
-          0.48,
-          0.16
+          0.05,
+          0.016,
+          0.05
         ],
         "euler": [
           0,
@@ -30424,16 +30564,149 @@
         ]
       },
       {
-        "name": "Col_Lid_1",
+        "name": "Col_Leg_C_0",
         "type": "box",
         "center": [
-          0.0,
-          0.808,
-          0.0
+          0.8400000000000001,
+          0.085,
+          -0.14
         ],
         "size": [
-          0.3,
+          0.02,
+          0.09,
+          0.02
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Foot_C_1",
+        "type": "box",
+        "center": [
+          0.8400000000000001,
+          0.01,
+          0.1
+        ],
+        "size": [
+          0.05,
           0.016,
+          0.05
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Leg_C_1",
+        "type": "box",
+        "center": [
+          0.8400000000000001,
+          0.085,
+          0.1
+        ],
+        "size": [
+          0.02,
+          0.09,
+          0.02
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Foot_C_2",
+        "type": "box",
+        "center": [
+          1.2,
+          0.01,
+          -0.14
+        ],
+        "size": [
+          0.05,
+          0.016,
+          0.05
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Leg_C_2",
+        "type": "box",
+        "center": [
+          1.2,
+          0.085,
+          -0.14
+        ],
+        "size": [
+          0.02,
+          0.09,
+          0.02
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Foot_C_3",
+        "type": "box",
+        "center": [
+          1.2,
+          0.01,
+          0.1
+        ],
+        "size": [
+          0.05,
+          0.016,
+          0.05
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Leg_C_3",
+        "type": "box",
+        "center": [
+          1.2,
+          0.085,
+          0.1
+        ],
+        "size": [
+          0.02,
+          0.09,
+          0.02
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Cab_C",
+        "type": "box",
+        "center": [
+          1.02,
+          0.46,
+          -0.06
+        ],
+        "size": [
+          0.32,
+          0.48,
           0.2
         ],
         "euler": [
@@ -30443,16 +30716,123 @@
         ]
       },
       {
-        "name": "Col_Cab_2",
+        "name": "Col_Lid_A",
+        "type": "capsule",
+        "center": [
+          -0.62,
+          1.02,
+          -0.02
+        ],
+        "radius": 0.05,
+        "height": 0.18,
+        "direction": 0
+      },
+      {
+        "name": "Col_Base_B",
         "type": "box",
         "center": [
-          0.48,
-          0.44,
+          0.2,
+          0.012,
           -0.02
         ],
         "size": [
-          0.26,
-          0.48,
+          0.32,
+          0.018,
+          0.24
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Cab_B",
+        "type": "box",
+        "center": [
+          0.2,
+          0.5,
+          -0.06
+        ],
+        "size": [
+          0.36,
+          0.72,
+          0.22
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Lid_B",
+        "type": "box",
+        "center": [
+          0.1,
+          0.972,
+          -0.02
+        ],
+        "size": [
+          0.24,
+          0.036,
+          0.3
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Lid_C",
+        "type": "box",
+        "center": [
+          0.92,
+          0.956,
+          -0.131
+        ],
+        "size": [
+          0.2,
+          0.064,
+          0.12
+        ],
+        "euler": [
+          12,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Coin_B",
+        "type": "box",
+        "center": [
+          0.32,
+          1.07,
+          -0.02
+        ],
+        "size": [
+          0.1,
+          0.12,
+          0.08
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_PoleBase",
+        "type": "box",
+        "center": [
+          -1.17,
+          0.012,
+          -0.02
+        ],
+        "size": [
+          0.16,
+          0.018,
           0.16
         ],
         "euler": [
@@ -30462,23 +30842,16 @@
         ]
       },
       {
-        "name": "Col_Lid_2",
-        "type": "box",
+        "name": "Col_Pole",
+        "type": "capsule",
         "center": [
-          0.48,
-          0.808,
-          0.0
+          -1.17,
+          0.78,
+          -0.02
         ],
-        "size": [
-          0.3,
-          0.016,
-          0.2
-        ],
-        "euler": [
-          0,
-          0,
-          0
-        ]
+        "radius": 0.032,
+        "height": 1.49,
+        "direction": 1
       }
     ],
     "climbable": false,

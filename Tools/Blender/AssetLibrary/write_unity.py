@@ -318,6 +318,19 @@ def write_materials(palette, textured, normals, ao_names, emissive, only=None):
             body = body.replace("RenderType: Opaque", "RenderType: TransparentCutout", 1)
             body = body.replace("m_CustomRenderQueue: -1", "m_CustomRenderQueue: 2450", 1)
             keywords.append("_ALPHATEST_ON")
+        if name == "Lib_HonorGlass":
+            tint = (num(color[0]), num(color[1]), num(color[2]))
+            body = body.replace("- _Surface: 0", "- _Surface: 1", 1)
+            body = body.replace("- _ZWrite: 1", "- _ZWrite: 0", 1)
+            body = body.replace("- _SrcBlend: 1", "- _SrcBlend: 5", 1)
+            body = body.replace("- _DstBlend: 0", "- _DstBlend: 10", 1)
+            body = body.replace("RenderType: Opaque", "RenderType: Transparent", 1)
+            body = body.replace("m_CustomRenderQueue: -1", "m_CustomRenderQueue: 3000", 1)
+            opaque = "{r: %s, g: %s, b: %s, a: 1}" % tint
+            clear = "{r: %s, g: %s, b: %s, a: 0.5}" % tint
+            body = body.replace("- _BaseColor: " + opaque, "- _BaseColor: " + clear, 1)
+            body = body.replace("- _Color: " + opaque, "- _Color: " + clear, 1)
+            keywords.append("_SURFACE_TYPE_TRANSPARENT")
         if keywords:
             body = body.replace(
                 "m_ValidKeywords: []",

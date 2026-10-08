@@ -81,6 +81,8 @@ PALETTE = {
     "Lib_ShopGlass": ((0.06, 0.09, 0.12), 0.22, 0.92),
     # Car glass. Dark tint you can see a cabin through, no backing sheet.
     "Lib_TintGlass": ((0.04, 0.075, 0.095), 0.08, 0.96),
+    # Honor-box pane. Darker than clear glass, slightly reflective, still transmissive.
+    "Lib_HonorGlass": ((0.34, 0.42, 0.46), 0.14, 0.86),
     "Lib_Headlamp": ((0.82, 0.88, 0.74), 0.04, 0.90),
     "Lib_Taillamp": ((0.72, 0.04, 0.03), 0.04, 0.86),
     "Lib_SignalAmber": ((0.86, 0.42, 0.05), 0.04, 0.88),
@@ -931,6 +933,11 @@ def _ensure_materials():
         if name == "Lib_TintGlass" and "Transmission Weight" in bsdf.inputs:
             bsdf.inputs["Transmission Weight"].default_value = 0.42
             bsdf.inputs["Roughness"].default_value = 0.04
+            if "IOR" in bsdf.inputs:
+                bsdf.inputs["IOR"].default_value = 1.45
+        if name == "Lib_HonorGlass" and "Transmission Weight" in bsdf.inputs:
+            bsdf.inputs["Transmission Weight"].default_value = 0.96
+            bsdf.inputs["Roughness"].default_value = 0.08
             if "IOR" in bsdf.inputs:
                 bsdf.inputs["IOR"].default_value = 1.45
         if name in CUTOUT and os.path.isfile(img_path):
