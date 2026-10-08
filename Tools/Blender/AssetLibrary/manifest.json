@@ -26574,7 +26574,7 @@
     "lods": [
       {
         "lod": 0,
-        "tris": 1728,
+        "tris": 2052,
         "materials": [
           "Lib_SteelDark",
           "Lib_Steel",
@@ -26728,7 +26728,7 @@
     "lods": [
       {
         "lod": 0,
-        "tris": 1908,
+        "tris": 2232,
         "materials": [
           "Lib_SteelDark",
           "Lib_Steel",
@@ -28699,5 +28699,3097 @@
     ],
     "slackCm": 0.0,
     "fbx": "Assets/Art/Props/Library/StreetFurniture/Dumpster_Rear.fbx"
+  },
+  {
+    "name": "BusShelter_City",
+    "category": "StreetFurniture",
+    "blurb": "3.2 m shelter, open on -Z. Roof top 2.48 m, framed glass, slat bench, poster, route blade.",
+    "size": [
+      3.4,
+      3.2,
+      1.62
+    ],
+    "min": [
+      -1.7,
+      0.0,
+      -0.79
+    ],
+    "max": [
+      1.7,
+      3.2,
+      0.83
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 884,
+        "materials": [
+          "Lib_Steel",
+          "Lib_SteelDark",
+          "Lib_Glass",
+          "Lib_PaintCream",
+          "Lib_PaintBlue",
+          "Lib_MetalWorn",
+          "Lib_PaintYellow",
+          "Lib_Black"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 360,
+        "materials": [
+          "Lib_Steel",
+          "Lib_SteelDark",
+          "Lib_Glass",
+          "Lib_PaintCream",
+          "Lib_PaintBlue",
+          "Lib_MetalWorn",
+          "Lib_PaintYellow",
+          "Lib_Black"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_Post_00",
+        "type": "box",
+        "center": [
+          -1.52,
+          1.18,
+          -0.62
+        ],
+        "size": [
+          0.07,
+          2.3,
+          0.07
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Foot_00",
+        "type": "box",
+        "center": [
+          -1.52,
+          0.02,
+          -0.62
+        ],
+        "size": [
+          0.14,
+          0.032,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Post_01",
+        "type": "box",
+        "center": [
+          -1.52,
+          1.18,
+          0.62
+        ],
+        "size": [
+          0.07,
+          2.3,
+          0.07
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Foot_01",
+        "type": "box",
+        "center": [
+          -1.52,
+          0.02,
+          0.62
+        ],
+        "size": [
+          0.14,
+          0.032,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Post_10",
+        "type": "box",
+        "center": [
+          1.52,
+          1.18,
+          -0.62
+        ],
+        "size": [
+          0.07,
+          2.3,
+          0.07
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Foot_10",
+        "type": "box",
+        "center": [
+          1.52,
+          0.02,
+          -0.62
+        ],
+        "size": [
+          0.14,
+          0.032,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Post_11",
+        "type": "box",
+        "center": [
+          1.52,
+          1.18,
+          0.62
+        ],
+        "size": [
+          0.07,
+          2.3,
+          0.07
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Foot_11",
+        "type": "box",
+        "center": [
+          1.52,
+          0.02,
+          0.62
+        ],
+        "size": [
+          0.14,
+          0.032,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Roof",
+        "type": "box",
+        "center": [
+          0,
+          2.44,
+          0.02
+        ],
+        "size": [
+          3.32,
+          0.05,
+          1.54
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_GlassL",
+        "type": "box",
+        "center": [
+          -0.74,
+          1.7,
+          0.655
+        ],
+        "size": [
+          1.36,
+          0.78,
+          0.01
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_GlassR",
+        "type": "box",
+        "center": [
+          0.74,
+          1.7,
+          0.655
+        ],
+        "size": [
+          1.36,
+          0.78,
+          0.01
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_GlassSide",
+        "type": "box",
+        "center": [
+          1.56,
+          1.3,
+          0.0
+        ],
+        "size": [
+          0.01,
+          1.44,
+          1.0
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Slat_0",
+        "type": "box",
+        "center": [
+          0,
+          0.45,
+          -0.02
+        ],
+        "size": [
+          2.0,
+          0.02,
+          0.05
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Slat_1",
+        "type": "box",
+        "center": [
+          0,
+          0.45,
+          0.1
+        ],
+        "size": [
+          2.0,
+          0.02,
+          0.05
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Slat_2",
+        "type": "box",
+        "center": [
+          0,
+          0.45,
+          0.22
+        ],
+        "size": [
+          2.0,
+          0.02,
+          0.05
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_BenchLeg_0",
+        "type": "box",
+        "center": [
+          -0.7,
+          0.22,
+          0.28
+        ],
+        "size": [
+          0.04,
+          0.4,
+          0.28
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_BenchLeg_1",
+        "type": "box",
+        "center": [
+          0.7,
+          0.22,
+          0.28
+        ],
+        "size": [
+          0.04,
+          0.4,
+          0.28
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Blade",
+        "type": "box",
+        "center": [
+          1.15,
+          3.05,
+          -0.62
+        ],
+        "size": [
+          0.66,
+          0.18,
+          0.02
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "climbable": false,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "Posts are 8 cm. The roof is a landing, not a cling wall.",
+    "vaultNote": "Roof edge is 2.48 m. Too high to vault from the ground.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1"
+    ],
+    "slackCm": 0.97,
+    "fbx": "Assets/Art/Props/Library/StreetFurniture/BusShelter_City.fbx"
+  },
+  {
+    "name": "NewspaperRack",
+    "category": "StreetFurniture",
+    "blurb": "Three honor boxes, 1.55 m overall, 0.92 m tall. Glass fronts and coin doors.",
+    "size": [
+      1.55,
+      0.92,
+      0.386
+    ],
+    "min": [
+      -0.775,
+      0.0,
+      -0.19
+    ],
+    "max": [
+      0.775,
+      0.92,
+      0.196
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 644,
+        "materials": [
+          "Lib_SteelDark",
+          "Lib_PaintBlue",
+          "Lib_Glass",
+          "Lib_Steel",
+          "Lib_PaintWhite",
+          "Lib_Brass",
+          "Lib_Black",
+          "Lib_PaintRed",
+          "Lib_PaintGreen"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 228,
+        "materials": [
+          "Lib_SteelDark",
+          "Lib_PaintBlue",
+          "Lib_Glass",
+          "Lib_Steel",
+          "Lib_PaintWhite",
+          "Lib_PaintRed",
+          "Lib_PaintGreen"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_Rail",
+        "type": "box",
+        "center": [
+          0,
+          0.015,
+          0
+        ],
+        "size": [
+          1.5,
+          0.024,
+          0.06
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Cab_0",
+        "type": "box",
+        "center": [
+          -0.5,
+          0.48,
+          0
+        ],
+        "size": [
+          0.4,
+          0.84,
+          0.32
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Cap_0",
+        "type": "box",
+        "center": [
+          -0.5,
+          0.9,
+          0
+        ],
+        "size": [
+          0.44,
+          0.03,
+          0.36
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Cab_1",
+        "type": "box",
+        "center": [
+          0.0,
+          0.48,
+          0
+        ],
+        "size": [
+          0.4,
+          0.84,
+          0.32
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Cap_1",
+        "type": "box",
+        "center": [
+          0.0,
+          0.9,
+          0
+        ],
+        "size": [
+          0.44,
+          0.03,
+          0.36
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Cab_2",
+        "type": "box",
+        "center": [
+          0.5,
+          0.48,
+          0
+        ],
+        "size": [
+          0.4,
+          0.84,
+          0.32
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Cap_2",
+        "type": "box",
+        "center": [
+          0.5,
+          0.9,
+          0
+        ],
+        "size": [
+          0.44,
+          0.03,
+          0.36
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "climbable": false,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "Not a cling surface.",
+    "vaultNote": "Too short to vault.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1"
+    ],
+    "slackCm": 0.55,
+    "fbx": "Assets/Art/Props/Library/StreetFurniture/NewspaperRack.fbx"
+  },
+  {
+    "name": "ParkingMeter_Twin",
+    "category": "StreetFurniture",
+    "blurb": "Dual-head meter. Post to 1.12 m, heads 1.22\u20131.48 m, 0.36 m across the pair.",
+    "size": [
+      0.35,
+      1.57,
+      0.22
+    ],
+    "min": [
+      -0.175,
+      0.0,
+      -0.11
+    ],
+    "max": [
+      0.175,
+      1.57,
+      0.11
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 500,
+        "materials": [
+          "Lib_SteelDark",
+          "Lib_Steel",
+          "Lib_Glass",
+          "Lib_Black",
+          "Lib_Brass",
+          "Lib_PaintGreen"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 180,
+        "materials": [
+          "Lib_SteelDark",
+          "Lib_Steel",
+          "Lib_Glass",
+          "Lib_Black"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_Base",
+        "type": "box",
+        "center": [
+          0,
+          0.015,
+          0
+        ],
+        "size": [
+          0.2,
+          0.024,
+          0.2
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Post",
+        "type": "capsule",
+        "center": [
+          0,
+          0.58,
+          0
+        ],
+        "radius": 0.024,
+        "height": 1.02,
+        "direction": 1
+      },
+      {
+        "name": "Col_Head_0",
+        "type": "box",
+        "center": [
+          -0.1,
+          1.34,
+          0
+        ],
+        "size": [
+          0.13,
+          0.22,
+          0.09
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Head_1",
+        "type": "box",
+        "center": [
+          0.1,
+          1.34,
+          0
+        ],
+        "size": [
+          0.13,
+          0.22,
+          0.09
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "climbable": false,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "Not a cling.",
+    "vaultNote": "Too short to vault.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1"
+    ],
+    "slackCm": 0.0,
+    "fbx": "Assets/Art/Props/Library/StreetFurniture/ParkingMeter_Twin.fbx"
+  },
+  {
+    "name": "BikeRack_Wave",
+    "category": "StreetFurniture",
+    "blurb": "Serpentine rack, 2.10 m long, 0.84 m to the top tube, 4.2 cm pipe.",
+    "size": [
+      1.88,
+      0.842,
+      0.6
+    ],
+    "min": [
+      -0.94,
+      -0.001,
+      -0.3
+    ],
+    "max": [
+      0.94,
+      0.841,
+      0.3
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 772,
+        "materials": [
+          "Lib_Steel",
+          "Lib_SteelDark"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 396,
+        "materials": [
+          "Lib_Steel",
+          "Lib_SteelDark"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_Up_0",
+        "type": "capsule",
+        "center": [
+          -0.9,
+          0.42,
+          -0.26
+        ],
+        "radius": 0.016,
+        "height": 0.76,
+        "direction": 1
+      },
+      {
+        "name": "Col_Down_0",
+        "type": "capsule",
+        "center": [
+          -0.9,
+          0.42,
+          0.26
+        ],
+        "radius": 0.016,
+        "height": 0.76,
+        "direction": 1
+      },
+      {
+        "name": "Col_Top_0",
+        "type": "capsule",
+        "center": [
+          -0.9,
+          0.82,
+          0.0
+        ],
+        "radius": 0.016,
+        "height": 0.48,
+        "direction": 2
+      },
+      {
+        "name": "Col_FootA_0",
+        "type": "box",
+        "center": [
+          -0.9,
+          0.012,
+          -0.26
+        ],
+        "size": [
+          0.06,
+          0.02,
+          0.06
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_FootB_0",
+        "type": "box",
+        "center": [
+          -0.9,
+          0.012,
+          0.26
+        ],
+        "size": [
+          0.06,
+          0.02,
+          0.06
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Up_1",
+        "type": "capsule",
+        "center": [
+          -0.3,
+          0.42,
+          0.26
+        ],
+        "radius": 0.016,
+        "height": 0.76,
+        "direction": 1
+      },
+      {
+        "name": "Col_Down_1",
+        "type": "capsule",
+        "center": [
+          -0.3,
+          0.42,
+          -0.26
+        ],
+        "radius": 0.016,
+        "height": 0.76,
+        "direction": 1
+      },
+      {
+        "name": "Col_Top_1",
+        "type": "capsule",
+        "center": [
+          -0.3,
+          0.82,
+          0.0
+        ],
+        "radius": 0.016,
+        "height": 0.48,
+        "direction": 2
+      },
+      {
+        "name": "Col_FootA_1",
+        "type": "box",
+        "center": [
+          -0.3,
+          0.012,
+          -0.26
+        ],
+        "size": [
+          0.06,
+          0.02,
+          0.06
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_FootB_1",
+        "type": "box",
+        "center": [
+          -0.3,
+          0.012,
+          0.26
+        ],
+        "size": [
+          0.06,
+          0.02,
+          0.06
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Up_2",
+        "type": "capsule",
+        "center": [
+          0.3,
+          0.42,
+          -0.26
+        ],
+        "radius": 0.016,
+        "height": 0.76,
+        "direction": 1
+      },
+      {
+        "name": "Col_Down_2",
+        "type": "capsule",
+        "center": [
+          0.3,
+          0.42,
+          0.26
+        ],
+        "radius": 0.016,
+        "height": 0.76,
+        "direction": 1
+      },
+      {
+        "name": "Col_Top_2",
+        "type": "capsule",
+        "center": [
+          0.3,
+          0.82,
+          0.0
+        ],
+        "radius": 0.016,
+        "height": 0.48,
+        "direction": 2
+      },
+      {
+        "name": "Col_FootA_2",
+        "type": "box",
+        "center": [
+          0.3,
+          0.012,
+          -0.26
+        ],
+        "size": [
+          0.06,
+          0.02,
+          0.06
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_FootB_2",
+        "type": "box",
+        "center": [
+          0.3,
+          0.012,
+          0.26
+        ],
+        "size": [
+          0.06,
+          0.02,
+          0.06
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Up_3",
+        "type": "capsule",
+        "center": [
+          0.9,
+          0.42,
+          0.26
+        ],
+        "radius": 0.016,
+        "height": 0.76,
+        "direction": 1
+      },
+      {
+        "name": "Col_Down_3",
+        "type": "capsule",
+        "center": [
+          0.9,
+          0.42,
+          -0.26
+        ],
+        "radius": 0.016,
+        "height": 0.76,
+        "direction": 1
+      },
+      {
+        "name": "Col_Top_3",
+        "type": "capsule",
+        "center": [
+          0.9,
+          0.82,
+          0.0
+        ],
+        "radius": 0.016,
+        "height": 0.48,
+        "direction": 2
+      },
+      {
+        "name": "Col_FootA_3",
+        "type": "box",
+        "center": [
+          0.9,
+          0.012,
+          -0.26
+        ],
+        "size": [
+          0.06,
+          0.02,
+          0.06
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_FootB_3",
+        "type": "box",
+        "center": [
+          0.9,
+          0.012,
+          0.26
+        ],
+        "size": [
+          0.06,
+          0.02,
+          0.06
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Run_0",
+        "type": "capsule",
+        "center": [
+          -0.6,
+          0.02,
+          0.26
+        ],
+        "radius": 0.016,
+        "height": 0.52,
+        "direction": 0
+      },
+      {
+        "name": "Col_Run_1",
+        "type": "capsule",
+        "center": [
+          0.0,
+          0.02,
+          -0.26
+        ],
+        "radius": 0.016,
+        "height": 0.52,
+        "direction": 0
+      },
+      {
+        "name": "Col_Run_2",
+        "type": "capsule",
+        "center": [
+          0.6,
+          0.02,
+          0.26
+        ],
+        "radius": 0.016,
+        "height": 0.52,
+        "direction": 0
+      }
+    ],
+    "climbable": false,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "Tube is too thin to cling.",
+    "vaultNote": "Top is 0.84 m and round. Under the vault band.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1"
+    ],
+    "slackCm": 0.81,
+    "fbx": "Assets/Art/Props/Library/StreetFurniture/BikeRack_Wave.fbx"
+  },
+  {
+    "name": "Bollard_Lit",
+    "category": "StreetFurniture",
+    "blurb": "Lit bollard, 1.09 m tall, 18 cm across the barrel. Lens band at 0.80 m.",
+    "size": [
+      0.28,
+      1.09,
+      0.28
+    ],
+    "min": [
+      -0.14,
+      0.0,
+      -0.14
+    ],
+    "max": [
+      0.14,
+      1.09,
+      0.14
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 672,
+        "materials": [
+          "Lib_SteelDark",
+          "Lib_Steel",
+          "Lib_Lamp"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 160,
+        "materials": [
+          "Lib_SteelDark",
+          "Lib_Steel",
+          "Lib_Lamp"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_Base",
+        "type": "box",
+        "center": [
+          0,
+          0.02,
+          0
+        ],
+        "size": [
+          0.2,
+          0.032,
+          0.2
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Barrel",
+        "type": "capsule",
+        "center": [
+          0,
+          0.4,
+          0
+        ],
+        "radius": 0.078,
+        "height": 0.62,
+        "direction": 1
+      },
+      {
+        "name": "Col_Lens",
+        "type": "capsule",
+        "center": [
+          0,
+          0.8,
+          0
+        ],
+        "radius": 0.088,
+        "height": 0.18,
+        "direction": 1
+      },
+      {
+        "name": "Col_Neck",
+        "type": "capsule",
+        "center": [
+          0,
+          0.92,
+          0
+        ],
+        "radius": 0.075,
+        "height": 0.151,
+        "direction": 1
+      },
+      {
+        "name": "Col_Cap",
+        "type": "sphere",
+        "center": [
+          0,
+          1.045,
+          0
+        ],
+        "radius": 0.04
+      }
+    ],
+    "climbable": false,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "Too narrow to cling.",
+    "vaultNote": "Round top at 1.05 m is not a vault rail.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1"
+    ],
+    "slackCm": 0.75,
+    "fbx": "Assets/Art/Props/Library/StreetFurniture/Bollard_Lit.fbx"
+  },
+  {
+    "name": "Bollard_Chain",
+    "category": "StreetFurniture",
+    "blurb": "Pair of bollards, 0.90 m tall, 1.50 m apart. Chain sags between eyes at 0.62 m.",
+    "size": [
+      1.734,
+      0.895,
+      0.24
+    ],
+    "min": [
+      -0.867,
+      0.0,
+      -0.12
+    ],
+    "max": [
+      0.867,
+      0.895,
+      0.12
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 1136,
+        "materials": [
+          "Lib_SteelDark",
+          "Lib_Black",
+          "Lib_Steel",
+          "Lib_Chain"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 404,
+        "materials": [
+          "Lib_SteelDark",
+          "Lib_Black",
+          "Lib_Steel",
+          "Lib_Chain"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_Post_0",
+        "type": "capsule",
+        "center": [
+          -0.75,
+          0.42,
+          0
+        ],
+        "radius": 0.048,
+        "height": 0.78,
+        "direction": 1
+      },
+      {
+        "name": "Col_Base_0",
+        "type": "box",
+        "center": [
+          -0.75,
+          0.015,
+          0
+        ],
+        "size": [
+          0.18,
+          0.024,
+          0.18
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Post_1",
+        "type": "capsule",
+        "center": [
+          0.75,
+          0.42,
+          0
+        ],
+        "radius": 0.048,
+        "height": 0.78,
+        "direction": 1
+      },
+      {
+        "name": "Col_Base_1",
+        "type": "box",
+        "center": [
+          0.75,
+          0.015,
+          0
+        ],
+        "size": [
+          0.18,
+          0.024,
+          0.18
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "climbable": false,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "Posts are too narrow to cling. The chain is not a rail.",
+    "vaultNote": "Tops are 0.90 m and round. Not a vault.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1"
+    ],
+    "slackCm": 0.8,
+    "fbx": "Assets/Art/Props/Library/StreetFurniture/Bollard_Chain.fbx"
+  },
+  {
+    "name": "TrafficCone_Tall",
+    "category": "StreetFurniture",
+    "blurb": "36-inch cone, 0.91 m tall, 0.38 m square base, two white collars.",
+    "size": [
+      0.38,
+      0.915,
+      0.38
+    ],
+    "min": [
+      -0.19,
+      0.0,
+      -0.19
+    ],
+    "max": [
+      0.19,
+      0.915,
+      0.19
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 252,
+        "materials": [
+          "Lib_Black",
+          "Lib_Orange",
+          "Lib_PaintWhite"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 96,
+        "materials": [
+          "Lib_Black",
+          "Lib_Orange",
+          "Lib_PaintWhite"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_Base",
+        "type": "box",
+        "center": [
+          0,
+          0.02,
+          0
+        ],
+        "size": [
+          0.34,
+          0.032,
+          0.34
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Low",
+        "type": "capsule",
+        "center": [
+          0,
+          0.28,
+          0
+        ],
+        "radius": 0.06,
+        "height": 0.36,
+        "direction": 1
+      },
+      {
+        "name": "Col_High",
+        "type": "capsule",
+        "center": [
+          0,
+          0.62,
+          0
+        ],
+        "radius": 0.018,
+        "height": 0.4,
+        "direction": 1
+      }
+    ],
+    "climbable": false,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "Not a cling.",
+    "vaultNote": "Too narrow to vault.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1"
+    ],
+    "slackCm": 0.0,
+    "fbx": "Assets/Art/Props/Library/StreetFurniture/TrafficCone_Tall.fbx"
+  },
+  {
+    "name": "Barrier_Water",
+    "category": "StreetFurniture",
+    "blurb": "Water-filled plastic barrier, 1.82 m long, 0.48 m wide, 0.81 m tall. Fill cap and end knuckles.",
+    "size": [
+      1.92,
+      0.81,
+      0.48
+    ],
+    "min": [
+      -0.96,
+      0.0,
+      -0.24
+    ],
+    "max": [
+      0.96,
+      0.81,
+      0.24
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 504,
+        "materials": [
+          "Lib_Orange",
+          "Lib_PaintYellow",
+          "Lib_Black",
+          "Lib_SteelDark",
+          "Lib_PaintWhite"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 276,
+        "materials": [
+          "Lib_Orange",
+          "Lib_PaintYellow",
+          "Lib_Black",
+          "Lib_SteelDark"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_Low",
+        "type": "box",
+        "center": [
+          0,
+          0.22,
+          0
+        ],
+        "size": [
+          1.7,
+          0.38,
+          0.42
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Mid",
+        "type": "box",
+        "center": [
+          0,
+          0.52,
+          0
+        ],
+        "size": [
+          1.62,
+          0.16,
+          0.3
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Top",
+        "type": "box",
+        "center": [
+          0,
+          0.68,
+          0
+        ],
+        "size": [
+          1.54,
+          0.12,
+          0.16
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "climbable": false,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "Sloped plastic. Not a cling wall.",
+    "vaultNote": "Top is 0.82 m, under the vault band.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1"
+    ],
+    "slackCm": 0.0,
+    "fbx": "Assets/Art/Props/Library/StreetFurniture/Barrier_Water.fbx"
+  },
+  {
+    "name": "Barrier_Sawhorse",
+    "category": "StreetFurniture",
+    "blurb": "A-frame barricade, 1.80 m wide, 1.05 m tall, three rails with dark stripes.",
+    "size": [
+      1.7,
+      1.005,
+      0.68
+    ],
+    "min": [
+      -0.85,
+      0.0,
+      -0.34
+    ],
+    "max": [
+      0.85,
+      1.005,
+      0.34
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 588,
+        "materials": [
+          "Lib_Steel",
+          "Lib_SteelDark",
+          "Lib_PaintYellow",
+          "Lib_Black"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 188,
+        "materials": [
+          "Lib_Steel",
+          "Lib_SteelDark",
+          "Lib_PaintYellow"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_LegA_0",
+        "type": "box",
+        "center": [
+          -0.78,
+          0.51,
+          -0.14
+        ],
+        "size": [
+          0.019798989873223333,
+          0.019798989873223333,
+          0.9214504817756013
+        ],
+        "euler": [
+          -75.06858282186245,
+          0.0,
+          0.0
+        ]
+      },
+      {
+        "name": "Col_LegB_0",
+        "type": "box",
+        "center": [
+          -0.78,
+          0.51,
+          0.14
+        ],
+        "size": [
+          0.019798989873223333,
+          0.019798989873223333,
+          0.9214504817756013
+        ],
+        "euler": [
+          -75.06858282186245,
+          180.0,
+          0.0
+        ]
+      },
+      {
+        "name": "Col_FootA_0",
+        "type": "box",
+        "center": [
+          -0.78,
+          0.015,
+          -0.28
+        ],
+        "size": [
+          0.08,
+          0.024,
+          0.1
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_FootB_0",
+        "type": "box",
+        "center": [
+          -0.78,
+          0.015,
+          0.28
+        ],
+        "size": [
+          0.08,
+          0.024,
+          0.1
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_LegA_1",
+        "type": "box",
+        "center": [
+          0.78,
+          0.51,
+          -0.14
+        ],
+        "size": [
+          0.019798989873223333,
+          0.019798989873223333,
+          0.9214504817756013
+        ],
+        "euler": [
+          -75.06858282186245,
+          0.0,
+          0.0
+        ]
+      },
+      {
+        "name": "Col_LegB_1",
+        "type": "box",
+        "center": [
+          0.78,
+          0.51,
+          0.14
+        ],
+        "size": [
+          0.019798989873223333,
+          0.019798989873223333,
+          0.9214504817756013
+        ],
+        "euler": [
+          -75.06858282186245,
+          180.0,
+          0.0
+        ]
+      },
+      {
+        "name": "Col_FootA_1",
+        "type": "box",
+        "center": [
+          0.78,
+          0.015,
+          -0.28
+        ],
+        "size": [
+          0.08,
+          0.024,
+          0.1
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_FootB_1",
+        "type": "box",
+        "center": [
+          0.78,
+          0.015,
+          0.28
+        ],
+        "size": [
+          0.08,
+          0.024,
+          0.1
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Rail_0",
+        "type": "box",
+        "center": [
+          0,
+          0.38,
+          0
+        ],
+        "size": [
+          1.64,
+          0.064,
+          0.028
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Rail_1",
+        "type": "box",
+        "center": [
+          0,
+          0.66,
+          0
+        ],
+        "size": [
+          1.64,
+          0.05600000000000001,
+          0.028
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Rail_2",
+        "type": "box",
+        "center": [
+          0,
+          0.94,
+          0
+        ],
+        "size": [
+          1.64,
+          0.048,
+          0.028
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "climbable": false,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "Open frame. Not a cling wall.",
+    "vaultNote": "Top rail is 0.98 m, thin, and not a vault lip.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1"
+    ],
+    "slackCm": 0.36,
+    "fbx": "Assets/Art/Props/Library/StreetFurniture/Barrier_Sawhorse.fbx"
+  },
+  {
+    "name": "PowerPole_Span",
+    "category": "StreetFurniture",
+    "blurb": "Two 10.5 m wood poles, 8 m apart. Crossarms at 8.9 m, three conductors sag 0.38 m, transformer and a guy. Conductors are visual only.",
+    "size": [
+      10.79,
+      10.5,
+      1.125
+    ],
+    "min": [
+      -5.69,
+      0.0,
+      -0.165
+    ],
+    "max": [
+      5.1,
+      10.5,
+      0.96
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 2908,
+        "materials": [
+          "Lib_Bark",
+          "Lib_Wood",
+          "Lib_SteelDark",
+          "Lib_Steel",
+          "Lib_Glass",
+          "Lib_PaintWhite",
+          "Lib_Black",
+          "Lib_Brass",
+          "Lib_Rust"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 956,
+        "materials": [
+          "Lib_Bark",
+          "Lib_Wood",
+          "Lib_SteelDark",
+          "Lib_Glass",
+          "Lib_Steel",
+          "Lib_PaintWhite",
+          "Lib_Black"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_Pole_0_0",
+        "type": "capsule",
+        "center": [
+          -4.0,
+          1.15,
+          0
+        ],
+        "radius": 0.128,
+        "height": 2.1,
+        "direction": 1
+      },
+      {
+        "name": "Col_Pole_0_1",
+        "type": "capsule",
+        "center": [
+          -4.0,
+          3.45,
+          0
+        ],
+        "radius": 0.105,
+        "height": 2.3,
+        "direction": 1
+      },
+      {
+        "name": "Col_Pole_0_2",
+        "type": "capsule",
+        "center": [
+          -4.0,
+          5.85,
+          0
+        ],
+        "radius": 0.088,
+        "height": 2.3,
+        "direction": 1
+      },
+      {
+        "name": "Col_Pole_0_3",
+        "type": "capsule",
+        "center": [
+          -4.0,
+          8.15,
+          0
+        ],
+        "radius": 0.072,
+        "height": 2.1,
+        "direction": 1
+      },
+      {
+        "name": "Col_Pole_0_4",
+        "type": "capsule",
+        "center": [
+          -4.0,
+          9.9,
+          0
+        ],
+        "radius": 0.06,
+        "height": 1.0,
+        "direction": 1
+      },
+      {
+        "name": "Col_Arm_0_-1",
+        "type": "box",
+        "center": [
+          -4.64,
+          8.9,
+          0.06
+        ],
+        "size": [
+          0.92,
+          0.06,
+          0.07
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Arm_0_1",
+        "type": "box",
+        "center": [
+          -3.36,
+          8.9,
+          0.06
+        ],
+        "size": [
+          0.92,
+          0.06,
+          0.07
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Pole_1_0",
+        "type": "capsule",
+        "center": [
+          4.0,
+          1.15,
+          0
+        ],
+        "radius": 0.128,
+        "height": 2.1,
+        "direction": 1
+      },
+      {
+        "name": "Col_Pole_1_1",
+        "type": "capsule",
+        "center": [
+          4.0,
+          3.45,
+          0
+        ],
+        "radius": 0.105,
+        "height": 2.3,
+        "direction": 1
+      },
+      {
+        "name": "Col_Pole_1_2",
+        "type": "capsule",
+        "center": [
+          4.0,
+          5.85,
+          0
+        ],
+        "radius": 0.088,
+        "height": 2.3,
+        "direction": 1
+      },
+      {
+        "name": "Col_Pole_1_3",
+        "type": "capsule",
+        "center": [
+          4.0,
+          8.15,
+          0
+        ],
+        "radius": 0.072,
+        "height": 2.1,
+        "direction": 1
+      },
+      {
+        "name": "Col_Pole_1_4",
+        "type": "capsule",
+        "center": [
+          4.0,
+          9.9,
+          0
+        ],
+        "radius": 0.06,
+        "height": 1.0,
+        "direction": 1
+      },
+      {
+        "name": "Col_Arm_1_-1",
+        "type": "box",
+        "center": [
+          3.36,
+          8.9,
+          0.06
+        ],
+        "size": [
+          0.92,
+          0.06,
+          0.07
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Arm_1_1",
+        "type": "box",
+        "center": [
+          4.64,
+          8.9,
+          0.06
+        ],
+        "size": [
+          0.92,
+          0.06,
+          0.07
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Transformer",
+        "type": "capsule",
+        "center": [
+          4.0,
+          6.05,
+          0.5
+        ],
+        "radius": 0.16,
+        "height": 0.58,
+        "direction": 1
+      },
+      {
+        "name": "Col_Bracket",
+        "type": "box",
+        "center": [
+          4.0,
+          6.3,
+          0.22
+        ],
+        "size": [
+          0.05,
+          0.22,
+          0.12
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Guy",
+        "type": "box",
+        "center": [
+          -4.74,
+          3.995,
+          0.45999999999999996
+        ],
+        "size": [
+          0.008485281374238571,
+          0.008485281374238571,
+          7.077464738431481
+        ],
+        "euler": [
+          77.8229351537014,
+          -62.81888891452279,
+          0.0
+        ]
+      },
+      {
+        "name": "Col_Anchor",
+        "type": "box",
+        "center": [
+          -5.55,
+          0.04,
+          0.85
+        ],
+        "size": [
+          0.22,
+          0.06,
+          0.16
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "climbable": false,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "Round timber, about 33 cm at the ground. Not a cling wall.",
+    "vaultNote": "No rail. Conductors are visual only.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1"
+    ],
+    "slackCm": 0.0,
+    "fbx": "Assets/Art/Props/Library/StreetFurniture/PowerPole_Span.fbx"
+  },
+  {
+    "name": "Sign_Yield",
+    "category": "StreetFurniture",
+    "blurb": "36-inch yield triangle. Point down, bottom of the sign at 2.10 m, pole 3.05 m.",
+    "size": [
+      0.907,
+      3.01,
+      0.18
+    ],
+    "min": [
+      -0.454,
+      0.0,
+      -0.09
+    ],
+    "max": [
+      0.454,
+      3.01,
+      0.09
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 216,
+        "materials": [
+          "Lib_SteelDark",
+          "Lib_Steel",
+          "Lib_PaintRed",
+          "Lib_PaintWhite"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 92,
+        "materials": [
+          "Lib_SteelDark",
+          "Lib_Steel",
+          "Lib_PaintRed",
+          "Lib_PaintWhite"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_Base",
+        "type": "box",
+        "center": [
+          0,
+          0.03,
+          0
+        ],
+        "size": [
+          0.14,
+          0.048,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Pole",
+        "type": "capsule",
+        "center": [
+          0,
+          1.52,
+          0
+        ],
+        "radius": 0.026,
+        "height": 2.9,
+        "direction": 1
+      },
+      {
+        "name": "Col_Sign",
+        "type": "box",
+        "center": [
+          0,
+          2.68,
+          0.055
+        ],
+        "size": [
+          0.42,
+          0.32,
+          0.016
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_SignTip",
+        "type": "box",
+        "center": [
+          0,
+          2.3600000000000003,
+          0.055
+        ],
+        "size": [
+          0.12,
+          0.18,
+          0.014
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "climbable": false,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "6 cm pole. Not a cling.",
+    "vaultNote": "Sign is a thin plate at 2.6 m.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1"
+    ],
+    "slackCm": 0.45,
+    "fbx": "Assets/Art/Props/Library/StreetFurniture/Sign_Yield.fbx"
+  },
+  {
+    "name": "Sign_OneWay",
+    "category": "StreetFurniture",
+    "blurb": "One-way blade 0.91 x 0.30 m at 2.45 m. Black arrow on white, 6 cm pole.",
+    "size": [
+      0.91,
+      2.675,
+      0.16
+    ],
+    "min": [
+      -0.355,
+      0.0,
+      -0.08
+    ],
+    "max": [
+      0.555,
+      2.675,
+      0.08
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 252,
+        "materials": [
+          "Lib_SteelDark",
+          "Lib_Steel",
+          "Lib_PaintWhite",
+          "Lib_Black"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 120,
+        "materials": [
+          "Lib_SteelDark",
+          "Lib_Steel",
+          "Lib_PaintWhite",
+          "Lib_Black"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_Base",
+        "type": "box",
+        "center": [
+          0,
+          0.025,
+          0
+        ],
+        "size": [
+          0.12,
+          0.04,
+          0.12
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Pole",
+        "type": "capsule",
+        "center": [
+          0,
+          1.35,
+          0
+        ],
+        "radius": 0.026,
+        "height": 2.58,
+        "direction": 1
+      },
+      {
+        "name": "Col_Blade",
+        "type": "box",
+        "center": [
+          0.1,
+          2.45,
+          0.055
+        ],
+        "size": [
+          0.86,
+          0.26,
+          0.018
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "climbable": false,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "6 cm pole. Not a cling.",
+    "vaultNote": "Blade is a thin plate.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1"
+    ],
+    "slackCm": 0.0,
+    "fbx": "Assets/Art/Props/Library/StreetFurniture/Sign_OneWay.fbx"
+  },
+  {
+    "name": "Sign_Blades",
+    "category": "StreetFurniture",
+    "blurb": "Crossed street blades at 2.70 m and 2.95 m. Each blade 0.90 x 0.22 m, pole 3.30 m.",
+    "size": [
+      0.9,
+      3.3,
+      1.02
+    ],
+    "min": [
+      -0.45,
+      0.0,
+      -0.51
+    ],
+    "max": [
+      0.45,
+      3.3,
+      0.51
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 404,
+        "materials": [
+          "Lib_SteelDark",
+          "Lib_Steel",
+          "Lib_PaintGreen",
+          "Lib_PaintWhite"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 184,
+        "materials": [
+          "Lib_SteelDark",
+          "Lib_Steel",
+          "Lib_PaintGreen",
+          "Lib_PaintWhite"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_Base",
+        "type": "box",
+        "center": [
+          0,
+          0.025,
+          0
+        ],
+        "size": [
+          0.14,
+          0.04,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Pole",
+        "type": "capsule",
+        "center": [
+          0,
+          1.65,
+          0
+        ],
+        "radius": 0.028,
+        "height": 3.16,
+        "direction": 1
+      },
+      {
+        "name": "Col_BladeZ_0",
+        "type": "box",
+        "center": [
+          -0.26,
+          2.7,
+          0.04
+        ],
+        "size": [
+          0.32,
+          0.16,
+          0.016
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_BladeZ_1",
+        "type": "box",
+        "center": [
+          0.26,
+          2.7,
+          0.04
+        ],
+        "size": [
+          0.32,
+          0.16,
+          0.016
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_BladeX_0",
+        "type": "box",
+        "center": [
+          0.055,
+          2.96,
+          -0.28
+        ],
+        "size": [
+          0.012,
+          0.16,
+          0.36
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_BladeX_1",
+        "type": "box",
+        "center": [
+          0.055,
+          2.96,
+          0.28
+        ],
+        "size": [
+          0.012,
+          0.16,
+          0.36
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "climbable": false,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "6 cm pole. Not a cling.",
+    "vaultNote": "Blades are thin plates.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1"
+    ],
+    "slackCm": 0.42,
+    "fbx": "Assets/Art/Props/Library/StreetFurniture/Sign_Blades.fbx"
+  },
+  {
+    "name": "Planter_Street",
+    "category": "StreetFurniture",
+    "blurb": "Street planter 1.80 x 0.48 m, 0.46 m tall. Steel frame, wood slats, soil and two shrubs.",
+    "size": [
+      1.86,
+      0.84,
+      0.528
+    ],
+    "min": [
+      -0.93,
+      0.0,
+      -0.264
+    ],
+    "max": [
+      0.93,
+      0.84,
+      0.264
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 1228,
+        "materials": [
+          "Lib_SteelDark",
+          "Lib_Steel",
+          "Lib_Wood",
+          "Lib_Soil",
+          "Lib_Foliage",
+          "Lib_FoliageDark",
+          "Lib_FoliageLite",
+          "Lib_PaintRed",
+          "Lib_PaintCream",
+          "Lib_Rubber"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 312,
+        "materials": [
+          "Lib_SteelDark",
+          "Lib_Steel",
+          "Lib_Wood",
+          "Lib_Soil",
+          "Lib_Foliage",
+          "Lib_FoliageDark",
+          "Lib_FoliageLite"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_WallN",
+        "type": "box",
+        "center": [
+          0,
+          0.22,
+          0.22
+        ],
+        "size": [
+          1.68,
+          0.36,
+          0.028
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_WallS",
+        "type": "box",
+        "center": [
+          0,
+          0.22,
+          -0.22
+        ],
+        "size": [
+          1.68,
+          0.36,
+          0.028
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_WallW",
+        "type": "box",
+        "center": [
+          -0.88,
+          0.22,
+          0
+        ],
+        "size": [
+          0.028,
+          0.36,
+          0.32
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_WallE",
+        "type": "box",
+        "center": [
+          0.88,
+          0.22,
+          0
+        ],
+        "size": [
+          0.028,
+          0.36,
+          0.32
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Floor",
+        "type": "box",
+        "center": [
+          0,
+          0.045,
+          0
+        ],
+        "size": [
+          1.6,
+          0.03,
+          0.32
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Rim",
+        "type": "box",
+        "center": [
+          0,
+          0.472,
+          0
+        ],
+        "size": [
+          1.74,
+          0.014,
+          0.44
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_ShrubL",
+        "type": "sphere",
+        "center": [
+          -0.42,
+          0.64,
+          0.0
+        ],
+        "radius": 0.1
+      },
+      {
+        "name": "Col_ShrubR",
+        "type": "sphere",
+        "center": [
+          0.36,
+          0.62,
+          -0.02
+        ],
+        "radius": 0.08
+      }
+    ],
+    "climbable": false,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "Rim is 0.46 m. Too low to cling.",
+    "vaultNote": "Too low to vault.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1"
+    ],
+    "slackCm": 0.61,
+    "fbx": "Assets/Art/Props/Library/StreetFurniture/Planter_Street.fbx"
+  },
+  {
+    "name": "Manhole_Ring",
+    "category": "StreetFurniture",
+    "blurb": "Manhole frame 0.86 m across, cover 0.66 m, 5 cm tall. Ribs and two pick slots.",
+    "size": [
+      0.86,
+      0.059,
+      0.86
+    ],
+    "min": [
+      -0.43,
+      0.0,
+      -0.43
+    ],
+    "max": [
+      0.43,
+      0.059,
+      0.43
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 1144,
+        "materials": [
+          "Lib_SteelDark",
+          "Lib_MetalWorn",
+          "Lib_Steel",
+          "Lib_Rust",
+          "Lib_Black"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 232,
+        "materials": [
+          "Lib_SteelDark",
+          "Lib_MetalWorn",
+          "Lib_Steel"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_Frame",
+        "type": "box",
+        "center": [
+          0,
+          0.014,
+          0
+        ],
+        "size": [
+          0.52,
+          0.02,
+          0.52
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Cover",
+        "type": "box",
+        "center": [
+          0,
+          0.04,
+          0
+        ],
+        "size": [
+          0.4,
+          0.006,
+          0.4
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "climbable": false,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "Flush with the road. Not a step.",
+    "vaultNote": "Flat cover.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1"
+    ],
+    "slackCm": 0.62,
+    "fbx": "Assets/Art/Props/Library/StreetFurniture/Manhole_Ring.fbx"
+  },
+  {
+    "name": "StormDrain_Curb",
+    "category": "StreetFurniture",
+    "blurb": "Curb inlet 1.50 m long. Curb is 0.15 m, throat 0.56 m wide, gutter grate 0.55 x 0.32 m.",
+    "size": [
+      1.5,
+      0.18,
+      0.96
+    ],
+    "min": [
+      -0.75,
+      0.0,
+      -0.48
+    ],
+    "max": [
+      0.75,
+      0.18,
+      0.48
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 564,
+        "materials": [
+          "Lib_Concrete",
+          "Lib_Black",
+          "Lib_SteelDark",
+          "Lib_Steel"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 132,
+        "materials": [
+          "Lib_Concrete",
+          "Lib_Black",
+          "Lib_SteelDark",
+          "Lib_Steel"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_Walk",
+        "type": "box",
+        "center": [
+          0,
+          0.09,
+          0.32
+        ],
+        "size": [
+          1.42,
+          0.14,
+          0.28
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_CurbL",
+        "type": "box",
+        "center": [
+          -0.52,
+          0.07,
+          0.01
+        ],
+        "size": [
+          0.36,
+          0.1,
+          0.04
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_CurbR",
+        "type": "box",
+        "center": [
+          0.52,
+          0.07,
+          0.01
+        ],
+        "size": [
+          0.36,
+          0.1,
+          0.04
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Lintel",
+        "type": "box",
+        "center": [
+          0,
+          0.132,
+          0.0
+        ],
+        "size": [
+          0.48,
+          0.024,
+          0.04
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Gutter",
+        "type": "box",
+        "center": [
+          0,
+          0.024,
+          -0.32
+        ],
+        "size": [
+          1.4,
+          0.032,
+          0.28
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Grate",
+        "type": "box",
+        "center": [
+          0,
+          0.056,
+          -0.26
+        ],
+        "size": [
+          0.5,
+          0.008,
+          0.26
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "climbable": false,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "Curb is 15 cm. Not a wall.",
+    "vaultNote": "Too low.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1"
+    ],
+    "slackCm": 0.0,
+    "fbx": "Assets/Art/Props/Library/StreetFurniture/StormDrain_Curb.fbx"
   }
 ]

@@ -17,6 +17,42 @@ def polyline(g, pts, radius, mat, segments=6):
         g.pipe(pts[i], pts[i + 1], radius, mat, segments)
 
 
+def tri_plate(g, center, side, thick, mat, bevel=0.0, segs=0, point="down"):
+    """Equilateral plate. `point` is down, up, left, or right in the Unity XY plane."""
+    h = side * math.sqrt(3.0) / 2.0
+    xy = [(0.0, -2.0 * h / 3.0), (-side * 0.5, h / 3.0), (side * 0.5, h / 3.0)]
+    if point == "up":
+        xy = [(x, -y) for x, y in xy]
+    elif point == "right":
+        xy = [(-y, x) for x, y in xy]
+    elif point == "left":
+        xy = [(y, -x) for x, y in xy]
+    cx, cy, cz = center
+    t = thick * 0.5
+    verts = [(cx + x, cy + y, cz - t) for x, y in xy]
+    verts += [(cx + x, cy + y, cz + t) for x, y in xy]
+    g.mesh(verts, [
+        (0, 2, 1),
+        (3, 4, 5),
+        (0, 1, 4, 3),
+        (1, 2, 5, 4),
+        (2, 0, 3, 5),
+    ], mat, bevel=bevel, segs=segs)
+
+
+def catenary(g, a, b, sag, radius, mat, steps=8, segments=6):
+    pts = []
+    for i in range(steps + 1):
+        t = i / float(steps)
+        drop = math.sin(t * math.pi) * sag
+        pts.append((
+            a[0] + (b[0] - a[0]) * t,
+            a[1] + (b[1] - a[1]) * t - drop,
+            a[2] + (b[2] - a[2]) * t,
+        ))
+    polyline(g, pts, radius, mat, segments)
+
+
 def chain(g, a, b, n=5, sag=0.05, radius=0.0045):
     pts = []
     for i in range(n + 1):
@@ -74,12 +110,24 @@ def add_hydrant(g, lod, body, cap, nut, band=None, wheel=False):
         g.cylinder((sign * 0.186, 0.40, 0), 0.042, 0.028, cap, half, axis="X")
         g.cylinder((sign * 0.204, 0.40, 0), 0.014, 0.012, nut, 6, axis="X")
         if lod == 0:
-            chain(g, (sign * 0.19, 0.38, 0.02), (sign * 0.06, 0.26, 0.07), sag=0.045)
+            # Eye under the cap lip, lug just proud of the barrel.
+            g.sphere((sign * 0.186, 0.352, 0.0), 0.010, "Lib_SteelDark", 8)
+            g.sphere((sign * 0.086, 0.300, 0.026), 0.013, "Lib_SteelDark", 8)
+            chain(
+                g,
+                (sign * 0.186, 0.346, 0.0),
+                (sign * 0.090, 0.300, 0.028),
+                n=6,
+                sag=0.022,
+                radius=0.0055,
+            )
     g.cylinder((0, 0.38, 0.155), 0.048, 0.12, "Lib_Brass", half, axis="Z", bevel=bev, segs=bs)
     g.cylinder((0, 0.38, 0.224), 0.058, 0.030, cap, half, axis="Z")
     g.cylinder((0, 0.38, 0.244), 0.016, 0.014, nut, 6, axis="Z")
     if lod == 0:
-        chain(g, (0.02, 0.36, 0.23), (0.09, 0.24, 0.10), sag=0.05)
+        g.sphere((0.0, 0.316, 0.224), 0.010, "Lib_SteelDark", 8)
+        g.sphere((0.046, 0.280, 0.074), 0.013, "Lib_SteelDark", 8)
+        chain(g, (0.0, 0.310, 0.224), (0.050, 0.280, 0.078), n=6, sag=0.018, radius=0.0055)
     if wheel:
         g.cylinder((0, 0.66, 0), 0.048, 0.12, "Lib_SteelDark", seg)
         g.cylinder((0, 0.74, 0), 0.022, 0.06, nut, 8)

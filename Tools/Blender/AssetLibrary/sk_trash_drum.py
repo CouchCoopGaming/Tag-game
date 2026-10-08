@@ -25,7 +25,7 @@ def create():
         g.cylinder((0, 0.385, 0), 0.215, 0.69, "Lib_MetalWorn", seg, bevel=bev, segs=1 if lod == 0 else 0)
         g.cylinder((0, 0.74, 0), 0.235, 0.045, "Lib_SteelDark", seg)
         for y in (0.24, 0.42, 0.60):
-            g.torus((0, y, 0), 0.224, 0.006, "Lib_Steel", seg, 5)
+            g.torus((0, y, 0), 0.218, 0.008, "Lib_Steel", seg, 5)
         g.cylinder((0, 0.785, 0), 0.245, 0.03, "Lib_SteelDark", seg, bevel=bev, segs=1 if lod == 0 else 0)
         g.cylinder((0, 0.805, 0), 0.04, 0.02, "Lib_Black", 8)
         g.sphere((0, 0.825, 0), 0.018, "Lib_Black", 8)

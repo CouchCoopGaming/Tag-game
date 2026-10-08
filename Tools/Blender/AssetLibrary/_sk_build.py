@@ -34,6 +34,22 @@ MODULES = (
     "sk_trash_drum",
     "sk_recycling_dual",
     "sk_dumpster_rear",
+    "sk_bus_shelter",
+    "sk_newspaper_rack",
+    "sk_meter_twin",
+    "sk_bike_wave",
+    "sk_bollard_lit",
+    "sk_bollard_chain",
+    "sk_cone_tall",
+    "sk_barrier_water",
+    "sk_barrier_sawhorse",
+    "sk_power_pole",
+    "sk_sign_yield",
+    "sk_sign_oneway",
+    "sk_sign_blades",
+    "sk_planter_street",
+    "sk_manhole_ring",
+    "sk_storm_curb",
 )
 
 
@@ -87,8 +103,10 @@ def main():
                 worst = (slack, asset.name)
             flag = "WARN" if asset.warnings else "OK"
             tris = ",".join(str(item["tris"]) for item in entry["lods"])
-            print("%s %s size=%s tris=%s slack=%s %s" % (
-                flag, asset.name, entry["size"], tris, slack, "; ".join(asset.warnings)
+            print("%s %s size=%s tris=%s slack=%s(%s) %s" % (
+                flag, asset.name, entry["size"], tris, slack,
+                getattr(asset, "collider_slack_name", ""),
+                "; ".join(asset.warnings),
             ))
         except Exception as exc:
             traceback.print_exc()

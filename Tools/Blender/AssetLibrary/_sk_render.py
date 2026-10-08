@@ -34,6 +34,22 @@ MODULES = (
     "sk_trash_drum",
     "sk_recycling_dual",
     "sk_dumpster_rear",
+    "sk_bus_shelter",
+    "sk_newspaper_rack",
+    "sk_meter_twin",
+    "sk_bike_wave",
+    "sk_bollard_lit",
+    "sk_bollard_chain",
+    "sk_cone_tall",
+    "sk_barrier_water",
+    "sk_barrier_sawhorse",
+    "sk_power_pole",
+    "sk_sign_yield",
+    "sk_sign_oneway",
+    "sk_sign_blades",
+    "sk_planter_street",
+    "sk_manhole_ring",
+    "sk_storm_curb",
     "mannequin",
 )
 
@@ -118,7 +134,7 @@ def _lineup(found, path):
     for name, pos, yaw in specs:
         objs.append(r._spawn(found[name](), pos, yaw))
     r._ground("concrete", 80.0)
-    r._frame(scene, objs, fill=0.86, elevation=11.0, azimuth=18.0)
+    r._frame(scene, objs, fill=0.70, elevation=13.0, azimuth=22.0)
     r._render(scene, path)
     _fit(path)
 
@@ -140,10 +156,89 @@ def _fit(path):
         print("SIZE_OVER", size, path)
 
 
+def _pass2_lineup(found, path):
+    r._reset_scene()
+    scene = bpy.context.scene
+    r._engine(scene, wide=True)
+    scene.render.resolution_x = 1280
+    scene.render.resolution_y = 720
+    scene.cycles.samples = 24
+    r._ensure_materials()
+    r._world(scene, night=False)
+    specs = [
+        ("Mannequin", (0.0, 0.0, 0.6), 190),
+        ("TrafficCone_Tall", (1.0, 0.0, 0.1), 10),
+        ("Bollard_Lit", (1.9, 0.0, 0.0), 0),
+        ("Bollard_Chain", (3.6, 0.0, 0.1), 0),
+        ("ParkingMeter_Twin", (5.3, 0.0, 0.0), 15),
+        ("NewspaperRack", (6.8, 0.0, 0.15), 8),
+        ("BikeRack_Wave", (8.8, 0.0, 0.2), 8),
+        ("Barrier_Sawhorse", (11.2, 0.0, 0.3), 12),
+        ("Barrier_Water", (13.6, 0.0, 0.2), -8),
+        ("BusShelter_City", (17.2, 0.0, 0.4), 20),
+    ]
+    objs = [r._spawn(found[name](), pos, yaw) for name, pos, yaw in specs]
+    r._ground("concrete", 80.0)
+    r._frame(scene, objs, fill=0.72, elevation=12.0, azimuth=24.0)
+    r._render(scene, path)
+    _fit(path)
+
+
+def _pass3_lineup(found, path):
+    r._reset_scene()
+    scene = bpy.context.scene
+    r._engine(scene, wide=True)
+    scene.render.resolution_x = 1280
+    scene.render.resolution_y = 720
+    scene.cycles.samples = 24
+    r._ensure_materials()
+    r._world(scene, night=False)
+    specs = [
+        ("Mannequin", (0.0, 0.0, 1.2), 200),
+        ("Manhole_Ring", (1.3, 0.0, 0.2), 15),
+        ("StormDrain_Curb", (3.2, 0.0, 0.15), 20),
+        ("Planter_Street", (5.4, 0.0, 0.3), 12),
+        ("Sign_OneWay", (7.3, 0.0, 0.0), 18),
+        ("Sign_Yield", (8.8, 0.0, 0.0), -12),
+        ("Sign_Blades", (10.4, 0.0, 0.0), 25),
+        ("PowerPole_Span", (18.5, 0.0, 0.0), 8),
+    ]
+    objs = [r._spawn(found[name](), pos, yaw) for name, pos, yaw in specs]
+    r._ground("concrete", 120.0)
+    r._frame(scene, objs, fill=0.68, elevation=11.0, azimuth=18.0)
+    r._render(scene, path)
+    _fit(path)
+
+
 def main():
     os.makedirs(STILL_DIR, exist_ok=True)
     found = _load()
-    shots = [
+    if PASS >= 3:
+        shots = [
+            ("power_pole", lambda: _shot(found["PowerPole_Span"], os.path.join(STILL_DIR, "power_pole.png"), fill=0.82)),
+            ("sign_yield", lambda: _shot(found["Sign_Yield"], os.path.join(STILL_DIR, "sign_yield.png"), fill=0.78)),
+            ("sign_oneway", lambda: _shot(found["Sign_OneWay"], os.path.join(STILL_DIR, "sign_oneway.png"), fill=0.78)),
+            ("sign_blades", lambda: _shot(found["Sign_Blades"], os.path.join(STILL_DIR, "sign_blades.png"), fill=0.78)),
+            ("planter_street", lambda: _shot(found["Planter_Street"], os.path.join(STILL_DIR, "planter_street.png"))),
+            ("manhole_ring", lambda: _shot(found["Manhole_Ring"], os.path.join(STILL_DIR, "manhole_ring.png"), fill=0.7)),
+            ("storm_curb", lambda: _shot(found["StormDrain_Curb"], os.path.join(STILL_DIR, "storm_curb.png"))),
+            ("kit_lineup", lambda: _pass3_lineup(found, os.path.join(STILL_DIR, "kit_lineup.png"))),
+        ]
+    elif PASS >= 2:
+        shots = [
+            ("bus_shelter", lambda: _shot(found["BusShelter_City"], os.path.join(STILL_DIR, "bus_shelter.png"), fill=0.78)),
+            ("newspaper_rack", lambda: _shot(found["NewspaperRack"], os.path.join(STILL_DIR, "newspaper_rack.png"))),
+            ("meter_twin", lambda: _shot(found["ParkingMeter_Twin"], os.path.join(STILL_DIR, "meter_twin.png"))),
+            ("bike_wave", lambda: _shot(found["BikeRack_Wave"], os.path.join(STILL_DIR, "bike_wave.png"))),
+            ("bollard_lit", lambda: _shot(found["Bollard_Lit"], os.path.join(STILL_DIR, "bollard_lit.png"))),
+            ("bollard_chain", lambda: _shot(found["Bollard_Chain"], os.path.join(STILL_DIR, "bollard_chain.png"))),
+            ("cone_tall", lambda: _shot(found["TrafficCone_Tall"], os.path.join(STILL_DIR, "cone_tall.png"))),
+            ("barrier_water", lambda: _shot(found["Barrier_Water"], os.path.join(STILL_DIR, "barrier_water.png"))),
+            ("barrier_sawhorse", lambda: _shot(found["Barrier_Sawhorse"], os.path.join(STILL_DIR, "barrier_sawhorse.png"))),
+            ("kit_lineup", lambda: _pass2_lineup(found, os.path.join(STILL_DIR, "kit_lineup.png"))),
+        ]
+    else:
+        shots = [
         ("light_globe", lambda: _shot(found["LightPost_Globe"], os.path.join(STILL_DIR, "light_globe.png"))),
         ("light_globe_head", lambda: _close(
             found["LightPost_Globe"], os.path.join(STILL_DIR, "light_globe_head.png"),
