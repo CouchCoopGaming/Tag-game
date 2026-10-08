@@ -83,6 +83,12 @@ PALETTE = {
     "Lib_CraneYellow": ((0.78, 0.62, 0.16), 0.15, 0.32),
     # Flat varnish. Not the baked wood tile, which reads blotchy on a curved hull.
     "Lib_Varnish": ((0.52, 0.34, 0.16), 0.0, 0.38),
+    # Untextured board paint and container enamel. The baked tiles read as brick.
+    "Lib_Board": ((0.63, 0.46, 0.29), 0.0, 0.32),
+    "Lib_Batten": ((0.38, 0.24, 0.14), 0.0, 0.28),
+    "Lib_BoxRed": ((0.55, 0.16, 0.12), 0.12, 0.34),
+    "Lib_BoxBlue": ((0.12, 0.30, 0.50), 0.12, 0.34),
+    "Lib_BoxGreen": ((0.15, 0.36, 0.24), 0.12, 0.34),
 }
 
 # Blender emission (color, strength). Unity gets the same color on _EmissionColor.
@@ -1275,7 +1281,7 @@ def load_asset_modules():
     if ROOT not in sys.path:
         sys.path.insert(0, ROOT)
     skip = {
-        "_common", "build_all", "render_pass1", "render_pass2", "render_pass3", "render_pass4", "render_pass5", "render_pass6", "render_pass7", "render_pass8", "render_pass9", "render_pass10", "render_pass11", "render_pass12", "render_pass13",
+        "_common", "build_all", "render_pass1", "render_pass2", "render_pass3", "render_pass4", "render_pass5", "render_pass6", "render_pass7", "render_pass8", "render_pass9", "render_pass10", "render_pass11", "render_pass12", "render_pass13", "render_pass14",
         "write_unity", "_kit",
     }
     names = []

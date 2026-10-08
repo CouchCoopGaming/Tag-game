@@ -1,4 +1,8 @@
-"""ISO 20-foot shipping container. 6.06 x 2.44 x 2.59 m."""
+"""ISO shipping container. Corrugated enamel, corner castings, locking bars.
+
+20 ft is 6.06 x 2.44 x 2.59 m. Doors face +Z. Ribs are modeled steel,
+not a brick tile. Container_20 is rust red, with blue and green twins.
+"""
 
 import os
 import sys
@@ -6,87 +10,192 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from _common import Asset, register, lod_pick
 
+WIDTH = 2.44
+HEIGHT = 2.59
+CAST = 0.178
+
+
+def _face_x():
+    return WIDTH * 0.5 - 0.08
+
 
 @register
 def create():
     return build_container(
         "Container_20",
         6.06,
-        "Lib_ContainerRed",
-        "20-foot container, 6.06 m long, 2.44 m wide, 2.59 m tall. Doors face +Z. Corrugation stands proud of the wall plate.",
+        "Lib_BoxRed",
+        "20-foot container, rust-red enamel. 6.06 x 2.44 x 2.59 m. Vertical corrugation, corner castings, four locking bars on the +Z doors.",
     )
 
 
-def _logo(g, width, height):
-    """Original mark. Not a shipping-line trademark."""
-    x = width * 0.5 + 0.028
-    g.box((x, 1.55, -0.15), (0.008, 0.78, 1.70), "Lib_PaintWhite")
-    g.box((x + 0.006, 1.78, -0.55), (0.006, 0.22, 0.55), "Lib_ContainerBlue", euler=(0, 18, 0))
-    g.box((x + 0.006, 1.78, 0.15), (0.006, 0.22, 0.55), "Lib_ContainerBlue", euler=(0, -18, 0))
-    g.text("NORTHLINE", (x + 0.01, 1.28, -0.15), 0.11, "Lib_SteelDark", extrude=0.003, yaw=90)
+@register
+def create_blue():
+    return build_container(
+        "Container_20_Blue",
+        6.06,
+        "Lib_BoxBlue",
+        "20-foot container, blue enamel. Same shell as Container_20.",
+    )
+
+
+@register
+def create_green():
+    return build_container(
+        "Container_20_Green",
+        6.06,
+        "Lib_BoxGreen",
+        "20-foot container, green enamel. Same shell as Container_20.",
+    )
+
+
+def _logo(g, color):
+    """Original mark on a flat panel. Not a shipping-line trademark."""
+    face = _face_x()
+    panel_x = face - 0.002 + 0.008
+    g.box((panel_x, 1.48, -0.05), (0.016, 0.92, 1.55), color)
+    x = panel_x + 0.012
+    g.box((x, 1.55, -0.05), (0.006, 0.62, 1.35), "Lib_PaintWhite")
+    g.box((x + 0.006, 1.78, -0.42), (0.006, 0.18, 0.42), "Lib_BoxBlue", euler=(0, 18, 0))
+    g.box((x + 0.006, 1.78, 0.28), (0.006, 0.18, 0.42), "Lib_BoxBlue", euler=(0, -18, 0))
+    g.text("NORTHLINE", (x + 0.012, 1.28, -0.05), 0.10, "Lib_SteelDark", extrude=0.003, yaw=90)
+
+
+def _castings(g, length, lod):
+    hx = WIDTH * 0.5 - CAST * 0.5
+    hz = length * 0.5 - CAST * 0.5
+    post_h = HEIGHT - CAST + 0.04
+    for sx in (-1.0, 1.0):
+        for sz in (-1.0, 1.0):
+            x = sx * hx
+            z = sz * hz
+            g.box((x, CAST * 0.5, z), (CAST, CAST, CAST), "Lib_SteelDark")
+            g.box((x, HEIGHT - CAST * 0.5, z), (CAST, CAST, CAST), "Lib_SteelDark")
+            g.box((x, HEIGHT * 0.5, z), (0.11, post_h, 0.11), "Lib_SteelDark")
+            if lod == 0:
+                # Dark pocket so the casting reads as a block with a hole, not a plain cube.
+                g.box((x, CAST * 0.5, z + sz * (CAST * 0.5 - 0.004)), (0.07, 0.09, 0.014), "Lib_Black")
+                g.box((x, HEIGHT - CAST * 0.5, z + sz * (CAST * 0.5 - 0.004)), (0.07, 0.09, 0.014), "Lib_Black")
+                g.box((x + sx * (CAST * 0.5 - 0.004), HEIGHT * 0.5, z), (0.014, 0.09, 0.07), "Lib_Black")
+
+
+def _rails(g, length):
+    face = _face_x()
+    span = length - 0.32
+    for sx in (-1.0, 1.0):
+        x = sx * (face - 0.012)
+        g.box((x, 0.09, 0), (0.07, 0.10, span), "Lib_SteelDark")
+        g.box((x, HEIGHT - 0.09, 0), (0.07, 0.10, span), "Lib_SteelDark")
+    # Door-end header and sill, welded into the castings.
+    z = length * 0.5 - 0.09
+    g.box((0, 0.10, z), (WIDTH - 0.42, 0.10, 0.08), "Lib_SteelDark")
+    g.box((0, HEIGHT - 0.10, z), (WIDTH - 0.42, 0.10, 0.08), "Lib_SteelDark")
+
+
+def _rib_center(face, sign, depth):
+    return face + sign * (depth * 0.5 - 0.002)
+
+
+def _side_ribs(g, length, color, pitch, depth, logo_gap):
+    face = _face_x()
+    y0, y1 = 0.24, 2.32
+    z0 = -(length * 0.5 - 0.30)
+    z1 = length * 0.5 - 0.30
+    z = z0
+    while z <= z1 + 0.001:
+        for sign in (-1.0, 1.0):
+            if logo_gap and sign > 0 and logo_gap[0] < z < logo_gap[1]:
+                continue
+            cx = _rib_center(sign * face, sign, depth)
+            g.box((cx, (y0 + y1) * 0.5, z), (depth, y1 - y0, 0.058), color)
+        z += pitch
+
+
+def _end_ribs(g, length, color, pitch, depth):
+    face = -(length * 0.5 - 0.06)
+    y0, y1 = 0.24, 2.32
+    x = -0.96
+    while x <= 0.961:
+        cz = _rib_center(face, -1.0, depth)
+        g.box((x, (y0 + y1) * 0.5, cz), (0.058, y1 - y0, depth), color)
+        x += pitch
+
+
+def _roof_ribs(g, length, color, pitch):
+    top = HEIGHT * 0.5 + (HEIGHT - 0.10) * 0.5
+    depth = 0.022
+    cy = top - 0.002 + depth * 0.5
+    z0 = -(length * 0.5 - 0.36)
+    z1 = length * 0.5 - 0.36
+    z = z0
+    while z <= z1 + 0.001:
+        g.box((0, cy, z), (1.92, depth, 0.08), color)
+        z += pitch
+
+
+def _door_ribs(g, outer_z, color):
+    y0, y1 = 0.36, 2.22
+    cy = (y0 + y1) * 0.5
+    depth = 0.024
+    cz = outer_z + (depth * 0.5 - 0.002)
+    for x in (-0.88, -0.62, -0.40, -0.14, 0.14, 0.40, 0.62, 0.88):
+        g.box((x, cy, cz), (0.05, y1 - y0, depth), color)
+
+
+def _bars(g, outer_z):
+    """Four locking bars, two on each door, with cams and handles."""
+    depth = 0.032
+    cz = outer_z + (depth * 0.5 - 0.002)
+    y0, y1 = 0.34, 2.24
+    for x in (-0.74, -0.28, 0.28, 0.74):
+        g.box((x, (y0 + y1) * 0.5, cz), (0.028, y1 - y0, depth), "Lib_SteelDark")
+        g.box((x, y0 + 0.02, cz + 0.01), (0.07, 0.045, 0.04), "Lib_Steel")
+        g.box((x, y1 - 0.02, cz + 0.01), (0.07, 0.045, 0.04), "Lib_Steel")
+        grip = 0.07 if x < 0 else -0.07
+        g.box((x, 1.18, cz + 0.028), (0.10, 0.024, 0.05), "Lib_Steel")
+        g.box((x + grip, 1.08, cz + 0.04), (0.024, 0.16, 0.024), "Lib_Brass")
+
+
+def _doors(g, length, color, lod):
+    face = length * 0.5 - 0.06
+    thick = 0.034
+    zc = face + 0.015
+    outer = zc + thick * 0.5
+    y0, y1 = 0.22, 2.36
+    cy = (y0 + y1) * 0.5
+    hy = y1 - y0
+    g.box((-0.505, cy, zc), (0.99, hy, thick), color)
+    g.box((0.505, cy, zc), (0.99, hy, thick), color)
+    g.box((0.0, cy, outer + 0.004), (0.03, hy, 0.012), "Lib_SteelDark")
+    if lod == 0:
+        _door_ribs(g, outer, color)
+        for x, y in ((-1.01, 0.55), (-1.01, 1.35), (-1.01, 2.10), (1.01, 0.55), (1.01, 1.35), (1.01, 2.10)):
+            g.cylinder((x, y, zc), 0.016, 0.07, "Lib_SteelDark", 8)
+    if lod < 2:
+        _bars(g, outer)
 
 
 def build_container(name, length, color, blurb):
     a = Asset(name, "Harbor", blurb)
     a.climbable = True
-    a.climb_note = "Long sides are cling. Door hardware is on +Z. Collider is the wall plate; ribs stand about 2 cm proud."
+    a.climb_note = "Long sides are cling. Door bars are on +Z. Collider is inside the wall plate."
     a.vault_note = "No rail. Roof is a landing at 2.59 m."
-    width, height = 2.44, 2.59
     for lod in (0, 1, 2):
         g = a.begin(lod)
-        bev = 0.004 if lod == 0 else 0
-        g.box((0, height * 0.5, 0), (width - 0.08, height - 0.08, length - 0.12), color, uv_scale=0.4)
-        # Corner posts.
-        for x in (-width * 0.5 + 0.06, width * 0.5 - 0.06):
-            for z in (-length * 0.5 + 0.06, length * 0.5 - 0.06):
-                g.box((x, height * 0.5, z), (0.12, height, 0.12), "Lib_MetalWorn", bevel=bev, segs=1)
-        # Top and bottom rails.
-        for y in (0.06, height - 0.06):
-            g.box((0, y, 0), (width, 0.10, length), "Lib_MetalWorn", uv_scale=0.5)
-        ribs = lod_pick(lod, 18 if length < 8 else 32, 8 if length < 8 else 14, 0)
-        if ribs:
-            _ribs(g, length, width, height, ribs, color)
-            if lod == 0:
-                _ribs(g, length, width, height, ribs, color, shift=0.5, scale=0.55)
-        _doors(g, length, width, height, lod, bev)
+        g.box((0, HEIGHT * 0.5, 0), (WIDTH - 0.16, HEIGHT - 0.10, length - 0.12), color)
+        _castings(g, length, lod)
+        _rails(g, length)
+        _doors(g, length, color, lod)
+        if lod < 2:
+            pitch = 0.15 if lod == 0 else 0.32
+            depth = 0.030 if lod == 0 else 0.024
+            gap = (-0.82, 0.72) if lod == 0 else None
+            _side_ribs(g, length, color, pitch, depth, gap)
+            _end_ribs(g, length, color, pitch, depth)
+            _roof_ribs(g, length, color, pitch * 2.0)
         if lod == 0:
-            _logo(g, width, height)
-        if lod == 0:
-            g.box((0, height + 0.02, 0), (0.5, 0.04, 0.9), "Lib_Steel", bevel=0.004, segs=1)
+            _logo(g, color)
         a.end()
-    # Wall plate, not the rib tips. Ribs stand about 2 cm proud of this box.
-    a.box("Climb_Body", (0, height * 0.5, 0), (width - 0.12, height - 0.08, length - 0.12))
+    # Inside the plate, clear of the corner-casting overlap.
+    a.box("Climb_Body", (0, 1.29, 0), (1.96, 2.14, length - 0.52))
     return a
-
-
-def _ribs(g, length, width, height, count, color, shift=0.0, scale=1.0):
-    z0 = -length * 0.5 + 0.28
-    z1 = length * 0.5 - 0.28
-    span = z1 - z0
-    for i in range(count):
-        z = z0 + span * ((i + shift) / max(1, count - 1))
-        if z <= z0 or z >= z1:
-            continue
-        proud = 0.012 + 0.008 * scale
-        g.box((-width * 0.5 - proud, height * 0.5, z), (0.02 * scale + 0.012, (height - 0.28) * (0.7 + 0.3 * scale), 0.045 * scale + 0.02), color)
-        g.box((width * 0.5 + proud, height * 0.5, z), (0.02 * scale + 0.012, (height - 0.28) * (0.7 + 0.3 * scale), 0.045 * scale + 0.02), color)
-    roof_n = max(3, count // 2)
-    for i in range(roof_n):
-        z = z0 + (z1 - z0) * (i / max(1, roof_n - 1))
-        g.box((0, height + 0.012, z), (width - 0.28, 0.025, 0.08), color)
-
-
-def _doors(g, length, width, height, lod, bev):
-    z = length * 0.5 - 0.02
-    g.box((-width * 0.22, height * 0.48, z), (width * 0.42, height * 0.82, 0.04), "Lib_MetalWorn", bevel=bev, segs=1, uv_scale=0.6)
-    g.box((width * 0.22, height * 0.48, z), (width * 0.42, height * 0.82, 0.04), "Lib_MetalWorn", bevel=bev, segs=1, uv_scale=0.6)
-    if lod < 2:
-        for x in (-0.18, 0.18):
-            g.box((x, height * 0.48, z + 0.03), (0.035, height * 0.86, 0.03), "Lib_Steel", bevel=bev, segs=1)
-            g.box((x, 0.16, z + 0.055), (0.08, 0.06, 0.04), "Lib_Steel")
-            g.box((x, height - 0.18, z + 0.055), (0.08, 0.06, 0.04), "Lib_Steel")
-            g.box((x, height * 0.22, z + 0.06), (0.12, 0.08, 0.035), "Lib_Brass")
-            g.box((x, height * 0.72, z + 0.06), (0.12, 0.08, 0.035), "Lib_Brass")
-        g.box((0, height * 0.48, z + 0.05), (0.36, 0.04, 0.025), "Lib_Steel")
-    if lod == 0:
-        g.box((0.0, height * 0.55, z + 0.045), (0.06, 0.16, 0.03), "Lib_PaintYellow")

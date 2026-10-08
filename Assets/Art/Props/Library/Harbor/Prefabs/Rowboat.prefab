@@ -47,7 +47,7 @@ LODGroup:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 100000}
   serializedVersion: 2
-  m_LocalReferencePoint: {x: 0, y: 0.3445, z: -0.235}
+  m_LocalReferencePoint: {x: 0, y: 0.3495, z: -0.235}
   m_Size: 2.87
   m_FadeMode: 0
   m_AnimateCrossFading: 0
@@ -75,12 +75,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Tag.Art.Library.LibraryPropMeta
   category: "Harbor"
-  summary: "Rowboat about 2.9 m, bow to -Z. Uniform varnish hull with lapstrake seams, a painted cockpit, and a gunwale rail. Two thwarts, oarlocks, oars, and cleats. Waterline is 0.26 m; place it so that meets the water."
+  summary: "Rowboat about 2.9 m, bow to -Z. Smooth varnish hull with overlapping lapstrake planks, two thwarts, and oarlocks. Sit it so the midship topsides meet the water."
   climbable: 0
   vaultable: 0
   vaultHeightMeters: 0
   climbNote: "Too small to cling."
-  vaultNote: "Gunwale is about 0.50 m. Not a vault."
+  vaultNote: "Gunwale is about 0.55 m. Not a vault."
 --- !u!1 &200000
 GameObject:
   m_ObjectHideFlags: 0
@@ -148,9 +148,7 @@ MeshRenderer:
   m_RendererPriority: 0
   m_Materials:
   - {fileID: 2100000, guid: 53ece5a73b8c687a91d45fbcd6fb37c3, type: 2}
-  - {fileID: 2100000, guid: b0ae13624c44bb51920d1571b19a6d8d, type: 2}
   - {fileID: 2100000, guid: bf0ace326dd21cd814cc8d0c1df35c10, type: 2}
-  - {fileID: 2100000, guid: b47c340ca201ae754a5835c14bb84ad8, type: 2}
   - {fileID: 2100000, guid: beb173626a35c30c1ff350a8ec04f0d1, type: 2}
   - {fileID: 2100000, guid: 3378749727762f35ade0a2e55dedd4ed, type: 2}
   m_StaticBatchInfo:
@@ -243,9 +241,7 @@ MeshRenderer:
   m_RendererPriority: 0
   m_Materials:
   - {fileID: 2100000, guid: 53ece5a73b8c687a91d45fbcd6fb37c3, type: 2}
-  - {fileID: 2100000, guid: b0ae13624c44bb51920d1571b19a6d8d, type: 2}
   - {fileID: 2100000, guid: bf0ace326dd21cd814cc8d0c1df35c10, type: 2}
-  - {fileID: 2100000, guid: b47c340ca201ae754a5835c14bb84ad8, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -320,7 +316,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.2, y: 0.05, z: 0.7}
+  m_Size: {x: 0.14, y: 0.035, z: 0.5}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300010
 GameObject:
@@ -348,7 +344,7 @@ Transform:
   m_GameObject: {fileID: 300010}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.285, z: -0.53}
+  m_LocalPosition: {x: 0, y: 0.3, z: -0.505}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -373,7 +369,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.22, y: 0.014, z: 0.05}
+  m_Size: {x: 0.18, y: 0.012, z: 0.04}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300020
 GameObject:
@@ -401,7 +397,7 @@ Transform:
   m_GameObject: {fileID: 300020}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.285, z: 0.24}
+  m_LocalPosition: {x: 0, y: 0.3, z: 0.265}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -426,7 +422,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.22, y: 0.014, z: 0.05}
+  m_Size: {x: 0.18, y: 0.012, z: 0.04}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300030
 GameObject:
@@ -454,7 +450,7 @@ Transform:
   m_GameObject: {fileID: 300030}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.3, z: 1.05}
+  m_LocalPosition: {x: 0, y: 0.14, z: 0.82}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -479,5 +475,5 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.28, y: 0.1, z: 0.06}
+  m_Size: {x: 0.12, y: 0.04, z: 0.18}
   m_Center: {x: 0, y: 0, z: 0}

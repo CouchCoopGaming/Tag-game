@@ -1,4 +1,4 @@
-"""Small fishing boat. Curved bow, sheer, keel, transom, wheelhouse. Bow is -Z."""
+"""Fishing skiff. Flared bow, deadrise V, wheelhouse, outboard. Bow is -Z."""
 
 import math
 import os
@@ -16,10 +16,26 @@ WL = 0.34
 def profile(t):
     bow = math.sin(min(t / 0.22, 1.0) * math.pi * 0.5)
     aft = 0.76 + 0.24 * math.sin(min((1.0 - t) / 0.16, 1.0) * math.pi * 0.5)
-    half = 0.78 * max(bow, 0.08) * aft
+    half = 0.84 * max(bow, 0.20) * aft
     keel = 0.0 + 0.18 * (1.0 - bow) ** 2 + 0.04 * (1.0 - aft) ** 2
     sheer = 0.68 + 0.18 * (1.0 - t) ** 1.45 + 0.05 * max(t - 0.78, 0.0) / 0.22
     return half, keel, sheer
+
+
+def section_skiff(half, keel, sheer, t):
+    """Hard chine. Bow pulls the chine in so the topsides flare."""
+    rise = max(0.05, sheer - keel)
+    chine_frac = 0.44 + 0.18 * min(t / 0.35, 1.0)
+    chine_x = half * chine_frac
+    chine_y = keel + rise * 0.36
+    sheer_x = half * 0.98
+    return [
+        (0.0, keel),
+        (chine_x * 0.45, keel + rise * 0.16),
+        (chine_x, chine_y),
+        (sheer_x * 0.92, keel + rise * 0.70),
+        (sheer_x, sheer),
+    ]
 
 
 def _top(t, half, sheer):
@@ -53,9 +69,9 @@ def _rails(g, segs, steps):
         pts = []
         for i in range(steps + 1):
             t = 0.08 + 0.84 * i / steps
-            half, _keel, sheer = profile(t)
+            _half, _keel, sheer = profile(t)
             z = Z0 + (Z1 - Z0) * t
-            x = side * (beam_at(profile, t, sheer - 0.02) + 0.028)
+            x = side * (beam_at(profile, t, sheer - 0.02, section_skiff) + 0.028)
             pts.append((x, sheer + 0.045, z))
         for i in range(steps):
             g.pipe(pts[i], pts[i + 1], 0.012, "Lib_Steel", segs)
@@ -67,10 +83,25 @@ def _stripe(g, segs, steps):
         for i in range(steps + 1):
             t = 0.06 + 0.88 * i / steps
             z = Z0 + (Z1 - Z0) * t
-            x = side * (beam_at(profile, t, WL) + 0.03)
+            x = side * (beam_at(profile, t, WL, section_skiff) + 0.020)
             pts.append((x, WL, z))
         for i in range(steps):
-            g.pipe(pts[i], pts[i + 1], 0.012, "Lib_PaintRed", segs)
+            g.pipe(pts[i], pts[i + 1], 0.010, "Lib_PaintRed", segs)
+
+
+def _chine(g, segs, steps):
+    for side in (1.0, -1.0):
+        pts = []
+        for i in range(steps + 1):
+            t = 0.05 + 0.90 * i / steps
+            half, keel, sheer = profile(t)
+            rise = max(0.05, sheer - keel)
+            y = keel + rise * 0.36
+            z = Z0 + (Z1 - Z0) * t
+            x = side * (beam_at(profile, t, y, section_skiff) + 0.016)
+            pts.append((x, y, z))
+        for i in range(steps):
+            g.pipe(pts[i], pts[i + 1], 0.006, "Lib_SteelDark", segs)
 
 
 def _cleat(g, x, y, z):
@@ -80,7 +111,6 @@ def _cleat(g, x, y, z):
 
 
 def _house(g, lod, seg):
-    # Sits on the foredeck, a few millimetres above the highest sheer under it.
     cz = -0.55
     bottom = 0.80
     height = 0.56
@@ -109,15 +139,13 @@ def _motor(g, seg):
 
 
 def _planks(g):
-    # Wood deck sits a few millimetres above the white hull top.
     for i, t in enumerate((0.16, 0.26, 0.36, 0.46)):
         _half, _keel, sheer = profile(t)
         z = Z0 + (Z1 - Z0) * t
-        y = sheer + 0.02
-        g.box((0, y, z), (0.62 - i * 0.04, 0.016, 0.22), "Lib_Wood", uv_scale=1.3)
+        g.box((0, sheer + 0.02, z), (0.58 - i * 0.03, 0.016, 0.20), "Lib_Varnish")
     for t in (0.68, 0.76, 0.84):
         z = Z0 + (Z1 - Z0) * t
-        g.box((0, 0.445, z), (0.85, 0.016, 0.22), "Lib_WoodDark", uv_scale=1.2)
+        g.box((0, 0.445, z), (0.78, 0.016, 0.20), "Lib_Varnish")
 
 
 @register
@@ -125,8 +153,8 @@ def create():
     a = Asset(
         "FishingBoat",
         "Harbor",
-        "Fishing boat about 5.1 m, bow to -Z. Curved stem, sheer, keel and transom. "
-        "Wheelhouse with windows, side rails, cleats, and an outboard. Waterline stripe at 0.34 m.",
+        "Fishing skiff about 5.1 m, bow to -Z. Hard-chine hull with a deadrise V and a flared bow. "
+        "Wheelhouse, side rails, cleats, and an outboard. Waterline stripe at 0.34 m.",
     )
     a.loose_pivot = True
     a.climb_note = "The hull is a solid prop. Not a cling wall."
@@ -134,12 +162,13 @@ def create():
     for lod in (0, 1):
         g = a.begin(lod)
         seg = lod_pick(lod, 8, 6)
-        n = lod_pick(lod, 16, 9)
-        solid_hull(g, Z0, Z1, n, profile, _top, "Lib_PaintWhite", bow_extra=0.16)
+        n = lod_pick(lod, 28, 16)
+        solid_hull(g, Z0, Z1, n, profile, _top, "Lib_PaintWhite", bow_extra=0.18, section_fn=section_skiff)
         _house(g, lod, seg)
-        steps = lod_pick(lod, 8, 4)
+        steps = lod_pick(lod, 12, 6)
         _rails(g, seg, steps)
         _stripe(g, seg, steps)
+        _chine(g, seg, steps)
         if lod == 0:
             _planks(g)
             _motor(g, seg)
@@ -147,9 +176,9 @@ def create():
             _cleat(g, -0.28, 0.455, 1.35)
             _cleat(g, 0.28, 0.455, 1.35)
         a.end()
-    a.box("Col_Bilge", (0, 0.16, 0.15), (0.36, 0.08, 1.4))
-    a.box("Col_Bow", (0, 0.52, -1.85), (0.14, 0.08, 0.22))
-    a.box("Col_Transom", (0, 0.46, 1.90), (0.40, 0.14, 0.10))
+    a.box("Col_Bilge", (0, 0.11, 0.20), (0.16, 0.04, 1.0))
+    a.box("Col_Bow", (0, 0.52, -1.85), (0.12, 0.06, 0.18))
+    a.box("Col_Transom", (0, 0.46, 1.90), (0.28, 0.10, 0.08))
     a.box("Col_Cabin", (0, 1.08, -0.55), (0.64, 0.36, 0.48))
     a.box("Col_Motor", (0, 0.64, 2.40), (0.14, 0.14, 0.10))
     return a

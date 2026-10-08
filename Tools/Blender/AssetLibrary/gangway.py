@@ -1,7 +1,7 @@
-"""Gangway from a quay deck at 0.90 m down to a floating dock at 0.62 m.
+"""Aluminum gangway. High end is -Z, roller end is +Z.
 
-High end is -Z. Yaw 180 when the pier is toward +Z. The mesh floats: both
-ends land on decks, not on the ground.
+The deck is one plate. Cleats sit on it. Rail posts are welded into the
+side stringers. The wheels at +Z bottom out at 0.62 m, the floating-dock deck.
 """
 
 import math
@@ -13,8 +13,11 @@ from _common import Asset, register, lod_pick
 
 LENGTH = 2.6
 HIGH = 0.90
-LOW = 0.62
+LOW = 0.72
 PITCH = math.degrees(math.atan2(HIGH - LOW, LENGTH))
+WHEEL_R = 0.050
+WHEEL_Z = 1.22
+WHEEL_Y = 0.620 + WHEEL_R
 
 
 def _y_at(z):
@@ -27,62 +30,58 @@ def create():
     a = Asset(
         "Gangway",
         "Harbor",
-        "Gangway 2.6 x 1.05 m. Deck falls from 0.90 m at -Z (quay) to 0.62 m at +Z (floating dock). Hinge leaf and pin at the high end, handrails both sides, anti-slip cleats on the deck.",
+        "Aluminum gangway, 2.6 m. Plate falls from 0.90 m at -Z to 0.72 m at +Z. "
+        "Side stringers carry the posts. Cleats are on the plate. Wheels at +Z rest at 0.62 m.",
     )
     a.allow_float = True
     a.loose_pivot = True
     a.vaultable = True
-    a.vault_height = 0.95
-    a.climb_note = "Walk the planks. Not a cling wall."
-    a.vault_note = "Vault_Rail is the handrail, 0.95 m above the deck."
-    count = 10
+    a.vault_height = 0.88
+    a.climb_note = "Walk the plate. Not a cling wall."
+    a.vault_note = "Vault_Rail is the handrail, 0.88 m above the plate."
     for lod in (0, 1):
         g = a.begin(lod)
-        n = lod_pick(lod, count, 6)
-        bev = 0.003 if lod == 0 else 0
         seg = lod_pick(lod, 8, 6)
-        for i in range(n):
-            t = (i + 0.5) / n
-            z = -LENGTH * 0.5 + t * LENGTH
-            y = HIGH + (LOW - HIGH) * t
-            pitch = LENGTH / n
-            g.box((0, y, z), (0.92, 0.028, pitch * 0.86), "Lib_WoodWeather", bevel=bev, segs=1 if lod == 0 else 0, euler=(PITCH, 0, 0), uv_scale=1.2)
-        for x in (-0.48, 0.48):
-            posts = lod_pick(lod, 4, 2)
-            for i in range(posts):
-                z = -LENGTH * 0.5 + 0.18 + i * (LENGTH - 0.36) / (posts - 1)
-                deck = _y_at(z)
-                g.cylinder((x, deck + 0.474, z), 0.016, 0.90, "Lib_Steel", seg)
-            z0 = -LENGTH * 0.5 + 0.18
-            z1 = LENGTH * 0.5 - 0.18
-            g.pipe((x, _y_at(z0) + 0.95, z0), (x, _y_at(z1) + 0.95, z1), 0.016, "Lib_Steel", seg)
-            inner = x * 0.92
-            g.pipe((inner, _y_at(z0) + 0.52, z0), (inner, _y_at(z1) + 0.52, z1), 0.011, "Lib_SteelDark", seg)
-        # Quay leaf stops short of the first plank. The pin sits in that gap.
-        g.box((0, HIGH + 0.010, -LENGTH * 0.5 - 0.20), (0.66, 0.012, 0.24), "Lib_Steel", bevel=bev, segs=1 if lod == 0 else 0)
-        pin_z = -LENGTH * 0.5 - 0.02
-        g.cylinder((0, HIGH + 0.028, pin_z), 0.016, 0.58, "Lib_SteelDark", seg, axis="X")
+        bev = 0.002 if lod == 0 else 0
+        mid = _y_at(0.0)
+        g.box((0, mid, 0), (0.92, 0.018, LENGTH), "Lib_Steel", bevel=bev, segs=1 if lod == 0 else 0, euler=(PITCH, 0, 0))
+        for x in (-0.47, 0.47):
+            g.box((x, mid - 0.042, 0), (0.055, 0.070, LENGTH), "Lib_SteelDark", euler=(PITCH, 0, 0))
+        posts = lod_pick(lod, 4, 3)
+        z_posts = []
+        for i in range(posts):
+            z_posts.append(-1.05 + i * (2.00 / (posts - 1)))
+        for x in (-0.47, 0.47):
+            for z in z_posts:
+                g.cylinder((x, _y_at(z) + 0.42, z), 0.018, 0.92, "Lib_Steel", seg)
+            z0, z1 = z_posts[0], z_posts[-1]
+            g.pipe((x, _y_at(z0) + 0.88, z0), (x, _y_at(z1) + 0.88, z1), 0.016, "Lib_Steel", seg)
+            inner = x * 0.94
+            g.pipe((inner, _y_at(z0) + 0.46, z0), (inner, _y_at(z1) + 0.46, z1), 0.012, "Lib_SteelDark", seg)
+        # Hinge leaf overlaps the high end of the plate.
+        g.box((0, HIGH, -LENGTH * 0.5 - 0.10), (0.55, 0.014, 0.28), "Lib_Steel", bevel=bev, segs=1 if lod == 0 else 0)
+        pin_z = -LENGTH * 0.5 - 0.18
+        g.cylinder((0, HIGH + 0.012, pin_z), 0.016, 0.52, "Lib_SteelDark", seg, axis="X")
         if lod == 0:
-            for hx in (-0.24, 0.24):
-                g.cylinder((hx, HIGH + 0.028, pin_z), 0.022, 0.032, "Lib_Steel", max(6, seg - 2), axis="X")
-        cleats = lod_pick(lod, 8, 4)
-        span = LENGTH - 0.44
+            for hx in (-0.22, 0.22):
+                g.cylinder((hx, HIGH + 0.012, pin_z), 0.022, 0.028, "Lib_Steel", max(6, seg - 2), axis="X")
+        cleats = lod_pick(lod, 6, 3)
         for i in range(cleats):
-            t = (i + 0.5) / cleats
-            z = -LENGTH * 0.5 + 0.22 + t * span
-            g.box((0, _y_at(z) + 0.024, z), (0.70, 0.008, 0.018), "Lib_SteelDark", euler=(PITCH, 0, 0))
+            z = -0.95 + (i + 0.5) * (1.70 / cleats)
+            g.box((0, _y_at(z) + 0.012, z), (0.64, 0.010, 0.022), "Lib_SteelDark", euler=(PITCH, 0, 0))
+        # Roller. The tire bottom is the floating-dock deck.
+        g.cylinder((0, WHEEL_Y, WHEEL_Z), 0.014, 0.72, "Lib_SteelDark", seg, axis="X")
+        for x in (-0.30, 0.30):
+            g.cylinder((x, WHEEL_Y, WHEEL_Z), WHEEL_R, 0.046, "Lib_Black", lod_pick(lod, 12, 8), axis="X")
+            shoe = 0.40 if x > 0 else -0.40
+            g.box((shoe, _y_at(WHEEL_Z) - 0.050, WHEEL_Z), (0.14, 0.06, 0.08), "Lib_Steel")
         a.end()
-    for i in range(count):
-        t = (i + 0.5) / count
-        z = -LENGTH * 0.5 + t * LENGTH
-        y = HIGH + (LOW - HIGH) * t
-        pitch = LENGTH / count
-        a.box("Col_Plank_%d" % i, (0, y, z), (0.78, 0.02, pitch * 0.70), euler=(PITCH, 0, 0))
-    for side, x in enumerate((-0.48, 0.48)):
+    a.box("Col_Deck", (0, _y_at(0.0), 0), (0.68, 0.010, LENGTH - 0.36), euler=(PITCH, 0, 0))
+    for side, x in enumerate((-0.47, 0.47)):
         a.box(
             "Vault_Rail_%d" % side,
-            (x, _y_at(0.0) + 0.95, 0.0),
-            (0.02, 0.02, LENGTH - 0.55),
+            (x, _y_at(0.0) + 0.88, 0.0),
+            (0.018, 0.018, 1.70),
             euler=(PITCH, 0, 0),
         )
     return a

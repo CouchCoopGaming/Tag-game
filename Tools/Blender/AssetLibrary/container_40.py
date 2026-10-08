@@ -13,6 +13,6 @@ def create():
     return build_container(
         "Container_40",
         12.19,
-        "Lib_ContainerBlue",
-        "40-foot container, 12.19 m long, 2.44 m wide, 2.59 m tall. Doors face +Z.",
+        "Lib_BoxBlue",
+        "40-foot container, blue enamel. 12.19 x 2.44 x 2.59 m. Same corrugation, castings, and door bars as the 20-foot box.",
     )
