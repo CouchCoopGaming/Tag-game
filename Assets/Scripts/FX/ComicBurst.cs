@@ -5,24 +5,31 @@ using UnityEngine;
 namespace Tag.FX
 {
     /// <summary>
-    /// Pooled comic words at the contact. Each split camera billboards them.
-    /// The burst, halftone, and letters are one high-res cell. Visual only.
+    /// Pooled comic words at the contact. The burst and the word are separate
+    /// quads so the word can pop after the burst. Each split camera billboards
+    /// them and shifts the quad in so the word stays inside that pane.
+    /// Visual only.
     /// </summary>
     [DefaultExecutionOrder(9000)]
     public sealed class ComicBurst : MonoBehaviour
     {
         const int Slots = 8;
         const float RestSize = 1.65f;
+        const float WordPeak = 1.15f;
 
         static ComicBurst _host;
         static uint _rng = 0xC0F1u;
-        static int _last = -1;
+        static string[] _lastWord;
 
         GameObject[] _root;
-        Material[] _mat;
+        Transform[] _burst;
+        Transform[] _word;
+        Material[] _burstMat;
+        Material[] _wordMat;
         float[] _age;
         float[] _tilt;
-        Texture2D _atlas;
+        Texture2D _bursts;
+        Texture2D _words;
 
         public static void Ensure()
         {
@@ -39,24 +46,44 @@ namespace Tag.FX
 
         public static void Raise(Vector3 origin, Vector3 forward, float reach, bool tag, float speed)
         {
+            int ev = tag ? ComicWords.EvTag : ComicWords.EvPunch;
+            RaiseEvent(origin, forward, reach, ev, ComicWords.Strength(tag, speed));
+        }
+
+        public static void RaiseEvent(Vector3 origin, Vector3 forward, float reach, int ev, int strength)
+        {
             if (!ComicWords.Visible(GameSettings.Current)) return;
+            if (ev < 0 || ev >= ComicWords.EvCount) ev = ComicWords.EvPunch;
             Ensure();
             if (_host == null || _host._age == null) return;
-            _host.Spawn(origin, forward, reach, tag, speed);
+            if (_lastWord == null)
+            {
+                _lastWord = new string[ComicWords.EvCount];
+            }
+            int pick = ComicWords.PickEvent(ref _rng, ev, strength, _lastWord[ev]);
+            string text = ComicWords.PoolWord(ev, pick);
+            _lastWord[ev] = text;
+            int atlas = ComicWords.AtlasOf(ev, pick);
+            _host.Spawn(origin, forward, reach, ev, atlas);
         }
 
         void Awake()
         {
             _host = this;
-            _atlas = LoadAtlas();
+            _bursts = Load(ComicBurstAtlas.Png());
+            _words = Load(ComicAtlas.Png());
             Shader shader = Shader.Find("Tag/ComicBillboard");
             if (shader == null) shader = Shader.Find("Universal Render Pipeline/Unlit");
             if (shader == null) shader = Shader.Find("Sprites/Default");
             Mesh quad = FullCell();
             _root = new GameObject[Slots];
-            _mat = new Material[Slots];
+            _burst = new Transform[Slots];
+            _word = new Transform[Slots];
+            _burstMat = new Material[Slots];
+            _wordMat = new Material[Slots];
             _age = new float[Slots];
             _tilt = new float[Slots];
+            float clamp = RestSize * WordPeak;
             for (int i = 0; i < Slots; i++)
             {
                 _age[i] = -1f;
@@ -64,15 +91,12 @@ namespace Tag.FX
                 root.transform.SetParent(transform, false);
                 root.SetActive(false);
                 _root[i] = root;
-                _mat[i] = MakeMat(shader, _atlas);
-                var go = new GameObject("Cell");
-                go.transform.SetParent(root.transform, false);
-                var filter = go.AddComponent<MeshFilter>();
-                filter.sharedMesh = quad;
-                var rend = go.AddComponent<MeshRenderer>();
-                rend.sharedMaterial = _mat[i];
-                rend.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-                rend.receiveShadows = false;
+                _burstMat[i] = MakeMat(shader, _bursts, 0f);
+                _wordMat[i] = MakeMat(shader, _words, 0.0015f);
+                _burstMat[i].SetFloat("_ClampExtent", clamp);
+                _wordMat[i].SetFloat("_ClampExtent", clamp);
+                _burst[i] = Child(root.transform, "Burst", quad, _burstMat[i]);
+                _word[i] = Child(root.transform, "Word", quad, _wordMat[i]);
             }
         }
 
@@ -91,34 +115,53 @@ namespace Tag.FX
                     _root[i].SetActive(false);
                     continue;
                 }
-                float s = ComicWords.Scale(_age[i]) * RestSize;
-                _root[i].transform.localScale = new Vector3(s, s, 1f);
+                float burst = ComicWords.Scale(_age[i]) * RestSize;
+                float word = ComicWords.WordScale(_age[i]) * RestSize;
+                _burst[i].localScale = new Vector3(burst, burst, 1f);
+                _word[i].localScale = new Vector3(word, word, 1f);
+                _word[i].gameObject.SetActive(word > 0.001f);
                 float a = ComicWords.Alpha(_age[i]);
-                Paint(_mat[i], a);
-                _mat[i].SetFloat("_Tilt", _tilt[i] + ComicWords.Wobble(_age[i]));
+                Paint(_burstMat[i], a);
+                Paint(_wordMat[i], a);
+                float tilt = _tilt[i] + ComicWords.Wobble(_age[i]);
+                _burstMat[i].SetFloat("_Tilt", tilt);
+                _wordMat[i].SetFloat("_Tilt", tilt);
             }
         }
 
-        void Spawn(Vector3 origin, Vector3 forward, float reach, bool tag, float speed)
+        void Spawn(Vector3 origin, Vector3 forward, float reach, int ev, int atlas)
         {
             int slot = Free();
             if (slot < 0) slot = Oldest();
-            int word = ComicWords.Pick(ComicWords.Strength(tag, speed));
-            _last = word;
             _rng = _rng * 1664525u + 1013904223u;
             _tilt[slot] = ComicWords.TiltRadians(_rng >> 8);
             _age[slot] = 0f;
             Vector3 contact = HitConfirmTell.Contact(origin, forward, reach);
             contact.y += 0.55f;
             _root[slot].transform.position = contact;
-            _root[slot].transform.localScale = Vector3.zero;
+            _burst[slot].localScale = Vector3.zero;
+            _word[slot].localScale = Vector3.zero;
+            _word[slot].gameObject.SetActive(false);
             _root[slot].SetActive(true);
-            Paint(_mat[slot], 1f);
-            _mat[slot].SetFloat("_Tilt", _tilt[slot]);
-            // One texel of gutter so a cell edge never samples the next word.
-            const float gutter = 2f / 4096f;
-            _mat[slot].mainTextureScale = new Vector2(0.25f - gutter * 2f, 1f);
-            _mat[slot].mainTextureOffset = new Vector2(word * 0.25f + gutter, 0f);
+            Paint(_burstMat[slot], 1f);
+            Paint(_wordMat[slot], 1f);
+            _burstMat[slot].SetFloat("_Tilt", _tilt[slot]);
+            _wordMat[slot].SetFloat("_Tilt", _tilt[slot]);
+            ApplyUv(_burstMat[slot], ev, true);
+            ApplyUv(_wordMat[slot], atlas, false);
+        }
+
+        static void ApplyUv(Material mat, int index, bool burst)
+        {
+            if (mat == null) return;
+            float sx;
+            float sy;
+            float ox;
+            float oy;
+            if (burst) ComicBurstAtlas.Uv(index, out sx, out sy, out ox, out oy);
+            else ComicAtlas.Uv(index, out sx, out sy, out ox, out oy);
+            mat.mainTextureScale = new Vector2(sx, sy);
+            mat.mainTextureOffset = new Vector2(ox, oy);
         }
 
         int Free()
@@ -151,15 +194,29 @@ namespace Tag.FX
             mat.color = new Color(1f, 1f, 1f, a);
         }
 
-        static Material MakeMat(Shader shader, Texture2D tex)
+        static Material MakeMat(Shader shader, Texture2D tex, float front)
         {
             var mat = new Material(shader);
             mat.mainTexture = tex;
             if (mat.HasProperty("_MainTex")) mat.SetTexture("_MainTex", tex);
             if (mat.HasProperty("_BaseMap")) mat.SetTexture("_BaseMap", tex);
             if (mat.HasProperty("_Surface")) mat.SetFloat("_Surface", 1f);
-            mat.mainTextureScale = new Vector2(0.25f, 1f);
+            if (mat.HasProperty("_Front")) mat.SetFloat("_Front", front);
+            if (mat.HasProperty("_ClampExtent")) mat.SetFloat("_ClampExtent", 0f);
             return mat;
+        }
+
+        static Transform Child(Transform parent, string name, Mesh quad, Material mat)
+        {
+            var go = new GameObject(name);
+            go.transform.SetParent(parent, false);
+            var filter = go.AddComponent<MeshFilter>();
+            filter.sharedMesh = quad;
+            var rend = go.AddComponent<MeshRenderer>();
+            rend.sharedMaterial = mat;
+            rend.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            rend.receiveShadows = false;
+            return go.transform;
         }
 
         static Mesh FullCell()
@@ -183,10 +240,10 @@ namespace Tag.FX
             return mesh;
         }
 
-        static Texture2D LoadAtlas()
+        static Texture2D Load(byte[] png)
         {
             var tex = new Texture2D(2, 2, TextureFormat.RGBA32, false);
-            tex.LoadImage(ComicAtlas.Png());
+            tex.LoadImage(png);
             tex.filterMode = FilterMode.Bilinear;
             tex.wrapMode = TextureWrapMode.Clamp;
             return tex;

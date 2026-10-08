@@ -3184,35 +3184,33 @@ def p12_footfall(speed):
 
 
 def p12_flecks(origin, speed, across, along):
-    """Clippings above the lawn. Three darker greens plus brown. Thinner than the old sticks."""
+    """Dried clippings above the lawn. Straw and tan, so they read against the blades.
+
+    The earlier dark greens sat inside the lawn colour. These stay diffuse, not neon.
+    """
     t = p11_speed_t(speed)
     n = 8 + int(round(4 * t))
-    greens = (
-        (0.15, 0.24, 0.09, 1.0),
-        (0.11, 0.18, 0.07, 1.0),
-        (0.22, 0.28, 0.12, 1.0),
-    )
-    browns = (
-        (0.32, 0.20, 0.09, 1.0),
-        (0.26, 0.16, 0.07, 1.0),
+    chips = (
+        (0.62, 0.48, 0.16, 1.0),
+        (0.42, 0.36, 0.12, 1.0),
+        (0.50, 0.32, 0.11, 1.0),
     )
     for i in range(n):
         ox = (p11_rand(i, 11) - 0.30) * 0.46
         oy = (p11_rand(i, 12) - 0.35) * 0.38
-        # Kicked clear of the lawn blades, which stand about 9 cm.
-        pos = origin + across * ox + along * oy + Vector((0.0, 0.0, 0.10 + 0.14 * p11_rand(i, 13)))
+        # Clear of the ~9 cm blades, up around the shin where the air is behind them.
+        pos = origin + across * ox + along * oy + Vector((0.0, 0.0, 0.18 + 0.26 * p11_rand(i, 13)))
         bpy.ops.mesh.primitive_cube_add(size=1.0, location=pos)
         chip = bpy.context.active_object
         chip.name = p11_name("Fx")
-        length = 0.07 + 0.05 * p11_rand(i, 14)
-        chip.scale = (0.012, 0.0045, length)
+        length = 0.14 + 0.06 * p11_rand(i, 14)
+        chip.scale = (0.022, 0.007, length)
         chip.rotation_euler = Euler((
             p11_rand(i, 15) * math.tau,
             p11_rand(i, 16) * math.tau,
             p11_rand(i, 17) * math.tau,
         ), "XYZ")
-        color = browns[i % 2] if p11_rand(i, 18) > 0.58 else greens[i % 3]
-        mat = make_mat(p11_name("Mat"), color, 1.0)
+        mat = make_mat(p11_name("Mat"), chips[i % 3], 0.85)
         mat.use_backface_culling = False
         chip.data.materials.append(mat)
 

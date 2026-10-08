@@ -202,7 +202,8 @@ def render_after(word, target_w, fill):
         jx, jy, rot = letter_jitter(i, word)
         plate = plate.rotate(rot, expand=True, resample=Image.Resampling.BICUBIC)
         pieces.append((plate, x + jx * cap, jy * cap))
-        x += tw * 0.90
+        # 0.78 is about 13% tighter than the 0.90 advance, so the letters read as one word.
+        x += tw * 0.78
     width = int(x + pieces[-1][0].width) + 4
     height = max(p.height for p, _, _ in pieces) + int(cap)
     sheet = Image.new("RGBA", (width, height), (0, 0, 0, 0))

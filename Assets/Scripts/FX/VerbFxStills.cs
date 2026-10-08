@@ -300,10 +300,13 @@ namespace Tag.FX
 
         static void BlitCell(byte[] pix, int w, int h, byte[] rgba, int aw, int ah, int cell, int cx, int cy, int dw, int dh)
         {
-            int srcX = cell * ComicAtlas.CellWidth;
+            int col = cell % ComicAtlas.Columns;
+            int row = cell / ComicAtlas.Columns;
+            int srcX = col * ComicAtlas.CellWidth;
+            int srcY = row * ComicAtlas.CellHeight;
             for (int y = 0; y < dh; y++)
             {
-                int sy = y * ah / dh;
+                int sy = srcY + y * ComicAtlas.CellHeight / dh;
                 if (sy < 0 || sy >= ah) continue;
                 for (int x = 0; x < dw; x++)
                 {

@@ -263,7 +263,27 @@ namespace Tag.FX
             if (WordScale(PopSeconds + 0.044f) < 1.10f) return false;
             if (WordScale(0.20f) < 0.98f || WordScale(LifeSeconds) < 0.98f) return false;
             if (!PoolsHold()) return false;
+            if (WordCount != 33) return false;
+            if (!AtlasHolds()) return false;
+            if (ClampAxis(1f, 0.25f) != 0.75f) return false;
+            if (ClampAxis(0f, 0.25f) != 0f) return false;
+            if (ClampAxis(-1f, 0.25f) != -0.75f) return false;
+            string proof = ProofLine();
+            if (proof.IndexOf("words=33", System.StringComparison.Ordinal) < 0) return false;
+            if (proof.IndexOf("repeat=0,0,0,0,0,0,0,0,0,0", System.StringComparison.Ordinal) < 0) return false;
             return true;
+        }
+
+        /// <summary>
+        /// Pull a viewport axis back inside. pad is the quad's half-extent in the same space.
+        /// </summary>
+        public static float ClampAxis(float center, float pad)
+        {
+            float limit = 1f - pad;
+            if (limit < 0f) limit = 0f;
+            if (center < -limit) return -limit;
+            if (center > limit) return limit;
+            return center;
         }
 
         public const int EvPunch = 0;
@@ -279,8 +299,8 @@ namespace Tag.FX
         public const int EvCount = 10;
 
         /// <summary>
-        /// The baked atlas stays the original four. These pools are the wider set.
         /// Each event has 3–6 words. A roll never repeats the previous word.
+        /// The atlas cell for a pool index is AtlasOf.
         /// </summary>
         public static int PoolCount(int ev)
         {
@@ -395,6 +415,103 @@ namespace Tag.FX
         static readonly string[] WallWords = { "KRAK!", "FWOOSH!", "THOK!" };
         static readonly string[] StaggerWords = { "OOF!", "UGH!", "OUCH!" };
 
+        public const int WordCount = 33;
+
+        // Atlas cells. The first four stay POP, POW, BAM, WHAM.
+        static readonly int[] PunchAtlas = { 0, 1, 4, 5, 6, 2 };
+        static readonly int[] TagAtlas = { 3, 7, 8 };
+        static readonly int[] TransferAtlas = { 9, 10, 11 };
+        static readonly int[] WhiffAtlas = { 12, 13, 14 };
+        static readonly int[] LandAtlas = { 15, 16, 17 };
+        static readonly int[] LaunchAtlas = { 18, 19, 20 };
+        static readonly int[] ZipAtlas = { 21, 22, 23 };
+        static readonly int[] GrappleAtlas = { 24, 25, 26 };
+        static readonly int[] WallAtlas = { 27, 28, 29 };
+        static readonly int[] StaggerAtlas = { 30, 31, 32 };
+
+        public static int AtlasOf(int ev, int poolIndex)
+        {
+            int[] map = AtlasMap(ev);
+            if (poolIndex < 0 || poolIndex >= map.Length) return map[0];
+            return map[poolIndex];
+        }
+
+        static int[] AtlasMap(int ev)
+        {
+            if (ev == EvTag) return TagAtlas;
+            if (ev == EvTransfer) return TransferAtlas;
+            if (ev == EvWhiff) return WhiffAtlas;
+            if (ev == EvLand) return LandAtlas;
+            if (ev == EvLaunch) return LaunchAtlas;
+            if (ev == EvZip) return ZipAtlas;
+            if (ev == EvGrapple) return GrappleAtlas;
+            if (ev == EvWall) return WallAtlas;
+            if (ev == EvStagger) return StaggerAtlas;
+            return PunchAtlas;
+        }
+
+        static bool AtlasHolds()
+        {
+            var seen = new bool[WordCount];
+            for (int ev = 0; ev < EvCount; ev++)
+            {
+                int[] map = AtlasMap(ev);
+                if (map.Length != PoolCount(ev)) return false;
+                for (int i = 0; i < map.Length; i++)
+                {
+                    int id = map[i];
+                    if (id < 0 || id >= WordCount || seen[id]) return false;
+                    seen[id] = true;
+                    if (PoolWord(ev, i) != AtlasWord(id)) return false;
+                }
+            }
+            for (int i = 0; i < WordCount; i++)
+            {
+                if (!seen[i]) return false;
+            }
+            return AtlasWord(0) == "POP!" && AtlasWord(2) == "BAM!" && AtlasWord(3) == "WHAM!";
+        }
+
+        public static string AtlasWord(int index)
+        {
+            switch (index)
+            {
+                case 0: return "POP!";
+                case 1: return "POW!";
+                case 2: return "BAM!";
+                case 3: return "WHAM!";
+                case 4: return "SMACK!";
+                case 5: return "WHACK!";
+                case 6: return "THWACK!";
+                case 7: return "BONK!";
+                case 8: return "KAPOW!";
+                case 9: return "TAG!";
+                case 10: return "GOTCHA!";
+                case 11: return "MINE!";
+                case 12: return "WHIFF!";
+                case 13: return "SWISH!";
+                case 14: return "WHOOSH!";
+                case 15: return "THUD!";
+                case 16: return "WHUMP!";
+                case 17: return "THUMP!";
+                case 18: return "BOING!";
+                case 19: return "SPROING!";
+                case 20: return "POING!";
+                case 21: return "ZING!";
+                case 22: return "ZIP!";
+                case 23: return "WHIZZ!";
+                case 24: return "THWIP!";
+                case 25: return "FWIP!";
+                case 26: return "ZWIP!";
+                case 27: return "KRAK!";
+                case 28: return "FWOOSH!";
+                case 29: return "THOK!";
+                case 30: return "OOF!";
+                case 31: return "UGH!";
+                default: return "OUCH!";
+            }
+        }
+
         static string[] Pool(int ev)
         {
             if (ev == EvTag) return TagWords;
@@ -412,33 +529,24 @@ namespace Tag.FX
         public static string ProofLine()
         {
             uint state = 9u;
-            int prev = -1;
-            int repeats = 0;
-            int tagBig = 0;
-            int punchSmall = 0;
-            uint tagState = state;
-            int tagPrev = -1;
-            for (int i = 0; i < 200; i++)
+            string repeat = "";
+            for (int ev = 0; ev < EvCount; ev++)
             {
-                int word = Pick(ref tagState, tagPrev, true);
-                if (word == tagPrev) repeats++;
-                if (word >= Bam) tagBig++;
-                tagPrev = word;
-            }
-            uint punchState = state;
-            int punchPrev = -1;
-            for (int i = 0; i < 200; i++)
-            {
-                int word = Pick(ref punchState, punchPrev, false);
-                if (word == punchPrev) repeats++;
-                if (word <= Pow) punchSmall++;
-                punchPrev = word;
+                string previous = null;
+                int hits = 0;
+                for (int i = 0; i < 40; i++)
+                {
+                    int pick = PickEvent(ref state, ev, i % 3, previous);
+                    string word = PoolWord(ev, pick);
+                    if (word == previous) hits++;
+                    previous = word;
+                }
+                if (ev > 0) repeat += ",";
+                repeat += hits.ToString();
             }
             return "comic-words"
-                + " words=4"
-                + " repeat=" + repeats.ToString()
-                + " tagBig=" + tagBig.ToString()
-                + " punchSmall=" + punchSmall.ToString()
+                + " words=" + WordCount.ToString()
+                + " repeat=" + repeat
                 + " pop=" + PopSeconds.ToString("0.00")
                 + " life=" + LifeSeconds.ToString("0.00")
                 + " toggle=1";
