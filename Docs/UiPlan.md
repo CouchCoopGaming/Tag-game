@@ -287,6 +287,10 @@ The prompt bar is a thin strip on the bottom edge of the screen. In a split, eac
 
 Character select keeps four cards. Each card shows the Hier mannequin in that player's look, in the idle or ready pose. The card frame and the name tag use the look colour. The in-game name plate uses that same look. The P chip stays the seat colour and is labelled Seat, the same seat colour as the match pane edge. Left and right arrows on the card change the look. A look another player already took is grey and shows a lock. The pictures in `Docs/UiStills/pass31/` are composites. The proof lines are unchanged.
 
+## Pass 32
+
+The card figure is the Hier mesh. Each seat has a lit preview, three-quarter view, idle or ready. Idle yaws back and forth by 10 degrees. Ready uses the ready pose and the hop already on that screen. pose stays 0. The P chip stays the seat colour. The words "P colour = controller seat" sit once in the header. A taken look is grey and carries a padlock. In `Docs/UiStills/pass32/cast-mesh.png` the figure pixels are a render of `Dummy_Mannequin_*_Hier_Hi.fbx`. The frames, type, swatches, and prompt bar in that picture are composite, and so are `cast-legend.png` and `cast-lock.png`. The proof lines are unchanged.
+
 ## Later passes
 
 - A 2D focus grid on rules so Left from a rule row lands on a mode tile.

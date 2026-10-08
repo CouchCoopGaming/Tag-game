@@ -58,6 +58,20 @@ namespace Tag.Ui.Menu
                 _cam[i] = cam;
                 Aim(i);
             }
+            var keyGo = new GameObject("PreviewKey");
+            keyGo.transform.SetParent(transform, false);
+            keyGo.transform.rotation = Quaternion.Euler(42f, -38f, 0f);
+            var key = keyGo.AddComponent<Light>();
+            key.type = LightType.Directional;
+            key.color = new Color(1f, 0.96f, 0.88f, 1f);
+            key.intensity = 1.15f;
+            var fillGo = new GameObject("PreviewFill");
+            fillGo.transform.SetParent(transform, false);
+            fillGo.transform.rotation = Quaternion.Euler(12f, 140f, 0f);
+            var fill = fillGo.AddComponent<Light>();
+            fill.type = LightType.Directional;
+            fill.color = new Color(0.62f, 0.74f, 1f, 1f);
+            fill.intensity = 0.35f;
             BuildPodium();
             BuildParade();
             gameObject.SetActive(false);
@@ -244,7 +258,9 @@ namespace Tag.Ui.Menu
             {
                 if (_anchor[i] == null) continue;
                 if (!still)
-                    _anchor[i].localRotation = Quaternion.Euler(0f, t * 18f + i * 40f, 0f);
+                    _anchor[i].localRotation = Quaternion.Euler(0f, Mathf.Sin(t * 0.6f) * 10f, 0f);
+                else
+                    _anchor[i].localRotation = Quaternion.identity;
                 if (_hop[i] > 0f)
                 {
                     _hop[i] -= dt / 0.36f;
@@ -451,7 +467,7 @@ namespace Tag.Ui.Menu
         {
             if (_cam[i] == null || _anchor[i] == null) return;
             Vector3 focus = _anchor[i].position + new Vector3(0f, 0.98f, 0f);
-            _cam[i].transform.position = focus + new Vector3(0f, 0.02f, 4.85f);
+            _cam[i].transform.position = focus + new Vector3(1.45f, 0.38f, 4.15f);
             _cam[i].transform.LookAt(focus);
         }
 

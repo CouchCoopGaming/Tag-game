@@ -448,11 +448,14 @@ namespace Tag.Ui.Menu
         {
             const int n = 64;
             Color[] px = Clear(n, n);
-            Color ink = new Color(0.96f, 0.97f, 1f, 1f);
-            RoundBox(px, n, 12, 6, 52, 34, 6, ink);
-            Fill(px, n, 20, 28, 26, 50, ink);
-            Fill(px, n, 38, 28, 44, 50, ink);
-            Fill(px, n, 20, 44, 44, 52, ink);
+            Color ink = new Color(0.97f, 0.98f, 1f, 1f);
+            Color hole = new Color(0.08f, 0.10f, 0.16f, 1f);
+            Disc(px, n, 32, 40, 16, ink);
+            Disc(px, n, 32, 40, 9, new Color(0f, 0f, 0f, 0f));
+            Fill(px, n, 16, 28, 48, 40, new Color(0f, 0f, 0f, 0f));
+            RoundBox(px, n, 12, 6, 52, 36, 6, ink);
+            Disc(px, n, 32, 22, 4, hole);
+            Fill(px, n, 30, 12, 34, 22, hole);
             return Bake(px, n, n);
         }
 

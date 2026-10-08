@@ -152,7 +152,7 @@ namespace Tag.Ui.Menu
         readonly int[] _seatDevice = { -1, -1, -1, -1 };
         readonly Image[] _castStat = new Image[4];
         readonly Image[] _castNamePlate = new Image[4];
-        readonly Text[] _castSeatWord = new Text[4];
+        Text _seatLegend;
         readonly Text[] _castPrev = new Text[4];
         readonly Text[] _castNext = new Text[4];
         readonly Image[] _swatchImage = new Image[24];
@@ -339,6 +339,7 @@ namespace Tag.Ui.Menu
             Cursor.lockState = CursorLockMode.None;
             Cursor.visible = true;
             ClearBody();
+            if (_seatLegend != null) _seatLegend.gameObject.SetActive(id == MenuScreenId.Cast);
             switch (id)
             {
                 case MenuScreenId.Title: BuildTitle(); break;
@@ -479,6 +480,22 @@ namespace Tag.Ui.Menu
             headerRt.sizeDelta = new Vector2(0f, 64f);
             headerRt.anchoredPosition = new Vector2(0f, -UiFit.HeaderTop(UiFit.RefH));
 
+            _seatLegend = MenuWidgets.Words(root, "P colour = controller seat", UiFit.FloorFont, TextAnchor.MiddleRight, MenuTheme.Cream, new Vector2(0f, 1f), new Vector2(1f, 1f));
+            _seatLegend.raycastTarget = false;
+            RectTransform legendRt = _seatLegend.rectTransform;
+            legendRt.anchorMin = new Vector2(0f, 1f);
+            legendRt.anchorMax = new Vector2(1f, 1f);
+            legendRt.pivot = new Vector2(0.5f, 1f);
+            legendRt.sizeDelta = new Vector2(0f, 64f);
+            legendRt.anchoredPosition = new Vector2(0f, -UiFit.HeaderTop(UiFit.RefH));
+            Vector2 legendMin = legendRt.offsetMin;
+            Vector2 legendMax = legendRt.offsetMax;
+            legendMin.x = UiFit.SafeX;
+            legendMax.x = -UiFit.SafeX;
+            legendRt.offsetMin = legendMin;
+            legendRt.offsetMax = legendMax;
+            _seatLegend.gameObject.SetActive(false);
+
             _body = MenuWidgets.Box(root, "Body", Vector2.zero, Vector2.one, new Vector2(0.5f, 0.5f));
             _body.offsetMin = new Vector2(UiFit.SafeX, 78f);
             _body.offsetMax = new Vector2(-UiFit.SafeX, -UiFit.ChromeTop);
@@ -587,7 +604,6 @@ namespace Tag.Ui.Menu
                 _castJoin[i] = null;
                 _castPlate[i] = null;
                 _castNamePlate[i] = null;
-                _castSeatWord[i] = null;
                 _castPrev[i] = null;
                 _castNext[i] = null;
                 _readyBurst[i] = null;
@@ -1140,6 +1156,18 @@ namespace Tag.Ui.Menu
                 max.x = -UiFit.SafeX;
                 headerRt.offsetMin = min;
                 headerRt.offsetMax = max;
+            }
+            if (_seatLegend != null)
+            {
+                RectTransform legendRt = _seatLegend.rectTransform;
+                legendRt.anchoredPosition = new Vector2(0f, -top);
+                legendRt.sizeDelta = new Vector2(0f, band);
+                Vector2 legendMin = legendRt.offsetMin;
+                Vector2 legendMax = legendRt.offsetMax;
+                legendMin.x = UiFit.SafeX;
+                legendMax.x = -UiFit.SafeX;
+                legendRt.offsetMin = legendMin;
+                legendRt.offsetMax = legendMax;
             }
             float chrome = top + band;
             if (chrome < UiFit.ChromeTop) chrome = UiFit.ChromeTop;
@@ -2205,9 +2233,6 @@ namespace Tag.Ui.Menu
                     _castReady[s].rectTransform.offsetMax = new Vector2(-12f, -8f);
                 }
                 SeatChip(card, 12f, 12f, s);
-                var seatWord = MenuWidgets.Place(card, "SeatWord", 84f, 12f, 88f, 36f);
-                _castSeatWord[s] = MenuWidgets.Words(seatWord, "Seat", UiFit.FloorFont, TextAnchor.MiddleLeft, MenuTheme.Seat(s), Vector2.zero, Vector2.one);
-                _castSeatWord[s].raycastTarget = false;
                 _castJoin[s] = MenuWidgets.Words(card, PadGlyph.Join(PadGlyph.Generic), 32, TextAnchor.MiddleCenter, MenuTheme.Cream, new Vector2(0.08f, 0.34f), new Vector2(0.92f, 0.72f));
                 float burstW = viewSide * 0.42f;
                 float burstH = viewH * 0.22f;
@@ -3331,7 +3356,6 @@ namespace Tag.Ui.Menu
                     }
                     if (_castPlate[s] != null) _castPlate[s].color = MenuTheme.Seat(s);
                     if (_castNamePlate[s] != null) _castNamePlate[s].color = MenuTheme.Navy;
-                    if (_castSeatWord[s] != null) _castSeatWord[s].color = MenuTheme.Seat(s);
                     if (_castPrev[s] != null) _castPrev[s].gameObject.SetActive(false);
                     if (_castNext[s] != null) _castNext[s].gameObject.SetActive(false);
                     PaintLooks(s, false);
@@ -3372,7 +3396,6 @@ namespace Tag.Ui.Menu
                 Color lookTint = MenuPortraits.Tint(picked);
                 if (_castPlate[s] != null) _castPlate[s].color = lookTint;
                 if (_castNamePlate[s] != null) _castNamePlate[s].color = Color.Lerp(lookTint, MenuTheme.Ink, 0.35f);
-                if (_castSeatWord[s] != null) _castSeatWord[s].color = MenuTheme.Seat(s);
                 if (_castPrev[s] != null) _castPrev[s].gameObject.SetActive(true);
                 if (_castNext[s] != null) _castNext[s].gameObject.SetActive(true);
                 PaintLooks(s, true);

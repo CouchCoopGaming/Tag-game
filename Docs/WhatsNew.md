@@ -328,6 +328,8 @@ The thirtieth pass keeps those lines. One row is focused at a time. The selected
 
 The thirty-first pass docks that bar to the bottom edge, and to the bottom of each pane in a split. The chips are small glyphs and labels, not buttons. Xbox shows A, B, X, and Y. PlayStation shows cross, circle, square, and triangle. A keyboard shows key caps. The token is the same ActionBinds token Controls uses, for the device that last gave input. Character select shows the Hier mannequin in the selected look, idle or ready. The frame and the name tag use that look, and so does the in-game name plate. The P chip is the seat colour, labelled Seat. Arrows change the look, and a taken look shows a lock. The pictures in `Docs/UiStills/pass31/` are composites.
 
+The thirty-second pass puts the Hier mesh on the card. The preview is lit, at a three-quarter angle, idle or ready. Idle sways by 10 degrees. Ready hops with the hop already on that screen, and pose stays 0. The P chip stays the seat colour. The header says "P colour = controller seat" once. A taken look is grey, with a padlock. In `Docs/UiStills/pass32/cast-mesh.png` the figures are a render of the FBX. The rest of that picture, and `cast-legend.png` and `cast-lock.png`, are composites.
+
 ## Motion, ninth pass
 
 The wall jump, the rope, the zip, the launch pad, a landing, the dash flash, a hard turnaround, and a punch while you run all ease instead of snapping. Speeds, the jump, and the dash length are the same.
