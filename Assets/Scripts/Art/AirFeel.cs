@@ -33,12 +33,14 @@ namespace Tag.Art
         public const float TuckKeep = 0.42f;
 
         public const float BraceThigh = 54f;
-        /// <summary>Soft knee, ready to take the landing. Not the deep buckle.</summary>
-        public const float BraceKnee = -36f;
-        /// <summary>Down and out. Negative yaw stays on the hand's own side of this rig.</summary>
+        /// <summary>About 30 degrees of knee bend. Feet stay a little ahead of the hips.</summary>
+        public const float BraceKnee = -32f;
+        /// <summary>Thighs open so the knees are not locked together.</summary>
+        public const float BraceLegYaw = 12f;
+        /// <summary>Hanging pitch. The spread is the yaw. Elbows stay soft.</summary>
         public const float BraceArmPitch = 12f;
-        public const float BraceArmYaw = -48f;
-        public const float BraceElbow = -10f;
+        public const float BraceArmYaw = 58f;
+        public const float BraceElbow = -34f;
         /// <summary>Chest up. Positive spine folds forward.</summary>
         public const float BraceSpine = -6f;
         public const float BraceHip = 2f;
@@ -319,6 +321,10 @@ namespace Tag.Art
             if (ApexFlex() < 30f || ApexFlex() > 45f) return false;
             if (!ApexHandsOut()) return false;
             if (BraceKnee > -18f || BraceKnee < -48f) return false;
+            if (BraceKnee > -25f || BraceKnee < -35f) return false;
+            if (BraceElbow > -18f || BraceElbow < -42f) return false;
+            if (BraceArmYaw < 40f || BraceArmYaw > 70f) return false;
+            if (BraceLegYaw < 8f || BraceLegYaw > 24f) return false;
             if (BraceSpine > 0f) return false;
             if (BraceHead < 8f) return false;
             if (BraceArmPitch < 0f || BraceArmPitch > 35f) return false;

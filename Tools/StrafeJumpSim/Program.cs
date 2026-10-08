@@ -772,6 +772,12 @@ static class Program
             Console.Error.WriteLine("handoff is not held");
             return 1;
         }
+        Console.WriteLine(Tag.Art.Handoff2Feel.ProofLine());
+        if (!Tag.Art.Handoff2Feel.Holds())
+        {
+            Console.Error.WriteLine("handoff2 is not held");
+            return 1;
+        }
         if (!AssetHas("Assets/Scripts/Art/DummyLocomotor.cs",
                 "SmoothMotion.Smooth",
                 "SmoothMotion.SecondsForSlew",
@@ -932,9 +938,9 @@ static class Program
                 "BodyLine.WallArc",
                 "BodyLine.LineFix",
                 "HangMotion.RopeSpine",
-                "BodyLine.ZipGrab",
-                "BodyLine.ZipWeights",
-                "BodyLine.PadOpen",
+                "Handoff2Feel.ZipGrab",
+                "Handoff2Feel.ZipDrop",
+                "Handoff2Feel.PadOpen",
                 "BodyLine.KeepStride",
                 "BodyLine.TellOpen",
                 "BodyLine.ReverseBlend",
@@ -965,7 +971,14 @@ static class Program
                 "AirFeel.HeadPitch",
                 "HandoffFeel.Release",
                 "HandoffFeel.RollWeight",
-                "HandoffFeel.Rolls"))
+                "HandoffFeel.Rolls",
+                "Handoff2Feel.ClimbOpen",
+                "Handoff2Feel.VaultShown",
+                "Handoff2Feel.VaultOutOpen",
+                "Handoff2Feel.LatchOpen",
+                "Handoff2Feel.ReleaseShown",
+                "Handoff2Feel.PadVyStep",
+                "Handoff2Feel.SlideOpen"))
         {
             Console.Error.WriteLine("loco feel is not on the mannequin");
             return 1;
@@ -1005,6 +1018,8 @@ static class Program
         Tag.Art.SmoothMotion.WritePass11Stills(Path.Combine(still11, "air.png"));
         string still12 = Path.Combine(RepoRoot(), "Docs", "SmoothStills", "pass12");
         Tag.Art.SmoothMotion.WritePass12Stills(Path.Combine(still12, "handoff.png"));
+        string still13 = Path.Combine(RepoRoot(), "Docs", "SmoothStills", "pass13");
+        Tag.Art.SmoothMotion.WritePass13Stills(Path.Combine(still13, "handoff2.png"));
         if (!File.Exists(Path.Combine(RepoRoot(), "Assets", "Scenes", "MotionGallery.unity")))
         {
             Console.Error.WriteLine("motion gallery scene is missing");

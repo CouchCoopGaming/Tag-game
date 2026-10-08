@@ -312,3 +312,25 @@ Stick figures are in `Docs/SmoothStills/pass12/handoff.png`. Eight rows, eight f
 The five mannequin stills share one camera. The body stays in frame, with about a tenth of the frame clear of it. Airborne poses sit over a contact shadow: `Docs/SmoothStills/pass12/stride.png`, `stop.png`, `turn.png`, `apex.png`, and `fall.png`.
 
 `loco-feel`, `loco-polish`, `body-life`, `foot-slide`, `respawn-blink`, `climb-contact`, `body-line`, `response-latency`, and `stick-quality` are unchanged. `climbRate` stays 16.50 and `runRate` stays 26.50. Enemy, pocket, and stack AI lines are unchanged. Hot-path allocs stay 0. Frame budget stays steady=ok. `transition-matrix` stays `over=0`. Mouse flicks still snap. Landing still waits one sample.
+
+## Pass 13
+
+Visual only. Feel locks stay. One `CharacterController.Move` per Update. No root motion. No new verbs. Hier v0.8.0 stays unbound. The apex clearance stays 10.3 cm. The cling handoff stays `42.0>15.4`, so the brace arm pitch stays 12. The thigh step into the existing land stays `58.0>20.0`.
+
+The terminal brace used to hang the legs together and hold the arms close to the body. The knees now bend about 30°, a little apart, with the feet ahead of the hips. The arms sit about 38° out from the torso and the elbows stay soft. The chest stays up and the head still looks toward the landing.
+
+`air-feel takeoff=24.8>12.5 tuck=3.7>1.6 fall=58.0>20.0 hop=22.1>4.9 strafe=18.0>1.8 coyote=24.8>10.9 clear=10.3cm gameplayDelay=0 rootMotion=0`
+
+`handoff run=7.6>3.2 roll=8.5>2.1 wall=81.0>8.8 cling=42.0>15.4 rollAt=36.5 gameplayDelay=0 rootMotion=0`
+
+The next handoffs were the biggest single-frame bone steps on the way into and out of a climb-top mantle, a vault, a slide, a zip, a grapple, and a launch pad. Each pose target now stays under 15°. The motor timers are unchanged: mantle 0.40, slide blend 0.10, zip catch 0.12, zip release 0.16, grapple latch 0.07, grapple release 0.10. The visual windows are longer. The slide's trail knee uses 0.26 s. The head drop stays on the 0.22 s curve, so the loco-feel drop proof stays `12.0>5.9`.
+
+`handoff2 climb=21.9>12.5 vault=20.2>13.6 vaultOut=14.0>8.4 slideIn=30.3>12.6 slideOut=30.3>12.6 zipGrab=33.1>11.9 zipDrop=53.2>7.9 grappleIn=72.0>10.4 grappleOut=25.0>11.3 padUp=30.6>11.9 padAir=14.2>10.8 gameplayDelay=0 rootMotion=0`
+
+`body-line wall=35.6>16.6 rope=70.0>0.0 zip=58.0>0.0 drop=128.0>53.2 pad=155.0>30.6 land=104.0>0.0 tell=0.42>0.16 rev=82.6>15.3 reach=12.9>0.0 gameplayDelay=0 rootMotion=0`
+
+Stick figures are in `Docs/SmoothStills/pass13/handoff2.png`. Twenty-two rows, eight frames: climb, vault in, vault out, slide in, slide out, zip grab, zip drop, grapple in, grapple out, pad up, and pad air. Before, then after.
+
+The mannequin stills share one camera, turned far enough to the side that the fall knees read as bent. The five full-body poses fill about 63 to 71 percent of the frame height. The contact shadow stays in frame and the empty floor is cropped: `Docs/SmoothStills/pass13/stride.png`, `stop.png`, `turn.png`, `apex.png`, `fall.png`, `climb.png`, `vault.png`, `slide.png`, `zip.png`, `grapple.png`, `pad.png`.
+
+`loco-feel`, `loco-polish`, `body-life`, `foot-slide`, `respawn-blink`, `climb-contact`, `response-latency`, and `stick-quality` are unchanged. `climbRate` stays 16.50 and `runRate` stays 26.50. Enemy, pocket, and stack AI lines are unchanged. Hot-path allocs stay 0. Frame budget stays steady=ok. `transition-matrix` stays `over=0`. Mouse flicks still snap. Landing still waits one sample.
