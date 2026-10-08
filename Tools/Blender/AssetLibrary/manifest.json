@@ -43773,5 +43773,104 @@
     ],
     "slackCm": 0.0,
     "fbx": "Assets/Art/Props/Library/StreetFurniture/FireAlarm_Box.fbx"
+  },
+  {
+    "name": "PayStation_Street",
+    "category": "StreetFurniture",
+    "blurb": "Pay station, 0.40 m wide, 1.60 m tall. Screen, keypad, card slot, coin, ticket mouth. No brand.",
+    "size": [
+      0.48,
+      1.586,
+      0.401
+    ],
+    "min": [
+      -0.24,
+      0.0,
+      -0.201
+    ],
+    "max": [
+      0.24,
+      1.586,
+      0.2
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 344,
+        "materials": [
+          "Lib_SteelDark",
+          "Lib_Steel",
+          "Lib_Black",
+          "Lib_Glass"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 140,
+        "materials": [
+          "Lib_SteelDark",
+          "Lib_Steel",
+          "Lib_Black",
+          "Lib_Glass"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_Base",
+        "type": "box",
+        "center": [
+          0,
+          0.02,
+          0
+        ],
+        "size": [
+          0.34,
+          0.028,
+          0.26
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Body",
+        "type": "box",
+        "center": [
+          0,
+          0.78,
+          -0.02
+        ],
+        "size": [
+          0.28,
+          1.2,
+          0.18
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "climbable": false,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "Not a cling.",
+    "vaultNote": "Too short to vault.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1"
+    ],
+    "slackCm": 0.35,
+    "fbx": "Assets/Art/Props/Library/StreetFurniture/PayStation_Street.fbx"
   }
 ]
