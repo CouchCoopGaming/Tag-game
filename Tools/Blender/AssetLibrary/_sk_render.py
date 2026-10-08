@@ -288,10 +288,38 @@ def _pass7_lineup(found, path):
     _fit(path)
 
 
+def _pass8_lineup(found, path):
+    r._reset_scene()
+    scene = bpy.context.scene
+    r._engine(scene, wide=True)
+    scene.render.resolution_x = 1280
+    scene.render.resolution_y = 720
+    scene.cycles.samples = 24
+    r._ensure_materials()
+    r._world(scene, night=False)
+    specs = [
+        ("Mannequin", (-0.15, 0.0, 0.35), 200),
+        ("RoofVent_Turbine", (1.05, 0.0, 0.05), 30),
+    ]
+    objs = [r._spawn(found[name](), pos, yaw) for name, pos, yaw in specs]
+    r._ground("concrete", 20.0)
+    r._frame(scene, objs, fill=0.58, elevation=12.0, azimuth=24.0)
+    r._render(scene, path)
+    _fit(path)
+
+
 def main():
     os.makedirs(STILL_DIR, exist_ok=True)
     found = _load()
-    if PASS >= 7:
+    if PASS >= 8:
+        shots = [
+            ("roof_vent", lambda: _shot(found["RoofVent_Turbine"], os.path.join(STILL_DIR, "roof_vent.png"), fill=0.72)),
+            ("roof_vent_head", lambda: _close(
+                found["RoofVent_Turbine"], os.path.join(STILL_DIR, "roof_vent_head.png"),
+                (0.7, 0.7, 0.75), (0.0, 0.52, 0.0), 55)),
+            ("kit_lineup", lambda: _pass8_lineup(found, os.path.join(STILL_DIR, "kit_lineup.png"))),
+        ]
+    elif PASS >= 7:
         shots = [
             ("satellite", lambda: _shot(found["SatelliteDish"], os.path.join(STILL_DIR, "satellite.png"), fill=0.78)),
             ("satellite_dish", lambda: _close(

@@ -78,7 +78,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Tag.Art.Library.LibraryPropMeta
   category: "StreetFurniture"
-  summary: "Turbine vent, 0.46 m curb, throat 0.32 m across, cap at 0.70 m. Vanes are visual only."
+  summary: "Turbine vent, 0.46 m curb, throat 0.32 m across, cap at 0.70 m. Helical vane cage, visual only."
   climbable: 0
   vaultable: 0
   vaultHeightMeters: 0

@@ -32897,7 +32897,7 @@
   {
     "name": "RoofVent_Turbine",
     "category": "StreetFurniture",
-    "blurb": "Turbine vent, 0.46 m curb, throat 0.32 m across, cap at 0.70 m. Vanes are visual only.",
+    "blurb": "Turbine vent, 0.46 m curb, throat 0.32 m across, cap at 0.70 m. Helical vane cage, visual only.",
     "size": [
       0.46,
       0.725,
@@ -32916,7 +32916,7 @@
     "lods": [
       {
         "lod": 0,
-        "tris": 588,
+        "tris": 1380,
         "materials": [
           "Lib_Steel",
           "Lib_SteelDark"
@@ -32926,7 +32926,7 @@
       },
       {
         "lod": 1,
-        "tris": 232,
+        "tris": 512,
         "materials": [
           "Lib_Steel",
           "Lib_SteelDark"
