@@ -3729,7 +3729,7 @@
     "size": [
       2.452,
       2.59,
-      6.099
+      6.13
     ],
     "min": [
       -1.22,
@@ -3739,12 +3739,12 @@
     "max": [
       1.232,
       2.59,
-      3.069
+      3.1
     ],
     "lods": [
       {
         "lod": 0,
-        "tris": 5812,
+        "tris": 5778,
         "materials": [
           "Lib_BoxRed",
           "Lib_SteelDark",
@@ -3758,7 +3758,7 @@
       },
       {
         "lod": 1,
-        "tris": 2088,
+        "tris": 1800,
         "materials": [
           "Lib_BoxRed",
           "Lib_SteelDark",
@@ -3822,7 +3822,7 @@
     "size": [
       2.452,
       2.59,
-      12.229
+      12.26
     ],
     "min": [
       -1.22,
@@ -3832,12 +3832,12 @@
     "max": [
       1.232,
       2.59,
-      6.134
+      6.165
     ],
     "lods": [
       {
         "lod": 0,
-        "tris": 9076,
+        "tris": 8466,
         "materials": [
           "Lib_BoxBlue",
           "Lib_SteelDark",
@@ -3850,7 +3850,7 @@
       },
       {
         "lod": 1,
-        "tris": 3720,
+        "tris": 3144,
         "materials": [
           "Lib_BoxBlue",
           "Lib_SteelDark",
@@ -11870,7 +11870,7 @@
     "blurb": "4.0 x 1.05 m median, 0.40 m concrete coping closed on all four sides, soil and a clipped shrub.",
     "size": [
       1.12,
-      0.77,
+      0.78,
       4.06
     ],
     "min": [
@@ -11880,7 +11880,7 @@
     ],
     "max": [
       0.56,
-      0.77,
+      0.78,
       2.03
     ],
     "lods": [
@@ -27230,7 +27230,7 @@
     "size": [
       2.452,
       2.59,
-      6.099
+      6.13
     ],
     "min": [
       -1.22,
@@ -27240,12 +27240,12 @@
     "max": [
       1.232,
       2.59,
-      3.069
+      3.1
     ],
     "lods": [
       {
         "lod": 0,
-        "tris": 5812,
+        "tris": 5778,
         "materials": [
           "Lib_BoxBlue",
           "Lib_SteelDark",
@@ -27258,7 +27258,7 @@
       },
       {
         "lod": 1,
-        "tris": 2088,
+        "tris": 1800,
         "materials": [
           "Lib_BoxBlue",
           "Lib_SteelDark",
@@ -27322,7 +27322,7 @@
     "size": [
       2.452,
       2.59,
-      6.099
+      6.13
     ],
     "min": [
       -1.22,
@@ -27332,12 +27332,12 @@
     "max": [
       1.232,
       2.59,
-      3.069
+      3.1
     ],
     "lods": [
       {
         "lod": 0,
-        "tris": 5812,
+        "tris": 5778,
         "materials": [
           "Lib_BoxGreen",
           "Lib_SteelDark",
@@ -27351,7 +27351,7 @@
       },
       {
         "lod": 1,
-        "tris": 2088,
+        "tris": 1800,
         "materials": [
           "Lib_BoxGreen",
           "Lib_SteelDark",

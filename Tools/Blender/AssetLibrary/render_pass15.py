@@ -79,7 +79,8 @@ def _containers(found):
     ]
     p6._place(found, specs)
     p6._ground((0.34, 0.34, 0.32))
-    p6._look(scene, (5.2, 2.4, 12.2), (4.8, 1.3, 0.3), lens=30.0)
+    # High 3/4 so the long side and the roof waves are both in frame.
+    p6._look(scene, (2.4, 3.6, 11.2), (4.6, 1.15, 0.6), lens=28.0)
     r._render(scene, os.path.join(STILL_DIR, "containers.png"))
 
 
@@ -87,7 +88,7 @@ def _container_door(found):
     scene = p6._begin(wide=True)
     p6._place(found, [("Container_20", (0.0, 0.0, 0.0), 12.0, 1.0)])
     p6._ground((0.30, 0.30, 0.28))
-    p6._look(scene, (1.7, 1.3, 5.35), (0.1, 1.25, 2.6), lens=40.0)
+    p6._look(scene, (2.3, 1.7, 9.4), (0.0, 1.25, 2.5), lens=32.0)
     r._render(scene, os.path.join(STILL_DIR, "container_door.png"))
 
 

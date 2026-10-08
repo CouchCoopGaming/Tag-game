@@ -41,8 +41,8 @@ Blender 4.2 LTS is enough. `write_unity.py` does not need Blender. The showcase 
 | ChainGate | Buildings | 1.225 × 1.8 × 0.085 | 422 (422/252) | Col_Hinge, Col_LatchStile, Col_Top, Col_Fabric | Same wire slab as the fence panel, inset to the leaf. Top is 1.80 m. | shipped |
 | Cleat | Harbor | 0.27 × 0.113 × 0.09 | 284 (284/76) | Col_Base, Col_Horns, Col_Waist | Too small to cling. Not a rail. | shipped |
 | TrafficCone | Utility | 0.36 × 0.71 × 0.36 | 176 (176/96) | Col_Base, Col_Cone | Not a cling. Too light and short. Not a vault. | shipped |
-| Container_20 | Harbor | 2.452 × 2.59 × 6.099 | 5812 (5812/2088/264) | Climb_Body | climb Long sides are cling. Door bars are on +Z. Collider is inside the wall plate. No rail. Roof is a landing at 2.59 m. | shipped |
-| Container_40 | Harbor | 2.452 × 2.59 × 12.229 | 9076 (9076/3720/264) | Climb_Body | climb Long sides are cling. Door bars are on +Z. Collider is inside the wall plate. No rail. Roof is a landing at 2.59 m. | shipped |
+| Container_20 | Harbor | 2.452 × 2.59 × 6.13 | 5778 (5778/1800/264) | Climb_Body | climb Long sides are cling. Door bars are on +Z. Collider is inside the wall plate. No rail. Roof is a landing at 2.59 m. | shipped |
+| Container_40 | Harbor | 2.452 × 2.59 × 12.26 | 8466 (8466/3144/264) | Climb_Body | climb Long sides are cling. Door bars are on +Z. Collider is inside the wall plate. No rail. Roof is a landing at 2.59 m. | shipped |
 | Court | Park | 12 × 0.126 × 22 | 14 (14/14) | Col_Slab | Flat slab, 0.12 m thick. No rail. Place each Hoop pole 1.2 m behind the end line, rim toward center court. | shipped |
 | CourtFence | Park | 12.98 × 3.095 × 22.99 | 3304 (3304/2400/2148) | Col_Post_SW, Col_Post_SE, Col_Post_NW, Col_Post_NE, Col_Fabric_S, Col_Fabric_N, Col_Fabric_W, Col_Fabric_E1, Col_Fabric_E2, Col_Gate | climb Posts, rails, and a wire-thick fabric slab. The diamonds are not a passage. The gate is closed. Sideline top is 1.80 m and the baselines are 3.05 m. Too high to vault from the court. | shipped |
 | HarborCrane | Harbor | 1.6 × 5.176 × 5.14 | 472 (472/208/136) | Col_Base, Col_Plinth, Col_Mast, Col_Head, Col_Cab, Col_Saddle, Col_Jib, Col_Chord, Col_Counter, Col_Tail | The mast is a 0.28 m tube, not a cling wall. No rail. The jib is overhead. | shipped |
@@ -72,7 +72,7 @@ Blender 4.2 LTS is enough. `write_unity.py` does not need Blender. The showcase 
 | Mailbox | StreetFurniture | 0.265 × 1.239 × 0.49 | 284 (284/96) | Col_Post, Col_Box | Post is a 5 cm tube. Not a cling. No vault edge. | shipped |
 | Manhole | StreetFurniture | 0.72 × 0.04 × 0.72 | 760 (760/152) | Col_Cover | Flat ground cover. Flush. Not a vault. | shipped |
 | Mannequin | Showcase | 0.63 × 1.8 × 0.32 | 624 (624/312) | Col_Body, Col_LegL, Col_LegR, Col_Head, Col_ArmL, Col_ArmR | Reference only. Reference only. | shipped |
-| Median_Planter | Roads | 1.12 × 0.77 × 4.06 | 484 (484/228) | Col_EndN, Col_EndS, Col_SideL, Col_SideR, Col_Soil, Col_Shrub | Too low to cling. 0.40 m wall. Not a vault. | shipped |
+| Median_Planter | Roads | 1.12 × 0.78 × 4.06 | 484 (484/228) | Col_EndN, Col_EndS, Col_SideL, Col_SideR, Col_Soil, Col_Shrub | Too low to cling. 0.40 m wall. Not a vault. | shipped |
 | Mooring | Harbor | 1.32 × 0.665 × 3.155 | 348 (348/172) | Col_Plank x10, Col_PileA, Col_PileB, Col_Cleat | Walk the deck. Pilings are round and sit on -X, so the pivot stays the deck center. Deck is 0.55 m. Under the vault band. | shipped |
 | NewspaperBox | StreetFurniture | 0.56 × 0.98 × 0.42 | 368 (368/60) | Col_Body, Col_Cap | Not a cling surface. Too short to vault. | shipped |
 | Pallet | Utility | 1.22 × 0.125 × 1.02 | 204 (204/132) | Col_Top, Col_Stringer x3 | Not a wall. 0.14 m. Not a vault. | shipped |
@@ -134,8 +134,8 @@ Blender 4.2 LTS is enough. `write_unity.py` does not need Blender. The showcase 
 | HarborWarehouse | Harbor | 10.772 × 4.592 × 6.972 | 1120 (1120/456) | Col_Floor, Climb_Back, Climb_SideL, Climb_SideR, Climb_PierL, Climb_PierC, Climb_PierR, Col_DoorL, Col_DoorR | climb Brick walls are cling. The roll-up doors are closed. No rail. Wall top is 4.40 m. | shipped |
 | QuayDavit | Harbor | 0.72 × 2.323 × 1.962 | 280 (280/96) | Col_Base, Col_Post, Col_Head, Col_Jib | The post is a 0.14 m tube, not a cling wall. No rail. The jib is overhead. | shipped |
 | MooringLine | Harbor | 0.021 × 0.304 × 3.406 | 120 (120/64) |  | A rope. Not a surface. No rail. | shipped |
-| Container_20_Blue | Harbor | 2.452 × 2.59 × 6.099 | 5812 (5812/2088/264) | Climb_Body | climb Long sides are cling. Door bars are on +Z. Collider is inside the wall plate. No rail. Roof is a landing at 2.59 m. | shipped |
-| Container_20_Green | Harbor | 2.452 × 2.59 × 6.099 | 5812 (5812/2088/264) | Climb_Body | climb Long sides are cling. Door bars are on +Z. Collider is inside the wall plate. No rail. Roof is a landing at 2.59 m. | shipped |
+| Container_20_Blue | Harbor | 2.452 × 2.59 × 6.13 | 5778 (5778/1800/264) | Climb_Body | climb Long sides are cling. Door bars are on +Z. Collider is inside the wall plate. No rail. Roof is a landing at 2.59 m. | shipped |
+| Container_20_Green | Harbor | 2.452 × 2.59 × 6.13 | 5778 (5778/1800/264) | Climb_Body | climb Long sides are cling. Door bars are on +Z. Collider is inside the wall plate. No rail. Roof is a landing at 2.59 m. | shipped |
 
 ## Modules
 

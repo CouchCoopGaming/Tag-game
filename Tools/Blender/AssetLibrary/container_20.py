@@ -98,14 +98,14 @@ def _add(a, b, s=1.0):
 def _casting_box(g, cx, cy, cz, sx, sy, sz):
     """One closed casting. Three exposed faces each carry a blind oval hole."""
     h = CAST * 0.5
-    segs = 3
+    segs = 4
     n = segs * 4
     hole = 0.040
     b = _Vert()
     faces = (
-        ((sx * h, 0.0, 0.0), (0.0, 1.0, 0.0), (0.0, 0.0, sx), True, 0.026, 0.042),
-        ((0.0, sy * h, 0.0), (1.0, 0.0, 0.0), (0.0, 0.0, -sy), True, 0.042, 0.026),
-        ((0.0, 0.0, sz * h), (1.0, 0.0, 0.0), (0.0, sz, 0.0), True, 0.042, 0.026),
+        ((sx * h, 0.0, 0.0), (0.0, 1.0, 0.0), (0.0, 0.0, sx), True, 0.024, 0.046),
+        ((0.0, sy * h, 0.0), (1.0, 0.0, 0.0), (0.0, 0.0, -sy), True, 0.046, 0.024),
+        ((0.0, 0.0, sz * h), (1.0, 0.0, 0.0), (0.0, sz, 0.0), True, 0.046, 0.024),
         ((-sx * h, 0.0, 0.0), (0.0, 1.0, 0.0), (0.0, 0.0, -sx), False, 0.0, 0.0),
         ((0.0, -sy * h, 0.0), (1.0, 0.0, 0.0), (0.0, 0.0, sy), False, 0.0, 0.0),
         ((0.0, 0.0, -sz * h), (1.0, 0.0, 0.0), (0.0, -sz, 0.0), False, 0.0, 0.0),
@@ -176,13 +176,13 @@ def _rails(g, length):
     g.box((0, HEIGHT - 0.10, z), (WIDTH - 0.42, 0.10, 0.08), "Lib_SteelDark")
 
 
-# One period: valley, slope, crown, slope. 0.064 + 0.034 + 0.048 + 0.034.
-PITCH = 0.180
-VALLEY = 0.064
-SLOPE = 0.034
-CROWN = 0.048
+# One period: valley, slope, crown, slope. The slopes are long enough to read as a roll.
+PITCH = 0.220
+VALLEY = 0.050
+SLOPE = 0.060
+CROWN = 0.050
 SHEET = 0.004
-PROUD = 0.028
+PROUD = 0.042
 BURY = 0.002
 
 
@@ -324,11 +324,11 @@ def _door_shell(g, outer_z, x0, x1, color, pitch):
     y0, y1 = 0.36, 2.22
     for start, n in _runs(x0, x1, pitch) or ():
         def outer(s, crown, outer_z=outer_z):
-            z = outer_z + (PROUD * 0.55 if crown else -BURY)
+            z = outer_z + (PROUD * 0.70 if crown else -BURY)
             return (s, z)
 
         def inner(s, crown, outer_z=outer_z):
-            z = outer_z + (PROUD * 0.55 if crown else -BURY) - SHEET
+            z = outer_z + (PROUD * 0.70 if crown else -BURY) - SHEET
             return (s, z)
 
         _sheet_y(g, _trap_pairs(start, n, pitch, outer, inner), y0, y1, color)
@@ -336,8 +336,9 @@ def _door_shell(g, outer_z, x0, x1, color, pitch):
 
 def _bars(g, outer_z):
     """Four locking bars, two on each door, with cams and handles."""
-    depth = 0.032
-    cz = outer_z + (depth * 0.5 - 0.002)
+    depth = 0.028
+    # The bar sits on the door crown and stays proud of it.
+    cz = outer_z + PROUD * 0.70 + 0.016
     y0, y1 = 0.34, 2.24
     for x in (-0.74, -0.28, 0.28, 0.74):
         g.box((x, (y0 + y1) * 0.5, cz), (0.028, y1 - y0, depth), "Lib_SteelDark")
