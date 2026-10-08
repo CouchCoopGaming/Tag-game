@@ -1,0 +1,305 @@
+PASS13 APPLIED
+clip 12_tictac_slanted_wall
+Bad tracking is a frame-to-frame limb length outside 15%, a limb crossing the torso, the 0.00 s tangle, or the 4.84–5.07 s heap.
+Protected real-track frames: 15, 34, 76, 106, 110
+HAND 0 is a palm-plant crouch with the knees splayed 35°. The 0.00 s stick is a tangle, so the pose is not a literal retarget. Forward spine roll pushed the chest into the thighs, so the spine returns to rest and the hips unfold instead.
+BRIDGE f=10-11 t=0.33-0.37s anchors 9,12 (jump laL)
+BRIDGE f=16-16 t=0.53-0.53s anchors 15,17 (jump laR)
+BRIDGE f=26-27 t=0.87-0.90s anchors 25,28 (cross laL; jump uaL,laL)
+BRIDGE f=29-33 t=0.97-1.10s anchors 28,34 (jump laL; jump laR; jump uaR,laR)
+BRIDGE f=38-38 t=1.27-1.27s anchors 37,39 (jump uaL,laL)
+BRIDGE f=40-41 t=1.33-1.37s anchors 39,42 (jump uaL; jump uaL,laL)
+BRIDGE f=47-51 t=1.57-1.70s anchors 46,52 (jump laL,laR; jump laR; jump uaL; jump uaL,laL,laR; jump uaL,laR)
+BRIDGE f=60-61 t=2.00-2.04s anchors 59,62 (jump laL; jump uaL,laL)
+BRIDGE f=63-63 t=2.10-2.10s anchors 62,64 (jump laL)
+BRIDGE f=65-67 t=2.17-2.24s anchors 64,68 (jump laL; jump uaL)
+BRIDGE f=99-100 t=3.30-3.34s anchors 98,101 (jump llL; jump uaL)
+BRIDGE f=107-107 t=3.57-3.57s anchors 106,108 (jump laR)
+BRIDGE f=114-116 t=3.80-3.87s anchors 113,117 (jump laL,llR; jump uaR,ulR; jump ulR,llR)
+BRIDGE f=118-118 t=3.94-3.94s anchors 117,119 (jump laR)
+BRIDGE f=121-126 t=4.04-4.20s anchors 120,127 (jump laR; jump uaR,laR; jump uaR,laR,ulR)
+BRIDGE f=129-130 t=4.30-4.34s anchors 128,131 (jump uaR; jump uaR,laR)
+BRIDGE f=145-156 t=4.84-5.21s anchors 144,157 (heap; jump laL,llR; jump laR)
+BRIDGE f=158-159 t=5.27-5.31s anchors 157,160 (jump laL; jump uaL)
+BRIDGE f=162-163 t=5.41-5.44s anchors 161,164 (jump laL; jump uaL,laR)
+BRIDGE f=167-167 t=5.57-5.57s anchors 166,168 (jump ulR)
+RELIEF frames=158
+f=0 L flex+175 yaw+0 d=0.40 R flex+160 yaw+0 d=0.13
+f=1 L flex+120 yaw+0 d=0.13 R flex+135 yaw+0 d=0.17
+f=2 L flex+120 yaw+0 d=0.13 R flex+135 yaw+0 d=0.17
+f=3 L flex+90 yaw+0 d=0.15 R flex+115 yaw+0 d=0.16
+f=4 L flex+90 yaw+0 d=0.15 R flex+110 yaw+0 d=0.13
+f=5 L flex+90 yaw+0 d=0.15 R flex+100 yaw+0 d=0.14
+f=6 L flex+85 yaw+0 d=0.15 R flex+90 yaw+0 d=0.17
+f=7 L flex+90 yaw+0 d=0.15 R flex+90 yaw+0 d=0.16
+f=8 L flex+90 yaw+0 d=0.16 R flex+85 yaw+0 d=0.14
+f=9 L flex+90 yaw+0 d=0.16 R flex+85 yaw+0 d=0.15
+f=10 L flex+75 yaw+0 d=0.43 R flex+80 yaw+0 d=0.13
+f=11 L flex+65 yaw+0 d=0.16 R flex+75 yaw+0 d=0.10
+f=12 L flex+50 yaw+0 d=0.22 R flex+70 yaw+0 d=0.11
+f=13 L flex+30 yaw+0 d=0.22 R flex+60 yaw+0 d=0.13
+f=14 L flex+10 yaw+0 d=0.22 R flex+45 yaw+0 d=0.12
+f=15 L flex+0 yaw+0 d=0.22 R flex+30 yaw+0 d=0.26
+f=16 L flex+0 yaw+0 d=0.06 R flex+20 yaw+0 d=0.25
+f=17 L flex+0 yaw+0 d=0.00 R flex+10 yaw+0 d=0.38
+f=18 L flex+0 yaw+0 d=0.00 R flex+20 yaw+0 d=0.34
+f=19 L flex+0 yaw+0 d=0.00 R flex+20 yaw+0 d=0.12
+f=20 L flex+0 yaw+0 d=0.00 R flex+25 yaw+0 d=0.12
+f=21 L flex+0 yaw+0 d=0.00 R flex+25 yaw+0 d=0.13
+f=22 L flex+0 yaw+0 d=0.00 R flex+25 yaw+0 d=0.12
+f=23 L flex+0 yaw+0 d=0.00 R flex+15 yaw+0 d=0.10
+f=25 L flex+0 yaw+0 d=0.00 R flex+5 yaw+0 d=0.14
+f=31 L flex+10 yaw+0 d=0.31 R flex+0 yaw+0 d=0.02
+f=32 L flex+25 yaw+0 d=0.15 R flex+0 yaw+0 d=0.00
+f=33 L flex+35 yaw+0 d=0.15 R flex+0 yaw+0 d=0.02
+f=34 L flex+45 yaw+0 d=0.14 R flex+0 yaw+0 d=0.01
+f=35 L flex+45 yaw+0 d=0.15 R flex+0 yaw+0 d=0.01
+f=36 L flex+45 yaw+0 d=0.15 R flex+0 yaw+0 d=0.11
+f=37 L flex+45 yaw+0 d=0.15 R flex+0 yaw+0 d=0.15
+f=38 L flex+45 yaw+0 d=0.15 R flex+0 yaw+0 d=0.16
+f=39 L flex+45 yaw+0 d=0.15 R flex+5 yaw+0 d=0.15
+f=40 L flex+30 yaw+0 d=0.45 R flex+15 yaw+0 d=0.28
+f=41 L flex+20 yaw+0 d=0.16 R flex+30 yaw+0 d=0.12
+f=42 L flex+10 yaw+0 d=0.15 R flex+45 yaw+0 d=0.13
+f=43 L flex+0 yaw+0 d=0.10 R flex+50 yaw+0 d=0.14
+f=44 L flex+0 yaw+0 d=0.04 R flex+50 yaw+0 d=0.11
+f=45 L flex+0 yaw+0 d=0.01 R flex+45 yaw+0 d=0.10
+f=46 L flex+0 yaw+0 d=0.09 R flex+40 yaw+0 d=0.10
+f=47 L flex+0 yaw+0 d=0.11 R flex+40 yaw+0 d=0.14
+f=48 L flex+0 yaw+0 d=0.08 R flex+35 yaw+0 d=0.32
+f=49 L flex+0 yaw+0 d=0.05 R flex+35 yaw+0 d=0.15
+f=50 L flex+0 yaw+0 d=0.00 R flex+35 yaw+0 d=0.13
+f=51 L flex+0 yaw+0 d=0.00 R flex+35 yaw+0 d=0.16
+f=52 L flex+0 yaw+0 d=0.00 R flex+35 yaw+0 d=0.32
+f=53 L flex+0 yaw+0 d=0.00 R flex+30 yaw+0 d=0.26
+f=54 L flex+0 yaw+0 d=0.38 R flex+55 yaw+0 d=0.16
+f=55 L flex+5 yaw+0 d=0.26 R flex+15 yaw+0 d=0.45
+f=56 L flex+15 yaw+0 d=0.14 R flex+5 yaw+0 d=0.43
+f=57 L flex+10 yaw+0 d=0.10 R flex+5 yaw+0 d=0.14
+f=58 L flex+0 yaw+0 d=0.11 R flex+35 yaw+0 d=0.43
+f=59 L flex+0 yaw+0 d=0.14 R flex+20 yaw+0 d=0.28
+f=60 L flex+0 yaw+0 d=0.14 R flex+15 yaw+0 d=0.28
+f=61 L flex+0 yaw+0 d=0.09 R flex+10 yaw+0 d=0.29
+f=62 L flex+0 yaw+0 d=0.00 R flex+5 yaw+0 d=0.31
+f=63 L flex+0 yaw+0 d=0.01 R flex+10 yaw+0 d=0.15
+f=64 L flex+0 yaw+0 d=0.03 R flex+10 yaw+0 d=0.33
+f=65 L flex+0 yaw+0 d=0.14 R flex+10 yaw+0 d=0.15
+f=66 L flex+0 yaw+0 d=0.16 R flex+10 yaw+0 d=0.14
+f=67 L flex+5 yaw+0 d=0.14 R flex+10 yaw+0 d=0.12
+f=68 L flex+10 yaw+0 d=0.32 R flex+10 yaw+0 d=0.13
+f=69 L flex+25 yaw+0 d=0.14 R flex+20 yaw+0 d=0.10
+f=70 L flex+30 yaw+0 d=0.14 R flex+30 yaw+0 d=0.29
+f=71 L flex+15 yaw+0 d=0.12 R flex+45 yaw+0 d=0.15
+f=72 L flex+25 yaw+0 d=0.31 R flex+45 yaw+0 d=0.20
+f=73 L flex+30 yaw+0 d=0.13 R flex+45 yaw+0 d=0.32
+f=74 L flex+45 yaw+0 d=0.15 R flex+45 yaw+0 d=0.14
+f=75 L flex+35 yaw+0 d=0.14 R flex+40 yaw+0 d=0.33
+f=76 L flex+30 yaw+0 d=0.14 R flex+35 yaw+0 d=0.20
+f=77 L flex+30 yaw+0 d=0.27 R flex+25 yaw+0 d=0.39
+f=78 L flex+30 yaw+0 d=0.15 R flex+15 yaw+0 d=0.34
+f=79 L flex+25 yaw+0 d=0.17 R flex+10 yaw+0 d=0.15
+f=80 L flex+20 yaw+0 d=0.28 R flex+0 yaw+0 d=0.13
+f=81 L flex+25 yaw+0 d=0.13 R flex+0 yaw+0 d=0.14
+f=82 L flex+15 yaw+0 d=0.24 R flex+0 yaw+0 d=0.15
+f=83 L flex+20 yaw+0 d=0.24 R flex+0 yaw+0 d=0.15
+f=84 L flex+20 yaw+0 d=0.37 R flex+0 yaw+0 d=0.16
+f=85 L flex+20 yaw+0 d=0.16 R flex+0 yaw+0 d=0.17
+f=86 L flex+25 yaw+0 d=0.14 R flex+0 yaw+0 d=0.16
+f=87 L flex+25 yaw+0 d=0.16 R flex+0 yaw+0 d=0.15
+f=88 L flex+5 yaw+0 d=0.41 R flex+0 yaw+0 d=0.11
+f=89 L flex+20 yaw+0 d=0.14 R flex+0 yaw+0 d=0.11
+f=90 L flex+30 yaw+0 d=0.13 R flex+5 yaw+0 d=0.17
+f=91 L flex+30 yaw+0 d=0.28 R flex+5 yaw+0 d=0.11
+f=92 L flex+30 yaw+0 d=0.28 R flex+5 yaw+0 d=0.09
+f=93 L flex+30 yaw+0 d=0.28 R flex+5 yaw+0 d=0.19
+f=94 L flex+30 yaw+0 d=0.28 R flex+0 yaw+0 d=0.15
+f=95 L flex+30 yaw+0 d=0.13 R flex+0 yaw+0 d=0.16
+f=96 L flex+30 yaw+0 d=0.28 R flex+0 yaw+0 d=0.17
+f=97 L flex+30 yaw+0 d=0.28 R flex+0 yaw+0 d=0.13
+f=98 L flex+30 yaw+0 d=0.28 R flex+0 yaw+0 d=0.00
+f=99 L flex+30 yaw+0 d=0.33 R flex+0 yaw+0 d=0.14
+f=100 L flex+30 yaw+0 d=0.38 R flex+0 yaw+0 d=0.16
+f=101 L flex+30 yaw+0 d=0.43 R flex+0 yaw+0 d=0.14
+f=102 L flex+30 yaw+0 d=0.28 R flex+0 yaw+0 d=0.16
+f=103 L flex+30 yaw+0 d=0.28 R flex+0 yaw+0 d=0.16
+f=104 L flex+40 yaw+0 d=0.13 R flex+0 yaw+0 d=0.14
+f=105 L flex+40 yaw+0 d=0.13 R flex+0 yaw+0 d=0.14
+f=106 L flex+30 yaw+0 d=0.13 R flex+20 yaw+0 d=0.11
+f=107 L flex+40 yaw+0 d=0.14 R flex+25 yaw+0 d=0.13
+f=108 L flex+50 yaw+0 d=0.15 R flex+30 yaw+0 d=0.15
+f=109 L flex+30 yaw+0 d=0.28 R flex+40 yaw+0 d=0.11
+f=110 L flex+30 yaw+0 d=0.28 R flex+40 yaw+0 d=0.18
+f=111 L flex+15 yaw+0 d=0.16 R flex+90 yaw+0 d=0.14
+f=112 L flex+15 yaw+0 d=0.16 R flex+85 yaw+0 d=0.10
+f=113 L flex+20 yaw+0 d=0.14 R flex+85 yaw+0 d=0.15
+f=114 L flex+15 yaw+0 d=0.44 R flex+70 yaw+0 d=0.27
+f=115 L flex+15 yaw+0 d=0.13 R flex+60 yaw+0 d=0.14
+f=116 L flex+15 yaw+0 d=0.12 R flex+50 yaw+0 d=0.14
+f=117 L flex+15 yaw+0 d=0.16 R flex+35 yaw+0 d=0.42
+f=118 L flex+25 yaw+0 d=0.34 R flex+35 yaw+0 d=0.13
+f=119 L flex+40 yaw+0 d=0.12 R flex+35 yaw+0 d=0.14
+f=120 L flex+45 yaw+0 d=0.13 R flex+35 yaw+0 d=0.13
+f=121 L flex+45 yaw+0 d=0.16 R flex+35 yaw+0 d=0.14
+f=122 L flex+40 yaw+0 d=0.26 R flex+35 yaw+0 d=0.12
+f=123 L flex+40 yaw+0 d=0.14 R flex+35 yaw+0 d=0.12
+f=124 L flex+40 yaw+0 d=0.13 R flex+35 yaw+0 d=0.14
+f=125 L flex+40 yaw+0 d=0.12 R flex+35 yaw+0 d=0.15
+f=126 L flex+35 yaw+0 d=0.38 R flex+35 yaw+0 d=0.24
+f=127 L flex+35 yaw+0 d=0.29 R flex+35 yaw+0 d=0.42
+f=128 L flex+35 yaw+0 d=0.34 R flex+35 yaw+0 d=0.42
+f=129 L flex+40 yaw+0 d=0.14 R flex+35 yaw+0 d=0.14
+f=130 L flex+40 yaw+0 d=0.13 R flex+35 yaw+0 d=0.14
+f=131 L flex+40 yaw+0 d=0.37 R flex+35 yaw+0 d=0.10
+f=132 L flex+0 yaw+0 d=0.16 R flex+35 yaw+0 d=0.16
+f=133 L flex+0 yaw+0 d=0.14 R flex+35 yaw+0 d=0.15
+f=134 L flex+0 yaw+0 d=0.22 R flex+35 yaw+0 d=0.15
+f=135 L flex+5 yaw+0 d=0.14 R flex+35 yaw+0 d=0.12
+f=136 L flex+5 yaw+0 d=0.33 R flex+35 yaw+0 d=0.13
+f=137 L flex+10 yaw+0 d=0.13 R flex+35 yaw+0 d=0.12
+f=138 L flex+10 yaw+0 d=0.35 R flex+35 yaw+0 d=0.11
+f=139 L flex+15 yaw+0 d=0.12 R flex+35 yaw+0 d=0.11
+f=140 L flex+15 yaw+0 d=0.31 R flex+35 yaw+0 d=0.11
+f=141 L flex+20 yaw+0 d=0.13 R flex+35 yaw+0 d=0.11
+f=142 L flex+20 yaw+0 d=0.09 R flex+35 yaw+0 d=0.12
+f=143 L flex+20 yaw+0 d=0.29 R flex+35 yaw+0 d=0.11
+f=144 L flex+25 yaw+0 d=0.10 R flex+35 yaw+0 d=0.12
+f=145 L flex+25 yaw+0 d=0.13 R flex+30 yaw+0 d=0.44
+f=146 L flex+20 yaw+0 d=0.12 R flex+30 yaw+0 d=0.35
+f=147 L flex+15 yaw+0 d=0.44 R flex+30 yaw+0 d=0.20
+f=148 L flex+15 yaw+0 d=0.12 R flex+30 yaw+0 d=0.09
+f=149 L flex+10 yaw+0 d=0.09 R flex+30 yaw+0 d=0.10
+f=150 L flex+10 yaw+0 d=0.13 R flex+30 yaw+0 d=0.11
+f=151 L flex+0 yaw+0 d=0.27 R flex+30 yaw+0 d=0.13
+f=152 L flex+0 yaw+0 d=0.14 R flex+30 yaw+0 d=0.14
+f=153 L flex+0 yaw+0 d=0.16 R flex+25 yaw+0 d=0.44
+f=154 L flex+0 yaw+0 d=0.16 R flex+25 yaw+0 d=0.35
+f=155 L flex+0 yaw+0 d=0.06 R flex+25 yaw+0 d=0.26
+f=156 L flex+0 yaw+0 d=0.00 R flex+25 yaw+0 d=0.18
+f=157 L flex+0 yaw+0 d=0.00 R flex+25 yaw+0 d=0.13
+f=158 L flex+0 yaw+0 d=0.00 R flex+15 yaw+0 d=0.19
+f=159 L flex+0 yaw+0 d=0.00 R flex+5 yaw+0 d=0.30
+f=164 L flex+0 yaw+0 d=0.00 R flex+5 yaw+0 d=0.28
+f=165 L flex+0 yaw+0 d=0.08 R flex+15 yaw+0 d=0.13
+f=166 L flex+0 yaw+0 d=0.15 R flex+25 yaw+0 d=0.14
+f=167 L flex+0 yaw+0 d=0.17 R flex+5 yaw+0 d=0.28
+Thigh flexion was reduced only until the thigh and shin left the abdomen plates. The knee took the extra bend so the sole stayed down. Root motion is off. The rig is unchanged.
+REPAIR wall push and sole unbury
+f=16 push=0.0  low=-2.1 Mesh_Foot_L
+f=28 push=12.7 Mesh_Hand_L low=-0.2 Mesh_Foot_R
+f=29 push=17.8 Mesh_Hand_L low=-0.2 Mesh_Foot_R
+f=30 push=19.1 Mesh_Hand_L low=-0.2 Mesh_Foot_R
+f=31 push=16.9 Mesh_Hand_L low=-0.2 Mesh_Foot_R
+f=32 push=11.6 Mesh_Hand_L low=-0.2 Mesh_Foot_R
+f=33 push=3.7 Mesh_Hand_L low=0.4 Mesh_Foot_R
+f=50 push=0.5 Mesh_Foot_R low=0.7 Mesh_Foot_L
+f=51 push=0.0  low=-3.2 Mesh_Foot_R
+f=52 push=3.5 Mesh_Hand_L low=-0.3 Mesh_Foot_L
+f=53 push=18.6 Mesh_Foot_R low=-0.3 Mesh_Foot_L
+f=55 push=11.9 Mesh_Foot_R low=0.9 Mesh_Foot_L
+f=56 push=4.9 Mesh_Foot_L low=3.4 Mesh_Foot_L
+f=63 push=4.1 Mesh_Hand_R low=-0.2 Mesh_Foot_L
+f=64 push=6.3 Mesh_Hand_R low=-0.1 Mesh_Foot_L
+f=65 push=6.3 Mesh_Hand_R low=0.1 Mesh_Foot_L
+f=66 push=3.7 Mesh_Hand_R low=0.1 Mesh_Foot_L
+f=67 push=0.5 Mesh_Hand_R low=0.5 Mesh_Foot_L
+f=68 push=0.3 Mesh_Head low=1.2 Mesh_Foot_L
+f=80 push=0.7 Mesh_Hand_L low=7.3 Mesh_Foot_L
+f=86 push=1.3 Mesh_Hand_L low=6.8 Mesh_Foot_L
+f=87 push=1.4 Mesh_Hand_L low=11.8 Mesh_Foot_L
+f=88 push=1.1 Mesh_Hand_L low=1.1 Mesh_Foot_L
+f=89 push=0.9 Mesh_Hand_L low=5.9 Mesh_Foot_L
+f=91 push=0.9 Mesh_Hand_L low=0.6 Mesh_Foot_R
+f=96 push=1.0 Mesh_Hand_L low=-0.3 Mesh_Foot_R
+f=97 push=1.2 Mesh_Hand_L low=-0.2 Mesh_Foot_R
+f=98 push=5.5 Mesh_Hand_L low=-0.3 Mesh_Foot_R
+f=99 push=4.3 Mesh_Hand_L low=3.0 Mesh_Foot_R
+f=100 push=2.9 Mesh_Hand_L low=1.1 Mesh_Foot_R
+f=101 push=1.3 Mesh_Hand_L low=-0.2 Mesh_Foot_R
+f=102 push=2.0 Mesh_Hand_L low=0.3 Mesh_Foot_R
+f=103 push=1.7 Mesh_Hand_L low=-0.3 Mesh_Foot_R
+f=104 push=2.7 Mesh_Hand_L low=-0.0 Mesh_Foot_R
+f=106 push=1.9 Mesh_Hand_R low=1.9 Mesh_Foot_R
+f=109 push=1.3 Mesh_Hand_R low=3.9 Mesh_Foot_L
+f=110 push=1.0 Mesh_Hand_R low=5.4 Mesh_Foot_L
+f=125 push=0.2 Mesh_Foot_L low=18.2 Mesh_Hand_L
+f=129 push=0.7 Mesh_Foot_L low=27.4 Mesh_Hand_L
+f=130 push=0.4 Mesh_Foot_L low=25.3 Mesh_Hand_L
+f=131 push=0.2 Mesh_Foot_L low=23.4 Mesh_Hand_L
+f=135 push=2.1 Mesh_Foot_L low=0.4 Mesh_Hand_L
+f=136 push=2.1 Mesh_Foot_L low=0.4 Mesh_Hand_L
+f=137 push=3.0 Mesh_Foot_L low=0.4 Mesh_Hand_L
+f=138 push=2.6 Mesh_Foot_L low=0.4 Mesh_Hand_L
+f=139 push=2.4 Mesh_Foot_L low=0.4 Mesh_Hand_L
+f=140 push=1.7 Mesh_Foot_L low=0.4 Mesh_Hand_L
+f=142 push=0.5 Mesh_Foot_L low=0.4 Mesh_Hand_L
+f=145 push=3.3 Mesh_Foot_L low=0.4 Mesh_Hand_L
+f=146 push=5.7 Mesh_Foot_L low=0.4 Mesh_Hand_L
+f=147 push=5.7 Mesh_Foot_L low=-0.3 Mesh_LowerArm_L
+f=148 push=5.2 Mesh_Foot_L low=-0.3 Mesh_Foot_L
+f=149 push=2.8 Mesh_Foot_L low=-0.3 Mesh_Foot_L
+f=150 push=0.6 Mesh_Foot_L low=1.3 Mesh_Foot_R
+f=164 push=4.1 Mesh_Hand_L low=-0.3 Mesh_Foot_L
+f=165 push=3.3 Mesh_Hand_L low=-0.1 Mesh_Foot_L
+f=166 push=3.0 Mesh_Hand_L low=-0.0 Mesh_Foot_L
+f=167 push=3.4 Mesh_Hand_L low=-0.2 Mesh_Foot_L
+f=168 push=3.5 Mesh_Hand_L low=-0.1 Mesh_Foot_L
+FIX leftover self hits
+f=10 2.2->0.0 clear
+f=11 2.0->0.0 clear
+f=13 0.5->0.0 clear
+f=14 1.6->0.0 clear
+f=16 0.5->0.0 clear
+f=30 1.2->0.0 clear
+f=32 1.5->0.0 clear
+f=33 2.5->0.0 clear
+f=36 1.6->0.5 Mesh_Neck in Mesh_UpperArm_L
+f=37 1.0->0.0 clear
+f=38 0.5->0.5 Mesh_Neck in Mesh_UpperArm_L
+f=46 2.4->0.0 clear
+f=48 1.0->1.0 Mesh_UpperLeg_L in Mesh_UpperLeg_R
+f=49 3.2->0.6 Mesh_LowerLeg_L in Mesh_LowerLeg_R
+f=50 2.5->1.3 Mesh_UpperLeg_R in Mesh_Spine
+f=51 2.9->0.0 clear
+f=52 2.0->0.0 clear
+f=53 4.6->1.5 Mesh_LowerArm_R in Mesh_Chest
+f=54 1.5->0.0 clear
+f=55 2.9->1.5 Mesh_LowerArm_R in Mesh_Chest
+f=56 1.5->0.0 clear
+f=65 1.9->0.0 clear
+f=69 0.6->0.0 clear
+f=99 1.4->0.0 clear
+f=146 0.9->0.0 clear
+f=147 1.7->0.0 clear
+f=148 4.4->0.0 clear
+f=149 3.1->0.0 clear
+FIX2
+f=36 UpperArm_L[0] +40 -> 0.00
+f=38 UpperArm_L[0] +40 -> 0.00
+f=48 UpperLeg_R[0] +40 -> 0.00
+f=49 UpperLeg_L[0] +20 -> 0.52
+f=50 UpperLeg_R[0] +40 -> 0.96
+f=50 UpperLeg_L[0] +20 -> 0.85
+f=50 UpperArm_R[0] +20 -> 0.58
+f=50 UpperLeg_L[2] -40 -> 0.00
+f=55 UpperArm_R[2] +20 -> 1.42
+f=55 UpperLeg_L[2] -40 -> 0.00
+STRIP 12_tictac_slanted_wall 0.50s sole L 0.5cm | 1.13s sole R 0.5cm | 2.54s sole L 15.4cm | 3.54s sole R 2.5cm | 3.67s sole L 6.0cm R 6.4cm | 5.07s sole L 18.1cm
+PLANT f=76 hip=68.2 sole {'L': 0.500000175088644} capz=-0.2081
+PLANT f=106 hip=75.8 sole {'R': 0.49999989569187164} capz=-0.1319
+PLANT f=110 hip=50.4 sole {'L': 0.4999999422580004, 'R': 0.9281551465392113} capz=-0.3859
+STRIP 12_tictac_slanted_wall 0.50s sole L 0.5cm | 1.13s sole R 0.5cm | 2.54s sole L 0.5cm | 3.54s sole R 0.5cm | 3.67s sole L 0.5cm R 0.9cm | 5.07s sole L 18.1cm
+
+RESULT
+DONE 03_wall_drop_softland frames=51 absMax=6.36 worldMax=0.30 rigJoint=661 poseFails=140
+DONE 04_window_drop_softland frames=52 absMax=6.70 worldMax=0.34 rigJoint=655 poseFails=93
+DONE 10_wallrun_slanted frames=127 absMax=6.90 worldMax=0.40 rigJoint=1554 poseFails=34
+DONE 12_tictac_slanted_wall frames=169 absMax=7.20 worldMax=0.40 rigJoint=1990 poseFails=0
+DONE 15_cat_leap_wall frames=240 absMax=6.97 worldMax=0.40 rigJoint=2972 poseFails=587
+DONE 17_slide_slope_crouch frames=16 absMax=4.25 worldMax=0.00 rigJoint=176 poseFails=0
+DONE 18_vertical_wallrun_back frames=73 absMax=4.92 worldMax=0.08 rigJoint=822 poseFails=0
+DONE 20_wallpop_180 frames=57 absMax=4.99 worldMax=0.02 rigJoint=643 poseFails=0
+no-clip clips=8 frames=785 absMax=7.20 worldMax=0.40 rigJoint=9473 poseFails=854 pose=854
+
+Tic-tac is pose=0. The other grade-A clips are unchanged and still have pose fails, so the grand total is 854. Pass 6 clips 17, 18 and 20 were already 0.
+
+Story soles after the thigh opened: 0.50 s L 0.5 cm, 1.13 s R 0.5 cm, 2.54 s L 0.5 cm, 3.54 s R 0.5 cm, 3.67 s L 0.5 cm R 0.9 cm. The 2.54 s hip is 68.2 cm against the scaled-stick target of 84.8 cm. That thigh has to sit about 30 degrees more open to stay out of the abdomen, and the preview capsule drops with the sole. 3.54 s hip is 75.8 cm (target 80.4). 3.67 s hip is 50.4 cm (target 54.0).
