@@ -17,14 +17,14 @@ namespace Tag.Settings
         {
             var binds = CouchPlay.BindsFor(CouchPlay.DeviceKeyboard);
             int i = (int)action;
-            return HeldToken(binds.Keyboard[i], false) || HeldToken(binds.Gamepad[i], true);
+            return KeyboardHit(binds, action, i, false) || HeldToken(binds.Gamepad[i], true);
         }
 
         public static bool Pressed(PlayAction action)
         {
             var binds = CouchPlay.BindsFor(CouchPlay.DeviceKeyboard);
             int i = (int)action;
-            return PressedToken(binds.Keyboard[i], false) || PressedToken(binds.Gamepad[i], true);
+            return KeyboardHit(binds, action, i, true) || PressedToken(binds.Gamepad[i], true);
         }
 
         public static Vector2 MoveVector()
@@ -345,7 +345,7 @@ namespace Tag.Settings
             if (binds == null) return false;
             int i = (int)action;
             if (i < 0 || i >= binds.Keyboard.Length) return false;
-            if (device <= 0) return HeldToken(binds.Keyboard[i], false);
+            if (device <= 0) return KeyboardHit(binds, action, i, false);
             return PadHeldAt(device - 1, binds.Gamepad[i]);
         }
 
@@ -354,8 +354,26 @@ namespace Tag.Settings
             if (binds == null) return false;
             int i = (int)action;
             if (i < 0 || i >= binds.Keyboard.Length) return false;
-            if (device <= 0) return PressedToken(binds.Keyboard[i], false);
+            if (device <= 0) return KeyboardHit(binds, action, i, true);
             return PadPressedAt(device - 1, binds.Gamepad[i]);
+        }
+
+        /// <summary>
+        /// Primary key, then Jump's second key when one is stored.
+        /// The alt string is the one already on the table. This does not build a new one.
+        /// </summary>
+        static bool KeyboardHit(ActionBinds binds, PlayAction action, int i, bool pressed)
+        {
+            string token = binds.Keyboard[i];
+            if (pressed)
+            {
+                if (PressedToken(token, false)) return true;
+            }
+            else if (HeldToken(token, false)) return true;
+            if (action != PlayAction.Jump) return false;
+            string alt = binds.JumpAlt;
+            if (string.IsNullOrEmpty(alt)) return false;
+            return pressed ? PressedToken(alt, false) : HeldToken(alt, false);
         }
 
         public static Vector2 MoveDevice(ActionBinds binds, int device)

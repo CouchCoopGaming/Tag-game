@@ -868,6 +868,19 @@ SHOW = {
     "rightShoulder": "RB",
     "leftTrigger": "LT",
     "rightTrigger": "RT",
+    "escape": "Esc",
+    "m": "M",
+    "f": "F",
+    "alpha1": "1",
+    "alpha2": "2",
+    "alpha3": "3",
+    "start": "Start",
+    "select": "Select",
+    "dpadLeft": "Left",
+    "dpadRight": "Right",
+    "dpadUp": "Up",
+    "dpadDown": "Down",
+    "mouseRight": "RMB",
 }
 
 
@@ -886,7 +899,7 @@ def mark_width(token):
         return 96
     if token in ("leftAlt", "mouseLeft", "mouseRight"):
         return 84
-    if token in ("rightShoulder", "leftShoulder", "leftTrigger", "rightTrigger"):
+    if token in ("rightShoulder", "leftShoulder", "leftTrigger", "rightTrigger", "select", "dpadLeft", "dpadRight"):
         return 70
     if token in ("wasd", "arrows", "space", "leftStick", "rightStick", "leftStickHold"):
         return 72
@@ -914,6 +927,8 @@ def draw_token(d, token, x, y):
         draw_glyph(d, "space", ix, iy)
     elif token == "escape":
         draw_glyph(d, "esc", ix, iy)
+    elif token == "start":
+        draw_glyph(d, "start", ix, iy)
     elif token in ("leftStick", "rightStick", "leftStickHold"):
         draw_glyph(d, "stick", ix, iy - 4)
     elif token == "buttonSouth":

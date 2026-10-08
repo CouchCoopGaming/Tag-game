@@ -325,6 +325,10 @@ A settings blob without `qv` still means the old single picture level. Stored qu
 
 Color-blind seat colors is the second Accessibility row, so it sits in the first window at 1080p. The older row is Player color set. That one still cycles Default, Deuteranopia, Protanopia, Tritanopia, and High contrast. The two rows are not the same control. Seat colors stay Off unless the player changes them. Drop-in says where to find them. Text size 1.25 and 1.50 keep the screen title in the top band, and the character cards name Red / Tan, Blue / Mint, Orange / Lavender, and Lavender / Mint. The hat line and the mode blurbs wrap instead of being cut off. Controls can show a conflict, and Jump stays on Space until reset. Stills are composites in `Docs/UiStills/screens2/pass16/`.
 
+## Screens 2, pass 17
+
+Controls lists every action in the input map. Move, Look, Jump, Cling hold, Slide, Air dash, Punch / tag, Sprint, Pause, Minimap, Arena 1, Arena 2, and Arena 3 each have a row. Grapple stays a note: RMB, a click pulls, a second click within 0.28 s releases, left hand, no pad bind. Keyboard and mouse glyphs are one column. Pad glyphs are the other. P1 through P4 choose which pad that column edits. Confirm waits 5 seconds for a button. Esc or B cancels. Space stays Jump, and a second key can sit beside it. The line says Space always jumps, then names the key that was added. When two rows want the same button, both light up, and the choice is Swap or Cancel. Reset and Back stay on the bottom row, outside the scroll. Reset asks once, then clears that pad and the shared keyboard. Stills are composites in `Docs/UiStills/screens2/pass17/`.
+
 ## Later passes
 
 - Left from a rule row returns to the modes even when that rule can still decrease. Right from the right-hand mode, and Left at the end of a rule, already move between the columns.

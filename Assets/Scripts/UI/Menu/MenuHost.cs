@@ -128,7 +128,16 @@ namespace Tag.Ui.Menu
         bool _capturing;
         int _captureAction = -1;
         int _captureFrame = -1;
-        string _conflict = "";
+        float _captureUntil;
+        string _notice = "";
+        int _bindSeat;
+        int _barChip;
+        bool _resetArmed;
+        int _swapAction = -1;
+        int _swapOther = -1;
+        bool _swapPad;
+        string _swapToken = "";
+        int _swapPick;
         int _joinSig = int.MinValue;
         int _castSig = int.MinValue;
         int _tip = 3;
@@ -908,7 +917,9 @@ namespace Tag.Ui.Menu
         {
             _pauseChild = fromPause;
             _capturing = false;
-            _conflict = "";
+            _notice = "";
+            _resetArmed = false;
+            ClearSwap();
             Open(MenuScreenId.Controls);
         }
 
@@ -1631,18 +1642,20 @@ namespace Tag.Ui.Menu
             if (_capturing)
             {
                 ReadNav(out _, out _, out _, out bool cancel, out _);
-                if (cancel || UnityEngine.Input.GetKeyDown(KeyCode.Escape))
+                if (cancel || UnityEngine.Input.GetKeyDown(KeyCode.Escape) || Time.unscaledTime >= _captureUntil)
                 {
                     if (_pauseChild) EatPause = true;
-                    _capturing = false;
-                    _conflict = "";
-                    MenuAudio.Back();
-                    PaintControls();
+                    StopCapture();
                     return;
                 }
                 if (Time.frameCount <= _captureFrame) return;
                 string token = BindSampler.AnyPressedToken();
                 if (string.IsNullOrEmpty(token) || token == "escape") return;
+                if (token == "buttonEast")
+                {
+                    StopCapture();
+                    return;
+                }
                 TakeBind(token);
                 return;
             }
@@ -1657,6 +1670,11 @@ namespace Tag.Ui.Menu
             if (back)
             {
                 if (_pauseChild) EatPause = true;
+                if (_swapOther >= 0)
+                {
+                    CancelSwap();
+                    return;
+                }
                 MenuAudio.Back();
                 GoBack();
                 return;
@@ -1665,7 +1683,44 @@ namespace Tag.Ui.Menu
             if (confirm) ArmActivate();
             if (dx != 0)
             {
-                ControlBands(out _, out _, out int stickAt, out int confirmAt, out int resetAt);
+                if (_swapOther >= 0)
+                {
+                    int pick = dx > 0 ? 1 : 0;
+                    if (pick != _swapPick)
+                    {
+                        _swapPick = pick;
+                        MenuAudio.Move();
+                        PaintControls();
+                    }
+                    return;
+                }
+                ControlBands(out _, out _, out int stickAt, out int confirmAt, out int barAt);
+                if (_focus == 0)
+                {
+                    int next = _bindSeat + (dx > 0 ? 1 : -1);
+                    if (next < 0) next = 0;
+                    if (next > 3) next = 3;
+                    if (next != _bindSeat)
+                    {
+                        _bindSeat = next;
+                        _resetArmed = false;
+                        MenuAudio.Move();
+                        PaintControls();
+                    }
+                    return;
+                }
+                if (_focus == barAt)
+                {
+                    int chip = dx > 0 ? 1 : 0;
+                    if (chip != _barChip)
+                    {
+                        _barChip = chip;
+                        _resetArmed = false;
+                        MenuAudio.Move();
+                        PaintControls();
+                    }
+                    return;
+                }
                 int stick = _focus - stickAt;
                 if (stick >= 0 && stick < MenuStick.Rows && MenuStick.Nudge(stick, dx))
                 {
@@ -1673,7 +1728,7 @@ namespace Tag.Ui.Menu
                     UnlockLooks();
                     PaintControls();
                 }
-                else if (_focus >= confirmAt && _focus < resetAt)
+                else if (_focus >= confirmAt && _focus < barAt)
                 {
                     GameSettings s = GameSettings.Current ?? GameSettings.Defaults();
                     GameSettings.Current = s;
@@ -1683,6 +1738,14 @@ namespace Tag.Ui.Menu
                     PaintControls();
                 }
             }
+        }
+
+        void StopCapture()
+        {
+            _capturing = false;
+            _captureAction = -1;
+            MenuAudio.Back();
+            PaintControls();
         }
 
         void TickRecords()
@@ -2691,10 +2754,9 @@ namespace Tag.Ui.Menu
         {
             _count = ControlCount();
             _cols = 1;
-            _window = 0;
+            _window = 1;
             if (_header != null) _header.text = "  Controls";
-            // One gamepad token per action. Families share it, so there is no footnote row.
-            if (_banner != null) _banner.text = "Keyboard and pad glyphs. Confirm changes one. Space still jumps.";
+            if (_banner != null) _banner.text = "Keyboard and pad glyphs. Space always jumps.";
             if (_dim != null) _dim.color = MenuTheme.Veil;
             PaintControls();
         }
@@ -2703,35 +2765,67 @@ namespace Tag.Ui.Menu
         {
             ClearKeepHeader();
             FitHeader();
+            ControlBands(out int action0, out int noteAt, out int stickAt, out int confirmAt, out int barAt);
             if (_banner != null)
             {
-                _banner.text = string.IsNullOrEmpty(_conflict)
-                    ? "Keyboard and pad glyphs. Confirm changes one. Space still jumps."
-                    : _conflict;
+                if (_swapOther >= 0)
+                    _banner.text = ActionBinds.Name((PlayAction)_swapAction) + " and " + ActionBinds.Name((PlayAction)_swapOther) + " use that button.";
+                else if (!string.IsNullOrEmpty(_notice))
+                    _banner.text = _notice;
+                else if (_capturing)
+                    _banner.text = "Esc or B cancels. This waits 5 seconds.";
+                else
+                    _banner.text = "Keyboard and pad glyphs. Space always jumps.";
             }
-            ActionBinds binds = ActionBinds.Current ?? ActionBinds.Defaults();
+            ActionBinds keys = KeyboardBinds();
+            ActionBinds pad = PadBinds();
             int win = ControlWindow();
-            if (_focus < _window) _window = _focus;
-            if (_focus >= _window + win) _window = _focus - (win - 1);
-            int max = _count - win;
-            if (max < 0) max = 0;
-            if (_window > max) _window = max;
-            if (_window < 0) _window = 0;
+            int last = barAt - 1;
+            if (_focus > 0 && _focus < barAt)
+            {
+                if (_focus < _window) _window = _focus;
+                if (_focus >= _window + win) _window = _focus - (win - 1);
+            }
+            if (_swapOther >= 0)
+            {
+                int lo = action0 + (_swapAction < _swapOther ? _swapAction : _swapOther);
+                int hi = action0 + (_swapAction > _swapOther ? _swapAction : _swapOther);
+                if (hi - lo < win)
+                {
+                    if (lo < _window) _window = lo;
+                    if (hi >= _window + win) _window = hi - (win - 1);
+                }
+            }
+            int maxStart = last - win + 1;
+            if (maxStart < 1) maxStart = 1;
+            if (_window > maxStart) _window = maxStart;
+            if (_window < 1) _window = 1;
+            UiFit.RowBox(UiFit.Current(), 1680f, out float rowX, out float rowW);
+            UiFit.OptionSpan(out float rowH, out float step);
+            const float seatBlock = 80f;
+            PaintSeatStrip(rowX, 8f, rowW);
+            float swapBlock = _swapOther >= 0 ? 84f : 0f;
+            float listTop = 8f + seatBlock;
+            if (swapBlock > 0f)
+            {
+                PaintSwapChips(rowX, listTop, rowW);
+                listTop += swapBlock;
+            }
             for (int v = 0; v < win; v++)
             {
                 int index = _window + v;
-                if (index >= _count) break;
+                if (index >= barAt) break;
                 string title;
                 string detail;
-                ControlBands(out int actions, out int noteAt, out int stickAt, out int confirmAt, out int resetAt);
                 int stick = index - stickAt;
                 int note = index - noteAt;
-                if (index < actions)
+                int action = index - action0;
+                if (action >= 0 && action < (int)PlayAction.Count)
                 {
-                    var action = (PlayAction)index;
-                    title = ActionBinds.Name(action);
-                    detail = ActionDetail(action, binds);
-                    if (_capturing && index == _captureAction) detail = "Press a key or a button";
+                    var act = (PlayAction)action;
+                    title = ActionBinds.Name(act);
+                    detail = ActionDetail(act, keys);
+                    if (_capturing && action == _captureAction) detail = "Press any button to bind";
                 }
                 else if (note >= 0 && note < ContextNotes)
                 {
@@ -2743,63 +2837,208 @@ namespace Tag.Ui.Menu
                     title = MenuStick.Label(stick);
                     detail = MenuStick.Detail(stick);
                 }
-                else if (index >= confirmAt && index < resetAt)
+                else if (index >= confirmAt && index < barAt)
                 {
                     int seat = index - confirmAt;
                     title = ConfirmTitle(seat);
                     GameSettings settings = GameSettings.Current ?? GameSettings.Defaults();
                     detail = FaceMap.Word(settings.ConfirmFace[seat]);
                 }
-                else if (index == resetAt)
-                {
-                    title = "Reset bindings";
-                    detail = "Back to the defaults. Jump is Space.";
-                }
                 else
                 {
                     title = "Back";
-                    detail = _conflict ?? "";
+                    detail = "";
                 }
-                UiFit.RowBox(UiFit.Current(), 1680f, out float rowX, out float rowW);
-                UiFit.OptionSpan(out float rowH, out float step);
-                MenuTile row = AddTile(rowX, 8f + v * step, rowW, rowH, index, title, detail, true);
+                MenuTile row = AddTile(rowX, listTop + v * step, rowW, rowH, index, title, detail, true);
                 if (UiFit.IdentityText() && row != null && row.Detail != null && detail != null && detail.Length > 48)
                 {
                     row.Detail.resizeTextForBestFit = true;
                     row.Detail.resizeTextMinSize = 18;
                     row.Detail.resizeTextMaxSize = UiFit.FloorFont;
                 }
-                if (index < actions && row != null)
-                    MenuBindRow.Stamp(row, index);
+                if (action >= 0 && action < (int)PlayAction.Count && row != null)
+                    MenuBindRow.Stamp(row, action, keys, pad.Gamepad[action]);
+                else if (note == 0 && row != null)
+                    MenuBindRow.StampToken(row, "mouseRight", "");
             }
-            PaintControlScroll(win);
+            float barY = UiFit.BodyH(UiFit.Current()) - MenuDepth.BarBlock;
+            PaintControlBar(rowX, barY, rowW, barAt);
+            PaintControlScroll(win, listTop);
             RefreshFocus();
+            if (_swapOther >= 0)
+            {
+                MenuTile a = TileAt(action0 + _swapAction);
+                MenuTile b = TileAt(action0 + _swapOther);
+                if (a != null) a.SetHot(true);
+                if (b != null) b.SetHot(true);
+            }
         }
 
-        void PaintControlScroll(int win)
+        void PaintControlScroll(int win, float top)
         {
             if (win < 1) win = 1;
+            ControlBands(out _, out _, out _, out _, out int barAt);
+            int scrollCount = barAt - 1;
             UiFit.RowBox(UiFit.Current(), 1680f, out float rowX, out float rowW);
             UiFit.OptionSpan(out _, out float step);
             float trackH = win * step - 16f;
             if (trackH < 120f) trackH = 120f;
             float trackX = rowX + rowW + 8f;
-            var track = MenuWidgets.Place(_body, "ScrollTrack", trackX, 12f, 14f, trackH);
+            var track = MenuWidgets.Place(_body, "ScrollTrack", trackX, top, 14f, trackH);
             var trackImage = track.gameObject.AddComponent<Image>();
             MenuArt.Plate(trackImage, new Color(0f, 0f, 0f, 0.55f), true);
             trackImage.raycastTarget = false;
-            int max = _count - win;
+            int max = scrollCount - win;
             if (max < 0) max = 0;
-            float span = _count <= win ? 1f : win / (float)_count;
+            float span = scrollCount <= win ? 1f : win / (float)scrollCount;
             float thumbH = trackH * span;
             if (thumbH < 56f) thumbH = 56f;
             if (thumbH > trackH) thumbH = trackH;
             float travel = trackH - thumbH;
-            float t = max <= 0 ? 0f : _window / (float)max;
+            int start = _window - 1;
+            if (start < 0) start = 0;
+            float t = max <= 0 ? 0f : start / (float)max;
             var thumb = MenuWidgets.Place(track, "ScrollThumb", 2f, travel * t, 10f, thumbH);
             var thumbImage = thumb.gameObject.AddComponent<Image>();
             MenuArt.Plate(thumbImage, MenuTheme.Gold, true);
             thumbImage.raycastTarget = false;
+        }
+
+        void PaintSeatStrip(float x, float y, float w)
+        {
+            float gap = 12f;
+            float chip = 132f;
+            for (int s = 0; s < 4; s++)
+            {
+                bool selected = s == _bindSeat;
+                Color seat = MenuTheme.Seat(s);
+                RectTransform rt = MenuWidgets.Place(_body, "Seat" + s.ToString(), x + s * (chip + gap), y, chip, 68f);
+                Image plate = rt.gameObject.AddComponent<Image>();
+                MenuArt.Plate(plate, seat, true);
+                plate.raycastTarget = true;
+                var stroke = MenuWidgets.Place(rt, "Stroke", 0f, 0f, chip, 68f);
+                Image ring = stroke.gameObject.AddComponent<Image>();
+                ring.sprite = plate.sprite;
+                ring.type = plate.type;
+                ring.color = selected ? MenuTheme.Gold : MenuTheme.Stroke;
+                ring.raycastTarget = false;
+                var inner = MenuWidgets.Place(rt, "Fill", 6f, 6f, chip - 12f, 56f);
+                Image fill = inner.gameObject.AddComponent<Image>();
+                MenuArt.Plate(fill, seat, true);
+                fill.raycastTarget = false;
+                string word = "P" + (s + 1).ToString();
+                var tag = MenuWidgets.Place(rt, "Tag", 16f, 10f, 100f, 48f);
+                Image tagPlate = tag.gameObject.AddComponent<Image>();
+                MenuArt.Plate(tagPlate, MenuTheme.Ink, true);
+                tagPlate.raycastTarget = false;
+                Text label = MenuWidgets.Words(tag, word, UiFit.FloorFont, TextAnchor.MiddleCenter, MenuTheme.Cream, Vector2.zero, Vector2.one);
+                LockFit(label, UiFit.FloorFont);
+                int seatIndex = s;
+                Button button = rt.gameObject.AddComponent<Button>();
+                button.targetGraphic = plate;
+                button.onClick.AddListener(() =>
+                {
+                    _focus = 0;
+                    if (_bindSeat != seatIndex)
+                    {
+                        _bindSeat = seatIndex;
+                        _resetArmed = false;
+                        if (_swapPad) ClearSwap();
+                    }
+                    MenuAudio.Move();
+                    PaintControls();
+                });
+            }
+            MenuBindRow.Columns(w, out float keyRight, out float padRight);
+            float keyHeadW = 360f;
+            RectTransform keyHead = MenuWidgets.Place(_body, "KeyHead", x + keyRight - keyHeadW, y, keyHeadW, 68f);
+            Image keyPlate = keyHead.gameObject.AddComponent<Image>();
+            MenuArt.Plate(keyPlate, MenuTheme.Navy, true);
+            keyPlate.raycastTarget = false;
+            Text keys = MenuWidgets.Words(keyHead, "Keyboard / Mouse", UiFit.FloorFont, TextAnchor.MiddleRight, MenuTheme.Cream, Vector2.zero, Vector2.one);
+            LockFit(keys, UiFit.FloorFont);
+            RectTransform padHead = MenuWidgets.Place(_body, "PadHead", x + padRight - MenuBindRow.PadCol, y, MenuBindRow.PadCol, 68f);
+            Image padPlate = padHead.gameObject.AddComponent<Image>();
+            MenuArt.Plate(padPlate, MenuTheme.Navy, true);
+            padPlate.raycastTarget = false;
+            Text pads = MenuWidgets.Words(padHead, "Pad", UiFit.FloorFont, TextAnchor.MiddleRight, MenuTheme.Cream, Vector2.zero, Vector2.one);
+            LockFit(pads, UiFit.FloorFont);
+        }
+
+        void PaintSwapChips(float x, float y, float w)
+        {
+            float gap = 16f;
+            float chipW = (w - gap) * 0.5f;
+            SwapChip(x, y, chipW, 72f, 0, "Swap");
+            SwapChip(x + chipW + gap, y, chipW, 72f, 1, "Cancel");
+        }
+
+        void SwapChip(float x, float y, float w, float h, int pick, string word)
+        {
+            bool hot = _swapPick == pick;
+            RectTransform rt = MenuWidgets.Place(_body, pick == 0 ? "SwapChip" : "CancelChip", x, y, w, h);
+            Image plate = rt.gameObject.AddComponent<Image>();
+            MenuArt.Plate(plate, hot ? MenuTheme.PanelHot : MenuTheme.Navy, true);
+            plate.raycastTarget = true;
+            Text label = MenuWidgets.Words(rt, word, UiFit.FloorFont, TextAnchor.MiddleCenter, hot ? MenuTheme.Ink : MenuTheme.Cream, Vector2.zero, Vector2.one);
+            LockFit(label, UiFit.FloorFont);
+            int chosen = pick;
+            Button button = rt.gameObject.AddComponent<Button>();
+            button.targetGraphic = plate;
+            button.onClick.AddListener(() =>
+            {
+                _swapPick = chosen;
+                if (chosen == 0) CommitSwap();
+                else CancelSwap();
+            });
+        }
+
+        void PaintControlBar(float x, float y, float w, int barAt)
+        {
+            ActionBinds binds = ActionBinds.Defaults();
+            string confirmKey = binds.Keyboard[(int)PlayAction.Jump];
+            string confirmPad = binds.Gamepad[(int)PlayAction.Jump];
+            string backKey = binds.Keyboard[(int)PlayAction.Pause];
+            string backPad = binds.Gamepad[(int)PlayAction.Slide];
+            float gap = 16f;
+            float chipW = (w - gap) * 0.5f;
+            bool onBar = _focus == barAt;
+            string resetWord = _resetArmed ? "Reset bindings?" : "Reset";
+            float chipH = UiFit.IdentityText() ? 72f : UiFit.LineH(72f);
+            ControlChip(x, y, chipW, chipH, 0, resetWord, confirmKey, confirmPad, onBar && _barChip == 0);
+            ControlChip(x + chipW + gap, y, chipW, chipH, 1, "Back", backKey, backPad, onBar && _barChip == 1);
+        }
+
+        void ControlChip(float x, float y, float w, float h, int chip, string word, string keyToken, string padToken, bool hot)
+        {
+            RectTransform rt = MenuWidgets.Place(_body, chip == 0 ? "ResetChip" : "BackChip", x, y, w, h);
+            Image plate = rt.gameObject.AddComponent<Image>();
+            MenuArt.Plate(plate, hot ? MenuTheme.PanelHot : MenuTheme.Navy, true);
+            plate.raycastTarget = true;
+            RectTransform keyRt = MenuWidgets.Place(rt, "Key", 12f, 16f, 56f, 40f);
+            Image key = keyRt.gameObject.AddComponent<Image>();
+            key.sprite = MenuIcons.Glyph(keyToken);
+            key.preserveAspect = true;
+            key.raycastTarget = false;
+            RectTransform padRt = MenuWidgets.Place(rt, "Pad", 76f, 16f, 44f, 40f);
+            Image pad = padRt.gameObject.AddComponent<Image>();
+            pad.sprite = MenuIcons.Glyph(padToken);
+            pad.preserveAspect = true;
+            pad.raycastTarget = false;
+            Text label = MenuWidgets.Words(rt, word, UiFit.FloorFont, TextAnchor.MiddleLeft, hot ? MenuTheme.Ink : MenuTheme.Cream, Vector2.zero, Vector2.one);
+            label.rectTransform.offsetMin = new Vector2(132f, 4f);
+            label.rectTransform.offsetMax = new Vector2(-12f, -4f);
+            LockFit(label, UiFit.FloorFont);
+            int which = chip;
+            Button button = rt.gameObject.AddComponent<Button>();
+            button.targetGraphic = plate;
+            button.onClick.AddListener(() =>
+            {
+                ControlBands(out _, out _, out _, out _, out int barAt);
+                _focus = barAt;
+                _barChip = which;
+                ActivateControls();
+            });
         }
 
         int OptionWindow()
@@ -2871,9 +3110,12 @@ namespace Tag.Ui.Menu
 
         int ControlWindow()
         {
+            float reserve = 8f + 80f + MenuDepth.BarBlock;
+            if (_swapOther >= 0) reserve += 84f;
             UiFit.OptionSpan(out _, out float step);
-            int n = UiFit.Window(UiFit.Current(), step, 8f);
+            int n = UiFit.Window(UiFit.Current(), step, reserve);
             if (n > OptWindow) n = OptWindow;
+            if (n < 3) n = 3;
             return n;
         }
 
@@ -3212,7 +3454,15 @@ namespace Tag.Ui.Menu
 
         void ActivateControls()
         {
-            ControlBands(out _, out int noteAt, out int stickAt, out int confirmAt, out int resetAt);
+            if (_swapOther >= 0)
+            {
+                if (_swapPick == 0) CommitSwap();
+                else CancelSwap();
+                return;
+            }
+            ControlBands(out int action0, out int noteAt, out int stickAt, out int confirmAt, out int barAt);
+            if (_focus == 0)
+                return;
             int note = _focus - noteAt;
             if (note >= 0 && note < ContextNotes)
                 return;
@@ -3229,7 +3479,7 @@ namespace Tag.Ui.Menu
                 PaintControls();
                 return;
             }
-            if (_focus >= confirmAt && _focus < resetAt)
+            if (_focus >= confirmAt && _focus < barAt)
             {
                 GameSettings s = GameSettings.Current ?? GameSettings.Defaults();
                 GameSettings.Current = s;
@@ -3239,28 +3489,36 @@ namespace Tag.Ui.Menu
                 PaintControls();
                 return;
             }
-            if (_focus == resetAt)
+            if (_focus == barAt)
             {
-                ActionBinds binds = ActionBinds.Current ?? ActionBinds.Defaults();
-                binds.ResetToDefaults();
-                ActionBinds.Current = binds;
-                LocalProfiles.StoreBinds(0, binds);
-                SettingsRuntime.Save();
-                _conflict = "";
+                if (_barChip == 1)
+                {
+                    MenuAudio.Back();
+                    GoBack();
+                    return;
+                }
+                if (!_resetArmed)
+                {
+                    _resetArmed = true;
+                    MenuAudio.Confirm();
+                    PaintControls();
+                    return;
+                }
+                ResetSeatBinds();
+                _resetArmed = false;
+                _notice = "Space always jumps.";
                 MenuAudio.Confirm();
                 PaintControls();
                 return;
             }
-            if (_focus > resetAt)
-            {
-                MenuAudio.Back();
-                GoBack();
+            int action = _focus - action0;
+            if (action < 0 || action >= (int)PlayAction.Count)
                 return;
-            }
             _capturing = true;
-            _captureAction = _focus;
+            _captureAction = action;
             _captureFrame = Time.frameCount;
-            _conflict = "";
+            _captureUntil = Time.unscaledTime + 5f;
+            _notice = "";
             MenuAudio.Confirm();
             PaintControls();
         }
@@ -3374,8 +3632,10 @@ namespace Tag.Ui.Menu
             }
             else if (_screen == MenuScreenId.Controls)
             {
+                bool armed = _resetArmed;
+                _resetArmed = false;
                 int span = ControlWindow();
-                if (_focus < _window || _focus >= _window + span)
+                if (armed || _focus < _window || _focus >= _window + span || previous == _count - 1 || _focus == _count - 1)
                     PaintControls();
                 else
                     RefreshFocus();
@@ -3396,32 +3656,213 @@ namespace Tag.Ui.Menu
         {
             var action = (PlayAction)_captureAction;
             bool pad = IsPad(token);
-            if (!pad && action == PlayAction.Jump && !ActionBinds.KnownKeyboard(token))
-            {
-                _conflict = "That key is not kept for Jump. Space stays jump.";
-                _capturing = false;
-                MenuAudio.Error();
-                PaintControls();
-                return;
-            }
-            ActionBinds trial = (ActionBinds.Current ?? ActionBinds.Defaults()).Clone();
-            if (pad) trial.SetGamepad(action, token);
-            else trial.SetKeyboard(action, token);
-            if (trial.Conflict(action, out PlayAction other))
-            {
-                _conflict = ActionBinds.Name(action) + " conflicts with " + ActionBinds.Name(other);
-                _capturing = false;
-                MenuAudio.Error();
-                PaintControls();
-                return;
-            }
-            ActionBinds.Current = trial;
-            LocalProfiles.StoreBinds(0, trial);
-            SettingsRuntime.Save();
             _capturing = false;
-            _conflict = "";
+            _captureAction = -1;
+            if (!pad && action == PlayAction.Jump)
+            {
+                if (token == "space" || !ActionBinds.KnownKeyboard(token))
+                {
+                    _notice = "Space always jumps.";
+                    MenuAudio.Back();
+                    PaintControls();
+                    return;
+                }
+                if (KeyboardClash(token, action, out PlayAction other))
+                {
+                    BeginSwap(action, other, false, token);
+                    return;
+                }
+                ActionBinds kb = KeyboardBinds();
+                if ((kb.Keyboard[(int)PlayAction.Jump] ?? "") != "space")
+                    kb.SetKeyboard(PlayAction.Jump, "space");
+                kb.SetJumpAlt(token);
+                _notice = "Space always jumps. Added " + ActionBinds.Show(token) + " as a second Jump key.";
+                SettingsRuntime.Save();
+                MenuAudio.Confirm();
+                PaintControls();
+                return;
+            }
+            if (!pad && token == "space")
+            {
+                _notice = "Space always jumps.";
+                MenuAudio.Back();
+                PaintControls();
+                return;
+            }
+            if (pad)
+            {
+                ActionBinds table = PadBinds();
+                string previous = table.Gamepad[(int)action] ?? "";
+                table.SetGamepad(action, token);
+                if (table.Conflict(action, out PlayAction other))
+                {
+                    table.SetGamepad(action, previous);
+                    BeginSwap(action, other, true, token);
+                    return;
+                }
+                RememberPad(table);
+                _notice = "";
+                MenuAudio.Confirm();
+                PaintControls();
+                return;
+            }
+            ActionBinds keys = KeyboardBinds();
+            if (!string.IsNullOrEmpty(keys.JumpAlt) && token == keys.JumpAlt)
+            {
+                BeginSwap(action, PlayAction.Jump, false, token);
+                return;
+            }
+            string old = keys.Keyboard[(int)action] ?? "";
+            keys.SetKeyboard(action, token);
+            if (keys.Conflict(action, out PlayAction clash))
+            {
+                keys.SetKeyboard(action, old);
+                BeginSwap(action, clash, false, token);
+                return;
+            }
+            _notice = "";
+            SettingsRuntime.Save();
             MenuAudio.Confirm();
             PaintControls();
+        }
+
+        void BeginSwap(PlayAction action, PlayAction other, bool pad, string token)
+        {
+            _swapAction = (int)action;
+            _swapOther = (int)other;
+            _swapPad = pad;
+            _swapToken = token ?? "";
+            _swapPick = 0;
+            _notice = "";
+            MenuAudio.Back();
+            PaintControls();
+        }
+
+        void CancelSwap()
+        {
+            ClearSwap();
+            _notice = "";
+            MenuAudio.Back();
+            PaintControls();
+        }
+
+        void ClearSwap()
+        {
+            _swapAction = -1;
+            _swapOther = -1;
+            _swapPad = false;
+            _swapToken = "";
+            _swapPick = 0;
+        }
+
+        void CommitSwap()
+        {
+            var action = (PlayAction)_swapAction;
+            var other = (PlayAction)_swapOther;
+            string token = _swapToken ?? "";
+            bool pad = _swapPad;
+            ClearSwap();
+            if (pad)
+            {
+                ActionBinds table = PadBinds();
+                string previous = table.Gamepad[(int)action] ?? "";
+                table.SetGamepad(action, token);
+                table.SetGamepad(other, previous);
+                RememberPad(table);
+                _notice = "";
+            }
+            else if (action == PlayAction.Jump)
+            {
+                ActionBinds kb = KeyboardBinds();
+                string previousAlt = kb.JumpAlt ?? "";
+                if ((kb.Keyboard[(int)PlayAction.Jump] ?? "") != "space")
+                    kb.SetKeyboard(PlayAction.Jump, "space");
+                kb.SetJumpAlt(token);
+                if (previousAlt.Length > 0) kb.SetKeyboard(other, previousAlt);
+                else kb.SetKeyboard(other, "");
+                _notice = "Space always jumps. Added " + ActionBinds.Show(token) + " as a second Jump key.";
+                SettingsRuntime.Save();
+            }
+            else if (other == PlayAction.Jump)
+            {
+                ActionBinds kb = KeyboardBinds();
+                if ((kb.Keyboard[(int)PlayAction.Jump] ?? "") != "space")
+                    kb.SetKeyboard(PlayAction.Jump, "space");
+                kb.SetKeyboard(action, token);
+                if ((kb.JumpAlt ?? "") == token) kb.SetJumpAlt("");
+                _notice = "Space always jumps.";
+                SettingsRuntime.Save();
+            }
+            else
+            {
+                ActionBinds kb = KeyboardBinds();
+                string previous = kb.Keyboard[(int)action] ?? "";
+                kb.SetKeyboard(action, token);
+                kb.SetKeyboard(other, previous);
+                _notice = "";
+                SettingsRuntime.Save();
+            }
+            MenuAudio.Confirm();
+            PaintControls();
+        }
+
+        static bool KeyboardClash(string token, PlayAction self, out PlayAction other)
+        {
+            other = self;
+            if (string.IsNullOrEmpty(token) || ActionBinds.SharesMove(token)) return false;
+            if (ActionBinds.Reserved(token)) return true;
+            ActionBinds keys = ActionBinds.Current ?? ActionBinds.Defaults();
+            for (int j = 0; j < (int)PlayAction.Count; j++)
+            {
+                if ((PlayAction)j == self) continue;
+                string have = keys.Keyboard[j] ?? "";
+                if (have.Length == 0 || have != token) continue;
+                if (ActionBinds.SharesMove(have)) continue;
+                other = (PlayAction)j;
+                return true;
+            }
+            return false;
+        }
+
+        ActionBinds KeyboardBinds()
+        {
+            if (ActionBinds.Current == null)
+                ActionBinds.Current = ActionBinds.Defaults();
+            return ActionBinds.Current;
+        }
+
+        ActionBinds PadBinds()
+        {
+            int seat = _bindSeat;
+            if (seat < 0) seat = 0;
+            if (seat > 3) seat = 3;
+            return CouchPlay.BindsFor(CouchPlay.DevicePad0 + seat);
+        }
+
+        void RememberPad(ActionBinds pad)
+        {
+            if (pad == null) return;
+            ActionBinds owned = LocalProfiles.BindsForSeat(_bindSeat);
+            if (owned != null && !ReferenceEquals(owned, pad))
+            {
+                for (int i = 0; i < (int)PlayAction.Count; i++)
+                    owned.SetGamepad((PlayAction)i, pad.Gamepad[i]);
+            }
+            SettingsRuntime.Save();
+        }
+
+        void ResetSeatBinds()
+        {
+            ActionBinds fresh = ActionBinds.Defaults();
+            ActionBinds kb = KeyboardBinds();
+            for (int i = 0; i < (int)PlayAction.Count; i++)
+                kb.SetKeyboard((PlayAction)i, fresh.Keyboard[i]);
+            kb.SetJumpAlt("");
+            ActionBinds pad = PadBinds();
+            for (int i = 0; i < (int)PlayAction.Count; i++)
+                pad.SetGamepad((PlayAction)i, fresh.Gamepad[i]);
+            RememberPad(pad);
+            ClearSwap();
         }
 
         static bool IsPad(string token)
@@ -3793,19 +4234,19 @@ namespace Tag.Ui.Menu
 
         const int ContextNotes = 3;
 
-        static void ControlBands(out int actions, out int noteAt, out int stickAt, out int confirmAt, out int resetAt)
+        static void ControlBands(out int action0, out int noteAt, out int stickAt, out int confirmAt, out int barAt)
         {
-            actions = (int)PlayAction.Count;
-            noteAt = actions;
-            stickAt = actions + ContextNotes;
+            action0 = 1;
+            noteAt = action0 + (int)PlayAction.Count;
+            stickAt = noteAt + ContextNotes;
             confirmAt = stickAt + MenuStick.Rows;
-            resetAt = confirmAt + GameSettings.SeatCount;
+            barAt = confirmAt + GameSettings.SeatCount;
         }
 
         static int ControlCount()
         {
-            ControlBands(out _, out _, out _, out _, out int resetAt);
-            return resetAt + 2;
+            ControlBands(out _, out _, out _, out _, out int barAt);
+            return barAt + 1;
         }
 
         /// <summary>
@@ -3814,17 +4255,11 @@ namespace Tag.Ui.Menu
         /// </summary>
         static string ActionDetail(PlayAction action, ActionBinds binds)
         {
-            MenuBindRow.Marks(action, binds, out string key, out string extra, out string pad);
-            string padWord = ActionBinds.PadWord(pad);
             if (action == PlayAction.Cling)
-            {
-                return ActionBinds.Show(key) + " / " + padWord
-                    + ". Wall climb and wall run need this hold. Wall jump is this hold plus Jump.";
-            }
-            string keys = ActionBinds.Show(key);
-            if (!string.IsNullOrEmpty(extra))
-                keys = keys + " or " + ActionBinds.Show(extra);
-            return keys + "    /    " + padWord;
+                return "Wall climb and wall run need this hold. Wall jump is this hold plus Jump.";
+            if (action == PlayAction.Jump && binds != null && !string.IsNullOrEmpty(binds.JumpAlt))
+                return "Space always jumps.";
+            return "";
         }
 
         static string PausePlace()

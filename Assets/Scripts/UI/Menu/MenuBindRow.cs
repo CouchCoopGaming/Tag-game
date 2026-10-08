@@ -10,7 +10,20 @@ namespace Tag.Ui.Menu
     /// </summary>
     public static class MenuBindRow
     {
-        public static void Stamp(MenuTile row, int action)
+        public const float PadCol = 188f;
+        public const float KeyCol = 268f;
+
+        public static void Columns(float rowW, out float keyRight, out float padRight)
+        {
+            padRight = rowW - 12f;
+            keyRight = padRight - PadCol - 16f;
+        }
+
+        /// <summary>
+        /// Keyboard glyphs sit in the left column. The pad glyph sits in the right column.
+        /// Jump's second key is an extra keyboard glyph. Space stays the first one.
+        /// </summary>
+        public static void Stamp(MenuTile row, int action, ActionBinds keys, string padToken)
         {
             if (row == null) return;
             RectTransform root = row.transform as RectTransform;
@@ -20,13 +33,41 @@ namespace Tag.Ui.Menu
             if (h < 72f) s = 44f;
             float y = (h - s) * 0.5f;
             if (y < 8f) y = 8f;
-            ActionBinds binds = ActionBinds.Current ?? ActionBinds.Defaults();
-            Marks((PlayAction)action, binds, out string key, out string extra, out string pad);
-            float edge = w - 16f;
-            edge = Place(row.transform, edge, y, s, pad);
-            if (!string.IsNullOrEmpty(extra)) edge = Place(row.transform, edge, y, s, extra);
-            edge = Place(row.transform, edge, y, s, key);
-            float reserve = w - edge;
+            if (keys == null) keys = ActionBinds.Defaults();
+            var act = (PlayAction)action;
+            Marks(act, keys, out string key, out string extra, out _);
+            if (act == PlayAction.Jump && !string.IsNullOrEmpty(keys.JumpAlt))
+                extra = keys.JumpAlt;
+            Columns(w, out float keyRight, out float padRight);
+            Place(row.transform, padRight, y, s, padToken);
+            float keyEdge = keyRight;
+            keyEdge = Place(row.transform, keyEdge, y, s, key);
+            if (!string.IsNullOrEmpty(extra))
+                keyEdge = Place(row.transform, keyEdge, y, s, extra);
+            float reserve = w - keyEdge;
+            if (reserve < w - keyRight + KeyCol) reserve = w - (keyRight - KeyCol);
+            Pull(row.Label, 18f, reserve);
+            Pull(row.Detail, 18f, reserve);
+        }
+
+        public static void StampToken(MenuTile row, string keyToken, string padToken)
+        {
+            if (row == null) return;
+            RectTransform root = row.transform as RectTransform;
+            float w = root != null ? root.sizeDelta.x : 900f;
+            float h = root != null ? root.sizeDelta.y : 88f;
+            float s = 56f;
+            if (h < 72f) s = 44f;
+            float y = (h - s) * 0.5f;
+            if (y < 8f) y = 8f;
+            Columns(w, out float keyRight, out float padRight);
+            if (!string.IsNullOrEmpty(padToken))
+                Place(row.transform, padRight, y, s, padToken);
+            float keyEdge = keyRight;
+            if (!string.IsNullOrEmpty(keyToken))
+                keyEdge = Place(row.transform, keyEdge, y, s, keyToken);
+            float reserve = w - (keyRight - KeyCol);
+            if (keyEdge < keyRight - KeyCol) reserve = w - keyEdge;
             Pull(row.Label, 18f, reserve);
             Pull(row.Detail, 18f, reserve);
         }

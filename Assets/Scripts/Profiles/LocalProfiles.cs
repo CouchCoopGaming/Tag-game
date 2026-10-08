@@ -309,6 +309,12 @@ namespace Tag.Profiles
             else if (rest == "win") Wins[slot] = Math.Max(0, Int(value, 0));
             else if (rest == "tag") Tags[slot] = Math.Max(0, Int(value, 0));
             else if (rest == "live") Live[slot] = Math.Max(0f, Num(value, 0f));
+            else if (rest == "jumpAlt")
+            {
+                if (Binds[slot] == null) Binds[slot] = ActionBinds.Defaults();
+                if (ActionBinds.KnownKeyboard(value))
+                    Binds[slot].SetJumpAlt(value);
+            }
             else if (rest.StartsWith("kb.", StringComparison.Ordinal))
                 AssignBind(slot, rest.Substring(3), value, true);
             else if (rest.StartsWith("pad.", StringComparison.Ordinal))
@@ -1461,6 +1467,7 @@ namespace Tag.Profiles
                 Binds[slot].SetKeyboard((PlayAction)i, src.Keyboard[i]);
                 Binds[slot].SetGamepad((PlayAction)i, src.Gamepad[i]);
             }
+            Binds[slot].SetJumpAlt(src.JumpAlt);
         }
 
         static void AssignBind(int slot, string name, string value, bool keyboard)
@@ -1784,6 +1791,13 @@ namespace Tag.Profiles
                 text.Append(action.ToString());
                 text.Append('=');
                 text.Append(binds.Gamepad[i] ?? "");
+                text.Append('\n');
+            }
+            if (!string.IsNullOrEmpty(binds.JumpAlt))
+            {
+                text.Append(p);
+                text.Append(".jumpAlt=");
+                text.Append(binds.JumpAlt);
                 text.Append('\n');
             }
         }

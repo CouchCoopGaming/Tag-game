@@ -31,6 +31,12 @@ namespace Tag.Settings
         public readonly string[] Keyboard = new string[(int)PlayAction.Count];
         public readonly string[] Gamepad = new string[(int)PlayAction.Count];
 
+        /// <summary>
+        /// Extra keyboard jump. Space stays the primary token. Empty means no second key.
+        /// The menu writes this. SetKeyboard does not.
+        /// </summary>
+        public string JumpAlt = "";
+
         /// <summary>Bumps when a token changes so prompt glyphs can refresh without scanning.</summary>
         public int Revision { get; private set; }
 
@@ -56,6 +62,7 @@ namespace Tag.Settings
                 b.Keyboard[i] = template.Keyboard[i];
                 b.Gamepad[i] = template.Gamepad[i];
             }
+            b.JumpAlt = template.JumpAlt ?? "";
             return b;
         }
 
@@ -213,7 +220,14 @@ namespace Tag.Settings
 
         public bool UsesLegacy(PlayAction action)
         {
+            if (action == PlayAction.Jump && !string.IsNullOrEmpty(JumpAlt)) return false;
             return KeyboardIsDefault(action) && GamepadIsDefault(action);
+        }
+
+        public void SetJumpAlt(string token)
+        {
+            JumpAlt = token ?? "";
+            Revision++;
         }
 
         public void SetKeyboard(PlayAction action, string token)
@@ -236,6 +250,7 @@ namespace Tag.Settings
                 Keyboard[i] = d.Keyboard[i];
                 Gamepad[i] = d.Gamepad[i];
             }
+            JumpAlt = d.JumpAlt ?? "";
             Revision++;
         }
 
@@ -247,6 +262,7 @@ namespace Tag.Settings
                 copy.Keyboard[i] = Keyboard[i];
                 copy.Gamepad[i] = Gamepad[i];
             }
+            copy.JumpAlt = JumpAlt ?? "";
             return copy;
         }
 

@@ -348,6 +348,8 @@ The fifteenth pass keeps an old picture setting on Medium. A save that has no qu
 
 The sixteenth pass puts Color-blind seat colors second on Accessibility, above the fold. Player color set is the older row: it cycles the mark colors, and it does not change the four seat colors. Drop-in points at Options, Accessibility. Text size 1.25 and 1.50 keep Menu, Characters, Mode and rules, and RESULTS in the title band. Each character card names its own look, and the hat line and the mode blurbs wrap. Controls shows a conflict, keeps Jump on Space, and can reset the binds. Composites are in `Docs/UiStills/screens2/pass16/`. Space still jumps.
 
+The seventeenth pass fills the controls list. Every action in the input map has a row: Move, Look, Jump, Cling hold, Slide, Air dash, Punch / tag, Sprint, Pause, Minimap, and Arena 1, 2, and 3. Grapple stays the left-hand note. A click pulls. A second click within 0.28 s releases. There is no pad bind for it. Keyboard and mouse glyphs sit in one column, and the pad glyphs sit in the other. P1 through P4 pick the pad, since each seat keeps its own. Confirm on a row waits 5 seconds for a button. Esc or B cancels. Space always jumps. A second key is added next to it, and the line says which key. If Slide and Punch / tag want the same button, both rows light up, and the choice is Swap or Cancel. Reset sits on the bottom row, outside the scroll, and asks before it puts the defaults back. Composites are in `Docs/UiStills/screens2/pass17/`. Space still jumps.
+
 ## Motion, ninth pass
 
 The wall jump, the rope, the zip, the launch pad, a landing, the dash flash, a hard turnaround, and a punch while you run all ease instead of snapping. Speeds, the jump, and the dash length are the same.
