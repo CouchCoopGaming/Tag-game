@@ -24,7 +24,7 @@ MEASURE_ONLY = os.environ.get("FX_MEASURE") == "1"
 PLAYER = (0.86, 0.55, 0.42, 1.0)
 JOINT = (0.16, 0.17, 0.18, 1.0)
 ACCENT = (0.45, 0.82, 0.86, 1.0)
-GROUND = (0.30, 0.32, 0.27, 1.0)
+GROUND = (0.42, 0.43, 0.44, 1.0)
 SKY = (0.55, 0.64, 0.74, 1.0)
 DUST = (0.62, 0.46, 0.28, 1.0)
 SHOCK = (0.93, 0.90, 0.82, 1.0)
@@ -488,22 +488,20 @@ def add_puff(name, location, size, color, strength=0.4):
     return obj
 
 
-def dust_ring(origin, scale, count, color, lift=0.03):
-    # scale is the impact multiplier. Each puff stays a few centimetres across.
-    puff = 0.022 + 0.012 * min(scale, 1.6)
-    if puff > 0.05:
-        puff = 0.05
+def dust_ring(origin, scale, count, color, lift=0.04):
+    # Soft discs, about 7–11 cm. Big enough to read, still smaller than a shin.
+    puff = 0.07 + 0.018 * min(scale, 1.5)
     for i in range(count):
         ang = i / count * math.tau
-        band = 0.16 + (i % 3) * 0.11
-        radial = band + scale * (0.12 + (i % 4) * 0.02)
-        pos = origin + Vector((math.cos(ang) * radial, math.sin(ang) * radial, lift + (i % 5) * 0.012))
-        add_puff("FxPuff%d" % i, pos, puff + (i % 3) * 0.004, color, 0.95)
+        band = 0.18 + (i % 3) * 0.12
+        radial = band + scale * (0.10 + (i % 4) * 0.018)
+        pos = origin + Vector((math.cos(ang) * radial, math.sin(ang) * radial, lift + (i % 5) * 0.02))
+        add_puff("FxPuff%d" % i, pos, puff + (i % 4) * 0.012, color, 1.35)
 
 
 def shockwave(origin, radius):
-    add_torus("FxShock", origin + Vector((0, 0, 0.025)), radius, 0.012, SHOCK, 0.55, 0.15)
-    add_torus("FxDustRing", origin + Vector((0, 0, 0.02)), radius * 0.72, 0.02, DUST, 0.4, 0.02)
+    add_torus("FxShock", origin + Vector((0, 0, 0.03)), radius, 0.022, SHOCK, 0.7, 0.55)
+    add_torus("FxDustRing", origin + Vector((0, 0, 0.02)), radius * 0.72, 0.028, DUST, 0.55, 0.12)
     add_plane(
         "FxDisc",
         origin + Vector((0, 0, 0.012)),
@@ -519,7 +517,7 @@ def star_object(name, location):
     verts = [(0.0, 0.0, 0.0)]
     for i in range(10):
         ang = i * math.pi / 5.0 - math.pi / 2.0
-        radius = 0.07 if i % 2 == 0 else 0.028
+        radius = 0.10 if i % 2 == 0 else 0.04
         verts.append((math.cos(ang) * radius, math.sin(ang) * radius, 0.0))
     faces = [(0, 1 + i, 1 + (i + 1) % 10) for i in range(10)]
     mesh.from_pydata(verts, [], faces)
@@ -527,14 +525,30 @@ def star_object(name, location):
     obj = bpy.data.objects.new(name, mesh)
     bpy.context.collection.objects.link(obj)
     obj.location = location
-    obj.data.materials.append(make_mat(name + "Mat", STAR, 0.35, 1.0, 1.6))
+    obj.data.materials.append(glow_mat(name + "Mat", (1.0, 0.78, 0.08, 1.0), 3.2))
     return obj
 
 
+def glow_mat(name, color, strength):
+    mat = bpy.data.materials.new(name)
+    mat.use_nodes = True
+    if hasattr(mat, "blend_method"):
+        mat.blend_method = "BLEND"
+    nt = mat.node_tree
+    nt.nodes.clear()
+    out = nt.nodes.new("ShaderNodeOutputMaterial")
+    emit = nt.nodes.new("ShaderNodeEmission")
+    emit.inputs["Color"].default_value = color
+    emit.inputs["Strength"].default_value = strength
+    nt.links.new(emit.outputs["Emission"], out.inputs["Surface"])
+    return mat
+
+
 def stars(head, count=5):
+    # Vertical ring, shifted toward the camera, so all five clear the skull.
     for i in range(count):
-        ang = i / count * math.tau + 0.5
-        pos = head + Vector((math.cos(ang) * 0.20, math.sin(ang) * 0.16, math.sin(ang * 2.0) * 0.05))
+        ang = math.pi * 0.5 + i / count * math.tau
+        pos = head + Vector((math.cos(ang) * 0.30, -0.18, math.sin(ang) * 0.26))
         star_object("FxStar%d" % i, pos)
 
 
@@ -558,7 +572,7 @@ def fresnel_shell():
         mat.use_backface_culling = True
     fres.inputs["IOR"].default_value = 1.55
     emit.inputs["Color"].default_value = RIM
-    emit.inputs["Strength"].default_value = 2.4
+    emit.inputs["Strength"].default_value = 3.2
     nt.links.new(fres.outputs["Fac"], mix.inputs["Fac"])
     nt.links.new(transparent.outputs["BSDF"], mix.inputs[1])
     nt.links.new(emit.outputs["Emission"], mix.inputs[2])
@@ -584,12 +598,12 @@ def add_shell():
 
 
 def launch_fx(origin):
-    add_torus("FxLaunch", origin + Vector((0, 0, 0.72)), 0.72, 0.016, CYAN, 0.7, 0.35)
+    add_torus("FxLaunch", origin + Vector((0, 0, 0.72)), 0.72, 0.03, CYAN, 0.85, 1.15)
     for i in range(6):
         ang = i / 6 * math.tau
         a = origin + Vector((math.cos(ang) * 0.28, math.sin(ang) * 0.28, 0.06))
-        b = a + Vector((math.cos(ang) * 0.05, math.sin(ang) * 0.05, 1.05 + (i % 2) * 0.28))
-        add_curve("FxStreak%d" % i, [a, b], 0.008, CYAN, 0.75, 0.25)
+        b = a + Vector((math.cos(ang) * 0.05, math.sin(ang) * 0.05, 1.15 + (i % 2) * 0.32))
+        add_curve("FxStreak%d" % i, [a, b], 0.016, CYAN, 0.9, 0.85)
 
 
 def rope_shimmer(hand, anchor):
@@ -623,13 +637,15 @@ def chip(name, location, size, color):
 
 
 def hook_fx(anchor):
-    for i in range(6):
-        ang = i / 6 * math.tau
-        pos = anchor + Vector((math.cos(ang) * 0.05, math.sin(ang) * 0.04, 0.02 + (i % 2) * 0.015))
-        add_puff("FxPuffSpark%d" % i, pos, 0.02 + (i % 2) * 0.006, SPARK, 1.3)
+    add_puff("FxPuffSparkCore", anchor + Vector((0.0, -0.02, 0.03)), 0.09, SPARK, 3.4)
+    for i in range(10):
+        ang = i / 10 * math.tau
+        spread = 0.05 + (i % 3) * 0.028
+        pos = anchor + Vector((math.cos(ang) * spread, -0.03 + math.sin(ang) * spread * 0.45, 0.02 + (i % 4) * 0.025))
+        add_puff("FxPuffSpark%d" % i, pos, 0.045 + (i % 3) * 0.012, SPARK, 2.6)
     for i in range(5):
         ang = i / 5 * math.tau + 0.4
-        pos = anchor + Vector((math.cos(ang) * 0.07, math.sin(ang) * 0.05, 0.015))
+        pos = anchor + Vector((math.cos(ang) * 0.09, math.sin(ang) * 0.05, 0.02))
         chip("FxChip%d" % i, pos, 0.02 + (i % 3) * 0.012, DUST)
 
 
@@ -659,18 +675,47 @@ def scuff_mat():
 
 
 def wall_fx(foot, normal):
-    # Short soft streaks on the wall face, trailing back from the planted foot.
+    # Irregular soft marks. Each one is a few faded discs, not a dark slab.
+    tint = (0.33, 0.26, 0.18, 1.0)
     for i in range(4):
-        mark = foot - Vector((0.04 + i * 0.14, 0.004, 0.01 + (i % 2) * 0.025))
-        bpy.ops.mesh.primitive_plane_add(size=1.0, location=mark)
-        obj = bpy.context.active_object
-        obj.name = "FxPuffScuff%d" % i
-        obj.scale = (0.16, 0.034, 1.0)
-        obj.rotation_euler = Euler((rad(90), 0.0, rad(-6 + i * 5)), "XYZ")
-        obj.data.materials.append(scuff_mat())
+        base = foot - Vector((0.03 + i * 0.13, 0.008, (i % 2) * 0.02))
+        spec = (
+            (0.0, 0.0, 0.055, 0.95),
+            (0.04, 0.012, 0.038, 0.55),
+            (-0.018, -0.016, 0.028, 0.32),
+            (0.07, -0.006, 0.018, 0.16),
+        )
+        for k, (dx, dz, size, strength) in enumerate(spec):
+            pos = base + Vector((dx, 0.0, dz))
+            obj = add_puff("FxPuffScuff%d_%d" % (i, k), pos, size, tint, strength)
+            obj.rotation_euler = Euler((rad(90), 0.0, rad(-8 + i * 6 + k * 4)), "XYZ")
     for i in range(8):
-        puff = foot - normal * (0.02 + (i % 4) * 0.012) - Vector((0.02 + i * 0.02, 0.0, -0.015 * (i % 3)))
-        add_puff("FxPuffFoot%d" % i, puff, 0.026 + (i % 3) * 0.007, DUST, 0.9)
+        puff = foot - normal * (0.03 + (i % 3) * 0.015) - Vector((i * 0.03, 0.0, -0.02 - (i % 4) * 0.015))
+        add_puff("FxPuffFoot%d" % i, puff, 0.055 + (i % 3) * 0.015, DUST, 1.2)
+
+
+def ground_mat():
+    mat = bpy.data.materials.new("GroundMat")
+    mat.use_nodes = True
+    nt = mat.node_tree
+    nt.nodes.clear()
+    out = nt.nodes.new("ShaderNodeOutputMaterial")
+    bsdf = nt.nodes.new("ShaderNodeBsdfPrincipled")
+    noise = nt.nodes.new("ShaderNodeTexNoise")
+    noise.inputs["Scale"].default_value = 22.0
+    noise.inputs["Detail"].default_value = 6.0
+    noise.inputs["Roughness"].default_value = 0.65
+    ramp = nt.nodes.new("ShaderNodeValToRGB")
+    ramp.color_ramp.elements[0].position = 0.35
+    ramp.color_ramp.elements[0].color = (0.30, 0.31, 0.32, 1.0)
+    ramp.color_ramp.elements[1].position = 0.72
+    ramp.color_ramp.elements[1].color = (0.50, 0.51, 0.52, 1.0)
+    nt.links.new(noise.outputs["Fac"], ramp.inputs["Fac"])
+    nt.links.new(ramp.outputs["Color"], bsdf.inputs["Base Color"])
+    if "Roughness" in bsdf.inputs:
+        bsdf.inputs["Roughness"].default_value = 0.92
+    nt.links.new(bsdf.outputs["BSDF"], out.inputs["Surface"])
+    return mat
 
 
 def setup_world(arm):
@@ -678,7 +723,7 @@ def setup_world(arm):
     bpy.ops.mesh.primitive_plane_add(size=16.0, location=(0, 0, 0))
     ground = bpy.context.active_object
     ground.name = "PropGround"
-    ground.data.materials.append(make_mat("GroundMat", GROUND, 0.9))
+    ground.data.materials.append(ground_mat())
     world = bpy.data.worlds.new("Sky")
     bpy.context.scene.world = world
     world.use_nodes = True
@@ -687,13 +732,13 @@ def setup_world(arm):
     bg.inputs["Strength"].default_value = 0.42
     bpy.ops.object.light_add(type="SUN", location=(4.2, -3.2, 7.5))
     sun = bpy.context.active_object
-    sun.data.energy = 2.1
+    sun.data.energy = 1.35
     sun.data.color = (1.0, 0.97, 0.92)
     sun.data.use_shadow = True
     look_at(sun, Vector((0, 0, 0.8)))
     bpy.ops.object.light_add(type="AREA", location=(-2.6, -2.2, 3.4))
     fill = bpy.context.active_object
-    fill.data.energy = 28
+    fill.data.energy = 16
     fill.data.size = 3.2
     look_at(fill, Vector((0, 0, 1.1)))
     bpy.ops.mesh.primitive_cube_add(size=1.0, location=(0, 0, -0.25))
@@ -817,7 +862,7 @@ def frame_camera(cam):
     mn, mx = bounds_of()
     if bpy.data.objects.get("PropWall") is not None:
         mn.z = min(mn.z, 0.0)
-    pad = Vector((0.30, 0.30, 0.40))
+    pad = Vector((0.35, 0.35, 0.55))
     mn = mn - pad
     mx = mx + pad
     center = (mn + mx) * 0.5
