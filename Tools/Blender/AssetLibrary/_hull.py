@@ -3,8 +3,9 @@
 import math
 
 
-def section(half, keel, sheer):
-    """Starboard outer skin, keel to gunwale. x >= 0."""
+def section(half, keel, sheer, t=0.5):
+    """Starboard outer skin, keel to gunwale. x >= 0. t is unused on this default."""
+    del t
     rise = max(0.05, sheer - keel)
     return [
         (0.0, keel),
@@ -15,15 +16,16 @@ def section(half, keel, sheer):
     ]
 
 
-def solid_hull(g, z0, z1, count, profile, top_at, mat, bow_extra=0.14):
-    """Loft a closed solid. top_at(t, half, sheer) returns 7 (x, y) samples, gunwale to gunwale."""
+def solid_hull(g, z0, z1, count, profile, top_at, mat, bow_extra=0.14, section_fn=None):
+    """Loft a closed solid. top_at(t, half, sheer) returns samples, gunwale to gunwale."""
+    section_fn = section_fn or section
     verts = []
     rings = []
     for i in range(count):
         t = i / (count - 1)
         z = z0 + (z1 - z0) * t
         half, keel, sheer = profile(t)
-        sec = section(half, keel, sheer)
+        sec = section_fn(half, keel, sheer, t)
         top = list(top_at(t, half, sheer))
         top[0] = sec[-1]
         top[-1] = (-sec[-1][0], sec[-1][1])
@@ -66,9 +68,10 @@ def solid_hull(g, z0, z1, count, profile, top_at, mat, bow_extra=0.14):
     g.mesh(verts, faces, mat, uv_scale=1.05)
 
 
-def beam_at(profile, t, y):
+def beam_at(profile, t, y, section_fn=None):
+    section_fn = section_fn or section
     half, keel, sheer = profile(t)
-    sec = section(half, keel, sheer)
+    sec = section_fn(half, keel, sheer, t)
     for (x0, y0), (x1, y1) in zip(sec, sec[1:]):
         lo, hi = (y0, y1) if y0 <= y1 else (y1, y0)
         if lo - 1e-6 <= y <= hi + 1e-6 and abs(y1 - y0) > 1e-6:

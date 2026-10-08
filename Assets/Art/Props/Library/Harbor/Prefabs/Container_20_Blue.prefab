@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 100002}
   - component: {fileID: 100004}
   m_Layer: 0
-  m_Name: Container_20
+  m_Name: Container_20_Blue
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -77,7 +77,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Tag.Art.Library.LibraryPropMeta
   category: "Harbor"
-  summary: "20-foot container, rust-red enamel. 6.06 x 2.44 x 2.59 m. Vertical corrugation, corner castings, four locking bars on the +Z doors."
+  summary: "20-foot container, blue enamel. Same shell as Container_20."
   climbable: 1
   vaultable: 0
   vaultHeightMeters: 0
@@ -123,7 +123,7 @@ MeshFilter:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 200000}
-  m_Mesh: {fileID: -1633821710574564935, guid: cf29c3f05d0ada9a2924cae0babdb802, type: 3}
+  m_Mesh: {fileID: -1633821710574564935, guid: e7f351b164d200a31bcf7d13903fd6e1, type: 3}
 --- !u!23 &200003
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -149,13 +149,12 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 6c4ede910a2e3f41781caad69114747a, type: 2}
+  - {fileID: 2100000, guid: 9e9f1e0f3e3c8e1f948dcbb8767c4aac, type: 2}
   - {fileID: 2100000, guid: beb173626a35c30c1ff350a8ec04f0d1, type: 2}
   - {fileID: 2100000, guid: b0ae13624c44bb51920d1571b19a6d8d, type: 2}
   - {fileID: 2100000, guid: 3378749727762f35ade0a2e55dedd4ed, type: 2}
   - {fileID: 2100000, guid: 3515f7b9728b10281c73c55a077c3fea, type: 2}
   - {fileID: 2100000, guid: b47c340ca201ae754a5835c14bb84ad8, type: 2}
-  - {fileID: 2100000, guid: 9e9f1e0f3e3c8e1f948dcbb8767c4aac, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -219,7 +218,7 @@ MeshFilter:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 200010}
-  m_Mesh: {fileID: -179393741545503174, guid: cf29c3f05d0ada9a2924cae0babdb802, type: 3}
+  m_Mesh: {fileID: -179393741545503174, guid: e7f351b164d200a31bcf7d13903fd6e1, type: 3}
 --- !u!23 &200013
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -245,7 +244,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 6c4ede910a2e3f41781caad69114747a, type: 2}
+  - {fileID: 2100000, guid: 9e9f1e0f3e3c8e1f948dcbb8767c4aac, type: 2}
   - {fileID: 2100000, guid: beb173626a35c30c1ff350a8ec04f0d1, type: 2}
   - {fileID: 2100000, guid: 3378749727762f35ade0a2e55dedd4ed, type: 2}
   - {fileID: 2100000, guid: 3515f7b9728b10281c73c55a077c3fea, type: 2}
@@ -312,7 +311,7 @@ MeshFilter:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 200020}
-  m_Mesh: {fileID: 736115405485880582, guid: cf29c3f05d0ada9a2924cae0babdb802, type: 3}
+  m_Mesh: {fileID: 736115405485880582, guid: e7f351b164d200a31bcf7d13903fd6e1, type: 3}
 --- !u!23 &200023
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -338,7 +337,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 6c4ede910a2e3f41781caad69114747a, type: 2}
+  - {fileID: 2100000, guid: 9e9f1e0f3e3c8e1f948dcbb8767c4aac, type: 2}
   - {fileID: 2100000, guid: beb173626a35c30c1ff350a8ec04f0d1, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
