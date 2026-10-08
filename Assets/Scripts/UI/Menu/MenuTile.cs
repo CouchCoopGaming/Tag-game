@@ -24,7 +24,6 @@ namespace Tag.Ui.Menu
         bool _hot;
         bool _chosen;
         RectTransform _chipRt;
-        Text _check;
         float _punch;
         float _confirm;
         float _select;
@@ -126,18 +125,35 @@ namespace Tag.Ui.Menu
             rt.pivot = new Vector2(1f, 0.5f);
             rt.anchoredPosition = new Vector2(-14f, 0f);
             rt.sizeDelta = new Vector2(side, side);
+            Color ink = chip ? MenuTheme.Ink : MenuTheme.Cream;
             if (chip)
             {
                 Image plate = rt.gameObject.AddComponent<Image>();
                 MenuArt.Plate(plate, MenuTheme.Gold, true);
                 plate.raycastTarget = false;
             }
-            Color ink = chip ? MenuTheme.Ink : MenuTheme.Cream;
-            _check = MenuWidgets.Words(rt, "\u2713", UiFit.FloorFont, TextAnchor.MiddleCenter, ink, Vector2.zero, Vector2.one);
-            _check.rectTransform.offsetMin = new Vector2(2f, 2f);
-            _check.rectTransform.offsetMax = new Vector2(-2f, -2f);
+            // Two bars that share a corner. No font character.
+            CheckStroke(rt, side * 0.20f, side * 0.46f, side * 0.42f, side * 0.70f, side * 0.16f, ink);
+            CheckStroke(rt, side * 0.42f, side * 0.70f, side * 0.82f, side * 0.24f, side * 0.16f, ink);
             _chipRt = rt;
             _chipRt.gameObject.SetActive(false);
+        }
+
+        static void CheckStroke(RectTransform parent, float x0, float y0, float x1, float y1, float thick, Color ink)
+        {
+            float dx = x1 - x0;
+            float dy = y1 - y0;
+            float len = Mathf.Sqrt(dx * dx + dy * dy);
+            if (len < 1f) len = 1f;
+            float degrees = Mathf.Atan2(-dy, dx) * Mathf.Rad2Deg;
+            RectTransform rt = MenuWidgets.Place(parent, "Mark", x0, y0, len, thick);
+            rt.pivot = new Vector2(0f, 0.5f);
+            rt.anchoredPosition = new Vector2(x0, -y0);
+            rt.sizeDelta = new Vector2(len, thick);
+            rt.localRotation = Quaternion.Euler(0f, 0f, degrees);
+            Image bar = rt.gameObject.AddComponent<Image>();
+            bar.color = ink;
+            bar.raycastTarget = false;
         }
 
         static readonly Color ChosenFill = new Color(0.12f, 0.40f, 0.78f, 1f);

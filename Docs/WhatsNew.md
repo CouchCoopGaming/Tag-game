@@ -364,6 +364,8 @@ The forty-seventh pass keeps Left Alt on air dash and takes it off sprint. Sprin
 
 The forty-eighth pass opens one screen at a time. Mode and rules no longer leaves the arena tiles underneath. A check fails if two screen roots are visible, and the old stacked open fails it. Hot Potato's line follows the win target, so it says first to 2 wins when that target is 2, and it does not call those the rounds. Least It wears a gold check chip. The rules list is headed "Rules for Least It". Grapple reads "Not on pad yet" in muted ink. No pad button was added. `Docs/Controls.md` notes that the pad bind is still open. The pictures are `Docs/UiStills/pass48/arena.png`, `options-controls.png`, and `rules.png`. pose stays 0 and rigJoint stays 26. Space still jumps.
 
+The forty-ninth pass draws the selected-mode mark as two strokes, because neither UI font has a check character. A coverage check fails if a screen string uses a character those fonts cannot draw, and it fails when the check character is put back. Win target stays at or under the round count, so a one-round match shows 1 and 1. The help line under the focused row says a handicap is a label: Least It does not change time as It, and Hot Potato does not change the fuse. The list sits above a bar that reads Space confirms and Esc goes back. Results uses the seat shapes and the seat colours, and the costume swatch stays. The pictures are `Docs/UiStills/pass49/rules.png` and `results.png`. pose stays 0 and rigJoint stays 26. Space still jumps.
+
 ## Motion, ninth pass
 
 The wall jump, the rope, the zip, the launch pad, a landing, the dash flash, a hard turnaround, and a punch while you run all ease instead of snapping. Speeds, the jump, and the dash length are the same.

@@ -1,3 +1,4 @@
+using Tag.Modes;
 using Tag.Settings;
 
 namespace Tag.Ui.Menu
@@ -164,9 +165,16 @@ namespace Tag.Ui.Menu
             if (fresh.WinTarget != 2 || fresh.StartIt != GameSettings.StartRandom) return false;
             if (!fresh.HazardPads || !fresh.HazardZips) return false;
             if (fresh.Handicap[0] != 0 || fresh.ConfirmFace[0] != FaceMap.Auto) return false;
-            if (LoadLength(fresh) != "120 s" || LoadRounds(fresh) != "1" || LoadWin(fresh) != "2") return false;
+            fresh.Clamp();
+            if (fresh.RoundsPerMatch != 1 || fresh.WinTarget != 1) return false;
+            if (fresh.WinTarget > fresh.RoundsPerMatch) return false;
+            if (LoadLength(fresh) != "120 s" || LoadRounds(fresh) != "1" || LoadWin(fresh) != "1") return false;
             if (LoadStart(fresh) != "Starting It  Random") return false;
             if (LoadPads(fresh) != "On" || LoadZips(fresh) != "On") return false;
+            if (!Edit(fresh, Win, 1) || fresh.WinTarget != 1) return false;
+            if (!Edit(fresh, Rounds, 1) || fresh.RoundsPerMatch != 2) return false;
+            if (!Edit(fresh, Win, 1) || fresh.WinTarget != 2) return false;
+            if (!Edit(fresh, Rounds, 1) || fresh.RoundsPerMatch != 3 || fresh.WinTarget != 2) return false;
             if (!Edit(fresh, Win, 1) || fresh.WinTarget != 3) return false;
             if (!Edit(fresh, Start, 1) || fresh.StartIt != GameSettings.StartLast) return false;
             if (LoadStart(fresh) != "Starting It  Last place") return false;
@@ -185,11 +193,61 @@ namespace Tag.Ui.Menu
             if (back.RoundLengthIndex != GameSettings.RoundLengthDefault) return false;
             GameSettings partial = GameSettings.Defaults();
             SettingsFile.Read("v=2\nmouse=1.8\n", partial, ActionBinds.Defaults());
-            if (partial.WinTarget != 2 || partial.StartIt != 0 || !partial.HazardPads || !partial.HazardZips) return false;
+            if (partial.WinTarget != 1 || partial.RoundsPerMatch != 1 || partial.WinTarget > partial.RoundsPerMatch) return false;
+            if (partial.StartIt != 0 || !partial.HazardPads || !partial.HazardZips) return false;
             if (partial.ConfirmFace[1] != FaceMap.Auto) return false;
             if (Title(Arena) != "Arena select" || Title(Back) != "Back") return false;
             if (Count != Back + 1) return false;
             return true;
+        }
+
+        /// <summary>
+        /// Win target cannot sit above the round count. Raising it on a
+        /// one-round match stays put. Dropping rounds pulls the target down.
+        /// </summary>
+        public static bool WinFits()
+        {
+            GameSettings high = GameSettings.Defaults();
+            high.WinTarget = 5;
+            high.RoundsPerMatch = 1;
+            high.Clamp();
+            if (high.WinTarget != 1) return false;
+            if (!Edit(high, Win, 1) || high.WinTarget != 1 || high.WinTarget > high.RoundsPerMatch) return false;
+            high.RoundsPerMatch = 4;
+            high.WinTarget = 9;
+            high.Clamp();
+            if (high.WinTarget != 4) return false;
+            if (!Edit(high, Rounds, -1) || high.RoundsPerMatch != 3 || high.WinTarget != 3) return false;
+            return high.WinTarget <= high.RoundsPerMatch;
+        }
+
+        public static string Help(TagModeId mode, int index)
+        {
+            if (index >= 0 && index <= 3) mode = (TagModeId)index;
+            if ((index >= 0 && index <= 3) || (index >= Hand0 && index < Hand0 + GameSettings.SeatCount))
+                return HandHelp(mode);
+            if (index == Length) return "How long one round lasts.";
+            if (index == Rounds) return "How many rounds are in the match.";
+            if (index == Win) return "Wins needed. It cannot pass the round count.";
+            if (index == Start) return "Who begins the round as It.";
+            if (index == Seat) return "Which seat starts as It when Starting It is Chosen.";
+            if (index == Pads) return "Launch pads in this match. Off skips them.";
+            if (index == Zips) return "Zip lines in this match. Off skips them.";
+            if (index == Ai) return "How many seats the AI fills.";
+            if (index == Diff) return "How sharp the AI plays.";
+            if (index == Split) return "Two humans split the screen this way.";
+            if (index == Listen) return "Where the sound sits in a split.";
+            if (index == Arena) return "Pick the park next.";
+            return "Back to the previous screen.";
+        }
+
+        static string HandHelp(TagModeId mode)
+        {
+            if (mode == TagModeId.HotPotato)
+                return "Handicap is a label on that seat. It does not change the fuse.";
+            if (mode == TagModeId.LeastIt)
+                return "Handicap is a label on that seat. It does not change time as It.";
+            return "Handicap is a label on that seat. Movement does not read it.";
         }
 
         static string StartWord(int start)

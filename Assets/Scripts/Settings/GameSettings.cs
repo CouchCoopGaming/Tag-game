@@ -227,6 +227,7 @@ namespace Tag.Settings
             if (StartSeat >= SeatCount) StartSeat = SeatCount - 1;
             if (WinTarget < WinTargetMin) WinTarget = WinTargetMin;
             if (WinTarget > WinTargetMax) WinTarget = WinTargetMax;
+            if (WinTarget > RoundsPerMatch) WinTarget = RoundsPerMatch;
             if (AccessSeat < 0) AccessSeat = 0;
             if (AccessSeat >= SeatCount) AccessSeat = SeatCount - 1;
             for (int i = 0; i < SeatCount; i++)

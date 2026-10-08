@@ -389,6 +389,16 @@ Opening a screen hides the one that was up. Mode and rules no longer draws the a
 
 `Docs/UiStills/pass48/arena.png`, `options-controls.png`, and `rules.png` are the checks. Each is under 400 KB. pose stays 0 and rigJoint stays 26. The gameplay proof lines are unchanged.
 
+## Pass 49
+
+The selected-mode mark is two strokes on a gold chip. Neither UI font has a check character, so the old text mark was a tofu box. A coverage check reads both font files and every screen string. A clean set reports no missing characters. Adding the check character to that set fails it.
+
+Win target clamps to the round count on every change. A one-round match shows Win target 1, and Hot Potato's line follows that. Raising the target on one round stays at 1. Dropping the rounds pulls the target down with them. The rules list stays inside the title-safe area. A help line under the focused row says what that row does. For Least It, the handicap is a label and it does not change time as It. For Hot Potato, it does not change the fuse. The bar under that reads Space confirms and Esc goes back.
+
+Results cards use the seat band: P1 red circle, P2 blue triangle, P3 orange square, P4 lavender diamond. The costume swatch stays beside that. The seat tag is the shape, not a text glyph. Title, the main menu, join, pause, and loading are unchanged.
+
+`Docs/UiStills/pass49/rules.png` and `results.png` are the checks. Each is under 400 KB. pose stays 0 and rigJoint stays 26. The gameplay proof lines are unchanged.
+
 ## Later passes
 
 - A 2D focus grid on rules so Left from a rule row lands on a mode tile.

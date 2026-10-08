@@ -70,12 +70,12 @@ namespace Tag.Ui.Menu
                 Fail(ref report, "menu cue slot missing");
             bool text = UiFit.FontsHold() && UiFit.Remembers() && UiFit.CardsHold();
             bool hud = Tag.Ui.Hud.HudCorner.ClearAll();
-            bool glyphs = PadGlyph.Samples();
+            bool glyphs = PadGlyph.Samples() && FontCover.Holds(Root());
             bool feed = Tag.Ui.Hud.TagFeed.Holds();
             bool load = LoadGate.Holds() && MenuTips.Holds();
             bool board = Tag.Ui.Hud.ScorePeek.Holds() && Tag.Ui.Hud.RoundCard.Holds();
             bool faces = FaceMap.Holds();
-            bool rules = RuleBook.Holds() && MenuCatalog.BlurbHolds();
+            bool rules = RuleBook.Holds() && RuleBook.WinFits() && MenuCatalog.BlurbHolds();
             if (!ScreenDeck.Holds(Root()))
                 Fail(ref report, "screen roots");
             bool records = RecordsHold();

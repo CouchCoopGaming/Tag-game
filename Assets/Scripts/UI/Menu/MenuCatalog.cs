@@ -55,12 +55,20 @@ namespace Tag.Ui.Menu
         public static bool BlurbHolds()
         {
             GameSettings fresh = GameSettings.Defaults();
+            fresh.Clamp();
             string line = ModeBlurb(TagModeId.HotPotato, fresh);
-            if (line != "First to 2 wins. Fuse 45 / 40 / 35s.") return false;
+            if (line != "First to 1 wins. Fuse 45 / 40 / 35s.") return false;
             if (line.IndexOf("round wins", System.StringComparison.Ordinal) >= 0) return false;
+            if (fresh.WinTarget > fresh.RoundsPerMatch) return false;
+            fresh.RoundsPerMatch = 4;
             fresh.WinTarget = 4;
+            fresh.Clamp();
             if (ModeBlurb(TagModeId.HotPotato, fresh) != "First to 4 wins. Fuse 45 / 40 / 35s.") return false;
-            if (ModeBlurb(TagModeId.LeastIt, fresh).IndexOf("OK", System.StringComparison.Ordinal) >= 0) return false;
+            fresh.WinTarget = 5;
+            fresh.RoundsPerMatch = 2;
+            fresh.Clamp();
+            if (fresh.WinTarget != 2) return false;
+            if (ModeBlurb(TagModeId.HotPotato, fresh) != "First to 2 wins. Fuse 45 / 40 / 35s.") return false;
             return true;
         }
 

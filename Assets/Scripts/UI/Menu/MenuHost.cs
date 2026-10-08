@@ -1411,9 +1411,19 @@ namespace Tag.Ui.Menu
             var plate = rt.gameObject.AddComponent<Image>();
             MenuArt.Plate(plate, plateColor, true);
             plate.raycastTarget = false;
-            string mark = shape ? AccessibilityPalette.Glyph(seat) + " " : "";
-            Text word = MenuWidgets.Words(rt, mark + "P" + (seat + 1).ToString(), UiFit.FloorFont, TextAnchor.MiddleCenter, MenuTheme.Ink, Vector2.zero, Vector2.one);
+            string wordText = "P" + (seat + 1).ToString();
+            Text word = MenuWidgets.Words(rt, wordText, UiFit.FloorFont, TextAnchor.MiddleCenter, MenuTheme.Ink, Vector2.zero, Vector2.one);
             Snug(word);
+            if (shape)
+            {
+                var markRt = MenuWidgets.Place(rt, "SeatShape", 8f, 4f, 28f, 28f);
+                var mark = markRt.gameObject.AddComponent<Image>();
+                mark.sprite = SeatMark.For(seat);
+                mark.color = MenuTheme.SeatInk(seat);
+                mark.raycastTarget = false;
+                if (word != null)
+                    word.rectTransform.offsetMin = new Vector2(40f, 2f);
+            }
         }
 
         void Animate()
@@ -2588,6 +2598,8 @@ namespace Tag.Ui.Menu
             }
             ClampRuleWindow();
             GameSettings s = GameSettings.Current ?? GameSettings.Defaults();
+            s.Clamp();
+            GameSettings.Current = s;
             for (int i = 0; i < _tiles.Count; i++)
             {
                 MenuTile mode = _tiles[i];
@@ -2595,12 +2607,15 @@ namespace Tag.Ui.Menu
                 mode.Detail.text = MenuCatalog.ModeBlurb((TagModeId)mode.Index, s);
             }
             UiFit.Columns(UiFit.Current(), out _, out _, out float rightX, out float rightW);
-            const float step = 72f;
-            const float rowH = 68f;
+            const float step = 64f;
+            const float rowH = 60f;
             PaintRuleHead(rightX, rightW);
+            float footX = 16f;
+            float footW = rightX + rightW - footX;
+            PaintRuleFoot(footX, footW);
             int win = RuleWindow(step);
             int shown = 0;
-            float listY = 12f + RuleHeadH + 6f;
+            float listY = 8f + RuleHeadH + 4f;
             for (int index = 4; index < RuleBook.Count; index++)
             {
                 if (index < 4 + _window || index >= 4 + _window + win) continue;
@@ -2611,9 +2626,12 @@ namespace Tag.Ui.Menu
             _count = RuleBook.Count;
             ShowHow();
             RefreshFocus();
+            RefreshRuleHelp();
         }
 
-        const float RuleHeadH = 52f;
+        const float RuleHeadH = 40f;
+        const float RuleHelpH = 36f;
+        const float RuleHintH = 48f;
 
         void PaintRuleHead(float x, float w)
         {
@@ -2633,11 +2651,63 @@ namespace Tag.Ui.Menu
             label.rectTransform.offsetMax = new Vector2(-8f, 0f);
         }
 
+        void PaintRuleFoot(float x, float w)
+        {
+            if (_body == null) return;
+            for (int i = _body.childCount - 1; i >= 0; i--)
+            {
+                Transform child = _body.GetChild(i);
+                if (child == null) continue;
+                if (child.name == "RuleHelp" || child.name == "RuleHint")
+                    DestroyImmediate(child.gameObject);
+            }
+            float body = UiFit.BodyH(UiFit.Current());
+            float hintY = body - RuleHintH - 8f;
+            float helpY = hintY - RuleHelpH - 4f;
+            RectTransform help = MenuWidgets.Place(_body, "RuleHelp", x, helpY, w, RuleHelpH);
+            Text helpText = MenuWidgets.Words(help, "", UiFit.FloorFont, TextAnchor.MiddleLeft, MenuTheme.Cream, Vector2.zero, Vector2.one);
+            if (helpText != null)
+            {
+                helpText.raycastTarget = false;
+                helpText.rectTransform.offsetMin = new Vector2(8f, 0f);
+                helpText.rectTransform.offsetMax = new Vector2(-8f, 0f);
+            }
+            RectTransform hint = MenuWidgets.Place(_body, "RuleHint", x, hintY, w, RuleHintH);
+            Image plate = hint.gameObject.AddComponent<Image>();
+            MenuArt.Plate(plate, MenuTheme.Navy, true);
+            plate.raycastTarget = false;
+            Text hintText = MenuWidgets.Words(hint, "Space confirms. Esc goes back.", UiFit.FloorFont, TextAnchor.MiddleLeft, MenuTheme.Gold, Vector2.zero, Vector2.one);
+            if (hintText != null)
+            {
+                hintText.raycastTarget = false;
+                hintText.rectTransform.offsetMin = new Vector2(12f, 0f);
+                hintText.rectTransform.offsetMax = new Vector2(-12f, 0f);
+            }
+        }
+
+        void RefreshRuleHelp()
+        {
+            if (_body == null || _screen != MenuScreenId.Rules) return;
+            Text help = null;
+            for (int i = 0; i < _body.childCount; i++)
+            {
+                Transform child = _body.GetChild(i);
+                if (child == null || child.name != "RuleHelp") continue;
+                help = child.GetComponentInChildren<Text>();
+                break;
+            }
+            if (help == null) return;
+            TagModeId mode = MenuSession.Mode;
+            if (_focus >= 0 && _focus <= 3) mode = (TagModeId)_focus;
+            help.text = RuleBook.Help(mode, _focus);
+        }
+
         static int RuleWindow(float step)
         {
             if (step < 1f) step = 1f;
             float body = UiFit.BodyH(UiFit.Current());
-            int n = (int)((body - 12f - RuleHeadH - 6f) / step);
+            float reserve = 8f + RuleHeadH + 4f + RuleHelpH + 4f + RuleHintH + 8f;
+            int n = (int)((body - reserve) / step);
             if (n < 4) n = 4;
             int rows = RuleBook.Count - 4;
             if (n > rows) n = rows;
@@ -2647,7 +2717,7 @@ namespace Tag.Ui.Menu
         void ClampRuleWindow()
         {
             if (_focus < 4) return;
-            int win = RuleWindow(72f);
+            int win = RuleWindow(64f);
             int right = _focus - 4;
             int rows = RuleBook.Count - 4;
             if (right < _window) _window = right;
@@ -3339,8 +3409,9 @@ namespace Tag.Ui.Menu
                 if (tile != null)
                 {
                     tile.KeepBar = true;
+                    Color seatColor = MenuTheme.SeatBand(seat);
                     Color look = MenuMannequin.Swatch(MenuMannequin.NameOf(_rows[rank].Hier));
-                    tile.BarColor = look;
+                    tile.BarColor = seatColor;
                     if (tile.Bar != null)
                     {
                         tile.Bar.color = tile.BarColor;
@@ -3348,12 +3419,12 @@ namespace Tag.Ui.Menu
                         barRt.anchoredPosition = new Vector2(0f, 0f);
                         barRt.sizeDelta = new Vector2(rankW, 10f);
                     }
-                    tile.Tint(Color.Lerp(MenuTheme.Ink, look, UiSweep.SeatMix));
+                    tile.Tint(Color.Lerp(MenuTheme.Ink, seatColor, UiSweep.SeatMix));
                     if (tile.Stroke != null && _rows[rank].Winner)
                         tile.Stroke.color = MenuTheme.Gold;
                     float chipX = rankW - 154f;
                     if (chipX < 8f) chipX = 8f;
-                    SeatChip(tile.transform, chipX, UiFit.StripeClear() + 6f, seat, look, true);
+                    SeatChip(tile.transform, chipX, UiFit.StripeClear() + 6f, seat, seatColor, true);
                     RectTransform swatch = MenuWidgets.Place(tile.transform, "LookSwatch", rankW - 34f, UiFit.StripeClear() + 12f, 22f, 22f);
                     var swatchImage = swatch.gameObject.AddComponent<Image>();
                     swatchImage.color = look;
@@ -4044,12 +4115,14 @@ namespace Tag.Ui.Menu
                 {
                     RefreshFocus();
                     ShowHow();
+                    RefreshRuleHelp();
                 }
             }
             else
             {
                 RefreshFocus();
                 ShowHow();
+                RefreshRuleHelp();
             }
         }
 
@@ -4065,6 +4138,7 @@ namespace Tag.Ui.Menu
                 MenuAudio.Move();
                 RefreshFocus();
                 ShowHow();
+                RefreshRuleHelp();
                 return;
             }
             GameSettings s = GameSettings.Current ?? GameSettings.Defaults();
