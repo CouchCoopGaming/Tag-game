@@ -63,6 +63,9 @@ MODULES = (
     "sk_bus_curbside",
     "sk_meter_single",
     "sk_mail_drop",
+    "sk_wheel_stop",
+    "sk_guardrail",
+    "sk_pay_kiosk",
     "mannequin",
 )
 
@@ -375,7 +378,22 @@ def _pass12_lineup(found, path):
 def main():
     os.makedirs(STILL_DIR, exist_ok=True)
     found = _load()
-    if PASS >= 13:
+    if PASS >= 14:
+        shots = [
+            ("wheel_stop", lambda: _shot(found["WheelStop_Concrete"], os.path.join(STILL_DIR, "wheel_stop.png"), fill=0.84)),
+            ("wheel_stop_scale", lambda: _with_figure(
+                found, "WheelStop_Concrete", os.path.join(STILL_DIR, "wheel_stop_scale.png"),
+                (0.0, 0.0, 0.0), 18, (-1.15, 0.0, 0.85))),
+            ("guardrail", lambda: _shot(found["Guardrail_WBeam"], os.path.join(STILL_DIR, "guardrail.png"), fill=0.86)),
+            ("guardrail_scale", lambda: _with_figure(
+                found, "Guardrail_WBeam", os.path.join(STILL_DIR, "guardrail_scale.png"),
+                (0.0, 0.0, 0.0), 16, (-1.6, 0.0, 1.15))),
+            ("pay_kiosk", lambda: _shot(found["PayKiosk_Lot"], os.path.join(STILL_DIR, "pay_kiosk.png"), fill=0.84)),
+            ("pay_kiosk_scale", lambda: _with_figure(
+                found, "PayKiosk_Lot", os.path.join(STILL_DIR, "pay_kiosk_scale.png"),
+                (0.55, 0.0, 0.0), 18, (-0.85, 0.0, 0.25))),
+        ]
+    elif PASS >= 13:
         shots = [
             ("car_sedan", lambda: _shot(found["Car_Sedan"], os.path.join(STILL_DIR, "car_sedan.png"), kind="asphalt", fill=0.84)),
             ("car_sedan_nose", lambda: _close(

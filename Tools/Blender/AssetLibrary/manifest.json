@@ -35328,5 +35328,318 @@
     ],
     "slackCm": 0.0,
     "fbx": "Assets/Art/Props/Library/StreetFurniture/MailDrop_Corner.fbx"
+  },
+  {
+    "name": "WheelStop_Concrete",
+    "category": "StreetFurniture",
+    "blurb": "Parking wheel stop, 1.80 m long and 0.10 m tall. Tapered ends, two bolts.",
+    "size": [
+      1.8,
+      0.119,
+      0.15
+    ],
+    "min": [
+      -0.9,
+      0.0,
+      -0.075
+    ],
+    "max": [
+      0.9,
+      0.119,
+      0.075
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 140,
+        "materials": [
+          "Lib_Concrete",
+          "Lib_Steel",
+          "Lib_SteelDark"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 84,
+        "materials": [
+          "Lib_Concrete",
+          "Lib_Steel"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_Block",
+        "type": "box",
+        "center": [
+          0,
+          0.04,
+          0
+        ],
+        "size": [
+          1.4,
+          0.05,
+          0.08
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "climbable": false,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "10 cm. Not a wall.",
+    "vaultNote": "Too low to vault.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1"
+    ],
+    "slackCm": 0.0,
+    "fbx": "Assets/Art/Props/Library/StreetFurniture/WheelStop_Concrete.fbx"
+  },
+  {
+    "name": "Guardrail_WBeam",
+    "category": "StreetFurniture",
+    "blurb": "W-beam bay, 2.40 m rail, posts to 0.72 m. Corrugated face toward +Z.",
+    "size": [
+      2.36,
+      0.72,
+      0.227
+    ],
+    "min": [
+      -1.18,
+      0.0,
+      -0.08
+    ],
+    "max": [
+      1.18,
+      0.72,
+      0.147
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 328,
+        "materials": [
+          "Lib_SteelDark",
+          "Lib_Steel",
+          "Lib_PaintYellow"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 144,
+        "materials": [
+          "Lib_SteelDark",
+          "Lib_Steel"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_PostL",
+        "type": "box",
+        "center": [
+          -0.9,
+          0.36,
+          0.0
+        ],
+        "size": [
+          0.05,
+          0.6,
+          0.04
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_PostR",
+        "type": "box",
+        "center": [
+          0.9,
+          0.36,
+          0.0
+        ],
+        "size": [
+          0.05,
+          0.6,
+          0.04
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Rail",
+        "type": "box",
+        "center": [
+          0,
+          0.55,
+          0.092
+        ],
+        "size": [
+          2.05,
+          0.2,
+          0.01
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "climbable": false,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "Posts are 8 cm. The rail is not a cling.",
+    "vaultNote": "Rail top is 0.70 m.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1"
+    ],
+    "slackCm": 0.3,
+    "fbx": "Assets/Art/Props/Library/StreetFurniture/Guardrail_WBeam.fbx"
+  },
+  {
+    "name": "PayKiosk_Lot",
+    "category": "StreetFurniture",
+    "blurb": "Pay cabinet, 0.46 m wide and 1.32 m tall. Screen, card slot, and PAY in Liberation Sans.",
+    "size": [
+      0.52,
+      1.29,
+      0.42
+    ],
+    "min": [
+      -0.26,
+      0.0,
+      -0.21
+    ],
+    "max": [
+      0.26,
+      1.29,
+      0.21
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 420,
+        "materials": [
+          "Lib_SteelDark",
+          "Lib_Steel",
+          "Lib_Glass",
+          "Lib_Black",
+          "Lib_PaintCream",
+          "Lib_PaintWhite"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 72,
+        "materials": [
+          "Lib_SteelDark",
+          "Lib_Steel",
+          "Lib_Glass",
+          "Lib_Black",
+          "Lib_PaintCream"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_Foot",
+        "type": "box",
+        "center": [
+          0,
+          0.012,
+          0
+        ],
+        "size": [
+          0.34,
+          0.016,
+          0.26
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Body",
+        "type": "box",
+        "center": [
+          0,
+          0.62,
+          0
+        ],
+        "size": [
+          0.28,
+          0.96,
+          0.22
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Hood",
+        "type": "box",
+        "center": [
+          0,
+          1.255,
+          0
+        ],
+        "size": [
+          0.3,
+          0.04,
+          0.24
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "climbable": false,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "Not a cling.",
+    "vaultNote": "Too short to vault.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1"
+    ],
+    "slackCm": 0.0,
+    "fbx": "Assets/Art/Props/Library/StreetFurniture/PayKiosk_Lot.fbx"
   }
 ]

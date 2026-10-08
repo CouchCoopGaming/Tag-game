@@ -63,6 +63,9 @@ MODULES = (
     "sk_bus_curbside",
     "sk_meter_single",
     "sk_mail_drop",
+    "sk_wheel_stop",
+    "sk_guardrail",
+    "sk_pay_kiosk",
 )
 
 
