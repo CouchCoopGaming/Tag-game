@@ -370,6 +370,8 @@ The twenty-sixth pass gives the tip and the progress bar their own rows, so Wait
 
 The twenty-seventh pass keeps the load card to the bottom third, so the dock, the court, and the gazebo sit in the upper pane. The park stays neutral and gets its contrast back: concrete about 140, 148, 146, and a blue sky. The diamond is the base lavender, and the light step is the pane band. The measured colour-blind floor still holds on that band: protan 0.41, deutan 0.52, tritan 0.41. The fill against blue is under the floor (protan 0.23). A cling tip reads Hold [Left stick] into a wall to climb. Pause was the sparse screen, so its card sits low, each row has a line, and the park stays visible above it. Unity is not installed here, so the stills are composites in `Docs/UiStills/screens2/pass27/`. Space still jumps.
 
+The twenty-eighth pass puts that graded Mega Park on the plate the game loads, so loading and pause match the stills. Pause darkens the plate by about 35% and keeps the park readable behind the card. The title logo is large, and the prompt reads Press Space or Start from the action map. Drop-in join stamps the seat shape from the one mannequin table. The colour-blind floor still holds on the band: protan 0.41, deutan 0.52, tritan 0.41. Unity is not installed here, so the frames are that live plate with the menu drawn on it, in `Docs/UiStills/screens2/pass28/`. Space still jumps.
+
 ## Motion, ninth pass
 
 The wall jump, the rope, the zip, the launch pad, a landing, the dash flash, a hard turnaround, and a punch while you run all ease instead of snapping. Speeds, the jump, and the dash length are the same.

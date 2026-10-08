@@ -383,6 +383,16 @@ A pad cling tip reads `Hold [Left stick] into a wall to climb`, and the wall jum
 
 Pause was the weak screen. The pass 16 still left a flat empty band under the buttons, and Resume, Options, and Quit had no second line. The card now sits on the bottom third. Each row has a line. The graded park, including the gazebo, stays visible above the card. P1's circle is in the header. Unity is not installed, so the stills are composites in `Docs/UiStills/screens2/pass27/`.
 
+## Screens 2, pass 28
+
+The live Mega Park plate is the graded yard. `MenuBackdrop.Bright` loads `Assets/Resources/UI/Menu/MegaGrade.png`, baked with the same neutral white balance, S-curve, and saturation lift as the pass 27 stills. Mega Gold stays the ungraded source. Loading already assigns that bright plate, so a Mega Park load uses it. The baked file measures the same as the pass 27 grade: sky about 155, 171, 189, concrete about 140, 148, 146.
+
+Pause no longer leaves the graybox showing through. It puts that graded plate up and darkens it with black at 35%, so the card reads first and the park stays recognizable. The pass 27 card is unchanged: bottom third, a second line on each row, and P1's circle. The pause still measures card fraction 0.33 and park standard deviation 16.7. The sky on that still is about 65% of the raw plate, which is the 35% darken.
+
+The title logo keeps the lockup's shape and is large enough for the couch (860 by 658). The prompt is `Press Space or Start` on a keyboard and `Press Start or Space` on a pad. Space is `ActionBinds.Show` of Jump, and Start is `ActionBinds.Show` of Pause. The main menu uses the same graded plate, and the focused row wears a 16 px gold edge. Drop-in join stamps `MenuMannequin.Shape`: circle, triangle, square, diamond, in the seat fill on a dark well. Arena select, RESULTS, and Options are untouched.
+
+`ui-cvd protan=0.41 blue/lavender deutan=0.52 blue/lavender tritan=0.41 orange/lavender floor=0.35`. `ui-seat off=0.41/0.52/0.41`. The floor holds on the band. The lavender fill against blue is still under it (protan 0.23, deutan 0.34). `hot-path allocs before=101 after=0`. No new pose was animated: `no-clip pose=0`. Unity is not installed, so the frames in `Docs/UiStills/screens2/pass28/` are that live plate with the menu drawn on it.
+
 ## Later passes
 
 - Left from a rule row returns to the modes even when that rule can still decrease. Right from the right-hand mode, and Left at the end of a rule, already move between the columns.
