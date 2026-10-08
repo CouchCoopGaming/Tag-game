@@ -26,6 +26,7 @@ MODULES = (
     "sedan_midsize",
     "sedan_compact",
     "crossover_compact",
+    "hatch_compact",
     "bus_city40",
     "bus_city40_blue",
     "bus_city40_red",
@@ -174,6 +175,9 @@ def main():
     if only is None or "crossover" in only:
         print("SHOT", "crossover_compact")
         _sedan_set(found, "Crossover_Compact", "crossover_compact")
+    if only is None or "hatch" in only:
+        print("SHOT", "hatch_compact")
+        _sedan_set(found, "Hatch_Compact", "hatch_compact")
     if only is None or "bus" in only:
         # Door center from the same overhang used by the shell.
         door_z = 5.10

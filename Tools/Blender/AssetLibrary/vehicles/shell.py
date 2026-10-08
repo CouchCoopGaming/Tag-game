@@ -581,7 +581,7 @@ def add_sedan_colliders(asset, spec):
     cabin_z = (spec["doors"][0][1] + spec["doors"][1][0]) * 0.5
     asset.box("Col_Cabin", (0.0, 0.55, cabin_z), (spec["width"] * 0.62, 0.46, spec["wheelbase"] * 0.42))
     asset.box("Col_Roof", (0.0, spec["height"] - 0.09, spec["roof_z"]), (spec["width"] * 0.36, 0.036, spec["roof_len"]))
-    asset.box("Col_Hood", (0.0, spec["hood_col_y"], spec["hood_z"]), (spec["width"] * 0.58, spec["hood_col_h"], spec["hood_len"]))
+    asset.box("Col_Hood", (0.0, spec["hood_col_y"], spec["hood_z"]), (spec["width"] * 0.46, spec["hood_col_h"], spec["hood_len"]))
     asset.box("Col_Deck", (0.0, spec["deck_col_y"], spec["deck_z"]), (spec["width"] * 0.48, spec["deck_col_h"], spec["deck_len"]))
 
 
@@ -607,6 +607,7 @@ def make_sedan(
     length, width, height, wheelbase, track, front_overhang,
     tire_radius, tire_width, nose_y, paint, name,
     deck_ratio=0.745, roof_span=0.22, cowl_setback=0.38, belly=0.145,
+    c_pillar_deg=58.0,
 ):
     """Family-sedan silhouette. A-pillar is 60 degrees from vertical by construction."""
     z0 = -length * 0.5
@@ -626,7 +627,7 @@ def make_sedan(
     roof_rear_y = roof - 0.055
     deck_y = roof * deck_ratio
     c_dy = roof_rear_y - deck_y
-    c_dz = c_dy * math.tan(math.radians(58.0))
+    c_dz = c_dy * math.tan(math.radians(c_pillar_deg))
     roof_rear_z = header_z - (length * roof_span)
     # Keep a real roof length, then drop the C-pillar to the deck.
     if roof_rear_z > header_z - 0.70:
@@ -727,9 +728,9 @@ def make_sedan(
         "grille_w": half * 1.15,
         "bumper_y": 0.20,
         "hood_z": hood_z,
-        "hood_len": (z1 - cowl_z) * 0.40,
+        "hood_len": (z1 - cowl_z) * 0.28,
         "hood_col_y": hood_chord - 0.18,
-        "hood_col_h": 0.10,
+        "hood_col_h": 0.08,
         "deck_z": deck_z,
         "deck_len": (deck_front_z - z0) * 0.36,
         "deck_col_y": 0.56,
