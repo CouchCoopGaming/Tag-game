@@ -112,6 +112,9 @@ MODULES = (
     "sk_fence_weave",
     "sk_curb_return",
     "sk_litter_can",
+    "sk_sidewalk_gap",
+    "sk_road_bike",
+    "sk_ped_button",
 )
 
 

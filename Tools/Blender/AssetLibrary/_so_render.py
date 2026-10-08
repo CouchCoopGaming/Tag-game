@@ -87,6 +87,11 @@ PASSES = {
         ("curb_return", "StreetCurb_Return", 24.0, (-1.8, 0.0, 1.2), 200.0),
         ("litter_can", "LitterCan_Street", 18.0, (-1.05, 0.0, 0.55), 200.0),
     ),
+    9: (
+        ("sidewalk_gap", "Sidewalk_Gap", 200.0, (-2.3, 0.0, 1.4), 160.0),
+        ("road_bike", "StreetRoad_Bike", 18.0, (-2.2, 0.0, 1.4), 200.0),
+        ("ped_button", "PedButton_Post", 16.0, (-0.9, 0.0, 0.45), 200.0),
+    ),
 }
 
 
@@ -132,6 +137,9 @@ def _load(names):
         "Fence_ChainWeave": "sk_fence_weave",
         "StreetCurb_Return": "sk_curb_return",
         "LitterCan_Street": "sk_litter_can",
+        "Sidewalk_Gap": "sk_sidewalk_gap",
+        "StreetRoad_Bike": "sk_road_bike",
+        "PedButton_Post": "sk_ped_button",
     }
     for name in names:
         module = importlib.import_module(stems[name])

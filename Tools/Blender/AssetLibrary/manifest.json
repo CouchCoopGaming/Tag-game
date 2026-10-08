@@ -41355,5 +41355,291 @@
     ],
     "slackCm": 0.0,
     "fbx": "Assets/Art/Props/Library/StreetFurniture/LitterCan_Street.fbx"
+  },
+  {
+    "name": "Sidewalk_Gap",
+    "category": "StreetFurniture",
+    "blurb": "Sidewalk 2.00 x 4.00 m, top at 0.27 m. Open 12 mm expansion joint. Curb face is -X.",
+    "size": [
+      2.011,
+      0.275,
+      4.0
+    ],
+    "min": [
+      -1.011,
+      0.0,
+      -2.0
+    ],
+    "max": [
+      1.0,
+      0.275,
+      2.0
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 136,
+        "materials": [
+          "Lib_Concrete",
+          "Lib_Mortar",
+          "Lib_AsphaltWear"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 24,
+        "materials": [
+          "Lib_Concrete"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_SlabS",
+        "type": "box",
+        "center": [
+          0,
+          0.133,
+          -1.003
+        ],
+        "size": [
+          1.86,
+          0.258,
+          1.8
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_SlabN",
+        "type": "box",
+        "center": [
+          0,
+          0.133,
+          1.003
+        ],
+        "size": [
+          1.86,
+          0.258,
+          1.8
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "climbable": false,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "Curb face is 0.27 m from the pivot. Not a cling wall.",
+    "vaultNote": "Top is 0.15 m above the road. Not a vault.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1"
+    ],
+    "slackCm": 0.0,
+    "fbx": "Assets/Art/Props/Library/StreetFurniture/Sidewalk_Gap.fbx"
+  },
+  {
+    "name": "StreetRoad_Bike",
+    "category": "StreetFurniture",
+    "blurb": "Bike lane 1.80 x 4.00 m. Surface at 0.12 m. White edge line and a bike symbol.",
+    "size": [
+      1.8,
+      0.135,
+      4.0
+    ],
+    "min": [
+      -0.9,
+      0.0,
+      -2.0
+    ],
+    "max": [
+      0.9,
+      0.135,
+      2.0
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 432,
+        "materials": [
+          "Lib_Asphalt",
+          "Lib_AsphaltWear",
+          "Lib_AsphaltPatch",
+          "Lib_PaintWhite"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 24,
+        "materials": [
+          "Lib_Asphalt",
+          "Lib_PaintWhite"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_Slab",
+        "type": "box",
+        "center": [
+          0,
+          0.056,
+          0
+        ],
+        "size": [
+          1.74,
+          0.112,
+          3.94
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "climbable": false,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "Flat asphalt. Not a climb.",
+    "vaultNote": "Surface is 0.12 m. Not a vault.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1"
+    ],
+    "slackCm": 0.0,
+    "fbx": "Assets/Art/Props/Library/StreetFurniture/StreetRoad_Bike.fbx"
+  },
+  {
+    "name": "PedButton_Post",
+    "category": "StreetFurniture",
+    "blurb": "Pushbutton pole. Button center at 1.07 m. Pole 90 mm. PUSH in Liberation Sans.",
+    "size": [
+      0.22,
+      1.412,
+      0.22
+    ],
+    "min": [
+      -0.11,
+      0.0,
+      -0.11
+    ],
+    "max": [
+      0.11,
+      1.412,
+      0.11
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 736,
+        "materials": [
+          "Lib_SteelDark",
+          "Lib_Steel",
+          "Lib_PaintYellow",
+          "Lib_Black",
+          "Lib_PaintWhite"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 128,
+        "materials": [
+          "Lib_SteelDark",
+          "Lib_Steel",
+          "Lib_PaintYellow",
+          "Lib_Black",
+          "Lib_PaintWhite"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_Base",
+        "type": "box",
+        "center": [
+          0,
+          0.01,
+          0
+        ],
+        "size": [
+          0.14,
+          0.012,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Pole",
+        "type": "capsule",
+        "center": [
+          0,
+          0.48,
+          0
+        ],
+        "radius": 0.028,
+        "height": 0.8,
+        "direction": 1
+      },
+      {
+        "name": "Col_Head",
+        "type": "box",
+        "center": [
+          0,
+          1.07,
+          0.062
+        ],
+        "size": [
+          0.08,
+          0.12,
+          0.016
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "climbable": false,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "90 mm pole. Not a cling.",
+    "vaultNote": "Too short to vault.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1"
+    ],
+    "slackCm": 0.0,
+    "fbx": "Assets/Art/Props/Library/StreetFurniture/PedButton_Post.fbx"
   }
 ]
