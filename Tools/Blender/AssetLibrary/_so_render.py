@@ -135,6 +135,7 @@ PASSES = {
         ("mail_drop", "MailDrop_Corner", 200.0, (0.95, 0.0, 0.45), 30.0),
         ("bus_shelter", "BusShelter_City", 0.0, (2.35, 0.0, -1.15), 40.0),
         ("traffic_signal", "TrafficSignal_Mast", 18.0, (-1.15, 0.0, 1.05), 200.0),
+        ("ped_signal", "PedSignal_Crosswalk", 24.0, (-0.95, 0.0, 0.55), 200.0),
     ),
 }
 
@@ -152,6 +153,7 @@ _FRAME15 = {
     "mail_drop": (0.64, 14.0, 148.0, 0.38, 0.50, 0.30, 3.40),
     "bus_shelter": (0.72, 11.0, 158.0, 0.42, 0.58, 0.36, 8.20),
     "traffic_signal": (0.78, 8.0, 38.0, 0.55, 0.70, 0.42, 9.0),
+    "ped_signal": (0.62, 12.0, 36.0, 0.42, 0.48, 0.32, 4.20),
 }
 
 # Pass 11 frames the subject at about 70% and aims at the middle of the bounds.
@@ -224,6 +226,7 @@ def _load(names):
         "MailDrop_Corner": "sk_mail_drop",
         "BusShelter_City": "sk_bus_shelter",
         "TrafficSignal_Mast": "sk_traffic_signal",
+        "PedSignal_Crosswalk": "sk_ped_signal",
         "BikeRack_Wave": "sk_bike_wave",
     }
     for name in names:

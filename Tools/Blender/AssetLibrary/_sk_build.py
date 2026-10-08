@@ -116,6 +116,7 @@ MODULES = (
     "sk_sidewalk_gap",
     "sk_road_bike",
     "sk_ped_button",
+    "sk_ped_signal",
     "sk_sign_parking",
     "sk_valve_box",
     "sk_sign_aframe",
@@ -147,7 +148,7 @@ def _cutout_assets():
     """Write the alpha-cutout material and its texture importer. Other materials stay put."""
     png = os.path.join(ROOT, "..", "..", "..", "Assets", "Art", "Props", "Library", "Textures", "Lib_ChainMesh.png")
     png = os.path.normpath(png)
-    names = {"Lib_HonorGlass"}
+    names = {"Lib_HonorGlass", "Lib_SignalWhite"}
     if os.path.isfile(png):
         write_unity.texture_meta(png, "Lib_ChainMesh", size=512, cutout=True)
         names.update(("Lib_ChainMesh", "Lib_SignGreen"))

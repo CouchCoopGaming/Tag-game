@@ -43523,5 +43523,139 @@
     ],
     "slackCm": 0.0,
     "fbx": "Assets/Art/Props/Library/StreetFurniture/Sign_AFrame.fbx"
+  },
+  {
+    "name": "PedSignal_Crosswalk",
+    "category": "StreetFurniture",
+    "blurb": "Crosswalk signal. Hand and walking figure, head bottom 2.36 m, push button at 1.07 m. No words.",
+    "size": [
+      0.42,
+      3.335,
+      0.42
+    ],
+    "min": [
+      -0.21,
+      0.0,
+      -0.14
+    ],
+    "max": [
+      0.21,
+      3.335,
+      0.28
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 668,
+        "materials": [
+          "Lib_SteelDark",
+          "Lib_Steel",
+          "Lib_Black",
+          "Lib_SignalAmber",
+          "Lib_SignalWhite",
+          "Lib_PaintYellow"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 404,
+        "materials": [
+          "Lib_SteelDark",
+          "Lib_Steel",
+          "Lib_Black",
+          "Lib_SignalAmber",
+          "Lib_SignalWhite",
+          "Lib_PaintYellow"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_Base",
+        "type": "box",
+        "center": [
+          0,
+          0.014,
+          0
+        ],
+        "size": [
+          0.2,
+          0.02,
+          0.2
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Pole",
+        "type": "capsule",
+        "center": [
+          0,
+          1.15,
+          0
+        ],
+        "radius": 0.034,
+        "height": 2.1,
+        "direction": 1
+      },
+      {
+        "name": "Col_Head",
+        "type": "box",
+        "center": [
+          0,
+          2.75,
+          0.15
+        ],
+        "size": [
+          0.28,
+          0.58,
+          0.08
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Button",
+        "type": "box",
+        "center": [
+          0,
+          1.07,
+          0.11
+        ],
+        "size": [
+          0.06,
+          0.16,
+          0.04
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "climbable": false,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "100 mm pole. Not a cling.",
+    "vaultNote": "Too thin to vault.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1"
+    ],
+    "slackCm": 0.0,
+    "fbx": "Assets/Art/Props/Library/StreetFurniture/PedSignal_Crosswalk.fbx"
   }
 ]
