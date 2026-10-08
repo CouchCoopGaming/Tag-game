@@ -43872,5 +43872,136 @@
     ],
     "slackCm": 0.35,
     "fbx": "Assets/Art/Props/Library/StreetFurniture/PayStation_Street.fbx"
+  },
+  {
+    "name": "Newsstand_Corner",
+    "category": "StreetFurniture",
+    "blurb": "Newsstand, 1.80 m wide, roof 2.17 m. Service hatch, counter, blank side racks. No masthead.",
+    "size": [
+      1.98,
+      2.172,
+      1.63
+    ],
+    "min": [
+      -0.99,
+      0.0,
+      -0.7
+    ],
+    "max": [
+      0.99,
+      2.172,
+      0.93
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 848,
+        "materials": [
+          "Lib_PaintGreen",
+          "Lib_BoxGreen",
+          "Lib_Black",
+          "Lib_Steel",
+          "Lib_SteelDark",
+          "Lib_PaintCream",
+          "Lib_PaintWhite",
+          "Lib_PaintRed",
+          "Lib_BoxBlue",
+          "Lib_PaintTeal",
+          "Lib_Brass"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 252,
+        "materials": [
+          "Lib_PaintGreen",
+          "Lib_BoxGreen",
+          "Lib_Black",
+          "Lib_Steel",
+          "Lib_PaintRed",
+          "Lib_BoxBlue",
+          "Lib_PaintCream",
+          "Lib_PaintTeal",
+          "Lib_PaintWhite",
+          "Lib_SteelDark"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_Body",
+        "type": "box",
+        "center": [
+          0,
+          1.05,
+          0
+        ],
+        "size": [
+          1.72,
+          2.02,
+          1.12
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Roof",
+        "type": "box",
+        "center": [
+          0,
+          2.14,
+          0
+        ],
+        "size": [
+          1.84,
+          0.048,
+          1.24
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Counter",
+        "type": "box",
+        "center": [
+          0,
+          1.1,
+          0.77
+        ],
+        "size": [
+          1.16,
+          0.024,
+          0.2
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "climbable": false,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "Roof is the stand.",
+    "vaultNote": "Counter lip is 1.12 m.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1"
+    ],
+    "slackCm": 0.0,
+    "fbx": "Assets/Art/Props/Library/StreetFurniture/Newsstand_Corner.fbx"
   }
 ]

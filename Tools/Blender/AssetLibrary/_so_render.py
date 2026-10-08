@@ -144,6 +144,7 @@ PASSES = {
         ("bike_rack", "BikeRack_Hoop3", 0.0, (0.20, 0.0, 1.15), 80.0),
         ("fire_alarm", "FireAlarm_Box", 180.0, (0.75, 0.0, 0.05), 20.0),
         ("pay_station", "PayStation_Street", 180.0, (0.85, 0.0, 0.08), 18.0),
+        ("newsstand", "Newsstand_Corner", 180.0, (1.55, 0.0, 0.15), 18.0),
     ),
 }
 
@@ -170,6 +171,7 @@ _FRAME15 = {
     "bike_rack": (0.62, 14.0, 72.0, 0.42, 0.48, 0.34, 4.60),
     "fire_alarm": (0.62, 12.0, 158.0, 0.40, 0.50, 0.32, 3.60),
     "pay_station": (0.66, 12.0, 156.0, 0.42, 0.52, 0.34, 3.80),
+    "newsstand": (0.78, 11.0, 214.0, 0.42, 0.58, 0.36, 5.60),
 }
 
 # Pass 11 frames the subject at about 70% and aims at the middle of the bounds.
@@ -241,6 +243,7 @@ def _load(names):
         "BikeRack_Hoop3": "sk_bike_wave",
         "FireAlarm_Box": "sk_fire_alarm",
         "PayStation_Street": "sk_pay_station",
+        "Newsstand_Corner": "sk_newsstand",
         "MailDrop_Corner": "sk_mail_drop",
         "BusShelter_City": "sk_bus_shelter",
         "TrafficSignal_Mast": "sk_traffic_signal",
