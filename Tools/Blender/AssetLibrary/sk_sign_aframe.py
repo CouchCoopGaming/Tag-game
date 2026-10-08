@@ -1,6 +1,6 @@
 """Sidewalk chalkboard A-frame.
 
-Wood stiles are the legs. The feet are pads those legs stand in.
+Wood stiles are the legs. Each leg ends in a rubber cap.
 A barrel hinge joins the top rails. A chain on each side keeps the stance.
 OPEN and a short generic menu are Overpass Bold (OFL) on both faces.
 """
@@ -47,7 +47,7 @@ def create():
     a = Asset(
         "Sign_AFrame",
         "StreetFurniture",
-        "Chalkboard A-frame 0.58 m wide and 0.88 m tall. Hinge, spreader chains, feet on the legs. OPEN on both faces.",
+        "Chalkboard A-frame 0.58 m wide and 0.88 m tall. Hinge, spreader chains, rubber caps on the legs. OPEN on both faces.",
     )
     a.climb_note = "Smooth board. Not a cling."
     a.vault_note = "Too short to vault."
@@ -58,9 +58,9 @@ def create():
         for x in (-0.26, 0.26):
             g.box(_front(0.0, 0.0, x), (0.040, 0.90, 0.036), "Lib_Wood", bevel=bev, segs=bs, euler=(-ANG, 0, 0))
             g.box(_back(0.0, 0.0, x), (0.040, 0.90, 0.036), "Lib_Wood", bevel=bev, segs=bs, euler=(ANG, 0, 0))
-            # Pad the leg stands in. The stile bottom lands inside it.
-            g.box((x, 0.011, 0.348), (0.090, 0.022, 0.110), "Lib_WoodDark")
-            g.box((x, 0.011, -0.348), (0.090, 0.022, 0.110), "Lib_WoodDark")
+            # Rubber cap sleeved on the leg end, not a separate shoe.
+            g.box(_front(-0.43, 0.0, x), (0.050, 0.055, 0.046), "Lib_Black", euler=(-ANG, 0, 0))
+            g.box(_back(-0.43, 0.0, x), (0.050, 0.055, 0.046), "Lib_Black", euler=(ANG, 0, 0))
         g.box(_front(0.40, 0.006), (0.58, 0.048, 0.064), "Lib_Wood", bevel=bev, segs=bs, euler=(-ANG, 0, 0))
         g.box(_back(0.40, 0.006), (0.58, 0.048, 0.064), "Lib_Wood", bevel=bev, segs=bs, euler=(ANG, 0, 0))
         g.box(_front(-0.32, 0.004), (0.58, 0.042, 0.040), "Lib_Wood", bevel=bev, segs=bs, euler=(-ANG, 0, 0))

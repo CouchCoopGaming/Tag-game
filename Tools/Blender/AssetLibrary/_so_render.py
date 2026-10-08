@@ -105,6 +105,12 @@ PASSES = {
         ("curb_return", "StreetCurb_Return", 28.0, (-1.85, 0.0, 1.20), 200.0),
         ("ped_button", "PedButton_Post", 18.0, (-0.95, 0.0, 0.50), 200.0),
     ),
+    12: (
+        ("fence_weave", "Fence_ChainWeave", 18.0, (-2.05, 0.0, 0.85), 200.0),
+        ("fence_chain", "Fence_ChainGate", 16.0, (-2.15, 0.0, 0.85), 200.0),
+        ("sign_street", "Sign_StreetName", 22.0, (-1.35, 0.0, 0.70), 200.0),
+        ("sign_aframe", "Sign_AFrame", 28.0, (-1.15, 0.0, 0.55), 200.0),
+    ),
 }
 
 # Pass 11 frames the subject at about 70% and aims at the middle of the bounds.
@@ -115,6 +121,7 @@ _FRAME11 = {
     "litter_can": (0.70, 12.0, 40.0),
     "curb_return": (0.70, 22.0, 48.0),
     "ped_button": (0.70, 12.0, 36.0),
+    "fence_chain": (0.70, 11.0, 40.0),
 }
 
 
@@ -293,15 +300,15 @@ def main():
         if ONLY and ONLY not in key:
             continue
         kind = "asphalt" if any(part in key for part in ("barrier", "road", "curb", "median")) else "concrete"
-        tuned = _FRAME11.get(key) if PASS == 11 else None
+        tuned = _FRAME11.get(key) if PASS >= 11 else None
         fill, elevation, azimuth = tuned if tuned else (0.78, 16.0, 38.0)
-        aim = 0.50 if PASS == 11 else 0.42
+        aim = 0.50 if PASS >= 11 else 0.42
         print("SHOT", key)
         _hero(
             found[name], os.path.join(STILL_DIR, key + ".png"),
             kind=kind, yaw=yaw, fill=fill, elevation=elevation, azimuth=azimuth, aim_frac=aim,
         )
-        if PASS == 11 and key == "sign_street":
+        if PASS >= 11 and key == "sign_street":
             print("SHOT", key + "_blades")
             _blades(found[name], os.path.join(STILL_DIR, key + "_blades.png"), yaw=28.0)
         print("SHOT", key + "_scale")
@@ -312,9 +319,9 @@ def main():
             hier_pos,
             hier_yaw,
             kind=kind,
-            fill=0.72 if PASS == 11 else 0.80,
-            elevation=elevation if PASS == 11 else 12.0,
-            azimuth=36.0 if PASS == 11 else 32.0,
+            fill=0.72 if PASS >= 11 else 0.80,
+            elevation=elevation if PASS >= 11 else 12.0,
+            azimuth=36.0 if PASS >= 11 else 32.0,
             aim_frac=aim,
         )
     print("STREET_OBJECTS_STILLS", STILL_DIR)

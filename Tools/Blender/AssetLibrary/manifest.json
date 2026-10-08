@@ -40098,42 +40098,44 @@
   {
     "name": "Fence_ChainGate",
     "category": "StreetFurniture",
-    "blurb": "Chain-link bay 2.44 m long, top rail at 1.83 m. Gate leaf about 1.20 m. Mesh is a sheet with diagonal wires.",
+    "blurb": "Chain-link gate bay 2.44 m. Diamond cutout, two hinges, fork latch. Top of the leaf at 1.78 m.",
     "size": [
-      2.56,
+      2.57,
       2.018,
-      0.12
+      0.13
     ],
     "min": [
-      -1.28,
+      -1.285,
       0.0,
-      -0.06
+      -0.065
     ],
     "max": [
-      1.28,
+      1.285,
       2.018,
-      0.06
+      0.065
     ],
     "lods": [
       {
         "lod": 0,
-        "tris": 560,
+        "tris": 1344,
         "materials": [
           "Lib_Steel",
           "Lib_Concrete",
-          "Lib_Chain",
-          "Lib_SteelDark"
+          "Lib_ChainMesh",
+          "Lib_SteelDark",
+          "Lib_Chain"
         ],
         "mesh": "LOD0",
         "fileID": -1633821710574564935
       },
       {
         "lod": 1,
-        "tris": 444,
+        "tris": 1020,
         "materials": [
           "Lib_Steel",
           "Lib_Concrete",
-          "Lib_Chain"
+          "Lib_ChainMesh",
+          "Lib_SteelDark"
         ],
         "mesh": "LOD1",
         "fileID": -179393741545503174
@@ -40148,20 +40150,20 @@
           0.95,
           0
         ],
-        "radius": 0.018,
-        "height": 1.4,
+        "radius": 0.016,
+        "height": 1.5,
         "direction": 1
       },
       {
         "name": "Col_PostH",
         "type": "capsule",
         "center": [
-          -0.1,
+          -0.06,
           0.95,
           0
         ],
-        "radius": 0.018,
-        "height": 1.4,
+        "radius": 0.016,
+        "height": 1.5,
         "direction": 1
       },
       {
@@ -40172,22 +40174,22 @@
           0.95,
           0
         ],
-        "radius": 0.018,
-        "height": 1.4,
+        "radius": 0.016,
+        "height": 1.5,
         "direction": 1
       },
       {
-        "name": "Col_Mesh",
+        "name": "Col_Fixed",
         "type": "box",
         "center": [
-          -0.66,
+          -0.62,
           0.95,
-          0
+          0.016
         ],
         "size": [
-          0.72,
-          1.2,
-          0.004
+          0.7,
+          1.3,
+          0.01
         ],
         "euler": [
           0,
@@ -40201,12 +40203,12 @@
         "center": [
           0.56,
           0.95,
-          0.012
+          0.016
         ],
         "size": [
-          0.8,
+          0.6,
           1.1,
-          0.004
+          0.01
         ],
         "euler": [
           0,
@@ -40218,8 +40220,8 @@
     "climbable": false,
     "vaultable": false,
     "vaultHeight": 0.0,
-    "climbNote": "Mesh is not a solid cling.",
-    "vaultNote": "Top rail is 1.83 m.",
+    "climbNote": "The fabric is a cutout sheet. Not a solid cling.",
+    "vaultNote": "Header is 1.90 m.",
     "warnings": [],
     "fbxNames": [
       "LODBoxS",
@@ -40782,43 +40784,43 @@
   {
     "name": "Sign_StreetName",
     "category": "StreetFurniture",
-    "blurb": "Street blades 0.91 x 0.23 m and 0.61 x 0.23 m. Bottoms at 2.74 m and 3.01 m. Slip base. MAIN and 5TH in Overpass.",
+    "blurb": "Street blades 0.91 x 0.23 m and 0.76 x 0.23 m, 3 mm thick. Bottoms at 2.74 m and 3.01 m. Slip base. MAIN ST and 5TH AVE in Overpass.",
     "size": [
-      0.91,
-      3.258,
-      0.61
+      0.92,
+      3.336,
+      0.768
     ],
     "min": [
-      -0.455,
+      -0.46,
       0.0,
-      -0.305
+      -0.384
     ],
     "max": [
-      0.455,
-      3.258,
-      0.305
+      0.46,
+      3.336,
+      0.384
     ],
     "lods": [
       {
         "lod": 0,
-        "tris": 2064,
+        "tris": 2884,
         "materials": [
           "Lib_SteelDark",
           "Lib_Steel",
-          "Lib_SignGreen",
-          "Lib_PaintWhite"
+          "Lib_PaintWhite",
+          "Lib_SignGreen"
         ],
         "mesh": "LOD0",
         "fileID": -1633821710574564935
       },
       {
         "lod": 1,
-        "tris": 448,
+        "tris": 524,
         "materials": [
           "Lib_SteelDark",
           "Lib_Steel",
-          "Lib_SignGreen",
-          "Lib_PaintWhite"
+          "Lib_PaintWhite",
+          "Lib_SignGreen"
         ],
         "mesh": "LOD1",
         "fileID": -179393741545503174
@@ -40857,17 +40859,17 @@
         "direction": 1
       },
       {
-        "name": "Col_MainF",
+        "name": "Col_Main",
         "type": "box",
         "center": [
-          0.3,
+          -0.42,
           2.855,
-          0.054
+          0.041
         ],
         "size": [
-          0.24,
-          0.14,
-          0.008
+          0.04,
+          0.08,
+          0.0015
         ],
         "euler": [
           0,
@@ -40876,55 +40878,17 @@
         ]
       },
       {
-        "name": "Col_MainB",
+        "name": "Col_Fifth",
         "type": "box",
         "center": [
-          -0.3,
-          2.855,
-          -0.054
-        ],
-        "size": [
-          0.24,
-          0.14,
-          0.008
-        ],
-        "euler": [
-          0,
-          0,
-          0
-        ]
-      },
-      {
-        "name": "Col_FifthF",
-        "type": "box",
-        "center": [
-          0.054,
+          0.041,
           3.125,
-          0.18
+          -0.34
         ],
         "size": [
-          0.008,
-          0.14,
-          0.14
-        ],
-        "euler": [
-          0,
-          0,
-          0
-        ]
-      },
-      {
-        "name": "Col_FifthB",
-        "type": "box",
-        "center": [
-          -0.054,
-          3.125,
-          -0.18
-        ],
-        "size": [
-          0.008,
-          0.14,
-          0.14
+          0.0015,
+          0.08,
+          0.04
         ],
         "euler": [
           0,
@@ -40944,7 +40908,7 @@
       "LOD0",
       "LOD1"
     ],
-    "slackCm": 0.7,
+    "slackCm": 0.45,
     "fbx": "Assets/Art/Props/Library/StreetFurniture/Sign_StreetName.fbx"
   },
   {
@@ -40969,7 +40933,7 @@
     "lods": [
       {
         "lod": 0,
-        "tris": 892,
+        "tris": 1228,
         "materials": [
           "Lib_Steel",
           "Lib_Concrete",
@@ -40982,7 +40946,7 @@
       },
       {
         "lod": 1,
-        "tris": 432,
+        "tris": 768,
         "materials": [
           "Lib_Steel",
           "Lib_Concrete",
@@ -41864,21 +41828,21 @@
   {
     "name": "Sign_AFrame",
     "category": "StreetFurniture",
-    "blurb": "Chalkboard A-frame 0.58 m wide and 0.88 m tall. Hinge, spreader chains, feet on the legs. OPEN on both faces.",
+    "blurb": "Chalkboard A-frame 0.58 m wide and 0.88 m tall. Hinge, spreader chains, rubber caps on the legs. OPEN on both faces.",
     "size": [
-      0.61,
-      0.856,
-      0.806
+      0.58,
+      0.861,
+      0.723
     ],
     "min": [
-      -0.305,
-      0.0,
-      -0.403
+      -0.29,
+      -0.005,
+      -0.361
     ],
     "max": [
-      0.305,
+      0.29,
       0.856,
-      0.403
+      0.361
     ],
     "lods": [
       {
@@ -41886,7 +41850,6 @@
         "tris": 5502,
         "materials": [
           "Lib_Wood",
-          "Lib_WoodDark",
           "Lib_Black",
           "Lib_SteelDark",
           "Lib_Steel",
@@ -41901,7 +41864,6 @@
         "tris": 196,
         "materials": [
           "Lib_Wood",
-          "Lib_WoodDark",
           "Lib_Black",
           "Lib_SteelDark"
         ],

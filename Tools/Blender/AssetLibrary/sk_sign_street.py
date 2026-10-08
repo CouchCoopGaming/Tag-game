@@ -1,8 +1,8 @@
-"""Street-name blades. 9 in tall. MAIN faces ±Z. 5TH faces ±X.
+"""Street-name blades. One 3 mm sheet each, not a pair of thick plates.
 
-Legends are Overpass Bold (OFL), a grotesque in the Highway Gothic family.
-Each blade is a reflective green plate with a thin white border, on both faces.
-The base is a slip-base anchor plate at the sidewalk.
+MAIN is 36 x 9 in and faces +Z. 5TH AVE is 30 x 9 in and faces +X.
+Letters are about two thirds of the blade height, Overpass Bold (OFL).
+A cast hub and two clamp straps hold each blade off the pole.
 """
 
 import os
@@ -22,7 +22,7 @@ def create():
     a = Asset(
         "Sign_StreetName",
         "StreetFurniture",
-        "Street blades 0.91 x 0.23 m and 0.61 x 0.23 m. Bottoms at 2.74 m and 3.01 m. Slip base. MAIN and 5TH in Overpass.",
+        "Street blades 0.91 x 0.23 m and 0.76 x 0.23 m, 3 mm thick. Bottoms at 2.74 m and 3.01 m. Slip base. MAIN ST and 5TH AVE in Overpass.",
     )
     a.climb_note = "60 mm pole. Not a cling."
     a.vault_note = "Blades are thin and high."
@@ -38,35 +38,58 @@ def create():
                 g.cylinder((x, 0.016, z), 0.008, 0.012, "Lib_Steel", 6)
         g.cylinder((0, 0.028, 0), 0.055, 0.016, "Lib_Steel", seg)
         g.cylinder((0, 0.052, 0), 0.048, 0.020, "Lib_SteelDark", seg)
-        g.cylinder((0, 1.64, 0), 0.030, 3.16, "Lib_Steel", seg)
-        g.sphere((0, 3.22, 0), 0.038, "Lib_Steel", seg)
-        g.cylinder((0, 2.98, 0), 0.046, 0.10, "Lib_SteelDark", seg)
-        # MAIN, both faces. The plate is thick enough for an 8 mm collider inset.
-        for zc, face in ((0.054, 1.0), (-0.054, -1.0)):
-            g.box((0, 2.855, zc), (0.91, 0.229, 0.016), "Lib_SignGreen", bevel=bev, segs=bs)
-            g.box((0, 2.855, zc + face * 0.009), (0.86, 0.198, 0.004), "Lib_PaintWhite")
-            g.box((0, 2.855, zc + face * 0.012), (0.80, 0.150, 0.005), "Lib_SignGreen")
-        for y in (2.78, 2.93):
-            g.box((0, y, 0.038), (0.07, 0.028, 0.040), "Lib_Steel", bevel=bev, segs=bs)
-            g.box((0, y, -0.038), (0.07, 0.028, 0.040), "Lib_Steel", bevel=bev, segs=bs)
-        for xc, face in ((0.054, 1.0), (-0.054, -1.0)):
-            g.box((xc, 3.125, 0), (0.016, 0.229, 0.61), "Lib_SignGreen", bevel=bev, segs=bs)
-            g.box((xc + face * 0.009, 3.125, 0), (0.004, 0.198, 0.56), "Lib_PaintWhite")
-            g.box((xc + face * 0.012, 3.125, 0), (0.005, 0.150, 0.50), "Lib_SignGreen")
-        for y in (3.05, 3.20):
-            g.box((0.038, y, 0), (0.040, 0.028, 0.07), "Lib_Steel", bevel=bev, segs=bs)
-            g.box((-0.038, y, 0), (0.040, 0.028, 0.07), "Lib_Steel", bevel=bev, segs=bs)
+        g.cylinder((0, 1.66, 0), 0.030, 3.24, "Lib_Steel", seg)
+        g.sphere((0, 3.30, 0), 0.036, "Lib_Steel", seg)
+        # One 3 mm blade per street, clear of the pole. White core, green both faces.
+        _blade(g, "z", 2.855, 0.914, bev, bs)
+        _blade(g, "x", 3.125, 0.762, bev, bs)
+        # Cast hubs. Clamp straps bite the pole and the blade. Bolt heads sit on the face.
+        g.cylinder((0, 2.855, 0), 0.044, 0.055, "Lib_SteelDark", seg)
+        g.cylinder((0, 3.125, 0), 0.044, 0.055, "Lib_SteelDark", seg)
+        for y in (2.775, 2.935):
+            g.box((0, y, 0.024), (0.040, 0.014, 0.032), "Lib_Steel", bevel=bev, segs=bs)
+            g.cylinder((0.0, y, 0.044), 0.007, 0.005, "Lib_Steel", 6, axis="Z")
+        for y in (3.045, 3.205):
+            g.box((0.024, y, 0), (0.032, 0.014, 0.040), "Lib_Steel", bevel=bev, segs=bs)
+            g.cylinder((0.044, y, 0.0), 0.007, 0.005, "Lib_Steel", 6, axis="X")
         if lod == 0:
-            g.text("MAIN", (0, 2.855, 0.070), 0.10, "Lib_PaintWhite", extrude=0.002, font=_FONT)
-            g.text("MAIN", (0, 2.855, -0.070), 0.10, "Lib_PaintWhite", extrude=0.002, yaw=180.0, font=_FONT)
-            g.text("5TH", (0.070, 3.125, 0), 0.09, "Lib_PaintWhite", extrude=0.002, yaw=90.0, font=_FONT)
-            g.text("5TH", (-0.070, 3.125, 0), 0.09, "Lib_PaintWhite", extrude=0.002, yaw=-90.0, font=_FONT)
+            # Cap height is about 0.7 of the em. 0.20 m is roughly 6 in on a 9 in blade.
+            g.text("MAIN", (-0.10, 2.855, 0.044), 0.23, "Lib_PaintWhite", extrude=0.001, font=_FONT)
+            g.text("ST", (0.34, 2.830, 0.044), 0.10, "Lib_PaintWhite", extrude=0.001, font=_FONT)
+            g.text("MAIN", (-0.10, 2.855, 0.038), 0.23, "Lib_PaintWhite", extrude=0.001, yaw=180.0, font=_FONT)
+            g.text("ST", (0.34, 2.830, 0.038), 0.10, "Lib_PaintWhite", extrude=0.001, yaw=180.0, font=_FONT)
+            g.text("5TH", (0.044, 3.125, -0.08), 0.21, "Lib_PaintWhite", extrude=0.001, yaw=90.0, font=_FONT)
+            g.text("AVE", (0.044, 3.100, 0.22), 0.09, "Lib_PaintWhite", extrude=0.001, yaw=90.0, font=_FONT)
+            g.text("5TH", (0.038, 3.125, -0.08), 0.21, "Lib_PaintWhite", extrude=0.001, yaw=-90.0, font=_FONT)
+            g.text("AVE", (0.038, 3.100, 0.22), 0.09, "Lib_PaintWhite", extrude=0.001, yaw=-90.0, font=_FONT)
         a.end()
     a.box("Col_Base", (0, 0.005, 0), (0.12, 0.006, 0.12))
     a.capsule("Col_Pole", (0, 1.30, 0), 0.018, 2.30)
-    # Wings of each plate, clear of the pole, the saddles, the border, and the legends.
-    a.box("Col_MainF", (0.30, 2.855, 0.054), (0.24, 0.14, 0.008))
-    a.box("Col_MainB", (-0.30, 2.855, -0.054), (0.24, 0.14, 0.008))
-    a.box("Col_FifthF", (0.054, 3.125, 0.18), (0.008, 0.14, 0.14))
-    a.box("Col_FifthB", (-0.054, 3.125, -0.18), (0.008, 0.14, 0.14))
+    # Tips of each sheet, past the legend and clear of the clamps.
+    a.box("Col_Main", (-0.42, 2.855, 0.041), (0.04, 0.08, 0.0015))
+    a.box("Col_Fifth", (0.041, 3.125, -0.34), (0.0015, 0.08, 0.04))
     return a
+
+
+def _blade(g, axis, y, length, bev, bs):
+    """One flanged sheet. axis 'z' faces the street. axis 'x' faces the cross street."""
+    thick = 0.003
+    tall = 0.229
+    if axis == "z":
+        g.box((0, y, 0.041), (length, tall, thick), "Lib_PaintWhite", bevel=bev, segs=bs)
+        g.box((0, y, 0.0432), (length - 0.028, tall - 0.028, 0.0012), "Lib_SignGreen")
+        g.box((0, y, 0.0388), (length - 0.028, tall - 0.028, 0.0012), "Lib_SignGreen")
+        lip = 0.008
+        g.box((0, y + tall * 0.5, 0.041), (length, 0.006, lip), "Lib_PaintWhite")
+        g.box((0, y - tall * 0.5, 0.041), (length, 0.006, lip), "Lib_PaintWhite")
+        g.box((length * 0.5, y, 0.041), (0.006, tall, lip), "Lib_PaintWhite")
+        g.box((-length * 0.5, y, 0.041), (0.006, tall, lip), "Lib_PaintWhite")
+    else:
+        g.box((0.041, y, 0), (thick, tall, length), "Lib_PaintWhite", bevel=bev, segs=bs)
+        g.box((0.0432, y, 0), (0.0012, tall - 0.028, length - 0.028), "Lib_SignGreen")
+        g.box((0.0388, y, 0), (0.0012, tall - 0.028, length - 0.028), "Lib_SignGreen")
+        lip = 0.008
+        g.box((0.041, y + tall * 0.5, 0), (lip, 0.006, length), "Lib_PaintWhite")
+        g.box((0.041, y - tall * 0.5, 0), (lip, 0.006, length), "Lib_PaintWhite")
+        g.box((0.041, y, length * 0.5), (lip, tall, 0.006), "Lib_PaintWhite")
+        g.box((0.041, y, -length * 0.5), (lip, tall, 0.006), "Lib_PaintWhite")

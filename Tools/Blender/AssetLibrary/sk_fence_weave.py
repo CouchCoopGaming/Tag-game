@@ -45,17 +45,21 @@ def create():
         g.cylinder((0.05, 1.83, 0), 0.016, 2.55, "Lib_Steel", seg, axis="X")
         # Bottom tension wire, 5 cm off the ground, inside the fabric.
         g.cylinder((0.0, 0.05, 0.016), 0.0035, 2.36, "Lib_Steel", 6, axis="X")
-        # Tension bars bite the fabric and the clamp bands bite the end posts.
-        for x in (-1.05, 1.05):
-            g.box((x, 0.95, 0.016), (0.012, 1.76, 0.022), "Lib_SteelDark")
-        for band in (-1.16, 1.16):
-            for y in (0.40, 0.95, 1.55):
-                g.box((band, y, 0.014), (0.14, 0.030, 0.040), "Lib_Steel")
+        # Tension bars sit on the fabric edge, flush with the sheet.
+        g.box((-1.185, 0.95, 0.016), (0.008, 1.72, 0.008), "Lib_SteelDark")
+        g.box((1.185, 0.95, 0.016), (0.008, 1.72, 0.008), "Lib_SteelDark")
+        # Clamp bands hug the end posts. A carriage bolt heads the band.
+        for x, face in ((-1.22, -1.0), (1.22, 1.0)):
+            radius = 0.030 if x < 0 else 0.024
+            for y in (0.40, 0.95, 1.50):
+                g.cylinder((x, y, 0), radius + 0.006, 0.014, "Lib_Steel", 8)
+                g.cylinder((x, y, face * 0.032), 0.005, 0.020, "Lib_Steel", 6, axis="Z")
+                g.cylinder((x, y, face * 0.044), 0.009, 0.004, "Lib_SteelDark", 6, axis="Z")
         # Fabric runs into the posts. 16 mm thick so an 8 mm collider inset stays inside.
         g.box((0, 0.95, 0.016), (2.40, 1.82, 0.016), "Lib_ChainMesh", bevel=0, uv_scale=_UV)
         # Brace on the back face, from the terminal post up to the top rail.
         polyline(g, [(-1.18, 1.42, -0.02), (-0.55, 1.83, -0.012)], 0.012, "Lib_Steel", seg)
-        g.cylinder((-1.20, 1.42, -0.012), 0.040, 0.028, "Lib_SteelDark", 8)
+        g.cylinder((-1.22, 1.42, 0), 0.038, 0.016, "Lib_SteelDark", 8)
         if lod == 0:
             # Knuckle the fabric over the top rail.
             x = -0.96
