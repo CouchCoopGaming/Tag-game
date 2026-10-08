@@ -233,6 +233,10 @@ The chase path is a light warm tan, about #C8A878, and the concrete that shows i
 
 Character select draws each runner from the color pair on its card. The chest is the first color, the body is the second, and the gold ring sits on that same first swatch. The card is a dark navy panel with a seat-colored border, so the runner does not sink into the card. The runners fill about half the card, and the joints are charcoal so the tint reads. The thin aslate lip beside the P2 path is a grey concrete curb. The tan path and the RESULTS cards stay. Mockups are in `Docs/UiStills/pass21/`.
 
+## Pass 22
+
+The match runner, the RESULTS figures, and the stat-card accent use the same color pair as character select. The seat color stays on the card border, the HUD edge, and the P# tag. P4 is Lavender / Mint, because Tan / Red is the same pair as Red / Tan. A chip whose pair is already taken is gray. READY sits under the swatches, not on the legs. Pause keeps COMIC WORDS ON inside the panel. Options puts that line on a navy plate. Mockups are in `Docs/UiStills/pass22/`.
+
 ## Later passes
 
 - A 2D focus grid on rules so Left from a rule row lands on a mode tile.

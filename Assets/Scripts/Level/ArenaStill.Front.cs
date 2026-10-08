@@ -441,16 +441,14 @@ namespace Tag.Level
                 ShadowTri(park[i], shadow, 768, sox, soy, soz, srx, sry, srz, sux, suy, suz, lsx, lsy, lsz, half);
             }
             bool hier = LoadHier();
-            float[] sr = { 0.95f, 0.16f, 1f, 0.16f };
-            float[] sg = { 0.16f, 0.45f, 0.86f, 0.82f };
-            float[] sb = { 0.22f, 1f, 0.12f, 0.28f };
             for (int i = 0; i < 4; i++)
             {
                 ParkArena.HumanSeat(ParkArena.Mega, i, out float px, out float py, out float pz, out float yaw);
                 var tris = new List<Tri>(park.Count + 64);
                 tris.AddRange(park);
-                if (hier) AddHier(tris, px, py, pz, yaw, sr[i], sg[i], sb[i]);
-                else AddRunner(tris, px, py, pz, sr[i], sg[i], sb[i]);
+                LookPair(i, out float chestR, out float chestG, out float chestB, out float bodyR, out float bodyG, out float bodyB);
+                if (hier) AddHier(tris, px, py, pz, yaw, bodyR, bodyG, bodyB, chestR, chestG, chestB, false);
+                else AddRunner(tris, px, py, pz, chestR, chestG, chestB);
                 AddContact(tris, px, py, pz);
                 var seatShadow = (float[])shadow.Clone();
                 for (int t = park.Count; t < tris.Count; t++)
@@ -531,29 +529,40 @@ namespace Tag.Level
         }
 
         /// <summary>
-        /// Character-card portraits. The chest shell is the first palette
-        /// color and the body is the second, matching the card label. Joints
-        /// stay charcoal so the pair reads. HUD chases keep the seat tint.
+        /// One look per seat. Chest is the first color, body the second.
+        /// Red/Tan, Blue/Mint, Orange/Lavender, Lavender/Mint. The last pair
+        /// is not the reverse of the first, so the four reads stay apart.
+        /// </summary>
+        static void LookPair(int seat, out float chestR, out float chestG, out float chestB, out float bodyR, out float bodyG, out float bodyB)
+        {
+            float[] cr = { 224f / 255f, 107f / 255f, 240f / 255f, 178f / 255f };
+            float[] cg = { 56f / 255f, 173f / 255f, 107f / 255f, 148f / 255f };
+            float[] cb = { 61f / 255f, 235f / 255f, 36f / 255f, 224f / 255f };
+            float[] br = { 230f / 255f, 107f / 255f, 178f / 255f, 107f / 255f };
+            float[] bg = { 194f / 255f, 209f / 255f, 148f / 255f, 209f / 255f };
+            float[] bb = { 133f / 255f, 178f / 255f, 224f / 255f, 178f / 255f };
+            int i = seat < 0 ? 0 : (seat > 3 ? 3 : seat);
+            chestR = cr[i]; chestG = cg[i]; chestB = cb[i];
+            bodyR = br[i]; bodyG = bg[i]; bodyB = bb[i];
+        }
+
+        /// <summary>
+        /// Character-card portraits. Same pairs as the chase runners. Joints
+        /// stay charcoal here so the tint reads on the navy card.
         /// </summary>
         static int WriteIdlePortraits(string folder)
         {
             int n = 0;
             string docs = RepoDocs();
             if (docs == null) return 0;
-            // Red/Tan, Blue/Mint, Orange/Lavender, Tan/Red. Same order as the cards.
-            float[] br = { 224f / 255f, 107f / 255f, 240f / 255f, 230f / 255f };
-            float[] bg = { 56f / 255f, 173f / 255f, 107f / 255f, 194f / 255f };
-            float[] bb = { 61f / 255f, 235f / 255f, 36f / 255f, 133f / 255f };
-            float[] pr = { 230f / 255f, 107f / 255f, 178f / 255f, 224f / 255f };
-            float[] pg = { 194f / 255f, 209f / 255f, 148f / 255f, 56f / 255f };
-            float[] pb = { 133f / 255f, 178f / 255f, 224f / 255f, 61f / 255f };
             for (int i = 0; i < 4; i++)
             {
                 string src = Path.Combine(docs, "UiStills", "hier-idle-" + i.ToString() + ".tris");
                 if (!LoadHierFile(src)) continue;
                 var tris = new List<Tri>(8);
                 AddBox(tris, 0f, -0.04f, 0f, 2.6f, 0.08f, 2.6f, 183f / 255f, 164f / 255f, 114f / 255f);
-                AddHier(tris, 0f, 0f, 0f, 16f, pr[i], pg[i], pb[i], br[i], bg[i], bb[i], true);
+                LookPair(i, out float chestR, out float chestG, out float chestB, out float bodyR, out float bodyG, out float bodyB);
+                AddHier(tris, 0f, 0f, 0f, 16f, bodyR, bodyG, bodyB, chestR, chestG, chestB, true);
                 AddContact(tris, 0f, 0f, 0f);
                 var shadow = new float[16 * 16];
                 for (int s = 0; s < shadow.Length; s++) shadow[s] = -1e20f;

@@ -310,6 +310,8 @@ The twentieth pass makes the chase path a light warm tan, and the concrete a lig
 
 The twenty-first pass keeps the tan chase path and the RESULTS cards. On character select the runner uses the two colors named on the card. The chest is the first, the body is the second, and the highlighted swatch is that first color. The card is a dark navy panel with a seat-colored border. The runners stand larger, and the joints are charcoal. The purple lip on the P2 path is a grey concrete curb. Space still jumps. Mockups are in `Docs/UiStills/pass21/`.
 
+The twenty-second pass carries that color pair into the match and onto RESULTS. The runner and the place figure use it, and the stat card accent uses the first color. The seat color stays on the card border, the screen edge, and the P# tag. P4 is Lavender / Mint, so it does not match P1. A taken pair is gray on the other cards. READY sits under the color row. Pause keeps COMIC WORDS ON inside the panel, and options puts that line on a navy plate. Space still jumps. Mockups are in `Docs/UiStills/pass22/`.
+
 ## Motion, ninth pass
 
 The wall jump, the rope, the zip, the launch pad, a landing, the dash flash, a hard turnaround, and a punch while you run all ease instead of snapping. Speeds, the jump, and the dash length are the same.
