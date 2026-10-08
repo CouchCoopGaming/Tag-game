@@ -50,7 +50,9 @@ namespace TagArena.Movement
         MoveState _prevState = MoveState.Idle;
         Vector3 _aheadSmoothed;
         Vector3 _kick;
-        float _fovKick;
+        Vector3 _kickFrom;
+        Vector3 _kickTo;
+        float _kickIn = 1f;
 
         PlayerInputReader _in;
         DummyLocomotor _loco;
@@ -207,7 +209,6 @@ namespace TagArena.Movement
                     targetFov += speedFovBoostMax * speedT;
                 }
                 targetFov = LookFeel.ScaleFov(targetFov);
-                targetFov += _fovKick;
                 _fov = Mathf.Lerp(_fov, targetFov, 1f - Mathf.Exp(-6f * dt));
                 cam.fieldOfView = _fov;
             }
@@ -220,8 +221,15 @@ namespace TagArena.Movement
                 wantTilt = motor.WallLeft ? tiltMax * 0.6f : -tiltMax * 0.6f;
             _tilt = Mathf.Lerp(_tilt, wantTilt, 1f - Mathf.Exp(-8f * dt));
 
-            _kick = Vector3.Lerp(_kick, Vector3.zero, 1f - Mathf.Exp(-12f * dt));
-            _fovKick = Mathf.Lerp(_fovKick, 0f, 1f - Mathf.Exp(-10f * dt));
+            if (_kickIn < 1f)
+            {
+                _kickIn = Mathf.MoveTowards(_kickIn, 1f, dt / SmoothMotion.ResponsiveSeconds);
+                float u = _kickIn;
+                u = u * u * (3f - 2f * u);
+                _kick = Vector3.Lerp(_kickFrom, _kickTo, u);
+            }
+            else
+                _kick = Vector3.Lerp(_kick, Vector3.zero, 1f - Mathf.Exp(-12f * dt));
             if (_catchT > 0f)
                 _catchT = Mathf.Max(0f, _catchT - dt);
 
@@ -241,11 +249,12 @@ namespace TagArena.Movement
             if (_loco == null) _loco = motor.GetComponentInChildren<DummyLocomotor>(true);
         }
 
-        /// <summary>Brief punch/tag camera kick (local pivot offset + optional FOV punch).</summary>
+        /// <summary>Brief punch/tag camera offset. fovKick=0. Shake and slow motion stay 0.</summary>
         public void AddKick(Vector3 local)
         {
-            _kick += local;
-            _fovKick += Mathf.Clamp(local.magnitude * 18f, 2f, 8f);
+            _kickFrom = _kick;
+            _kickTo = _kick + local;
+            _kickIn = 0f;
         }
 
         void ApplyBoomWithCollision()

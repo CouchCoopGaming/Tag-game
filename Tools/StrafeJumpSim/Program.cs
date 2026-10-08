@@ -679,6 +679,8 @@ static class Program
 
         Console.WriteLine(Tag.Art.SmoothMotion.ProofLine());
         Console.WriteLine(Tag.Art.SmoothMotion.DetailLine());
+        Console.WriteLine(Tag.Art.SmoothMotion.ParkourLine());
+        Console.WriteLine(Tag.Art.SmoothMotion.ResponseLine());
         if (!Tag.Art.SmoothMotion.Holds())
         {
             Console.Error.WriteLine("smooth motion is not held");
@@ -687,6 +689,9 @@ static class Program
         if (!AssetHas("Assets/Scripts/Art/DummyLocomotor.cs",
                 "SmoothMotion.Smooth",
                 "SmoothMotion.SecondsForSlew",
+                "SmoothMotion.CycleSlew",
+                "ClimbPresented",
+                "RepeatingPush",
                 "AbsorbPop",
                 "EaseFacing"))
         {
@@ -702,14 +707,32 @@ static class Program
         }
         if (!AssetHas("Assets/TagArenaMovement/Scripts/Camera/TpsMoveCamera.cs",
                 "SmoothMotion.Smooth",
-                "SmoothMotion.YawSeconds"))
+                "SmoothMotion.YawSeconds",
+                "fovKick=0"))
         {
             Console.Error.WriteLine("camera follow is not smoothed");
+            return 1;
+        }
+        if (!AssetHas("Assets/TagArenaMovement/Scripts/Camera/ChaseCam.cs",
+                "if (desired < current) return desired;",
+                "BoomRate = 6f"))
+        {
+            Console.Error.WriteLine("boom pull-in is not instant");
+            return 1;
+        }
+        if (!AssetHas("Assets/Scripts/Art/WallPose.cs",
+                "PlantShape",
+                "HoldWeight",
+                "Sample Entry"))
+        {
+            Console.Error.WriteLine("climb cycle is not on the wall pose");
             return 1;
         }
 
         string stillDir = Path.Combine(RepoRoot(), "Docs", "SmoothStills", "pass1");
         Tag.Art.SmoothMotion.WriteStrip(Path.Combine(stillDir, "transitions.ppm"));
+        string still2 = Path.Combine(RepoRoot(), "Docs", "SmoothStills", "pass2");
+        Tag.Art.SmoothMotion.WriteParkourStills(Path.Combine(still2, "climb-wall-mantle.png"));
 
         Console.WriteLine("solo grapple on; opponent and couch off; jet off; clips and locks held");
         return 0;

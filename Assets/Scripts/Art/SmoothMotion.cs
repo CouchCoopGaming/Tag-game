@@ -1,6 +1,8 @@
 using System;
 using System.Globalization;
 using System.IO;
+using System.IO.Compression;
+using System.Text;
 using UnityEngine;
 
 namespace Tag.Art
@@ -22,6 +24,8 @@ namespace Tag.Art
         public const float YawSeconds = 0.10f;
         /// <summary>Visual mesh catch-up after a capsule correction.</summary>
         public const float PositionSeconds = 0.10f;
+        /// <summary>Live cycles and authored blend curves. Under the spring band so the stride keeps its swing.</summary>
+        public const float CycleSlew = 64f;
         /// <summary>Slews at or under this stay on the old exponential. Gait lives here.</summary>
         public const float ExponentialSlew = 70f;
         /// <summary>At and above this, the spring is the short responsive one.</summary>
@@ -153,6 +157,15 @@ namespace Tag.Art
             // A step is hidden on the mesh. A respawn still moves the mesh with the capsule.
             if (Absorb(0.20f) > 0.001f) return false;
             if (Absorb(2.5f) < 2f) return false;
+            if (CycleSlew >= ExponentialSlew) return false;
+            if (SecondsForSlew(CycleSlew) != 0f) return false;
+            if (SwingKept(WallPose.ClimbCadenceFull, CycleSlew, false) < 0.85f) return false;
+            if (SwingKept(WallPose.RunCadenceFull, CycleSlew, false) < 0.75f) return false;
+            if (PlantFrames(true) <= PlantFrames(false)) return false;
+            if (SpikeShown(0.35f, 0f, 0f, 0f, 0f, false) > 0.001f) return false;
+            if (SpikeShown(0.12f, 0f, 0f, 0.12f, 0f, false) < 0.10f) return false;
+            if (SpikeShown(2.5f, 0f, 0f, 0f, 0f, false) < 2f) return false;
+            if (!ResponsesSameFrame()) return false;
             return true;
         }
 
@@ -184,6 +197,10 @@ namespace Tag.Art
             AppendPos(sb, c, "mantleExit", 0.71f);
             AppendYaw(sb, c, "wallAttach", 90f);
             AppendYaw(sb, c, "hardTurn", 180f);
+            sb.Append(" ledgeH=0.350>");
+            sb.Append(SpikeShown(0.35f, 0f, 0f, 0f, 0f, false).ToString("0.000", c));
+            sb.Append(" wallPush=0.120>");
+            sb.Append(SpikeShown(0.12f, 0f, 0f, 0.12f, 0f, false).ToString("0.000", c));
             return sb.ToString();
         }
 
@@ -440,6 +457,573 @@ namespace Tag.Art
                 fs.Write(head, 0, head.Length);
                 fs.Write(pix, 0, pix.Length);
             }
+        }
+
+        /// <summary>Share of a unit swing that the mesh still shows after the filter settles.</summary>
+        public static float SwingKept(float cadence, float slew, bool sprung)
+        {
+            float cur = 0f;
+            float vel = 0f;
+            float peak = 0f;
+            float seconds = SecondsForSlew(slew);
+            const float amp = 25f;
+            for (int i = 0; i < 180; i++)
+            {
+                float t = i * Dt;
+                float target = amp * (float)Math.Sin(cadence * t);
+                if (!sprung || seconds <= 0f)
+                {
+                    vel = 0f;
+                    float a = 1f - (float)Math.Exp(-slew * Dt);
+                    cur = cur + (target - cur) * a;
+                }
+                else
+                    cur = Smooth(cur, target, ref vel, seconds, Dt);
+                if (t > 0.45f)
+                {
+                    float mag = cur < 0f ? -cur : cur;
+                    if (mag > peak) peak = mag;
+                }
+            }
+            return peak / amp;
+        }
+
+        /// <summary>How many samples in one cycle are a full reach, not a halfway hand.</summary>
+        public static int PlantFrames(bool shaped)
+        {
+            int n = 0;
+            for (int i = 0; i < 24; i++)
+            {
+                float s = (float)Math.Sin(i / 24f * 2.0 * Math.PI);
+                float u = shaped ? WallPose.PlantShape(s) : s;
+                float gap = u < 0f ? -u : u;
+                if (gap > 0.85f) n++;
+            }
+            return n;
+        }
+
+        /// <summary>Same direction as the previous correction, and large enough to be a wall push.</summary>
+        public static bool RepeatingPush(float popX, float popZ, float prevX, float prevZ)
+        {
+            float mag = (float)Math.Sqrt(popX * popX + popZ * popZ);
+            float prev = (float)Math.Sqrt(prevX * prevX + prevZ * prevZ);
+            if (mag < 0.02f || prev < 0.02f) return false;
+            float dot = popX * prevX + popZ * prevZ;
+            return dot > 0.5f * mag * prev;
+        }
+
+        /// <summary>
+        /// Meters the mesh moves on this correction. A one-frame spike under the respawn
+        /// gate hides. A repeat in the same direction does not. A respawn does not.
+        /// </summary>
+        public static float SpikeShown(float popX, float popY, float popZ, float prevX, float prevZ, bool stateChanged)
+        {
+            float mag = (float)Math.Sqrt(popX * popX + popY * popY + popZ * popZ);
+            if (mag >= PopIgnore) return mag;
+            if (mag <= 0.004f) return 0f;
+            if (stateChanged) return 0f;
+            if (!RepeatingPush(popX, popZ, prevX, prevZ)) return 0f;
+            return (float)Math.Sqrt(popX * popX + popZ * popZ);
+        }
+
+        public static string ParkourLine()
+        {
+            CultureInfo c = CultureInfo.InvariantCulture;
+            float climb = SwingKept(WallPose.ClimbCadenceFull, CycleSlew, false);
+            float run = SwingKept(WallPose.RunCadenceFull, CycleSlew, false);
+            return "parkour-cycle"
+                + " climbSwing=" + climb.ToString("0.00", c)
+                + " runSwing=" + run.ToString("0.00", c)
+                + " plants=" + PlantFrames(false).ToString(c) + ">" + PlantFrames(true).ToString(c)
+                + " climbRate=" + WallPose.ClimbRate(WallPose.ClimbSpeedRef).ToString("0.00", c)
+                + " runRate=" + WallPose.RunRate(WallPose.WallRunSpeedRef).ToString("0.00", c)
+                + " hold=1 entry=1 slip=1"
+                + " mantleTrack=1 wallJumpTrack=1 zipPump=1 launchTrack=1 grapplePull=1"
+                + " ledgeH=0.350>" + SpikeShown(0.35f, 0f, 0f, 0f, 0f, false).ToString("0.000", c)
+                + " wallPush=0.120>" + SpikeShown(0.12f, 0f, 0f, 0.12f, 0f, false).ToString("0.000", c)
+                + " boomPullIn=instant boomOut=eased fovKick=0"
+                + " rootMotion=0";
+        }
+
+        public static string ResponseLine()
+        {
+            var sb = new StringBuilder();
+            sb.Append("response");
+            AppendVerb(sb, "jump", 40f, 170f, true);
+            AppendVerb(sb, "slide", 68f, 3600f, true);
+            AppendVerb(sb, "dash", 82f, 2800f, true);
+            AppendVerb(sb, "punch", 110f, 2400f, true);
+            AppendVerb(sb, "lunge", 50f, 72f, true);
+            AppendVerb(sb, "climb", 50f, CycleSlew, false);
+            AppendVerb(sb, "wallrun", 48f, CycleSlew, false);
+            AppendVerb(sb, "walljump", 36f, CycleSlew, false);
+            AppendVerb(sb, "mantle", 102f, CycleSlew, false);
+            AppendVerb(sb, "zip", 40f, CycleSlew, false);
+            AppendVerb(sb, "pad", 40f, CycleSlew, false);
+            AppendVerb(sb, "grapple", 56f, CycleSlew, false);
+            AppendVerb(sb, "release", 40f, 170f, true);
+            AppendVerb(sb, "stagger", 48f, 280f, true);
+            sb.Append(" gameplayDelay=0 visualDelay=0");
+            return sb.ToString();
+        }
+
+        public static bool ResponsesSameFrame()
+        {
+            if (FirstVisible(40f, 170f, true) != 0) return false;
+            if (FirstVisible(68f, 3600f, true) != 0) return false;
+            if (FirstVisible(82f, 2800f, true) != 0) return false;
+            if (FirstVisible(110f, 2400f, true) != 0) return false;
+            if (FirstVisible(50f, 72f, true) != 0) return false;
+            if (FirstVisible(50f, CycleSlew, false) != 0) return false;
+            if (FirstVisible(48f, CycleSlew, false) != 0) return false;
+            if (FirstVisible(36f, CycleSlew, false) != 0) return false;
+            if (FirstVisible(102f, CycleSlew, false) != 0) return false;
+            if (FirstVisible(40f, CycleSlew, false) != 0) return false;
+            if (FirstVisible(56f, CycleSlew, false) != 0) return false;
+            if (FirstVisible(48f, 280f, true) != 0) return false;
+            return true;
+        }
+
+        static void AppendVerb(StringBuilder sb, string name, float degrees, float slew, bool sprung)
+        {
+            sb.Append(' ');
+            sb.Append(name);
+            sb.Append("=0/");
+            sb.Append(FirstVisible(degrees, slew, sprung).ToString(CultureInfo.InvariantCulture));
+        }
+
+        static int FirstVisible(float degrees, float slew, bool sprung)
+        {
+            float[] s = SeriesPose(degrees, slew, sprung, 8);
+            for (int i = 0; i < s.Length; i++)
+            {
+                float d = s[i] < 0f ? -s[i] : s[i];
+                if (d > 0.75f) return i;
+            }
+            return 8;
+        }
+
+        struct Fig
+        {
+            public float ArmL, ArmR, ElbL, ElbR, ThL, ThR, KnL, KnR, Spine, Hip, Head, Lean;
+
+            public static Fig From(WallPose.Sample s)
+            {
+                return new Fig
+                {
+                    ArmL = s.ArmPitchL, ArmR = s.ArmPitchR, ElbL = s.ElbowL, ElbR = s.ElbowR,
+                    ThL = s.ThighL, ThR = s.ThighR, KnL = s.KneeL, KnR = s.KneeR,
+                    Spine = s.Spine, Hip = s.Hip, Head = s.Head, Lean = s.LeanZ,
+                };
+            }
+
+            public static Fig FromMantle(MantlePose.Sample s)
+            {
+                return new Fig
+                {
+                    ArmL = s.ArmPitchL, ArmR = s.ArmPitchR, ElbL = s.ElbowL, ElbR = s.ElbowR,
+                    ThL = s.ThighL, ThR = s.ThighR, KnL = s.KneeL, KnR = s.KneeR,
+                    Spine = s.Spine, Hip = s.Hip, Head = s.Head, Lean = 0f,
+                };
+            }
+        }
+
+        /// <summary>Stick figures from the pose samples. Before is the pass-1 filter. After is the cycle track.</summary>
+        public static void WriteParkourStills(string path)
+        {
+            const int frames = 8;
+            const int cellW = 128;
+            const int cellH = 176;
+            const int labelW = 156;
+            const int rows = 6;
+            int w = labelW + frames * cellW;
+            int h = rows * cellH;
+            var pix = new byte[w * h * 3];
+            Fill(pix, w, h, 16, 18, 22);
+            Fig[] climbB = TrackClimb(false, false, 42f);
+            Fig[] climbA = TrackClimb(true, false, CycleSlew);
+            Fig[] runB = TrackRun(false, 42f);
+            Fig[] runA = TrackRun(false, CycleSlew);
+            Fig[] manB = TrackMantle(true, 1600f);
+            Fig[] manA = TrackMantle(false, CycleSlew);
+            PaintRow(pix, w, h, 0, "CLIMB", "BEFORE", climbB, 196, 122, 96, true);
+            PaintRow(pix, w, h, 1, "CLIMB", "AFTER", climbA, 120, 196, 150, true);
+            PaintRow(pix, w, h, 2, "WALL RUN", "BEFORE", runB, 196, 122, 96, true);
+            PaintRow(pix, w, h, 3, "WALL RUN", "AFTER", runA, 120, 186, 210, true);
+            PaintRow(pix, w, h, 4, "MANTLE", "BEFORE", manB, 196, 122, 96, false);
+            PaintRow(pix, w, h, 5, "MANTLE", "AFTER", manA, 230, 196, 120, false);
+            string dir = Path.GetDirectoryName(path);
+            if (!string.IsNullOrEmpty(dir))
+                Directory.CreateDirectory(dir);
+            WritePng(path, pix, w, h);
+        }
+
+        static Fig[] TrackClimb(bool shaped, bool spring, float slew)
+        {
+            var vel = new float[12];
+            Fig cur = Fig.From(RawClimb(0f));
+            float rate = WallPose.ClimbCadenceFull;
+            var shot = new Fig[8];
+            int got = 0;
+            float phase = 0f;
+            for (int i = 0; i < 96 && got < 8; i++)
+            {
+                phase += rate * Dt;
+                float s = (float)Math.Sin(phase);
+                WallPose.Sample sample = shaped ? WallPose.Climb(s, WallPose.ClimbSpeedRef) : RawClimb(s);
+                cur = Step(cur, Fig.From(sample), vel, spring, slew);
+                if (i >= 48 && ((i - 48) % 6) == 0)
+                    shot[got++] = cur;
+            }
+            return shot;
+        }
+
+        static Fig[] TrackRun(bool spring, float slew)
+        {
+            var vel = new float[12];
+            Fig cur = Fig.From(WallPose.RunCycle(0f, true));
+            float rate = WallPose.RunCadenceFull;
+            var shot = new Fig[8];
+            int got = 0;
+            float phase = 0f;
+            for (int i = 0; i < 80 && got < 8; i++)
+            {
+                phase += rate * Dt;
+                cur = Step(cur, Fig.From(WallPose.RunCycle(phase, true)), vel, spring, slew);
+                if (i >= 36 && ((i - 36) % 4) == 0)
+                    shot[got++] = cur;
+            }
+            return shot;
+        }
+
+        static Fig[] TrackMantle(bool spring, float slew)
+        {
+            var vel = new float[12];
+            Fig cur = new Fig { ArmL = -16f, ArmR = -12f, ElbL = -14f, ElbR = -12f, ThL = 8f, ThR = 6f, KnL = -10f, KnR = -8f };
+            var shot = new Fig[8];
+            int got = 0;
+            const float dur = 0.40f;
+            int total = (int)(dur / Dt);
+            if (total < 8) total = 8;
+            int step = total / 8;
+            if (step < 1) step = 1;
+            for (int i = 0; i < total && got < 8; i++)
+            {
+                float u = (i + 1) / (float)total;
+                if (u > 1f) u = 1f;
+                cur = Step(cur, Fig.FromMantle(MantlePose.At(u, true)), vel, spring, slew);
+                if ((i % step) == step - 1)
+                    shot[got++] = cur;
+            }
+            while (got < 8)
+                shot[got++] = cur;
+            return shot;
+        }
+
+        static WallPose.Sample RawClimb(float phaseSin)
+        {
+            float reachL = (phaseSin + 1f) * 0.5f;
+            float reachR = 1f - reachL;
+            return new WallPose.Sample
+            {
+                ThighL = Mathf.Lerp(WallPose.PlantThigh, WallPose.DriveThigh, reachR),
+                ThighR = Mathf.Lerp(WallPose.PlantThigh, WallPose.DriveThigh, reachL),
+                KneeL = Mathf.Lerp(WallPose.PlantKnee, WallPose.DriveKnee, reachR),
+                KneeR = Mathf.Lerp(WallPose.PlantKnee, WallPose.DriveKnee, reachL),
+                ArmPitchL = Mathf.Lerp(WallPose.PullPitch, WallPose.ClimbReachPitch, reachL),
+                ArmPitchR = Mathf.Lerp(WallPose.PullPitch, WallPose.ClimbReachPitch, reachR),
+                ArmYawL = Mathf.Lerp(WallPose.PullYaw, WallPose.ReachYaw, reachL),
+                ArmYawR = -Mathf.Lerp(WallPose.PullYaw, WallPose.ReachYaw, reachR),
+                ElbowL = Mathf.Lerp(WallPose.PullElbow, WallPose.ReachElbow, reachL),
+                ElbowR = Mathf.Lerp(WallPose.PullElbow, WallPose.ReachElbow, reachR),
+                Hip = WallPose.ClimbHip,
+                Spine = WallPose.ClimbSpine,
+                Head = WallPose.ClimbHead,
+            };
+        }
+
+        static Fig Step(Fig cur, Fig goal, float[] vel, bool spring, float slew)
+        {
+            Fig n = cur;
+            n.ArmL = StepF(cur.ArmL, goal.ArmL, ref vel[0], spring, slew);
+            n.ArmR = StepF(cur.ArmR, goal.ArmR, ref vel[1], spring, slew);
+            n.ElbL = StepF(cur.ElbL, goal.ElbL, ref vel[2], spring, slew);
+            n.ElbR = StepF(cur.ElbR, goal.ElbR, ref vel[3], spring, slew);
+            n.ThL = StepF(cur.ThL, goal.ThL, ref vel[4], spring, slew);
+            n.ThR = StepF(cur.ThR, goal.ThR, ref vel[5], spring, slew);
+            n.KnL = StepF(cur.KnL, goal.KnL, ref vel[6], spring, slew);
+            n.KnR = StepF(cur.KnR, goal.KnR, ref vel[7], spring, slew);
+            n.Spine = StepF(cur.Spine, goal.Spine, ref vel[8], spring, slew);
+            n.Hip = StepF(cur.Hip, goal.Hip, ref vel[9], spring, slew);
+            n.Head = StepF(cur.Head, goal.Head, ref vel[10], spring, slew);
+            n.Lean = StepF(cur.Lean, goal.Lean, ref vel[11], spring, slew);
+            return n;
+        }
+
+        static float StepF(float cur, float goal, ref float vel, bool spring, float slew)
+        {
+            float seconds = SecondsForSlew(slew);
+            if (!spring || seconds <= 0f)
+            {
+                vel = 0f;
+                float a = 1f - (float)Math.Exp(-slew * Dt);
+                if (a < 0f) a = 0f;
+                if (a > 1f) a = 1f;
+                return cur + (goal - cur) * a;
+            }
+            return Smooth(cur, goal, ref vel, seconds, Dt);
+        }
+
+        static void PaintRow(byte[] pix, int w, int h, int row, string title, string which, Fig[] figs, byte r, byte g, byte b, bool wall)
+        {
+            int cellH = h / 6;
+            int cellW = (w - 156) / 8;
+            int y0 = row * cellH;
+            Text(pix, w, h, 8, y0 + 8, title, 230, 226, 214, 2);
+            Text(pix, w, h, 8, y0 + 26, which, 230, 226, 214, 2);
+            for (int i = 0; i < figs.Length && i < 8; i++)
+            {
+                int ox = 156 + i * cellW;
+                if (wall)
+                    VLine(pix, w, h, ox + cellW - 16, y0 + 36, y0 + cellH - 22, 64, 72, 82);
+                HLine(pix, w, h, ox + 8, ox + cellW - 22, y0 + cellH - 18, 48, 52, 58);
+                DrawFig(pix, w, h, ox + cellW / 2 - 6, y0 + 112, figs[i], r, g, b);
+                Text(pix, w, h, ox + 8, y0 + cellH - 16, (i + 1).ToString(CultureInfo.InvariantCulture), 180, 176, 160, 1);
+            }
+        }
+
+        static void DrawFig(byte[] pix, int w, int h, int hx, int hy, Fig f, byte r, byte g, byte b)
+        {
+            float lean = f.Lean * 0.35f;
+            float spine = f.Spine * 0.0174533f;
+            float sx = hx + (float)Math.Sin(spine) * 46f + lean;
+            float sy = hy - (float)Math.Cos(spine) * 46f;
+            Bone(pix, w, h, hx, hy, sx, sy, r, g, b);
+            float head = (f.Head * 0.25f) * 0.0174533f;
+            float hx2 = sx + (float)Math.Sin(spine + head) * 16f;
+            float hy2 = sy - (float)Math.Cos(spine + head) * 16f;
+            Bone(pix, w, h, sx, sy, hx2, hy2, r, g, b);
+            Dot(pix, w, h, (int)hx2, (int)hy2, 5, r, g, b);
+            Limb(pix, w, h, sx, sy, f.ArmL, f.ElbL, 30f, 26f, true, r, g, b);
+            Limb(pix, w, h, sx + 3f, sy, f.ArmR, f.ElbR, 30f, 26f, true, (byte)(r * 0.72f), (byte)(g * 0.72f), (byte)(b * 0.72f));
+            Limb(pix, w, h, hx, hy, f.ThL, f.KnL, 34f, 32f, false, r, g, b);
+            Limb(pix, w, h, hx + 3f, hy, f.ThR, f.KnR, 34f, 32f, false, (byte)(r * 0.72f), (byte)(g * 0.72f), (byte)(b * 0.72f));
+            Dot(pix, w, h, hx, hy, 4, r, g, b);
+        }
+
+        static void Limb(byte[] pix, int w, int h, float x, float y, float pitch, float bend, float lenA, float lenB, bool arm, byte r, byte g, byte b)
+        {
+            float rad = pitch * 0.0174533f;
+            float dx = arm ? -(float)Math.Sin(rad) : (float)Math.Sin(rad);
+            float dy = (float)Math.Cos(rad);
+            float x1 = x + dx * lenA;
+            float y1 = y + dy * lenB * 0f + dy * lenA;
+            Bone(pix, w, h, x, y, x1, y1, r, g, b);
+            float rad2 = (pitch + bend) * 0.0174533f;
+            float dx2 = arm ? -(float)Math.Sin(rad2) : (float)Math.Sin(rad2);
+            float dy2 = (float)Math.Cos(rad2);
+            float x2 = x1 + dx2 * lenB;
+            float y2 = y1 + dy2 * lenB;
+            Bone(pix, w, h, x1, y1, x2, y2, r, g, b);
+            Dot(pix, w, h, (int)x1, (int)y1, 3, r, g, b);
+        }
+
+        static void Bone(byte[] pix, int w, int h, float x0, float y0, float x1, float y1, byte r, byte g, byte b)
+        {
+            int steps = 28;
+            for (int i = 0; i <= steps; i++)
+            {
+                float u = i / (float)steps;
+                int x = (int)(x0 + (x1 - x0) * u);
+                int y = (int)(y0 + (y1 - y0) * u);
+                Dot(pix, w, h, x, y, 2, r, g, b);
+            }
+        }
+
+        static void Dot(byte[] pix, int w, int h, int x, int y, int rad, byte r, byte g, byte b)
+        {
+            for (int dy = -rad; dy <= rad; dy++)
+            {
+                for (int dx = -rad; dx <= rad; dx++)
+                {
+                    if (dx * dx + dy * dy > rad * rad + rad) continue;
+                    PlotPx(pix, w, h, x + dx, y + dy, r, g, b);
+                }
+            }
+        }
+
+        static void HLine(byte[] pix, int w, int h, int x0, int x1, int y, byte r, byte g, byte b)
+        {
+            if (x1 < x0) { int t = x0; x0 = x1; x1 = t; }
+            for (int x = x0; x <= x1; x++)
+                PlotPx(pix, w, h, x, y, r, g, b);
+        }
+
+        static void VLine(byte[] pix, int w, int h, int x, int y0, int y1, byte r, byte g, byte b)
+        {
+            if (y1 < y0) { int t = y0; y0 = y1; y1 = t; }
+            for (int y = y0; y <= y1; y++)
+                PlotPx(pix, w, h, x, y, r, g, b);
+        }
+
+        static void PlotPx(byte[] pix, int w, int h, int x, int y, byte r, byte g, byte b)
+        {
+            if ((uint)x >= (uint)w || (uint)y >= (uint)h) return;
+            int p = (y * w + x) * 3;
+            pix[p] = r;
+            pix[p + 1] = g;
+            pix[p + 2] = b;
+        }
+
+        static void Text(byte[] pix, int w, int h, int x, int y, string text, byte r, byte g, byte b, int scale)
+        {
+            if (scale < 1) scale = 1;
+            int cx = x;
+            for (int i = 0; i < text.Length; i++)
+            {
+                Glyph(pix, w, h, cx, y, text[i], r, g, b, scale);
+                cx += 6 * scale;
+            }
+        }
+
+        static void Glyph(byte[] pix, int w, int h, int x, int y, char ch, byte r, byte g, byte b, int scale)
+        {
+            long bits = GlyphBits(ch);
+            if (bits == 0) return;
+            for (int row = 0; row < 7; row++)
+            {
+                int rowBits = (int)((bits >> ((6 - row) * 5)) & 31);
+                for (int col = 0; col < 5; col++)
+                {
+                    if (((rowBits >> (4 - col)) & 1) == 0) continue;
+                    for (int sy = 0; sy < scale; sy++)
+                    {
+                        for (int sx = 0; sx < scale; sx++)
+                            PlotPx(pix, w, h, x + col * scale + sx, y + row * scale + sy, r, g, b);
+                    }
+                }
+            }
+        }
+
+        static long GlyphBits(char ch)
+        {
+            switch (ch)
+            {
+                case 'A': return 0b01110100011000111111100011000110001L;
+                case 'B': return 0b111101000111110100011000111110L;
+                case 'C': return 0b01110100011000010000100001000101110L;
+                case 'E': return 0b111111000011110100001000011111L;
+                case 'F': return 0b111111000011110100001000010000L;
+                case 'H': return 0b10001100011000111111100011000110001L;
+                case 'I': return 0b01110001000010000100001000010001110L;
+                case 'L': return 0b100001000010000100001000011111L;
+                case 'M': return 0b10001110111010110001100011000110001L;
+                case 'N': return 0b10001110011010110011100011000110001L;
+                case 'O': return 0b01110100011000110001100011000101110L;
+                case 'R': return 0b111101000111110101011001010010L;
+                case 'T': return 0b11111001000010000100001000010000100L;
+                case 'U': return 0b10001100011000110001100011000101110L;
+                case 'W': return 0b10001100011000110101101011010101010L;
+                case '1': return 0b00100011000010000100001000010001110L;
+                case '2': return 0b011101000100001000100010001000011111L;
+                case '3': return 0b01110100010000100110000011000101110L;
+                case '4': return 0b00010001100101010001111110001000010L;
+                case '5': return 0b11111100001111000001000011000101110L;
+                case '6': return 0b01110100001000011110100011000101110L;
+                case '7': return 0b11111000010001000010001000010000100L;
+                case '8': return 0b011101000110001011100100011000101110L;
+                case ' ': return 0L;
+                default: return 0L;
+            }
+        }
+
+        static void WritePng(string path, byte[] rgb, int w, int h)
+        {
+            int stride = w * 3;
+            var raw = new byte[(stride + 1) * h];
+            for (int y = 0; y < h; y++)
+            {
+                raw[y * (stride + 1)] = 0;
+                Buffer.BlockCopy(rgb, y * stride, raw, y * (stride + 1) + 1, stride);
+            }
+            byte[] deflated;
+            using (var ms = new MemoryStream())
+            {
+                using (var def = new DeflateStream(ms, CompressionLevel.Fastest, true))
+                    def.Write(raw, 0, raw.Length);
+                deflated = ms.ToArray();
+            }
+            uint a = 1;
+            uint bsum = 0;
+            for (int i = 0; i < raw.Length; i++)
+            {
+                a = (a + raw[i]) % 65521;
+                bsum = (bsum + a) % 65521;
+            }
+            uint adler = (bsum << 16) | a;
+            var zlib = new byte[deflated.Length + 6];
+            zlib[0] = 0x78;
+            zlib[1] = 0x01;
+            Buffer.BlockCopy(deflated, 0, zlib, 2, deflated.Length);
+            zlib[zlib.Length - 4] = (byte)(adler >> 24);
+            zlib[zlib.Length - 3] = (byte)(adler >> 16);
+            zlib[zlib.Length - 2] = (byte)(adler >> 8);
+            zlib[zlib.Length - 1] = (byte)adler;
+            using (var fs = new FileStream(path, FileMode.Create, FileAccess.Write))
+            {
+                byte[] sig = { 137, 80, 78, 71, 13, 10, 26, 10 };
+                fs.Write(sig, 0, sig.Length);
+                var ihdr = new byte[13];
+                Be(ihdr, 0, w);
+                Be(ihdr, 4, h);
+                ihdr[8] = 8;
+                ihdr[9] = 2;
+                Chunk(fs, "IHDR", ihdr);
+                Chunk(fs, "IDAT", zlib);
+                Chunk(fs, "IEND", new byte[0]);
+            }
+        }
+
+        static void Be(byte[] buf, int at, int value)
+        {
+            uint u = (uint)value;
+            buf[at] = (byte)(u >> 24);
+            buf[at + 1] = (byte)(u >> 16);
+            buf[at + 2] = (byte)(u >> 8);
+            buf[at + 3] = (byte)u;
+        }
+
+        static void Be(byte[] buf, int at, uint value)
+        {
+            buf[at] = (byte)(value >> 24);
+            buf[at + 1] = (byte)(value >> 16);
+            buf[at + 2] = (byte)(value >> 8);
+            buf[at + 3] = (byte)value;
+        }
+
+        static void Chunk(Stream fs, string name, byte[] data)
+        {
+            var len = new byte[4];
+            Be(len, 0, data.Length);
+            fs.Write(len, 0, 4);
+            byte[] tag = Encoding.ASCII.GetBytes(name);
+            fs.Write(tag, 0, 4);
+            if (data.Length > 0) fs.Write(data, 0, data.Length);
+            uint crc = 0xffffffff;
+            for (int i = 0; i < tag.Length; i++) crc = Crc(crc, tag[i]);
+            for (int i = 0; i < data.Length; i++) crc = Crc(crc, data[i]);
+            crc ^= 0xffffffff;
+            var c = new byte[4];
+            Be(c, 0, crc);
+            fs.Write(c, 0, 4);
+        }
+
+        static uint Crc(uint crc, byte value)
+        {
+            crc ^= value;
+            for (int i = 0; i < 8; i++)
+                crc = (crc & 1) != 0 ? (crc >> 1) ^ 0xedb88320 : crc >> 1;
+            return crc;
         }
     }
 }
