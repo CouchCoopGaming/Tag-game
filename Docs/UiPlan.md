@@ -365,6 +365,14 @@ Loading plates are a mid exposure. The still grades Mega Park with contrast 1.35
 
 Cling's pad token is `leftStickHold`, and `Show` reads "Left stick hold". The short chip "Left stick" is Move, so the tip does not use it. The keyboard token is `holdIntoWall`, and `Show` reads "Hold into wall". The same check covers Jump, Sprint, Slide, Air dash, and Punch. Their chips do not collide with Move or Look: Space, Shift, Ctrl, Q, LMB, and on a pad A, LB, B, RB, X. The opening tips are Jump [Space], Sprint [LB], then slide [B], Cling hold [Left stick hold] against a wall to climb, and Cling hold [Left stick hold] + jump [A] to wall jump. Unity is not installed, so the stills are composites in `Docs/UiStills/screens2/pass25/`. The world marker is not in those stills.
 
+## Screens 2, pass 26
+
+The tip bar and the progress track are separate rows, with a gap between them. The arena size sits under the name: Mega Park, then `160 x 100 m`. A layout check rejects a still when any text rect leaves its row or intersects another text rect. The four-up prints `layout=ok texts=32 rows=16 hits=0`.
+
+Lavender stays lighter than blue, and it keeps its colour. The swatch is `(0.82, 0.70, 0.98)`, about 92% of the chroma of the base lavender `(0.70, 0.58, 0.88)`. Re-measured on the four that ship: `ui-cvd protan=0.41 blue/lavender deutan=0.52 blue/lavender tritan=0.41 orange/lavender floor=0.35`. `ui-seat off=0.41/0.52/0.41`. The floor still holds. Seat shape and body live in one `MenuMannequin` table: P1 circle, P2 triangle, P3 square, P4 diamond. The chip sprite and the glyph both read that mark.
+
+Loading stills pull the golden-hour cast until the concrete is grey (about 134, 137, 141) and the grass that is in the yard reads green. Crops are large enough to downscale onto a four-up pane, then a light sharpen. P1 frames the dock, P2 the chase runners with their heads in frame, P3 the basketball court, and P4 the gazebo. Unity is not installed, so the stills are composites in `Docs/UiStills/screens2/pass26/`. The live texture is still the ungraded plate. The world marker is not in those stills.
+
 ## Later passes
 
 - Left from a rule row returns to the modes even when that rule can still decrease. Right from the right-hand mode, and Left at the end of a rule, already move between the columns.
