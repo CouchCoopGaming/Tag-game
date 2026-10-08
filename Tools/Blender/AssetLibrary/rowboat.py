@@ -1,10 +1,79 @@
-"""Wood rowboat. Bow to -Z. Two seats and a pair of oars."""
+"""Wood rowboat. Curved bow, sheer, keel, transom, two thwarts, oars. Bow is -Z."""
 
+import math
 import os
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from _common import Asset, register, lod_pick
+from _hull import beam_at, solid_hull
+
+Z0 = -1.55
+Z1 = 1.20
+WL = 0.26
+
+
+def profile(t):
+    bow = math.sin(min(t / 0.24, 1.0) * math.pi * 0.5)
+    aft = 0.70 + 0.30 * math.sin(min((1.0 - t) / 0.14, 1.0) * math.pi * 0.5)
+    half = 0.50 * max(bow, 0.10) * aft
+    keel = 0.0 + 0.14 * (1.0 - bow) ** 2 + 0.03 * (1.0 - aft) ** 2
+    sheer = 0.50 + 0.16 * (1.0 - t) ** 1.5 + 0.04 * max(t - 0.8, 0.0) / 0.2
+    return half, keel, sheer
+
+
+def _top(t, half, sheer):
+    xg = half * 0.96
+    gy = sheer
+    seat = 0.30
+    floor = 0.18
+    inner = max(0.08, xg - 0.045)
+    if 0.32 <= t <= 0.42 or 0.60 <= t <= 0.70:
+        return [
+            (xg, gy),
+            (inner, gy - 0.012),
+            (inner * 0.55, seat),
+            (0.0, seat + 0.006),
+            (-inner * 0.55, seat),
+            (-inner, gy - 0.012),
+            (-xg, gy),
+        ]
+    if 0.16 <= t <= 0.88:
+        return [
+            (xg, gy),
+            (inner, gy - 0.012),
+            (inner, floor),
+            (0.0, floor + 0.006),
+            (-inner, floor),
+            (-inner, gy - 0.012),
+            (-xg, gy),
+        ]
+    pts = []
+    for i in range(7):
+        u = i / 6.0
+        x = xg * (1.0 - 2.0 * u)
+        pts.append((x, gy - 0.01))
+    pts[0] = (xg, gy)
+    pts[-1] = (-xg, gy)
+    return pts
+
+
+def _oarlock(g, x, z, seg):
+    _half, _keel, sheer = profile((z - Z0) / (Z1 - Z0))
+    y = sheer + 0.04
+    g.cylinder((x, y, z - 0.025), 0.008, 0.045, "Lib_SteelDark", seg)
+    g.cylinder((x, y, z + 0.025), 0.008, 0.045, "Lib_SteelDark", seg)
+    g.pipe((x, y + 0.02, z - 0.025), (x, y + 0.02, z + 0.025), 0.006, "Lib_Steel", seg)
+
+
+def _oar(g, side, z):
+    # Shaft and blade sit above the gunwale so they rest in the lock.
+    _half, _keel, sheer = profile(0.5)
+    y = sheer + 0.065
+    reach = side * 0.48
+    g.box((reach, y, z), (1.00, 0.014, 0.028), "Lib_Wood", uv_scale=1.4)
+    blade = side * 1.16
+    g.box((blade, y, z), (0.26, 0.012, 0.08), "Lib_WoodDark", uv_scale=1.2)
 
 
 @register
@@ -12,30 +81,38 @@ def create():
     a = Asset(
         "Rowboat",
         "Harbor",
-        "Rowboat, 2.6 m long and 0.95 m across, gunwale at 0.42 m. Bow is -Z. Two seats. Oars rest across the gunwales.",
+        "Rowboat about 2.9 m, bow to -Z. Curved stem, sheer, keel and transom. "
+        "Two thwarts, oarlocks, and a pair of oars. Waterline is 0.26 m; place it so that meets the water.",
     )
     a.loose_pivot = True
     a.climb_note = "Too small to cling."
-    a.vault_note = "Gunwale is 0.42 m. Not a vault."
+    a.vault_note = "Gunwale is about 0.50 m. Not a vault."
     for lod in (0, 1):
         g = a.begin(lod)
-        bev = 0.003 if lod == 0 else 0
-        g.box((0, 0.08, 0.0), (0.55, 0.12, 1.85), "Lib_Wood", bevel=bev, segs=1, uv_scale=1.2)
-        g.box((-0.36, 0.24, 0.02), (0.035, 0.26, 1.95), "Lib_Wood", euler=(0, -6.0, 0), uv_scale=1.2)
-        g.box((0.36, 0.24, 0.02), (0.035, 0.26, 1.95), "Lib_Wood", euler=(0, 6.0, 0), uv_scale=1.2)
-        g.box((0, 0.22, 1.05), (0.62, 0.28, 0.04), "Lib_WoodDark")
-        g.box((0, 0.20, -1.05), (0.28, 0.24, 0.28), "Lib_WoodDark")
-        g.box((-0.40, 0.40, 0.02), (0.025, 0.03, 1.90), "Lib_WoodDark", euler=(0, -6.0, 0))
-        g.box((0.40, 0.40, 0.02), (0.025, 0.03, 1.90), "Lib_WoodDark", euler=(0, 6.0, 0))
-        g.box((0, 0.28, -0.35), (0.55, 0.025, 0.22), "Lib_WoodDark")
-        g.box((0, 0.28, 0.45), (0.55, 0.025, 0.22), "Lib_WoodDark")
+        seg = lod_pick(lod, 8, 6)
+        n = lod_pick(lod, 14, 8)
+        solid_hull(g, Z0, Z1, n, profile, _top, "Lib_Wood", bow_extra=0.12)
+        steps = lod_pick(lod, 7, 4)
+        for side in (1.0, -1.0):
+            pts = []
+            for i in range(steps + 1):
+                t = 0.08 + 0.84 * i / steps
+                _half, _keel, sheer = profile(t)
+                z = Z0 + (Z1 - Z0) * t
+                x = side * (beam_at(profile, t, WL) + 0.026)
+                pts.append((x, WL, z))
+            for i in range(steps):
+                g.pipe(pts[i], pts[i + 1], 0.01, "Lib_WoodDark", seg)
         if lod == 0:
-            g.box((0, 0.46, 0.05), (1.35, 0.025, 0.06), "Lib_Wood", uv_scale=1.4)
-            g.box((0.15, 0.50, 0.05), (1.15, 0.02, 0.045), "Lib_WoodDark", uv_scale=1.4)
+            z_lock = Z0 + (Z1 - Z0) * 0.52
+            x_lock = beam_at(profile, 0.52, profile(0.52)[2]) + 0.03
+            _oarlock(g, x_lock, z_lock, seg)
+            _oarlock(g, -x_lock, z_lock, seg)
+            _oar(g, 1.0, z_lock + 0.08)
+            _oar(g, -1.0, z_lock - 0.10)
         a.end()
-    a.box("Col_Keel", (0, 0.08, 0), (0.46, 0.08, 1.65))
-    a.box("Col_SideL", (-0.36, 0.24, 0.02), (0.025, 0.18, 1.75), euler=(0, -6.0, 0))
-    a.box("Col_SideR", (0.36, 0.24, 0.02), (0.025, 0.18, 1.75), euler=(0, 6.0, 0))
-    a.box("Col_Transom", (0, 0.22, 1.05), (0.50, 0.20, 0.028))
-    a.box("Col_Bow", (0, 0.20, -1.05), (0.20, 0.16, 0.20))
+    a.box("Col_Bilge", (0, 0.10, 0.0), (0.20, 0.05, 0.70))
+    a.box("Col_ThwartF", (0, 0.285, -0.53), (0.22, 0.014, 0.05))
+    a.box("Col_ThwartA", (0, 0.285, 0.24), (0.22, 0.014, 0.05))
+    a.box("Col_Transom", (0, 0.30, 1.05), (0.28, 0.10, 0.06))
     return a

@@ -1,4 +1,4 @@
-# Asset library, pass 11
+# Asset library, pass 12
 
 Procedural props for the couch tag arenas. Real meters, +Y up, pivot at the ground contact (or the module origin called out in the notes). Players are about 1.8 m. Vault rails in the park kit sit at 0.90–1.05 m. Every mesh is rebuilt from `Tools/Blender/AssetLibrary/<asset>.py`.
 
@@ -9,7 +9,7 @@ No third-party textures. Brick, concrete, wood, bark, asphalt, and the worn meta
 ```
 blender --background --python Tools/Blender/AssetLibrary/build_all.py
 python3 Tools/Blender/AssetLibrary/write_unity.py
-blender --background --python Tools/Blender/AssetLibrary/render_pass11.py
+blender --background --python Tools/Blender/AssetLibrary/render_pass12.py
 ```
 
 Blender 4.2 LTS is enough. `write_unity.py` does not need Blender. The showcase scene is `Assets/Scenes/AssetShowcase.unity`. It is not in the build settings and it does not touch the three arenas. `Tag/Asset Showcase` rebuilds that scene from the prefabs.
@@ -35,7 +35,7 @@ Blender 4.2 LTS is enough. `write_unity.py` does not need Blender. The showcase 
 | Brick_Parapet | Buildings | 4.06 × 0.5 × 0.38 | 88 (88/88/24) | Climb_Parapet, Col_Coping | climb Short cling face, 0.50 m. Useful as a roof edge, not a full wall. Coping is 0.50 m above its own base. Vault only if the roof you stand on makes the coping fall in the 0.90–1.05 band. | shipped |
 | Brick_Wall | Buildings | 4 × 3.2 × 0.382 | 336 (336/144/48) | Climb_Wall, Col_Plinth, Col_Cornice | climb Both broad faces are cling panels. Exterior is +Z. Collider is Climb_Wall. No rail. The cornice is at 3.2 m. | shipped |
 | Brick_Window | Buildings | 4 × 3.2 × 0.415 | 472 (472/412/72) | Climb_PierL, Climb_PierR, Climb_Sill, Climb_Header, Col_Plinth, Col_Cornice, Col_Glass, Col_FrameSill | climb Piers, sill, and header are cling. The opening is glass, not a hole. Exterior is +Z. Sill is 0.95 m but only 0.30 m deep. Not a vault rail. | shipped |
-| Buoy | Harbor | 0.72 × 1.375 × 0.72 | 828 (828/188) | Col_Float, Col_Base, Col_Top | Round. Not a cling. No rail. | shipped |
+| Buoy | Harbor | 0.704 × 1.88 × 0.704 | 1028 (1028/316) | Col_Body, Col_Ballast | Round. Not a cling. No rail. | shipped |
 | BusShelter | StreetFurniture | 3.6 × 2.56 × 1.7 | 368 (368/132) | Col_Post x4, Col_Roof, Col_GlassBack, Col_GlassSide, Col_Bench, Col_BenchLeg x2 | Glass and posts. The roof is a landing. Posts are 8 cm, not a cling wall. Roof edge is 2.45 m. Too high to vault from the ground; it is a landing. | shipped |
 | ChainFence | Buildings | 2.001 × 1.875 × 0.07 | 1428 (1428/628) | Col_PostL, Col_PostR, Col_TopRail, Col_BotRail, Col_Fabric | climb The mesh is climbable in the loose sense, but the collider is the posts, rails, and a fabric slab the thickness of the wire. Top rail is 1.80 m. Too high to vault from flat ground. | shipped |
 | ChainGate | Buildings | 1.225 × 1.8 × 0.085 | 422 (422/252) | Col_Hinge, Col_LatchStile, Col_Top, Col_Fabric | Same wire slab as the fence panel, inset to the leaf. Top is 1.80 m. | shipped |
@@ -122,10 +122,15 @@ Blender 4.2 LTS is enough. `write_unity.py` does not need Blender. The showcase 
 | WallAC | Utility | 0.7 × 0.48 × 0.616 | 204 (204/36) | Col_Sleeve, Col_Head | Not a cling. Too small to vault. | shipped |
 | WaterTank | Buildings | 1.75 × 4.16 × 1.56 | 608 (608/228/180) | Col_Leg x4, Col_Tank | Legs are 8 cm tubes, not a cling wall. The tank is round. No rail at vault height. | shipped |
 | WoodFence | Buildings | 2.04 × 1.9 × 0.12 | 676 (676/132) | Climb_Boards, Col_PostL, Col_PostR | The board faces are a cling panel. Gaps are 6 mm and are not a passage. Top is 1.80 m. Too high to vault from the ground. | shipped |
-| FishingBoat | Harbor | 1.58 × 0.89 × 3.915 | 204 (204/120) | Col_Keel, Col_SideL, Col_SideR, Col_Transom, Col_Bow, Col_Deck | The hull is a solid prop. Not a cling wall. Gunwale is 0.72 m. Under the vault band. | shipped |
-| HarborShed | Harbor | 4 × 3.11 × 3.16 | 156 (156/144) | Col_Floor, Climb_Back, Climb_SideL, Climb_SideR, Climb_FrontL, Col_Door | climb The board walls are cling. The door is closed. No rail. Wall top is 2.35 m. | shipped |
+| FishingBoat | Harbor | 1.591 × 1.446 × 5.398 | 1632 (1632/592) | Col_Bilge, Col_Bow, Col_Transom, Col_Cabin, Col_Motor | The hull is a solid prop. Not a cling wall. Gunwale is about 0.70 m. Under the vault band. | shipped |
+| HarborShed | Harbor | 3.96 × 3.2 × 3.335 | 156 (156/144) | Col_Floor, Climb_Back, Climb_SideL, Climb_SideR, Climb_FrontL, Col_Door | climb The board walls are cling. The door is closed. No rail. Wall top is 2.35 m. | shipped |
 | Pond | Park | 10.537 × 0.86 × 7.7 | 748 (748/336) | Col_BankN, Col_BankS, Col_BankE, Col_BankW | The bank is a slope, not a cling wall. No rail. Water has no collider. | shipped |
-| Rowboat | Harbor | 1.4 × 0.49 × 2.26 | 164 (164/108) | Col_Keel, Col_SideL, Col_SideR, Col_Transom, Col_Bow | Too small to cling. Gunwale is 0.42 m. Not a vault. | shipped |
+| Rowboat | Harbor | 2.58 × 0.66 × 2.87 | 952 (952/376) | Col_Bilge, Col_ThwartF, Col_ThwartA, Col_Transom | Too small to cling. Gunwale is about 0.50 m. Not a vault. | shipped |
+| Gangway | Harbor | 0.992 × 1.238 × 2.565 | 776 (776/232) | Col_Plank x10, Vault_Rail x2 | vault 0.95 m Walk the planks. Not a cling wall. Vault_Rail is the handrail, 0.95 m above the deck. | shipped |
+| FuelDock | Harbor | 0.52 × 1.3 × 0.604 | 444 (444/48) | Col_Cabinet, Col_Base | Cabinet. Not a cling wall. No rail. | shipped |
+| LifeRing | Harbor | 0.819 × 1.416 × 0.25 | 388 (388/164) | Col_Post, Col_Base | Post is 4 cm. Not a cling. No rail. | shipped |
+| FishCrate | Harbor | 0.72 × 0.295 × 0.46 | 48 (48/24) | Col_Body, Col_Rim | Too small to cling. Not a vault. | shipped |
+| LobsterTrap | Harbor | 0.916 × 0.393 × 0.496 | 444 (444/216) | Col_Base, Col_Post x4 | Too small to cling. Not a vault. | shipped |
 
 ## Modules
 
@@ -136,7 +141,7 @@ Blender 4.2 LTS is enough. `write_unity.py` does not need Blender. The showcase 
 - The court is a 22 × 12 m street full court. Paint is one decal: FIBA markings scaled by 22/28 along the length and 12/15 across the width, every line 5 cm. Boundary, center line, center circle, lane, free-throw circle, restricted arc, and the 3-point arc are on that texture. `CourtFence` shares that pivot (baselines 3.05 m, sidelines 1.80 m, gate on +X). `Hoop` rim is 3.05 m and 2.49 m in front of the pole. Baskets are at z = ±9.71. Place the pole 1.2 m behind the slab end line: south z = -12.2 (yaw 0), north z = 12.2 (yaw 180). The backboard face is 0.29 m behind the rim, which is the scaled 1.20 m inboard distance. A literal 1.20 m face would pass through the rim on this scaled court.
 - `DockRamp` is 4 × 2 m and falls from 0.62 m at -Z to 0.05 m at +Z. A dock centered at the origin meets a ramp centered at z = 4.
 - `LaneArrow` and `StopBar` are paint. Place them on a road top (y = 0.12). They have no collider. `RaisedCrosswalk` replaces a 6 × 4 m road tile; the crown is 8 cm above the road and the collider follows that hump.
-- `HarborWater` is a dark rippled sheet with no collider. `Quay_Edge` is 18 m long with an 8.2 m apron, deck at 0.90 m. The water face is a vertical concrete wall from about 1.2 m below the pivot up to the deck, with a foundation under the apron. Edge stone, four bollards, a ladder, and five fenders are on -Z. `Container_20` stays the ISO 20 ft box (6.06 × 2.44 × 2.59 m) and sits on that apron. `HarborCrane` is a steel jib crane: tubular mast, cab, level jib toward +Z, counterweight on -Z. `Boat` is a work boat about 6.4 m long with a cabin, bow to -Z, gunwale near 1.0 m. `FishingBoat` is an open skiff about 4.2 m, bow to -Z. `Rowboat` is 2.6 m with two seats and oars. `HarborShed` is a wood gable shed, door on +Z. `Piling` continues about 1.4 m below its pivot. `Mooring` is a 3.2 m finger at 0.55 m.
+- `HarborWater` is a dark rippled sheet with no collider. `Quay_Edge` is 18 m long with an 8.2 m apron, deck at 0.90 m. The water face is a vertical concrete wall from about 1.2 m below the pivot up to the deck, with a foundation under the apron. Edge stone, four bollards, a ladder, and five fenders are on -Z. `Container_20` stays the ISO 20 ft box (6.06 × 2.44 × 2.59 m) and sits on that apron. `HarborCrane` is a steel jib crane: tubular mast, cab, level jib toward +Z, counterweight on -Z. `Boat` is a work boat about 6.4 m long with a cabin, bow to -Z, gunwale near 1.0 m. `FishingBoat` is about 5.1 m with a curved stem, sheer, keel, transom, wheelhouse, rails, cleats, and an outboard; the red stripe is the 0.34 m waterline. `Rowboat` is about 2.9 m with the same hull language, two thwarts, oarlocks, and oars; its stripe is at 0.26 m. `HarborShed` is a wood shed with a closed gable, fascia, a door, and a window on +Z. `Buoy` is a can buoy: ballast bulb, red body, white band, and a cage with a light. `Gangway` runs from 0.90 m at -Z to 0.62 m at +Z. `FuelDock` is a hose pump. `LifeRing` faces +Z. `FishCrate` and `LobsterTrap` sit on a deck. `Piling` continues about 1.4 m below its pivot. `Mooring` is a 3.2 m finger at 0.55 m.
 - `Pavilion` is the square park shelter: 4.6 m across, rail 0.95 m above the deck, pyramid roof. `Gazebo` is a hexagon: six posts on the deck corners, roof corners on those same rays with a short overhang. Every side except the entry has a top rail, a bottom rail, and even balusters. The deck is 0.32 m thick with vertical skirt boards, and one side is a step. Top rail center is 0.95 m above the deck. `Playground` is an A-frame swing with two chains on each red belt seat. The seat has a cream rim. The slide has rails and a curled lip, square posts down to the mulch, guard panels, and stairs in the same blue as the deck. The spring rider seat is about 0.6 m and the climbing dome is a geodesic of bars, on a rubber border with a wood-chip patch. `Seesaw` is a separate park plank. `Tree_Grate` is a street tree standing in a square steel grate.
 - `Mannequin` is a 1.80 m scale figure for the showcase. It is not a gameplay character. Harbor and street stills use the Hier mannequin at the same height.
 - `RecyclingBin` is a blue street bin with a white rim and a green lid, about 0.95 m tall. `TrashCan_Slat` and `TrashCan_Lidded` stay the round cans.
