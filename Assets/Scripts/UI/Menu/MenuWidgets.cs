@@ -242,7 +242,7 @@ namespace Tag.Ui.Menu
         /// Drop-in card. The plate and the stripe stay the seat tint. Focus is the gold
         /// stroke only. A joined seat gets a bust in the slot color and a Ready or Joined chip.
         /// </summary>
-        public static void JoinDress(MenuTile tile, Color seat, bool joined, bool ready, string profile, string deviceLine)
+        public static void JoinDress(MenuTile tile, Color seat, bool joined, bool ready, string profile, string deviceLine, int index)
         {
             if (tile == null) return;
             tile.LockColors = true;
@@ -252,24 +252,26 @@ namespace Tag.Ui.Menu
             if (tile.Label != null) Band(tile.Label, h, 22f, 36f);
             if (!joined)
             {
-                float bustH = h * 0.42f;
-                if (bustH > 210f) bustH = 210f;
-                if (bustH < 120f) bustH = 120f;
-                float bustW = bustH * 0.72f;
-                if (bustW > w * 0.72f) bustW = w * 0.72f;
+                float side = h * 0.42f;
+                if (side > 220f) side = 220f;
+                if (side < 120f) side = 120f;
+                if (side > w * 0.78f) side = w * 0.78f;
                 float bustY = 86f;
-                Ghost(tile.transform, (w - bustW) * 0.5f, bustY, bustW, bustH, seat);
-                float mark = 76f;
-                float mx = (w - mark) * 0.5f;
-                float my = bustY + bustH * 0.38f;
-                var well = Place(tile.transform, "GhostWell", mx, my, mark, mark);
-                var wellImage = well.gameObject.AddComponent<Image>();
-                wellImage.color = new Color(0.02f, 0.02f, 0.04f, 0.85f);
-                wellImage.raycastTarget = false;
-                SeatShape.StampKind(well, MenuMannequin.Shape(seat), 10f, 10f, mark - 20f, MenuTheme.SeatFill(seat));
+                if (!HierSeat(tile.transform, (w - side) * 0.5f, bustY, side, index))
+                {
+                    Ghost(tile.transform, (w - side * 0.72f) * 0.5f, bustY, side * 0.72f, side, seat);
+                    float mark = 76f;
+                    float mx = (w - mark) * 0.5f;
+                    float my = bustY + side * 0.38f;
+                    var well = Place(tile.transform, "GhostWell", mx, my, mark, mark);
+                    var wellImage = well.gameObject.AddComponent<Image>();
+                    wellImage.color = new Color(0.02f, 0.02f, 0.04f, 0.85f);
+                    wellImage.raycastTarget = false;
+                    SeatShape.StampKind(well, MenuMannequin.Shape(index), 10f, 10f, mark - 20f, MenuTheme.SeatFill(index));
+                }
                 if (tile.Detail != null)
                 {
-                    Band(tile.Detail, h, bustY + bustH + 10f, 44f);
+                    Band(tile.Detail, h, bustY + side + 10f, 44f);
                     tile.Detail.alignment = TextAnchor.MiddleCenter;
                 }
                 return;
@@ -279,9 +281,9 @@ namespace Tag.Ui.Menu
             float bustY = 62f;
             if (bustY + bustH > h - 148f) bustH = h - 148f - bustY;
             if (bustH < 96f) bustH = 96f;
-            float bustW = bustH * 0.72f;
-            if (bustW > w * 0.78f) bustW = w * 0.78f;
-            Bust(tile.transform, (w - bustW) * 0.5f, bustY, bustW, bustH, seat);
+            if (bustH > w * 0.78f) bustH = w * 0.78f;
+            if (!HierSeat(tile.transform, (w - bustH) * 0.5f, bustY, bustH, index))
+                Bust(tile.transform, (w - bustH * 0.72f) * 0.5f, bustY, bustH * 0.72f, bustH, seat);
             string name = string.IsNullOrEmpty(profile) ? "" : "<  " + profile + "  >";
             var nameRt = Place(tile.transform, "ProfileName", 16f, bustY + bustH + 6f, w - 32f, 36f);
             Words(nameRt, name, 28, TextAnchor.MiddleCenter, MenuTheme.Cream, Vector2.zero, Vector2.one);
@@ -321,6 +323,21 @@ namespace Tag.Ui.Menu
         /// Head, chest, and legs in the seat color. A joined drop-in card uses this
         /// instead of a tiny device mark.
         /// </summary>
+        /// <summary>Seat Hier idle, square so the disc is not stretched. False when the atlas is missing.</summary>
+        public static bool HierSeat(Transform parent, float x, float y, float side, int index)
+        {
+            Texture tex = MenuBackdrop.SeatLoad;
+            if (parent == null || tex == null) return false;
+            if (index < 0) index = 0;
+            if (index > 3) index = 3;
+            RectTransform rt = Place(parent, "HierSeat", x, y, side, side);
+            RawImage raw = rt.gameObject.AddComponent<RawImage>();
+            raw.texture = tex;
+            raw.raycastTarget = false;
+            raw.uvRect = new Rect(index * 0.25f, 0f, 0.25f, 1f);
+            return true;
+        }
+
         /// <summary>Empty drop-in seat. A faint body with a light outline, not a blank slab.</summary>
         public static void Ghost(Transform parent, float x, float y, float w, float h, Color seat)
         {

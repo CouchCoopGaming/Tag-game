@@ -378,6 +378,8 @@ The thirtieth pass holds the start line until every joined seat is ready and at 
 
 The thirty-first pass rebuilds that title blur in float, with a wide Gaussian and a little blue noise, so the sky no longer steps in rings. The biggest step between adjacent sky rows is 0.155. The main menu stands the real red and blue mannequins on their discs, idle, three-quarter, with the seat shape on the chest. Loading and pause use the same short header chip, and the load pane shows that blue mannequin instead of the chase plate. Unity is not installed here, so the frames are that live plate with the menu drawn on it, in `Docs/UiStills/screens2/pass31/`. Space still jumps.
 
+The thirty-second pass puts a Hier idle on every loading pane, in that seat's color, with the chest shape and the feet on a disc in the same lower-right spot. The waiting bar is a real track at 0%, and each tip is a full sentence. Climb is pushing into the wall. Wall jump is pressing jump while you do. A pad tip does not invent a grapple glyph. The arms stay in the bind pose, because no idle clip lowers them. Drop-in uses those same four figures. The pictures are in `Docs/UiStills/screens2/pass32/`. Space still jumps.
+
 ## Motion, ninth pass
 
 The wall jump, the rope, the zip, the launch pad, a landing, the dash flash, a hard turnaround, and a punch while you run all ease instead of snapping. Speeds, the jump, and the dash length are the same.

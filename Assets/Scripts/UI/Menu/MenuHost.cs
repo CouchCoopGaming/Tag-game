@@ -2123,7 +2123,7 @@ namespace Tag.Ui.Menu
                     if (tile.Bar != null) tile.Bar.color = tile.BarColor;
                     tile.Tint(Color.Lerp(MenuTheme.Ink, seat, UiSweep.SeatMix));
                     tile.LockColors = true;
-                    MenuWidgets.JoinDress(tile, seat, human, human && MenuSession.Ready[s], profile, deviceLine);
+                    MenuWidgets.JoinDress(tile, seat, human, human && MenuSession.Ready[s], profile, deviceLine, s);
                     MenuWidgets.JoinShape(tile, s);
                     if (!human) MenuBindRow.JoinPair(tile);
                 }

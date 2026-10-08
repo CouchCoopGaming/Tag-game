@@ -427,6 +427,20 @@ Loading and pause use the same short header chip as the menu. Loading says Loadi
 
 `ui-fill protan=0.43 blue/lavender deutan=0.53 red/orange tritan=0.42 orange/lavender floor=0.35`. `ui-cvd protan=0.41 blue/lavender deutan=0.52 blue/lavender tritan=0.41 orange/lavender floor=0.35`. `hot-path allocs before=101 after=0`. `no-clip pose=0`. Arena select, RESULTS, options, controls, and mode/rules are untouched. Unity is not installed, so the frames in `Docs/UiStills/screens2/pass31/` are the live plate with the menu drawn on it. The figures are a Blender render of the repo FBX.
 
+## Screens 2, pass 32
+
+Loading gives every pane the same Hier idle. The figure sits in the lower-right, the same size in each pane, feet on a disc just above the info card, whole body in frame. P1 is the red circle, P2 the blue triangle, P3 the orange square, P4 the lavender diamond. The Orange Hier file is a different skinned mesh, so P3 is the shared rig tinted orange. The waiting track is a full-height bar with a short gold cap at 0%, labeled Waiting 0%. The jump tip is a full sentence, and punctuation stays on that sentence.
+
+Climb is the move wish into the wall. `PlayerMotor.ClingHeld` (`PlayerMotor.cs` 1226–1239) is `dot(wishDir, -wallNormal) > 0.25`. Jump is not cling, and there is no cling button. Keyboard `holdIntoWall` is not sampled: `BindSampler.HeldToken` (`BindSampler.cs` 203–205) returns false for `SharesMove` (`ActionBinds.cs` 415–417). A pad `leftStickHold` is the stick past 0.04 (`BindSampler.cs` 469), and `PlayerInputReader.ReadDriven` (`PlayerInputReader.cs` 390–391) then biases Move forward. Wall jump is `JumpPressed` on the wall or inside cling grace (`PlayerMotor.cs` 474–484, 1020–1025, 1164). Keyboard jump is Space, including the Space OR (`PlayerInputReader.cs` 409–420). Pad jump is South, shown as A. Grapple release is the second press inside 0.28 s (`ExperimentalGrapple.cs` 26, 177–185). Keyboard fire is mouse right (`ExperimentalGrapple.cs` 256–262, `ActionBinds.Show` for `mouseRight`). The pad token is `leftTrigger` (`ActionBinds.cs` 44) but the tip does not print a pad glyph.
+
+No idle clip lowers the Hier arms. `VerbPoseClips.IdleArmPitch` is a constant for the primitive body only (`MenuIdle.cs` sets the Hier hang to 0). There is no `.anim` idle. The arms stay on the bind A-pose. Pose sample 0 is unchanged: knees −4°, soles at 0.5 cm, no root lift. The 30 fps no-clip check was not run, because no new pose was sampled. `no-clip pose=0`.
+
+Drop-in puts that same idle on all four seats, seat color and chest shape, feet on the discs. P1 ready and P2 joined still read Waiting for 1 player to ready up. Empty seats keep Press Space or A to join.
+
+The title plate, the main-menu Red and Blue pair, and the pause card stay as accepted in pass 31, except the main-menu climb sentence and the arms note above. Arena select, RESULTS, options, controls, and mode/rules are untouched.
+
+`ui-flow screens=15 kb=15 pad=15 dead=0 focus=ok back=ok seats=4 drop=ok reclaim=ok min=ok keep=ok cues=9 text=ok hud=ok glyphs=ok feed=ok load=ok board=ok faces=ok rules=ok records=ok contrast=ok style=ok sheet=ok defaults-conflict=0`. `ui-apply master=ok sfx=ok ui=ok music=ok mute=ok res=ok full=ok vsync=ok quality=ok scale=ok motion=ok text=ok player=ok palette=ok comic=ok mouse=ok pad=ok invert=ok fov=ok reset=ok apply=ok persist=ok`. `hot-path allocs before=101 after=0`. Stills: `32-load.png` 383063, `32-main.png` 332883, `32-join.png` 242863. Unity is not installed, so the frames in `Docs/UiStills/screens2/pass32/` are the live plate with the menu drawn on it. The figures are a Blender render of the repo FBX.
+
 ## Later passes
 
 - Left from a rule row returns to the modes even when that rule can still decrease. Right from the right-hand mode, and Left at the end of a rule, already move between the columns.
