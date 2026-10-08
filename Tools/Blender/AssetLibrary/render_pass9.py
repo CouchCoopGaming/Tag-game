@@ -335,7 +335,16 @@ def _court(found):
         p6._spawn(found, "Hoop", (0, 0, 10.572), 180),
     ]
     p6._ground((0.15, 0.16, 0.15))
-    r._frame(scene, objs, fill=0.78, elevation=52.0, azimuth=38.0)
+    # Darker than the street sky so the court quantize snap does not paint it white.
+    bg = scene.world.node_tree.nodes.get("Background")
+    if bg:
+        bg.inputs["Color"].default_value = (0.28, 0.38, 0.50, 1.0)
+        bg.inputs["Strength"].default_value = 0.9
+    for obj in bpy.data.objects:
+        if obj.type == "LIGHT" and obj.data.type == "AREA":
+            obj.data.energy = 90.0
+    # Wide sideline view. Both backboard faces stay inside the frame.
+    p6._look(scene, (12.5, 5.4, 0.0), (0.0, 1.3, 0.0), lens=20.0)
     r._render(scene, os.path.join(STILL_DIR, "court.png"))
 
 

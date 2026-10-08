@@ -1,4 +1,4 @@
-# Asset library, pass 8
+# Asset library, pass 9
 
 Procedural props for the couch tag arenas. Real meters, +Y up, pivot at the ground contact (or the module origin called out in the notes). Players are about 1.8 m. Vault rails in the park kit sit at 0.90–1.05 m. Every mesh is rebuilt from `Tools/Blender/AssetLibrary/<asset>.py`.
 
@@ -9,7 +9,7 @@ No third-party textures. Brick, concrete, wood, bark, asphalt, and the worn meta
 ```
 blender --background --python Tools/Blender/AssetLibrary/build_all.py
 python3 Tools/Blender/AssetLibrary/write_unity.py
-blender --background --python Tools/Blender/AssetLibrary/render_pass8.py
+blender --background --python Tools/Blender/AssetLibrary/render_pass9.py
 ```
 
 Blender 4.2 LTS is enough. `write_unity.py` does not need Blender. The showcase scene is `Assets/Scenes/AssetShowcase.unity`. It is not in the build settings and it does not touch the three arenas. `Tag/Asset Showcase` rebuilds that scene from the prefabs.
@@ -82,13 +82,14 @@ Blender 4.2 LTS is enough. `write_unity.py` does not need Blender. The showcase 
 | PicnicTable | Park | 1.8 × 0.781 × 1.32 | 424 (424/156) | Col_Top, Col_BenchN, Col_BenchS, Col_Leg x2, Col_BenchLegN x2, Col_BenchLegS x2 | Not a wall. Top is 0.76 m, under the vault band. Benches are 0.45 m. | shipped |
 | Piling | Harbor | 0.4 × 4.65 × 0.4 | 508 (508/140) | Col_Collar, Col_Pile | Round timber. Not a cling wall. About 1.4 m of the shaft is below the pivot, in the water. No rail. The head is 3.2 m, too high to vault from the dock. | shipped |
 | Planter | Park | 0.9 × 0.84 × 0.9 | 356 (356/108) | Col_WallN, Col_WallS, Col_WallL, Col_WallR, Col_Soil, Col_Shrub | Too low. 0.48 m. Not a vault. | shipped |
-| Playground | Park | 7.4 × 2.48 × 4.8 | 3378 (3378/1192/340) | Col_Pad, Col_Mulch, Col_LegA x2, Col_LegB x2, Col_Beam, Col_Seat x2, Col_Deck, Col_DeckPost x4, Col_Guard x4, Col_Slide x4, Col_Stair x5, Col_RiderBase, Col_RiderBody | Bars and posts are too small to cling. Not a wall. The deck panels are a guard, not a 0.90 m vault. The rider seat is about 0.6 m. | shipped |
+| Playground | Park | 7.4 × 2.48 × 4.8 | 3474 (3474/1288/340) | Col_Pad, Col_Mulch, Col_LegA x2, Col_LegB x2, Col_Beam, Col_Seat x2, Col_Deck, Col_DeckPost x4, Col_Guard x4, Col_Slide x4, Col_Stair x5, Col_RiderBase, Col_RiderBody | Bars and posts are too small to cling. Not a wall. The deck panels are a guard, not a 0.90 m vault. The rider seat is about 0.6 m. | shipped |
 | Quay_Edge | Harbor | 18 × 2.78 × 8.87 | 1244 (1244/708) | Col_Deck, Col_Face, Col_Foundation, Col_Coping, Col_Fender x5, Col_Bollard x4, Col_LadderL, Col_LadderR | The face is a wall. Too low and too thick to treat as a cling panel from the water. Deck is 0.90 m. The bullnose is rounded, not a rail. | shipped |
 | RaisedCrosswalk | Roads | 6 × 0.28 × 4.014 | 120 (120/96) | Col_Slab, Col_Crown, Col_RampS, Col_RampN | The crown is 8 cm above the road. Walk it. Not a cling wall. 8 cm rise. Not a vault. | shipped |
+| RecyclingBin | StreetFurniture | 0.52 × 0.95 × 0.454 | 184 (184/48) | Col_Body, Col_Lid | Not a cling surface. Too short and narrow to vault. | shipped |
 | Road_Cross | Roads | 6 × 0.128 × 6 | 92 (92/60) | Col_Slab | Flat intersection. No curb on this tile. | shipped |
 | Road_Crosswalk | Roads | 6 × 0.128 × 4 | 140 (140/72) | Col_Slab | Flat road. Paint has no collider. No curb on this tile. | shipped |
 | Road_Curve | Roads | 6 × 0.27 × 6 | 156 (156/60) | Col_South, Col_East, Col_Walk | Curb at the sidewalk wedge is 0.15 m. Curb is not a vault. | shipped |
-| Road_Straight | Roads | 6 × 0.135 × 4 | 120 (120/84) | Col_Slab | Flat road. No curb on this tile. Sidewalks carry the curb. | shipped |
+| Road_Straight | Roads | 6 × 0.133 × 4 | 72 (72/60) | Col_Slab | Flat road. No curb on this tile. Sidewalks carry the curb. | shipped |
 | Road_T | Roads | 6 × 0.27 × 6 | 124 (124/60) | Col_Asphalt, Col_Curb | Curb face on -Z is 0.15 m. Too short to cling. Curb is 0.15 m. Not a vault. | shipped |
 | Roof_Parapet | Buildings | 4.14 × 0.68 × 0.48 | 112 (112/36/36) | Climb_Parapet, Col_Cornice, Col_Coping | climb Short cling face. A roof edge, not a full wall. Coping is 0.72 m above its own base. | shipped |
 | RooftopAC | Buildings | 1.33 × 0.895 × 0.9 | 488 (488/148/132) | Col_Unit, Col_RailL, Col_RailR | Not a wall. Too bulky and low to vault. It is a rooftop obstacle. | shipped |
@@ -109,6 +110,7 @@ Blender 4.2 LTS is enough. `write_unity.py` does not need Blender. The showcase 
 | TrashCan_Lidded | StreetFurniture | 0.48 × 1.09 × 0.519 | 948 (948/276) | Col_Body, Col_Door | Not a cling surface. Too narrow to vault. | shipped |
 | TrashCan_Slat | StreetFurniture | 0.47 × 0.877 × 0.47 | 1128 (1128/260) | Col_Liner, Col_Rim | Not a cling surface. 0.92 m rim is narrow and round. Not a vault rail. | shipped |
 | Tree | Park | 3.482 × 3.539 × 3.066 | 1584 (1584/732/336) | Col_Flare, Col_Trunk | Trunk is round, about 0.28 m at the flare. Not a flat cling wall. No rail. The canopy is visual; the trunk is the blocker. | shipped |
+| Tree_Grate | Park | 2.752 × 3.111 × 2.321 | 1176 (1176/600/360) | Col_GrateN, Col_GrateS, Col_GrateE, Col_GrateW, Col_Flare, Col_Trunk | Trunk is round, about 0.22 m at the flare. Not a flat cling wall. No rail. The grate is a sidewalk skin. The trunk is the blocker. | shipped |
 | Tree_Maple | Park | 2.739 × 3.702 × 2.385 | 1584 (1584/732/264) | Col_Flare, Col_Trunk | Trunk is round. Not a flat cling wall. No rail. The canopy is visual; the trunk is the blocker. | shipped |
 | Tree_Palm | Park | 3.1 × 4.345 × 3.1 | 120 (120/60/48) | Col_Trunk | Trunk is round. Not a flat cling wall. No rail. Fronds are visual; the trunk is the blocker. | shipped |
 | Tree_Pine | Park | 2.968 × 4.214 × 2.75 | 2932 (2932/816/528) | Col_Flare, Col_Trunk | Trunk is round. Not a flat cling wall. No rail. The crown is visual; the trunk is the blocker. | shipped |
@@ -119,7 +121,7 @@ Blender 4.2 LTS is enough. `write_unity.py` does not need Blender. The showcase 
 
 ## Modules
 
-- Roads are 6 m wide and 4 m long. Top of asphalt is 0.12 m. The asphalt tile is near-uniform dark gray with very fine grain. Each straight tile has a slightly darker wheel path, one white edge line per side running the full 4 m, a dashed yellow center, and a couple of hairline crack-seal marks. Sidewalk top is 0.27 m (15 cm curb) and the curb faces -X. `Gutter` is one concrete pan, 0.38 m wide and a full 4 m long, top at 0.09 m. Its +X face meets that curb and its -X face sits on the road edge. On the shop street the road edge is x = 3, the gutter center is x = 3.19, the walk center is x = 4.38, and the shop footing is x = 5.38.
+- Roads are 6 m wide and 4 m long. Top of asphalt is 0.12 m. Each straight tile is one continuous asphalt surface: no lane seam and no crack-seal ticks. One white edge line per side runs the full 4 m, with a dashed yellow center. Sidewalk top is 0.27 m (15 cm curb) and the curb faces -X. `Gutter` is one concrete pan, 0.38 m wide and a full 4 m long, top at 0.09 m. Its +X face meets that curb and its -X face sits on the road edge. On the shop street the road edge is x = 3, the gutter center is x = 3.19, the walk center is x = 4.38, and the shop footing is x = 5.38.
 - Brick bays are 4.0 m wide, 3.2 m tall, 0.30 m thick, exterior +Z. Stack a second row at y = 3.2 for two stories. `Store_Corner`, `Store_Diner`, and `Store_Laundromat` are closed volumes. The ground floor is a shopfront: kickplate, dark reflective display glass with shelves behind it, a recessed door with a transom, a tall sign band on a dark plate, a brick string course, and a cornice. Letters are about 0.62 m. The awning is sloped fabric with a valance and a steel frame. Signs read MARKET, DINER, and WASH. `House_Gable` and `House_Hip` have a porch, steps, a paneled door, trimmed windows, eave gutters, and a chimney.
 - Dock modules share a deck at 0.62 m. `Dock_Straight` is 6 × 3 m, with cleats on both sides and a rope coil. `Dock_Corner` is an L inside a 4 m square; its pivot is the center of that square.
 - Containers are external ISO sizes: 20 ft is 6.06 × 2.44 × 2.59 m, 40 ft is 12.19 × 2.44 × 2.59 m. Doors face +Z. Ribs stand about 2 cm proud of the collider.
@@ -127,8 +129,9 @@ Blender 4.2 LTS is enough. `write_unity.py` does not need Blender. The showcase 
 - `DockRamp` is 4 × 2 m and falls from 0.62 m at -Z to 0.05 m at +Z. A dock centered at the origin meets a ramp centered at z = 4.
 - `LaneArrow` and `StopBar` are paint. Place them on a road top (y = 0.12). They have no collider. `RaisedCrosswalk` replaces a 6 × 4 m road tile; the crown is 8 cm above the road and the collider follows that hump.
 - `HarborWater` is a dark rippled sheet with no collider. `Quay_Edge` is 18 m long with an 8.2 m apron, deck at 0.90 m. The water face is a vertical concrete wall from about 1.2 m below the pivot up to the deck, with a foundation under the apron. Edge stone, four bollards, a ladder, and five fenders are on -Z. `Container_20` stays the ISO 20 ft box (6.06 × 2.44 × 2.59 m) and sits on that apron. `HarborCrane` is a steel jib crane: tubular mast, cab, level jib toward +Z, counterweight on -Z. `Boat` is a work boat about 6.4 m long with a cabin, bow to -Z, gunwale near 1.0 m. `Piling` continues about 1.4 m below its pivot. `Mooring` is a 3.2 m finger at 0.55 m.
-- `Pavilion` is the square park shelter: 4.6 m across, rail 0.95 m above the deck, pyramid roof. `Gazebo` is a hexagon: six posts on the deck corners, roof corners on those same rays with a short overhang. Every side except the entry has a top rail, a bottom rail, and even balusters. The deck is 0.32 m thick with vertical skirt boards, and one side is a step. Top rail center is 0.95 m above the deck. `Playground` is an A-frame swing with two chains on each belt seat, a railed slide with a curled lip, square posts down to the mulch, guard panels, and stairs. The spring rider seat is about 0.6 m and the climbing dome is a geodesic of bars, on a rubber border with a wood-chip patch. `Seesaw` is a separate park plank.
-- `Mannequin` is a 1.80 m scale figure for the showcase. It is not a gameplay character.
+- `Pavilion` is the square park shelter: 4.6 m across, rail 0.95 m above the deck, pyramid roof. `Gazebo` is a hexagon: six posts on the deck corners, roof corners on those same rays with a short overhang. Every side except the entry has a top rail, a bottom rail, and even balusters. The deck is 0.32 m thick with vertical skirt boards, and one side is a step. Top rail center is 0.95 m above the deck. `Playground` is an A-frame swing with two chains on each red belt seat. The seat has a cream rim. The slide has rails and a curled lip, square posts down to the mulch, guard panels, and stairs in the same blue as the deck. The spring rider seat is about 0.6 m and the climbing dome is a geodesic of bars, on a rubber border with a wood-chip patch. `Seesaw` is a separate park plank. `Tree_Grate` is a street tree standing in a square steel grate.
+- `Mannequin` is a 1.80 m scale figure for the showcase. It is not a gameplay character. Harbor and street stills use the Hier mannequin at the same height.
+- `RecyclingBin` is a blue street bin with a white rim and a green lid, about 0.95 m tall. `TrashCan_Slat` and `TrashCan_Lidded` stay the round cans.
 
 ## TODO
 

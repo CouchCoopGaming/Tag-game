@@ -12615,7 +12615,7 @@
   {
     "name": "Playground",
     "category": "Park",
-    "blurb": "Play set about 7.4 x 4.8 m. A-frame swings with two chains per belt seat, a slide with rails and a curled lip, square posts to the mulch, guard panels, and stairs. Spring rider seat is about 0.6 m. Climbing dome is a geodesic of bars. Wood-chip patch inside a rubber border. Pivot is the pad center.",
+    "blurb": "Play set about 7.4 x 4.8 m. A-frame swings with two chains per red belt seat and a cream rim. Slide with rails and a curled lip, square posts to the mulch, guard panels, and blue stairs. Spring rider seat is about 0.6 m. Climbing dome is a geodesic of bars. Wood-chip patch inside a rubber border. Pivot is the pad center.",
     "size": [
       7.4,
       2.48,
@@ -12634,17 +12634,18 @@
     "lods": [
       {
         "lod": 0,
-        "tris": 3378,
+        "tris": 3474,
         "materials": [
           "Lib_Rubber",
           "Lib_Mulch",
           "Lib_PaintBlue",
           "Lib_SteelDark",
           "Lib_Chain",
+          "Lib_PaintRed",
+          "Lib_PaintCream",
           "Lib_Steel",
           "Lib_Wood",
           "Lib_Orange",
-          "Lib_PaintRed",
           "Lib_PaintYellow",
           "Lib_PaintGreen"
         ],
@@ -12653,17 +12654,18 @@
       },
       {
         "lod": 1,
-        "tris": 1192,
+        "tris": 1288,
         "materials": [
           "Lib_Rubber",
           "Lib_Mulch",
           "Lib_PaintBlue",
           "Lib_SteelDark",
           "Lib_Chain",
+          "Lib_PaintRed",
+          "Lib_PaintCream",
           "Lib_Steel",
           "Lib_Wood",
           "Lib_Orange",
-          "Lib_PaintRed",
           "Lib_PaintYellow",
           "Lib_PaintGreen"
         ],
@@ -13658,6 +13660,105 @@
     "fbx": "Assets/Art/Props/Library/Roads/RaisedCrosswalk.fbx"
   },
   {
+    "name": "RecyclingBin",
+    "category": "StreetFurniture",
+    "blurb": "Street recycling bin, 0.52 m wide and 0.95 m to the lid. Blue body, white rim, green lid, and a drop slot.",
+    "size": [
+      0.52,
+      0.95,
+      0.454
+    ],
+    "min": [
+      -0.26,
+      0.02,
+      -0.22
+    ],
+    "max": [
+      0.26,
+      0.97,
+      0.234
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 184,
+        "materials": [
+          "Lib_PaintBlue",
+          "Lib_PaintWhite",
+          "Lib_PaintGreen",
+          "Lib_Black"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 48,
+        "materials": [
+          "Lib_PaintBlue",
+          "Lib_PaintWhite",
+          "Lib_PaintGreen",
+          "Lib_Black"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_Body",
+        "type": "box",
+        "center": [
+          0,
+          0.4,
+          0
+        ],
+        "size": [
+          0.44,
+          0.72,
+          0.36
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Lid",
+        "type": "box",
+        "center": [
+          0,
+          0.9,
+          0
+        ],
+        "size": [
+          0.46,
+          0.12,
+          0.38
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "climbable": false,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "Not a cling surface.",
+    "vaultNote": "Too short and narrow to vault.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1"
+    ],
+    "slackCm": 0.0,
+    "fbx": "Assets/Art/Props/Library/StreetFurniture/RecyclingBin.fbx"
+  },
+  {
     "name": "Road_Cross",
     "category": "Roads",
     "blurb": "6 x 6 m intersection. Attach Road_Straight to any edge, centered, 4 m further out.",
@@ -13928,10 +14029,10 @@
   {
     "name": "Road_Straight",
     "category": "Roads",
-    "blurb": "6 m wide (two 3 m lanes) by 4 m long. Top at 0.12 m. Near-uniform asphalt, slight wheel-path darkening, one white edge line each side, dashed yellow center. Center the next tile 4 m along Z.",
+    "blurb": "6 m wide (two 3 m lanes) by 4 m long. Top at 0.12 m. One continuous asphalt surface, one white edge line each side, dashed yellow center. Center the next tile 4 m along Z.",
     "size": [
       6.0,
-      0.135,
+      0.133,
       4.0
     ],
     "min": [
@@ -13941,29 +14042,26 @@
     ],
     "max": [
       3.0,
-      0.135,
+      0.133,
       2.0
     ],
     "lods": [
       {
         "lod": 0,
-        "tris": 120,
+        "tris": 72,
         "materials": [
           "Lib_Asphalt",
-          "Lib_AsphaltWear",
           "Lib_PaintWhite",
-          "Lib_Lane",
-          "Lib_AsphaltPatch"
+          "Lib_Lane"
         ],
         "mesh": "LOD0",
         "fileID": -1633821710574564935
       },
       {
         "lod": 1,
-        "tris": 84,
+        "tris": 60,
         "materials": [
           "Lib_Asphalt",
-          "Lib_AsphaltWear",
           "Lib_PaintWhite",
           "Lib_Lane"
         ],
@@ -22793,6 +22891,192 @@
     ],
     "slackCm": 1.5,
     "fbx": "Assets/Art/Props/Library/Park/Tree.fbx"
+  },
+  {
+    "name": "Tree_Grate",
+    "category": "Park",
+    "blurb": "Street tree in a 1.20 m steel grate. Trunk about 2.4 m to the forks, canopy about 3.4 m. The grate opening clears the flare.",
+    "size": [
+      2.752,
+      3.111,
+      2.321
+    ],
+    "min": [
+      -1.299,
+      0.0,
+      -1.309
+    ],
+    "max": [
+      1.453,
+      3.111,
+      1.012
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 1176,
+        "materials": [
+          "Lib_SteelDark",
+          "Lib_Steel",
+          "Lib_Bark",
+          "Lib_Foliage",
+          "Lib_FoliageDark",
+          "Lib_FoliageLite"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 600,
+        "materials": [
+          "Lib_SteelDark",
+          "Lib_Steel",
+          "Lib_Bark",
+          "Lib_Foliage",
+          "Lib_FoliageDark",
+          "Lib_FoliageLite"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      },
+      {
+        "lod": 2,
+        "tris": 360,
+        "materials": [
+          "Lib_SteelDark",
+          "Lib_Steel",
+          "Lib_Bark",
+          "Lib_Foliage",
+          "Lib_FoliageDark"
+        ],
+        "mesh": "LOD2",
+        "fileID": 736115405485880582
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_GrateN",
+        "type": "box",
+        "center": [
+          0,
+          0.03,
+          0.56
+        ],
+        "size": [
+          1.12,
+          0.03,
+          0.06
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_GrateS",
+        "type": "box",
+        "center": [
+          0,
+          0.03,
+          -0.56
+        ],
+        "size": [
+          1.12,
+          0.03,
+          0.06
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_GrateE",
+        "type": "box",
+        "center": [
+          0.56,
+          0.03,
+          0
+        ],
+        "size": [
+          0.06,
+          0.03,
+          0.96
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_GrateW",
+        "type": "box",
+        "center": [
+          -0.56,
+          0.03,
+          0
+        ],
+        "size": [
+          0.06,
+          0.03,
+          0.96
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Flare",
+        "type": "box",
+        "center": [
+          0,
+          0.06,
+          0
+        ],
+        "size": [
+          0.28,
+          0.08,
+          0.28
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Trunk",
+        "type": "capsule",
+        "center": [
+          0,
+          1.15,
+          0
+        ],
+        "radius": 0.07,
+        "height": 2.0,
+        "direction": 1
+      }
+    ],
+    "climbable": false,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "Trunk is round, about 0.22 m at the flare. Not a flat cling wall.",
+    "vaultNote": "No rail. The grate is a sidewalk skin. The trunk is the blocker.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1",
+      "LOD2"
+    ],
+    "slackCm": 2.22,
+    "fbx": "Assets/Art/Props/Library/Park/Tree_Grate.fbx"
   },
   {
     "name": "Tree_Maple",

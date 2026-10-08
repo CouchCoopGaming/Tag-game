@@ -105,7 +105,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Tag.Art.Library.LibraryPropMeta
   category: "Park"
-  summary: "Play set about 7.4 x 4.8 m. A-frame swings with two chains per belt seat, a slide with rails and a curled lip, square posts to the mulch, guard panels, and stairs. Spring rider seat is about 0.6 m. Climbing dome is a geodesic of bars. Wood-chip patch inside a rubber border. Pivot is the pad center."
+  summary: "Play set about 7.4 x 4.8 m. A-frame swings with two chains per red belt seat and a cream rim. Slide with rails and a curled lip, square posts to the mulch, guard panels, and blue stairs. Spring rider seat is about 0.6 m. Climbing dome is a geodesic of bars. Wood-chip patch inside a rubber border. Pivot is the pad center."
   climbable: 0
   vaultable: 0
   vaultHeightMeters: 0
@@ -182,10 +182,11 @@ MeshRenderer:
   - {fileID: 2100000, guid: 09bfd371e8f0f16e6b78127684637c79, type: 2}
   - {fileID: 2100000, guid: beb173626a35c30c1ff350a8ec04f0d1, type: 2}
   - {fileID: 2100000, guid: d3c80c08498f6d09e5fc4bd175e6f068, type: 2}
+  - {fileID: 2100000, guid: 38838e5bb0bb608f1038bb4926803471, type: 2}
+  - {fileID: 2100000, guid: bf0ace326dd21cd814cc8d0c1df35c10, type: 2}
   - {fileID: 2100000, guid: 3378749727762f35ade0a2e55dedd4ed, type: 2}
   - {fileID: 2100000, guid: 039f45c8ec256a2c59edb56941405e17, type: 2}
   - {fileID: 2100000, guid: 501b322339ee64fd67079e2df90c37f2, type: 2}
-  - {fileID: 2100000, guid: 38838e5bb0bb608f1038bb4926803471, type: 2}
   - {fileID: 2100000, guid: 8a63964d15fa16988483419991831ff1, type: 2}
   - {fileID: 2100000, guid: ba48119948a19620090fab7b739a0d12, type: 2}
   m_StaticBatchInfo:
@@ -282,10 +283,11 @@ MeshRenderer:
   - {fileID: 2100000, guid: 09bfd371e8f0f16e6b78127684637c79, type: 2}
   - {fileID: 2100000, guid: beb173626a35c30c1ff350a8ec04f0d1, type: 2}
   - {fileID: 2100000, guid: d3c80c08498f6d09e5fc4bd175e6f068, type: 2}
+  - {fileID: 2100000, guid: 38838e5bb0bb608f1038bb4926803471, type: 2}
+  - {fileID: 2100000, guid: bf0ace326dd21cd814cc8d0c1df35c10, type: 2}
   - {fileID: 2100000, guid: 3378749727762f35ade0a2e55dedd4ed, type: 2}
   - {fileID: 2100000, guid: 039f45c8ec256a2c59edb56941405e17, type: 2}
   - {fileID: 2100000, guid: 501b322339ee64fd67079e2df90c37f2, type: 2}
-  - {fileID: 2100000, guid: 38838e5bb0bb608f1038bb4926803471, type: 2}
   - {fileID: 2100000, guid: 8a63964d15fa16988483419991831ff1, type: 2}
   - {fileID: 2100000, guid: ba48119948a19620090fab7b739a0d12, type: 2}
   m_StaticBatchInfo:
