@@ -2,6 +2,7 @@ using System;
 using System.Globalization;
 using System.IO;
 using Tag.Art;
+using Tag.Level;
 using UnityEngine;
 
 namespace Tag.Ui.Menu
@@ -22,6 +23,8 @@ namespace Tag.Ui.Menu
         static int RayTests;
         static float[][][] BindDepth;
         static float[] PoseMax;
+        static bool RailKnown;
+        static float RailClear;
 
         public static bool Run(string repo, out string line, bool verbose)
         {
@@ -34,6 +37,8 @@ namespace Tag.Ui.Menu
             Trace = probe;
             RayTests = 0;
             PoseMax = new float[6];
+            RailKnown = false;
+            RailClear = 0f;
             var sw = System.Diagnostics.Stopwatch.StartNew();
             int screens = 0;
             int frames = 0;
@@ -85,6 +90,7 @@ namespace Tag.Ui.Menu
             Results(rig, ref frames, ref fails, ref selfMax, ref worldMax, ref worstSelf, ref worstWorld, hit);
             screens++;
             screens++;
+            TitleRail(rig, ref fails, ref worldMax, ref worstWorld);
             Finish(screens, frames, selfMax, worldMax, fails, out line);
             if (verbose || fails != 0)
             {
@@ -109,6 +115,126 @@ namespace Tag.Ui.Menu
                 + " step=" + Cm(PoseAt(3))
                 + " cheer=" + Cm(PoseAt(4))
                 + " slump=" + Cm(PoseAt(5));
+            if (RailKnown)
+                line += " rail=" + Cm(RailClear);
+        }
+
+        /// <summary>
+        /// Title still on the south straight. The far-right runner stands by the
+        /// bar posts. Foot and shin must clear that rail by 2 cm. rail= is that
+        /// gap in centimetres.
+        /// </summary>
+        static void TitleRail(Rig rig, ref int fails, ref float worldMax, ref string worstWorld)
+        {
+            string note;
+            float gap = TitleRailGap(rig, out note);
+            RailClear = gap;
+            RailKnown = true;
+            if (gap < 0f && -gap > worldMax)
+            {
+                worldMax = -gap;
+                worstWorld = note;
+            }
+            if (gap < 0.02f)
+            {
+                fails++;
+                if (worstWorld.Length == 0) worstWorld = note;
+            }
+            if (Verbose)
+                Console.Error.WriteLine("no-clip " + note);
+        }
+
+        public static string ProbeRail(string repo)
+        {
+            Rig rig = Rig.Load(Path.Combine(repo, "Docs", "UiStills", "hier-rigid.bin"));
+            string note;
+            float gap = TitleRailGap(rig, out note);
+            return "rail=" + (gap * 100f).ToString("0.00", CultureInfo.InvariantCulture) + " " + note;
+        }
+
+        static float TitleRailGap(Rig rig, out string note)
+        {
+            float[] xs = { 75.45f, 77.15f, 78.85f, 80.55f };
+            float halfPi = 1.5707963f;
+            MenuAlive.Angles[] angles =
+            {
+                MenuAlive.Run(halfPi / 2.4f),
+                MenuAlive.Step(0.5f / 0.28f),
+                MenuAlive.Run(-halfPi / 2.4f),
+                MenuAlive.Step(0.22f / 0.28f)
+            };
+            MegaParkP1Layout.Solid[] world = MegaParkP1Layout.BuildSolids();
+            float best = 1e9f;
+            float bestPost = 1e9f;
+            string postNote = "post none";
+            note = "rail clear";
+            var posed = new Posed(rig);
+            for (int i = 0; i < 4; i++)
+            {
+                posed.Place(From(angles[i]), 0f, 0f, 0f);
+                for (int p = 0; p < rig.Pieces; p++)
+                {
+                    string piece = rig.Piece[p].Name;
+                    if (piece == null) continue;
+                    if (piece.IndexOf("Foot", StringComparison.Ordinal) < 0 && piece.IndexOf("LowerLeg", StringComparison.Ordinal) < 0)
+                        continue;
+                    int samples = rig.Piece[p].Samples;
+                    for (int s = 0; s < samples; s++)
+                    {
+                        float x = xs[i] + posed.Wz[p][s];
+                        float y = 0.2f + posed.Wy[p][s];
+                        float z = 16f - posed.Wx[p][s];
+                        for (int w = 0; w < world.Length; w++)
+                        {
+                            MegaParkP1Layout.Solid solid = world[w];
+                            if (!RailKind(solid.Kind)) continue;
+                            if (!NearRail(solid, x, z)) continue;
+                            float gap = BoxGap(x, y, z, solid);
+                            if (gap < best)
+                            {
+                                best = gap;
+                                note = "P" + (i + 1).ToString(CultureInfo.InvariantCulture)
+                                    + " " + piece + " " + solid.Name
+                                    + " gap=" + (gap * 100f).ToString("0.00", CultureInfo.InvariantCulture);
+                            }
+                            if (solid.Kind == "post" && gap < bestPost)
+                            {
+                                bestPost = gap;
+                                postNote = solid.Name + " " + (gap * 100f).ToString("0.00", CultureInfo.InvariantCulture);
+                            }
+                        }
+                    }
+                }
+            }
+            note = note + " post=" + postNote;
+            return best;
+        }
+
+        static bool RailKind(string kind)
+        {
+            return kind == "post" || kind == "bar" || kind == "fence";
+        }
+
+        static bool NearRail(MegaParkP1Layout.Solid s, float x, float z)
+        {
+            float hx = s.Sx * 0.5f + 3f;
+            float hz = s.Sz * 0.5f + 3f;
+            if (x < s.X - hx || x > s.X + hx) return false;
+            if (z < s.Z - hz || z > s.Z + hz) return false;
+            return true;
+        }
+
+        static float BoxGap(float x, float y, float z, MegaParkP1Layout.Solid s)
+        {
+            float dx = Math.Abs(x - s.X) - s.Sx * 0.5f;
+            float dy = Math.Abs(y - s.Y) - s.Sy * 0.5f;
+            float dz = Math.Abs(z - s.Z) - s.Sz * 0.5f;
+            if (dx <= 0f && dy <= 0f && dz <= 0f)
+                return Math.Max(dx, Math.Max(dy, dz));
+            float ox = dx > 0f ? dx : 0f;
+            float oy = dy > 0f ? dy : 0f;
+            float oz = dz > 0f ? dz : 0f;
+            return (float)Math.Sqrt(ox * ox + oy * oy + oz * oz);
         }
 
         static float PoseAt(int i)

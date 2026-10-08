@@ -14,6 +14,11 @@ static class Program
             Console.WriteLine(Tag.Level.ArenaStill.WriteHudChases(folder));
             return 0;
         }
+        if (args != null && args.Length > 0 && args[0] == "--rail")
+        {
+            Console.WriteLine(Tag.Ui.Menu.MenuNoClip.ProbeRail(RepoRoot()));
+            return 0;
+        }
         if (args != null && args.Length > 0 && args[0] == "--pass26")
         {
             string repo = RepoRoot();

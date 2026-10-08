@@ -849,11 +849,12 @@ namespace Tag.Level
             WritePass26Line(folder, "pan_title.png", poses,
                 new[] { "run_pos.tris", "step.tris", "run_neg.tris", "step_b.tris" },
                 park, shadow, sox, soy, soz, srx, sry, srz, sux, suy, suz, lsx, lsy, lsz, half,
-                78f, 7f, 4f, 78f, 1.4f, 16f, 30f);
+                78f, 7f, 4f, 78f, 1.4f, 16f, 30f, true);
+            WritePass26Rail(folder, poses);
             WritePass26Line(folder, "pan_main.png", poses,
                 new[] { "step_b.tris", "run_neg.tris", "step.tris", "run_pos.tris" },
                 park, shadow, sox, soy, soz, srx, sry, srz, sux, suy, suz, lsx, lsy, lsz, half,
-                86f, 7f, 4f, 78.4f, 2f, 16f, 36f);
+                86f, 7f, 4f, 78.4f, 2f, 16f, 36f, false);
             WritePass26Portraits(folder, poses);
             WritePass26Results(folder, poses, park, shadow, sox, soy, soz, srx, sry, srz, sux, suy, suz, lsx, lsy, lsz, half);
             WritePass26Pause(folder, poses, park, shadow, sox, soy, soz, srx, sry, srz, sux, suy, suz, lsx, lsy, lsz, half);
@@ -864,14 +865,14 @@ namespace Tag.Level
             List<Tri> park, float[] shadow,
             float sox, float soy, float soz, float srx, float sry, float srz,
             float sux, float suy, float suz, float lsx, float lsy, float lsz, float half,
-            float ex, float ey, float ez, float tx, float ty, float tz, float fov)
+            float ex, float ey, float ez, float tx, float ty, float tz, float fov, bool slot)
         {
             float[] xs = { 75.45f, 77.15f, 78.85f, 80.55f };
             var tris = new List<Tri>(park.Count + 256);
             tris.AddRange(park);
             int from = tris.Count;
             for (int i = 0; i < 4; i++)
-                AddPosed(tris, Path.Combine(poses, files[i]), xs[i], 0.2f, 16f, 90f, i);
+                AddPosed(tris, Path.Combine(poses, files[i]), xs[i], 0.2f, 16f, 90f, i, slot);
             var seatShadow = (float[])shadow.Clone();
             StampShadow(tris, from, seatShadow, sox, soy, soz, srx, sry, srz, sux, suy, suz, lsx, lsy, lsz, half);
             ChasePng(tris, Path.Combine(folder, name), 1920, 1080,
@@ -887,7 +888,7 @@ namespace Tag.Level
                 var tris = new List<Tri>(8);
                 AddBox(tris, 0f, 1.3f, -2.4f, 28f, 18f, 0.3f, 8f / 255f, 16f / 255f, 36f / 255f);
                 AddBox(tris, 0f, -0.02f, 0.15f, 2.4f, 0.06f, 2.2f, 183f / 255f, 164f / 255f, 114f / 255f);
-                AddPosed(tris, Path.Combine(poses, files[i]), 0f, 0.02f, 0f, yaw[i], i);
+                AddPosed(tris, Path.Combine(poses, files[i]), 0f, 0.02f, 0f, yaw[i], i, true);
                 var shadow = new float[16 * 16];
                 for (int s = 0; s < shadow.Length; s++) shadow[s] = -1e20f;
                 PortraitPng(tris, Path.Combine(folder, "idle_" + i.ToString() + ".png"), 720, 900,
@@ -921,7 +922,7 @@ namespace Tag.Level
                 AddBox(tris, x[i], ground + h[i] * 0.5f, z, wide[i], h[i], 1.02f, sr[i], sg[i], sb[i]);
                 AddBox(tris, x[i], ground + h[i] + 0.03f, z, wide[i] + 0.08f, 0.06f, 1.10f, sr[i] * 1.15f, sg[i] * 1.1f, sb[i] * 0.9f);
                 AddBox(tris, x[i], ground + h[i] * 0.45f, z - 0.54f, wide[i] * 0.72f, h[i] * 0.55f, 0.06f, fr[i], fg[i], fb[i]);
-                AddPosed(tris, Path.Combine(poses, files[i]), x[i], ground + h[i] + 0.06f, z, 180f, i);
+                AddPosed(tris, Path.Combine(poses, files[i]), x[i], ground + h[i] + 0.06f, z, 180f, i, false);
             }
             for (int c = 0; c < 14; c++)
             {
@@ -949,7 +950,7 @@ namespace Tag.Level
             var tris = new List<Tri>(park.Count + 64);
             tris.AddRange(park);
             int from = tris.Count;
-            AddPosed(tris, Path.Combine(poses, "ready.tris"), 76.4f, 0.2f, 16f, 200f, 0);
+            AddPosed(tris, Path.Combine(poses, "ready.tris"), 76.4f, 0.2f, 16f, 200f, 0, false);
             var seatShadow = (float[])shadow.Clone();
             StampShadow(tris, from, seatShadow, sox, soy, soz, srx, sry, srz, sux, suy, suz, lsx, lsy, lsz, half);
             ChasePng(tris, Path.Combine(folder, "pause.png"), 1920, 1080,
@@ -957,13 +958,138 @@ namespace Tag.Level
                 seatShadow, sox, soy, soz, srx, sry, srz, sux, suy, suz, lsx, lsy, lsz, half, 32f);
         }
 
-        static void AddPosed(List<Tri> tris, string file, float x, float y, float z, float yaw, int seat)
+        static void AddPosed(List<Tri> tris, string file, float x, float y, float z, float yaw, int seat, bool slot)
         {
             if (!LoadHierFile(file)) return;
-            LookPair(seat, out float bodyR, out float bodyG, out float bodyB, out float accentR, out float accentG, out float accentB);
+            float bodyR, bodyG, bodyB, accentR, accentG, accentB;
+            if (slot) SlotPaint(seat, out bodyR, out bodyG, out bodyB, out accentR, out accentG, out accentB);
+            else LookPair(seat, out bodyR, out bodyG, out bodyB, out accentR, out accentG, out accentB);
             bool card = file.IndexOf("idle", StringComparison.Ordinal) >= 0 || file.IndexOf("ready", StringComparison.Ordinal) >= 0;
             AddHier(tris, x, y, z, yaw, bodyR, bodyG, bodyB, accentR, accentG, accentB, card);
             AddContact(tris, x, y, z);
+        }
+
+        /// <summary>
+        /// Seat paint from MenuTheme, the same colors as the P badges.
+        /// P1 red, P2 blue, P3 yellow, P4 green.
+        /// </summary>
+        static void SlotPaint(int seat, out float bodyR, out float bodyG, out float bodyB, out float accentR, out float accentG, out float accentB)
+        {
+            float[] r = { 0.95f, 0.16f, 1f, 0.16f };
+            float[] g = { 0.16f, 0.45f, 0.86f, 0.82f };
+            float[] b = { 0.22f, 1f, 0.12f, 0.28f };
+            int i = seat < 0 ? 0 : (seat > 3 ? 3 : seat);
+            bodyR = r[i]; bodyG = g[i]; bodyB = b[i];
+            accentR = r[i]; accentG = g[i]; accentB = b[i];
+        }
+
+        /// <summary>
+        /// Orthographic top and side of the far-right title runner and the bar rail.
+        /// Top is X across and Z down the path. Side looks along X so the gap to the
+        /// south post is a gap along Z, not a perspective stack.
+        /// </summary>
+        static void WritePass26Rail(string folder, string poses)
+        {
+            var tris = new List<Tri>(256);
+            Albedo("steel", out float sr, out float sg, out float sb);
+            Albedo("concrete", out float cr, out float cg, out float cb);
+            MegaParkP1Layout.Solid[] world = MegaParkP1Layout.BuildSolids();
+            for (int i = 0; i < world.Length; i++)
+            {
+                MegaParkP1Layout.Solid s = world[i];
+                if (s.Kind != "post" && s.Kind != "bar" && s.Kind != "vault") continue;
+                if (s.X < 76f || s.X > 86f || s.Z < 10f || s.Z > 22f) continue;
+                float r = s.Kind == "vault" ? cr : sr;
+                float g = s.Kind == "vault" ? cg : sg;
+                float b = s.Kind == "vault" ? cb : sb;
+                AddBox(tris, s.X, s.Y, s.Z, s.Sx, s.Sy, s.Sz, r, g, b);
+            }
+            AddBox(tris, 80.55f, 0.02f, 16f, 6f, 0.04f, 8f, 183f / 255f, 164f / 255f, 114f / 255f);
+            AddPosed(tris, Path.Combine(poses, "step_b.tris"), 80.55f, 0.2f, 16f, 90f, 3, true);
+            OrthoPng(tris, Path.Combine(folder, "rail_top.png"), 960, 720, 0, 78.4f, 82.6f, 11.6f, 17.4f);
+            OrthoPng(tris, Path.Combine(folder, "rail_side.png"), 960, 720, 1, 11.6f, 17.4f, -0.1f, 2.3f);
+        }
+
+        static void OrthoPng(List<Tri> tris, string path, int w, int h, int axis, float u0, float u1, float v0, float v1)
+        {
+            var rgb = new byte[w * h * 3];
+            var depth = new float[w * h];
+            for (int i = 0; i < depth.Length; i++) depth[i] = -1e20f;
+            for (int y = 0; y < h; y++)
+            {
+                for (int x = 0; x < w; x++)
+                {
+                    int p = (y * w + x) * 3;
+                    rgb[p] = 214;
+                    rgb[p + 1] = 220;
+                    rgb[p + 2] = 224;
+                }
+            }
+            for (int i = 0; i < tris.Count; i++)
+                OrthoTri(tris[i], rgb, depth, w, h, axis, u0, u1, v0, v1);
+            WritePng(path, rgb, w, h);
+        }
+
+        static void OrthoTri(Tri t, byte[] rgb, float[] depth, int w, int h, int axis, float u0, float u1, float v0, float v1)
+        {
+            OrthoVert(t.X0, t.Y0, t.Z0, w, h, axis, u0, u1, v0, v1, out float x0, out float y0, out float d0);
+            OrthoVert(t.X1, t.Y1, t.Z1, w, h, axis, u0, u1, v0, v1, out float x1, out float y1, out float d1);
+            OrthoVert(t.X2, t.Y2, t.Z2, w, h, axis, u0, u1, v0, v1, out float x2, out float y2, out float d2);
+            float area = (x1 - x0) * (y2 - y0) - (y1 - y0) * (x2 - x0);
+            if (area < 0f)
+            {
+                float sx = x1, sy = y1, sd = d1;
+                x1 = x2; y1 = y2; d1 = d2;
+                x2 = sx; y2 = sy; d2 = sd;
+                area = -area;
+            }
+            if (area < 0.01f) return;
+            int minX = (int)Math.Floor(Math.Min(x0, Math.Min(x1, x2)));
+            int maxX = (int)Math.Ceiling(Math.Max(x0, Math.Max(x1, x2)));
+            int minY = (int)Math.Floor(Math.Min(y0, Math.Min(y1, y2)));
+            int maxY = (int)Math.Ceiling(Math.Max(y0, Math.Max(y1, y2)));
+            if (minX < 0) minX = 0;
+            if (minY < 0) minY = 0;
+            if (maxX >= w) maxX = w - 1;
+            if (maxY >= h) maxY = h - 1;
+            byte cr = (byte)(Math.Max(0f, Math.Min(1f, t.R)) * 255f);
+            byte cg = (byte)(Math.Max(0f, Math.Min(1f, t.G)) * 255f);
+            byte cb = (byte)(Math.Max(0f, Math.Min(1f, t.B)) * 255f);
+            float inv = 1f / area;
+            for (int y = minY; y <= maxY; y++)
+            {
+                for (int x = minX; x <= maxX; x++)
+                {
+                    float px = x + 0.5f;
+                    float py = y + 0.5f;
+                    float w0 = ((x1 - px) * (y2 - py) - (y1 - py) * (x2 - px)) * inv;
+                    float w1 = ((x2 - px) * (y0 - py) - (y2 - py) * (x0 - px)) * inv;
+                    float w2 = 1f - w0 - w1;
+                    if (w0 < -0.001f || w1 < -0.001f || w2 < -0.001f) continue;
+                    float d = d0 * w0 + d1 * w1 + d2 * w2;
+                    int i = y * w + x;
+                    if (d <= depth[i]) continue;
+                    depth[i] = d;
+                    int p = i * 3;
+                    rgb[p] = cr;
+                    rgb[p + 1] = cg;
+                    rgb[p + 2] = cb;
+                }
+            }
+        }
+
+        static void OrthoVert(float x, float y, float z, int w, int h, int axis, float u0, float u1, float v0, float v1,
+            out float px, out float py, out float depth)
+        {
+            float u = axis == 0 ? x : z;
+            float v = axis == 0 ? z : y;
+            depth = axis == 0 ? y : -x;
+            float su = u1 - u0;
+            float sv = v1 - v0;
+            if (Math.Abs(su) < 1e-4f) su = 1f;
+            if (Math.Abs(sv) < 1e-4f) sv = 1f;
+            px = (u - u0) / su * (w - 1);
+            py = (1f - (v - v0) / sv) * (h - 1);
         }
 
         static void StampShadow(List<Tri> tris, int from, float[] shadow,
