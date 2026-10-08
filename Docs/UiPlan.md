@@ -285,6 +285,10 @@ The stills in `Docs/UiStills/screens2/pass5/` are software-raster composites. Ev
 
 Options buttons and the RESULTS rematch row are tall enough for a full-size title under the stripe, then a grey sub-line on its own row. RESULTS bodies use the slot fallback from worker 1 tip `29b3dbdd`: red, blue, yellow, green. That tip's character-select costumes are still Red/Tan, Blue/Mint, Orange/Lavender, Lavender/Mint. The runners here follow the slot colors so the badge and the body match. Feet sit on the steps. The 2nd, 3rd, and 4th steps descend. Accessibility shows the comic-words switch. Stills are composites in `Docs/UiStills/screens2/pass6/`, and every filename ends in `-composite`.
 
+## Screens 2, pass 7
+
+Runtime and the composites use the same numbers. Options and Accessibility rows are 108 px tall on a 116 px step. The stripe stays in the top 16 px, the title is 40 px and starts 24 px down, and the sub-line starts at 70 px in FloorFont 30. RESULTS action buttons, including Rematch, are 128 px. RESULTS bodies are tinted with MenuTheme.Seat (fallback red, blue, yellow, green) after the costume spawn. Accent stays the costume swatch (sample Tan, Mint, Tan, Mint). The loading still is the Waiting gate: caption `Waiting  0%` and a gold dash 28% of the track, which is the frame the screen opens on. Stills are composites in `Docs/UiStills/screens2/pass7/`.
+
 ## Later passes
 
 - Left from a rule row returns to the modes even when that rule can still decrease. Right from the right-hand mode, and Left at the end of a rule, already move between the columns.

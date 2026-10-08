@@ -238,11 +238,18 @@ namespace Tag.Ui.Menu
             if (Page != Access || body == null) return;
             GameSettings s = GameSettings.Current ?? GameSettings.Defaults();
             int pal = s.PaletteOf(s.AccessSeat);
-            float y = 8f + Count * 96f;
+            int shown = Count;
+            int win = UiFit.Window(UiFit.Current(), UiFit.OptStep, 8f);
+            if (shown > win) shown = win;
+            float y = 8f + (shown - 1) * UiFit.OptStep + UiFit.OptRow + 8f;
+            float room = UiFit.BodyH(UiFit.Current()) - 8f - y;
+            float swH = 78f;
+            if (room < 48f) return;
+            if (swH > room) swH = room;
             for (int i = 0; i < 4; i++)
             {
                 AccessibilityPalette.Player(pal, i, out float r, out float g, out float b);
-                RectTransform rt = MenuWidgets.Place(body, "Swatch", 360f + i * 150f, y, 120f, 78f);
+                RectTransform rt = MenuWidgets.Place(body, "Swatch", 360f + i * 150f, y, 120f, swH);
                 Image image = rt.gameObject.AddComponent<Image>();
                 MenuArt.Plate(image, new Color(r, g, b, 1f), true);
                 image.raycastTarget = false;

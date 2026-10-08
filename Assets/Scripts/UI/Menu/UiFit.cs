@@ -181,7 +181,7 @@ namespace Tag.Ui.Menu
             if (view > 420f) view = 420f;
             if (view < 180f) view = 180f;
             rankH = 180f;
-            btnH = 88f;
+            btnH = RematchH;
             rankY = view + 10f;
             btnY = rankY + rankH + 10f;
             if (btnY + btnH > h)
@@ -242,6 +242,13 @@ namespace Tag.Ui.Menu
         public const float StripeH = 8f;
         public const float StripeGap = 6f;
 
+        /// <summary>Options and Accessibility rows. Title is 40 px under the stripe. The sub-line is its own row.</summary>
+        public const float OptRow = 108f;
+        public const float OptStep = 116f;
+
+        /// <summary>RESULTS action row. Rematch carries the "Same setup" sub-line.</summary>
+        public const float RematchH = 128f;
+
         public static float StripeClear()
         {
             return StripeY + StripeH + StripeGap;
@@ -266,6 +273,19 @@ namespace Tag.Ui.Menu
                 titleH = well;
                 detailFromTop = top + well;
                 detailH = 0f;
+                return;
+            }
+            if (h >= OptRow && h <= RematchH)
+            {
+                titleFromTop = 24f;
+                titleH = 40f;
+                detailFromTop = 70f;
+                detailH = h - detailFromTop - 8f;
+                if (detailH < FloorFont)
+                {
+                    detailH = FloorFont;
+                    detailFromTop = h - 8f - detailH;
+                }
                 return;
             }
             float titleBand = FloorFont + 4f;

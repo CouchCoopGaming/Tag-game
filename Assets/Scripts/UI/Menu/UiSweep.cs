@@ -29,8 +29,8 @@ namespace Tag.Ui.Menu
             float bodyH = UiFit.BodyH(scale);
             float bodyW = UiFit.BodyW(scale);
             if (bodyH < 400f || bodyW < 900f) return false;
-            int opt = UiFit.Window(scale, 96f, 8f);
-            if (8f + opt * 96f > bodyH + 0.5f) return false;
+            int opt = UiFit.Window(scale, UiFit.OptStep, 8f);
+            if (8f + opt * UiFit.OptStep > bodyH + 0.5f) return false;
             int rules = UiFit.Window(scale, 84f, 12f);
             if (12f + rules * 84f > bodyH + 0.5f) return false;
             UiFit.Columns(scale, out _, out float leftW, out float rightX, out float rightW);

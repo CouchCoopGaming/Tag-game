@@ -622,17 +622,17 @@ namespace Tag.Level
         }
 
         /// <summary>
-        /// RESULTS bodies use the slot fallback: red, blue, yellow, green.
-        /// Accent stays on the chest, the hands, and the feet.
+        /// RESULTS bodies use MenuTheme.Seat fallback: red, blue, yellow, green.
+        /// Accent is MenuMannequin.Swatch of the locked sample pairs: Tan, Mint, Tan, Mint.
         /// </summary>
         static void PlacePair(int seat, out float bodyR, out float bodyG, out float bodyB, out float accentR, out float accentG, out float accentB)
         {
             float[] br = { 0.95f, 0.16f, 1f, 0.16f };
             float[] bg = { 0.16f, 0.45f, 0.86f, 0.82f };
             float[] bb = { 0.22f, 1f, 0.12f, 0.28f };
-            float[] ar = { 230f / 255f, 107f / 255f, 184f / 255f, 230f / 255f };
-            float[] ag = { 194f / 255f, 209f / 255f, 92f / 255f, 160f / 255f };
-            float[] ab = { 133f / 255f, 178f / 255f, 40f / 255f, 90f / 255f };
+            float[] ar = { 0.90f, 0.42f, 0.90f, 0.42f };
+            float[] ag = { 0.76f, 0.82f, 0.76f, 0.82f };
+            float[] ab = { 0.52f, 0.70f, 0.52f, 0.70f };
             int i = seat < 0 ? 0 : (seat > 3 ? 3 : seat);
             bodyR = br[i]; bodyG = bg[i]; bodyB = bb[i];
             accentR = ar[i]; accentG = ag[i]; accentB = ab[i];

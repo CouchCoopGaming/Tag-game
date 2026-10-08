@@ -105,9 +105,82 @@ namespace Tag.Ui.Menu
                     if (!Usable(color)) color = RoleColor(matName, body, accent);
                     else if (IsAccent(matName)) color = Swatch(accent);
                     next[i] = DummyPrimitiveFactory.MakeMat(color, 0.45f, 0f);
+                    next[i].name = RoleTag(matName);
                 }
                 rend.sharedMaterials = next;
             }
+        }
+
+        /// <summary>
+        /// RESULTS only. The body matches the seat slot color. Accent, joints,
+        /// and eyes stay as Dress left them. Character select does not call this.
+        /// </summary>
+        public static void PaintSlot(GameObject inst, Color slot)
+        {
+            if (inst == null) return;
+            slot.a = 1f;
+            Renderer[] rends = inst.GetComponentsInChildren<Renderer>(true);
+            for (int r = 0; r < rends.Length; r++)
+            {
+                Renderer rend = rends[r];
+                if (rend == null) continue;
+                string goName = rend.gameObject.name;
+                if (goName.IndexOf("MenuHat", System.StringComparison.Ordinal) >= 0) continue;
+                Material[] shared = rend.sharedMaterials;
+                int n = shared != null ? shared.Length : 0;
+                if (n < 1)
+                {
+                    if (BodyPart(goName))
+                        rend.sharedMaterial = DummyPrimitiveFactory.MakeMat(slot, 0.45f, 0f);
+                    continue;
+                }
+                var next = new Material[n];
+                for (int i = 0; i < n; i++)
+                {
+                    Material src = shared[i];
+                    string matName = src != null ? src.name : "";
+                    bool tagged = matName.IndexOf("MenuRole_", System.StringComparison.Ordinal) >= 0;
+                    bool body = matName.IndexOf("MenuRole_Base", System.StringComparison.Ordinal) >= 0
+                        || (!tagged && BodyPart(goName));
+                    if (body)
+                        next[i] = DummyPrimitiveFactory.MakeMat(slot, 0.45f, 0f);
+                    else
+                        next[i] = src;
+                }
+                rend.sharedMaterials = next;
+            }
+        }
+
+        static string RoleTag(string matName)
+        {
+            if (IsAccent(matName)) return "MenuRole_Accent";
+            if (IsTrim(matName)) return "MenuRole_Trim";
+            return "MenuRole_Base";
+        }
+
+        static bool BodyPart(string name)
+        {
+            if (string.IsNullOrEmpty(name)) return false;
+            if (IsAccent(name) || IsTrim(name)) return false;
+            return true;
+        }
+
+        static bool IsTrim(string name)
+        {
+            if (string.IsNullOrEmpty(name)) return false;
+            return name.IndexOf("Joint", System.StringComparison.OrdinalIgnoreCase) >= 0
+                || name.IndexOf("Eye", System.StringComparison.OrdinalIgnoreCase) >= 0
+                || name.IndexOf("Sensor", System.StringComparison.OrdinalIgnoreCase) >= 0
+                || name.IndexOf("Rubber", System.StringComparison.OrdinalIgnoreCase) >= 0
+                || name.IndexOf("Bellow", System.StringComparison.OrdinalIgnoreCase) >= 0
+                || name.IndexOf("Metal", System.StringComparison.OrdinalIgnoreCase) >= 0
+                || name.IndexOf("Neck", System.StringComparison.OrdinalIgnoreCase) >= 0
+                || name.IndexOf("Shoulder", System.StringComparison.OrdinalIgnoreCase) >= 0
+                || name.IndexOf("Elbow", System.StringComparison.OrdinalIgnoreCase) >= 0
+                || name.IndexOf("Knee", System.StringComparison.OrdinalIgnoreCase) >= 0
+                || name.IndexOf("Hip", System.StringComparison.OrdinalIgnoreCase) >= 0
+                || name.IndexOf("Hand", System.StringComparison.OrdinalIgnoreCase) >= 0
+                || name.IndexOf("Foot", System.StringComparison.OrdinalIgnoreCase) >= 0;
         }
 
         static bool IsAccent(string name)

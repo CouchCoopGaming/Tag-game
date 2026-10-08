@@ -12,7 +12,7 @@ import os
 from PIL import Image, ImageDraw, ImageFont, ImageFilter, ImageEnhance
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
-OUT = os.path.join(ROOT, "Docs", "UiStills", "screens2", "pass6")
+OUT = os.path.join(ROOT, "Docs", "UiStills", "screens2", "pass7")
 FIG = os.path.join(OUT, "figures")
 W, H = 1920, 1080
 
@@ -105,7 +105,7 @@ def wrap(draw, text, f, max_w):
     return lines
 
 
-def button(base, box, title, sub, hot, bar=None, right=24):
+def button(base, box, title, sub, hot, bar=None, right=24, inset=0):
     x0, y0, x1, y1 = box
     shadow(base, box)
     d = ImageDraw.Draw(base)
@@ -116,25 +116,31 @@ def button(base, box, title, sub, hot, bar=None, right=24):
         d.rounded_rectangle((x0 + 14, y0 + 28, x0 + 26, y1 - 14), 4, fill=bar if not hot else INK)
     title_c = INK if hot else CREAM
     sub_c = INK if hot else MUTE
-    left = 40 if bar is not None else 28
+    left = (40 if bar is not None else 28) + inset
     tw = x1 - x0 - left - right
     if tw < 80:
         tw = 80
     box_h = y1 - y0
-    # The stripe owns the top 16 px. The title sits under it at full size.
-    title_size = 40 if box_h >= 108 else 32
-    sub_size = 24 if box_h >= 108 else 20
-    title_y = y0 + 24 if box_h >= 108 else y0 + 20
+    # Rows of 108–128 match UiFit: stripe, title at y+24 size 40, sub at y+70 size 30.
+    if box_h >= 108:
+        title_size = 40
+        sub_size = 30
+        title_y = y0 + 24
+        sub_y = y0 + 70
+    else:
+        title_size = 32
+        sub_size = 20
+        title_y = y0 + 20
+        sub_y = title_y + title_size + 8
     tf = fit_text(d, title, FONT_D, tw, title_size, 26, title_c)
     d.text((x0 + left, title_y), title, font=tf, fill=title_c)
     if sub:
         sf = font(FONT_B, sub_size)
-        yy = title_y + title_size + 8
         lines = wrap(d, sub, sf, tw)
         for line in lines[:1]:
-            if yy + sub_size > y1 - 8:
+            if sub_y + sub_size > y1 - 8:
                 break
-            d.text((x0 + left, yy), line, font=sf, fill=sub_c)
+            d.text((x0 + left, sub_y), line, font=sf, fill=sub_c)
     return contrast(title_c, fill)
 
 
@@ -505,9 +511,9 @@ def loading():
     track = (400, track_y, 1520, track_y + 36)
     rounded(d, track, 10, (5, 13, 31), STROKE, 2)
     span = 1520 - 400 - 12
-    fill_w = int(span * 0.60)
-    rounded(d, (406, track_y + 6, 406 + fill_w, track_y + 30), 6, GOLD)
-    d.text((760, track_y + 48), "Loading  60%", font=font(FONT_B, 28), fill=CREAM)
+    dash = int(span * 0.28)
+    rounded(d, (406, track_y + 6, 406 + dash, track_y + 30), 6, GOLD)
+    d.text((760, track_y + 48), "Waiting  0%", font=font(FONT_B, 28), fill=CREAM)
     return img, min(contrast(CREAM, (8, 22, 58)), contrast(INK, GOLD), contrast(GOLD, (5, 13, 31)))
 
 
@@ -519,8 +525,8 @@ def pause():
     x = 520
     y = 220
     for title, sub, hot in items:
-        ratios.append(button(img, (x, y, x + 880, y + 120), title, sub, hot))
-        y += 140
+        ratios.append(button(img, (x, y, x + 880, y + 108), title, sub, hot))
+        y += 120
     footer_both(img)
     return img, min(ratios)
 
@@ -569,7 +575,11 @@ def options(page):
     row_h = 108
     step = 116
     for i, (name, sub, hot) in enumerate(rows):
-        ratios.append(button(img, (280, y, 1640, y + row_h), name, sub, hot))
+        inset = 52 if page == "hub" and i < 6 else 0
+        ratios.append(button(img, (280, y, 1640, y + row_h), name, sub, hot, inset=inset))
+        if inset:
+            d = ImageDraw.Draw(img)
+            d.rounded_rectangle((294, y + 26, 350, y + 82), 12, fill=(255, 255, 255, 70))
         if i < len(meters):
             d = ImageDraw.Draw(img)
             d.rounded_rectangle((1080, y + 74, 1500, y + 90), 4, fill=(0, 0, 0, 90))
@@ -615,17 +625,17 @@ def controls(bottom=False):
             ("Back", ""),
         ]
     ratios = []
-    y = 176
+    y = 128
     d = ImageDraw.Draw(img)
     for i, (title, sub) in enumerate(rows):
         hot = i == (2 if not bottom else 0)
-        ratios.append(button(img, (120, y, 1780, y + 84), title, sub, hot, right=300))
+        ratios.append(button(img, (120, y, 1780, y + 88), title, sub, hot, right=300))
         if not bottom:
             kb = "space" if i == 2 else "esc" if i == 8 else "arrows"
             pad = "a" if i == 2 else "b" if i == 4 else "stick"
             draw_glyph(d, kb, 1648, y + 18)
             draw_glyph(d, pad, 1720, y + 16)
-        y += 90
+        y += 96
     d.rounded_rectangle((1740, 184, 1756, 960), 4, fill=(0, 0, 0, 140))
     if bottom:
         d.rounded_rectangle((1742, 700, 1754, 948), 3, fill=GOLD)
@@ -726,8 +736,8 @@ def records(filled=False, end=False):
     y = 180
     for title, detail, hot in rows:
         sub = detail.replace("\n", "   ")
-        ratios.append(button(img, (360, y, 1560, y + 100), title, sub, hot))
-        y += 112
+        ratios.append(button(img, (360, y, 1560, y + 120), title, sub, hot))
+        y += 128
     footer_both(img)
     return img, min(ratios)
 

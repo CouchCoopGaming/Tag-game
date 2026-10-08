@@ -2475,7 +2475,7 @@ namespace Tag.Ui.Menu
             _count = MenuDepth.Count;
             if (_header != null) _header.text = "  " + MenuDepth.Header();
             if (_banner != null) _banner.text = MenuDepth.Banner();
-            int win = OptWindow;
+            int win = OptionWindow();
             if (_focus < _window) _window = _focus;
             if (_focus >= _window + win) _window = _focus - (win - 1);
             int max = _count - win;
@@ -2487,7 +2487,7 @@ namespace Tag.Ui.Menu
                 int index = _window + v;
                 if (index >= _count) break;
                 UiFit.RowBox(UiFit.Current(), 1120f, out float rowX, out float rowW);
-                MenuTile tile = AddTile(rowX, 8f + v * 96f, rowW, 88f, index, MenuDepth.Title(index), MenuDepth.Detail(index), true);
+                MenuTile tile = AddTile(rowX, 8f + v * UiFit.OptStep, rowW, UiFit.OptRow, index, MenuDepth.Title(index), MenuDepth.Detail(index), true);
                 if (MenuDepth.Page == MenuDepth.Hub)
                     MarkOption(tile, index);
                 float meter = MenuDepth.Meter(index);
@@ -2513,7 +2513,7 @@ namespace Tag.Ui.Menu
         {
             if (meter < 0f) meter = 0f;
             if (meter > 1f) meter = 1f;
-            var track = MenuWidgets.Place(tile, "Meter", 620f, 52f, 440f, 16f);
+            var track = MenuWidgets.Place(tile, "Meter", 620f, 74f, 440f, 16f);
             var trackImage = track.gameObject.AddComponent<Image>();
             MenuArt.Plate(trackImage, new Color(0f, 0f, 0f, 0.35f), true);
             trackImage.raycastTarget = false;
@@ -2622,6 +2622,13 @@ namespace Tag.Ui.Menu
             var thumbImage = thumb.gameObject.AddComponent<Image>();
             MenuArt.Plate(thumbImage, MenuTheme.Gold, true);
             thumbImage.raycastTarget = false;
+        }
+
+        int OptionWindow()
+        {
+            int n = UiFit.Window(UiFit.Current(), UiFit.OptStep, 8f);
+            if (n > OptWindow) n = OptWindow;
+            return n;
         }
 
         int ControlWindow()
@@ -3092,7 +3099,7 @@ namespace Tag.Ui.Menu
             MenuAudio.Move();
             if (_screen == MenuScreenId.Options)
             {
-                int span = OptWindow;
+                int span = OptionWindow();
                 if (_focus < _window || _focus >= _window + span || before != _window)
                     PaintOptions();
                 else

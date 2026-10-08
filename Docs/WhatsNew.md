@@ -328,6 +328,8 @@ The fifth pass turns those runners to face the camera and stands the winner on a
 
 The sixth pass gives the options buttons and the rematch row room for a full title under the stripe and a grey line under that. RESULTS bodies use the slot colors, red, blue, yellow, and green. Feet sit on the steps, and the other steps descend. Accessibility shows the comic-words switch. Composites are in `Docs/UiStills/screens2/pass6/`. Space still jumps.
 
+The seventh pass makes the runtime match those pictures. Options and Accessibility rows are 108 px on a 116 px step, title 40 px under the stripe, sub-line at 70 px in the 30 px floor font. Rematch is 128 px. RESULTS tints the body with the seat color after the costume spawn, so the badge and the body match. The loading picture is the Waiting gate, `Waiting  0%`, with the gold dash. Composites are in `Docs/UiStills/screens2/pass7/`. Space still jumps.
+
 ## Motion, ninth pass
 
 The wall jump, the rope, the zip, the launch pad, a landing, the dash flash, a hard turnaround, and a punch while you run all ease instead of snapping. Speeds, the jump, and the dash length are the same.

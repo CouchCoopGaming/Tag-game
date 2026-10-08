@@ -110,6 +110,13 @@ namespace Tag.Ui.Menu
             var title = Words(rt, label, 40, TextAnchor.MiddleLeft, MenuTheme.Cream, Vector2.zero, Vector2.one);
             title.font = MenuTheme.Display;
             var sub = Words(rt, detail, UiFit.FloorFont, TextAnchor.MiddleLeft, MenuTheme.Mute, Vector2.zero, Vector2.one);
+            if (h >= UiFit.OptRow && h <= UiFit.RematchH)
+            {
+                title.resizeTextForBestFit = false;
+                title.fontSize = 40;
+                sub.resizeTextForBestFit = false;
+                sub.fontSize = UiFit.FloorFont;
+            }
             Band(title, h, titleFromTop, titleH);
             Band(sub, h, detailFromTop, detailH);
             var tile = rt.gameObject.AddComponent<MenuTile>();

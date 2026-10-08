@@ -199,7 +199,11 @@ namespace Tag.Ui.Menu
                 MenuCheer.Play(body, win, clap, i == 2);
                 if (body != null)
                 {
-                    body.transform.localPosition = new Vector3(0f, 0.04f, 0f);
+                    int seat = row.Seat;
+                    if (seat < 0) seat = 0;
+                    if (seat > 3) seat = 3;
+                    MenuMannequin.PaintSlot(body, MenuTheme.Seat(seat));
+                    body.transform.localPosition = Vector3.zero;
                     if (win) body.transform.localScale = new Vector3(1.16f, 1.16f, 1.16f);
                 }
             }
