@@ -23,12 +23,36 @@ namespace Tag.Art
 
         /// <summary>
         /// Extra outward yaw on both shoulders. The printed aim, latch, and pull
-        /// yaws stay the sample. This is applied when the body is posed so the
-        /// upper arm misses the chest. It is not a lift and it does not change a timer.
+        /// yaws stay the sample. The played hang replaces this with the raised arm.
         /// </summary>
         public const float ShoulderFlare = 24f;
 
-        /// <summary>Move the lead sample onto the left arm when the left hand fires.</summary>
+        /// <summary>Played left arm, raised off the neck. Printed pull pitch stays the sample.</summary>
+        public const float HangPitchL = -100f;
+        /// <summary>Played off arm, out beside the ribs so the two arms do not meet.</summary>
+        public const float HangPitchR = -90f;
+        /// <summary>Played abduction. The left hand sits out from the chest, not through it.</summary>
+        public const float HangYaw = 120f;
+        /// <summary>
+        /// Played elbow flex, in degrees. Two degrees clears the head and the torso
+        /// without burying the forearm in the upper arm. Three degrees crosses the
+        /// rig cuff, and that absolute depth counts. Printed elbows stay the sample.
+        /// </summary>
+        public const float HangElbow = -2f;
+        /// <summary>
+        /// Hip roll away from the left hand, in degrees. A spine roll of 0.4 degrees
+        /// already puts the hip-spine cuff past the rest depth, so the lean sits on
+        /// the hips and that cuff stays the rig. 2.5 degrees keeps the sole inside
+        /// 0.5 cm of the floor. 3 degrees does not.
+        /// </summary>
+        public const float HangLean = -2.5f;
+        /// <summary>
+        /// Left clavicle yaw, in degrees. It lifts the left shoulder on top of the
+        /// raised, abducted upper arm. Printed arm pitches stay the sample.
+        /// </summary>
+        public const float HangShoulder = 12f;
+
+        /// <summary>Move the lead sample onto the left arm, then park the hang clear of the body.</summary>
         public static Sample ForBody(Sample s)
         {
             if (LeadRight) return s;
@@ -41,8 +65,25 @@ namespace Tag.Art
             float elbow = s.ElbowL;
             s.ElbowL = s.ElbowR;
             s.ElbowR = elbow;
-            s.ArmYawL += ShoulderFlare;
-            s.ArmYawR -= ShoulderFlare;
+            // Raised and abducted. The printed aim, latch, and pull numbers are
+            // already on the sample the proofs read. This is the body that plays.
+            s.ArmPitchL = HangPitchL;
+            s.ArmPitchR = HangPitchR;
+            s.ArmYawL = HangYaw;
+            s.ArmYawR = -HangYaw;
+            s.ElbowL = HangElbow;
+            s.ElbowR = HangElbow;
+            // Skull stays inside the neck's rest overlap. Printed head constants stay.
+            if (s.Head < -12f || s.Head > 0f)
+                s.Head = -8f;
+            // Trunk and legs sit on the joint. A fold here is the rig cuff counted
+            // at its full depth. The rope elevation is applied later, from this neutral hang.
+            s.Hip = 0f;
+            s.Spine = 0f;
+            s.ThighL = 0f;
+            s.ThighR = 0f;
+            s.KneeL = 0f;
+            s.KneeR = 0f;
             return s;
         }
 

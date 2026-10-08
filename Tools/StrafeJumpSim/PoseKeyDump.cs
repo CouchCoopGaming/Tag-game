@@ -268,7 +268,8 @@ static class PoseKeyDump
             }
             Emit(w, c, "grapple", t, s.ThighL, s.ThighR, s.KneeL, s.KneeR, 0f, 0f,
                 s.ArmPitchL, s.ArmPitchR, s.ArmYawL, s.ArmYawR, 0f, 0f,
-                s.ElbowL, s.ElbowR, s.Hip, s.Spine, s.Head, 0f, s.HipYaw, s.SpineYaw, 0f, 0f, 0f);
+                s.ElbowL, s.ElbowR, s.Hip, s.Spine, s.Head, GrapplePose.HangLean, s.HipYaw, s.SpineYaw, 0f, 0f, 0f,
+                0f, 0f, GrapplePose.HangShoulder);
             if (t >= dur) break;
         }
     }
@@ -411,7 +412,7 @@ static class PoseKeyDump
         float armL, float armR, float armYawL, float armYawR, float rollL, float rollR,
         float elbL, float elbR, float hip, float spine, float head, float lean,
         float hipYaw, float spineYaw, float footL, float footR, float drop,
-        float elbYawL = 0f, float elbYawR = 0f)
+        float elbYawL = 0f, float elbYawR = 0f, float shoulderL = 0f)
     {
         w.Write(clip);
         w.Write('\t');
@@ -424,7 +425,7 @@ static class PoseKeyDump
         Write(w, c, hip); Write(w, c, spine); Write(w, c, head); Write(w, c, lean);
         Write(w, c, hipYaw); Write(w, c, spineYaw);
         Write(w, c, footL); Write(w, c, footR); Write(w, c, drop);
-        Write(w, c, elbYawL); Write(w, c, elbYawR);
+        Write(w, c, elbYawL); Write(w, c, elbYawR); Write(w, c, shoulderL);
         w.WriteLine();
     }
 

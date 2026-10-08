@@ -46,6 +46,7 @@ def load_keys(path):
                 "footL": nums[21], "footR": nums[22], "drop": nums[23],
                 "elbYawL": nums[24] if len(nums) > 24 else 0.0,
                 "elbYawR": nums[25] if len(nums) > 25 else 0.0,
+                "shoulderL": nums[26] if len(nums) > 26 else 0.0,
             })
     return frames
 
@@ -77,6 +78,8 @@ def apply_frame(arm, frame):
     set_bone(arm, "LowerArm_L", frame["elbL"], frame.get("elbYawL", 0.0), frame.get("elbRollL", 0.0))
     set_bone(arm, "UpperArm_R", frame["armR"], frame["armYawR"], frame["rollR"])
     set_bone(arm, "LowerArm_R", frame["elbR"], frame.get("elbYawR", 0.0), frame.get("elbRollR", 0.0))
+    if abs(frame.get("shoulderL", 0.0)) > 0.001:
+        set_bone(arm, "Shoulder_L", 0.0, frame["shoulderL"], 0.0)
     arm.location = Vector((0.0, 0.0, frame["drop"] + SEAT))
     bpy.context.view_layer.update()
 
@@ -149,6 +152,8 @@ def main():
             if hit["kind"] == "self" and hit["depth"] > row["raw"]:
                 row["raw"] = hit["depth"]
                 row["raw_at"] = (frame["t"], hit["a"], hit["b"], hit["depth"])
+            if hit["kind"] == "self" and hit["depth"] > raw_max:
+                raw_max = hit["depth"]
             if hit["kind"] == "self":
                 key = tuple(sorted((hit["a"], hit["b"])))
                 rest_depth = rest.get(key, 0.0)
@@ -165,8 +170,6 @@ def main():
                     pose_max = absolute
             if hit["kind"] == "world" and hit["depth"] > world_max:
                 world_max = hit["depth"]
-            if hit["kind"] == "self" and hit["depth"] > raw_max:
-                raw_max = hit["depth"]
         if frame["clip"] == "slide" and abs(played["drop"] + 0.525) < 0.04:
             print(
                 "SLIDECONTACT t", round(frame["t"], 3),
