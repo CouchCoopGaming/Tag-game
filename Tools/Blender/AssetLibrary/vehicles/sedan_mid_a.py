@@ -36,7 +36,7 @@ _BUILT = {}
 
 def _blurb(year, color):
     return (
-        "Midsize sedan, %d fascia, 4.915 m long, 1.839 m wide, roof 1.445 m. "
+        "Midsize sedan, %d fascia, 4.90 m long, 1.84 m wide, roof 1.44 m. "
         "Raked windshield, fastback pillar, 18 inch alloys. Color %s."
         % (year, color)
     )
@@ -52,8 +52,6 @@ def _finish(src_shell, year, color, name):
         geo = body_a._copy_open(src_shell.lods[lod], asset, lod)
         body_a.dress(geo, year, lod, paint)
         asset.end()
-        if lod == 0:
-            body_a._separate_coplanar(asset.lods[0].bm)
     body_a.add_colliders(asset)
     asset._sedan_spec = body_a.probe_spec(name)
     return asset

@@ -238,6 +238,27 @@ def _lineup(found, names, path, azimuth=36.0, elevation=12.0, fill=0.90):
     _fit(path)
 
 
+def _lineup_side(found, names, path):
+    """Five cars in profile, nose to image-left, opened just enough to see the fascia."""
+    r._reset_scene()
+    scene = bpy.context.scene
+    r._engine(scene, wide=False)
+    scene.cycles.samples = 16
+    r._ensure_materials()
+    r._world(scene, night=False)
+    objs = []
+    span = 6.55
+    origin = (len(names) - 1) * span * 0.5
+    for i, name in enumerate(names):
+        objs.append(r._spawn(found[name](), (0.0, 0.0, i * span - origin), 0.0))
+    r._ground("asphalt", 90.0)
+    # Azimuth 90 is pure side from +X, and that puts the nose on the left.
+    # 74 degrees swings the camera toward the nose so the grille and lamps show.
+    r._frame(scene, objs, fill=0.93, elevation=6.0, azimuth=74.0)
+    r._render(scene, path)
+    _fit(path)
+
+
 def _sedan_set(found, name, folder):
     out = os.path.join(STILL_ROOT, folder)
     os.makedirs(out, exist_ok=True)
@@ -263,15 +284,15 @@ def main():
     found = _load(only)
     if only is not None and "sedan_mid_a" in only:
         print("SHOT", "sedan_mid_a", shot or "all")
-        out = os.path.join(STILL_ROOT, "sedan_mid_a")
+        out = os.path.join(STILL_ROOT, "sedan_mid_a", "pass10")
         os.makedirs(out, exist_ok=True)
         if shot in (None, "hero"):
             _shot_az(found["Sedan_Mid_A_25"], os.path.join(out, "hero.png"), 48.0, elevation=11.0, fill=0.90)
-        # 2025 sheet: 193.5 x 56.9 in, wheelbase 111.2. Axles from the 39.0 in front overhang.
-        length = 193.5 * 0.0254
-        height = 56.9 * 0.0254
-        wheelbase = 111.2 * 0.0254
-        z_front = length * 0.5 - 39.0 * 0.0254
+        # Built shell, not the brochure inches: 4.90 m, roof 1.44 m, wheelbase 2.82 m.
+        length = 4.90
+        height = 1.44
+        wheelbase = 2.82
+        z_front = length * 0.5 - 0.96
         z_rear = z_front - wheelbase
         if shot in (None, "side"):
             _side_dims(
@@ -290,7 +311,7 @@ def main():
                 (0.4, 0.0, 0.0), 18, (-1.7, 0.0, 1.55), fill=0.88,
             )
         if shot in (None, "lineup"):
-            _lineup(
+            _lineup_side(
                 found,
                 (
                     "Sedan_Mid_A_21",
@@ -300,7 +321,6 @@ def main():
                     "Sedan_Mid_A_25",
                 ),
                 os.path.join(out, "lineup.png"),
-                azimuth=34.0, elevation=8.0, fill=0.90,
             )
         return
     if only is None or "midsize" in only or "sedan_midsize" in only:
