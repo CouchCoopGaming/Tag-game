@@ -3430,7 +3430,7 @@ namespace Tag.Ui.Menu
             _cols = 1;
             _window = 0;
             TitleBar("  Controls");
-            if (_banner != null) _banner.text = "Keyboard and pad glyphs. Space always jumps.";
+            if (_banner != null) _banner.text = "Alt is on Air dash and Sprint. Space always jumps.";
             if (_dim != null) _dim.color = MenuTheme.Veil;
             PaintControls();
         }
