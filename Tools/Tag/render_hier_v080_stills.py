@@ -344,7 +344,7 @@ def _prepare_scene():
         fill.data.size = 4.0
 
 
-def _shot(path, loc, look, ortho=None):
+def _shot(path, loc, look, ortho=None, up="Y"):
     import bpy
     from mathutils import Vector
     if "ShotCam" in bpy.data.objects:
@@ -362,7 +362,9 @@ def _shot(path, loc, look, ortho=None):
         cam.data.ortho_scale = ortho
     cam.location = loc
     direction = Vector(look) - Vector(loc)
-    cam.rotation_euler = direction.to_track_quat("-Z", "Y").to_euler()
+    # `up` is the camera axis aimed at world +Z when the look direction is horizontal.
+    # Looking along Y, "Z" keeps image-up as world up and the wall as a vertical edge.
+    cam.rotation_euler = direction.to_track_quat("-Z", up).to_euler()
     bpy.context.scene.camera = cam
     bpy.context.scene.render.filepath = path
     bpy.ops.render.render(write_still=True)
