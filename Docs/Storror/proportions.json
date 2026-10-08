@@ -1,0 +1,2360 @@
+{
+ "generated": "2026-10-08",
+ "method": {
+  "source": "MediaPipe PoseLandmarker heavy world landmarks (raw, unsmoothed) on 720p YouTube segments (480p for the 2011 episode: clips 01-03)",
+  "frame_gate": "detected (not interpolated) frames, outside known subject-swap windows, hip-centre jump < 0.6 torso length to neighbours, |spine_twist|<=100 (L/R flip guard); each segment only when both endpoint visibilities >= 0.7",
+  "aggregation": "per-clip median length per segment (L/R pooled) -> median across clips",
+  "stature": "H reconstructed = (shin+thigh+torso+shoulder->ear)/(1-0.039-0.070); ankle height 0.039H and ear->crown 0.070H from Winter anthropometry (MediaPipe has no crown/sole landmarks)",
+  "head": "head height (chin->crown) estimated as ear_to_ear * 1.59 (adult head height / bitragion breadth)",
+  "caveats": [
+   "MediaPipe world landmarks are a learned metric prior, so absolute sizes regress toward the training-set average adult; ratios are more trustworthy than metres, but still pulled toward average human proportions",
+   "wrist/ankle/ear landmarks are the noisiest at these resolutions (subjects are often 150-400 px tall); lower arm and head numbers have the widest spread",
+   "MediaPipe hip landmarks sit near the hip joint/greater-trochanter, shoulder landmarks near the glenohumeral joint, i.e. roughly joint centres like the Hier bones",
+   "angles are camera-frame body-frame estimates, not gravity aligned; shoulder/hip flex unwrapped so overhead > 180 is allowed"
+  ]
+ },
+ "clips_excluded": {},
+ "bad_windows_excluded": {
+  "05_window_jump_land_run": [
+   [
+    184.25,
+    184.5
+   ]
+  ]
+ },
+ "frames_used": {
+  "01_roll_grass": {
+   "total": 59,
+   "clean": 50,
+   "lr_flip_skipped": 0
+  },
+  "02_drop_roll_gravel": {
+   "total": 76,
+   "clean": 65,
+   "lr_flip_skipped": 0
+  },
+  "03_wall_drop_softland": {
+   "total": 51,
+   "clean": 51,
+   "lr_flip_skipped": 0
+  },
+  "04_window_drop_softland": {
+   "total": 52,
+   "clean": 52,
+   "lr_flip_skipped": 0
+  },
+  "05_window_jump_land_run": {
+   "total": 72,
+   "clean": 68,
+   "lr_flip_skipped": 0
+  },
+  "06_run_walljump_climb_window": {
+   "total": 135,
+   "clean": 133,
+   "lr_flip_skipped": 0
+  },
+  "07_wall_climb_traverse": {
+   "total": 180,
+   "clean": 180,
+   "lr_flip_skipped": 0
+  },
+  "08_vault_block_close": {
+   "total": 63,
+   "clean": 63,
+   "lr_flip_skipped": 0
+  },
+  "09_run_vault_park": {
+   "total": 135,
+   "clean": 131,
+   "lr_flip_skipped": 0
+  },
+  "10_wallrun_slanted": {
+   "total": 127,
+   "clean": 127,
+   "lr_flip_skipped": 0
+  },
+  "11_wallrun_slanted_34": {
+   "total": 165,
+   "clean": 160,
+   "lr_flip_skipped": 1
+  },
+  "12_tictac_slanted_wall": {
+   "total": 169,
+   "clean": 165,
+   "lr_flip_skipped": 0
+  },
+  "13_sprint_front": {
+   "total": 62,
+   "clean": 46,
+   "lr_flip_skipped": 0
+  },
+  "14_rail_precisions": {
+   "total": 171,
+   "clean": 157,
+   "lr_flip_skipped": 0
+  },
+  "15_cat_leap_wall": {
+   "total": 240,
+   "clean": 240,
+   "lr_flip_skipped": 0
+  },
+  "16_sprint_dive_hole": {
+   "total": 117,
+   "clean": 92,
+   "lr_flip_skipped": 0
+  }
+ },
+ "segment_lengths_m_per_clip": {
+  "01_roll_grass": {
+   "upper_arm": {
+    "median": 0.23,
+    "p25": 0.2023,
+    "p75": 0.2549,
+    "n": 76
+   },
+   "lower_arm": {
+    "median": 0.2115,
+    "p25": 0.189,
+    "p75": 0.2318,
+    "n": 70
+   },
+   "thigh": {
+    "median": 0.3439,
+    "p25": 0.3207,
+    "p75": 0.3929,
+    "n": 57
+   },
+   "shin": {
+    "median": 0.4051,
+    "p25": 0.3772,
+    "p75": 0.4319,
+    "n": 44
+   },
+   "shoulder_width": {
+    "median": 0.2946,
+    "p25": 0.2607,
+    "p75": 0.3106,
+    "n": 50
+   },
+   "hip_width": {
+    "median": 0.2072,
+    "p25": 0.1951,
+    "p75": 0.2214,
+    "n": 50
+   },
+   "ear_to_ear": {
+    "median": 0.1486,
+    "p25": 0.1415,
+    "p75": 0.1588,
+    "n": 48
+   },
+   "foot_heel_to_toe": {
+    "median": 0.083,
+    "p25": 0.0769,
+    "p75": 0.0944,
+    "n": 33
+   },
+   "ankle_to_heel": {
+    "median": 0.0377,
+    "p25": 0.0315,
+    "p75": 0.0416,
+    "n": 33
+   },
+   "torso": {
+    "median": 0.4613,
+    "p25": 0.4394,
+    "p75": 0.5103,
+    "n": 50
+   },
+   "shoulder_to_ear": {
+    "median": 0.1959,
+    "p25": 0.1398,
+    "p75": 0.2141,
+    "n": 48
+   }
+  },
+  "02_drop_roll_gravel": {
+   "upper_arm": {
+    "median": 0.2281,
+    "p25": 0.2029,
+    "p75": 0.2688,
+    "n": 94
+   },
+   "lower_arm": {
+    "median": 0.2158,
+    "p25": 0.1818,
+    "p75": 0.2551,
+    "n": 84
+   },
+   "thigh": {
+    "median": 0.3715,
+    "p25": 0.3191,
+    "p75": 0.4115,
+    "n": 98
+   },
+   "shin": {
+    "median": 0.4039,
+    "p25": 0.3822,
+    "p75": 0.4304,
+    "n": 79
+   },
+   "shoulder_width": {
+    "median": 0.3183,
+    "p25": 0.2939,
+    "p75": 0.3572,
+    "n": 65
+   },
+   "hip_width": {
+    "median": 0.2136,
+    "p25": 0.1924,
+    "p75": 0.228,
+    "n": 65
+   },
+   "ear_to_ear": {
+    "median": 0.1549,
+    "p25": 0.146,
+    "p75": 0.1746,
+    "n": 65
+   },
+   "foot_heel_to_toe": {
+    "median": 0.0883,
+    "p25": 0.0809,
+    "p75": 0.1026,
+    "n": 66
+   },
+   "ankle_to_heel": {
+    "median": 0.0437,
+    "p25": 0.0373,
+    "p75": 0.0468,
+    "n": 66
+   },
+   "torso": {
+    "median": 0.4453,
+    "p25": 0.4092,
+    "p75": 0.4704,
+    "n": 65
+   },
+   "shoulder_to_ear": {
+    "median": 0.1926,
+    "p25": 0.1707,
+    "p75": 0.2156,
+    "n": 65
+   }
+  },
+  "03_wall_drop_softland": {
+   "upper_arm": {
+    "median": 0.2457,
+    "p25": 0.2193,
+    "p75": 0.3056,
+    "n": 99
+   },
+   "lower_arm": {
+    "median": 0.2274,
+    "p25": 0.2091,
+    "p75": 0.2408,
+    "n": 98
+   },
+   "thigh": {
+    "median": 0.3871,
+    "p25": 0.3535,
+    "p75": 0.4215,
+    "n": 94
+   },
+   "shin": {
+    "median": 0.3994,
+    "p25": 0.3739,
+    "p75": 0.4235,
+    "n": 86
+   },
+   "shoulder_width": {
+    "median": 0.3139,
+    "p25": 0.3044,
+    "p75": 0.3228,
+    "n": 51
+   },
+   "hip_width": {
+    "median": 0.223,
+    "p25": 0.2148,
+    "p75": 0.2372,
+    "n": 51
+   },
+   "ear_to_ear": {
+    "median": 0.1509,
+    "p25": 0.1388,
+    "p75": 0.1581,
+    "n": 51
+   },
+   "foot_heel_to_toe": {
+    "median": 0.0952,
+    "p25": 0.0843,
+    "p75": 0.1041,
+    "n": 61
+   },
+   "ankle_to_heel": {
+    "median": 0.0463,
+    "p25": 0.0421,
+    "p75": 0.0481,
+    "n": 61
+   },
+   "torso": {
+    "median": 0.4858,
+    "p25": 0.4376,
+    "p75": 0.5022,
+    "n": 51
+   },
+   "shoulder_to_ear": {
+    "median": 0.174,
+    "p25": 0.1572,
+    "p75": 0.1859,
+    "n": 51
+   }
+  },
+  "04_window_drop_softland": {
+   "upper_arm": {
+    "median": 0.2408,
+    "p25": 0.2164,
+    "p75": 0.2892,
+    "n": 81
+   },
+   "lower_arm": {
+    "median": 0.2443,
+    "p25": 0.2327,
+    "p75": 0.2645,
+    "n": 80
+   },
+   "thigh": {
+    "median": 0.3611,
+    "p25": 0.342,
+    "p75": 0.4109,
+    "n": 102
+   },
+   "shin": {
+    "median": 0.4253,
+    "p25": 0.3963,
+    "p75": 0.4417,
+    "n": 91
+   },
+   "shoulder_width": {
+    "median": 0.3661,
+    "p25": 0.359,
+    "p75": 0.3782,
+    "n": 52
+   },
+   "hip_width": {
+    "median": 0.1881,
+    "p25": 0.1808,
+    "p75": 0.1937,
+    "n": 52
+   },
+   "ear_to_ear": {
+    "median": 0.147,
+    "p25": 0.1418,
+    "p75": 0.1536,
+    "n": 52
+   },
+   "foot_heel_to_toe": {
+    "median": 0.1115,
+    "p25": 0.1024,
+    "p75": 0.1233,
+    "n": 84
+   },
+   "ankle_to_heel": {
+    "median": 0.0446,
+    "p25": 0.0352,
+    "p75": 0.0477,
+    "n": 84
+   },
+   "torso": {
+    "median": 0.4643,
+    "p25": 0.4403,
+    "p75": 0.4885,
+    "n": 52
+   },
+   "shoulder_to_ear": {
+    "median": 0.1979,
+    "p25": 0.1878,
+    "p75": 0.202,
+    "n": 52
+   }
+  },
+  "05_window_jump_land_run": {
+   "upper_arm": {
+    "median": 0.2175,
+    "p25": 0.202,
+    "p75": 0.2302,
+    "n": 59
+   },
+   "lower_arm": {
+    "median": 0.2701,
+    "p25": 0.2505,
+    "p75": 0.2835,
+    "n": 53
+   },
+   "thigh": {
+    "median": 0.3739,
+    "p25": 0.3522,
+    "p75": 0.3951,
+    "n": 70
+   },
+   "shin": {
+    "median": 0.3924,
+    "p25": 0.3608,
+    "p75": 0.4118,
+    "n": 68
+   },
+   "shoulder_width": {
+    "median": 0.3789,
+    "p25": 0.3568,
+    "p75": 0.3966,
+    "n": 68
+   },
+   "hip_width": {
+    "median": 0.1779,
+    "p25": 0.1576,
+    "p75": 0.1901,
+    "n": 68
+   },
+   "ear_to_ear": {
+    "median": 0.1507,
+    "p25": 0.1397,
+    "p75": 0.1611,
+    "n": 68
+   },
+   "foot_heel_to_toe": {
+    "median": 0.1372,
+    "p25": 0.1242,
+    "p75": 0.1466,
+    "n": 79
+   },
+   "ankle_to_heel": {
+    "median": 0.0498,
+    "p25": 0.043,
+    "p75": 0.0552,
+    "n": 80
+   },
+   "torso": {
+    "median": 0.4602,
+    "p25": 0.4334,
+    "p75": 0.4857,
+    "n": 68
+   },
+   "shoulder_to_ear": {
+    "median": 0.1563,
+    "p25": 0.1397,
+    "p75": 0.1653,
+    "n": 68
+   }
+  },
+  "06_run_walljump_climb_window": {
+   "upper_arm": {
+    "median": 0.2452,
+    "p25": 0.2244,
+    "p75": 0.2637,
+    "n": 94
+   },
+   "lower_arm": {
+    "median": 0.2546,
+    "p25": 0.2341,
+    "p75": 0.2758,
+    "n": 73
+   },
+   "thigh": {
+    "median": 0.3637,
+    "p25": 0.3426,
+    "p75": 0.3839,
+    "n": 169
+   },
+   "shin": {
+    "median": 0.3618,
+    "p25": 0.34,
+    "p75": 0.3954,
+    "n": 157
+   },
+   "shoulder_width": {
+    "median": 0.3111,
+    "p25": 0.2709,
+    "p75": 0.3776,
+    "n": 133
+   },
+   "hip_width": {
+    "median": 0.1612,
+    "p25": 0.1472,
+    "p75": 0.184,
+    "n": 133
+   },
+   "ear_to_ear": {
+    "median": 0.1522,
+    "p25": 0.142,
+    "p75": 0.1663,
+    "n": 133
+   },
+   "foot_heel_to_toe": {
+    "median": 0.1285,
+    "p25": 0.1106,
+    "p75": 0.144,
+    "n": 213
+   },
+   "ankle_to_heel": {
+    "median": 0.0546,
+    "p25": 0.0465,
+    "p75": 0.0598,
+    "n": 189
+   },
+   "torso": {
+    "median": 0.4723,
+    "p25": 0.4539,
+    "p75": 0.4878,
+    "n": 133
+   },
+   "shoulder_to_ear": {
+    "median": 0.0841,
+    "p25": 0.053,
+    "p75": 0.11,
+    "n": 133
+   }
+  },
+  "07_wall_climb_traverse": {
+   "upper_arm": {
+    "median": 0.2329,
+    "p25": 0.2197,
+    "p75": 0.2493,
+    "n": 139
+   },
+   "lower_arm": {
+    "median": 0.2709,
+    "p25": 0.2116,
+    "p75": 0.2923,
+    "n": 125
+   },
+   "thigh": {
+    "median": 0.361,
+    "p25": 0.3349,
+    "p75": 0.3885,
+    "n": 234
+   },
+   "shin": {
+    "median": 0.3505,
+    "p25": 0.3261,
+    "p75": 0.3688,
+    "n": 233
+   },
+   "shoulder_width": {
+    "median": 0.3399,
+    "p25": 0.3263,
+    "p75": 0.3582,
+    "n": 180
+   },
+   "hip_width": {
+    "median": 0.1617,
+    "p25": 0.1517,
+    "p75": 0.1775,
+    "n": 180
+   },
+   "ear_to_ear": {
+    "median": 0.1543,
+    "p25": 0.1434,
+    "p75": 0.1669,
+    "n": 180
+   },
+   "foot_heel_to_toe": {
+    "median": 0.1263,
+    "p25": 0.1097,
+    "p75": 0.1507,
+    "n": 267
+   },
+   "ankle_to_heel": {
+    "median": 0.0536,
+    "p25": 0.045,
+    "p75": 0.0592,
+    "n": 272
+   },
+   "torso": {
+    "median": 0.4646,
+    "p25": 0.4511,
+    "p75": 0.4764,
+    "n": 180
+   },
+   "shoulder_to_ear": {
+    "median": 0.1015,
+    "p25": 0.0954,
+    "p75": 0.1096,
+    "n": 180
+   }
+  },
+  "08_vault_block_close": {
+   "upper_arm": {
+    "median": 0.2497,
+    "p25": 0.2266,
+    "p75": 0.2729,
+    "n": 74
+   },
+   "lower_arm": {
+    "median": 0.2114,
+    "p25": 0.1805,
+    "p75": 0.2527,
+    "n": 71
+   },
+   "thigh": {
+    "median": 0.3076,
+    "p25": 0.2815,
+    "p75": 0.3741,
+    "n": 66
+   },
+   "shin": {
+    "median": 0.4091,
+    "p25": 0.3812,
+    "p75": 0.4189,
+    "n": 60
+   },
+   "shoulder_width": {
+    "median": 0.3333,
+    "p25": 0.3232,
+    "p75": 0.3515,
+    "n": 63
+   },
+   "hip_width": {
+    "median": 0.1869,
+    "p25": 0.1646,
+    "p75": 0.2009,
+    "n": 63
+   },
+   "ear_to_ear": {
+    "median": 0.1368,
+    "p25": 0.1299,
+    "p75": 0.1425,
+    "n": 63
+   },
+   "foot_heel_to_toe": {
+    "median": 0.0956,
+    "p25": 0.0794,
+    "p75": 0.1224,
+    "n": 42
+   },
+   "ankle_to_heel": {
+    "median": 0.0358,
+    "p25": 0.0276,
+    "p75": 0.0504,
+    "n": 42
+   },
+   "torso": {
+    "median": 0.5023,
+    "p25": 0.4765,
+    "p75": 0.5147,
+    "n": 63
+   },
+   "shoulder_to_ear": {
+    "median": 0.1662,
+    "p25": 0.146,
+    "p75": 0.1862,
+    "n": 63
+   }
+  },
+  "09_run_vault_park": {
+   "upper_arm": {
+    "median": 0.2379,
+    "p25": 0.215,
+    "p75": 0.2667,
+    "n": 128
+   },
+   "lower_arm": {
+    "median": 0.2433,
+    "p25": 0.1823,
+    "p75": 0.2562,
+    "n": 125
+   },
+   "thigh": {
+    "median": 0.3641,
+    "p25": 0.326,
+    "p75": 0.3904,
+    "n": 127
+   },
+   "shin": {
+    "median": 0.3814,
+    "p25": 0.349,
+    "p75": 0.4057,
+    "n": 125
+   },
+   "shoulder_width": {
+    "median": 0.3274,
+    "p25": 0.3075,
+    "p75": 0.3603,
+    "n": 131
+   },
+   "hip_width": {
+    "median": 0.1488,
+    "p25": 0.1362,
+    "p75": 0.1595,
+    "n": 131
+   },
+   "ear_to_ear": {
+    "median": 0.1443,
+    "p25": 0.1331,
+    "p75": 0.1542,
+    "n": 131
+   },
+   "foot_heel_to_toe": {
+    "median": 0.1013,
+    "p25": 0.0855,
+    "p75": 0.1174,
+    "n": 160
+   },
+   "ankle_to_heel": {
+    "median": 0.0431,
+    "p25": 0.0311,
+    "p75": 0.0501,
+    "n": 169
+   },
+   "torso": {
+    "median": 0.4839,
+    "p25": 0.4703,
+    "p75": 0.495,
+    "n": 131
+   },
+   "shoulder_to_ear": {
+    "median": 0.1294,
+    "p25": 0.1152,
+    "p75": 0.1518,
+    "n": 131
+   }
+  },
+  "10_wallrun_slanted": {
+   "upper_arm": {
+    "median": 0.2484,
+    "p25": 0.2189,
+    "p75": 0.2689,
+    "n": 165
+   },
+   "lower_arm": {
+    "median": 0.1982,
+    "p25": 0.1618,
+    "p75": 0.2253,
+    "n": 154
+   },
+   "thigh": {
+    "median": 0.3654,
+    "p25": 0.3379,
+    "p75": 0.3945,
+    "n": 191
+   },
+   "shin": {
+    "median": 0.3689,
+    "p25": 0.3358,
+    "p75": 0.4089,
+    "n": 187
+   },
+   "shoulder_width": {
+    "median": 0.394,
+    "p25": 0.376,
+    "p75": 0.4148,
+    "n": 127
+   },
+   "hip_width": {
+    "median": 0.177,
+    "p25": 0.1605,
+    "p75": 0.1921,
+    "n": 127
+   },
+   "ear_to_ear": {
+    "median": 0.1599,
+    "p25": 0.1498,
+    "p75": 0.1667,
+    "n": 127
+   },
+   "foot_heel_to_toe": {
+    "median": 0.0937,
+    "p25": 0.0659,
+    "p75": 0.1229,
+    "n": 190
+   },
+   "ankle_to_heel": {
+    "median": 0.043,
+    "p25": 0.035,
+    "p75": 0.0511,
+    "n": 201
+   },
+   "torso": {
+    "median": 0.4678,
+    "p25": 0.4556,
+    "p75": 0.4813,
+    "n": 127
+   },
+   "shoulder_to_ear": {
+    "median": 0.138,
+    "p25": 0.0996,
+    "p75": 0.1682,
+    "n": 127
+   }
+  },
+  "11_wallrun_slanted_34": {
+   "upper_arm": {
+    "median": 0.2404,
+    "p25": 0.2134,
+    "p75": 0.2754,
+    "n": 171
+   },
+   "lower_arm": {
+    "median": 0.2359,
+    "p25": 0.1804,
+    "p75": 0.2631,
+    "n": 146
+   },
+   "thigh": {
+    "median": 0.3311,
+    "p25": 0.306,
+    "p75": 0.3656,
+    "n": 144
+   },
+   "shin": {
+    "median": 0.3543,
+    "p25": 0.317,
+    "p75": 0.4039,
+    "n": 136
+   },
+   "shoulder_width": {
+    "median": 0.3919,
+    "p25": 0.3608,
+    "p75": 0.4181,
+    "n": 159
+   },
+   "hip_width": {
+    "median": 0.21,
+    "p25": 0.1898,
+    "p75": 0.2253,
+    "n": 159
+   },
+   "ear_to_ear": {
+    "median": 0.1692,
+    "p25": 0.1594,
+    "p75": 0.1825,
+    "n": 158
+   },
+   "foot_heel_to_toe": {
+    "median": 0.0621,
+    "p25": 0.045,
+    "p75": 0.0774,
+    "n": 134
+   },
+   "ankle_to_heel": {
+    "median": 0.0471,
+    "p25": 0.0388,
+    "p75": 0.0575,
+    "n": 171
+   },
+   "torso": {
+    "median": 0.4278,
+    "p25": 0.4009,
+    "p75": 0.4474,
+    "n": 159
+   },
+   "shoulder_to_ear": {
+    "median": 0.0807,
+    "p25": 0.0635,
+    "p75": 0.0964,
+    "n": 158
+   }
+  },
+  "12_tictac_slanted_wall": {
+   "upper_arm": {
+    "median": 0.2408,
+    "p25": 0.2147,
+    "p75": 0.2897,
+    "n": 176
+   },
+   "lower_arm": {
+    "median": 0.2262,
+    "p25": 0.201,
+    "p75": 0.2561,
+    "n": 164
+   },
+   "thigh": {
+    "median": 0.3499,
+    "p25": 0.32,
+    "p75": 0.3784,
+    "n": 198
+   },
+   "shin": {
+    "median": 0.3729,
+    "p25": 0.3507,
+    "p75": 0.4073,
+    "n": 192
+   },
+   "shoulder_width": {
+    "median": 0.3047,
+    "p25": 0.2652,
+    "p75": 0.3263,
+    "n": 165
+   },
+   "hip_width": {
+    "median": 0.2225,
+    "p25": 0.1717,
+    "p75": 0.2419,
+    "n": 165
+   },
+   "ear_to_ear": {
+    "median": 0.1413,
+    "p25": 0.1288,
+    "p75": 0.1535,
+    "n": 162
+   },
+   "foot_heel_to_toe": {
+    "median": 0.1038,
+    "p25": 0.0865,
+    "p75": 0.1223,
+    "n": 222
+   },
+   "ankle_to_heel": {
+    "median": 0.0456,
+    "p25": 0.0389,
+    "p75": 0.0518,
+    "n": 219
+   },
+   "torso": {
+    "median": 0.4765,
+    "p25": 0.4455,
+    "p75": 0.5045,
+    "n": 165
+   },
+   "shoulder_to_ear": {
+    "median": 0.1025,
+    "p25": 0.0799,
+    "p75": 0.1388,
+    "n": 162
+   }
+  },
+  "13_sprint_front": {
+   "upper_arm": {
+    "median": 0.2478,
+    "p25": 0.2119,
+    "p75": 0.2931,
+    "n": 86
+   },
+   "lower_arm": {
+    "median": 0.191,
+    "p25": 0.1751,
+    "p75": 0.2158,
+    "n": 86
+   },
+   "thigh": {
+    "median": 0.3802,
+    "p25": 0.3546,
+    "p75": 0.422,
+    "n": 53
+   },
+   "shin": {
+    "median": 0.4093,
+    "p25": 0.3894,
+    "p75": 0.4504,
+    "n": 35
+   },
+   "shoulder_width": {
+    "median": 0.3304,
+    "p25": 0.321,
+    "p75": 0.3374,
+    "n": 46
+   },
+   "hip_width": {
+    "median": 0.2088,
+    "p25": 0.1985,
+    "p75": 0.2172,
+    "n": 46
+   },
+   "ear_to_ear": {
+    "median": 0.1609,
+    "p25": 0.1575,
+    "p75": 0.1664,
+    "n": 46
+   },
+   "foot_heel_to_toe": {
+    "median": 0.0873,
+    "p25": 0.0762,
+    "p75": 0.0959,
+    "n": 19
+   },
+   "ankle_to_heel": {
+    "median": 0.0471,
+    "p25": 0.0426,
+    "p75": 0.0489,
+    "n": 19
+   },
+   "torso": {
+    "median": 0.498,
+    "p25": 0.4851,
+    "p75": 0.5056,
+    "n": 46
+   },
+   "shoulder_to_ear": {
+    "median": 0.1915,
+    "p25": 0.1856,
+    "p75": 0.1979,
+    "n": 46
+   }
+  },
+  "14_rail_precisions": {
+   "upper_arm": {
+    "median": 0.2357,
+    "p25": 0.2184,
+    "p75": 0.2532,
+    "n": 164
+   },
+   "lower_arm": {
+    "median": 0.2354,
+    "p25": 0.2095,
+    "p75": 0.2542,
+    "n": 153
+   },
+   "thigh": {
+    "median": 0.3534,
+    "p25": 0.3266,
+    "p75": 0.389,
+    "n": 170
+   },
+   "shin": {
+    "median": 0.3805,
+    "p25": 0.3571,
+    "p75": 0.4048,
+    "n": 162
+   },
+   "shoulder_width": {
+    "median": 0.3455,
+    "p25": 0.2928,
+    "p75": 0.3737,
+    "n": 157
+   },
+   "hip_width": {
+    "median": 0.1725,
+    "p25": 0.1501,
+    "p75": 0.2075,
+    "n": 156
+   },
+   "ear_to_ear": {
+    "median": 0.1507,
+    "p25": 0.1362,
+    "p75": 0.1587,
+    "n": 157
+   },
+   "foot_heel_to_toe": {
+    "median": 0.1096,
+    "p25": 0.0856,
+    "p75": 0.1341,
+    "n": 176
+   },
+   "ankle_to_heel": {
+    "median": 0.0451,
+    "p25": 0.039,
+    "p75": 0.0501,
+    "n": 172
+   },
+   "torso": {
+    "median": 0.4731,
+    "p25": 0.4449,
+    "p75": 0.497,
+    "n": 156
+   },
+   "shoulder_to_ear": {
+    "median": 0.1358,
+    "p25": 0.1152,
+    "p75": 0.1557,
+    "n": 157
+   }
+  },
+  "15_cat_leap_wall": {
+   "upper_arm": {
+    "median": 0.2346,
+    "p25": 0.2057,
+    "p75": 0.2702,
+    "n": 354
+   },
+   "lower_arm": {
+    "median": 0.2251,
+    "p25": 0.1947,
+    "p75": 0.2541,
+    "n": 346
+   },
+   "thigh": {
+    "median": 0.3524,
+    "p25": 0.3274,
+    "p75": 0.3766,
+    "n": 368
+   },
+   "shin": {
+    "median": 0.3787,
+    "p25": 0.3486,
+    "p75": 0.4116,
+    "n": 351
+   },
+   "shoulder_width": {
+    "median": 0.3132,
+    "p25": 0.2844,
+    "p75": 0.3433,
+    "n": 240
+   },
+   "hip_width": {
+    "median": 0.21,
+    "p25": 0.1801,
+    "p75": 0.2312,
+    "n": 240
+   },
+   "ear_to_ear": {
+    "median": 0.1446,
+    "p25": 0.1318,
+    "p75": 0.1557,
+    "n": 240
+   },
+   "foot_heel_to_toe": {
+    "median": 0.1018,
+    "p25": 0.0798,
+    "p75": 0.1232,
+    "n": 355
+   },
+   "ankle_to_heel": {
+    "median": 0.0465,
+    "p25": 0.0412,
+    "p75": 0.0541,
+    "n": 359
+   },
+   "torso": {
+    "median": 0.4616,
+    "p25": 0.4314,
+    "p75": 0.4873,
+    "n": 240
+   },
+   "shoulder_to_ear": {
+    "median": 0.1206,
+    "p25": 0.1002,
+    "p75": 0.1385,
+    "n": 240
+   }
+  },
+  "16_sprint_dive_hole": {
+   "upper_arm": {
+    "median": 0.2683,
+    "p25": 0.2096,
+    "p75": 0.2993,
+    "n": 101
+   },
+   "lower_arm": {
+    "median": 0.2133,
+    "p25": 0.1972,
+    "p75": 0.229,
+    "n": 91
+   },
+   "thigh": {
+    "median": 0.3524,
+    "p25": 0.3382,
+    "p75": 0.3722,
+    "n": 100
+   },
+   "shin": {
+    "median": 0.3925,
+    "p25": 0.3615,
+    "p75": 0.4225,
+    "n": 92
+   },
+   "shoulder_width": {
+    "median": 0.2439,
+    "p25": 0.2242,
+    "p75": 0.2585,
+    "n": 92
+   },
+   "hip_width": {
+    "median": 0.2233,
+    "p25": 0.207,
+    "p75": 0.24,
+    "n": 92
+   },
+   "ear_to_ear": {
+    "median": 0.1508,
+    "p25": 0.1422,
+    "p75": 0.1615,
+    "n": 92
+   },
+   "foot_heel_to_toe": {
+    "median": 0.1055,
+    "p25": 0.0858,
+    "p75": 0.1228,
+    "n": 102
+   },
+   "ankle_to_heel": {
+    "median": 0.038,
+    "p25": 0.0333,
+    "p75": 0.0474,
+    "n": 106
+   },
+   "torso": {
+    "median": 0.4746,
+    "p25": 0.4507,
+    "p75": 0.4996,
+    "n": 92
+   },
+   "shoulder_to_ear": {
+    "median": 0.1493,
+    "p25": 0.1329,
+    "p75": 0.1689,
+    "n": 92
+   }
+  }
+ },
+ "segment_lengths_m_aggregate": {
+  "upper_arm": {
+   "median_of_clips": 0.2406,
+   "weighted_mean": 0.2399,
+   "clip_min": 0.2175,
+   "clip_max": 0.2683,
+   "n_clips": 16,
+   "n_frames": 2061
+  },
+  "lower_arm": {
+   "median_of_clips": 0.2268,
+   "weighted_mean": 0.2286,
+   "clip_min": 0.191,
+   "clip_max": 0.2709,
+   "n_clips": 16,
+   "n_frames": 1919
+  },
+  "thigh": {
+   "median_of_clips": 0.361,
+   "weighted_mean": 0.3569,
+   "clip_min": 0.3076,
+   "clip_max": 0.3871,
+   "n_clips": 16,
+   "n_frames": 2241
+  },
+  "shin": {
+   "median_of_clips": 0.3869,
+   "weighted_mean": 0.3784,
+   "clip_min": 0.3505,
+   "clip_max": 0.4253,
+   "n_clips": 16,
+   "n_frames": 2098
+  },
+  "shoulder_width": {
+   "median_of_clips": 0.3289,
+   "weighted_mean": 0.333,
+   "clip_min": 0.2439,
+   "clip_max": 0.394,
+   "n_clips": 16,
+   "n_frames": 1779
+  },
+  "hip_width": {
+   "median_of_clips": 0.1976,
+   "weighted_mean": 0.1909,
+   "clip_min": 0.1488,
+   "clip_max": 0.2233,
+   "n_clips": 16,
+   "n_frames": 1778
+  },
+  "ear_to_ear": {
+   "median_of_clips": 0.1507,
+   "weighted_mean": 0.1511,
+   "clip_min": 0.1368,
+   "clip_max": 0.1692,
+   "n_clips": 16,
+   "n_frames": 1773
+  },
+  "foot_heel_to_toe": {
+   "median_of_clips": 0.1016,
+   "weighted_mean": 0.1057,
+   "clip_min": 0.0621,
+   "clip_max": 0.1372,
+   "n_clips": 16,
+   "n_frames": 2203
+  },
+  "ankle_to_heel": {
+   "median_of_clips": 0.0454,
+   "weighted_mean": 0.0466,
+   "clip_min": 0.0358,
+   "clip_max": 0.0546,
+   "n_clips": 16,
+   "n_frames": 2243
+  },
+  "torso": {
+   "median_of_clips": 0.47,
+   "weighted_mean": 0.4673,
+   "clip_min": 0.4278,
+   "clip_max": 0.5023,
+   "n_clips": 16,
+   "n_frames": 1778
+  },
+  "shoulder_to_ear": {
+   "median_of_clips": 0.1436,
+   "weighted_mean": 0.1288,
+   "clip_min": 0.0807,
+   "clip_max": 0.1979,
+   "n_clips": 16,
+   "n_frames": 1773
+  }
+ },
+ "storror": {
+  "stature_est_m": 1.528,
+  "ratios_to_height": {
+   "torso": 0.3076,
+   "upper_arm": 0.1575,
+   "lower_arm": 0.1484,
+   "thigh": 0.2362,
+   "shin": 0.2532,
+   "shoulder_width": 0.2152,
+   "hip_width": 0.1293,
+   "shoulder_to_ear": 0.094,
+   "ear_to_ear": 0.0986,
+   "head_height_est": 0.1568,
+   "leg_thigh_plus_shin": 0.4894,
+   "arm_upper_plus_lower": 0.3059
+  },
+  "ratios_height_free": {
+   "lower_over_upper_arm": 0.943,
+   "shin_over_thigh": 1.072,
+   "shoulder_over_hip_width": 1.664,
+   "leg_over_torso": 1.591,
+   "arm_over_leg": 0.625
+  }
+ },
+ "hier_v0_7_8": {
+  "stature_m": 1.856,
+  "source": "Tools/Tag/build_mannequin_hier.py v0.7.8 constants (SHOULDER_X/Z/Y, UA_LEN, LA_LEN, HIP_X/Z, UL_LEN, LL_LEN, Head sph, shoe_foot sole) cross-checked against Dummy_Mannequin_Tan_Hier_Hi.fbx bone offsets (UpperLeg 0.5405, LowerLeg 0.49, UpperArm 0.37, LowerArm 0.33, Shoulder bone 0.1188 from x=0.12 -> joint x=0.235)",
+  "lengths_m": {
+   "torso": 0.3523,
+   "upper_arm": 0.37,
+   "lower_arm": 0.33,
+   "thigh": 0.5405,
+   "shin": 0.49,
+   "shoulder_width": 0.47,
+   "hip_width": 0.236,
+   "shoulder_to_ear": 0.265,
+   "ear_to_ear": 0.25,
+   "head_height": 0.276,
+   "ankle_height": 0.061
+  },
+  "ratios_to_height": {
+   "torso": 0.1898,
+   "upper_arm": 0.1994,
+   "lower_arm": 0.1778,
+   "thigh": 0.2912,
+   "shin": 0.264,
+   "shoulder_width": 0.2532,
+   "hip_width": 0.1272,
+   "shoulder_to_ear": 0.1428,
+   "ear_to_ear": 0.1347,
+   "head_height_est": 0.1487,
+   "leg_thigh_plus_shin": 0.5552,
+   "arm_upper_plus_lower": 0.3772
+  },
+  "ratios_height_free": {
+   "lower_over_upper_arm": 0.892,
+   "shin_over_thigh": 0.907,
+   "shoulder_over_hip_width": 1.992,
+   "leg_over_torso": 2.925,
+   "arm_over_leg": 0.679
+  }
+ },
+ "reference_winter_ratios": {
+  "upper_arm": 0.186,
+  "lower_arm": 0.146,
+  "thigh": 0.245,
+  "shin": 0.246,
+  "head_height_est": 0.13,
+  "torso_joint_centres_approx": 0.258,
+  "shoulder_width_biacromial": 0.259,
+  "hip_width_bi_iliac": 0.191
+ },
+ "raw_deltas_to_match_storror_mediapipe_ratios_exactly (over-corrects torso and under-sizes arms because of MediaPipe landmark bias; use recommended_hier_changes)": {
+  "torso": {
+   "hier_m": 0.352,
+   "storror_ratio_target_m": 0.571,
+   "delta_full_m": 0.219,
+   "delta_pct": 62.1,
+   "delta_half_blend_m": 0.109
+  },
+  "upper_arm": {
+   "hier_m": 0.37,
+   "storror_ratio_target_m": 0.292,
+   "delta_full_m": -0.078,
+   "delta_pct": -21.0,
+   "delta_half_blend_m": -0.039
+  },
+  "lower_arm": {
+   "hier_m": 0.33,
+   "storror_ratio_target_m": 0.275,
+   "delta_full_m": -0.055,
+   "delta_pct": -16.5,
+   "delta_half_blend_m": -0.027
+  },
+  "thigh": {
+   "hier_m": 0.54,
+   "storror_ratio_target_m": 0.438,
+   "delta_full_m": -0.102,
+   "delta_pct": -18.9,
+   "delta_half_blend_m": -0.051
+  },
+  "shin": {
+   "hier_m": 0.49,
+   "storror_ratio_target_m": 0.47,
+   "delta_full_m": -0.02,
+   "delta_pct": -4.1,
+   "delta_half_blend_m": -0.01
+  },
+  "shoulder_width": {
+   "hier_m": 0.47,
+   "storror_ratio_target_m": 0.399,
+   "delta_full_m": -0.071,
+   "delta_pct": -15.0,
+   "delta_half_blend_m": -0.035
+  },
+  "hip_width": {
+   "hier_m": 0.236,
+   "storror_ratio_target_m": 0.24,
+   "delta_full_m": 0.004,
+   "delta_pct": 1.7,
+   "delta_half_blend_m": 0.002
+  },
+  "head_height_est": {
+   "hier_m": 0.276,
+   "storror_ratio_target_m": 0.291,
+   "delta_full_m": 0.015,
+   "delta_pct": 5.4,
+   "delta_half_blend_m": 0.008
+  }
+ },
+ "rom_deg_pooled_LR": {
+  "ankle_dorsi": {
+   "p2": -60.3,
+   "p10": -43.5,
+   "p50": -19.2,
+   "p90": 3.1,
+   "p98": 19.5,
+   "n": 2018
+  },
+  "elbow_flex": {
+   "p2": 7.1,
+   "p10": 17.3,
+   "p50": 48.6,
+   "p90": 78.8,
+   "p98": 98.6,
+   "n": 1919
+  },
+  "hip_abd_lat": {
+   "p2": -24.4,
+   "p10": -11.6,
+   "p50": 5.0,
+   "p90": 27.8,
+   "p98": 44.4,
+   "n": 2241
+  },
+  "hip_elev": {
+   "p2": 5.2,
+   "p10": 13.3,
+   "p50": 54.4,
+   "p90": 104.3,
+   "p98": 126.8,
+   "n": 2241
+  },
+  "hip_flex": {
+   "p2": -18.5,
+   "p10": 4.1,
+   "p50": 50.3,
+   "p90": 103.2,
+   "p98": 123.5,
+   "n": 2241
+  },
+  "knee_flex": {
+   "p2": 9.3,
+   "p10": 18.7,
+   "p50": 49.0,
+   "p90": 95.9,
+   "p98": 117.9,
+   "n": 2098
+  },
+  "shoulder_abd_lat": {
+   "p2": -8.4,
+   "p10": 8.1,
+   "p50": 30.8,
+   "p90": 62.9,
+   "p98": 77.2,
+   "n": 2061
+  },
+  "shoulder_elev": {
+   "p2": 14.5,
+   "p10": 26.2,
+   "p50": 64.1,
+   "p90": 122.4,
+   "p98": 145.0,
+   "n": 2061
+  },
+  "shoulder_flex": {
+   "p2": -76.9,
+   "p10": -46.3,
+   "p50": 26.1,
+   "p90": 138.4,
+   "p98": 182.1,
+   "n": 2061
+  },
+  "wrist_flex": {
+   "p2": 6.0,
+   "p10": 14.1,
+   "p50": 39.1,
+   "p90": 77.3,
+   "p98": 107.9,
+   "n": 1851
+  },
+  "trunk_lean_from_cam_vertical": {
+   "p2": 3.3,
+   "p10": 8.6,
+   "p50": 23.3,
+   "p90": 65.3,
+   "p98": 122.3,
+   "n": 1779
+  },
+  "spine_twist": {
+   "p2": -37.1,
+   "p10": -25.4,
+   "p50": 0.4,
+   "p90": 23.1,
+   "p98": 37.3,
+   "n": 1779
+  },
+  "spine_lateral_bend": {
+   "p2": -18.3,
+   "p10": -10.7,
+   "p50": 5.5,
+   "p90": 23.0,
+   "p98": 35.8,
+   "n": 1779
+  },
+  "neck_flex": {
+   "p2": -55.6,
+   "p10": -36.3,
+   "p50": 17.6,
+   "p90": 63.1,
+   "p98": 79.8,
+   "n": 1773
+  },
+  "neck_lateral": {
+   "p2": -84.7,
+   "p10": -61.4,
+   "p50": -24.2,
+   "p90": 58.0,
+   "p98": 74.8,
+   "n": 1773
+  }
+ },
+ "rom_deg_by_side": {
+  "ankle_dorsi_L": {
+   "p2": -63.1,
+   "p10": -47.3,
+   "p50": -24.0,
+   "p90": -5.1,
+   "p98": 8.7,
+   "n": 1092
+  },
+  "ankle_dorsi_R": {
+   "p2": -54.1,
+   "p10": -36.5,
+   "p50": -13.2,
+   "p90": 9.1,
+   "p98": 24.9,
+   "n": 926
+  },
+  "elbow_flex_L": {
+   "p2": 7.3,
+   "p10": 18.9,
+   "p50": 51.9,
+   "p90": 79.3,
+   "p98": 102.4,
+   "n": 1200
+  },
+  "elbow_flex_R": {
+   "p2": 6.6,
+   "p10": 15.7,
+   "p50": 41.8,
+   "p90": 76.1,
+   "p98": 91.3,
+   "n": 719
+  },
+  "hip_abd_lat_L": {
+   "p2": -28.5,
+   "p10": -11.7,
+   "p50": 3.1,
+   "p90": 23.2,
+   "p98": 42.0,
+   "n": 1190
+  },
+  "hip_abd_lat_R": {
+   "p2": -19.7,
+   "p10": -11.5,
+   "p50": 7.3,
+   "p90": 31.4,
+   "p98": 45.1,
+   "n": 1051
+  },
+  "hip_elev_L": {
+   "p2": 5.1,
+   "p10": 13.0,
+   "p50": 57.1,
+   "p90": 103.5,
+   "p98": 123.9,
+   "n": 1190
+  },
+  "hip_elev_R": {
+   "p2": 5.4,
+   "p10": 13.5,
+   "p50": 50.3,
+   "p90": 106.7,
+   "p98": 131.6,
+   "n": 1051
+  },
+  "hip_flex_L": {
+   "p2": -14.4,
+   "p10": 5.6,
+   "p50": 53.3,
+   "p90": 103.1,
+   "p98": 121.1,
+   "n": 1190
+  },
+  "hip_flex_R": {
+   "p2": -20.5,
+   "p10": 3.1,
+   "p50": 45.6,
+   "p90": 103.3,
+   "p98": 127.0,
+   "n": 1051
+  },
+  "knee_flex_L": {
+   "p2": 11.0,
+   "p10": 19.9,
+   "p50": 48.8,
+   "p90": 93.9,
+   "p98": 117.9,
+   "n": 1119
+  },
+  "knee_flex_R": {
+   "p2": 6.2,
+   "p10": 16.4,
+   "p50": 49.3,
+   "p90": 97.7,
+   "p98": 119.5,
+   "n": 979
+  },
+  "neck_flex": {
+   "p2": -55.6,
+   "p10": -36.3,
+   "p50": 17.6,
+   "p90": 63.1,
+   "p98": 79.8,
+   "n": 1773
+  },
+  "neck_lateral": {
+   "p2": -84.7,
+   "p10": -61.4,
+   "p50": -24.2,
+   "p90": 58.0,
+   "p98": 74.8,
+   "n": 1773
+  },
+  "shoulder_abd_lat_L": {
+   "p2": -8.7,
+   "p10": 9.3,
+   "p50": 32.8,
+   "p90": 64.3,
+   "p98": 77.2,
+   "n": 1298
+  },
+  "shoulder_abd_lat_R": {
+   "p2": -7.3,
+   "p10": 6.6,
+   "p50": 27.8,
+   "p90": 59.7,
+   "p98": 77.1,
+   "n": 763
+  },
+  "shoulder_elev_L": {
+   "p2": 16.4,
+   "p10": 30.1,
+   "p50": 74.0,
+   "p90": 128.3,
+   "p98": 147.9,
+   "n": 1298
+  },
+  "shoulder_elev_R": {
+   "p2": 12.3,
+   "p10": 22.2,
+   "p50": 51.3,
+   "p90": 102.3,
+   "p98": 132.5,
+   "n": 763
+  },
+  "shoulder_flex_L": {
+   "p2": -81.0,
+   "p10": -50.9,
+   "p50": 36.9,
+   "p90": 149.4,
+   "p98": 185.2,
+   "n": 1298
+  },
+  "shoulder_flex_R": {
+   "p2": -60.5,
+   "p10": -38.7,
+   "p50": 14.5,
+   "p90": 107.4,
+   "p98": 151.9,
+   "n": 763
+  },
+  "spine_lateral_bend": {
+   "p2": -18.3,
+   "p10": -10.7,
+   "p50": 5.5,
+   "p90": 23.0,
+   "p98": 35.8,
+   "n": 1779
+  },
+  "spine_twist": {
+   "p2": -37.1,
+   "p10": -25.4,
+   "p50": 0.4,
+   "p90": 23.1,
+   "p98": 37.3,
+   "n": 1779
+  },
+  "trunk_lean_from_cam_vertical": {
+   "p2": 3.3,
+   "p10": 8.6,
+   "p50": 23.3,
+   "p90": 65.3,
+   "p98": 122.3,
+   "n": 1779
+  },
+  "wrist_flex_L": {
+   "p2": 4.2,
+   "p10": 12.2,
+   "p50": 29.3,
+   "p90": 53.3,
+   "p98": 79.4,
+   "n": 1156
+  },
+  "wrist_flex_R": {
+   "p2": 11.9,
+   "p10": 24.7,
+   "p50": 53.3,
+   "p90": 90.3,
+   "p98": 119.0,
+   "n": 695
+  }
+ },
+ "rom_deg_by_verb": {
+  "climbtop/mantle": {
+   "hip_flex": {
+    "p2": -5.3,
+    "p10": 7.8,
+    "p50": 83.2,
+    "p90": 106.0,
+    "p98": 114.2,
+    "n": 169
+   },
+   "hip_elev": {
+    "p2": 6.0,
+    "p10": 17.5,
+    "p50": 83.5,
+    "p90": 104.1,
+    "p98": 121.8,
+    "n": 169
+   },
+   "knee_flex": {
+    "p2": 18.7,
+    "p10": 28.0,
+    "p50": 47.0,
+    "p90": 63.6,
+    "p98": 77.6,
+    "n": 157
+   },
+   "ankle_dorsi": {
+    "p2": -58.6,
+    "p10": -44.4,
+    "p50": -21.2,
+    "p90": 1.6,
+    "p98": 5.2,
+    "n": 157
+   },
+   "shoulder_flex": {
+    "p2": -54.1,
+    "p10": -33.2,
+    "p50": 86.3,
+    "p90": 120.4,
+    "p98": 129.8,
+    "n": 94
+   },
+   "shoulder_elev": {
+    "p2": 22.0,
+    "p10": 36.6,
+    "p50": 86.1,
+    "p90": 117.6,
+    "p98": 123.8,
+    "n": 94
+   },
+   "shoulder_abd_lat": {
+    "p2": -4.5,
+    "p10": 10.0,
+    "p50": 25.9,
+    "p90": 57.2,
+    "p98": 73.4,
+    "n": 94
+   },
+   "elbow_flex": {
+    "p2": 13.2,
+    "p10": 51.3,
+    "p50": 64.8,
+    "p90": 82.7,
+    "p98": 103.0,
+    "n": 73
+   }
+  },
+  "cling": {
+   "hip_flex": {
+    "p2": -7.8,
+    "p10": 7.9,
+    "p50": 54.5,
+    "p90": 108.8,
+    "p98": 123.1,
+    "n": 602
+   },
+   "hip_elev": {
+    "p2": 8.6,
+    "p10": 17.8,
+    "p50": 58.9,
+    "p90": 113.2,
+    "p98": 124.9,
+    "n": 602
+   },
+   "knee_flex": {
+    "p2": 9.2,
+    "p10": 13.4,
+    "p50": 45.9,
+    "p90": 86.3,
+    "p98": 109.7,
+    "n": 584
+   },
+   "ankle_dorsi": {
+    "p2": -62.8,
+    "p10": -41.3,
+    "p50": -18.2,
+    "p90": 2.2,
+    "p98": 17.4,
+    "n": 559
+   },
+   "shoulder_flex": {
+    "p2": -75.6,
+    "p10": -36.1,
+    "p50": 58.7,
+    "p90": 143.1,
+    "p98": 204.5,
+    "n": 493
+   },
+   "shoulder_elev": {
+    "p2": 23.5,
+    "p10": 35.3,
+    "p50": 75.2,
+    "p90": 117.3,
+    "p98": 134.6,
+    "n": 493
+   },
+   "shoulder_abd_lat": {
+    "p2": 3.3,
+    "p10": 12.9,
+    "p50": 35.5,
+    "p90": 65.6,
+    "p98": 79.5,
+    "n": 493
+   },
+   "elbow_flex": {
+    "p2": 9.6,
+    "p10": 18.1,
+    "p50": 44.8,
+    "p90": 78.3,
+    "p98": 88.7,
+    "n": 471
+   }
+  },
+  "roll": {
+   "hip_flex": {
+    "p2": 25.7,
+    "p10": 35.0,
+    "p50": 77.3,
+    "p90": 107.5,
+    "p98": 128.3,
+    "n": 155
+   },
+   "hip_elev": {
+    "p2": 18.1,
+    "p10": 30.0,
+    "p50": 77.8,
+    "p90": 107.5,
+    "p98": 122.4,
+    "n": 155
+   },
+   "knee_flex": {
+    "p2": 38.8,
+    "p10": 44.8,
+    "p50": 76.9,
+    "p90": 109.3,
+    "p98": 115.0,
+    "n": 123
+   },
+   "ankle_dorsi": {
+    "p2": -57.5,
+    "p10": -43.5,
+    "p50": -26.9,
+    "p90": -6.9,
+    "p98": 7.8,
+    "n": 120
+   },
+   "shoulder_flex": {
+    "p2": -64.5,
+    "p10": -2.2,
+    "p50": 52.4,
+    "p90": 157.9,
+    "p98": 182.9,
+    "n": 170
+   },
+   "shoulder_elev": {
+    "p2": 23.3,
+    "p10": 39.2,
+    "p50": 68.1,
+    "p90": 119.8,
+    "p98": 156.7,
+    "n": 170
+   },
+   "shoulder_abd_lat": {
+    "p2": -18.3,
+    "p10": 14.2,
+    "p50": 40.8,
+    "p90": 64.0,
+    "p98": 73.8,
+    "n": 170
+   },
+   "elbow_flex": {
+    "p2": 4.8,
+    "p10": 8.9,
+    "p50": 24.3,
+    "p90": 57.6,
+    "p98": 87.2,
+    "n": 154
+   }
+  },
+  "softland": {
+   "hip_flex": {
+    "p2": 3.4,
+    "p10": 15.1,
+    "p50": 55.5,
+    "p90": 105.2,
+    "p98": 126.4,
+    "n": 436
+   },
+   "hip_elev": {
+    "p2": 3.6,
+    "p10": 13.3,
+    "p50": 58.1,
+    "p90": 106.1,
+    "p98": 133.9,
+    "n": 436
+   },
+   "knee_flex": {
+    "p2": 15.4,
+    "p10": 26.4,
+    "p50": 64.5,
+    "p90": 114.0,
+    "p98": 127.1,
+    "n": 407
+   },
+   "ankle_dorsi": {
+    "p2": -53.2,
+    "p10": -40.9,
+    "p50": -17.0,
+    "p90": 0.3,
+    "p98": 15.6,
+    "n": 406
+   },
+   "shoulder_flex": {
+    "p2": -69.5,
+    "p10": -30.5,
+    "p50": 19.4,
+    "p90": 108.8,
+    "p98": 132.6,
+    "n": 403
+   },
+   "shoulder_elev": {
+    "p2": 10.5,
+    "p10": 17.6,
+    "p50": 43.1,
+    "p90": 104.8,
+    "p98": 133.0,
+    "n": 403
+   },
+   "shoulder_abd_lat": {
+    "p2": -9.1,
+    "p10": 0.9,
+    "p50": 20.4,
+    "p90": 60.2,
+    "p98": 74.9,
+    "n": 403
+   },
+   "elbow_flex": {
+    "p2": 6.7,
+    "p10": 19.1,
+    "p50": 57.8,
+    "p90": 83.1,
+    "p98": 95.4,
+    "n": 384
+   }
+  },
+  "sprint": {
+   "hip_flex": {
+    "p2": -23.0,
+    "p10": 1.8,
+    "p50": 29.9,
+    "p90": 88.8,
+    "p98": 116.7,
+    "n": 153
+   },
+   "hip_elev": {
+    "p2": 3.2,
+    "p10": 8.6,
+    "p50": 32.7,
+    "p90": 94.8,
+    "p98": 124.0,
+    "n": 153
+   },
+   "knee_flex": {
+    "p2": 15.5,
+    "p10": 29.6,
+    "p50": 46.2,
+    "p90": 80.4,
+    "p98": 111.3,
+    "n": 127
+   },
+   "ankle_dorsi": {
+    "p2": -76.3,
+    "p10": -57.9,
+    "p50": -18.0,
+    "p90": 8.1,
+    "p98": 18.3,
+    "n": 117
+   },
+   "shoulder_flex": {
+    "p2": -50.3,
+    "p10": -34.8,
+    "p50": 6.8,
+    "p90": 101.2,
+    "p98": 128.3,
+    "n": 187
+   },
+   "shoulder_elev": {
+    "p2": 8.6,
+    "p10": 19.6,
+    "p50": 38.6,
+    "p90": 95.7,
+    "p98": 126.3,
+    "n": 187
+   },
+   "shoulder_abd_lat": {
+    "p2": -14.2,
+    "p10": 8.9,
+    "p50": 25.4,
+    "p90": 35.7,
+    "p98": 43.0,
+    "n": 187
+   },
+   "elbow_flex": {
+    "p2": 10.6,
+    "p10": 14.8,
+    "p50": 47.7,
+    "p90": 73.6,
+    "p98": 85.0,
+    "n": 177
+   }
+  },
+  "vault": {
+   "hip_flex": {
+    "p2": -10.9,
+    "p10": 9.5,
+    "p50": 40.5,
+    "p90": 70.2,
+    "p98": 80.2,
+    "n": 193
+   },
+   "hip_elev": {
+    "p2": 8.1,
+    "p10": 17.8,
+    "p50": 51.9,
+    "p90": 74.8,
+    "p98": 83.8,
+    "n": 193
+   },
+   "knee_flex": {
+    "p2": 7.6,
+    "p10": 20.3,
+    "p50": 37.0,
+    "p90": 74.0,
+    "p98": 85.2,
+    "n": 185
+   },
+   "ankle_dorsi": {
+    "p2": -51.1,
+    "p10": -35.3,
+    "p50": -19.5,
+    "p90": 9.9,
+    "p98": 29.1,
+    "n": 182
+   },
+   "shoulder_flex": {
+    "p2": -70.8,
+    "p10": -21.4,
+    "p50": 131.6,
+    "p90": 179.5,
+    "p98": 187.4,
+    "n": 202
+   },
+   "shoulder_elev": {
+    "p2": 32.4,
+    "p10": 52.5,
+    "p50": 120.0,
+    "p90": 151.6,
+    "p98": 166.4,
+    "n": 202
+   },
+   "shoulder_abd_lat": {
+    "p2": -12.8,
+    "p10": -1.9,
+    "p50": 34.3,
+    "p90": 66.5,
+    "p98": 79.2,
+    "n": 202
+   },
+   "elbow_flex": {
+    "p2": 13.1,
+    "p10": 30.3,
+    "p50": 43.3,
+    "p90": 79.4,
+    "p98": 104.4,
+    "n": 196
+   }
+  },
+  "walljump": {
+   "hip_flex": {
+    "p2": 10.2,
+    "p10": 25.7,
+    "p50": 60.9,
+    "p90": 111.9,
+    "p98": 153.8,
+    "n": 198
+   },
+   "hip_elev": {
+    "p2": 11.2,
+    "p10": 28.2,
+    "p50": 64.5,
+    "p90": 121.0,
+    "p98": 151.9,
+    "n": 198
+   },
+   "knee_flex": {
+    "p2": 14.6,
+    "p10": 30.2,
+    "p50": 60.0,
+    "p90": 100.6,
+    "p98": 125.6,
+    "n": 192
+   },
+   "ankle_dorsi": {
+    "p2": -54.2,
+    "p10": -40.0,
+    "p50": -21.1,
+    "p90": -0.9,
+    "p98": 13.7,
+    "n": 181
+   },
+   "shoulder_flex": {
+    "p2": -79.7,
+    "p10": -58.9,
+    "p50": 53.9,
+    "p90": 141.6,
+    "p98": 152.0,
+    "n": 176
+   },
+   "shoulder_elev": {
+    "p2": 24.8,
+    "p10": 34.6,
+    "p50": 77.8,
+    "p90": 131.1,
+    "p98": 136.2,
+    "n": 176
+   },
+   "shoulder_abd_lat": {
+    "p2": -8.0,
+    "p10": 4.9,
+    "p50": 24.1,
+    "p90": 60.7,
+    "p98": 77.0,
+    "n": 176
+   },
+   "elbow_flex": {
+    "p2": 6.3,
+    "p10": 15.3,
+    "p50": 47.9,
+    "p90": 70.6,
+    "p98": 96.7,
+    "n": 164
+   }
+  },
+  "wallrun": {
+   "hip_flex": {
+    "p2": -27.7,
+    "p10": -13.8,
+    "p50": 12.4,
+    "p90": 46.3,
+    "p98": 71.6,
+    "n": 335
+   },
+   "hip_elev": {
+    "p2": 3.9,
+    "p10": 8.1,
+    "p50": 21.4,
+    "p90": 50.4,
+    "p98": 90.1,
+    "n": 335
+   },
+   "knee_flex": {
+    "p2": 4.7,
+    "p10": 13.0,
+    "p50": 34.8,
+    "p90": 83.8,
+    "p98": 103.2,
+    "n": 323
+   },
+   "ankle_dorsi": {
+    "p2": -64.6,
+    "p10": -49.1,
+    "p50": -20.9,
+    "p90": 8.9,
+    "p98": 22.9,
+    "n": 296
+   },
+   "shoulder_flex": {
+    "p2": -85.2,
+    "p10": -64.9,
+    "p50": -31.5,
+    "p90": 14.9,
+    "p98": 55.3,
+    "n": 336
+   },
+   "shoulder_elev": {
+    "p2": 14.1,
+    "p10": 30.7,
+    "p50": 57.0,
+    "p90": 79.2,
+    "p98": 92.9,
+    "n": 336
+   },
+   "shoulder_abd_lat": {
+    "p2": 3.2,
+    "p10": 16.9,
+    "p50": 39.2,
+    "p90": 65.4,
+    "p98": 76.4,
+    "n": 336
+   },
+   "elbow_flex": {
+    "p2": 3.4,
+    "p10": 23.7,
+    "p50": 52.3,
+    "p90": 76.8,
+    "p98": 103.8,
+    "n": 300
+   }
+  }
+ },
+ "angle_conventions": "hip_abd/shoulder_abd from clip JSONs replaced here by *_elev (0 = limb along -torso axis, 90 = perpendicular, 180 = along +torso axis/overhead) and *_abd_lat (asin of lateral component, -90..90) because the atan2 abd in the clip JSONs blows up when the limb is near 90 deg flexion. ankle_dorsi neutral standing reads about -15..-20 with this landmark definition; neck_flex neutral reads about +15..+30 (ears sit forward of shoulders); neck_lateral is noisy at 240p, treat as unreliable. Others as in clip JSON angle_notes: flex + = limb forward of torso; abd + = away from midline; knee/elbow/wrist 0 = straight; ankle_dorsi + = toes up",
+ "recommended_hier_changes": {
+  "keep": {
+   "stature_m": 1.856,
+   "SHOULDER_Z": 1.4,
+   "HIP_X": 0.118,
+   "neck/head_bone_heights": "unchanged except head shell"
+  },
+  "changes": [
+   {
+    "const": "HIP_Z",
+    "cur": 1.05,
+    "new": 0.93,
+    "delta": -0.12,
+    "why": "torso (hip->shoulder joint) 0.352 m = 0.190H vs Storror 0.308H / Winter ~0.258H; leg 0.555H vs Storror 0.489H / Winter 0.491H. Lowering the hips moves 12 cm from legs into torso at the same stature: torso -> 0.47 m (0.254H), legs -> 0.91 m (0.490H)"
+   },
+   {
+    "const": "UL_LEN",
+    "cur": 0.54,
+    "new": 0.455,
+    "delta": -0.085,
+    "why": "thigh 0.291H -> 0.245H (Winter 0.245H, Storror 0.236H)"
+   },
+   {
+    "const": "LL_LEN",
+    "cur": 0.49,
+    "new": 0.455,
+    "delta": -0.035,
+    "why": "shin 0.264H -> 0.245H (Winter 0.246H, Storror 0.253H); shin/thigh 0.91 -> 1.00 (Winter 1.00, Storror 3D 1.07 / 2D 0.97)"
+   },
+   {
+    "const": "UA_LEN",
+    "cur": 0.37,
+    "new": 0.34,
+    "delta": -0.03,
+    "why": "upper arm 0.199H -> 0.183H (Winter 0.186H, Storror 0.158H)"
+   },
+   {
+    "const": "LA_LEN",
+    "cur": 0.33,
+    "new": 0.275,
+    "delta": -0.055,
+    "why": "forearm 0.178H -> 0.148H (Winter 0.146H, Storror 0.148H); whole arm 0.377H -> 0.331H (Storror 0.306H), so hanging fingertips land near mid-thigh (~0.38H) instead of just above the knee"
+   },
+   {
+    "const": "SHOULDER_X",
+    "cur": 0.235,
+    "new": 0.205,
+    "delta": -0.03,
+    "why": "shoulder joint spacing 0.253H -> 0.221H (Storror 0.215H; human glenohumeral spacing ~0.21-0.22H). Continues the v0.7.8 narrowing; shoulder/hip becomes 1.74 (Storror 3D 1.66 / 2D 1.60)"
+   },
+   {
+    "const": "Head sph scale (x,y,z)",
+    "cur": [
+     0.125,
+     0.114,
+     0.15
+    ],
+    "new": [
+     0.1,
+     0.108,
+     0.14
+    ],
+    "delta": [
+     -0.025,
+     -0.006,
+     -0.01
+    ],
+    "why": "head breadth 0.25 m = 0.135H vs Storror ear-to-ear 0.099H (human ~0.085H) -> 0.20 m = 0.108H, still a bit chunky for the Hybrid III read. Head height (chin->crown) 0.276 m = 0.149H (1/6.7): Storror estimate 0.157H is weak (derived from ear breadth), Winter 0.130H, script comment target ~1/7.5 -> trim z to 0.140 (about 0.256 m = 0.138H). Raise head centre +0.010 (1.665 -> 1.675) to keep the crown at 1.815. Scale brow/nose/chin/jaw about the head centre too"
+   }
+  ],
+  "not_changed": {
+   "HIP_X": "hip joint spacing 0.127H already matches Storror 0.129H (MediaPipe hip landmarks sit slightly wide of true joint centres ~0.10H, so at most -0.01 m per side)"
+  },
+  "half_blend_option": "if the long-leg/small-torso look is deliberate art direction, apply ~50% of each delta (HIP_Z 0.99, UL 0.50, LL 0.47, UA 0.355, LA 0.30, SHOULDER_X 0.22, head x 0.112 / z 0.145)",
+  "side_effects": [
+   "hip height drops 12 cm: DummyLocomotor/CharacterController capsule centre, foot IK and any authored hip-height constants (crouch, slide, ledge-grab reach) need re-tuning",
+   "arm reach drops ~8.5 cm: ledge-grab / climb-up reach checks keyed to hand position will change",
+   "clip curves are angles, so they retarget regardless; root height curves in the clip JSONs are in MediaPipe metres (~0.87 scale vs a 1.75 m adult) and should be scaled by leg length"
+  ],
+  "observation_not_a_proportion": "feet: Ankle bone at z=0.02 but shoe_foot sole bottom at z=-0.041 and heel pad bottom about z=-0.044, i.e. the soles sit ~4 cm below Root (z=0). Worth checking whether the game offsets the model up or the feet clip into the floor"
+ },
+ "storror_2d_check": {
+  "note": "independent 2D image-space check (tools/check2d.py); MediaPipe landmark definitions, not anatomical joint centres",
+  "leg_over_torso": 1.432,
+  "shin_over_thigh": 0.97,
+  "shoulder_over_hip_width_frontal": 1.601,
+  "frames": "33 upright straight-leg frames, 25 frontal"
+ }
+}

@@ -1,0 +1,18 @@
+{
+"01_roll_grass":{"grade":"B","note":"480p source (2011). Small figure. Tracked from take-off through the shoulder roll; a few mid-roll frames missing (55/59 detected). Good for roll timing and tuck shape."},
+"02_drop_roll_gravel":{"grade":"B","note":"480p. Wall drop into diagonal roll. Truncated at a scene cut (33.34 s). Some inverted roll frames lost (67/76 detected)."},
+"03_wall_drop_softland":{"grade":"A","note":"480p front-on, static. Drop, deep absorb, stand up. Visibility 0.92. Best soft-land reference."},
+"04_window_drop_softland":{"grade":"A","note":"Fisheye pan. Hop down from window ledge and land. Truncated at a cut (164.04 s). Visibility 0.90."},
+"05_window_jump_land_run":{"grade":"B","note":"Side follow-cam, dark clothing (visibility 0.67). Jump out of window, land, run off. Last ~0.15 s camera swing excluded from stats."},
+"06_run_walljump_climb_window":{"grade":"B","note":"Fisheye. Run-in, wall step to grate, cling, climb into window. Usable for climb-up/mantle timing; hands partly occluded on the grate."},
+"07_wall_climb_traverse":{"grade":"B","note":"Small figure, fisheye. Facade climbing between holds. Good cling poses; fine hand detail unreliable."},
+"08_vault_block_close":{"grade":"B","note":"Close fisheye, athlete runs and vaults toward the camera. Strong lens distortion; limbs leave frame at the end."},
+"09_run_vault_park":{"grade":"B","note":"Jog, sprint, two-hand vault with bystanders in frame. The size-continuity tracker keeps the athlete through the vault. Scene-cut detection is disabled here because a camera whip falsely triggers it."},
+"10_wallrun_slanted":{"grade":"A","note":"Slanted sea-wall run from below, static. Truncated at a cut (140.74 s). Visibility 0.80."},
+"11_wallrun_slanted_34":{"grade":"B","note":"Handheld, front 3/4. The filmer's hand enters frame and a second runner is in the first frames."},
+"12_tictac_slanted_wall":{"grade":"A","note":"Run-up, tic-tac off the slanted brick wall, drop and land. Truncated at a cut (296.14 s)."},
+"13_sprint_front":{"grade":"B","note":"Front-on sprint and deceleration. First ~0.5 s too motion-blurred to detect (46/62)."},
+"14_rail_precisions":{"grade":"B","note":"Stair-rail to wall precisions; a bystander is in frame (tracked correctly now). Last ~0.3 s is a camera close-up."},
+"15_cat_leap_wall":{"grade":"A","note":"Jump to wall, cat leap / cling, climb over. Visibility 0.83. Best cling reference."},
+"16_sprint_dive_hole":{"grade":"B","note":"Climb out of wall window, side-on sprint, dive through wall hole. Handheld follow; some frames lost in the dive (106/117). Starts at 195.6 (after a cut at 195.30), seeded on the athlete."}
+}

@@ -1,0 +1,155 @@
+[
+ {
+  "id": "01_roll_grass",
+  "vid": "rq6XY_D_9M0",
+  "t0": 100.0,
+  "t1": 101.95,
+  "move": "jump down onto grass, parkour roll over shoulder, sit up",
+  "verb": "roll",
+  "view": "side-on, static camera, small figure",
+  "seed": [
+   0.35,
+   0.26
+  ]
+ },
+ {
+  "id": "02_drop_roll_gravel",
+  "vid": "rq6XY_D_9M0",
+  "t0": 30.8,
+  "t1": 33.5,
+  "move": "wall drop, landing into diagonal roll on gravel",
+  "verb": "roll",
+  "view": "side-on / 3/4, static camera"
+ },
+ {
+  "id": "03_wall_drop_softland",
+  "vid": "rq6XY_D_9M0",
+  "t0": 52.0,
+  "t1": 53.7,
+  "move": "drop off ~3 m wall, deep crouch absorb, stand up",
+  "verb": "softland",
+  "view": "front-on, static camera"
+ },
+ {
+  "id": "04_window_drop_softland",
+  "vid": "TCyhLQBBPmg",
+  "t0": 162.3,
+  "t1": 164.2,
+  "move": "hop down from window ledge, land, absorb",
+  "verb": "softland",
+  "view": "3/4 front, handheld pan"
+ },
+ {
+  "id": "05_window_jump_land_run",
+  "vid": "TCyhLQBBPmg",
+  "t0": 182.0,
+  "t1": 184.4,
+  "move": "jump out of window, land, run away",
+  "verb": "softland",
+  "view": "side-on, handheld follow"
+ },
+ {
+  "id": "06_run_walljump_climb_window",
+  "vid": "TCyhLQBBPmg",
+  "t0": 173.0,
+  "t1": 177.5,
+  "move": "approach run, wall step/jump to window grate, cling, climb up into window",
+  "verb": "climbtop/mantle",
+  "view": "side/3/4, fisheye handheld"
+ },
+ {
+  "id": "07_wall_climb_traverse",
+  "vid": "TCyhLQBBPmg",
+  "t0": 148.0,
+  "t1": 154.0,
+  "move": "climbing on building facade between windows (cling holds)",
+  "verb": "cling",
+  "view": "low 3/4, fisheye, small figure"
+ },
+ {
+  "id": "08_vault_block_close",
+  "vid": "zt7xP3_K7uQ",
+  "t0": 108.3,
+  "t1": 110.4,
+  "move": "run and vault/dive over concrete block toward camera",
+  "verb": "vault",
+  "view": "front 3/4, close handheld"
+ },
+ {
+  "id": "09_run_vault_park",
+  "vid": "zt7xP3_K7uQ",
+  "t0": 121.5,
+  "t1": 126.0,
+  "move": "jog, sprint, two-hand vault over block",
+  "verb": "vault",
+  "view": "3/4 side, handheld",
+  "nocut": true
+ },
+ {
+  "id": "10_wallrun_slanted",
+  "vid": "WGV_b8lPbyQ",
+  "t0": 136.5,
+  "t1": 141.0,
+  "move": "run across Brighton slanted wall (wall run)",
+  "verb": "wallrun",
+  "view": "3/4 from below, static"
+ },
+ {
+  "id": "11_wallrun_slanted_34",
+  "vid": "WGV_b8lPbyQ",
+  "t0": 368.5,
+  "t1": 374.0,
+  "move": "run along slanted wall toward camera",
+  "verb": "wallrun",
+  "view": "front 3/4, handheld"
+ },
+ {
+  "id": "12_tictac_slanted_wall",
+  "vid": "QvvJ2t9iVyE",
+  "t0": 290.5,
+  "t1": 296.4,
+  "move": "run up slanted brick wall, tic-tac off wall, drop and land",
+  "verb": "walljump",
+  "view": "3/4 side, static"
+ },
+ {
+  "id": "13_sprint_front",
+  "vid": "QvvJ2t9iVyE",
+  "t0": 296.75,
+  "t1": 298.8,
+  "move": "sprint toward camera then decelerate",
+  "verb": "sprint",
+  "view": "front-on, static"
+ },
+ {
+  "id": "14_rail_precisions",
+  "vid": "QvvJ2t9iVyE",
+  "t0": 283.5,
+  "t1": 289.2,
+  "move": "stair-rail to wall precision jumps and landings",
+  "verb": "softland",
+  "view": "side-on, static, second person in frame"
+ },
+ {
+  "id": "15_cat_leap_wall",
+  "vid": "QvvJ2t9iVyE",
+  "t0": 370.0,
+  "t1": 378.0,
+  "move": "jump to wall, cat leap / cling, climb over",
+  "verb": "cling",
+  "view": "3/4 side, static"
+ },
+ {
+  "id": "16_sprint_dive_hole",
+  "vid": "M8bu4tTqjg0",
+  "t0": 195.6,
+  "t1": 199.5,
+  "move": "climb out through wall window, sprint side-on, dive through wall hole",
+  "verb": "sprint",
+  "view": "side-on, handheld follow",
+  "seed": [
+   0.54,
+   0.46
+  ]
+ }
+]
