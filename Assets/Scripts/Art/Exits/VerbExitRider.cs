@@ -402,13 +402,14 @@ namespace Tag.Art
             if (_id == VerbExitId.Roll)
             {
                 float spin = s.RootSpin * show;
+                float bank = LandingRollPose.BankDegrees(spin);
                 Vector3 axis = LandingRollPose.Axis(_shoulderLeft);
-                Quaternion q = Quaternion.AngleAxis(spin, axis);
+                Quaternion q = Quaternion.AngleAxis(bank, axis);
                 transform.localRotation = transform.localRotation
                     * Quaternion.Euler(0f, _travelYaw * show, 0f)
                     * q;
                 Vector3 p = transform.localPosition;
-                p += LandingRollPose.OrbitDelta(LandingRollPose.Pivot(_shoulderLeft), axis, spin);
+                p += LandingRollPose.OrbitDelta(LandingRollPose.Pivot(_shoulderLeft), axis, bank);
                 p.y += LandingRollPose.FloorShift(s, spin, _shoulderLeft);
                 transform.localPosition = p;
             }

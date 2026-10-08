@@ -71,6 +71,14 @@ Pass 1 is the exit poses and the terminal landing roll. Pass 2 deepens those pos
 - The ground is a grass plane plus a concrete pad, both noised so they read as texture. The key is a warm sun under a Hosek sky.
 - Stills are in `Docs/AnimStills/pass8/` (`dash-ghosts.png`, `roll-swirl.png`, `roll-strip.png`, `tag-burst.png`). Coyote, speeds, the 0.52 s roll, and the 65% gate stay.
 
+## Pass 9 (this branch)
+
+- The runner and the four dash ghosts are the same Hier mesh. Skin takes the player color. Sensors, joints, wear, and the teal accent stay, so the bolts read on the solid body and on the trail. Alphas stay 0.60, 0.45, 0.30, 0.15, with a fresnel rim.
+- The roll is a low diagonal: hand plant, lead shoulder down, across the back, hip, then up onto the feet. Peak hip height stays under 0.90 m, the head stays off the ground, and the hips-over-head angle stays under 60 degrees. The landing-roll proof adds `hip`, `head`, and `invert`. Time stays 0.52 s. The 65% gate stays. In play the mesh banks onto the shoulder. It does not turn a full somersault.
+- A tag draws one comic starburst at the contact. Black outline, orange fill, white flash, halftone, speed spikes, no letters. Full density still reports `tag=8`, which is how many spikes are on. The comic-words toggle still hides the burst.
+- The dust still is one sprint on dirt beside one sprint on concrete, at the same speed, so the surface scale is visible.
+- Stills are in `Docs/AnimStills/pass9/` (`dash-ghosts.png`, `roll-swirl.png`, `roll-strip-side.png`, `roll-strip-three-quarter.png`, `tag-burst.png`, `running-dust.png`). Coyote, speeds, the 0.52 s roll, and the 65% gate stay.
+
 Pass 3 mockups stay in `Docs/AnimStills/pass3/`.
 
 ## FX queue

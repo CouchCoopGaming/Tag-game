@@ -80,17 +80,23 @@ namespace Tag.Art
 
         public static Vector3 Axis(bool shoulderLeft)
         {
-            float x = shoulderLeft ? -0.86f : 0.86f;
-            Vector3 a = new Vector3(x, -0.30f, 0.42f);
+            // Diagonal from the lead shoulder toward the opposite hip, mostly along the ground.
+            float x = shoulderLeft ? -0.62f : 0.62f;
+            Vector3 a = new Vector3(x, -0.10f, 0.78f);
             a.Normalize();
             return a;
         }
 
         public static Vector3 Pivot(bool shoulderLeft)
         {
-            // Lead shoulder, so the hips and the head orbit that diagonal.
-            float x = shoulderLeft ? -0.22f : 0.22f;
-            return new Vector3(x, 1.15f, 0.08f);
+            float x = shoulderLeft ? -0.16f : 0.16f;
+            return new Vector3(x, 0.36f, 0.06f);
+        }
+
+        /// <summary>Visual bank. Peaks on the shoulder and stands back up. It does not pass through a headstand.</summary>
+        public static float BankDegrees(float spin)
+        {
+            return Mathf.Sin(spin * 0.5f * Mathf.Deg2Rad) * 62f;
         }
 
         public static float SpinAt(float u)
@@ -164,59 +170,16 @@ namespace Tag.Art
 
         public static Figure PoseFigure(VerbExitSample s, float spin, bool shoulderLeft)
         {
-            float leadPitch = shoulderLeft ? s.ArmPitchL : s.ArmPitchR;
-            float leadElbow = shoulderLeft ? s.ElbowL : s.ElbowR;
-            float offPitch = shoulderLeft ? s.ArmPitchR : s.ArmPitchL;
-            float offElbow = shoulderLeft ? s.ElbowR : s.ElbowL;
-            float thigh = shoulderLeft ? s.ThighL : s.ThighR;
-            float knee = shoulderLeft ? s.KneeL : s.KneeR;
             float side = shoulderLeft ? -1f : 1f;
-
-            float squat = -knee / 140f;
-            if (squat < 0f) squat = 0f;
-            if (squat > 1f) squat = 1f;
-            // A spinning roll keeps the hip up so the orbit reads. A plant squats.
-            if (spin > 1f && spin < 359f)
-                squat *= 0.25f;
-            float hipY = 0.96f + (0.42f - 0.96f) * squat;
-            Vector3 hip = new Vector3(0f, hipY, 0f);
-            float spine = s.Spine * Mathf.Deg2Rad;
-            Vector3 chest = new Vector3(
-                side * s.SpineRoll * 0.003f,
-                hipY + Mathf.Cos(spine) * 0.30f,
-                Mathf.Sin(spine) * 0.30f);
-            float hr = (s.Spine + s.Head) * Mathf.Deg2Rad;
-            Vector3 head = new Vector3(
-                chest.x,
-                chest.y + Mathf.Cos(hr) * 0.13f,
-                chest.z + Mathf.Sin(hr) * 0.13f);
-            Vector3 shoulder = new Vector3(side * 0.26f, chest.y + 0.02f, chest.z + 0.02f);
-            Vector3 hand = LimbEnd(shoulder, leadPitch, leadElbow, 0.24f, 0.20f, side * 0.06f);
-            Vector3 off = LimbEnd(
-                new Vector3(-side * 0.20f, chest.y, chest.z),
-                offPitch, offElbow, 0.22f, 0.18f, -side * 0.04f);
-            float rt = thigh * Mathf.Deg2Rad;
-            Vector3 kneeV = new Vector3(
-                side * 0.08f,
-                hipY - Mathf.Cos(rt) * 0.42f,
-                Mathf.Sin(rt) * 0.42f);
-            float rk = (thigh + knee) * Mathf.Deg2Rad;
-            Vector3 foot = new Vector3(
-                kneeV.x,
-                kneeV.y - Mathf.Cos(rk) * 0.40f,
-                kneeV.z + Mathf.Sin(rk) * 0.40f);
-
-            Vector3 axis = Axis(shoulderLeft);
-            Vector3 pivot = Pivot(shoulderLeft);
             Figure f;
-            f.Hip = SpinPoint(hip, pivot, axis, spin);
-            f.Chest = SpinPoint(chest, pivot, axis, spin);
-            f.Head = SpinPoint(head, pivot, axis, spin);
-            f.Shoulder = SpinPoint(shoulder, pivot, axis, spin);
-            f.Hand = SpinPoint(hand, pivot, axis, spin);
-            f.Knee = SpinPoint(kneeV, pivot, axis, spin);
-            f.Foot = SpinPoint(foot, pivot, axis, spin);
-            f.OffHand = SpinPoint(off, pivot, axis, spin);
+            f.Hip = RollPoint(0, spin, side);
+            f.Head = RollPoint(1, spin, side);
+            f.Shoulder = RollPoint(2, spin, side);
+            f.Hand = RollPoint(3, spin, side);
+            f.OffHand = RollPoint(4, spin, side);
+            f.Foot = RollPoint(5, spin, side);
+            f.Knee = RollPoint(6, spin, side);
+            f.Chest = RollPoint(7, spin, side);
             f.MinY = f.Hip.y;
             f.MinY = Lower(f.MinY, f.Chest.y);
             f.MinY = Lower(f.MinY, f.Head.y);
@@ -227,6 +190,115 @@ namespace Tag.Art
             f.MinY = Lower(f.MinY, f.OffHand.y);
             f.Shift = -f.MinY;
             return f;
+        }
+
+        /// <summary>Low diagonal roll. Hips stay under 0.9 m and never stack over the head.</summary>
+        static Vector3 RollPoint(int id, float spin, float side)
+        {
+            if (spin < 0f) spin = 0f;
+            if (spin > 360f) spin = 360f;
+            float a, b, t;
+            SpanKey(spin, out a, out b, out t);
+            Vector3 p = LerpV(Key(id, a), Key(id, b), t);
+            p.x *= side;
+            return p;
+        }
+
+        static void SpanKey(float spin, out float a, out float b, out float t)
+        {
+            if (spin <= 0f) { a = 0f; b = 100f; t = 0f; return; }
+            if (spin >= 360f) { a = 260f; b = 360f; t = 1f; return; }
+            if (spin < 100f) { a = 0f; b = 100f; }
+            else if (spin < 187.2f) { a = 100f; b = 187.2f; }
+            else if (spin < 260f) { a = 187.2f; b = 260f; }
+            else { a = 260f; b = 360f; }
+            t = (spin - a) / (b - a);
+        }
+
+        static Vector3 LerpV(Vector3 a, Vector3 b, float t)
+        {
+            return new Vector3(a.x + (b.x - a.x) * t, a.y + (b.y - a.y) * t, a.z + (b.z - a.z) * t);
+        }
+
+        static Vector3 Key(int id, float at)
+        {
+            // 0 hip, 1 head, 2 shoulder, 3 hand, 4 off hand, 5 foot, 6 knee, 7 chest.
+            if (at < 50f)
+            {
+                if (id == 0) return new Vector3(0f, 0.52f, 0f);
+                if (id == 1) return new Vector3(0f, 0.95f, 0.12f);
+                if (id == 2) return new Vector3(0.22f, 0.62f, 0.08f);
+                if (id == 3) return new Vector3(0.16f, 0.02f, 0.28f);
+                if (id == 4) return new Vector3(-0.16f, 0.04f, 0.22f);
+                if (id == 5) return new Vector3(0.08f, 0.00f, -0.05f);
+                if (id == 6) return new Vector3(0.10f, 0.22f, 0.08f);
+                return new Vector3(0f, 0.72f, 0.06f);
+            }
+            if (at < 150f)
+            {
+                if (id == 0) return new Vector3(0f, 0.46f, 0.05f);
+                if (id == 1) return new Vector3(-0.10f, 0.58f, 0.16f);
+                if (id == 2) return new Vector3(0.24f, 0.22f, 0.10f);
+                if (id == 3) return new Vector3(0.20f, 0.00f, 0.32f);
+                if (id == 4) return new Vector3(-0.18f, 0.20f, 0.10f);
+                if (id == 5) return new Vector3(0.06f, 0.16f, -0.12f);
+                if (id == 6) return new Vector3(0.04f, 0.28f, -0.02f);
+                return new Vector3(0.02f, 0.50f, 0.10f);
+            }
+            if (at < 220f)
+            {
+                if (id == 0) return new Vector3(-0.04f, 0.42f, -0.06f);
+                if (id == 1) return new Vector3(-0.20f, 0.30f, 0.12f);
+                if (id == 2) return new Vector3(0.18f, 0.00f, 0.04f);
+                if (id == 3) return new Vector3(0.14f, 0.06f, 0.22f);
+                if (id == 4) return new Vector3(-0.16f, 0.22f, 0.02f);
+                if (id == 5) return new Vector3(0.02f, 0.32f, -0.16f);
+                if (id == 6) return new Vector3(0.00f, 0.34f, -0.08f);
+                return new Vector3(-0.02f, 0.36f, 0.04f);
+            }
+            if (at < 300f)
+            {
+                if (id == 0) return new Vector3(0.02f, 0.44f, 0.02f);
+                if (id == 1) return new Vector3(-0.12f, 0.40f, 0.10f);
+                if (id == 2) return new Vector3(0.16f, 0.18f, 0.02f);
+                if (id == 3) return new Vector3(0.08f, 0.20f, 0.12f);
+                if (id == 4) return new Vector3(-0.10f, 0.28f, 0.04f);
+                if (id == 5) return new Vector3(0.10f, 0.04f, 0.16f);
+                if (id == 6) return new Vector3(0.08f, 0.20f, 0.08f);
+                return new Vector3(0f, 0.42f, 0.06f);
+            }
+            if (id == 0) return new Vector3(0f, 0.84f, 0f);
+            if (id == 1) return new Vector3(0f, 1.35f, 0.04f);
+            if (id == 2) return new Vector3(0.22f, 0.95f, 0f);
+            if (id == 3) return new Vector3(0.28f, 0.70f, 0.10f);
+            if (id == 4) return new Vector3(-0.26f, 0.72f, 0.05f);
+            if (id == 5) return new Vector3(0.08f, 0.00f, 0.12f);
+            if (id == 6) return new Vector3(0.10f, 0.42f, 0.06f);
+            return new Vector3(0f, 1.05f, 0.02f);
+        }
+
+        public static void CurveLimits(out float maxHip, out float minHead, out float maxInvert)
+        {
+            maxHip = 0f;
+            minHead = 99f;
+            maxInvert = -90f;
+            for (int i = 0; i <= 180; i++)
+            {
+                float spin = i * 2f;
+                Figure f = PoseFigure(default, spin, false);
+                float hip = f.Hip.y + f.Shift;
+                float head = f.Head.y + f.Shift;
+                if (hip > maxHip) maxHip = hip;
+                if (head < minHead) minHead = head;
+                float dx = f.Hip.x - f.Head.x;
+                float dy = f.Hip.y - f.Head.y;
+                float dz = f.Hip.z - f.Head.z;
+                float horiz = Mathf.Sqrt(dx * dx + dz * dz);
+                float elev;
+                if (horiz < 0.0001f) elev = dy > 0f ? 90f : -90f;
+                else elev = Mathf.Atan(dy / horiz) * Mathf.Rad2Deg;
+                if (elev > maxInvert) maxInvert = elev;
+            }
         }
 
         public static float FloorShift(VerbExitSample s, float spin, bool shoulderLeft)
@@ -644,6 +716,10 @@ namespace Tag.Art
             if (LeadLeft(0f, 0)) return false;
 
             if (ChaseCam.FovPop != 0f || ChaseCam.Shake != 0f || ChaseCam.SlowMo != 0f) return false;
+            CurveLimits(out float maxHip, out float minHead, out float maxInvert);
+            if (maxHip > 0.90f) return false;
+            if (minHead <= 0f) return false;
+            if (maxInvert > 60f) return false;
             return true;
         }
 
@@ -674,6 +750,7 @@ namespace Tag.Art
             Figure contact = PoseFigure(shoulder, shoulder.RootSpin, false);
             float gap = contact.Shoulder.y - contact.MinY;
             if (gap < 0f) gap = -gap;
+            CurveLimits(out float maxHip, out float minHead, out float maxInvert);
             return "landing-roll"
                 + " threshold=" + Threshold.ToString("0.00")
                 + " fraction=" + Fraction.ToString("0.00")
@@ -688,7 +765,10 @@ namespace Tag.Art
                 + " dip=" + DipMeters.ToString("0.00") + "m"
                 + " spin=" + SpinDegrees.ToString("0")
                 + " floor=" + (contact.MinY + contact.Shift).ToString("0.00")
-                + " shoulder=" + gap.ToString("0.00");
+                + " shoulder=" + gap.ToString("0.00")
+                + " hip=" + maxHip.ToString("0.00")
+                + " head=" + minHead.ToString("0.00")
+                + " invert=" + maxInvert.ToString("0.0");
         }
     }
 }

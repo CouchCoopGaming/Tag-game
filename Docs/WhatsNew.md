@@ -343,3 +343,12 @@ The pictures for the dash, the roll, and the tag now show the move from the side
 - The dash ghosts trail behind you. Each one is your color and a step more transparent, with a bright rim, and they overlap your body. They are not white cards standing in a row. Try it: dash, and look back along the path.
 - The roll reaches one hand down, tucks the chin, goes over the shoulder with the legs in, and comes up into the run. The whole body stays in frame. It is still the same half second, and it still waits for the same fast fall. Try it: fall about 19 meters while running.
 - The tag picture is a jagged burst at the hand. Black outline, print dots, a white flash, speed spikes, and no letters. The words still say POP, POW, BAM, and WHAM. Try it: tag the dummy, then compare the hand to the still.
+
+## A low roll, and the trail matches your body
+
+The dash trail uses the same bolted body as the runner. A fast landing stays low across one shoulder. A tag throws the comic burst where the fist lands. Speed, the roll timer, and the camera stay as they were.
+
+- The ghosts are your mesh, bolts and all, a step more transparent each, with a bright rim. Try it: dash, and compare the trail to your own head and shoulders.
+- The roll plants a hand, drops the lead shoulder, crosses the back toward the opposite hip, and comes up onto the feet. The hips stay low, and the head stays off the ground. It is still the same half second, and it still waits for the same fast fall. Try it: fall about 19 meters while running.
+- A tag draws the comic burst on the contact. No letters. The words still say POP, POW, BAM, and WHAM. Turning comic words off still hides the burst. Try it: tag the dummy.
+- Dirt throws a bigger, browner trail than concrete at the same sprint. Try it: sprint on the concrete, then onto dirt.
