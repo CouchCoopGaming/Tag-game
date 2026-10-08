@@ -73,6 +73,8 @@ namespace Tag.Ui.Menu
             string menu = Path.Combine(root, "Assets", "Scripts", "UI", "Menu");
             string host = File.ReadAllText(Path.Combine(menu, "MenuHost.cs"));
             if (host.IndexOf("string headline = MenuSheet.ResultsWord;", StringComparison.Ordinal) < 0) return false;
+            if (host.IndexOf("MenuMannequin.NameOf(_rows[0].Hier)", StringComparison.Ordinal) < 0) return false;
+            if (host.IndexOf("\"TipPlate\"", StringComparison.Ordinal) < 0) return false;
             if (host.IndexOf("MenuBindRow.Stamp", StringComparison.Ordinal) < 0) return false;
             if (host.IndexOf("MenuSheet.JoinPrompt", StringComparison.Ordinal) < 0) return false;
             int arena = host.IndexOf("void BuildArena()", StringComparison.Ordinal);

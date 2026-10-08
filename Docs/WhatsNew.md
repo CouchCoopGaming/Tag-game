@@ -318,6 +318,8 @@ The twenty-fourth pass lifts the title camera so the fence stays under the frame
 
 Secondary screens, first pass on this branch: arena select is a grid of Mega Park, Pocket Park, and Stack Yard. Mode tiles are a 2 by 2, and the rules list scrolls. RESULTS keeps that heading. The place figures use the body color and the accent color, not one flat seat tint. Options opens on Sound, Picture, and Accessibility. Each control row shows a keyboard glyph and a pad glyph, and Jump stays on Space. An open join seat says Press Space or A. Layout drawings are in `Docs/UiStills/screens2/pass1/`. They are not Unity captures. Space still jumps.
 
+The second pass names the winner's colors on the RESULTS banner, body then accent, so the sample reads Red / Tan. That line sits on a navy plate. The loading tip leaves the rule list and sits on a gold plate above the bar. Layout drawings are in `Docs/UiStills/screens2/pass2/`. Space still jumps.
+
 ## Motion, ninth pass
 
 The wall jump, the rope, the zip, the launch pad, a landing, the dash flash, a hard turnaround, and a punch while you run all ease instead of snapping. Speeds, the jump, and the dash length are the same.

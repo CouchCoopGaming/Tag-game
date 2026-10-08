@@ -9,7 +9,7 @@ import os
 from PIL import Image, ImageDraw, ImageFont, ImageFilter, ImageEnhance
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
-OUT = os.path.join(ROOT, "Docs", "UiStills", "screens2", "pass1")
+OUT = os.path.join(ROOT, "Docs", "UiStills", "screens2", "pass2")
 W, H = 1920, 1080
 
 INK = (10, 18, 41)
@@ -167,7 +167,11 @@ def header(img, title, banner):
     d.text((310, 28), title, font=tf, fill=GOLD)
     if banner:
         bf = font(FONT_B, 28)
-        d.text((310, 96), banner, font=bf, fill=CREAM)
+        tw = d.textlength(banner, font=bf)
+        pad = 18
+        bx0 = 300
+        rounded(d, (bx0, 94, bx0 + tw + pad * 2, 132), 10, NAVY)
+        d.text((bx0 + pad, 96), banner, font=bf, fill=CREAM)
     d.rectangle((64, 148, W - 64, 154), fill=GOLD)
 
 
@@ -217,12 +221,15 @@ def save(img, name, notes):
     os.makedirs(OUT, exist_ok=True)
     path = os.path.join(OUT, name)
     rgb = img.convert("RGB")
-    rgb.save(path, "PNG", optimize=True)
+    rgb.save(path, "PNG", optimize=True, compress_level=9)
     size = os.path.getsize(path)
     if size > 390000:
-        q = rgb.quantize(colors=128, method=Image.Quantize.MEDIANCUT, dither=Image.Dither.FLOYDSTEINBERG)
-        q.save(path, "PNG", optimize=True)
-        size = os.path.getsize(path)
+        for colors in (256, 224, 192, 160):
+            q = rgb.quantize(colors=colors, method=Image.Quantize.FASTOCTREE, dither=Image.Dither.NONE)
+            q.save(path, "PNG", optimize=True)
+            size = os.path.getsize(path)
+            if size <= 390000:
+                break
     notes.append((name, size, rgb.size))
     print(f"{name} {size} {rgb.size}")
 
@@ -331,11 +338,12 @@ def arena(which):
 
 def results():
     img = screen(0.85)
-    header(img, "RESULTS", "Least It")
+    header(img, "RESULTS", "Least It  ·  Red / Tan")
     src = Image.open(FIGURES).convert("RGBA")
     spans = [(143, 445), (466, 780), (827, 1091), (1102, 1444)]
     order = [0, 1, 2, 3]
     colors = [BODY["Blue"], BODY["Red"], BODY["Orange"], BODY["Lavender"]]
+    accents = [BODY["Mint"], BODY["Tan"], BODY["Tan"], BODY["Mint"]]
     places = ["2nd  P2", "1st  P1", "3rd  P3", "4th  P4"]
     stats = [
         "5 tags\n14.7s as It\n1 round win",
@@ -349,7 +357,7 @@ def results():
     ratios = []
     for col, src_i in enumerate(order):
         crop = src.crop((spans[src_i][0], 80, spans[src_i][1], 620))
-        crop = tint_figure(crop, colors[col])
+        crop = tint_figure(crop, colors[col], accents[col])
         crop.thumbnail((220, 320), Image.Resampling.LANCZOS)
         fx = x0 + col * (rank_w + 20) + (rank_w - crop.size[0]) // 2
         img.alpha_composite(crop, (fx, 175))
@@ -382,24 +390,49 @@ def results():
     return img, min(ratios)
 
 
-def tint_figure(im, color):
+def _shade(color, lum_v):
+    scale = 0.35 + lum_v * 1.05
+    return (
+        max(0, min(255, int(color[0] * scale))),
+        max(0, min(255, int(color[1] * scale))),
+        max(0, min(255, int(color[2] * scale))),
+    )
+
+
+def tint_figure(im, body, accent):
     out = im.copy()
     px = out.load()
     w, h = out.size
     body_h = int(h * 0.72)
+    torso = []
     for y in range(body_h):
+        xs = []
         for x in range(w):
             r, g, b, a = px[x, y]
             if a < 16:
                 continue
             lum_v = (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255.0
-            shade = 0.35 + lum_v * 1.05
-            px[x, y] = (
-                max(0, min(255, int(color[0] * shade))),
-                max(0, min(255, int(color[1] * shade))),
-                max(0, min(255, int(color[2] * shade))),
-                a,
-            )
+            if lum_v < 0.12:
+                continue
+            px[x, y] = _shade(body, lum_v) + (a,)
+            xs.append(x)
+        if 28 <= len(xs) <= 120:
+            torso.append((y, xs[0], xs[-1]))
+    if torso:
+        i0 = int(len(torso) * 0.34)
+        i1 = int(len(torso) * 0.52)
+        if i1 <= i0:
+            i1 = i0 + 1
+        chest = torso[i0:i1]
+        for y, x0, x1 in chest:
+            span = x1 - x0
+            a0 = x0 + int(span * 0.18)
+            a1 = x1 - int(span * 0.18)
+            for x in range(a0, a1 + 1):
+                r, g, b, a = px[x, y]
+                if a < 16:
+                    continue
+                px[x, y] = _shade(accent, 0.62) + (a,)
     return out
 
 
@@ -416,16 +449,19 @@ def loading():
         ("Handicaps", "none"),
         ("Pads", "On"),
         ("Zips", "On"),
-        ("Tip", "Jump again to leave the wall."),
     ]
     y = 340
     for label, value in rows:
         d.text((260, y), label, font=font(FONT_B, 30), fill=MUTE)
         d.text((620, y), value, font=font(FONT_B, 30), fill=CREAM)
         y += 62
-    d.rounded_rectangle((360, 820, 1560, 852), 10, fill=(0, 0, 0, 120))
-    d.text((860, 860), "Waiting", font=font(FONT_B, 28), fill=CREAM)
-    return img, contrast(CREAM, (8, 22, 58))
+    tip = (400, 730, 1520, 810)
+    rounded(d, tip, 16, GOLD, INK, 3)
+    d.text((428, 748), "TIP", font=font(FONT_D, 32), fill=INK)
+    d.text((540, 752), "Jump again to leave the wall.", font=font(FONT_B, 28), fill=INK)
+    d.rounded_rectangle((400, 830, 1520, 862), 10, fill=(0, 0, 0, 120))
+    d.text((900, 868), "Waiting", font=font(FONT_B, 28), fill=CREAM)
+    return img, min(contrast(CREAM, (8, 22, 58)), contrast(INK, GOLD))
 
 
 def pause():
@@ -643,13 +679,27 @@ def records(filled=False):
     return img, min(ratios)
 
 
-def wipe():
-    img, ratio = mode_rules(False)
+def bars(img):
     d = ImageDraw.Draw(img)
     for i, color in enumerate((GOLD, CREAM, HOT)):
         x = 280 + i * 220
         d.polygon([(x, -40), (x + 180, -40), (x + 40, H + 40), (x - 140, H + 40)], fill=color + (230,))
-    return img, ratio
+    return img
+
+
+def wipe():
+    img, ratio = mode_rules(False)
+    return bars(img), ratio
+
+
+def wipe_load():
+    img, ratio = loading()
+    return bars(img), ratio
+
+
+def wipe_results():
+    img, ratio = results()
+    return bars(img), ratio
 
 
 def main():
@@ -674,6 +724,8 @@ def main():
         ("14-records.png", records(False)),
         ("14-records-card.png", records(True)),
         ("16-trans-rules.png", wipe()),
+        ("16-trans-load.png", wipe_load()),
+        ("16-trans-results.png", wipe_results()),
     ]
     worst = 99
     for name, (img, ratio) in jobs:

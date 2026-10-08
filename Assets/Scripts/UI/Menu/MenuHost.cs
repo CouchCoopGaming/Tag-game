@@ -93,6 +93,7 @@ namespace Tag.Ui.Menu
         Text _header;
         Text _footer;
         Text _banner;
+        Image _bannerPlate;
         Image _startGlyph;
         CanvasGroup _startPrompt;
         Text _promptWord;
@@ -308,6 +309,7 @@ namespace Tag.Ui.Menu
             Cursor.lockState = CursorLockMode.None;
             Cursor.visible = true;
             ClearBody();
+            if (_bannerPlate != null) _bannerPlate.enabled = false;
             switch (id)
             {
                 case MenuScreenId.Title: BuildTitle(); break;
@@ -467,6 +469,14 @@ namespace Tag.Ui.Menu
             _body.offsetMin = new Vector2(UiFit.SafeX, 78f);
             _body.offsetMax = new Vector2(-UiFit.SafeX, -108f);
 
+            var bannerBack = MenuWidgets.Box(root, "BannerPlate", new Vector2(0f, 0f), new Vector2(1f, 0f), new Vector2(0.5f, 0f));
+            _bannerPlate = bannerBack.gameObject.AddComponent<Image>();
+            MenuArt.Plate(_bannerPlate, MenuTheme.Navy, true);
+            _bannerPlate.raycastTarget = false;
+            _bannerPlate.enabled = false;
+            RectTransform plateRt = _bannerPlate.rectTransform;
+            plateRt.sizeDelta = new Vector2(-120f, 44f);
+            plateRt.anchoredPosition = new Vector2(0f, 66f);
             _banner = MenuWidgets.Words(root, "", UiFit.FloorFont, TextAnchor.MiddleCenter, MenuTheme.Gold, new Vector2(0f, 0f), new Vector2(1f, 0f));
             RectTransform bannerRt = _banner.rectTransform;
             bannerRt.anchorMin = new Vector2(0f, 0f);
@@ -2216,10 +2226,6 @@ namespace Tag.Ui.Menu
             ruleLabel[rows] = "Zips";
             ruleValue[rows] = RuleBook.LoadZips(rules);
             rows++;
-            ruleLabel[rows] = "Tip";
-            ruleValue[rows] = MenuTips.At(_tip);
-            rows++;
-            _tip++;
             for (int i = 0; i < rows; i++)
             {
                 float top = 0.78f - i * 0.07f;
@@ -2231,6 +2237,16 @@ namespace Tag.Ui.Menu
             UiFit.RowBox(UiFit.Current(), 1120f, out float barX, out float barW);
             float barY = bodyH - 92f;
             if (barY < 24f) barY = 24f;
+            float tipH = 72f;
+            float tipY = barY - tipH - 16f;
+            if (tipY < 16f) tipY = 16f;
+            var tipRt = MenuWidgets.Place(_body, "TipPlate", barX, tipY, barW, tipH);
+            Image tipPlate = tipRt.gameObject.AddComponent<Image>();
+            MenuArt.Plate(tipPlate, MenuTheme.Gold, true);
+            tipPlate.raycastTarget = false;
+            MenuWidgets.Words(tipRt, "TIP", 28, TextAnchor.MiddleLeft, MenuTheme.Ink, new Vector2(0.02f, 0.08f), new Vector2(0.16f, 0.92f));
+            MenuWidgets.Words(tipRt, MenuTips.At(_tip), UiFit.FloorFont, TextAnchor.MiddleLeft, MenuTheme.Ink, new Vector2(0.18f, 0.08f), new Vector2(0.98f, 0.92f));
+            _tip++;
             var track = MenuWidgets.Place(_body, "LoadTrack", barX, barY, barW, 28f);
             var trackImage = track.gameObject.AddComponent<Image>();
             MenuArt.Plate(trackImage, new Color(0f, 0f, 0f, 0.45f), true);
@@ -2296,12 +2312,19 @@ namespace Tag.Ui.Menu
             TagModeController mode = TagModeController.Instance;
             TagModeId modeId = mode != null ? mode.SelectedMode : MenuSession.Mode;
             string headline = MenuSheet.ResultsWord;
+            int n = FillRanks();
             string resultLine = MenuCatalog.ModeName(modeId);
             if (mode != null && !string.IsNullOrEmpty(mode.ResultMessage))
                 resultLine = MenuCatalog.ModeName(modeId) + "  ·  " + mode.ResultMessage;
+            if (n > 0)
+            {
+                string bodyName = MenuMannequin.NameOf(_rows[0].Hier);
+                string accentName = MenuMannequin.NameOf(_rows[0].Accent);
+                resultLine = resultLine + "  ·  " + bodyName + " / " + accentName;
+            }
             if (_header != null) _header.text = "  " + headline;
             if (_banner != null) _banner.text = resultLine;
-            int n = FillRanks();
+            if (_bannerPlate != null) _bannerPlate.enabled = resultLine.Length > 0;
             float span = UiFit.BodyW(UiFit.Current());
             UiFit.Bands(UiFit.Current(), out float viewH, out float rankY, out float rankH, out float btnY, out float btnH);
             float stageW = span - 32f;

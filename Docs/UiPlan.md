@@ -255,6 +255,14 @@ Options says Sound, Picture, and Accessibility. Controls shows a keyboard glyph 
 
 Stills for this pass are layout drawings in `Docs/UiStills/screens2/pass1/`. Unity is not running here, so they are not editor captures. `ui-flow` still passes, with `sheet=ok`.
 
+## Screens 2, pass 2
+
+The RESULTS banner names the winner's body color and accent color, as `Red / Tan` on the sample set. That line sits on a navy plate so the gold type clears the park photo. The heading stays RESULTS. The stat cards are unchanged, so the three stat lines still fit.
+
+Loading lifts the tip off the rule list. It sits on a gold plate above the bar, with TIP in ink and the tip line in ink. The first tip is still "Jump again to leave the wall." The bar still reads Waiting until the match starts.
+
+The layout drawings for this pass are in `Docs/UiStills/screens2/pass2/`. The chest panel on each figure is the accent color. Hands and feet in those drawings stay the body tint, because the bake does not split those meshes. The comic wipe is also shown over loading and over RESULTS. Unity is not running here.
+
 ## Later passes
 
 - Left from a rule row returns to the modes even when that rule can still decrease. Right from the right-hand mode, and Left at the end of a rule, already move between the columns.
