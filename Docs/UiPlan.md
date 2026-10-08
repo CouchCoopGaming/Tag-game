@@ -373,6 +373,16 @@ Lavender stays lighter than blue, and it keeps its colour. The swatch is `(0.82,
 
 Loading stills pull the golden-hour cast until the concrete is grey (about 134, 137, 141) and the grass that is in the yard reads green. Crops are large enough to downscale onto a four-up pane, then a light sharpen. P1 frames the dock, P2 the chase runners with their heads in frame, P3 the basketball court, and P4 the gazebo. Unity is not installed, so the stills are composites in `Docs/UiStills/screens2/pass26/`. The live texture is still the ungraded plate. The world marker is not in those stills.
 
+## Screens 2, pass 27
+
+The load card is the bottom third of the pane, with a smaller chip and tighter rows. The 1280×720 four-up prints `layout=ok texts=31 rows=16 hits=0`. The dock, the court, and the gazebo sit in the visible upper area. White balance stays neutral: a concrete patch reads about 140, 148, 146. An S-curve and a saturation lift bring the sky back to blue (about 155, 171, 189) and leave green in the grass. The live texture is still the ungraded plate.
+
+The diamond fill is the base lavender `(0.70, 0.58, 0.88)`. The light step `(0.82, 0.70, 0.98)` is the pane band. `ui-cvd` measures that band: `protan=0.41 blue/lavender deutan=0.52 blue/lavender tritan=0.41 orange/lavender floor=0.35`. `ui-seat off=0.41/0.52/0.41`. The floor holds on the band. The fill against blue is protan 0.23 and deutan 0.34, under 0.35. The band is the value step that keeps the measured floor.
+
+A pad cling tip reads `Hold [Left stick] into a wall to climb`, and the wall jump reads `[Left stick] into a wall + [A] to wall jump`. The verb and the input are each said once. Keyboard cling reads `Hold [WASD] into a wall to climb`.
+
+Pause was the weak screen. The pass 16 still left a flat empty band under the buttons, and Resume, Options, and Quit had no second line. The card now sits on the bottom third. Each row has a line. The graded park, including the gazebo, stays visible above the card. P1's circle is in the header. Unity is not installed, so the stills are composites in `Docs/UiStills/screens2/pass27/`.
+
 ## Later passes
 
 - Left from a rule row returns to the modes even when that rule can still decrease. Right from the right-hand mode, and Left at the end of a rule, already move between the columns.

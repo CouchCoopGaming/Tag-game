@@ -368,6 +368,8 @@ The twenty-fifth pass separates the costume seats by value and by shape. Red and
 
 The twenty-sixth pass gives the tip and the progress bar their own rows, so Waiting no longer cuts the tip in half. Mega Park carries its size, 160 x 100 m, under the name. Lavender stays a light purple instead of washing out to white, and the colour-blind floor still holds: protan 0.41, deutan 0.52, tritan 0.41. The seat shape comes from the one mannequin table: circle, triangle, square, diamond. The loading plates are cooled so the concrete is grey, and each seat shows a landmark or the runners with their heads in frame. Unity is not installed here, so the stills are composites in `Docs/UiStills/screens2/pass26/`. Space still jumps.
 
+The twenty-seventh pass keeps the load card to the bottom third, so the dock, the court, and the gazebo sit in the upper pane. The park stays neutral and gets its contrast back: concrete about 140, 148, 146, and a blue sky. The diamond is the base lavender, and the light step is the pane band. The measured colour-blind floor still holds on that band: protan 0.41, deutan 0.52, tritan 0.41. The fill against blue is under the floor (protan 0.23). A cling tip reads Hold [Left stick] into a wall to climb. Pause was the sparse screen, so its card sits low, each row has a line, and the park stays visible above it. Unity is not installed here, so the stills are composites in `Docs/UiStills/screens2/pass27/`. Space still jumps.
+
 ## Motion, ninth pass
 
 The wall jump, the rope, the zip, the launch pad, a landing, the dash flash, a hard turnaround, and a punch while you run all ease instead of snapping. Speeds, the jump, and the dash length are the same.
