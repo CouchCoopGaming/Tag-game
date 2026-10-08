@@ -27,19 +27,20 @@ def create():
         g = a.begin(lod)
         bev = lod_pick(lod, 0.008, 0.004, 0.0)
         bs = lod_pick(lod, 2, 1, 0)
-        brick = dict(bevel=bev, segs=bs, uv_scale=1.0)
-        g.box((0, 0.09, 0), (W, 0.18, T + 0.06), "Lib_Brick", **brick)
-        # Piers and the mullion are full height. The door and window are the only holes.
-        g.box((-1.70, 1.65, 0), (0.70, 3.00, T), "Lib_Brick", **brick)  # x -2.05..-1.35
-        g.box((1.50, 1.65, 0), (1.10, 3.00, T), "Lib_Brick", **brick)  # x 0.95..2.05
-        g.box((-0.20, 1.605, 0), (0.70, 2.89, T), "Lib_Brick", uv_scale=1.0)  # x -0.55..0.15
-        g.box((0.55, 0.70, 0), (0.84, 1.04, T), "Lib_Brick", uv_scale=1.0)  # under the sill, y 0.18..1.22
-        g.box((-0.95, 2.40, 0), (0.90, 0.56, T), "Lib_Brick", uv_scale=1.0)  # over the door
-        g.box((0.55, 2.40, 0), (0.90, 0.56, T), "Lib_Brick", uv_scale=1.0)  # over the window
-        g.box((0, 2.85, 0), (3.10, 0.60, T), "Lib_Brick", uv_scale=1.0)
+        g.box((0, 0.09, 0), (W, 0.18, T + 0.06), "Lib_Brick", bevel=bev, segs=bs, uv_scale=1.0)
+        # Each front face is its own brick, butted, so nothing shares a plane.
+        # Left pier x -2.00..-1.35, right pier 0.95..2.00, both up to the cornice.
+        g.box((-1.675, 1.65, 0), (0.65, 2.94, T), "Lib_Brick", uv_scale=1.0)
+        g.box((1.475, 1.65, 0), (1.05, 2.94, T), "Lib_Brick", uv_scale=1.0)
+        # Mullion between the openings, only up to the header.
+        g.box((-0.20, 1.15, 0), (0.70, 1.94, T), "Lib_Brick", uv_scale=1.0)
+        # Brick under the sill. Meets the mullion and the right pier without an overlap.
+        g.box((0.55, 0.65, 0), (0.80, 0.94, T), "Lib_Brick", uv_scale=1.0)
+        # Header fills above both openings and stops at the piers.
+        g.box((-0.20, 2.62, 0), (2.30, 1.00, T), "Lib_Brick", uv_scale=1.0)
         # One stone lintel across both openings, and a sill on the brick under the window.
         g.box((-0.20, 2.20, 0.11), (2.70, 0.10, 0.14), "Lib_Concrete")
-        g.box((0.55, 1.16, 0.12), (1.02, 0.08, 0.16), "Lib_Concrete")
+        g.box((0.55, 1.16, 0.12), (0.84, 0.08, 0.16), "Lib_Concrete")
         _door(g, lod)
         _window(g, lod)
         g.box((0, 3.16, 0), (W, 0.08, T + 0.08), "Lib_Concrete", bevel=bev, segs=bs, uv_scale=0.8)
@@ -56,11 +57,20 @@ def _door(g, lod):
     g.box((-1.33, 1.16, z), (0.08, 2.00, 0.08), "Lib_Wood")
     g.box((-0.57, 1.16, z), (0.08, 2.00, 0.08), "Lib_Wood")
     g.box((-0.95, 2.12, z), (0.68, 0.08, 0.08), "Lib_Wood")
-    g.box((-0.95, 1.16, z + 0.01), (0.74, 1.96, 0.04), "Lib_WoodDark")
+    # Vertical planks, about 13 cm, grain running with the height.
+    left, right = -1.29, -0.61
+    count = 5
+    seam = 0.004
+    span = right - left
+    pw = (span - seam * (count - 1)) / count
+    for i in range(count):
+        x = left + pw * 0.5 + i * (pw + seam)
+        g.box((x, 1.14, z + 0.012), (pw, 1.88, 0.028), "Lib_WoodDark")
+    g.box((-0.95, 2.02, z + 0.030), (0.64, 0.055, 0.012), "Lib_Wood")
+    g.box((-0.95, 1.14, z + 0.030), (0.64, 0.055, 0.012), "Lib_Wood")
+    g.box((-0.95, 0.34, z + 0.030), (0.64, 0.055, 0.012), "Lib_Wood")
     if lod == 0:
-        g.box((-0.95, 1.55, z + 0.035), (0.52, 0.70, 0.012), "Lib_Wood")
-        g.box((-0.95, 0.70, z + 0.035), (0.52, 0.72, 0.012), "Lib_Wood")
-        g.box((-0.68, 1.05, z + 0.05), (0.04, 0.08, 0.03), "Lib_Brass")
+        g.box((-0.68, 1.05, z + 0.046), (0.04, 0.08, 0.03), "Lib_Brass")
 
 
 def _window(g, lod):

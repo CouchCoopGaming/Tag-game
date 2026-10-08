@@ -72,7 +72,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Tag.Art.Library.LibraryPropMeta
   category: "Park"
-  summary: "Street full court, 22 m by 12 m. One decal carries the FIBA paint scaled to the slab: boundary, center line, center circle, and at each end a lane, free-throw circle, restricted arc, and a 3-point arc that meets the corner lines. Lines are 5 cm. No collider on the paint."
+  summary: "Street full court, 22 m by 12 m. One decal carries FIBA paint measured from the rims: a 4.90 m key, a free-throw circle solid toward center court and dashed inside the lane, a restricted arc, and a 6.75 m three-point arc on the rim. Asphalt has cracks and wear. Lines are 5 cm. No collider on the paint."
   climbable: 0
   vaultable: 0
   vaultHeightMeters: 0

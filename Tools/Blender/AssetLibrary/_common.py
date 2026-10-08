@@ -296,6 +296,8 @@ class Geo:
         self.bm = bmesh.new()
         self.uv = self.bm.loops.layers.uv.new("UVMap")
         self.scale_layer = self.bm.faces.layers.float.new("uvscale")
+        # 0 keeps the usual triplanar axes. 1 lays long grain on world X, 2 on world Z.
+        self.grain_layer = self.bm.faces.layers.float.new("uvgrain")
         self.mats = []
 
     def slot(self, name):
@@ -305,7 +307,7 @@ class Geo:
             self.mats.append(name)
         return self.mats.index(name)
 
-    def _ingest(self, src, mat, uv_scale):
+    def _ingest(self, src, mat, uv_scale, grain=0.0):
         mi = self.slot(mat)
         vmap = {}
         for v in src.verts:
@@ -322,6 +324,7 @@ class Geo:
             nf.material_index = mi
             nf.smooth = True
             nf[self.scale_layer] = uv_scale
+            nf[self.grain_layer] = grain
             if src_uv is not None:
                 for loop, src_loop in zip(nf.loops, f.loops):
                     loop[self.uv].uv = src_loop[src_uv].uv[:]
@@ -353,7 +356,7 @@ class Geo:
         bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
         return bm
 
-    def box(self, center, size, mat, bevel=0.0, segs=1, euler=(0, 0, 0), uv_scale=1.0):
+    def box(self, center, size, mat, bevel=0.0, segs=1, euler=(0, 0, 0), uv_scale=1.0, grain=0.0):
         sx, sy, sz = size
         if sx <= 0 or sy <= 0 or sz <= 0:
             return
@@ -383,9 +386,9 @@ class Geo:
         for idxs in faces_idx:
             bm.faces.new([verts[i] for i in idxs])
         self._finish_src(bm, bevel, segs)
-        self._ingest(bm, mat, uv_scale)
+        self._ingest(bm, mat, uv_scale, grain)
 
-    def cylinder(self, center, radius, height, mat, segments=12, axis="Y", bevel=0.0, segs=1, uv_scale=1.0, cap_ends=True):
+    def cylinder(self, center, radius, height, mat, segments=12, axis="Y", bevel=0.0, segs=1, uv_scale=1.0, cap_ends=True, grain=0.0):
         if radius <= 0 or height <= 0:
             return
         bm = bmesh.new()
@@ -409,7 +412,7 @@ class Geo:
         # Unity X / Unity Z because of the axis map (see file header).
         bmesh.ops.translate(bm, verts=bm.verts, vec=Vector(unity_to_blender(*center)))
         self._finish_src(bm, bevel, segs)
-        self._ingest(bm, mat, uv_scale)
+        self._ingest(bm, mat, uv_scale, grain)
 
     def cone(self, center, radius1, radius2, height, mat, segments=12, axis="Y", uv_scale=1.0):
         bm = bmesh.new()
@@ -462,7 +465,7 @@ class Geo:
         bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
         self._ingest(bm, mat, uv_scale)
 
-    def pipe(self, a, b, radius, mat, segments=8, bevel=0.0, segs=0, uv_scale=1.0):
+    def pipe(self, a, b, radius, mat, segments=8, bevel=0.0, segs=0, uv_scale=1.0, grain=0.0):
         a = Vector(a)
         b = Vector(b)
         delta = b - a
@@ -493,7 +496,7 @@ class Geo:
         bm.faces.new(list(reversed(rings[0])))
         bm.faces.new(rings[1])
         self._finish_src(bm, bevel, segs)
-        self._ingest(bm, mat, uv_scale)
+        self._ingest(bm, mat, uv_scale, grain)
 
     def blob(self, spheres, mat, voxel=0.12):
         """Union of (center, radius) spheres via a voxel remesh. One clean canopy."""
@@ -581,7 +584,7 @@ class Geo:
         bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
         self._ingest(bm, mat, -1.0)
 
-    def mesh(self, verts, faces, mat, uv_scale=1.0, bevel=0.0, segs=0):
+    def mesh(self, verts, faces, mat, uv_scale=1.0, bevel=0.0, segs=0, grain=0.0):
         """verts are Unity-space. faces are index tuples (quads preferred)."""
         bm = bmesh.new()
         bverts = [bm.verts.new(unity_to_blender(*v)) for v in verts]
@@ -591,7 +594,7 @@ class Geo:
             except ValueError:
                 continue
         self._finish_src(bm, bevel, segs)
-        self._ingest(bm, mat, uv_scale)
+        self._ingest(bm, mat, uv_scale, grain)
 
     def arc_pipe(self, center, radius, height0, height1, a0, a1, tube, mat, segments=8, steps=8):
         """Tube along a horizontal arc. Angles in degrees, 0 = +Z, 90 = +X."""
@@ -626,6 +629,7 @@ class Geo:
                 continue
             if not scale:
                 scale = 1.0
+            grain = f[self.grain_layer]
             n = f.normal
             nu = Vector(blender_to_unity(n.x, n.y, n.z))
             if nu.length:
@@ -634,11 +638,19 @@ class Geo:
                 c = loop.vert.co
                 u = blender_to_unity(c.x, c.y, c.z)
                 if abs(nu.y) >= abs(nu.x) and abs(nu.y) >= abs(nu.z):
-                    loop[self.uv].uv = (u[0] * scale, u[2] * scale)
+                    uu, vv = u[0], u[2]
                 elif abs(nu.x) >= abs(nu.z):
-                    loop[self.uv].uv = (u[2] * scale, u[1] * scale)
+                    uu, vv = u[2], u[1]
                 else:
-                    loop[self.uv].uv = (u[0] * scale, u[1] * scale)
+                    uu, vv = u[0], u[1]
+                # Bands vary along U, so long grain has to run along V.
+                if grain >= 1.5:
+                    if abs(nu.z) < 0.65 and abs(nu.y) < 0.65:
+                        uu, vv = vv, uu
+                elif grain >= 0.5:
+                    if abs(nu.x) < 0.65:
+                        uu, vv = vv, uu
+                loop[self.uv].uv = (uu * scale, vv * scale)
 
     def tri_count(self):
         n = 0
@@ -1283,7 +1295,7 @@ def load_asset_modules():
     if ROOT not in sys.path:
         sys.path.insert(0, ROOT)
     skip = {
-        "_common", "build_all", "render_pass1", "render_pass2", "render_pass3", "render_pass4", "render_pass5", "render_pass6", "render_pass7", "render_pass8", "render_pass9", "render_pass10", "render_pass11", "render_pass12", "render_pass13", "render_pass14", "render_pass15", "render_pass16", "render_pass17", "render_pass18",
+        "_common", "build_all", "render_pass1", "render_pass2", "render_pass3", "render_pass4", "render_pass5", "render_pass6", "render_pass7", "render_pass8", "render_pass9", "render_pass10", "render_pass11", "render_pass12", "render_pass13", "render_pass14", "render_pass15", "render_pass16", "render_pass17", "render_pass18", "render_pass19",
         "write_unity", "_kit",
     }
     names = []

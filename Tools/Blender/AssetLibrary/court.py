@@ -1,7 +1,8 @@
 """Street full court, 22 m by 12 m.
 
-Paint is one decal: FIBA markings scaled onto this slab. The boundary is the
-slab edge. Lengths scale by 22/28 and widths by 12/15. Every line is 5 cm.
+Paint is one decal. FIBA distances are measured from the hoop rims at
+z = ±9.7125, not scaled. The slab is narrower than 15 m, so the three-point
+corner line sits 0.90 m in from the sideline. Every line is 5 cm.
 """
 
 import os
@@ -17,9 +18,10 @@ def create():
     a = Asset(
         "Court",
         "Park",
-        "Street full court, 22 m by 12 m. One decal carries the FIBA paint scaled to the slab: "
-        "boundary, center line, center circle, and at each end a lane, free-throw circle, "
-        "restricted arc, and a 3-point arc that meets the corner lines. Lines are 5 cm. No collider on the paint.",
+        "Street full court, 22 m by 12 m. One decal carries FIBA paint measured from the rims: "
+        "a 4.90 m key, a free-throw circle solid toward center court and dashed inside the lane, "
+        "a restricted arc, and a 6.75 m three-point arc on the rim. Asphalt has cracks and wear. "
+        "Lines are 5 cm. No collider on the paint.",
     )
     a.climb_note = "Flat slab, 0.12 m thick."
     a.vault_note = "No rail. Place each Hoop pole 1.2 m behind the end line, rim toward center court."

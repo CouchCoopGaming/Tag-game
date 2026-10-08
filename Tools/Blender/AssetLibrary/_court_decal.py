@@ -1,9 +1,8 @@
-"""FIBA court markings scaled onto the 22 x 12 m street slab.
+"""FIBA markings on the 22 x 12 m street slab, measured from the real rims.
 
-One texture, one decal. Line centers are 5 cm wide. Distances along the length
-scale by 22/28 and distances across the width scale by 12/15, so the boundary
-is the slab and the circles stay round. FIBA measures to the outer edge of a
-line; the stroke here is centered 2.5 cm inside that edge.
+The hoops stay where they are: rim centres at z = ±9.7125. Lengths are not
+scaled. A full FIBA court is 15 m wide, so the 6.75 m arc is clipped by a
+corner line 0.90 m in from this slab's sideline. Line centres are 5 cm wide.
 """
 
 import math
@@ -14,8 +13,8 @@ import zlib
 W = 12.0
 L = 22.0
 LINE = 0.05
-SX = W / 15.0
-SZ = L / 28.0
+# Painted basket the hoop already uses. South is negative.
+RIM = 9.7125
 # 100 px per meter. Not a power of two; the importer must not rescale it.
 PX_PER_M = 100
 WP = int(W * PX_PER_M)
@@ -31,40 +30,39 @@ WHITE = (236, 236, 228)
 
 
 def basket_z(sign):
-    """sign +1 is the north (+Z) basket."""
-    return sign * (Z_IN - 1.575 * SZ)
+    """sign +1 is the north (+Z) basket. This is the hoop rim, not a scaled guess."""
+    return sign * RIM
 
 
 def ft_z(sign):
-    # 5.80 m to the outer edge of the free-throw line, then back to the stroke center.
-    return sign * (Z_IN - (5.80 - LINE * 0.5) * SZ)
+    # FIBA free-throw line is 4.225 m in front of the rim, toward center court.
+    return sign * (RIM - 4.225)
 
 
 def lane_half():
-    """Distance from center court to the center of a lane line."""
-    return (4.90 * SX) * 0.5 - LINE * 0.5
+    """Center of a lane line. FIBA key is 4.90 m outside to outside."""
+    return 4.90 * 0.5 - LINE * 0.5
 
 
 def three_radius():
-    return (6.75 - LINE * 0.5) * SZ
+    return 6.75 - LINE * 0.5
 
 
 def three_x():
-    """Center of the straight corner line."""
-    outer = X_IN - 0.90 * SX
-    return outer - LINE * 0.5
+    """Center of the straight corner line, 0.90 m in from the sideline."""
+    return X_IN - 0.90 - LINE * 0.5
 
 
 def ft_radius():
-    return (1.80 - LINE * 0.5) * SZ
+    return 1.80 - LINE * 0.5
 
 
 def restricted_radius():
-    return (1.25 - LINE * 0.5) * SZ
+    return 1.25 - LINE * 0.5
 
 
 def center_radius():
-    return (1.80 - LINE * 0.5) * SZ
+    return 1.80 - LINE * 0.5
 
 
 def _png(path, w, h, buf):
@@ -127,7 +125,10 @@ def _disc(buf, x, z, radius, color):
 
 
 def _stroke(buf, x, z, color):
-    _disc(buf, x, z, LINE * 0.5, color)
+    # Paint the mirrors too, so a one-pixel raster difference cannot fail the symmetry check.
+    for sx in (x, -x):
+        for sz in (z, -z):
+            _disc(buf, sx, sz, LINE * 0.5, color)
 
 
 def _segment(buf, x0, z0, x1, z1, color):
@@ -153,7 +154,7 @@ def _dashed_free_throw(buf, cx, cz, radius, forward):
     a0, a1 = math.pi * 0.5, math.pi * 1.5
     span = a1 - a0
     steps = max(8, int(abs(radius * span) * PX_PER_M * 0.5))
-    dash, gap = 0.36, 0.16
+    dash, gap = 0.38, 0.36
     period = dash + gap
     for i in range(steps + 1):
         a = a0 + span * (i / float(steps))
@@ -200,6 +201,37 @@ def _end(buf, sign):
     _segment(buf, x3, base, x3, meet_z, WHITE)
 
 
+def _dist_seg(x, z, x0, z0, x1, z1):
+    dx, dz = x1 - x0, z1 - z0
+    length2 = dx * dx + dz * dz or 1.0
+    t = max(0.0, min(1.0, ((x - x0) * dx + (z - z0) * dz) / length2))
+    return math.hypot(x - (x0 + dx * t), z - (z0 + dz * t))
+
+
+def _worn(xm, z):
+    """Cracks and pale patches. abs() keeps the four-way mirror the checker expects."""
+    ax, az = abs(xm), abs(z)
+    cracks = (
+        ((1.1, 1.6), (2.6, 2.9), (2.2, 4.3)),
+        ((3.4, 6.1), (4.5, 7.0)),
+        ((0.6, 8.4), (1.8, 9.2)),
+    )
+    for pts in cracks:
+        for i in range(len(pts) - 1):
+            if _dist_seg(ax, az, pts[i][0], pts[i][1], pts[i + 1][0], pts[i + 1][1]) < 0.016:
+                return (18, 18, 20)
+    n = _noise(ax, az)
+    wear = _noise(ax * 0.37, az * 0.31)
+    lift = 16 if wear > 0.78 else 0
+    if ((ax - 2.4) ** 2) / 1.4 + ((az - 7.2) ** 2) / 0.55 < 1.0:
+        lift += 12
+    return (
+        int(ASPHALT[0] + n * 8 + lift),
+        int(ASPHALT[1] + n * 8 + lift),
+        int(ASPHALT[2] + n * 6 + lift),
+    )
+
+
 def render(path):
     buf = bytearray(WP * HP * 3)
     for y in range(HP):
@@ -207,12 +239,7 @@ def render(path):
         row = bytearray()
         for x in range(WP):
             xm = (x + 0.5) / WP * W - W * 0.5
-            n = _noise(xm, z)
-            row.extend((
-                int(ASPHALT[0] + n * 10),
-                int(ASPHALT[1] + n * 10),
-                int(ASPHALT[2] + n * 8),
-            ))
+            row.extend(_worn(xm, z))
         buf[y * WP * 3:(y + 1) * WP * 3] = row
     _end(buf, -1.0)
     _end(buf, 1.0)
