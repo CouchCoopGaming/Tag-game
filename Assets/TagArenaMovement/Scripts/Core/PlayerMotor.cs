@@ -410,6 +410,8 @@ namespace TagArena.Movement
             float evasionX = _velocity.x;
             float evasionZ = _velocity.z;
             _in.EvasionPlanarSpeed = Mathf.Sqrt(evasionX * evasionX + evasionZ * evasionZ);
+            Vector3 evasionRight = transform.right;
+            _in.EvasionLateral = evasionX * evasionRight.x + evasionZ * evasionRight.z;
             // Evasion is off unless the flag is set. Vertical stays the jump the button wrote.
             if (Tag.Gameplay.EvasionMoves.Enabled)
                 _velocity = Tag.Gameplay.EvasionMoves.Gate(

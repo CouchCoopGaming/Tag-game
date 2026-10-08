@@ -39,7 +39,7 @@ These read the pad only while `EvasionMoves.Enabled` is on. The flag starts off,
 |---|---|---|
 | Juke | Right stick flicked left or right | Not bound |
 | Spin | Right stick half circle, same direction as the spin | Not bound |
-| Stutter | Not bound. LT is the couch rope | Not bound |
+| Stutter | Double-tap RT, flag on. Side from the left stick. LT stays the couch rope | Not bound |
 | Dive | Not bound. Stick forward is look | Not bound |
 
 A sideways flick that returns to center is a juke. A half circle is a spin. A slow pan, a fast pan that holds, tracking a runner, a snap to look behind, and looking up or down do not start a move. When a juke or a spin does start, that one gesture does not also turn the camera. RB stays air dash. LB stays sprint.

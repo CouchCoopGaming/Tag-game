@@ -42,7 +42,7 @@ Landon picked the pad gestures. Juke and spin are wired. They call `TryRaise` on
 |---|---|---|---|
 | Juke | Right-stick flick left or right. The sign is the flick. | `X` | Wired for the pad. `X` is not bound. |
 | Spin | Right-stick half circle. Clockwise on the stick is the clockwise spin (`spinR`). The other way is `spinL`. | `B` | Wired for the pad. `B` is not bound. |
-| Stutter | Not bound. | `Z` | Stopped. See below. |
+| Stutter | Double-tap RT inside 0.25 s. The second tap's left-stick lean is the side. A centered stick uses the lateral move, or a straight plant when there is none. | `Z` | Prototype behind the flag. LT stays the couch rope. |
 | Dive | Not bound. | `R` | Not recognized. See below. `R` is free and not bound. |
 
 A flick is a sideways deflection past 0.85 that is back near the center, and stopped, within 0.15 s. A half circle sweeps at least 150° while the stick is past 0.70 deflection, inside 0.35 s. Looking up or down does not count as sideways, and a stick that stays out past 0.15 s is a look, including the release after that hold.

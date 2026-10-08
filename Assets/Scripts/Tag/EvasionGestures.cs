@@ -22,6 +22,9 @@ namespace Tag.Gameplay
         public const float ArcDeflection = 0.7f;
         public const float ArcDegrees = 150f;
         public const float ArcWindow = 0.35f;
+        public const float StutterWindow = 0.25f;
+        public const float StutterLean = 0.25f;
+        public const float StutterLateral = 0.40f;
 
         public struct State
         {
@@ -189,19 +192,83 @@ namespace Tag.Gameplay
             return result;
         }
 
+        public struct TapState
+        {
+            public bool Held;
+            public bool Live;
+            public float FirstT;
+            public float Time;
+        }
+
+        public struct TapResult
+        {
+            public bool Commit;
+            public int Sign;
+        }
+
+        /// <summary>
+        /// RT double-tap. The second press's left-stick lean picks the side.
+        /// A centered stick uses the lateral move, and a straight run plants in place.
+        /// LT is not read.
+        /// </summary>
+        public static TapResult StutterTap(ref TapState s, bool held, float lean, float lateral, float dt)
+        {
+            TapResult result = default;
+            if (dt <= 0f) dt = 0.0001f;
+            bool rise = held && !s.Held;
+            if (rise)
+            {
+                if (s.Live && (s.Time - s.FirstT) <= StutterWindow)
+                {
+                    result.Commit = true;
+                    result.Sign = StutterSign(lean, lateral);
+                    s.Live = false;
+                }
+                else
+                {
+                    s.Live = true;
+                    s.FirstT = s.Time;
+                }
+            }
+            if (s.Live && (s.Time - s.FirstT) > StutterWindow)
+                s.Live = false;
+            s.Held = held;
+            s.Time += dt;
+            return result;
+        }
+
+        public static void ResetTap(ref TapState s)
+        {
+            s = default;
+        }
+
+        static int StutterSign(float lean, float lateral)
+        {
+            if (lean >= StutterLean) return 1;
+            if (lean <= -StutterLean) return -1;
+            if (lateral >= StutterLateral) return 1;
+            if (lateral <= -StutterLateral) return -1;
+            return 0;
+        }
+
         public struct Report
         {
             public int Camera;
             public int Fp;
             public int Moves;
             public int Fn;
+            public int StutterFp;
+            public int StutterFpN;
+            public int StutterFn;
+            public int StutterFnN;
             public bool SwallowOk;
         }
 
         public static bool Holds()
         {
             Report r = Measure();
-            return r.Fp == 0 && r.Fn == 0 && r.Camera > 0 && r.Moves > 0 && r.SwallowOk;
+            return r.Fp == 0 && r.Fn == 0 && r.Camera > 0 && r.Moves > 0 && r.SwallowOk
+                && r.StutterFp == 0 && r.StutterFn == 0 && r.StutterFpN > 0 && r.StutterFnN > 0;
         }
 
         public static string ProofLine()
@@ -211,7 +278,9 @@ namespace Tag.Gameplay
                 + "/" + r.Camera.ToString()
                 + " moveFN=" + r.Fn.ToString()
                 + "/" + r.Moves.ToString()
-                + " swallow=commit dive=unbound stutter=unbound";
+                + " swallow=commit dive=unbound"
+                + " stutterFP=" + r.StutterFp.ToString() + "/" + r.StutterFpN.ToString()
+                + " stutterFN=" + r.StutterFn.ToString() + "/" + r.StutterFnN.ToString();
         }
 
         public static Report Measure()
@@ -226,7 +295,66 @@ namespace Tag.Gameplay
                 RunMoves(ref report, dt);
             }
             report.SwallowOk = report.SwallowOk && SwallowHolds();
+            RunStutter(ref report);
             return report;
+        }
+
+        static void RunStutter(ref Report report)
+        {
+            float[] rates = { 1f / 60f, 1f / 30f, 1f / 120f };
+            for (int i = 0; i < rates.Length; i++)
+            {
+                float dt = rates[i];
+                StutterFalse(ref report, dt, 0.50f, new float[] { 0f }, 0.06f, 0f, 0f);
+                StutterFalse(ref report, dt, 0.70f, new float[] { 0f }, 0.60f, 0f, 0f);
+                StutterFalse(ref report, dt, 0.70f, new float[] { 0f, 0.40f }, 0.05f, 0f, 0f);
+                StutterFalse(ref report, dt, 1.20f, new float[] { 0f, 0.32f, 0.64f, 0.96f }, 0.04f, 0f, 0f);
+                StutterFalse(ref report, dt, 0.80f, new float[] { 0f, 0.50f }, 0.20f, 0.4f, 0f);
+                StutterTrue(ref report, dt, 0.12f, 0f, 0f, 0);
+                StutterTrue(ref report, dt, 0.18f, 0.60f, 0f, 1);
+                StutterTrue(ref report, dt, 0.22f, -0.70f, 0f, -1);
+                StutterTrue(ref report, dt, 0.16f, 0f, 1.5f, 1);
+                StutterTrue(ref report, dt, 0.14f, 0.10f, -2f, -1);
+            }
+        }
+
+        static void StutterFalse(ref Report report, float dt, float end, float[] rises, float pulse, float lean, float lateral)
+        {
+            report.StutterFpN++;
+            int sign;
+            int fires = PlayTaps(dt, end, rises, pulse, lean, lateral, out sign);
+            if (fires != 0) report.StutterFp++;
+        }
+
+        static void StutterTrue(ref Report report, float dt, float gap, float lean, float lateral, int want)
+        {
+            report.StutterFnN++;
+            int sign;
+            int fires = PlayTaps(dt, gap + 0.20f, new float[] { 0f, gap }, 0.05f, lean, lateral, out sign);
+            if (fires != 1 || sign != want) report.StutterFn++;
+        }
+
+        static int PlayTaps(float dt, float end, float[] rises, float pulse, float lean, float lateral, out int sign)
+        {
+            TapState s = default;
+            int fires = 0;
+            sign = 0;
+            int n = (int)Math.Round(end / dt);
+            if (n < 2) n = 2;
+            for (int i = 0; i < n; i++)
+            {
+                float t = i * dt;
+                bool held = false;
+                for (int k = 0; k < rises.Length; k++)
+                {
+                    if (t >= rises[k] && t < rises[k] + pulse) held = true;
+                }
+                TapResult r = StutterTap(ref s, held, lean, lateral, dt);
+                if (!r.Commit) continue;
+                fires++;
+                sign = r.Sign;
+            }
+            return fires;
         }
 
         static void RunCamera(ref Report report, float dt)

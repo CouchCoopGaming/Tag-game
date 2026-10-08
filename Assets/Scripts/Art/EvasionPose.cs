@@ -186,8 +186,9 @@ namespace Tag.Art
 
         static Sample MovePose(EvasionMoves.Kind kind, int sign, float local, float move)
         {
-            if (sign >= 0) sign = 1;
-            else sign = -1;
+            if (sign > 0) sign = 1;
+            else if (sign < 0) sign = -1;
+            else sign = 0;
             if (local < 0f) local = 0f;
             if (local > move) local = move;
             Sample s;
@@ -195,7 +196,7 @@ namespace Tag.Art
             else if (kind == EvasionMoves.Kind.Spin) s = Spin(local, move, sign);
             else if (kind == EvasionMoves.Kind.Juke) s = Juke(local, move);
             else s = Dive(local);
-            if (sign < 0 && (kind == EvasionMoves.Kind.Juke))
+            if (sign < 0 && (kind == EvasionMoves.Kind.Juke || kind == EvasionMoves.Kind.Stutter))
                 s = Mirror(s);
             return s;
         }

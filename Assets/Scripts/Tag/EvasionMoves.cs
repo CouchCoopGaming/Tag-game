@@ -109,7 +109,7 @@ namespace Tag.Gameplay
             slot.Playing = true;
             slot.Show = true;
             slot.Kind = kind;
-            slot.Sign = sign < 0 ? -1 : 1;
+            slot.Sign = sign < 0 ? -1 : (sign > 0 ? 1 : 0);
             slot.Age = 0f;
             slot.ShownAge = 0f;
             float entry = speed < 0f ? -speed : speed;

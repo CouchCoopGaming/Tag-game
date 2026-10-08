@@ -36,6 +36,7 @@ namespace TagArena.Movement
         public bool EvasionGrounded;
         public int EvasionId;
         public float EvasionPlanarSpeed;
+        public float EvasionLateral;
 
         /// <summary>When true, Read() is a no-op - AI / tests own Move/Look/buttons.</summary>
         public bool ExternalControl;
@@ -77,6 +78,7 @@ namespace TagArena.Movement
         float _kbSpacePrev;
         int _readSerial = -1;
         EvasionGestures.State _gesture;
+        EvasionGestures.TapState _stutterTap;
 
         void Awake()
         {
@@ -97,6 +99,7 @@ namespace TagArena.Movement
             if (ExternalControl)
             {
                 EvasionGestures.Reset(ref _gesture);
+                EvasionGestures.ResetTap(ref _stutterTap);
                 return;
             }
             int serial = Time.frameCount;
@@ -152,6 +155,7 @@ namespace TagArena.Movement
                 PadLookStick = Vector2.zero;
                 LookIsStick = false;
                 EvasionGestures.Reset(ref _gesture);
+                EvasionGestures.ResetTap(ref _stutterTap);
                 return;
             }
 
@@ -247,6 +251,7 @@ namespace TagArena.Movement
                     _lookPunchGateFrames--;
                 SuppressResumeOneShots();
                 EvasionGestures.Reset(ref _gesture);
+                EvasionGestures.ResetTap(ref _stutterTap);
             }
             else
                 ApplyEvasionStick();
@@ -380,6 +385,7 @@ namespace TagArena.Movement
                 PadLookStick = Vector2.zero;
                 LookIsStick = false;
                 EvasionGestures.Reset(ref _gesture);
+                EvasionGestures.ResetTap(ref _stutterTap);
                 return;
             }
 
@@ -429,6 +435,7 @@ namespace TagArena.Movement
                 PunchPressed = false;
                 TapForwardPulse = false;
                 EvasionGestures.Reset(ref _gesture);
+                EvasionGestures.ResetTap(ref _stutterTap);
             }
             else
                 ApplyEvasionStick();
@@ -460,26 +467,43 @@ namespace TagArena.Movement
         }
 
         /// <summary>
-        /// Juke and spin, and only while the evasion flag is on. The commit sample
-        /// of a raised move replaces stick look so that gesture does not also yaw.
-        /// A pan is not replaced. Stutter and dive are not read.
+        /// Juke, spin, and the stutter double-tap. Only while the evasion flag is on.
+        /// The commit sample of a raised stick move replaces stick look.
+        /// RT is the stutter. LT, LB, and RB are not read here.
         /// </summary>
         void ApplyEvasionStick()
         {
             if (!EvasionMoves.Enabled)
             {
                 EvasionGestures.Reset(ref _gesture);
+                EvasionGestures.ResetTap(ref _stutterTap);
                 return;
             }
             float dt = Time.deltaTime;
             if (dt <= 0f) return;
             EvasionGestures.Result step = EvasionGestures.Step(ref _gesture, PadLookStick.x, PadLookStick.y, dt);
-            if (!step.Commit || !EvasionGrounded) return;
-            if (!EvasionMoves.TryRaise(EvasionId, step.Kind, step.Sign, EvasionPlanarSpeed, true))
-                return;
-            if (!LookIsStick) return;
-            Look = new Vector2(-step.UndoX, -step.UndoY);
-            LookFromGamepad = true;
+            if (step.Commit && EvasionGrounded)
+            {
+                if (EvasionMoves.TryRaise(EvasionId, step.Kind, step.Sign, EvasionPlanarSpeed, true) && LookIsStick)
+                {
+                    Look = new Vector2(-step.UndoX, -step.UndoY);
+                    LookFromGamepad = true;
+                }
+            }
+            EvasionGestures.TapResult tap = EvasionGestures.StutterTap(
+                ref _stutterTap, SampleRightTrigger(), Move.x, EvasionLateral, dt);
+            if (!tap.Commit || !EvasionGrounded) return;
+            EvasionMoves.TryRaise(EvasionId, EvasionMoves.Kind.Stutter, tap.Sign, EvasionPlanarSpeed, true);
+        }
+
+        bool SampleRightTrigger()
+        {
+            if (DriveDevice > 0) return BindSampler.RightTriggerHeld(DriveDevice);
+#if ENABLE_INPUT_SYSTEM
+            var pad = Gamepad.current;
+            if (pad != null) return pad.rightTrigger.isPressed;
+#endif
+            return false;
         }
 
         void ShapeHumanMove()

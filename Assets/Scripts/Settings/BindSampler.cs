@@ -413,6 +413,17 @@ namespace Tag.Settings
 #endif
         }
 
+        /// <summary>Pad RT level. Not a PlayAction. LT, LB, and RB are not read here.</summary>
+        public static bool RightTriggerHeld(int device)
+        {
+            if (device <= 0) return false;
+#if ENABLE_INPUT_SYSTEM
+            return RightTriggerHeldAt(device - 1);
+#else
+            return false;
+#endif
+        }
+
         /// <summary>Existing rope fire for the keyboard seat. RMB, the same button as solo.</summary>
         public static bool MouseRightHeld()
         {
@@ -433,6 +444,14 @@ namespace Tag.Settings
             if (pad == null)
                 return false;
             return pad.leftTrigger.isPressed;
+        }
+
+        static bool RightTriggerHeldAt(int index)
+        {
+            Gamepad pad = PadAt(index);
+            if (pad == null)
+                return false;
+            return pad.rightTrigger.isPressed;
         }
 #endif
 
