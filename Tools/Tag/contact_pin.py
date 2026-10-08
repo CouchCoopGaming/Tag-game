@@ -8,6 +8,7 @@ only while the 0.5 cm test still passes. Frames that were not planted are
 left on their approach.
 """
 import json
+import math
 import os
 import sys
 
@@ -35,8 +36,10 @@ def _min_point(name):
     mw = obj.matrix_world
     for v in obj.data.vertices:
         p = mw @ v.co
+        # mathutils reuses the returned vector. Keep a real copy or the
+        # next vertex overwrites the point we thought was foremost.
         if best is None or p.x < best.x:
-            best = p
+            best = Vector((p.x, p.y, p.z))
     return best
 
 
@@ -341,10 +344,109 @@ def slide_pass5(prenoclip_path):
     rh._hide_wall()
 
 
+def _sole(name):
+    obj = bpy.data.objects.get(name)
+    if obj is None:
+        return None
+    best = None
+    mw = obj.matrix_world
+    for v in obj.data.vertices:
+        p = mw @ v.co
+        if best is None or p.z < best.z:
+            best = Vector((p.x, p.y, p.z))
+    return best
+
+
+def _copy_leg(arm, bones, side):
+    for name in (f"UpperLeg_{side}", f"LowerLeg_{side}", f"Foot_{side}"):
+        deg = bones.get(name)
+        pb = arm.pose.bones.get(name)
+        if deg is None or pb is None:
+            continue
+        pb.rotation_mode = "XYZ"
+        pb.rotation_euler = tuple(math.radians(a) for a in deg)
+    bpy.context.view_layer.update()
+
+
+def hold_soles():
+    """Stop a grounded sole from popping to a new spot between frames.
+
+    The no-clip open sometimes snaps one leg to the generic stance while
+    the sole is still down, and the foot jumps. Copying the previous
+    frame's leg keeps the plant when that copy still clears.
+    """
+    arm = bpy.data.objects["DummyArmature"]
+    rh._prepare_scene()
+    pieces = nc._pieces(arm)
+    locals_c = {obj.name: nc._local_coords(obj) for obj in pieces}
+    polys_c = {obj.name: nc._polys(obj) for obj in pieces}
+    bind = nc._bind_self(arm, pieces, locals_c, polys_c)
+    new = json.load(open(nc.PASS5_JSON))
+    for spec in sp.CLIPS:
+        cid = spec["id"]
+        entry = new["clips"][cid]
+        facing = nc._pass5_facing(cid)
+        has_wall, wall_top = nc._wall_plan(arm, "pass5", cid, entry, facing)
+        n_hit = 0
+        worst = 0.0
+        for i in range(1, len(entry["keys"])):
+            prev_key = entry["keys"][i - 1]
+            key = entry["keys"][i]
+            nc._apply_key(arm, prev_key["bones"], entry["capsule_preview_m"][i - 1], facing)
+            anchors = {}
+            for side in ("L", "R"):
+                p = _sole(f"Mesh_Foot_{side}")
+                if p is not None and p.z < 0.02:
+                    anchors[side] = (p.x, p.y, p.z)
+            if not anchors:
+                continue
+            nc._apply_key(arm, key["bones"], entry["capsule_preview_m"][i], facing)
+            popped = []
+            for side, anchor in anchors.items():
+                cur = _sole(f"Mesh_Foot_{side}")
+                if cur is None or cur.z > 0.02:
+                    continue
+                was = ((cur.x - anchor[0]) ** 2 + (cur.y - anchor[1]) ** 2) ** 0.5
+                if was >= 0.03:
+                    popped.append((side, was, anchor))
+            for side, was, anchor in popped:
+                snap = nclear._snap(arm)
+                _copy_leg(arm, prev_key["bones"], side)
+                sole = _sole(f"Mesh_Foot_{side}")
+                if sole is not None and sole.z < -0.002:
+                    arm.location.z -= sole.z
+                    bpy.context.view_layer.update()
+                obstacles = nclear._obstacle_bvh(arm, has_wall, wall_top, locals_c, polys_c)
+                if not _clear(arm, pieces, locals_c, polys_c, bind, obstacles):
+                    nclear._restore(arm, snap)
+                    continue
+                sole = _sole(f"Mesh_Foot_{side}")
+                if sole is None:
+                    nclear._restore(arm, snap)
+                    continue
+                now = ((sole.x - anchor[0]) ** 2 + (sole.y - anchor[1]) ** 2) ** 0.5
+                if now > was - 0.02 or sole.z > 0.02:
+                    nclear._restore(arm, snap)
+                    continue
+                key["bones"] = nclear._read_bones(arm, key["bones"])
+                cpos = arm.location
+                entry["capsule_preview_m"][i] = [round(cpos.x, 4), round(cpos.y, 4), round(cpos.z, 4)]
+                n_hit += 1
+                worst = max(worst, was)
+        nc._flush(f"SOLE {cid} held={n_hit} worst_was_cm={round(worst * 100, 1)}")
+    with open(nc.PASS5_JSON, "w") as f:
+        json.dump(new, f)
+    nc._flush("wrote " + nc.PASS5_JSON)
+    rh._reset(arm)
+    rh._hide_wall()
+
+
 if __name__ == "__main__":
     argv = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else []
     src = next((a for a in argv if not a.startswith("--")), "/tmp/pass5_prenoclip.json")
     if "--slide" in argv:
         slide_pass5(src)
+    elif "--soles" in argv:
+        hold_soles()
     else:
         pin_pass5(src)
