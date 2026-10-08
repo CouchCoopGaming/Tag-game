@@ -63,17 +63,28 @@ Slide entry, slide stay, and the slide jump cap were not touched. The crouch-to-
 
 The frame strip is `Docs/SmoothStills/pass1/transitions.png` (and the same pixels as `transitions.ppm`). Six rows, sixteen frames at 60 Hz. Top to bottom: air-dash chest before, air-dash chest after, wall lean before, wall lean after, vault-exit position before, vault-exit position after. A full bar is the old snap. The after rows grow instead of appearing full on frame one.
 
-## TODO for the next pass
+## Pass 2
 
-1. Chase boom snap-in. `ChaseCam.BoomDistance` returns the shorter distance on the same frame, and the proof requires that. A visual-only ease has to stay out of the wall. Do not change the proof's snap-in check until a collision-safe ease exists.
-2. The lens `LookRotation` is still written every frame. The look point is smooth. The rotation step is whatever the point did. Worth a pass if the horizon still ticks.
-3. `TpsMoveCamera.AddKick` still adds a small field-of-view kick on punch and tag. The chase-cam constants `fovPop`, `shake`, and `slowMo` stay 0. The kick is a separate write.
-4. Gait slews of 18–64 are a couple of frames, on purpose. Do not spring them or the feet lag the stride.
-5. Kill-box and other `Place` calls still snap the mesh. They should. Do not ease a respawn across the park.
-6. Horizontal ledge pops that do not change move state are not absorbed. Only the vertical part of a steady-state correction is. A later pass can detect a one-frame horizontal spike that is not "I am pushing this wall."
-7. Wall-cling marks, slide scrape, and dash ribbons still appear in one frame. They are tells, not the body.
-8. If the locomotor sits on the capsule instead of a child, the mesh yaw is skipped so it cannot fight the camera yaw. Those pawns still snap their facing with the camera.
-9. An unbound mannequin (no limb rig) does not run the visual offset. The pill is hidden, but a failed bind would still pop.
-10. The vault capsule still teleports on the last mantle frame (`transform.position` plus the one Move). The mesh hides it. Folding that write into the Move would move the capsule, which can move the AI lines. Leave it until a visual-only path is not enough.
-11. Air dash is 0.10 s long and the pose now arrives over 0.06 s. If a dash reads late in play, shorten only that spring. Do not put the slew back to 2800.
-12. Landing still waits one sample so a hop can cancel the thud. That is not input delay. Leave it unless the hop and the land both read wrong.
+Climbing and the parkour poses now play as cycles, and the mesh follows those curves instead of lagging a second spring behind them. Gameplay is still the same frame as the press. Feel locks are unchanged.
+
+- A climb at 6.0 is hand-over-hand. The reaching hand plants, holds, then the other hand takes the next grip. The rhythm is `WallPose.ClimbRate`, full at 16.5 rad/s when vertical speed is 6.0. A cling that is barely moving holds both hands on the wall. Dropping at the slip speed 3.7 drags both hands. The first part of a grab aims at an entry pose, hands coming up, then the cycle or the hold.
+- A wall run at 9.5 keeps the stride. The mesh tracks it on the gait slew (64), so the outer arm and the outer leg keep about 93% of the swing. The old live slew was 42.
+- Vault, wall-jump push-off, zip catch, and the pad arc follow their authored curves on that same gait slew. The public slew constants are unchanged, so the old pose proofs still hold. Exit animations and the landing roll are not in this pass.
+- A one-frame horizontal ledge correction is hidden on the mesh the same way a step is. Pushing a wall every frame is not hidden, so the mesh does not sink into it. Measured: a 0.350 m one-frame ledge moves the mesh 0.000 m on that frame. A repeated 0.120 m push still moves the mesh 0.120 m.
+- The chase boom still shortens in one frame when a wall is inside it. Lengthening was already an ease, and it was fast (rate 18, about a meter of a full boom on frame one). The re-extension rate is now 6. The pull-in check in `ChaseCam.Holds` is unchanged.
+- A punch or a tag no longer punches the field of view. The camera offset eases in over 0.06 s and then settles. `fovPop`, `shake`, and `slowMo` stay 0.
+- Every verb's first visible pose is the same frame as the press. The smoothing does not insert a windup. See the response line from the sim.
+
+Stick figures drawn from the joint angles are in `Docs/SmoothStills/pass2/climb-wall-mantle.png`. Six rows, eight frames. Climb before and after, wall run before and after, mantle before and after. Before is the pass-1 filter. After is the cycle track. The wall is the line on the right of the climb and wall-run frames.
+
+## TODO still open
+
+1. The lens `LookRotation` is still written every frame. The look point is smooth. The rotation step is whatever the point did. Worth a pass if the horizon still ticks.
+2. Gait slews of 18–64 are a couple of frames, on purpose. Do not spring them or the feet lag the stride.
+3. Kill-box and other `Place` calls still snap the mesh. They should. Do not ease a respawn across the park.
+4. Wall-cling marks, slide scrape, dash ribbons, dust, and any new particle are the anim-fx lane (`cursor/tag-anim-fx`). That lane also owns the exit animation of each verb and the landing roll.
+5. If the locomotor sits on the capsule instead of a child, the mesh yaw is skipped so it cannot fight the camera yaw. Those pawns still snap their facing with the camera.
+6. An unbound mannequin (no limb rig) does not run the visual offset. The pill is hidden, but a failed bind would still pop.
+7. The vault capsule still teleports on the last mantle frame (`transform.position` plus the one Move). The mesh hides it. Folding that write into the Move would move the capsule, which can move the AI lines. Leave it.
+8. Air dash is 0.10 s long and the pose arrives over 0.06 s. The first visible pose is still the press frame. Do not put the slew back to 2800.
+9. Landing still waits one sample so a hop can cancel the thud. That is not input delay. Leave it unless the hop and the land both read wrong.
