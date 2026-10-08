@@ -5,8 +5,8 @@ namespace Tag.Ui.Menu
     /// <summary>
     /// Menu-only poses. The hip shell already sits in the thigh at rest.
     /// Life is a whole-body lean, a look, a breath, and a small weight shift.
-    /// The march keeps the chest up. Celebrate poses are menu clips: a V,
-    /// a fist pump, and a slump. They are not gameplay verbs.
+    /// The march keeps the chest up. Celebrate poses are menu clips: an overhead V,
+    /// a side fist, a two-fist chest pump, and a slump. They are not gameplay verbs.
     /// </summary>
     public static class MenuAlive
     {
@@ -150,29 +150,50 @@ namespace Tag.Ui.Menu
             float s = Mathf.Sin(t * 2.1f);
             var a = new Angles();
             a.RootPitch = -16f * lean;
-            a.HeadYaw = 10f * s * lean;
+            a.Head = -14f * lean;
+            a.HeadYaw = 8f * s * lean;
             a.Spine = -2f * lean;
-            a.ArmPitchL = -120f * lean;
-            a.ArmPitchR = -120f * lean;
-            a.ArmYawL = -50f * lean;
-            a.ArmYawR = 50f * lean;
-            a.ElbowL = -8f * lean;
-            a.ElbowR = -8f * lean;
+            a.ArmPitchL = 164f * lean;
+            a.ArmPitchR = 164f * lean;
+            a.ArmYawL = 28f * lean;
+            a.ArmYawR = -28f * lean;
+            a.ArmRollL = 35f * lean;
+            a.ArmRollR = -35f * lean;
             return a;
         }
 
-        /// <summary>Second and third. One fist up, the other arm down.</summary>
+        /// <summary>Second place. One fist beside the head, the other arm down.</summary>
         public static Angles Pump(float t)
         {
             float s = Mathf.Sin(t * 4.2f);
             var a = new Angles();
-            a.RootPitch = -16f;
+            a.RootPitch = -8f;
             a.Spine = -2f;
-            a.HeadYaw = 6f * s;
-            a.ArmPitchL = -120f;
-            a.ElbowL = -70f;
-            a.ArmPitchR = 4f;
-            a.ElbowR = -6f;
+            a.Head = -8f;
+            a.HeadYaw = 4f * s;
+            a.ArmPitchL = 8f;
+            a.ElbowL = -8f;
+            a.ArmPitchR = -180f;
+            a.ArmYawR = -80f;
+            a.ArmRollR = 40f;
+            a.ElbowR = -60f;
+            return a;
+        }
+
+        /// <summary>Third place. Both fists curled at the chest, elbows out.</summary>
+        public static Angles Chest(float t)
+        {
+            float s = Mathf.Sin(t * 3.1f);
+            var a = new Angles();
+            a.Spine = 4f;
+            a.Head = -8f;
+            a.HeadYaw = 4f * s;
+            a.ArmPitchL = 20f;
+            a.ArmPitchR = 20f;
+            a.ArmYawL = -30f;
+            a.ArmYawR = 30f;
+            a.ElbowL = 80f;
+            a.ElbowR = 80f;
             return a;
         }
 

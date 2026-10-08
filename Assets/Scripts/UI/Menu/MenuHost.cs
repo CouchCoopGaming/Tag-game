@@ -1347,14 +1347,21 @@ namespace Tag.Ui.Menu
 
         static void SeatChip(Transform parent, float x, float y, int seat)
         {
+            SeatChip(parent, x, y, seat, MenuTheme.Seat(seat), false);
+        }
+
+        static void SeatChip(Transform parent, float x, float y, int seat, Color plateColor, bool shape)
+        {
             if (parent == null) return;
             if (seat < 0) seat = 0;
             if (seat > 3) seat = 3;
-            var rt = MenuWidgets.Place(parent, "SeatTag", x, y, 68f, 36f);
+            float w = shape ? 118f : 68f;
+            var rt = MenuWidgets.Place(parent, "SeatTag", x, y, w, 36f);
             var plate = rt.gameObject.AddComponent<Image>();
-            MenuArt.Plate(plate, MenuTheme.Seat(seat), true);
+            MenuArt.Plate(plate, plateColor, true);
             plate.raycastTarget = false;
-            Text word = MenuWidgets.Words(rt, "P" + (seat + 1).ToString(), UiFit.FloorFont, TextAnchor.MiddleCenter, MenuTheme.Ink, Vector2.zero, Vector2.one);
+            string mark = shape ? AccessibilityPalette.Glyph(seat) + " " : "";
+            Text word = MenuWidgets.Words(rt, mark + "P" + (seat + 1).ToString(), UiFit.FloorFont, TextAnchor.MiddleCenter, MenuTheme.Ink, Vector2.zero, Vector2.one);
             Snug(word);
         }
 
@@ -2870,7 +2877,8 @@ namespace Tag.Ui.Menu
                 if (tile != null)
                 {
                     tile.KeepBar = true;
-                    tile.BarColor = MenuTheme.Seat(seat);
+                    Color look = MenuMannequin.Swatch(MenuMannequin.NameOf(_rows[rank].Hier));
+                    tile.BarColor = look;
                     if (tile.Bar != null)
                     {
                         tile.Bar.color = tile.BarColor;
@@ -2878,11 +2886,10 @@ namespace Tag.Ui.Menu
                         barRt.anchoredPosition = new Vector2(0f, 0f);
                         barRt.sizeDelta = new Vector2(rankW, 10f);
                     }
-                    tile.Tint(Color.Lerp(MenuTheme.Ink, MenuTheme.Seat(seat), UiSweep.SeatMix));
+                    tile.Tint(Color.Lerp(MenuTheme.Ink, look, UiSweep.SeatMix));
                     if (tile.Stroke != null && _rows[rank].Winner)
                         tile.Stroke.color = MenuTheme.Gold;
-                    SeatChip(tile.transform, rankW - 118f, UiFit.StripeClear() + 6f, seat);
-                    Color look = MenuMannequin.Swatch(MenuMannequin.NameOf(_rows[rank].Hier));
+                    SeatChip(tile.transform, rankW - 168f, UiFit.StripeClear() + 6f, seat, look, true);
                     RectTransform swatch = MenuWidgets.Place(tile.transform, "LookSwatch", rankW - 42f, UiFit.StripeClear() + 12f, 22f, 22f);
                     var swatchImage = swatch.gameObject.AddComponent<Image>();
                     swatchImage.color = look;

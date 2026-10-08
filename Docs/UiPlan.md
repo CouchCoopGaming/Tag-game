@@ -313,6 +313,14 @@ Pause keeps a single menu, owned by the player who paused, centred on that pane.
 
 In `Docs/UiStills/pass36/` the figures are renders of `Dummy_Mannequin_Tan_Hier_Hi.fbx`. The cards, the pause chrome, and the labels are composite. The arena quarters in the pause pictures are earlier chase stills. Each still is under 400 KB. The proof lines are unchanged.
 
+## Pass 37
+
+The winner's arms are an overhead V, about 30° off vertical on each side, hands above the head, palms turned out a little, chin tipped up. Second place pumps one fist out beside the head, elbow wide, so the face stays in view. Third place holds both fists at the chest, elbows out. Fourth still drops the head and lets the arms hang. The results camera sits a little to one side, a front three-quarter, so each face reads and all four stay in frame. The still is the planted frame: each sole is half a centimetre above the cap. The hop still lifts the winner between plants.
+
+The bar across a results card, the P tag, and the swatch are the look that figure wears. A colour-blind shape stays on the tag: circle, square, triangle, diamond. Look-sheet chips are as wide as the name and sit centred under the figure. The no-clip rule is unchanged. pose stays 0 and rigJoint stays 26. The rig fix is still a separate change and does not bind here.
+
+In `Docs/UiStills/pass37/` the figures are renders of `Dummy_Mannequin_Tan_Hier_Hi.fbx`. The cards and the labels are composite. The BEFORE picture is the pass 36 results still. Each still is under 400 KB. The proof lines are unchanged.
+
 ## Later passes
 
 - A 2D focus grid on rules so Left from a rule row lands on a mode tile.

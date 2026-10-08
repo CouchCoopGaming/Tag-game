@@ -405,8 +405,8 @@ namespace Tag.Ui.Menu
             _podiumRt = new RenderTexture(1920, 1080, 16, RenderTextureFormat.ARGB32);
             _podiumRt.Create();
             cam.targetTexture = _podiumRt;
-            cam.transform.position = _podiumRoot.position + new Vector3(0.73f, 1.72f, 8.60f);
-            cam.transform.LookAt(_podiumRoot.position + new Vector3(0.73f, 1.60f, 0f));
+            cam.transform.position = _podiumRoot.position + new Vector3(-1.05f, 1.65f, 9.20f);
+            cam.transform.LookAt(_podiumRoot.position + new Vector3(0.73f, 1.35f, 0f));
             _podiumCam = cam;
         }
 

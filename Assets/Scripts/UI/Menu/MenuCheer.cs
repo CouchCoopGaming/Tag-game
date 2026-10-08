@@ -5,7 +5,7 @@ namespace Tag.Ui.Menu
 {
     /// <summary>
     /// Results poses. The winner raises both arms and hops.
-    /// Second and third pump a fist. Last place slumps.
+    /// Second pumps one fist. Third holds both fists at the chest. Last place slumps.
     /// These are menu clips. Reduce motion holds one frame.
     /// </summary>
     public sealed class MenuCheer : MonoBehaviour
@@ -92,6 +92,7 @@ namespace Tag.Ui.Menu
             float time = _still ? 1.2f : t;
             MenuAlive.Angles a;
             if (_win) a = MenuAlive.Cheer(time, 1f);
+            else if (_clap && _small) a = MenuAlive.Chest(time);
             else if (_clap) a = MenuAlive.Pump(time);
             else a = MenuAlive.Slump(time);
             _hop = _win ? MenuAlive.Hop(time) : 0f;

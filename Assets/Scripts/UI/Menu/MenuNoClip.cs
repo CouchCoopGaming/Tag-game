@@ -491,6 +491,7 @@ namespace Tag.Ui.Menu
             float peak = 1.5707963f / 2.1f;
             WriteOverlapPose(rig, Path.Combine(folder, "victory.tris"), From(MenuAlive.Cheer(peak, 1f)));
             WriteOverlapPose(rig, Path.Combine(folder, "pump.tris"), From(MenuAlive.Pump(0.4f)));
+            WriteOverlapPose(rig, Path.Combine(folder, "chest.tris"), From(MenuAlive.Chest(0.4f)));
             WriteOverlapPose(rig, Path.Combine(folder, "slump.tris"), From(MenuAlive.Slump(0.2f)));
         }
 
@@ -818,6 +819,7 @@ namespace Tag.Ui.Menu
                     float hop = 0f;
                     if (rank == 0) { pose = Cheer(t, 1f); poseId = 4; hop = MenuAlive.Hop(t); }
                     else if (rank == 3) { pose = Slump(t); poseId = 5; }
+                    else if (rank == 2) { pose = Chest(t); poseId = 4; }
                     else { pose = Pump(t); poseId = 4; }
                     posed[rank].Place(pose, sx, height + 0.09f + hop, 0f);
                     solids[0] = Solid.Box("step", sx, height * 0.5f, 0f, wide * 0.5f, height * 0.5f, deep * 0.5f);
@@ -1076,6 +1078,11 @@ namespace Tag.Ui.Menu
         static Pose Pump(float t)
         {
             return From(MenuAlive.Pump(t));
+        }
+
+        static Pose Chest(float t)
+        {
+            return From(MenuAlive.Chest(t));
         }
 
         static Pose Slump(float t)
