@@ -40946,5 +40946,414 @@
     ],
     "slackCm": 0.51,
     "fbx": "Assets/Art/Props/Library/StreetFurniture/Sign_StreetName.fbx"
+  },
+  {
+    "name": "Fence_ChainWeave",
+    "category": "StreetFurniture",
+    "blurb": "Chain-link bay 2.44 m between posts, top rail at 1.83 m. Diamond is about 60 mm. A dark sheet backs the wires.",
+    "size": [
+      2.56,
+      2.018,
+      0.12
+    ],
+    "min": [
+      -1.28,
+      0.0,
+      -0.06
+    ],
+    "max": [
+      1.28,
+      2.018,
+      0.06
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 1204,
+        "materials": [
+          "Lib_Steel",
+          "Lib_Concrete",
+          "Lib_SteelDark",
+          "Lib_Chain"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 220,
+        "materials": [
+          "Lib_Steel",
+          "Lib_Concrete",
+          "Lib_SteelDark"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_PostL",
+        "type": "capsule",
+        "center": [
+          -1.22,
+          0.95,
+          0
+        ],
+        "radius": 0.018,
+        "height": 1.4,
+        "direction": 1
+      },
+      {
+        "name": "Col_PostR",
+        "type": "capsule",
+        "center": [
+          1.22,
+          0.95,
+          0
+        ],
+        "radius": 0.018,
+        "height": 1.4,
+        "direction": 1
+      },
+      {
+        "name": "Col_Mesh",
+        "type": "box",
+        "center": [
+          0,
+          0.95,
+          -0.0035
+        ],
+        "size": [
+          1.7,
+          1.2,
+          0.003
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Rail",
+        "type": "box",
+        "center": [
+          0,
+          1.784,
+          -0.004
+        ],
+        "size": [
+          1.9,
+          0.014,
+          0.008
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "climbable": false,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "Wires are not a solid cling. The sheet blocks passage.",
+    "vaultNote": "Top rail is 1.83 m.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1"
+    ],
+    "slackCm": 0.0,
+    "fbx": "Assets/Art/Props/Library/StreetFurniture/Fence_ChainWeave.fbx"
+  },
+  {
+    "name": "StreetCurb_Return",
+    "category": "StreetFurniture",
+    "blurb": "Quarter curb return. Face radius 1.50 m. Gutter 0.30 m at 0.12 m. Curb top at 0.27 m. Ends match StreetCurb_Straight.",
+    "size": [
+      1.74,
+      0.274,
+      1.74
+    ],
+    "min": [
+      -0.87,
+      0.0,
+      -0.87
+    ],
+    "max": [
+      0.87,
+      0.274,
+      0.87
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 212,
+        "materials": [
+          "Lib_Concrete",
+          "Lib_Mortar"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 116,
+        "materials": [
+          "Lib_Concrete"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_GutterA",
+        "type": "box",
+        "center": [
+          0.4424579924873119,
+          0.058,
+          -0.44355654776257264
+        ],
+        "size": [
+          0.16,
+          0.108,
+          0.16
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_GutterB",
+        "type": "box",
+        "center": [
+          0.10580735803743557,
+          0.058,
+          0.10580735803743546
+        ],
+        "size": [
+          0.16,
+          0.108,
+          0.16
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_GutterC",
+        "type": "box",
+        "center": [
+          -0.44355654776257253,
+          0.058,
+          0.4424579924873119
+        ],
+        "size": [
+          0.16,
+          0.108,
+          0.16
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_HeadA",
+        "type": "box",
+        "center": [
+          0.6992432518870032,
+          0.206,
+          -0.36012195928133683
+        ],
+        "size": [
+          0.12,
+          0.112,
+          0.12
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_HeadB",
+        "type": "box",
+        "center": [
+          0.29672618895780334,
+          0.206,
+          0.29672618895780334
+        ],
+        "size": [
+          0.12,
+          0.112,
+          0.12
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_HeadC",
+        "type": "box",
+        "center": [
+          -0.3601219592813367,
+          0.206,
+          0.6992432518870032
+        ],
+        "size": [
+          0.12,
+          0.112,
+          0.12
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "climbable": false,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "Curb face is 0.15 m. Not a cling wall.",
+    "vaultNote": "Curb is 0.15 m above the gutter. Not a vault.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1"
+    ],
+    "slackCm": 0.0,
+    "fbx": "Assets/Art/Props/Library/StreetFurniture/StreetCurb_Return.fbx"
+  },
+  {
+    "name": "LitterCan_Street",
+    "category": "StreetFurniture",
+    "blurb": "Litter can, 0.56 m across and 1.02 m to the lid. Steel body, two belts, rain cap.",
+    "size": [
+      0.66,
+      1.045,
+      0.66
+    ],
+    "min": [
+      -0.33,
+      0.0,
+      -0.33
+    ],
+    "max": [
+      0.33,
+      1.045,
+      0.33
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 412,
+        "materials": [
+          "Lib_SteelDark",
+          "Lib_PaintGreen",
+          "Lib_Steel",
+          "Lib_Black"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 196,
+        "materials": [
+          "Lib_SteelDark",
+          "Lib_PaintGreen",
+          "Lib_Steel"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_Base",
+        "type": "box",
+        "center": [
+          0,
+          0.012,
+          0
+        ],
+        "size": [
+          0.32,
+          0.014,
+          0.32
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Body",
+        "type": "box",
+        "center": [
+          0,
+          0.45,
+          0
+        ],
+        "size": [
+          0.32,
+          0.22,
+          0.32
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Lid",
+        "type": "box",
+        "center": [
+          0,
+          1.004,
+          0
+        ],
+        "size": [
+          0.4,
+          0.012,
+          0.4
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "climbable": false,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "Smooth body. Not a cling.",
+    "vaultNote": "Lid is 1.02 m. Not a vault.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1"
+    ],
+    "slackCm": 0.0,
+    "fbx": "Assets/Art/Props/Library/StreetFurniture/LitterCan_Street.fbx"
   }
 ]

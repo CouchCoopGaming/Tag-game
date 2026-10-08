@@ -109,6 +109,9 @@ MODULES = (
     "sk_fence_iron",
     "sk_scaffold_bay",
     "sk_sign_street",
+    "sk_fence_weave",
+    "sk_curb_return",
+    "sk_litter_can",
 )
 
 

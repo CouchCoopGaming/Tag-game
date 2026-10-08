@@ -82,6 +82,11 @@ PASSES = {
     7: (
         ("sign_street", "Sign_StreetName", 28.0, (-1.35, 0.0, 0.7), 200.0),
     ),
+    8: (
+        ("fence_weave", "Fence_ChainWeave", 16.0, (-2.1, 0.0, 0.8), 200.0),
+        ("curb_return", "StreetCurb_Return", 24.0, (-1.8, 0.0, 1.2), 200.0),
+        ("litter_can", "LitterCan_Street", 18.0, (-1.05, 0.0, 0.55), 200.0),
+    ),
 }
 
 
@@ -124,6 +129,9 @@ def _load(names):
         "Fence_Iron": "sk_fence_iron",
         "Scaffold_Bay": "sk_scaffold_bay",
         "Sign_StreetName": "sk_sign_street",
+        "Fence_ChainWeave": "sk_fence_weave",
+        "StreetCurb_Return": "sk_curb_return",
+        "LitterCan_Street": "sk_litter_can",
     }
     for name in names:
         module = importlib.import_module(stems[name])
