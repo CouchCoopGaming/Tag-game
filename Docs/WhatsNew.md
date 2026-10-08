@@ -431,3 +431,7 @@ The vault hands sit on the box, the climb holds the lip with the chest and one f
 ## Motion, seventeenth pass
 
 The vault and the slide are the same. The climb camera sits on your side of the wall, so you see the body on the face instead of a fist over the top. The launch pad shows the crouch with both feet on the plate. The jump after you leave the plate is a second still. Vault, climb, slide, wall jump, and roll each have an eight-frame strip. Try it: climb a wall and look at the face you are on, then hit a launch pad and watch the knees.
+
+## Motion, eighteenth pass
+
+The climb and the pad plant stay. Each clip is now the whole move, eight frames apart, close enough that the runner fills the frame. The climb rises from the first hand on the wall to standing on top. The roll goes over one shoulder. Vault, slide, and the wall jump run through to the landing or the air. Try it: watch a roll finish inverted, then a climb that actually goes up.
