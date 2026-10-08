@@ -1,5 +1,7 @@
 using Tag.Art;
+using Tag.FX;
 using Tag.Local;
+using Tag.Settings;
 using TagArena.Movement;
 using UnityEngine;
 
@@ -234,7 +236,30 @@ namespace Tag.Experimental
                     return;
                 }
 
-                PlaceSpan(_rope, _halo, _mesh, hand, end, GrappleRopeTell.RopeStartWidth, GrappleRopeTell.RopeEndWidth, GrappleRopeTell.HaloWidth);
+                if (FxAmount.Show(GameSettings.Current))
+                {
+                    float dist = (end - hand).magnitude;
+                    float slack = 0f;
+                    if (_ropeLength > dist + 0.02f && _ropeLength > 0.05f)
+                        slack = (_ropeLength - dist) / _ropeLength;
+                    if (slack > 1f) slack = 1f;
+                    float tension = 1f - slack;
+                    if (_rope != null)
+                    {
+                        _rope.startWidth = GrappleRopeTell.RopeStartWidth;
+                        _rope.endWidth = GrappleRopeTell.RopeEndWidth;
+                    }
+                    if (_halo != null)
+                    {
+                        _halo.startWidth = GrappleRopeTell.HaloWidth;
+                        _halo.endWidth = GrappleRopeTell.RopeEndWidth;
+                    }
+                    VerbFxRope.Lay(_rope, hand, end, tension, slack, Time.time);
+                    VerbFxRope.Lay(_halo, hand, end, tension, slack, Time.time);
+                    if (_mesh != null) _mesh.gameObject.SetActive(false);
+                }
+                else
+                    PlaceSpan(_rope, _halo, _mesh, hand, end, GrappleRopeTell.RopeStartWidth, GrappleRopeTell.RopeEndWidth, GrappleRopeTell.HaloWidth);
                 HideSpan(_aim, null, _aimMesh);
                 PlaceKnot(end, GrappleRopeTell.HookMarkerSize);
                 TickLatchFlash(hand, end);
@@ -359,6 +384,7 @@ namespace Tag.Experimental
             if (core != null)
             {
                 core.enabled = true;
+                if (core.positionCount != 2) core.positionCount = 2;
                 core.startWidth = startWidth;
                 core.endWidth = endWidth;
                 core.SetPosition(0, a);
@@ -370,6 +396,7 @@ namespace Tag.Experimental
                 halo.enabled = haloWidth > 0.001f;
                 if (halo.enabled)
                 {
+                    if (halo.positionCount != 2) halo.positionCount = 2;
                     halo.startWidth = haloWidth;
                     halo.endWidth = Mathf.Max(endWidth, haloWidth * 0.65f);
                     halo.SetPosition(0, a);

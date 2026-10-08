@@ -1,17 +1,33 @@
 # Animation and FX plan
 
-Pass 1 is the exit poses and the terminal landing roll. Pass 2 deepens those poses. Pass 3 is the first FX: running dust and comic contact words. Exits, the roll, and the FX stay visual: they do not change speed, stun, coyote, cling, slide, or the camera.
+Pass 1 is the exit poses and the terminal landing roll. Pass 2 deepens those poses. Pass 3 is running dust and comic contact words. Pass 4 redraws those words as a classic comic burst and adds the verb FX layer. Exits, the roll, and the FX stay visual: they do not change speed, stun, coyote, cling, slide, or the camera.
 
 ## Pass 3 (this branch)
 
 - Foot puffs land on the gait plant (the stride crossing each multiple of pi). Size, opacity, lifetime, and count grow with planar speed. A walk at 6.9 is faint. A sprint at 13.8 is a clear cloud. Run start, a hard pivot, and the first frame of a slide kick harder. A slide keeps a thinner trail. A wall run scuffs on the same plant, and a vault plays the hand puff. Both use the surface table. Reduced flashing skips the clouds.
 - Surfaces: grass (green-brown, light), dirt/sand including mulch (tan, thick, longer), concrete/asphalt (light gray, thin, short), wood (faint splinters), metal (quiet, a few sparks only on a hard pivot), wet (dark droplets). Put a `SurfaceTag` on the collider (kind 0 grass, 1 dirt, 2 concrete, 3 wood, 4 metal, 5 wet). If there is no tag, the physics material name is used, then the renderer material name, then the object name. The parks stamp grass, mulch, sand, concrete, wood, and metal when they build. Name a material `wet`, or set the tag to 5, for splash. The stamp does not change slide friction.
-- Comic words on a punch hit or a tag: POP!, POW!, BAM!, WHAM!. Random, and the same word never plays twice in a row. A punch favors POP! and POW!. A tag favors WHAM! and BAM!. Bold outlined letters on a spiky burst, a small tilt, a scale-pop in 0.05 s, then a hold and a fade, about 0.45 s. They sit at the contact and face each split camera. Settings has Comic words, on by default. Reduced flashing hides them. No hitstop, no shake, no new font file.
-- Mockups are in `Docs/AnimStills/pass3/`.
+- Comic words on a punch hit or a tag: POP!, POW!, BAM!, WHAM!. Random, and the same word never plays twice in a row. A punch favors POP! and POW!. A tag favors WHAM! and BAM!. Each word is its own hand-built burst (see pass 4). Settings has Comic words, on by default. Reduced flashing hides them. No hitstop, no shake.
+
+## Pass 4 (this branch)
+
+- Effects slider in Pause → Settings: Off, Low, Full. Full is the default. Off hides dust, comic words, and the verb layer. Low keeps the words and draws about half the particles, ghosts, and wisps. Reduced flashing hides the layer even when the slider is Full.
+- Big landings grow a ground ring and a debris flick with fall speed, on the same light / medium / heavy tiers as the landings. The 65% shoulder roll also swirls dust along the travel.
+- A dash leaves 3 or 4 fading ghosts in the player color during the 0.10 s. The cooldown ring is unchanged.
+- A grapple rope sags and wobbles. The hook chips the surface (sparks on a hard metal hit, droplets on wet). Letting go snaps. The pull is unchanged.
+- A launch pad throws an up ring and a thin wind streak on the rise.
+- A zip throws trolley sparks that grow with speed, and the line shimmers.
+- A stagger shows comic dizzy stars for the existing 0.25 s.
+- Tag-back keeps its 1.0 s. A soft rim in the player color pulses so the safe body reads in every split pane.
+- A wall run leaves speed-scaled scuff streaks. Wet walls drip.
+- Sprint and faster leave world-space wisps on the body.
+- Comic words, redrawn before the other effects: each word has its own jagged burst, a thick black outline, a second burst in a contrasting color, and Ben-Day dots. Letters are the OFL font Bangers (`Assets/Art/FX/Fonts/Bangers-Regular.ttf`, license in `OFL.txt`): chunky, slanted, thick black stroke, extruded shadow, a highlight, letters varied in size and rotation, on an arch. The pop goes 0 to 1.25 to 1.0 inside 0.05 s, wobbles a little, then fades by 0.45 s. Cells are 1024 and sampled bilinear. Tilt stays within ±12°. Same toggle, pool, and Reduced flashing switch.
+- Camera fov pop, shake, and slow motion stay 0. No hitstop. Stills are in `Docs/AnimStills/pass4/` (`comic-before.png`, `comic-after.png`, `comic-park.png`, `verb-fx.png`).
+
+Pass 3 mockups stay in `Docs/AnimStills/pass3/`.
 
 ## FX queue
 
-Running dust and the comic words are in. Do not add the later items until a later pass.
+Running dust, the comic words, and the verb layer are in. Do not add the later items until a later pass.
 
 ## Pass 2 (this branch)
 

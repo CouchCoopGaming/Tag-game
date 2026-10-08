@@ -120,8 +120,8 @@ namespace Tag.Settings
             const float inner = GameSettings.StickInnerDefault;
             const float outer = GameSettings.StickOuterDefault;
             const float curve = GameSettings.StickCurveDefault;
-            // 19 stick rows plus the comic-words toggle.
-            if (GameSettings.RowCount != 20) return false;
+            // Stick rows, the comic-words toggle, and the effects slider.
+            if (GameSettings.RowCount != 21) return false;
             if (GameSettings.LookAccelDefault != 0f) return false;
             Vector2 full = Shape(1f, 0f, inner, outer, curve);
             if (Math.Abs(full.x - 1f) > 0.001f || Math.Abs(full.y) > 0.001f) return false;

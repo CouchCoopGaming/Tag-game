@@ -244,3 +244,11 @@ Footfalls kick up dust, and a punch or a tag pops a comic word. Speed, slide, an
 
 - Walking is a small puff. Sprinting is a thicker cloud. Starting a run, spinning hard, and dropping into a slide kick more dust. The slide leaves a trail. A wall run scuffs, and a vault puffs at the hands. Grass is a light fleck, sand and mulch hang in the air, concrete fades fast, wood is a faint splinter, metal is almost quiet unless you pivot, and a wet surface splashes. Try it: sprint the lawn, then the sand, then a hard turn on the concrete.
 - A punch shows POP! or POW!. A tag shows BAM! or WHAM!. The same word does not repeat on the next hit. The letters face you in every split pane. Pause → Settings → Comic words turns them off. Reduced flashing hides the dust and the words. Try it: Practice, dummy on, punch, then tag.
+
+## Verb effects and comic lettering
+
+The contact words now read as a comic burst, and the big moves leave a trail you can see. Speed, slide, and the camera stay as they were.
+
+- POP!, POW!, BAM!, and WHAM! each have their own explosion shape and colors. A thick black outline, a second burst behind the letters, and print dots. The letters are big, slanted, and arched, with a black stroke and a block shadow. They punch in a little too big, wobble, and fade on the same short beat as before. Try it: punch the dummy, then tag.
+- Pause → Settings → Effects is Off, Low, or Full. Full is the default. Off hides the dust, the words, and these trails. Low draws fewer of them. Reduced flashing hides them too.
+- A hard landing stamps a ring and flicks debris. The shoulder roll swirls dust along the path. A dash leaves a few ghosts in your color. The rope sags, wobbles, chips the hook point, and snaps when you let go. A pad throws an up ring and a wind streak. A zip sparks along the ride. A stagger puts dizzy stars over the head for the same quarter second. Tag-back keeps its one second and pulses a colored rim so you can see who is safe in every split pane. A wall run scuffs, and a wet wall drips. Sprinting leaves wisps. Try it: fall, dash, rope, pad, zip, then take a hit.

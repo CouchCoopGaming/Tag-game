@@ -12,6 +12,7 @@ namespace Tag.FX
         public const float PopSeconds = 0.05f;
         public const float LifeSeconds = 0.45f;
         public const float HoldSeconds = 0.28f;
+        public const float TiltDegrees = 12f;
         public const int Pop = 0;
         public const int Pow = 1;
         public const int Bam = 2;
@@ -67,20 +68,37 @@ namespace Tag.FX
             if (settings == null) return true;
             if (!settings.ComicWords) return false;
             if (settings.AnyReduceFlash()) return false;
+            if (settings.Effects <= 0) return false;
             return true;
         }
 
-        /// <summary>0.15 at the hit, full size by 0.05 s, then it holds.</summary>
+        /// <summary>Starts at 0, overshoots to 1.25, and is back at 1 by 0.05 s.</summary>
         public static float Scale(float age)
         {
-            if (age <= 0f) return 0.15f;
-            if (age < PopSeconds)
+            if (age <= 0f) return 0f;
+            if (age >= PopSeconds) return 1f;
+            float u = age / PopSeconds;
+            const float peakAt = 0.58f;
+            const float peak = 1.25f;
+            if (u < peakAt)
             {
-                float u = age / PopSeconds;
-                float e = u * u * (3f - 2f * u);
-                return 0.15f + 0.85f * e;
+                float t = u / peakAt;
+                float e = t * t * (3f - 2f * t);
+                return peak * e;
             }
-            return 1f;
+            float settle = (u - peakAt) / (1f - peakAt);
+            float down = settle * settle * (3f - 2f * settle);
+            return peak + (1f - peak) * down;
+        }
+
+        /// <summary>A few degrees of wobble that dies before the hold. Radians.</summary>
+        public static float Wobble(float age)
+        {
+            if (age <= 0f) return 0f;
+            float settle = PopSeconds * 3f;
+            if (age >= settle) return 0f;
+            float decay = 1f - age / settle;
+            return (float)System.Math.Sin(age * 48f) * 0.07f * decay;
         }
 
         public static float Alpha(float age)
@@ -94,6 +112,13 @@ namespace Tag.FX
             if (u < 0f) u = 0f;
             if (u > 1f) u = 1f;
             return 1f - u;
+        }
+
+        /// <summary>Random tilt in ±12 degrees, in radians.</summary>
+        public static float TiltRadians(uint bits)
+        {
+            float u = (bits & 255u) / 255f;
+            return (u * 2f - 1f) * TiltDegrees * 0.017453292f;
         }
 
         public static void ColorOf(int word, out float r, out float g, out float b)
@@ -136,6 +161,10 @@ namespace Tag.FX
             if (PopSeconds < 0.04f || PopSeconds > 0.06f) return false;
             if (LifeSeconds < 0.40f || LifeSeconds > 0.50f) return false;
             if (Scale(0f) > 0.20f || Scale(PopSeconds) < 0.98f) return false;
+            if (Scale(PopSeconds * 0.58f) < 1.15f) return false;
+            float wob = Wobble(0.03f);
+            if (wob < 0.02f || wob > 0.12f) return false;
+            if (Wobble(0f) != 0f || Wobble(LifeSeconds) != 0f) return false;
             if (Alpha(0.10f) < 0.99f) return false;
             if (Alpha(LifeSeconds) > 0.001f) return false;
             if (Alpha(LifeSeconds - 0.02f) <= 0f) return false;
@@ -181,6 +210,14 @@ namespace Tag.FX
             if (loaded.ComicWords) return false;
             loaded.Nudge(GameSettings.RowComic, 1);
             if (!loaded.ComicWords) return false;
+            loaded.Effects = 0;
+            if (Visible(loaded)) return false;
+            loaded.Effects = 2;
+            if (!Visible(loaded)) return false;
+            float hi = TiltRadians(255u);
+            float lo = TiltRadians(0u);
+            float lim = TiltDegrees * 0.017453292f + 0.0001f;
+            if (hi > lim || lo < -lim || hi <= 0f || lo >= 0f) return false;
             return true;
         }
 

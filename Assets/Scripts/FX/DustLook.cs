@@ -54,6 +54,7 @@ namespace Tag.FX
         public static bool CloudsOn(Tag.Settings.GameSettings settings)
         {
             if (settings != null && settings.AnyReduceFlash()) return false;
+            if (settings != null && settings.Effects <= 0) return false;
             return true;
         }
 

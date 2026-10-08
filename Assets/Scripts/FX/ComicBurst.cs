@@ -6,24 +6,23 @@ namespace Tag.FX
 {
     /// <summary>
     /// Pooled comic words at the contact. Each split camera billboards them.
-    /// No hitstop, no shake, no change to punch reach or tag timing.
+    /// The burst, halftone, and letters are one high-res cell. Visual only.
     /// </summary>
     [DefaultExecutionOrder(9000)]
     public sealed class ComicBurst : MonoBehaviour
     {
         const int Slots = 8;
-        const int Atlas = 256;
+        const float RestSize = 1.65f;
 
         static ComicBurst _host;
         static uint _rng = 0xC0F1u;
         static int _last = -1;
 
         GameObject[] _root;
-        Material[] _starMat;
-        Material[] _wordMat;
+        Material[] _mat;
         float[] _age;
+        float[] _tilt;
         Texture2D _atlas;
-        Texture2D _white;
 
         public static void Ensure()
         {
@@ -44,19 +43,15 @@ namespace Tag.FX
         void Awake()
         {
             _host = this;
-            _white = new Texture2D(2, 2, TextureFormat.RGBA32, false);
-            _white.SetPixels(new[] { Color.white, Color.white, Color.white, Color.white });
-            _white.Apply(false, true);
-            _atlas = BuildAtlas();
+            _atlas = LoadAtlas();
             Shader shader = Shader.Find("Tag/ComicBillboard");
             if (shader == null) shader = Shader.Find("Universal Render Pipeline/Unlit");
             if (shader == null) shader = Shader.Find("Sprites/Default");
+            Mesh quad = FullCell();
             _root = new GameObject[Slots];
-            _starMat = new Material[Slots];
-            _wordMat = new Material[Slots];
+            _mat = new Material[Slots];
             _age = new float[Slots];
-            Mesh star = StarMesh();
-            Mesh word = WordMesh();
+            _tilt = new float[Slots];
             for (int i = 0; i < Slots; i++)
             {
                 _age[i] = -1f;
@@ -64,10 +59,15 @@ namespace Tag.FX
                 root.transform.SetParent(transform, false);
                 root.SetActive(false);
                 _root[i] = root;
-                _starMat[i] = MakeMat(shader, _white);
-                _wordMat[i] = MakeMat(shader, _atlas);
-                AddQuad(root.transform, "Burst", star, _starMat[i], 0.02f);
-                AddQuad(root.transform, "Letters", word, _wordMat[i], 0f);
+                _mat[i] = MakeMat(shader, _atlas);
+                var go = new GameObject("Cell");
+                go.transform.SetParent(root.transform, false);
+                var filter = go.AddComponent<MeshFilter>();
+                filter.sharedMesh = quad;
+                var rend = go.AddComponent<MeshRenderer>();
+                rend.sharedMaterial = _mat[i];
+                rend.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                rend.receiveShadows = false;
             }
         }
 
@@ -86,15 +86,11 @@ namespace Tag.FX
                     _root[i].SetActive(false);
                     continue;
                 }
-                float s = ComicWords.Scale(_age[i]) * 1.35f;
+                float s = ComicWords.Scale(_age[i]) * RestSize;
                 _root[i].transform.localScale = new Vector3(s, s, 1f);
                 float a = ComicWords.Alpha(_age[i]);
-                Color star = _starMat[i].color;
-                star.a = a;
-                _starMat[i].color = star;
-                Color word = _wordMat[i].color;
-                word.a = a;
-                _wordMat[i].color = word;
+                Paint(_mat[i], a);
+                _mat[i].SetFloat("_Tilt", _tilt[i] + ComicWords.Wobble(_age[i]));
             }
         }
 
@@ -105,20 +101,19 @@ namespace Tag.FX
             int word = ComicWords.Pick(ref _rng, _last, tag);
             _last = word;
             _rng = _rng * 1664525u + 1013904223u;
-            float tilt = (((_rng >> 8) & 255u) / 255f) * 0.34f - 0.17f;
+            _tilt[slot] = ComicWords.TiltRadians(_rng >> 8);
             _age[slot] = 0f;
             Vector3 contact = HitConfirmTell.Contact(origin, forward, reach);
-            contact.y += 0.35f;
+            contact.y += 0.55f;
             _root[slot].transform.position = contact;
-            _root[slot].transform.localScale = new Vector3(0.2f, 0.2f, 1f);
+            _root[slot].transform.localScale = Vector3.zero;
             _root[slot].SetActive(true);
-            ComicWords.ColorOf(word, out float r, out float g, out float b);
-            _starMat[slot].color = new Color(r, g, b, 1f);
-            _starMat[slot].SetFloat("_Tilt", tilt);
-            _wordMat[slot].color = Color.white;
-            _wordMat[slot].SetFloat("_Tilt", tilt);
-            _wordMat[slot].mainTextureScale = new Vector2(0.25f, 1f);
-            _wordMat[slot].mainTextureOffset = new Vector2(word * 0.25f, 0f);
+            Paint(_mat[slot], 1f);
+            _mat[slot].SetFloat("_Tilt", _tilt[slot]);
+            // One texel of gutter so a cell edge never samples the next word.
+            const float gutter = 2f / 4096f;
+            _mat[slot].mainTextureScale = new Vector2(0.25f - gutter * 2f, 1f);
+            _mat[slot].mainTextureOffset = new Vector2(word * 0.25f + gutter, 0f);
         }
 
         int Free()
@@ -145,6 +140,12 @@ namespace Tag.FX
             return best;
         }
 
+        static void Paint(Material mat, float a)
+        {
+            if (mat == null) return;
+            mat.color = new Color(1f, 1f, 1f, a);
+        }
+
         static Material MakeMat(Shader shader, Texture2D tex)
         {
             var mat = new Material(shader);
@@ -152,64 +153,19 @@ namespace Tag.FX
             if (mat.HasProperty("_MainTex")) mat.SetTexture("_MainTex", tex);
             if (mat.HasProperty("_BaseMap")) mat.SetTexture("_BaseMap", tex);
             if (mat.HasProperty("_Surface")) mat.SetFloat("_Surface", 1f);
+            mat.mainTextureScale = new Vector2(0.25f, 1f);
             return mat;
         }
 
-        static void AddQuad(Transform parent, string name, Mesh mesh, Material mat, float z)
-        {
-            var go = new GameObject(name);
-            go.transform.SetParent(parent, false);
-            go.transform.localPosition = new Vector3(0f, 0f, z);
-            var filter = go.AddComponent<MeshFilter>();
-            filter.sharedMesh = mesh;
-            var rend = go.AddComponent<MeshRenderer>();
-            rend.sharedMaterial = mat;
-            rend.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-            rend.receiveShadows = false;
-        }
-
-        static Mesh StarMesh()
-        {
-            const int spikes = 12;
-            var verts = new Vector3[spikes * 2 + 1];
-            var uv = new Vector2[verts.Length];
-            var tris = new int[spikes * 6];
-            verts[0] = Vector3.zero;
-            uv[0] = new Vector2(0.5f, 0.5f);
-            for (int i = 0; i < spikes; i++)
-            {
-                float a0 = i / (float)spikes * 6.2831855f;
-                float a1 = (i + 0.5f) / spikes * 6.2831855f;
-                verts[1 + i * 2] = new Vector3(Mathf.Cos(a0) * 0.72f, Mathf.Sin(a0) * 0.72f, 0f);
-                verts[2 + i * 2] = new Vector3(Mathf.Cos(a1) * 1.15f, Mathf.Sin(a1) * 1.15f, 0f);
-                uv[1 + i * 2] = new Vector2(0.5f, 0.5f);
-                uv[2 + i * 2] = new Vector2(0.5f, 0.5f);
-                int t = i * 6;
-                int tip = 2 + i * 2;
-                int next = 1 + ((i + 1) % spikes) * 2;
-                tris[t] = 0;
-                tris[t + 1] = 1 + i * 2;
-                tris[t + 2] = tip;
-                tris[t + 3] = 0;
-                tris[t + 4] = tip;
-                tris[t + 5] = next;
-            }
-            var mesh = new Mesh();
-            mesh.vertices = verts;
-            mesh.uv = uv;
-            mesh.triangles = tris;
-            return mesh;
-        }
-
-        static Mesh WordMesh()
+        static Mesh FullCell()
         {
             var mesh = new Mesh();
             mesh.vertices = new[]
             {
-                new Vector3(-0.95f, -0.42f, 0f),
-                new Vector3(0.95f, -0.42f, 0f),
-                new Vector3(0.95f, 0.42f, 0f),
-                new Vector3(-0.95f, 0.42f, 0f)
+                new Vector3(-1f, -1f, 0f),
+                new Vector3(1f, -1f, 0f),
+                new Vector3(1f, 1f, 0f),
+                new Vector3(-1f, 1f, 0f)
             };
             mesh.uv = new[]
             {
@@ -222,48 +178,13 @@ namespace Tag.FX
             return mesh;
         }
 
-        static Texture2D BuildAtlas()
+        static Texture2D LoadAtlas()
         {
-            var tex = new Texture2D(Atlas, 64, TextureFormat.RGBA32, false);
-            var clear = new Color32[Atlas * 64];
-            tex.SetPixels32(clear);
-            for (int word = 0; word < ComicWords.Count; word++)
-            {
-                int letters = ComicWords.LetterCount(word);
-                int origin = word * 64 + (64 - letters * 12) / 2;
-                for (int place = 0; place < letters; place++)
-                {
-                    byte[] rows = ComicWords.Glyph(ComicWords.Letter(word, place));
-                    int ox = origin + place * 12;
-                    for (int y = 0; y < 7; y++)
-                    {
-                        byte row = rows[y];
-                        for (int x = 0; x < 5; x++)
-                        {
-                            if ((row & (1 << (4 - x))) == 0) continue;
-                            Stamp(tex, ox + x * 2, 50 - y * 6, 2, new Color32(20, 16, 16, 255), 1);
-                            Stamp(tex, ox + x * 2, 51 - y * 6, 2, new Color32(255, 255, 255, 255), 0);
-                        }
-                    }
-                }
-            }
-            tex.filterMode = FilterMode.Point;
-            tex.Apply(false, true);
+            var tex = new Texture2D(2, 2, TextureFormat.RGBA32, false);
+            tex.LoadImage(ComicAtlas.Png());
+            tex.filterMode = FilterMode.Bilinear;
+            tex.wrapMode = TextureWrapMode.Clamp;
             return tex;
-        }
-
-        static void Stamp(Texture2D tex, int x, int y, int size, Color32 color, int grow)
-        {
-            for (int yy = -grow; yy < size + grow; yy++)
-            {
-                for (int xx = -grow; xx < size + grow; xx++)
-                {
-                    int px = x + xx;
-                    int py = y + yy;
-                    if (px < 0 || py < 0 || px >= tex.width || py >= tex.height) continue;
-                    tex.SetPixel(px, py, color);
-                }
-            }
         }
     }
 }

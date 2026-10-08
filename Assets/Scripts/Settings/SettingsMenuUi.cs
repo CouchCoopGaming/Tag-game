@@ -292,8 +292,9 @@ namespace Tag.Settings
                 if (_focus == GameSettings.RowInvert || _focus == GameSettings.RowMute
                     || _focus == GameSettings.RowColorblind || _focus == GameSettings.RowMinimap
                     || _focus == GameSettings.RowPlayer || _focus == GameSettings.RowCaptions
-                    || _focus == GameSettings.RowRumble || _focus == GameSettings.RowReduceFlash
-                    || _focus == GameSettings.RowComic)
+                    || _focus == GameSettings.RowRumble                     || _focus == GameSettings.RowReduceFlash
+                    || _focus == GameSettings.RowComic
+                    || _focus == GameSettings.RowEffects)
                     Step(1);
                 return;
             }

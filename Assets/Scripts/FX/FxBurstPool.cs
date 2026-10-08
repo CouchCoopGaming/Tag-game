@@ -65,7 +65,9 @@ namespace Tag.FX
         public static bool Calmed()
         {
             GameSettings settings = GameSettings.Current;
-            return settings != null && settings.AnyReduceFlash();
+            if (settings == null) return false;
+            if (settings.AnyReduceFlash()) return true;
+            return settings.Effects <= 0;
         }
 
         public void Play(FxBurstKind kind, Vector3 worldPos)
@@ -74,7 +76,13 @@ namespace Tag.FX
             if (Calmed()) return;
             Apply(kind);
             _ps.transform.position = worldPos;
-            _ps.Emit(Count(kind));
+            int emit = Count(kind);
+            if (GameSettings.Current != null && GameSettings.Current.Effects == FxAmount.Low)
+            {
+                emit = emit / 2;
+                if (emit < 1) emit = 1;
+            }
+            _ps.Emit(emit);
         }
 
         public void PlayShaped(FxBurstKind kind, Vector3 worldPos, DustLook.Puff puff)
@@ -105,6 +113,12 @@ namespace Tag.FX
             }
             _ps.transform.position = worldPos;
             int n = puff.Count;
+            float dens = FxAmount.Density(GameSettings.Current);
+            if (dens < 0.99f)
+            {
+                n = (int)(n * dens + 0.001f);
+                if (n < 1) n = 1;
+            }
             if (n > 12) n = 12;
             _ps.Emit(n);
         }

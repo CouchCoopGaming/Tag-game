@@ -917,6 +917,14 @@ static class Program
         }
         Tag.FX.FxStills.Write(Path.Combine(RepoRoot(), "Docs", "AnimStills", "pass3"));
 
+        Console.WriteLine(Tag.FX.VerbFxLook.ProofLine());
+        if (!Tag.FX.VerbFxLook.Holds())
+        {
+            Console.Error.WriteLine("verb fx is not held");
+            return 1;
+        }
+        Tag.FX.VerbFxStills.Write(Path.Combine(RepoRoot(), "Docs", "AnimStills", "pass4"));
+
         Console.WriteLine("solo grapple on; opponent and couch off; jet off; clips and locks held");
         return 0;
     }
