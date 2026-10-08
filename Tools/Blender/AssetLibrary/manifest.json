@@ -35641,5 +35641,311 @@
     ],
     "slackCm": 0.0,
     "fbx": "Assets/Art/Props/Library/StreetFurniture/PayKiosk_Lot.fbx"
+  },
+  {
+    "name": "BikeLocker_Single",
+    "category": "StreetFurniture",
+    "blurb": "Bike locker, 0.78 m wide and 1.82 m tall. Plinth, door, vents, and a pull.",
+    "size": [
+      0.78,
+      1.82,
+      0.9
+    ],
+    "min": [
+      -0.39,
+      0.0,
+      -0.45
+    ],
+    "max": [
+      0.39,
+      1.82,
+      0.45
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 216,
+        "materials": [
+          "Lib_SteelDark",
+          "Lib_PaintBlue",
+          "Lib_Black",
+          "Lib_Steel"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 84,
+        "materials": [
+          "Lib_SteelDark",
+          "Lib_PaintBlue",
+          "Lib_Black",
+          "Lib_Steel"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_Foot",
+        "type": "box",
+        "center": [
+          0,
+          0.018,
+          0
+        ],
+        "size": [
+          0.52,
+          0.024,
+          0.6
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Body",
+        "type": "box",
+        "center": [
+          0,
+          0.9,
+          0
+        ],
+        "size": [
+          0.5,
+          1.2,
+          0.56
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Cap",
+        "type": "box",
+        "center": [
+          0,
+          1.785,
+          0
+        ],
+        "size": [
+          0.54,
+          0.03,
+          0.6
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "climbable": false,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "Not a cling.",
+    "vaultNote": "Roof is 1.82 m.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1"
+    ],
+    "slackCm": 0.0,
+    "fbx": "Assets/Art/Props/Library/StreetFurniture/BikeLocker_Single.fbx"
+  },
+  {
+    "name": "CallBox_Pedestal",
+    "category": "StreetFurniture",
+    "blurb": "Call box. Post to 1.05 m, head 1.05\u20131.45 m. HELP in Liberation Sans.",
+    "size": [
+      0.24,
+      1.44,
+      0.22
+    ],
+    "min": [
+      -0.12,
+      0.0,
+      -0.11
+    ],
+    "max": [
+      0.12,
+      1.44,
+      0.11
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 360,
+        "materials": [
+          "Lib_SteelDark",
+          "Lib_Steel",
+          "Lib_PaintBlue",
+          "Lib_PaintRed",
+          "Lib_PaintWhite"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 92,
+        "materials": [
+          "Lib_SteelDark",
+          "Lib_Steel",
+          "Lib_PaintBlue",
+          "Lib_PaintRed"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_Base",
+        "type": "box",
+        "center": [
+          0,
+          0.015,
+          0
+        ],
+        "size": [
+          0.14,
+          0.02,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Post",
+        "type": "capsule",
+        "center": [
+          0,
+          0.52,
+          0
+        ],
+        "radius": 0.026,
+        "height": 0.88,
+        "direction": 1
+      },
+      {
+        "name": "Col_Head",
+        "type": "box",
+        "center": [
+          0,
+          1.24,
+          0
+        ],
+        "size": [
+          0.16,
+          0.28,
+          0.1
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "climbable": false,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "Not a cling.",
+    "vaultNote": "Too short to vault.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1"
+    ],
+    "slackCm": 0.61,
+    "fbx": "Assets/Art/Props/Library/StreetFurniture/CallBox_Pedestal.fbx"
+  },
+  {
+    "name": "SpeedCushion_Asphalt",
+    "category": "StreetFurniture",
+    "blurb": "Speed cushion, 2.10 m wide and 0.08 m tall. Two yellow stripes on the crown.",
+    "size": [
+      2.1,
+      0.085,
+      0.84
+    ],
+    "min": [
+      -1.05,
+      0.0,
+      -0.42
+    ],
+    "max": [
+      1.05,
+      0.085,
+      0.42
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 70,
+        "materials": [
+          "Lib_Asphalt",
+          "Lib_PaintYellow"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 70,
+        "materials": [
+          "Lib_Asphalt",
+          "Lib_PaintYellow"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_Hump",
+        "type": "box",
+        "center": [
+          0,
+          0.028,
+          0
+        ],
+        "size": [
+          1.5,
+          0.04,
+          0.16
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "climbable": false,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "8 cm. Not a wall.",
+    "vaultNote": "Too low to vault.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1"
+    ],
+    "slackCm": 0.0,
+    "fbx": "Assets/Art/Props/Library/StreetFurniture/SpeedCushion_Asphalt.fbx"
   }
 ]
