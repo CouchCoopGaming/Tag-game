@@ -98,6 +98,14 @@ Pass 1 is the exit poses and the terminal landing roll. Pass 2 deepens those pos
 - A punch (not a tag) shows a small POW!. The tag burst stays the large letter-free one.
 - Stills are in `Docs/AnimStills/pass11/`. The live dust numbers, the 0.52 s roll, and the 65% gate stay.
 
+## Pass 12 (this branch)
+
+- Dirt sprint dust is one step lighter and a little less saturated than pass 11, with a warm rim on the cloud edge so it separates from the ground. The clouds stay filled. Concrete stays a small pale puff. A walk stays a short faint puff. `DustLook` is unchanged.
+- The hard-landing absorb is a squat. On this rig a positive thigh X folds the knee up and back, which is why pass 11 measured a 100° bend and still rendered a downward dog standing on its hands. The still now uses a negative thigh pitch, so the knees sit forward of and below the hips, the feet sit under the hips, the chest pitches forward, the head looks ahead, and one hand rests by a foot. The 1.30 m ring and 12 debris bits stay.
+- A punch uses the same side camera as the tag burst. POW! is a comic starburst at the fist, with a black outline and yellow letters, about 13.5% of the frame height. The tag burst stays the larger letter-free one.
+- The launch pad, the zip sparks, and the slide scrape are the same reads as pass 11, shot in the park. A grapple still shows the sagging rope, the hook, and two chips.
+- Stills are in `Docs/AnimStills/pass12/`. The live dust numbers, the 0.52 s roll, and the 65% gate stay.
+
 Pass 3 mockups stay in `Docs/AnimStills/pass3/`.
 
 ## FX queue

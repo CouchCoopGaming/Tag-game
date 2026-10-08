@@ -375,6 +375,15 @@ The effect pictures were taken again in the park, in warm daylight. Speed, the r
 - A launch pad kicks up a short cyan burst around your knees and you leave it in a tuck, with a few speed lines behind you. Try it: run over a pad.
 - A zip leans you along the cable and sparks trail off the hand. A punch throws a small POW!. A tag is still the bigger burst with no letters. Try it: take a zip, then punch the dummy.
 
+## A planted landing, and a punch word you can read
+
+The effect pictures were taken again. Speed, the roll timer, and the camera in play stay as they were.
+
+- Dirt dust is a lighter cloud than the ground under it, with a warm edge. Concrete is still the small gray puff, and a walk is still the short one. Try it: sprint on dirt, then on concrete.
+- A hard landing that is not fast enough to roll drops into a squat: feet under you, knees bent, chest forward, head up, one hand by a foot. The ring and the debris stay. Try it: hop off something about head height while moving.
+- A punch puts a small POW! on the fist. A tag is still the bigger burst with no letters. Try it: punch the dummy, then tag.
+- A zip still sparks off the hand, a slide still leaves two scrape ribbons, and a grapple shows the sagging rope and the hook. Try it: take a zip, slide, then fire the rope.
+
 ## Motion, thirteenth pass
 
 A long fall now bends the knees, sets the feet a little ahead, and opens the arms. Climbing onto a ledge, vaulting, sliding, grabbing and leaving a zip, arriving and letting go of a grapple, and leaving a launch pad no longer pop a bone in one frame. Speeds and the timers you feel are the same. Try it: fall from high up and watch the knees, then climb, vault, slide, zip, grapple, and hit a launch pad.
