@@ -14,7 +14,7 @@ namespace Tag.Ui.Menu
     {
         const int Slots = 4;
         const float BandH = 0.15f;
-        const float NumSize = 0.10f;
+        const float NumSize = 0.22f;
 
         readonly Transform[] _anchor = new Transform[Slots];
         readonly Transform[] _figure = new Transform[Slots];
@@ -236,7 +236,9 @@ namespace Tag.Ui.Menu
                 int seat = row.Seat;
                 if (seat < 0) seat = i;
                 if (_bandRend[i] != null)
-                    _bandRend[i].sharedMaterial = DummyPrimitiveFactory.MakeMat(MenuTheme.SeatBand(seat), 0.4f, 0.02f);
+                    _bandRend[i].sharedMaterial = Flat(MenuTheme.SeatBand(seat));
+                if (_rankNum[i] != null)
+                    _rankNum[i].color = MenuTheme.SeatInk(seat);
                 GameObject body = MenuMannequin.Spawn(_podiumAnchor[i], MenuMannequin.NameOf(row.Hier), MenuMannequin.NameOf(row.Accent), row.Hat != 0);
                 bool win = row.Winner;
                 bool clap = !win && i < 3;
@@ -422,6 +424,18 @@ namespace Tag.Ui.Menu
             }
         }
 
+        static Material Flat(Color c)
+        {
+            Shader shader = Shader.Find("Universal Render Pipeline/Unlit");
+            if (shader == null) shader = Shader.Find("Unlit/Color");
+            if (shader == null) shader = Shader.Find("Sprites/Default");
+            if (shader == null) return DummyPrimitiveFactory.MakeMat(c, 0.02f, 0f);
+            var mat = new Material(shader);
+            if (mat.HasProperty("_BaseColor")) mat.SetColor("_BaseColor", c);
+            if (mat.HasProperty("_Color")) mat.SetColor("_Color", c);
+            return mat;
+        }
+
         void BuildPodium()
         {
             var root = new GameObject("Results");
@@ -480,7 +494,7 @@ namespace Tag.Ui.Menu
                 if (faceCol != null) Destroy(faceCol);
                 var faceRend = face.GetComponent<Renderer>();
                 if (faceRend != null)
-                    faceRend.sharedMaterial = DummyPrimitiveFactory.MakeMat(MenuTheme.SeatBand(i), 0.4f, 0.02f);
+                    faceRend.sharedMaterial = Flat(MenuTheme.SeatBand(i));
                 _band[i] = face.transform;
                 _bandRend[i] = faceRend;
                 var numGo = new GameObject("Num" + i.ToString());
@@ -488,12 +502,12 @@ namespace Tag.Ui.Menu
                 numGo.transform.localPosition = new Vector3(xs[i], plateY, deep * 0.5f + 0.05f);
                 var num = numGo.AddComponent<TextMesh>();
                 num.text = (i + 1).ToString();
-                num.font = MenuTheme.Font;
+                num.font = MenuTheme.Display;
                 num.fontSize = 128;
                 num.characterSize = NumSize;
                 num.anchor = TextAnchor.MiddleCenter;
                 num.alignment = TextAlignment.Center;
-                num.color = new Color(0.98f, 0.97f, 0.94f, 1f);
+                num.color = MenuTheme.SeatInk(i);
                 _rankNum[i] = num;
                 var blot = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
                 blot.name = "BlockShade" + i.ToString();

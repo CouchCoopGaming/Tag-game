@@ -348,7 +348,9 @@ The fortieth pass makes every results block the same stone. The front band is th
 
 The forty-first pass reads the band from MenuMannequin.Swatch, so P4 is lavender with the figure. Every band is the same height, and the rank numeral is one bold size on each block. The results card drops the costume line and keeps the place, the seat, the name, and the two stat lines. The floor fades into the sky. The check is `Docs/UiStills/pass41/results-reveal.gif`. pose stays 0 and rigJoint stays 26. Space still jumps.
 
-Arena select is next. The park name and the size sit to the right of the map, with a gap, so the loop does not cover the words. The picture is `Docs/UiStills/pass42/arena.png`. Space still jumps.
+The forty-second pass makes the place numeral fill the band, in the comic title face. The band is that seat's swatch at full strength, and the numeral is the darker step of the same colour, so the 2 stays on the blue and the 4 stays on the lavender. The cards keep their shapes.
+
+Arena select is a cup list. Each park shows a golden-hour picture, with a small map of the loop, the landmarks, the pads, and the zips. The big panel pans that picture and keeps the name, the size, and the pad and zip counts inside the frame. The header is the comic title on the dark band. Random is a question mark that shuffles the three parks. Joined players leave their shape and colour on the row they are hovering, with a vote count. The pictures are `Docs/UiStills/pass42/arena.png`, `arena-hover-4seats.png`, and `results-fix.png`. pose stays 0 and rigJoint stays 26. Space still jumps.
 
 ## Motion, ninth pass
 

@@ -38,6 +38,14 @@ namespace Tag.Ui.Menu
             return Size(id) + "\n" + Flavor(id);
         }
 
+        public static void Counts(int id, out int pads, out int zips)
+        {
+            MegaParkP1Layout.PadSpot[] padList = Pads(id);
+            MegaParkP1Layout.ZipLineSpot[] zipList = Zips(id);
+            pads = padList != null ? padList.Length : 0;
+            zips = zipList != null ? zipList.Length : 0;
+        }
+
         public static void Paint(Transform frame, int id)
         {
             if (frame == null) return;
@@ -100,19 +108,53 @@ namespace Tag.Ui.Menu
                     Dot(map, marks[i].X, marks[i].Z, mapW, mapD, inset, innerW, innerH, tone, dot);
                 }
             }
+            float[] markX;
+            float[] markZ;
+            int markN = Marks(id, out markX, out markZ);
+            float markSize = w < 100f ? 5f : 9f;
+            for (int m = 0; m < markN; m++)
+                Dot(map, markX[m], markZ[m], mapW, mapD, inset, innerW, innerH, new Color(0.96f, 0.93f, 0.84f, 1f), markSize);
             MegaParkP1Layout.ZipLineSpot[] zips = Zips(id);
             int zn = zips != null ? zips.Length : 0;
+            float zipThick = w < 100f ? 1.5f : 2.5f;
             for (int i = 0; i < zn; i++)
-                Line(map, zips[i].Ax, zips[i].Az, zips[i].Bx, zips[i].Bz, mapW, mapD, inset, innerW, innerH, MenuTheme.Gold, 2f);
+                Line(map, zips[i].Ax, zips[i].Az, zips[i].Bx, zips[i].Bz, mapW, mapD, inset, innerW, innerH, MenuTheme.Gold, zipThick);
             MegaParkP1Layout.PadSpot[] pads = Pads(id);
             int pn = pads != null ? pads.Length : 0;
+            float padSize = w < 100f ? 5f : 8f;
             for (int p = 0; p < pn; p++)
-                Dot(map, pads[p].X, pads[p].Z, mapW, mapD, inset, innerW, innerH, MenuTheme.Gold, 8f);
+                Dot(map, pads[p].X, pads[p].Z, mapW, mapD, inset, innerW, innerH, MenuTheme.Gold, padSize);
             MegaParkP1Layout.SpawnPad[] spawns = Spawns(id);
             int seats = spawns != null ? spawns.Length : 0;
             if (seats > 4) seats = 4;
             for (int s = 0; s < seats; s++)
                 Dot(map, spawns[s].X, spawns[s].Z, mapW, mapD, inset, innerW, innerH, MenuTheme.Seat(s), 10f);
+        }
+
+        static readonly float[] MegaMarkX = { 20f, 15.2f, 40f, 84f, 109f, 148.2f, 54f, 150.4f };
+        static readonly float[] MegaMarkZ = { 10f, 77.4f, 36.6f, 95f, 58f, 28.8f, 34.35f, 5.2f };
+        static readonly float[] PocketMarkX = { 46f, 66f, 12f, 14f };
+        static readonly float[] PocketMarkZ = { 42f, 32f, 22f, 40f };
+        static readonly float[] StackMarkX = { 14f, 96f, 14f, 96f };
+        static readonly float[] StackMarkZ = { 18f, 18f, 56f, 56f };
+
+        static int Marks(int id, out float[] xs, out float[] zs)
+        {
+            if (id == ParkArena.Pocket)
+            {
+                xs = PocketMarkX;
+                zs = PocketMarkZ;
+                return PocketMarkX.Length;
+            }
+            if (id == ParkArena.Stack)
+            {
+                xs = StackMarkX;
+                zs = StackMarkZ;
+                return StackMarkX.Length;
+            }
+            xs = MegaMarkX;
+            zs = MegaMarkZ;
+            return MegaMarkX.Length;
         }
 
         static MegaParkP1Layout.Pt[] Loop(int id)

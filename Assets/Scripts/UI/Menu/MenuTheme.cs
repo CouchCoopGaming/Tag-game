@@ -79,7 +79,16 @@ namespace Tag.Ui.Menu
             int i = seat;
             if (i < 0) i = 0;
             if (i > 3) i = 3;
-            return MenuMannequin.Swatch(BandKey[i]);
+            return MenuMannequin.LightStep(BandKey[i]);
+        }
+
+        /// <summary>Dark step of the same swatch, for a numeral or a mark on the band.</summary>
+        public static Color SeatInk(int seat)
+        {
+            int i = seat;
+            if (i < 0) i = 0;
+            if (i > 3) i = 3;
+            return MenuMannequin.DarkStep(BandKey[i]);
         }
 
         public static string Place(int rank)

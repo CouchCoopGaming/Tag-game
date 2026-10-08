@@ -345,7 +345,13 @@ The seat band reads MenuMannequin.Swatch. P1 is red, P2 blue, P3 orange, P4 lave
 
 In `Docs/UiStills/pass41/` the figures are renders of `Dummy_Mannequin_Tan_Hier_Hi.fbx`. The cards, the summary, and the labels are composite. The BEFORE picture is the pass 40 results still. Each still is under 400 KB. The proof lines are unchanged.
 
-Arena select is the next screen. Each park row keeps its map on the left. The name and the size sit to the right of that map, with a gap, so the loop does not cover the words. `Docs/UiStills/pass42/arena.png` is that list. The proof lines are unchanged.
+## Pass 42
+
+The place numeral fills most of the band and uses the comic title face. The band is the costume swatch at full strength, from MenuMannequin.LightStep. The numeral is MenuMannequin.DarkStep of that same swatch, so lavender and blue stay readable. The results cards keep the seat shapes: circle, square, triangle, diamond.
+
+Arena select is a cup list. Each park is a golden-hour plate, Mega Park from the existing yard plate, Pocket Park and Stack Yard graded from their overview captures. A small minimap sits on the plate, with the loop, landmark marks, pad dots, and zip lines. The right panel pans that plate, and the name, the size, and the pad and zip counts stay inside it. The header is the comic title on the dark band. Random is a question-mark tile that shuffles the three plates. Each joined seat leaves a shape and colour chip on the row it is hovering, with the vote count on a dark chip. Pad and keyboard focus, and back, are unchanged.
+
+`Docs/UiStills/pass42/arena.png`, `arena-hover-4seats.png`, and `results-fix.png` are the checks. Each is under 400 KB. pose stays 0 and rigJoint stays 26. The proof lines are unchanged.
 
 ## Later passes
 

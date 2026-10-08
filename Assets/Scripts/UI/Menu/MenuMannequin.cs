@@ -188,6 +188,29 @@ namespace Tag.Ui.Menu
             }
         }
 
+        /// <summary>The costume swatch at full strength. The light step of that hue.</summary>
+        public static Color LightStep(string key)
+        {
+            return Swatch(key);
+        }
+
+        /// <summary>
+        /// Same hue as <see cref="Swatch"/>, one step darker. The colour-blind
+        /// scheme pairs this ink with the light step. No second colour table.
+        /// </summary>
+        public static Color DarkStep(string key)
+        {
+            Color plate = Swatch(key);
+            Color.RGBToHSV(plate, out float h, out float s, out float v);
+            if (s < 0.62f) s = 0.62f;
+            float inkV = v * 0.28f;
+            if (inkV > 0.32f) inkV = 0.32f;
+            if (inkV < 0.12f) inkV = 0.12f;
+            Color ink = Color.HSVToRGB(h, s, inkV);
+            ink.a = 1f;
+            return ink;
+        }
+
         static void AddHat(Transform root)
         {
             var hat = GameObject.CreatePrimitive(PrimitiveType.Sphere);

@@ -141,6 +141,18 @@ namespace Tag.Ui.Menu
         RawImage _arenaShot;
         Text _arenaShotName;
         Text _arenaShotBlurb;
+        Text _arenaSize;
+        Text _arenaPads;
+        Text _arenaZips;
+        RawImage _arenaRandom;
+        Image _headerBand;
+        int _arenaShuffle = -1;
+        readonly int[] _arenaHover = { 0, 1, 2, 3 };
+        readonly Image[] _arenaChip = new Image[4];
+        readonly Text[] _arenaVote = new Text[4];
+        readonly int[] _arenaVoteN = new int[4];
+        readonly int[] _arenaPlaced = new int[4];
+        static readonly string[] Digit = { "0", "1", "2", "3", "4", "5", "6", "7", "8", "9" };
         readonly Image[] _glyphChip = new Image[4];
         readonly Image[] _glyphIcon = new Image[4];
         readonly Text[] _glyphWord = new Text[4];
@@ -481,6 +493,10 @@ namespace Tag.Ui.Menu
             BuildRibbons(back);
             BuildOrbs(back);
 
+            var bandRt = MenuWidgets.Box(root, "HeaderBand", new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(0.5f, 1f));
+            _headerBand = bandRt.gameObject.AddComponent<Image>();
+            _headerBand.color = MenuTheme.Ink;
+            _headerBand.raycastTarget = false;
             _header = MenuWidgets.Heading(root, "TAG", 42, TextAnchor.MiddleLeft, MenuTheme.Gold, new Vector2(0f, 1f), new Vector2(1f, 1f));
             RectTransform headerRt = _header.rectTransform;
             headerRt.anchorMin = new Vector2(0f, 1f);
@@ -604,6 +620,19 @@ namespace Tag.Ui.Menu
             _promptWord = null;
             _promptTail = null;
             _parade = null;
+            _arenaShot = null;
+            _arenaShotName = null;
+            _arenaShotBlurb = null;
+            _arenaSize = null;
+            _arenaPads = null;
+            _arenaZips = null;
+            _arenaRandom = null;
+            _arenaShuffle = -1;
+            for (int i = 0; i < _arenaChip.Length; i++)
+            {
+                _arenaChip[i] = null;
+                _arenaVote[i] = null;
+            }
             for (int i = 0; i < _castMark.Length; i++) _castMark[i] = null;
             for (int i = 0; i < _castView.Length; i++)
             {
@@ -1149,6 +1178,12 @@ namespace Tag.Ui.Menu
             PlaceGlyphs();
         }
 
+        void TitleBar(string text)
+        {
+            if (_header != null) _header.text = text ?? "";
+            if (_headerBand != null) _headerBand.enabled = text != null && text.Length > 0;
+        }
+
         void PlaceChrome()
         {
             UiFit.Ref(UiFit.Current(), out _, out float rh);
@@ -1165,6 +1200,14 @@ namespace Tag.Ui.Menu
                 max.x = -UiFit.SafeX;
                 headerRt.offsetMin = min;
                 headerRt.offsetMax = max;
+            }
+            if (_headerBand != null)
+            {
+                RectTransform bandRt = _headerBand.rectTransform;
+                bandRt.anchoredPosition = new Vector2(0f, -top);
+                bandRt.sizeDelta = new Vector2(0f, band);
+                bandRt.offsetMin = new Vector2(0f, bandRt.offsetMin.y);
+                bandRt.offsetMax = new Vector2(0f, bandRt.offsetMax.y);
             }
             if (_seatLegend != null)
             {
@@ -1765,8 +1808,11 @@ namespace Tag.Ui.Menu
             if (dx != 0 || dy != 0)
             {
                 Move(dx, dy);
+                NoteArenaHover();
                 ShowArenaPreview();
             }
+            LayoutArenaMarks();
+            TickArenaShot();
             if (confirm || start) ArmActivate();
         }
 
@@ -2101,7 +2147,7 @@ namespace Tag.Ui.Menu
         void BuildTitle()
         {
             _count = 0;
-            if (_header != null) _header.text = "";
+            TitleBar("");
             if (_banner != null) _banner.text = "";
             if (_dim != null) _dim.color = new Color(0.02f, 0.04f, 0.10f, 0.25f);
             ShowFlyover(ParkArena.Mega, 1f);
@@ -2192,7 +2238,7 @@ namespace Tag.Ui.Menu
         {
             _count = 0;
             _cols = 1;
-            if (_header != null) _header.text = "  Menu";
+            TitleBar("  Menu");
             if (_banner != null) _banner.text = "";
             if (_dim != null) _dim.color = MenuTheme.Veil;
             ShowFlyover(ParkArena.Mega, 0.88f);
@@ -2248,7 +2294,7 @@ namespace Tag.Ui.Menu
         {
             _count = 0;
             _cols = 4;
-            if (_header != null) _header.text = "  Who's playing";
+            TitleBar("  Who's playing");
             if (_dim != null) _dim.color = MenuTheme.Veil;
             _joinSig = JoinSig();
             for (int s = 0; s < 4; s++)
@@ -2308,7 +2354,7 @@ namespace Tag.Ui.Menu
         {
             _count = 0;
             _naming = -1;
-            if (_header != null) _header.text = "  Characters";
+            TitleBar("  Characters");
             if (_banner != null) _banner.text = "Down from a color opens the name keys";
             if (_dim != null) _dim.color = MenuTheme.Veil;
             float span = UiFit.BodyW(UiFit.Current());
@@ -2506,7 +2552,7 @@ namespace Tag.Ui.Menu
             _window = 0;
             _focus = (int)MenuSession.Mode;
             if (_focus < 0 || _focus > 3) _focus = 1;
-            if (_header != null) _header.text = "  Mode and rules";
+            TitleBar("  Mode and rules");
             if (_banner != null) _banner.text = "Left and right change a rule";
             if (_dim != null) _dim.color = MenuTheme.Veil;
             UiFit.Columns(UiFit.Current(), out float leftX, out float leftW, out _, out _);
@@ -2575,25 +2621,30 @@ namespace Tag.Ui.Menu
             _cols = 1;
             _focus = MenuSession.RandomArena ? 3 : MenuSession.Arena;
             if (_focus < 0 || _focus > 4) _focus = 0;
-            if (_header != null) _header.text = "  Arena";
+            TitleBar("  Arena");
             if (_banner != null) _banner.text = "Random picks one of the three parks";
             if (_dim != null) _dim.color = MenuTheme.Veil;
+            for (int s = 0; s < 4; s++)
+                _arenaHover[s] = _focus <= 3 ? _focus : 0;
             UiFit.ArenaSplit(UiFit.Current(), out float listW, out float shotX, out float shotW, out float row, out float step);
-            float thumbW = listW * 0.28f;
-            if (thumbW > 200f) thumbW = 200f;
-            if (thumbW < 72f) thumbW = 72f;
+            float mapW = 92f;
+            if (row < 120f) mapW = 72f;
+            float mapH = row * 0.42f;
+            if (mapH > 64f) mapH = 64f;
+            if (mapH < 40f) mapH = 40f;
             for (int i = 0; i < ParkArena.Count; i++)
             {
-                AddTile(16f, 12f + i * step, listW, row, i, ParkArena.NameOf(i), MenuArenaCard.Blurb(i), true);
-                MenuTile park = TileAt(i);
-                if (park != null)
-                {
-                    MenuArenaCard.PaintAt(park.transform, i, 12f, 12f, thumbW, row - 24f);
-                    Pull(park.Label, thumbW + 36f);
-                    Pull(park.Detail, thumbW + 36f);
-                }
+                AddTile(16f, 12f + i * step, listW, row, i, ParkArena.NameOf(i), MenuArenaCard.Size(i), true);
+                DressArenaTile(TileAt(i), i, listW, row, mapW, mapH, false);
             }
-            AddTile(16f, 12f + 3 * step, listW, row, 3, "Random", "One of Mega Park, Pocket Park, or Stack Yard.", true);
+            AddTile(16f, 12f + 3 * step, listW, row, 3, "Random", "", true);
+            MenuTile randomTile = TileAt(3);
+            DressArenaTile(randomTile, 0, listW, row, mapW, mapH, true);
+            if (randomTile != null)
+            {
+                var mark = MenuWidgets.Heading(randomTile.transform, "?", 72, TextAnchor.MiddleCenter, MenuTheme.Gold, new Vector2(0.08f, 0.28f), new Vector2(0.62f, 0.82f));
+                mark.raycastTarget = false;
+            }
             float backW = listW * 0.5f;
             if (backW > 360f) backW = 360f;
             AddTile(16f, 12f + 4 * step, backW, row > 100f ? 100f : row, 4, "Back", "", true);
@@ -2603,35 +2654,257 @@ namespace Tag.Ui.Menu
             var frame = shot.gameObject.AddComponent<Image>();
             MenuArt.Plate(frame, MenuTheme.Navy, true);
             frame.raycastTarget = false;
-            float viewH = shotH * 0.68f;
-            if (viewH < 120f) viewH = 120f;
-            var view = MenuWidgets.Place(shot, "Shot", 16f, 16f, shotW - 32f, viewH);
+            const float pad = 16f;
+            float foot = 132f;
+            float viewH = shotH - pad * 2f - foot;
+            if (viewH < 140f)
+            {
+                foot = 112f;
+                viewH = shotH - pad * 2f - foot;
+            }
+            if (viewH < 100f) viewH = 100f;
+            var view = MenuWidgets.Place(shot, "Shot", pad, pad, shotW - pad * 2f, viewH);
             _arenaShot = view.gameObject.AddComponent<RawImage>();
             _arenaShot.raycastTarget = false;
-            _arenaShotName = MenuWidgets.Words(shot, "", MenuTokens.Display, TextAnchor.MiddleLeft, MenuTheme.Gold, new Vector2(0f, 0.08f), new Vector2(1f, 0.28f));
-            _arenaShotBlurb = MenuWidgets.Words(shot, "", MenuTokens.Body, TextAnchor.UpperLeft, MenuTheme.Cream, new Vector2(0f, 0f), new Vector2(1f, 0.14f));
+            _arenaShot.uvRect = new Rect(0.06f, 0.04f, 0.86f, 0.88f);
+            float mapInset = viewH > 180f ? 108f : 84f;
+            MenuArenaCard.PaintAt(view, 0, shotW - pad * 2f - mapInset - 8f, 8f, mapInset, mapInset * 0.62f);
+            float nameY = pad + viewH + 6f;
+            var nameHold = MenuWidgets.Place(shot, "Name", pad, nameY, shotW - pad * 2f, 48f);
+            _arenaShotName = MenuWidgets.Heading(nameHold, "", 44, TextAnchor.MiddleLeft, MenuTheme.Gold, Vector2.zero, Vector2.one);
+            var sizeHold = MenuWidgets.Place(shot, "Size", pad, nameY + 48f, shotW - pad * 2f, 32f);
+            _arenaSize = MenuWidgets.Words(sizeHold, "", UiFit.FloorFont, TextAnchor.MiddleLeft, MenuTheme.Cream, Vector2.zero, Vector2.one);
+            float iconY = nameY + 82f;
+            if (iconY + 36f > shotH - 8f) iconY = shotH - 44f;
+            var padHold = MenuWidgets.Place(shot, "Pads", pad, iconY, 150f, 36f);
+            var padIcon = MenuWidgets.Place(padHold, "PadIcon", 0f, 4f, 28f, 28f);
+            var padImage = padIcon.gameObject.AddComponent<Image>();
+            padImage.sprite = MenuArt.Round;
+            padImage.color = MenuTheme.Gold;
+            padImage.raycastTarget = false;
+            _arenaPads = MenuWidgets.Words(padHold, "", UiFit.FloorFont, TextAnchor.MiddleLeft, MenuTheme.Cream, Vector2.zero, Vector2.one);
+            if (_arenaPads != null)
+            {
+                Vector2 min = _arenaPads.rectTransform.offsetMin;
+                min.x = 34f;
+                _arenaPads.rectTransform.offsetMin = min;
+            }
+            var zipHold = MenuWidgets.Place(shot, "Zips", pad + 160f, iconY, 170f, 36f);
+            var zipIcon = MenuWidgets.Place(zipHold, "ZipIcon", 0f, 14f, 28f, 8f);
+            var zipImage = zipIcon.gameObject.AddComponent<Image>();
+            zipImage.color = MenuTheme.Gold;
+            zipImage.raycastTarget = false;
+            _arenaZips = MenuWidgets.Words(zipHold, "", UiFit.FloorFont, TextAnchor.MiddleLeft, MenuTheme.Cream, Vector2.zero, Vector2.one);
+            if (_arenaZips != null)
+            {
+                Vector2 min = _arenaZips.rectTransform.offsetMin;
+                min.x = 34f;
+                _arenaZips.rectTransform.offsetMin = min;
+            }
+            _arenaShotBlurb = null;
+            for (int s = 0; s < 4; s++)
+            {
+                var chip = MenuWidgets.Place(_body, "SeatCursor", 0f, 0f, 26f, 26f);
+                chip.pivot = new Vector2(0.5f, 0.5f);
+                var image = chip.gameObject.AddComponent<Image>();
+                image.sprite = SeatMark.For(s);
+                image.color = MenuTheme.SeatBand(s);
+                image.raycastTarget = false;
+                _arenaChip[s] = image;
+                var vote = MenuWidgets.Place(_body, "Vote", 0f, 0f, 36f, 28f);
+                vote.pivot = new Vector2(0.5f, 0.5f);
+                var votePlate = vote.gameObject.AddComponent<Image>();
+                MenuArt.Plate(votePlate, MenuTheme.Navy, true);
+                votePlate.raycastTarget = false;
+                _arenaVote[s] = MenuWidgets.Words(vote, "", UiFit.FloorFont, TextAnchor.MiddleCenter, MenuTheme.Cream, Vector2.zero, Vector2.one);
+            }
             ShowArenaPreview();
+            LayoutArenaMarks();
+        }
+
+        void DressArenaTile(MenuTile tile, int arena, float listW, float row, float mapW, float mapH, bool random)
+        {
+            if (tile == null) return;
+            if (tile.Plate != null) tile.Plate.color = new Color(0.05f, 0.08f, 0.16f, 1f);
+            Texture tex = MenuArenaArt.Thumb(arena);
+            RawImage photo = MenuWidgets.Thumb(tile, tex, 8f, 8f, listW - 16f, row - 16f);
+            if (photo != null) photo.rectTransform.SetSiblingIndex(3);
+            if (random) _arenaRandom = photo;
+            var scrim = MenuWidgets.Place(tile.transform, "Scrim", 8f, row - 62f, listW - 16f, 54f);
+            var scrimImage = scrim.gameObject.AddComponent<Image>();
+            scrimImage.color = new Color(0.04f, 0.07f, 0.14f, 0.78f);
+            scrimImage.raycastTarget = false;
+            scrim.SetSiblingIndex(4);
+            float mapX = listW - mapW - 16f;
+            float mapY = 14f;
+            if (!random)
+                MenuArenaCard.PaintAt(tile.transform, arena, mapX, mapY, mapW, mapH);
+            SitTileWords(tile.Label, listW, row, mapW);
+            SitTileWords(tile.Detail, listW, row, mapW);
+            if (tile.Detail != null)
+            {
+                RectTransform rt = tile.Detail.rectTransform;
+                Vector2 pos = rt.anchoredPosition;
+                pos.y += 28f;
+                rt.anchoredPosition = pos;
+            }
+        }
+
+        static void SitTileWords(Text label, float listW, float row, float mapW)
+        {
+            if (label == null) return;
+            RectTransform rt = label.rectTransform;
+            rt.anchorMin = new Vector2(0f, 1f);
+            rt.anchorMax = new Vector2(0f, 1f);
+            rt.pivot = new Vector2(0f, 1f);
+            rt.anchoredPosition = new Vector2(18f, -(row - 52f));
+            rt.sizeDelta = new Vector2(listW - mapW - 40f, 28f);
         }
 
         void ShowArenaPreview()
         {
             if (_arenaShot == null) return;
             int id = _focus;
-            bool random = id == 3 || id < 0 || id >= ParkArena.Count;
-            int shown = random ? MenuSession.Arena : id;
+            bool random = id == 3;
+            int shown = id;
+            if (shown < 0 || shown >= ParkArena.Count) shown = MenuSession.Arena;
+            if (random) shown = _arenaShuffle;
             if (shown < 0 || shown >= ParkArena.Count) shown = 0;
             Texture tex = MenuBackdrop.Shot(shown);
             _arenaShot.texture = tex;
             _arenaShot.color = tex != null ? Color.white : MenuTheme.Panel;
-            if (_arenaShotName != null)
-                _arenaShotName.text = random ? "Random" : ParkArena.NameOf(shown);
-            if (_arenaShotBlurb != null)
-            {
-                string size = MenuArenaCard.Size(shown);
-                _arenaShotBlurb.text = random ? size + "\nOne of the three parks." : size + "\n" + MenuArenaCard.Flavor(shown);
-            }
-            MenuArenaCard.Paint(_arenaShot != null ? _arenaShot.transform.parent : null, shown);
+            if (_arenaRandom != null && random)
+                _arenaRandom.texture = tex;
+            PaintArenaFacts(shown, random);
             ShowFlyover(shown, 0.2f);
+        }
+
+        void PaintArenaFacts(int shown, bool random)
+        {
+            if (shown < 0 || shown >= ParkArena.Count) shown = 0;
+            if (_arenaShotName != null)
+                _arenaShotName.text = random ? "?" : ParkArena.NameOf(shown);
+            if (_arenaSize != null)
+                _arenaSize.text = MenuArenaCard.Size(shown);
+            MenuArenaCard.Counts(shown, out int pads, out int zips);
+            if (_arenaPads != null) _arenaPads.text = DigitOf(pads);
+            if (_arenaZips != null) _arenaZips.text = DigitOf(zips);
+            if (_arenaShot == null) return;
+            Transform view = _arenaShot.transform;
+            for (int i = view.childCount - 1; i >= 0; i--)
+            {
+                Transform child = view.GetChild(i);
+                if (child != null && child.name == "Map") Object.DestroyImmediate(child.gameObject);
+            }
+            RectTransform viewRt = view as RectTransform;
+            float vw = viewRt != null ? viewRt.sizeDelta.x : 240f;
+            float vh = viewRt != null ? viewRt.sizeDelta.y : 160f;
+            float mapInset = vh > 180f ? 108f : 84f;
+            if (mapInset > vw * 0.34f) mapInset = vw * 0.34f;
+            MenuArenaCard.PaintAt(view, shown, vw - mapInset - 8f, 8f, mapInset, mapInset * 0.62f);
+        }
+
+        static string DigitOf(int n)
+        {
+            if (n < 0) n = 0;
+            if (n > 9) n = 9;
+            return Digit[n];
+        }
+
+        void NoteArenaHover()
+        {
+            int pick = _focus;
+            if (pick < 0) pick = 0;
+            if (pick > 3) pick = 3;
+            for (int i = 0; i < MenuInput.Count; i++)
+            {
+                MenuEdge edge = MenuInput.Edges[i];
+                if (edge.X == 0 && edge.Y == 0) continue;
+                int seat = SeatOf(edge.Device);
+                if (seat < 0 || seat > 3) continue;
+                _arenaHover[seat] = pick;
+            }
+        }
+
+        void LayoutArenaMarks()
+        {
+            if (_arenaChip[0] == null) return;
+            for (int i = 0; i < 4; i++)
+            {
+                _arenaVoteN[i] = 0;
+                _arenaPlaced[i] = 0;
+            }
+            for (int s = 0; s < 4; s++)
+            {
+                if (!CouchPlay.HumanAt(s)) continue;
+                int tile = _arenaHover[s];
+                if (tile < 0 || tile > 3) continue;
+                _arenaVoteN[tile]++;
+            }
+            for (int s = 0; s < 4; s++)
+            {
+                Image chip = _arenaChip[s];
+                if (chip == null) continue;
+                bool on = CouchPlay.HumanAt(s);
+                chip.enabled = on;
+                if (!on) continue;
+                int tile = _arenaHover[s];
+                if (tile < 0) tile = 0;
+                if (tile > 3) tile = 3;
+                MenuTile row = TileAt(tile);
+                RectTransform rt = row != null ? row.transform as RectTransform : null;
+                if (rt == null) continue;
+                int slot = _arenaPlaced[tile];
+                _arenaPlaced[tile] = slot + 1;
+                float right = rt.anchoredPosition.x + rt.sizeDelta.x * 0.5f;
+                float top = -rt.anchoredPosition.y - rt.sizeDelta.y * 0.5f;
+                RectTransform chipRt = chip.rectTransform;
+                chipRt.anchoredPosition = new Vector2(right - 22f - slot * 30f, -(top + 20f));
+            }
+            for (int tile = 0; tile < 4; tile++)
+            {
+                Text vote = _arenaVote[tile];
+                if (vote == null) continue;
+                int n = _arenaVoteN[tile];
+                vote.text = n > 0 ? DigitOf(n) : "";
+                MenuTile row = TileAt(tile);
+                RectTransform rt = row != null ? row.transform as RectTransform : null;
+                RectTransform hold = vote.transform.parent as RectTransform;
+                if (rt == null || n < 1)
+                {
+                    vote.enabled = false;
+                    if (hold != null) hold.gameObject.SetActive(false);
+                    continue;
+                }
+                vote.enabled = true;
+                if (hold != null) hold.gameObject.SetActive(true);
+                float right = rt.anchoredPosition.x + rt.sizeDelta.x * 0.5f;
+                float top = -rt.anchoredPosition.y - rt.sizeDelta.y * 0.5f;
+                int slots = _arenaPlaced[tile];
+                if (hold != null)
+                    hold.anchoredPosition = new Vector2(right - 22f - slots * 30f - 18f, -(top + 20f));
+            }
+        }
+
+        void TickArenaShot()
+        {
+            if (_arenaShot == null || _screen != MenuScreenId.Arena) return;
+            bool still = MenuVideo.ReduceMotion || MenuCapture.Running;
+            if (!still)
+            {
+                float t = Time.unscaledTime;
+                float u = 0.05f + 0.06f * Mathf.Sin(t * 0.16f);
+                float v = 0.03f + 0.04f * Mathf.Sin(t * 0.11f);
+                _arenaShot.uvRect = new Rect(u, v, 0.86f, 0.88f);
+            }
+            if (_focus != 3) return;
+            int frame = still ? 0 : (int)(Time.unscaledTime * 0.4f) % 3;
+            if (frame == _arenaShuffle) return;
+            _arenaShuffle = frame;
+            Texture tex = MenuBackdrop.Shot(frame);
+            _arenaShot.texture = tex;
+            if (_arenaRandom != null) _arenaRandom.texture = tex;
+            PaintArenaFacts(frame, true);
         }
 
         void ShowFlyover(int arena, float alpha)
@@ -2654,7 +2927,7 @@ namespace Tag.Ui.Menu
             if (_dim != null) _dim.color = MenuTheme.Veil;
             string name = MenuSession.RandomArena ? "Random" : ParkArena.NameOf(MenuSession.Arena);
             if (_loadPractice) name = PracticeSession.ArenaName();
-            if (_header != null) _header.text = "  Loading";
+            TitleBar("  Loading");
             int fly = MenuSession.Arena;
             if (fly < 0 || fly >= ParkArena.Count) fly = 0;
             ShowFlyover(fly, 0.72f);
@@ -2740,7 +3013,7 @@ namespace Tag.Ui.Menu
             _pauseOwner = opener;
             bool preview = MenuSplitPause.Preview > 0;
             string who = MenuSplitPause.SeatLabel(opener, preview);
-            if (_header != null) _header.text = "  Pause";
+            TitleBar("  Pause");
             if (_banner != null) _banner.text = Tag.Ui.Hud.MatchHudText.ComicHint;
             int n = MenuSplitPause.Fill(_cards);
             int humans = preview ? MenuSplitPause.Preview : CouchPlay.Humans;
@@ -2821,7 +3094,7 @@ namespace Tag.Ui.Menu
             string headline = "RESULTS";
             if (mode != null && !string.IsNullOrEmpty(mode.ResultMessage))
                 headline = mode.ResultMessage;
-            if (_header != null) _header.text = "  " + headline;
+            TitleBar("  " + headline);
             int n = FillRanks();
             float chase = n > 0 ? _rows[0].Chase : 0f;
             string chaseWho = n > 0 ? _rows[0].ChaseName : "";
@@ -2978,7 +3251,7 @@ namespace Tag.Ui.Menu
         {
             ClearKeepHeader();
             _count = MenuDepth.Count;
-            if (_header != null) _header.text = "  " + MenuDepth.Header();
+            TitleBar("  " + MenuDepth.Header());
             if (_banner != null) _banner.text = MenuDepth.Banner();
             int win = OptWindow;
             if (_focus < _window) _window = _focus;
@@ -3023,7 +3296,7 @@ namespace Tag.Ui.Menu
             _count = ControlCount();
             _cols = 1;
             _window = 0;
-            if (_header != null) _header.text = "  Controls";
+            TitleBar("  Controls");
             if (_banner != null) _banner.text = "The list is the current binds. Confirm changes one. Space still jumps.";
             if (_dim != null) _dim.color = MenuTheme.Veil;
             PaintControls();
@@ -3152,7 +3425,7 @@ namespace Tag.Ui.Menu
         {
             _count = 1;
             _cols = 1;
-            if (_header != null) _header.text = "  Credits";
+            TitleBar("  Credits");
             if (_banner != null) _banner.text = "";
             if (_dim != null) _dim.color = MenuTheme.Veil;
             Text credits = MenuWidgets.Words(_body, MenuCatalog.Credits(), UiFit.FloorFont, TextAnchor.UpperLeft, MenuTheme.Cream, new Vector2(0.06f, 0.22f), new Vector2(0.94f, 0.98f));
@@ -3168,7 +3441,7 @@ namespace Tag.Ui.Menu
         {
             _count = PracticeSession.Rows;
             _cols = 1;
-            if (_header != null) _header.text = "  Practice";
+            TitleBar("  Practice");
             if (_banner != null) _banner.text = "Free roam. Dummy stays passive when it is on.";
             if (_dim != null) _dim.color = MenuTheme.Veil;
             PaintPractice();
@@ -3794,7 +4067,7 @@ namespace Tag.Ui.Menu
             _count = LocalProfiles.Max + 1;
             _cols = 1;
             _window = 0;
-            if (_header != null) _header.text = "  Records";
+            TitleBar("  Records");
             if (_banner != null) _banner.text = "Matches, wins, tags, and longest time not It";
             if (_dim != null) _dim.color = MenuTheme.Veil;
             PaintRecords();
