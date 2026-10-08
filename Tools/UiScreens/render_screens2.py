@@ -12,7 +12,7 @@ import os
 from PIL import Image, ImageDraw, ImageFont, ImageFilter, ImageEnhance
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
-OUT = os.path.join(ROOT, "Docs", "UiStills", "screens2", "pass9")
+OUT = os.path.join(ROOT, "Docs", "UiStills", "screens2", "pass10")
 FIG = os.path.join(OUT, "figures")
 W, H = 1920, 1080
 
@@ -681,20 +681,38 @@ def controls(bottom=False):
     return img, min(ratios)
 
 
-def draw_bust(d, x, y, h, color):
+def draw_bust(d, x, y, w, h, color):
+    # MenuWidgets.Bust: head, torso, and legs, centered in the bust box.
     head = int(h * 0.28)
-    d.ellipse((x, y, x + head, y + head), fill=color)
-    tw = int(h * 0.46)
-    th = int(h * 0.34)
-    tx = x - (tw - head) // 2
-    ty = y + head - 6
-    rounded(d, (tx, ty, tx + tw, ty + th), 16, color)
-    lw = max(14, tw // 5)
-    lh = int(h * 0.28)
-    ly = ty + th - 4
-    inset = tw // 5
-    rounded(d, (tx + inset, ly, tx + inset + lw, ly + lh), 8, color)
-    rounded(d, (tx + tw - inset - lw, ly, tx + tw - inset, ly + lh), 8, color)
+    if head > int(w * 0.62):
+        head = int(w * 0.62)
+    hx = x + (w - head) // 2
+    d.ellipse((hx, y, hx + head, y + head), fill=color)
+    torso_w = int(w * 0.72)
+    torso_h = int(h * 0.34)
+    torso_y = y + int(head * 0.82)
+    tx = x + (w - torso_w) // 2
+    rounded(d, (tx, torso_y, tx + torso_w, torso_y + torso_h), 16, color)
+    leg_w = max(12, int(w * 0.22))
+    leg_h = int(h * 0.28)
+    leg_y = torso_y + torso_h - 4
+    rounded(d, (x + int(w * 0.22), leg_y, x + int(w * 0.22) + leg_w, leg_y + leg_h), 8, color)
+    rounded(d, (x + int(w * 0.56), leg_y, x + int(w * 0.56) + leg_w, leg_y + leg_h), 8, color)
+
+
+def card_y(top, card_h, runtime_y, runtime_h=420.0):
+    return top + int(runtime_y / runtime_h * card_h)
+
+
+def draw_cup(d, x, y, s):
+    # MenuWidgets.EmptyMark: rim, bowl, two handles, stem, base.
+    rounded(d, (x + int(s * 0.22), y + int(s * 0.10), x + int(s * 0.78), y + int(s * 0.48)), int(s * 0.08), CREAM)
+    rounded(d, (x + int(s * 0.14), y, x + int(s * 0.86), y + int(s * 0.16)), int(s * 0.05), GOLD)
+    width = max(8, int(s * 0.07))
+    d.arc((x, y + int(s * 0.04), x + int(s * 0.36), y + int(s * 0.52)), 80, 280, fill=GOLD, width=width)
+    d.arc((x + int(s * 0.64), y + int(s * 0.04), x + s, y + int(s * 0.52)), 260, 100, fill=GOLD, width=width)
+    rounded(d, (x + int(s * 0.44), y + int(s * 0.46), x + int(s * 0.56), y + int(s * 0.74)), 4, GOLD)
+    rounded(d, (x + int(s * 0.16), y + int(s * 0.72), x + int(s * 0.84), y + int(s * 0.92)), 8, GOLD)
 
 
 def draw_join_glyph(d, kind, x, y):
@@ -709,39 +727,59 @@ def draw_join_glyph(d, kind, x, y):
 
 def drop_in():
     img = screen(0.5)
-    header(img, "Who's playing", "Seated players press Space to continue")
+    header(img, "Who's playing", "Everyone Ready? Press Start")
+    # Joined seats: keyboard shows Space / Enter, a pad shows A. Both show Y Ready.
     cards = [
-        ("P1", "P1  keyboard\nLeft / Right picks a profile", True, 0, True),
-        ("P2", "P2  pad\nLeft / Right picks a profile", True, 1, False),
-        ("P3", "Press Space or A to join", False, 2, False),
-        ("P4", "Press Space or A to join", False, 3, False),
+        (True, 0, True, "P1", "Space / Enter"),
+        (True, 1, False, "P2", "A"),
+        (False, 2, False, "", ""),
+        (False, 3, False, "", ""),
     ]
     ratios = []
-    for i, (title, detail, human, seat, ready) in enumerate(cards):
+    top, card_h, card_w = 200, 700, 420
+    for i, (human, seat, ready, profile, device) in enumerate(cards):
         x = 80 + i * 450
         fill = mix(INK, SEAT[seat], 0.4)
-        box = (x, 200, x + 420, 900)
+        box = (x, top, x + card_w, top + card_h)
         shadow(img, box)
         d = ImageDraw.Draw(img)
         selected = i == 0
         rounded(d, box, 22, fill, GOLD if selected else STROKE, 6 if selected else 3)
-        d.rounded_rectangle((x + 18, 248, x + 30, 860), 4, fill=SEAT[seat])
-        d.text((x + 48, 220), title, font=font(FONT_D, 48), fill=CREAM)
-        yy = 280
-        for line in detail.split("\n"):
-            d.text((x + 48, yy), line, font=font(FONT_B, 26), fill=MUTE)
-            yy += 34
+        d.rounded_rectangle((x + 18, card_y(top, card_h, 19), x + 30, card_y(top, card_h, 412)), 4, fill=SEAT[seat])
+        d.text((x + 48, card_y(top, card_h, 18)), "P%d" % (seat + 1), font=font(FONT_D, 44), fill=CREAM)
         if human:
-            draw_bust(d, x + 176, 430, 200, SEAT[seat])
-            chip = (x + 130, 760, x + 290, 808)
+            bust_h = int(card_h * 0.40)
+            bust_w = int(bust_h * 0.72)
+            if bust_w > int(card_w * 0.78):
+                bust_w = int(card_w * 0.78)
+            draw_bust(d, x + (card_w - bust_w) // 2, card_y(top, card_h, 62), bust_w, bust_h, SEAT[seat])
+            name = "<  %s  >" % profile
+            nf = font(FONT_B, 32)
+            nw = d.textlength(name, font=nf)
+            d.text((x + (card_w - nw) / 2, card_y(top, card_h, 236)), name, font=nf, fill=CREAM)
+            hint = "Y  Ready"
+            hf = font(FONT_B, 24)
+            hw = d.textlength(hint, font=hf)
+            d.text((x + (card_w - hw) / 2, card_y(top, card_h, 298)), hint, font=hf, fill=MUTE)
+            df = font(FONT_B, 28)
+            dw = d.textlength(device, font=df)
+            d.text((x + (card_w - dw) / 2, card_y(top, card_h, 328)), device, font=df, fill=CREAM)
+            chip_h = int(40 / 420.0 * card_h)
+            chip_w = 176
+            chip_y = card_y(top, card_h, 366)
+            chip = (x + (card_w - chip_w) // 2, chip_y, x + (card_w + chip_w) // 2, chip_y + chip_h)
             rounded(d, chip, 12, GOLD if ready else NAVY, INK, 2)
             word = "Ready" if ready else "Joined"
             ink = INK if ready else CREAM
-            d.text((x + 158, 768), word, font=font(FONT_D, 32), fill=ink)
+            wf = font(FONT_D, 32)
+            ww = d.textlength(word, font=wf)
+            d.text((x + (card_w - ww) / 2, chip_y + 12), word, font=wf, fill=ink)
             ratios.append(contrast(ink, GOLD if ready else NAVY))
         else:
-            draw_join_glyph(d, "space", x + 100, 560)
-            draw_join_glyph(d, "a", x + 240, 560)
+            d.text((x + 48, card_y(top, card_h, 64)), "Press Space or A to join", font=font(FONT_B, 26), fill=MUTE)
+            gy = card_y(top, card_h, 193)
+            draw_join_glyph(d, "space", x + 100, gy)
+            draw_join_glyph(d, "a", x + 240, gy)
         ratios.append(contrast(CREAM, fill))
         ratios.append(contrast(MUTE, fill))
     footer_both(img)
@@ -787,12 +825,9 @@ def records_empty():
     box = (360, 200, 1560, 500)
     shadow(img, box)
     rounded(d, box, 22, NAVY, GOLD, 4)
-    # Cup on a gold base. The sentence sits to the right of it.
-    d.ellipse((430, 250, 560, 380), fill=CREAM)
-    rounded(d, (470, 360, 520, 430), 8, GOLD)
-    rounded(d, (420, 420, 570, 470), 10, GOLD)
-    d.text((620, 280), "No records yet.", font=font(FONT_D, 40), fill=CREAM)
-    d.text((620, 340), "Play a match to set one.", font=font(FONT_B, 30), fill=MUTE)
+    draw_cup(d, 400, 230, 220)
+    d.text((680, 280), "No records yet.", font=font(FONT_D, 40), fill=CREAM)
+    d.text((680, 340), "Play a match to set one.", font=font(FONT_B, 30), fill=MUTE)
     ratios = [
         contrast(CREAM, NAVY),
         contrast(MUTE, NAVY),

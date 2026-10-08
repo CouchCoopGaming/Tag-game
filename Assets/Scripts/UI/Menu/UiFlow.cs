@@ -133,6 +133,18 @@ namespace Tag.Ui.Menu
                 Fail(ref report, "records missed");
                 return 0;
             }
+            if (s.Count != RecordRows())
+            {
+                Fail(ref report, "records rows");
+                return 0;
+            }
+            Spot recordsBack = Move(s, 1);
+            if (Tag.Profiles.LocalProfiles.Count == 0 && recordsBack.Focus != 1)
+            {
+                Fail(ref report, "records back row");
+                return 0;
+            }
+            s = recordsBack;
             if (!BackTo(ref s, Main, report)) return 0;
             s.Focus = 0;
             if (!Step(ref seen, ref s, Confirm(s), report)) return 0;
@@ -473,6 +485,9 @@ namespace Tag.Ui.Menu
                 case Practice:
                     if (s.Focus == s.Count - 1) return Back(s);
                     return s;
+                case Records:
+                    if (s.Focus >= s.Count - 1) return Back(s);
+                    return s;
                 default:
                     return s;
             }
@@ -565,6 +580,13 @@ namespace Tag.Ui.Menu
             return s;
         }
 
+        static int RecordRows()
+        {
+            int n = Tag.Profiles.LocalProfiles.Count;
+            if (n < 1) return 2;
+            return n + 1;
+        }
+
         static int CountOf(Spot s)
         {
             switch (s.Screen)
@@ -579,7 +601,7 @@ namespace Tag.Ui.Menu
                 case Credits: return 1;
                 case Practice: return 6;
                 case Controls: return 2;
-                case Records: return 9;
+                case Records: return RecordRows();
                 case Options:
                     if (s.Page == 0) return 7;
                     if (s.Page == 3) return 6;

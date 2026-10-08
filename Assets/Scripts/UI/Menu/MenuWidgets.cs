@@ -215,26 +215,40 @@ namespace Tag.Ui.Menu
         /// Drop-in card. The plate and the stripe stay the seat tint. Focus is the gold
         /// stroke only. A joined seat gets a bust in the slot color and a Ready or Joined chip.
         /// </summary>
-        public static void JoinDress(MenuTile tile, Color seat, bool joined, bool ready)
+        public static void JoinDress(MenuTile tile, Color seat, bool joined, bool ready, string profile, string deviceLine)
         {
             if (tile == null) return;
             tile.LockColors = true;
             RectTransform root = tile.transform as RectTransform;
             float w = root != null ? root.sizeDelta.x : 400f;
             float h = root != null ? root.sizeDelta.y : 420f;
-            if (tile.Label != null) Band(tile.Label, h, 28f, 44f);
-            if (tile.Detail != null) Band(tile.Detail, h, 76f, 96f);
-            if (!joined) return;
-            float bw = w * 0.46f;
-            if (bw > 180f) bw = 180f;
-            float bh = h - 230f;
-            if (bh > 160f) bh = 160f;
-            if (bh < 110f) bh = 110f;
-            Bust(tile.transform, (w - bw) * 0.5f, 184f, bw, bh, seat);
+            if (tile.Label != null) Band(tile.Label, h, 22f, 36f);
+            if (!joined)
+            {
+                if (tile.Detail != null) Band(tile.Detail, h, 64f, 72f);
+                return;
+            }
+            if (tile.Detail != null) tile.Detail.text = "";
+            float bustH = h * 0.40f;
+            float bustY = 62f;
+            if (bustY + bustH > h - 148f) bustH = h - 148f - bustY;
+            if (bustH < 96f) bustH = 96f;
+            float bustW = bustH * 0.72f;
+            if (bustW > w * 0.78f) bustW = w * 0.78f;
+            Bust(tile.transform, (w - bustW) * 0.5f, bustY, bustW, bustH, seat);
+            string name = string.IsNullOrEmpty(profile) ? "" : "<  " + profile + "  >";
+            var nameRt = Place(tile.transform, "ProfileName", 16f, bustY + bustH + 6f, w - 32f, 36f);
+            Words(nameRt, name, 28, TextAnchor.MiddleCenter, MenuTheme.Cream, Vector2.zero, Vector2.one);
+            float chipH = 40f;
+            float chipY = h - chipH - 14f;
+            var hint = Place(tile.transform, "ReadyHint", 16f, chipY - 68f, w - 32f, 26f);
+            Words(hint, "Y  Ready", 22, TextAnchor.MiddleCenter, MenuTheme.Mute, Vector2.zero, Vector2.one);
+            var device = Place(tile.transform, "DeviceLine", 16f, chipY - 38f, w - 32f, 32f);
+            Words(device, deviceLine ?? "", 26, TextAnchor.MiddleCenter, MenuTheme.Cream, Vector2.zero, Vector2.one);
             string word = ready ? "Ready" : "Joined";
             Color plate = ready ? MenuTheme.Gold : MenuTheme.Navy;
             Color ink = ready ? MenuTheme.Ink : MenuTheme.Cream;
-            var chip = Place(tile.transform, "ReadyChip", (w - 168f) * 0.5f, 184f + bh + 8f, 168f, 40f);
+            var chip = Place(tile.transform, "ReadyChip", (w - 168f) * 0.5f, chipY, 168f, chipH);
             var chipImage = chip.gameObject.AddComponent<Image>();
             MenuArt.Plate(chipImage, plate, true);
             chipImage.raycastTarget = false;
@@ -279,19 +293,37 @@ namespace Tag.Ui.Menu
         public static void EmptyMark(Transform parent, float x, float y, float s)
         {
             if (parent == null) return;
-            var baseRt = Place(parent, "EmptyBase", x, y + s * 0.72f, s, s * 0.28f);
-            var baseImage = baseRt.gameObject.AddComponent<Image>();
-            MenuArt.Plate(baseImage, MenuTheme.Gold, true);
-            baseImage.raycastTarget = false;
-            var cup = Place(parent, "EmptyCup", x + s * 0.22f, y, s * 0.56f, s * 0.62f);
-            var cupImage = cup.gameObject.AddComponent<Image>();
-            cupImage.sprite = MenuArt.Soft;
-            cupImage.color = MenuTheme.Cream;
-            cupImage.raycastTarget = false;
-            var stem = Place(parent, "EmptyStem", x + s * 0.42f, y + s * 0.48f, s * 0.16f, s * 0.28f);
-            var stemImage = stem.gameObject.AddComponent<Image>();
-            MenuArt.Plate(stemImage, MenuTheme.Gold, true);
-            stemImage.raycastTarget = false;
+            float bowlX = x + s * 0.22f;
+            float bowlY = y + s * 0.08f;
+            float bowlW = s * 0.56f;
+            float bowlH = s * 0.40f;
+            Plate(parent, "CupRim", x + s * 0.16f, y, s * 0.68f, s * 0.14f, MenuTheme.Gold);
+            Plate(parent, "CupBowl", bowlX, bowlY, bowlW, bowlH, MenuTheme.Cream);
+            Handle(parent, "CupLeft", x, bowlY + s * 0.06f, s * 0.20f, bowlH * 0.72f);
+            Handle(parent, "CupRight", x + s * 0.80f, bowlY + s * 0.06f, s * 0.20f, bowlH * 0.72f);
+            Plate(parent, "CupStem", x + s * 0.44f, y + s * 0.50f, s * 0.12f, s * 0.24f, MenuTheme.Gold);
+            Plate(parent, "CupBase", x + s * 0.18f, y + s * 0.74f, s * 0.64f, s * 0.16f, MenuTheme.Gold);
+        }
+
+        static void Plate(Transform parent, string name, float x, float y, float w, float h, Color color)
+        {
+            var rt = Place(parent, name, x, y, w, h);
+            var image = rt.gameObject.AddComponent<Image>();
+            MenuArt.Plate(image, color, true);
+            image.raycastTarget = false;
+        }
+
+        static void Handle(Transform parent, string name, float x, float y, float w, float h)
+        {
+            var outer = Place(parent, name, x, y, w, h);
+            var gold = outer.gameObject.AddComponent<Image>();
+            MenuArt.Plate(gold, MenuTheme.Gold, true);
+            gold.raycastTarget = false;
+            float inset = w * 0.34f;
+            var hole = Place(outer, "Hole", inset, h * 0.18f, w - inset * 2f, h * 0.64f);
+            var navy = hole.gameObject.AddComponent<Image>();
+            MenuArt.Plate(navy, MenuTheme.Navy, true);
+            navy.raycastTarget = false;
         }
 
         public static void Glyph(MenuTile tile, Sprite icon, Color tint)

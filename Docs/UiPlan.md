@@ -297,6 +297,10 @@ The Default accessibility palette is the seat slot colors: red, blue, yellow, gr
 
 Drop-in cards keep the seat tint and the seat stripe when they are selected. The gold stroke is the highlight. A joined seat draws a bust in the slot color and a Ready or Joined chip. An empty seat draws Space and A at 64 px. Y on a seated player toggles Ready. Confirm still opens character select. Records with no profiles is one card, "No records yet. Play a match to set one.", plus Back. The filled picture is sample data and its filename contains `-sample`. GoToPlay, the Rematch scene-load fallback, and QuitToMenu use the same async load as the menu boot. Stills are composites in `Docs/UiStills/screens2/pass9/`.
 
+## Screens 2, pass 10
+
+The drop-in banner reads `Everyone Ready? Press Start`. A keyboard seat's card says `Space / Enter`. A pad seat says `A`. Each joined card shows `Y  Ready`. The bust is 40% of the card and sits under the seat name. The profile name, with left and right arrows, sits under the bust. The device line sits above the Ready or Joined chip. Empty seats still say `Press Space or A to join`. The empty records mark is a cup: a rim, a bowl, two handles, a stem, and a base. The headless walk counts Records as one card plus Back when no profile is saved, and as each saved profile plus Back otherwise. OpenSetup uses the same async scene load as quit. Stills are composites in `Docs/UiStills/screens2/pass10/`.
+
 ## Later passes
 
 - Left from a rule row returns to the modes even when that rule can still decrease. Right from the right-hand mode, and Left at the end of a rule, already move between the columns.

@@ -334,6 +334,8 @@ The eighth pass makes the Default color swatches the same red, blue, yellow, and
 
 The ninth pass keeps each drop-in card on its seat color. The selected card gets a gold border. Joined seats show a bust and Ready or Joined. Empty seats show Space and A at 64 px. Records with nothing saved is one card that says to play a match, and a second picture is marked sample. Leaving for a match, a rematch reload, and quit use the same scene load as the boot. Composites are in `Docs/UiStills/screens2/pass9/`. Space still jumps.
 
+The tenth pass on these screens asks `Everyone Ready? Press Start`. A keyboard seat shows Space / Enter. A pad seat shows A. Each joined card has a Y Ready hint, a larger bust, the profile name between arrows, and the device line above the chip. The empty records picture is a cup with two handles. Composites are in `Docs/UiStills/screens2/pass10/`. Space still jumps.
+
 ## Motion, ninth pass
 
 The wall jump, the rope, the zip, the launch pad, a landing, the dash flash, a hard turnaround, and a punch while you run all ease instead of snapping. Speeds, the jump, and the dash length are the same.

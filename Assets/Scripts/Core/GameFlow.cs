@@ -379,7 +379,7 @@ namespace Tag.Core
             FrontLive.Reset();
             State = GameFlowState.Setup;
             if (SceneManager.GetActiveScene().name != bootSceneName)
-                SceneManager.LoadScene(bootSceneName);
+                BeginAsyncLoad(bootSceneName);
         }
 
         /// <summary>

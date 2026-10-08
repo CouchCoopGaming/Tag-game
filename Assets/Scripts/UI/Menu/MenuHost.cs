@@ -1822,14 +1822,12 @@ namespace Tag.Ui.Menu
             for (int s = 0; s < 4; s++)
             {
                 bool human = CouchPlay.HumanAt(s);
-                string title = human ? CouchPlay.Name(s) : "P" + (s + 1).ToString();
-                string detail = human ? CouchPlay.SeatLine(s) : "Press a button to join";
-                if (human)
-                {
-                    string profile = LocalProfiles.SeatName(s);
-                    if (!string.IsNullOrEmpty(profile)) detail = detail + "\n" + profile;
-                    detail = detail + "\nLeft / Right picks a profile";
-                }
+                string title = "P" + (s + 1).ToString();
+                string detail = human ? "" : "Press a button to join";
+                string profile = human ? LocalProfiles.SeatName(s) : "";
+                if (human && string.IsNullOrEmpty(profile)) profile = CouchPlay.Name(s);
+                int device = human ? CouchPlay.DeviceOf(s) : -1;
+                string deviceLine = device <= CouchPlay.DeviceKeyboard ? "Space / Enter" : "A";
                 float span = UiFit.BodyW(UiFit.Current());
                 float cardW = (span - 16f * 5f) / 4f;
                 if (cardW > 428f) cardW = 428f;
@@ -1850,19 +1848,15 @@ namespace Tag.Ui.Menu
                     if (tile.Bar != null) tile.Bar.color = tile.BarColor;
                     tile.Tint(Color.Lerp(MenuTheme.Ink, seat, UiSweep.SeatMix));
                     tile.LockColors = true;
-                    MenuWidgets.JoinDress(tile, seat, human, human && MenuSession.Ready[s]);
+                    MenuWidgets.JoinDress(tile, seat, human, human && MenuSession.Ready[s], profile, deviceLine);
                     if (!human) MenuBindRow.JoinPair(tile);
                 }
             }
             _count = 4;
             if (_banner != null)
             {
-                int bannerFamily = MenuInput.LastKind == InputDeviceKind.Gamepad
-                    ? PadGlyph.Family(MenuInput.LastDevice)
-                    : PadGlyph.Keyboard;
-                int bannerDevice = MenuInput.LastKind == InputDeviceKind.Gamepad ? MenuInput.LastDevice : CouchPlay.DeviceKeyboard;
                 _banner.text = CouchPlay.Humans > 0
-                    ? PadGlyph.Continue(bannerFamily, FaceFor(bannerDevice, bannerFamily))
+                    ? "Everyone Ready? Press Start"
                     : "Anyone can join";
             }
         }
