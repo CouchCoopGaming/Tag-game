@@ -21,7 +21,7 @@ namespace Tag.Ui.Menu
         static bool Trace;
         static int RayTests;
         static float[][][] BindDepth;
-        const float Show = 0.012f;
+        static float[] PoseMax;
 
         public static bool Run(string repo, out string line, bool verbose)
         {
@@ -33,6 +33,7 @@ namespace Tag.Ui.Menu
             Verbose = verbose;
             Trace = probe;
             RayTests = 0;
+            PoseMax = new float[6];
             var sw = System.Diagnostics.Stopwatch.StartNew();
             int screens = 0;
             int frames = 0;
@@ -99,9 +100,129 @@ namespace Tag.Ui.Menu
         {
             line = "no-clip screens=" + screens.ToString(CultureInfo.InvariantCulture)
                 + " frames=" + frames.ToString(CultureInfo.InvariantCulture)
-                + " worldMax=" + (worldMax * 100f).ToString("0.00", CultureInfo.InvariantCulture)
-                + " selfMax=" + (selfMax * 100f).ToString("0.00", CultureInfo.InvariantCulture)
-                + " fails=" + fails.ToString(CultureInfo.InvariantCulture);
+                + " worldMax=" + Cm(worldMax)
+                + " selfMax=" + Cm(selfMax)
+                + " fails=" + fails.ToString(CultureInfo.InvariantCulture)
+                + " idle=" + Cm(PoseAt(0))
+                + " ready=" + Cm(PoseAt(1))
+                + " run=" + Cm(PoseAt(2))
+                + " step=" + Cm(PoseAt(3))
+                + " cheer=" + Cm(PoseAt(4))
+                + " slump=" + Cm(PoseAt(5));
+        }
+
+        static float PoseAt(int i)
+        {
+            if (PoseMax == null || i < 0 || i >= PoseMax.Length) return 0f;
+            return PoseMax[i];
+        }
+
+        static string Cm(float meters)
+        {
+            return (meters * 100f).ToString("0.00", CultureInfo.InvariantCulture);
+        }
+
+        static void Note(int pose, float local)
+        {
+            if (PoseMax == null || pose < 0 || pose >= PoseMax.Length) return;
+            if (local > PoseMax[pose]) PoseMax[pose] = local;
+        }
+
+        static bool Judge(Posed posed, Posed[] group, int index, Solid[] solids, string screen, int pose, ref int fails, ref float selfMax, ref float worldMax, ref string worstSelf, ref string worstWorld, Hit hit)
+        {
+            float localSelf = 0f;
+            float localWorld = 0f;
+            string ls = "";
+            string lw = "";
+            bool bad = Test(posed, group, index, solids, screen, ref localSelf, ref localWorld, ref ls, ref lw, hit);
+            if (localSelf > selfMax)
+            {
+                selfMax = localSelf;
+                worstSelf = ls;
+            }
+            if (localWorld > worldMax)
+            {
+                worldMax = localWorld;
+                worstWorld = lw;
+            }
+            Note(pose, localSelf);
+            if (bad) fails++;
+            return bad;
+        }
+
+        public static void ExportPoses(string repo, string folder)
+        {
+            Directory.CreateDirectory(folder);
+            Rig rig = Rig.Load(Path.Combine(repo, "Docs", "UiStills", "hier-rigid.bin"));
+            float halfPi = 1.5707963f;
+            WritePose(rig, Path.Combine(folder, "run_pos.tris"), From(MenuAlive.Run(halfPi / 2.4f)));
+            WritePose(rig, Path.Combine(folder, "run_neg.tris"), From(MenuAlive.Run(-halfPi / 2.4f)));
+            WritePose(rig, Path.Combine(folder, "step.tris"), From(MenuAlive.Step(0.5f / 0.28f)));
+            WritePose(rig, Path.Combine(folder, "step_b.tris"), From(MenuAlive.Step(0.22f / 0.28f)));
+            WritePose(rig, Path.Combine(folder, "idle_a.tris"), From(MenuAlive.Idle(halfPi, halfPi)));
+            WritePose(rig, Path.Combine(folder, "idle_b.tris"), From(MenuAlive.Idle(-halfPi, 0f)));
+            WritePose(rig, Path.Combine(folder, "ready.tris"), From(MenuAlive.Ready()));
+            WritePose(rig, Path.Combine(folder, "cheer.tris"), From(MenuAlive.Cheer(halfPi / 2.1f, 1f)));
+            WritePose(rig, Path.Combine(folder, "cheer_b.tris"), From(MenuAlive.Cheer(halfPi / 2.1f, 0.55f)));
+            WritePose(rig, Path.Combine(folder, "cheer_c.tris"), From(MenuAlive.Cheer(halfPi / 2.1f, 0.3f)));
+            WritePose(rig, Path.Combine(folder, "slump.tris"), From(MenuAlive.Slump(0f)));
+        }
+
+        static void WritePose(Rig rig, string path, Pose pose)
+        {
+            var posed = new Posed(rig);
+            posed.Place(pose, 0f, 0f, 0f);
+            Console.WriteLine("pose " + Path.GetFileName(path)
+                + " x=" + posed.MinXAll.ToString("0.00", CultureInfo.InvariantCulture) + ".." + posed.MaxXAll.ToString("0.00", CultureInfo.InvariantCulture)
+                + " y=" + posed.MinYAll.ToString("0.00", CultureInfo.InvariantCulture) + ".." + posed.MaxYAll.ToString("0.00", CultureInfo.InvariantCulture)
+                + " z=" + posed.MinZAll.ToString("0.00", CultureInfo.InvariantCulture) + ".." + posed.MaxZAll.ToString("0.00", CultureInfo.InvariantCulture));
+            int n = 0;
+            for (int p = 0; p < rig.Pieces; p++)
+                for (int s = 0; s < rig.Piece[p].Subs; s++)
+                    n += rig.Piece[p].Sub[s].Tris;
+            using (var fs = File.Create(path))
+            using (var bw = new BinaryWriter(fs))
+            {
+                bw.Write(0x52454948);
+                bw.Write(n);
+                for (int p = 0; p < rig.Pieces; p++)
+                {
+                    Piece piece = rig.Piece[p];
+                    var q = new Rot { X = posed.Qx[p], Y = posed.Qy[p], Z = posed.Qz[p], W = posed.Qw[p] };
+                    float ox = posed.Ox[p], oy = posed.Oy[p], oz = posed.Oz[p];
+                    for (int s = 0; s < piece.Subs; s++)
+                    {
+                        Shell shell = piece.Sub[s];
+                        byte mat = MatOf(piece.Name, shell.Name);
+                        for (int t = 0; t < shell.Tris; t++)
+                        {
+                            bw.Write(mat);
+                            WriteVert(bw, q, ox, oy, oz, shell, shell.I0[t]);
+                            WriteVert(bw, q, ox, oy, oz, shell, shell.I1[t]);
+                            WriteVert(bw, q, ox, oy, oz, shell, shell.I2[t]);
+                        }
+                    }
+                }
+            }
+        }
+
+        static void WriteVert(BinaryWriter bw, Rot q, float ox, float oy, float oz, Shell shell, int i)
+        {
+            float x, y, z;
+            Rotate(q, shell.Vx[i], shell.Vy[i], shell.Vz[i], out x, out y, out z);
+            bw.Write(x + ox);
+            bw.Write(y + oy);
+            bw.Write(z + oz);
+        }
+
+        static byte MatOf(string piece, string sub)
+        {
+            string n = sub == null ? "" : sub;
+            if (n.IndexOf("Eye", StringComparison.Ordinal) >= 0 || n.IndexOf("Pupil", StringComparison.Ordinal) >= 0) return 3;
+            if (n.IndexOf("Joint", StringComparison.Ordinal) >= 0) return 2;
+            if (n.IndexOf("Panel", StringComparison.Ordinal) >= 0) return 1;
+            if (piece != null && (piece.StartsWith("Hand", StringComparison.Ordinal) || piece.StartsWith("Foot", StringComparison.Ordinal))) return 1;
+            return 0;
         }
 
         static int Frames(float period)
@@ -140,17 +261,6 @@ namespace Tag.Ui.Menu
             }
         }
 
-        static Pose MulPose(Pose p, float s)
-        {
-            p.Hip *= s; p.HipYaw *= s; p.HipRoll *= s;
-            p.Spine *= s; p.SpineYaw *= s; p.SpineRoll *= s;
-            p.Head *= s; p.HeadYaw *= s;
-            p.ArmPitchL *= s; p.ArmPitchR *= s; p.ArmYawL *= s; p.ArmYawR *= s; p.ArmRollL *= s; p.ArmRollR *= s;
-            p.ElbowL *= s; p.ElbowR *= s;
-            p.ThighL *= s; p.ThighR *= s; p.KneeL *= s; p.KneeR *= s;
-            return p;
-        }
-
         static void Title(Rig rig, ref int frames, ref int fails, ref float selfMax, ref float worldMax, ref string worstSelf, ref string worstWorld, Hit hit)
         {
             int n = Frames(1f / 0.28f);
@@ -164,7 +274,7 @@ namespace Tag.Ui.Menu
                 for (int i = 0; i < 4; i++)
                 {
                     float age = t + i * 0.37f;
-                    Pose pose = (i % 2 == 1) ? Vault(age) : Run(age);
+                    Pose pose = (i % 2 == 1) ? Step(age) : Run(age);
                     posed[i].Place(pose, x[i], 0.08f, 0f);
                 }
                 for (int i = 0; i < 4; i++)
@@ -172,15 +282,14 @@ namespace Tag.Ui.Menu
                     solids[0] = Solid.Cyl("pedestal", x[i], 0.05f, 0f, 0.575f, 0.04f, 0.575f);
                     solids[1] = Solid.Cyl("contact", x[i], 0.012f, 0f, 0.775f, 0.012f, 0.775f);
                     frames++;
-                    if (Test(posed[i], posed, i, solids, "title", ref selfMax, ref worldMax, ref worstSelf, ref worstWorld, hit))
-                        fails++;
+                    Judge(posed[i], posed, i, solids, "title", (i % 2 == 1) ? 3 : 2, ref fails, ref selfMax, ref worldMax, ref worstSelf, ref worstWorld, hit);
                 }
             }
         }
 
         static void Main(Rig rig, string repo, ref int frames, ref int fails, ref float selfMax, ref float worldMax, ref string worstSelf, ref string worstWorld, Hit hit)
         {
-            int n = Frames((float)(Math.PI * 2.0 / 5.5));
+            int n = Frames((float)(Math.PI * 2.0 / 2.4));
             float[] phase = { 0f, 0.37f, 0.74f, 1.11f };
             var posed = new Posed(rig);
             var solids = new Solid[1];
@@ -192,8 +301,7 @@ namespace Tag.Ui.Menu
                     float age = k * Dt + phase[i];
                     posed.Place(Run(age), 0f, 0.2f, 0f);
                     frames++;
-                    if (Test(posed, null, 0, solids, "main", ref selfMax, ref worldMax, ref worstSelf, ref worstWorld, hit))
-                        fails++;
+                    Judge(posed, null, 0, solids, "main", 2, ref fails, ref selfMax, ref worldMax, ref worstSelf, ref worstWorld, hit);
                 }
             }
             BakeFloor(Path.Combine(repo, "Docs", "UiStills", "hier-run.tris"), 0.2f, 0f, ref worldMax, ref fails, ref worstWorld);
@@ -214,8 +322,7 @@ namespace Tag.Ui.Menu
                     float breath = k * Dt * IdlePose.BreathRate;
                     posed.Place(Idle(shift, breath, 0f), 0f, 0.12f, 0f);
                     frames++;
-                    if (Test(posed, null, 0, solids, "characters", ref selfMax, ref worldMax, ref worstSelf, ref worstWorld, hit))
-                        fails++;
+                    Judge(posed, null, 0, solids, "characters", 0, ref fails, ref selfMax, ref worldMax, ref worstSelf, ref worstWorld, hit);
                 }
             }
             for (int seat = 0; seat < 2; seat++)
@@ -229,8 +336,7 @@ namespace Tag.Ui.Menu
                     float y = 0.12f + MenuPolish.Hop(hop);
                     posed.Place(Idle(shift, breath, blend), 0f, y, 0f);
                     frames++;
-                    if (Test(posed, null, 0, solids, "characters", ref selfMax, ref worldMax, ref worstSelf, ref worstWorld, hit))
-                        fails++;
+                    Judge(posed, null, 0, solids, "characters", blend < 0.5f ? 0 : 1, ref fails, ref selfMax, ref worldMax, ref worstSelf, ref worstWorld, hit);
                     shift += IdlePose.ShiftRate * Dt;
                     breath += IdlePose.BreathRate * Dt;
                     blend += Dt / 0.18f;
@@ -240,8 +346,7 @@ namespace Tag.Ui.Menu
                 }
                 posed.Place(Idle(0f, 0f, 1f), 0f, 0.12f, 0f);
                 frames++;
-                if (Test(posed, null, 0, solids, "characters", ref selfMax, ref worldMax, ref worstSelf, ref worstWorld, hit))
-                    fails++;
+                Judge(posed, null, 0, solids, "characters", 1, ref fails, ref selfMax, ref worldMax, ref worstSelf, ref worstWorld, hit);
             }
             for (int i = 0; i < 4; i++)
                 BakeFloor(Path.Combine(repo, "Docs", "UiStills", "hier-idle-" + i.ToString(CultureInfo.InvariantCulture) + ".tris"), 0f, 0f, ref worldMax, ref fails, ref worstWorld);
@@ -262,9 +367,10 @@ namespace Tag.Ui.Menu
                     float wide = rank == 0 ? 1.16f : rank == 3 ? 1.28f : 1.06f;
                     float deep = 1.02f;
                     Pose pose;
-                    if (rank == 0) pose = Win(t);
-                    else if (rank == 3) pose = Give();
-                    else pose = Clap(rank == 2);
+                    int poseId;
+                    if (rank == 0) { pose = Cheer(t, 1f); poseId = 4; }
+                    else if (rank == 3) { pose = Slump(t); poseId = 5; }
+                    else { pose = Cheer(t, rank == 2 ? 0.3f : 0.55f); poseId = 4; }
                     posed[rank].Place(pose, sx, height + 0.09f, 0f);
                     solids[0] = Solid.Box("step", sx, height * 0.5f, 0f, wide * 0.5f, height * 0.5f, deep * 0.5f);
                     solids[1] = Solid.Box("trim", sx, height + 0.025f, 0f, (wide + 0.10f) * 0.5f, 0.025f, (deep + 0.08f) * 0.5f);
@@ -278,8 +384,7 @@ namespace Tag.Ui.Menu
                         solids[4 + c] = Solid.YawBox("confetti", (float)Math.Sin(ang) * 1.35f, 3.4f - fall, 0.92f + (float)Math.Cos(ang) * 0.18f, 0.08f, 0.13f, 0.025f, yaw);
                     }
                     frames++;
-                    if (Test(posed[rank], posed, rank, solids, "results", ref selfMax, ref worldMax, ref worstSelf, ref worstWorld, hit))
-                        fails++;
+                    Judge(posed[rank], posed, rank, solids, "results", poseId, ref fails, ref selfMax, ref worldMax, ref worstSelf, ref worstWorld, hit);
                 }
             }
         }
@@ -458,91 +563,42 @@ namespace Tag.Ui.Menu
 
         static Pose Run(float age)
         {
-            float cycle = age * 5.5f;
-            JumpPose.Sample s = JumpPose.Stride(12f, Mathf.Sin(cycle), cycle);
-            return MulPose(FromRun(s), Show);
+            return From(MenuAlive.Run(age));
         }
 
-        static Pose Vault(float age)
+        static Pose Step(float age)
         {
-            float u = Repeat(age * 0.28f, 1f);
-            MantlePose.Sample s = MantlePose.At(u, true);
-            var p = new Pose();
-            p.ThighL = s.ThighL; p.ThighR = s.ThighR; p.KneeL = s.KneeL; p.KneeR = s.KneeR;
-            p.ArmPitchL = s.ArmPitchL; p.ArmPitchR = s.ArmPitchR; p.ArmYawL = s.ArmYawL; p.ArmYawR = s.ArmYawR;
-            p.ElbowL = s.ElbowL; p.ElbowR = s.ElbowR;
-            p.Hip = s.Hip; p.Spine = s.Spine; p.Head = s.Head;
-            return MulPose(p, Show);
+            return From(MenuAlive.Step(age));
         }
 
         static Pose Idle(float shift, float breath, float ready)
         {
-            if (ready < 0f) ready = 0f;
-            if (ready > 1f) ready = 1f;
-            float idle = 1f - ready;
-            IdlePose.Sample s = IdlePose.At(shift, breath);
-            var p = new Pose();
-            p.HipRoll = s.HipRoll * idle;
-            p.Spine = s.ChestPitch * idle + (-8f * ready);
-            p.SpineRoll = s.ChestRoll * idle;
-            p.Head = s.HeadPitch * idle + (-4f * ready);
-            p.ArmPitchL = s.Shoulder * idle + (-58f * ready);
-            p.ArmPitchR = s.Shoulder * idle + (-58f * ready);
-            p.ElbowL = 42f * ready;
-            p.ElbowR = 42f * ready;
-            p.ThighL = s.ThighL * idle + (10f * ready);
-            p.ThighR = s.ThighR * idle + (10f * ready);
-            p.KneeL = s.KneeL * idle + (16f * ready);
-            p.KneeR = s.KneeR * idle + (16f * ready);
-            return MulPose(p, Show);
+            return From(MenuAlive.Lerp(MenuAlive.Idle(shift, breath), MenuAlive.Ready(), ready));
         }
 
-        static Pose Win(float t)
+        static Pose Cheer(float t, float lean)
         {
-            float u = 0.35f + 0.65f * Mathf.Abs(Mathf.Sin(t * 2.1f));
-            BecomeItPose.Sample s = BecomeItPose.Claim(u);
-            return MulPose(FromBecome(s), Show);
+            return From(MenuAlive.Cheer(t, lean));
         }
 
-        static Pose Clap(bool small)
+        static Pose Slump(float t)
         {
-            float elbow = small ? -72f : -108f;
-            float pitch = small ? -34f : -50f;
-            var p = new Pose();
-            p.ThighL = 6f; p.ThighR = 6f; p.KneeL = -8f; p.KneeR = -8f;
-            p.ArmPitchL = pitch; p.ArmPitchR = pitch; p.ArmYawL = -34f; p.ArmYawR = 34f;
-            p.ArmRollL = 8f; p.ArmRollR = -8f;
-            p.ElbowL = elbow; p.ElbowR = elbow;
-            p.Spine = -6f; p.Head = -4f;
-            return MulPose(p, Show);
+            return From(MenuAlive.Slump(t));
         }
 
-        static Pose Give()
-        {
-            return MulPose(FromBecome(BecomeItPose.GiveUp()), Show);
-        }
-
-        static Pose FromRun(JumpPose.Sample s)
+        static Pose From(MenuAlive.Angles a)
         {
             var p = new Pose();
-            p.ThighL = s.ThighL; p.ThighR = s.ThighR; p.KneeL = s.KneeL; p.KneeR = s.KneeR;
-            p.ArmPitchL = s.ArmPitchL; p.ArmPitchR = s.ArmPitchR; p.ArmYawL = s.ArmYawL; p.ArmYawR = s.ArmYawR;
-            p.ElbowL = s.ElbowL; p.ElbowR = s.ElbowR;
-            p.Hip = s.Hip; p.Spine = s.Spine;
-            return p;
-        }
-
-        static Pose FromBecome(BecomeItPose.Sample s)
-        {
-            var p = new Pose();
-            p.ThighL = s.ThighL; p.ThighR = s.ThighR; p.KneeL = s.KneeL; p.KneeR = s.KneeR;
-            p.ArmPitchL = s.ArmPitchL; p.ArmPitchR = s.ArmPitchR;
-            p.ArmYawL = s.ArmYawL; p.ArmYawR = s.ArmYawR;
-            p.ArmRollL = s.ArmRollL; p.ArmRollR = s.ArmRollR;
-            p.ElbowL = s.ElbowL; p.ElbowR = s.ElbowR;
-            p.Hip = s.Hip; p.HipYaw = s.HipYaw;
-            p.Spine = s.Spine; p.SpineYaw = s.SpineYaw;
-            p.Head = s.Head; p.HeadYaw = s.HeadYaw;
+            p.RootPitch = a.RootPitch; p.RootYaw = a.RootYaw; p.RootRoll = a.RootRoll;
+            p.Hip = a.Hip; p.HipYaw = a.HipYaw; p.HipRoll = a.HipRoll;
+            p.Spine = a.Spine; p.SpineYaw = a.SpineYaw; p.SpineRoll = a.SpineRoll;
+            p.Head = a.Head; p.HeadYaw = a.HeadYaw;
+            p.ArmPitchL = a.ArmPitchL; p.ArmPitchR = a.ArmPitchR;
+            p.ArmYawL = a.ArmYawL; p.ArmYawR = a.ArmYawR;
+            p.ArmRollL = a.ArmRollL; p.ArmRollR = a.ArmRollR;
+            p.ElbowL = a.ElbowL; p.ElbowR = a.ElbowR;
+            p.ThighL = a.ThighL; p.ThighR = a.ThighR;
+            p.KneeL = a.KneeL; p.KneeR = a.KneeR;
             return p;
         }
 
@@ -579,17 +635,17 @@ namespace Tag.Ui.Menu
             string cheer = Read(repo, "Assets/Scripts/UI/Menu/MenuCheer.cs");
             string preview = Read(repo, "Assets/Scripts/UI/Menu/MenuPreview.cs");
             string host = Read(repo, "Assets/Scripts/UI/Menu/MenuHost.cs");
-            if (stride == null || idle == null || cheer == null || preview == null || host == null) return false;
-            if (stride.IndexOf("age * 5.5f", StringComparison.Ordinal) < 0) return false;
-            if (stride.IndexOf("age * 0.28f", StringComparison.Ordinal) < 0) return false;
-            if (stride.IndexOf("JumpPose.Stride(12f", StringComparison.Ordinal) < 0) return false;
-            if (stride.IndexOf("0.012f", StringComparison.Ordinal) < 0) return false;
-            if (idle.IndexOf("0.012f", StringComparison.Ordinal) < 0) return false;
-            if (cheer.IndexOf("0.012f", StringComparison.Ordinal) < 0) return false;
-            if (idle.IndexOf("-58f * ready", StringComparison.Ordinal) < 0) return false;
-            if (idle.IndexOf("42f * ready", StringComparison.Ordinal) < 0) return false;
-            if (cheer.IndexOf("0.35f + 0.65f", StringComparison.Ordinal) < 0) return false;
-            if (cheer.IndexOf("t * 2.1f", StringComparison.Ordinal) < 0) return false;
+            string alive = Read(repo, "Assets/Scripts/UI/Menu/MenuAlive.cs");
+            if (stride == null || idle == null || cheer == null || preview == null || host == null || alive == null) return false;
+            if (stride.IndexOf("MenuAlive.Run", StringComparison.Ordinal) < 0) return false;
+            if (stride.IndexOf("MenuAlive.Step", StringComparison.Ordinal) < 0) return false;
+            if (idle.IndexOf("MenuAlive.Idle", StringComparison.Ordinal) < 0) return false;
+            if (idle.IndexOf("MenuAlive.Ready", StringComparison.Ordinal) < 0) return false;
+            if (cheer.IndexOf("MenuAlive.Cheer", StringComparison.Ordinal) < 0) return false;
+            if (cheer.IndexOf("MenuAlive.Slump", StringComparison.Ordinal) < 0) return false;
+            if (alive.IndexOf("RootPitch = -16f", StringComparison.Ordinal) < 0) return false;
+            if (alive.IndexOf("RootPitch = 16f", StringComparison.Ordinal) < 0) return false;
+            if (alive.IndexOf("HeadYaw = 12f * s", StringComparison.Ordinal) < 0) return false;
             if (cheer.IndexOf("height = 0.72f", StringComparison.Ordinal) < 0) return false;
             if (cheer.IndexOf("x = -1.46f", StringComparison.Ordinal) < 0) return false;
             if (cheer.IndexOf("x = 2.92f", StringComparison.Ordinal) < 0) return false;
@@ -641,6 +697,7 @@ namespace Tag.Ui.Menu
 
         struct Pose
         {
+            public float RootPitch, RootYaw, RootRoll;
             public float Hip, HipYaw, HipRoll;
             public float Spine, SpineYaw, SpineRoll;
             public float Head, HeadYaw;
@@ -810,7 +867,7 @@ namespace Tag.Ui.Menu
         static void Channels(string name, Pose p, out float x, out float y, out float z)
         {
             x = 0f; y = 0f; z = 0f;
-            if (name == "Hips") { x = p.Hip; y = p.HipYaw; z = p.HipRoll; return; }
+            if (name == "DummyRoot") { x = p.RootPitch; y = p.RootYaw; z = p.RootRoll; return; }
             if (name == "Spine") { x = p.Spine; y = p.SpineYaw; z = p.SpineRoll; return; }
             if (name == "Head") { x = p.Head; y = p.HeadYaw; return; }
             if (name == "UpperArm_L") { x = p.ArmPitchL; y = p.ArmYawL; z = p.ArmRollL; return; }
@@ -922,6 +979,7 @@ namespace Tag.Ui.Menu
             public float[] Vx, Vy, Vz;
             public int[] I0, I1, I2;
             public int Tris;
+            public string Name;
             public float MinX, MinY, MinZ, MaxX, MaxY, MaxZ;
             public int Nx, Ny, Nz;
             public float Ox, Oy, Oz;
@@ -1475,10 +1533,10 @@ namespace Tag.Ui.Menu
                         piece.Sub = new Shell[subs];
                         for (int s = 0; s < subs; s++)
                         {
-                            ReadName(br);
+                            var shell = new Shell();
+                            shell.Name = ReadName(br);
                             int nv = br.ReadInt32();
                             int nt = br.ReadInt32();
-                            var shell = new Shell();
                             shell.Vx = new float[nv];
                             shell.Vy = new float[nv];
                             shell.Vz = new float[nv];

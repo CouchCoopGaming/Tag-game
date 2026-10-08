@@ -614,11 +614,11 @@ namespace Tag.Level
         }
 
         static void PortraitPng(List<Tri> tris, string path, int w, int h,
-            float ex, float ey, float ez, float tx, float ty, float tz, float[] shadow)
+            float ex, float ey, float ez, float tx, float ty, float tz, float[] shadow, float fov = 28f)
         {
             var rgb = new byte[w * h * 3];
             var depth = new float[w * h];
-            Paint(tris, rgb, depth, w, h, ex, ey, ez, tx, ty, tz, 28f, true,
+            Paint(tris, rgb, depth, w, h, ex, ey, ez, tx, ty, tz, fov, true,
                 shadow, 16, 0f, 2f, 0f, 1f, 0f, 0f, 0f, 1f, 0f, 0f, 1f, 0f, 4f);
             WritePng(path, rgb, w, h);
         }
@@ -818,6 +818,163 @@ namespace Tag.Level
             Paint(tris, rgb, depth, w, h, ex, ey, ez, tx, ty, tz, fov, true,
                 shadow, 768, sox, soy, soz, srx, sry, srz, sux, suy, suz, lsx, lsy, lsz, half);
             WritePng(path, rgb, w, h);
+        }
+
+        /// <summary>
+        /// Pass 26 captures. Title and main keep the raised south-straight camera.
+        /// Each runner is a menu pose baked by MenuNoClip, drawn with the same
+        /// rasterizer as the chase stills. No sky key.
+        /// </summary>
+        public static string WritePass26(string folder, string poses)
+        {
+            if (string.IsNullOrEmpty(folder) || string.IsNullOrEmpty(poses)) return "pass26 missing folder";
+            Directory.CreateDirectory(folder);
+            List<Tri> park = Gather(ParkArena.Mega);
+            LiftChaseGround(park);
+            float mapW = MegaParkP1Layout.MapW;
+            float mapD = MegaParkP1Layout.MapD;
+            Sun(out float lsx, out float lsy, out float lsz);
+            float half = Math.Max(mapW, mapD) * 0.70f + 28f;
+            var shadow = new float[768 * 768];
+            for (int i = 0; i < shadow.Length; i++) shadow[i] = -1e20f;
+            float sox = mapW * 0.5f;
+            float soy = 6f;
+            float soz = mapD * 0.5f;
+            Basis(lsx, lsy, lsz, out float srx, out float sry, out float srz, out float sux, out float suy, out float suz);
+            for (int i = 0; i < park.Count; i++)
+            {
+                if (park[i].A < 0.99f) continue;
+                ShadowTri(park[i], shadow, 768, sox, soy, soz, srx, sry, srz, sux, suy, suz, lsx, lsy, lsz, half);
+            }
+            WritePass26Line(folder, "pan_title.png", poses,
+                new[] { "run_pos.tris", "step.tris", "run_neg.tris", "step_b.tris" },
+                park, shadow, sox, soy, soz, srx, sry, srz, sux, suy, suz, lsx, lsy, lsz, half,
+                78f, 7f, 4f, 78f, 1.4f, 16f, 30f);
+            WritePass26Line(folder, "pan_main.png", poses,
+                new[] { "step_b.tris", "run_neg.tris", "step.tris", "run_pos.tris" },
+                park, shadow, sox, soy, soz, srx, sry, srz, sux, suy, suz, lsx, lsy, lsz, half,
+                86f, 7f, 4f, 78.4f, 2f, 16f, 36f);
+            WritePass26Portraits(folder, poses);
+            WritePass26Results(folder, poses, park, shadow, sox, soy, soz, srx, sry, srz, sux, suy, suz, lsx, lsy, lsz, half);
+            WritePass26Pause(folder, poses, park, shadow, sox, soy, soz, srx, sry, srz, sux, suy, suz, lsx, lsy, lsz, half);
+            return "pass26 " + folder;
+        }
+
+        static void WritePass26Line(string folder, string name, string poses, string[] files,
+            List<Tri> park, float[] shadow,
+            float sox, float soy, float soz, float srx, float sry, float srz,
+            float sux, float suy, float suz, float lsx, float lsy, float lsz, float half,
+            float ex, float ey, float ez, float tx, float ty, float tz, float fov)
+        {
+            float[] xs = { 75.45f, 77.15f, 78.85f, 80.55f };
+            var tris = new List<Tri>(park.Count + 256);
+            tris.AddRange(park);
+            int from = tris.Count;
+            for (int i = 0; i < 4; i++)
+                AddPosed(tris, Path.Combine(poses, files[i]), xs[i], 0.2f, 16f, 90f, i);
+            var seatShadow = (float[])shadow.Clone();
+            StampShadow(tris, from, seatShadow, sox, soy, soz, srx, sry, srz, sux, suy, suz, lsx, lsy, lsz, half);
+            ChasePng(tris, Path.Combine(folder, name), 1920, 1080,
+                ex, ey, ez, tx, ty, tz, seatShadow, sox, soy, soz, srx, sry, srz, sux, suy, suz, lsx, lsy, lsz, half, fov);
+        }
+
+        static void WritePass26Portraits(string folder, string poses)
+        {
+            string[] files = { "idle_a.tris", "ready.tris", "idle_b.tris", "ready.tris" };
+            float[] yaw = { 22f, 14f, -22f, 10f };
+            for (int i = 0; i < 4; i++)
+            {
+                var tris = new List<Tri>(8);
+                AddBox(tris, 0f, 1.3f, -2.4f, 28f, 18f, 0.3f, 8f / 255f, 16f / 255f, 36f / 255f);
+                AddBox(tris, 0f, -0.02f, 0.15f, 2.4f, 0.06f, 2.2f, 183f / 255f, 164f / 255f, 114f / 255f);
+                AddPosed(tris, Path.Combine(poses, files[i]), 0f, 0.02f, 0f, yaw[i], i);
+                var shadow = new float[16 * 16];
+                for (int s = 0; s < shadow.Length; s++) shadow[s] = -1e20f;
+                PortraitPng(tris, Path.Combine(folder, "idle_" + i.ToString() + ".png"), 720, 900,
+                    0.55f, 1.05f, 4.5f, 0f, 0.92f, 0.02f, shadow, 32f);
+            }
+        }
+
+        static void WritePass26Results(string folder, string poses,
+            List<Tri> park, float[] shadow,
+            float sox, float soy, float soz, float srx, float sry, float srz,
+            float sux, float suy, float suz, float lsx, float lsy, float lsz, float half)
+        {
+            float ground = 0.2f;
+            float z = 16f;
+            float origin = 77.27f;
+            float[] x = { origin, origin - 1.46f, origin + 1.50f, origin + 2.92f };
+            float[] h = { 0.72f, 0.50f, 0.34f, 0.20f };
+            float[] wide = { 1.16f, 1.06f, 1.06f, 1.28f };
+            string[] files = { "cheer.tris", "cheer_b.tris", "cheer_c.tris", "slump.tris" };
+            float[] sr = { 0.78f, 0.55f, 0.62f, 0.38f };
+            float[] sg = { 0.62f, 0.58f, 0.42f, 0.40f };
+            float[] sb = { 0.28f, 0.64f, 0.30f, 0.46f };
+            float[] fr = { 242f / 255f, 41f / 255f, 255f / 255f, 41f / 255f };
+            float[] fg = { 41f / 255f, 115f / 255f, 219f / 255f, 209f / 255f };
+            float[] fb = { 56f / 255f, 255f / 255f, 31f / 255f, 71f / 255f };
+            var tris = new List<Tri>(park.Count + 400);
+            tris.AddRange(park);
+            int from = tris.Count;
+            for (int i = 0; i < 4; i++)
+            {
+                AddBox(tris, x[i], ground + h[i] * 0.5f, z, wide[i], h[i], 1.02f, sr[i], sg[i], sb[i]);
+                AddBox(tris, x[i], ground + h[i] + 0.03f, z, wide[i] + 0.08f, 0.06f, 1.10f, sr[i] * 1.15f, sg[i] * 1.1f, sb[i] * 0.9f);
+                AddBox(tris, x[i], ground + h[i] * 0.45f, z - 0.54f, wide[i] * 0.72f, h[i] * 0.55f, 0.06f, fr[i], fg[i], fb[i]);
+                AddPosed(tris, Path.Combine(poses, files[i]), x[i], ground + h[i] + 0.06f, z, 180f, i);
+            }
+            for (int c = 0; c < 14; c++)
+            {
+                float ang = c * 0.55f;
+                float cx = origin + (float)Math.Sin(ang) * 1.15f;
+                float cy = 2.15f + (c % 4) * 0.22f;
+                float cz = z - 0.35f + (float)Math.Cos(ang) * 0.25f;
+                float cr = c % 3 == 0 ? 1f : (c % 3 == 1 ? 0.95f : 0.35f);
+                float cg = c % 3 == 0 ? 0.84f : (c % 3 == 1 ? 0.35f : 0.82f);
+                float cb = c % 3 == 0 ? 0.2f : (c % 3 == 1 ? 0.28f : 0.55f);
+                AddBox(tris, cx, cy, cz, 0.16f, 0.26f, 0.04f, cr, cg, cb);
+            }
+            var seatShadow = (float[])shadow.Clone();
+            StampShadow(tris, from, seatShadow, sox, soy, soz, srx, sry, srz, sux, suy, suz, lsx, lsy, lsz, half);
+            ChasePng(tris, Path.Combine(folder, "results.png"), 1920, 1080,
+                78.1f, 3.6f, 8.4f, 78.1f, 1.7f, 16f,
+                seatShadow, sox, soy, soz, srx, sry, srz, sux, suy, suz, lsx, lsy, lsz, half, 28f);
+        }
+
+        static void WritePass26Pause(string folder, string poses,
+            List<Tri> park, float[] shadow,
+            float sox, float soy, float soz, float srx, float sry, float srz,
+            float sux, float suy, float suz, float lsx, float lsy, float lsz, float half)
+        {
+            var tris = new List<Tri>(park.Count + 64);
+            tris.AddRange(park);
+            int from = tris.Count;
+            AddPosed(tris, Path.Combine(poses, "ready.tris"), 76.4f, 0.2f, 16f, 200f, 0);
+            var seatShadow = (float[])shadow.Clone();
+            StampShadow(tris, from, seatShadow, sox, soy, soz, srx, sry, srz, sux, suy, suz, lsx, lsy, lsz, half);
+            ChasePng(tris, Path.Combine(folder, "pause.png"), 1920, 1080,
+                73.5f, 1.85f, 11.6f, 76.4f, 1.2f, 16f,
+                seatShadow, sox, soy, soz, srx, sry, srz, sux, suy, suz, lsx, lsy, lsz, half, 32f);
+        }
+
+        static void AddPosed(List<Tri> tris, string file, float x, float y, float z, float yaw, int seat)
+        {
+            if (!LoadHierFile(file)) return;
+            LookPair(seat, out float bodyR, out float bodyG, out float bodyB, out float accentR, out float accentG, out float accentB);
+            bool card = file.IndexOf("idle", StringComparison.Ordinal) >= 0 || file.IndexOf("ready", StringComparison.Ordinal) >= 0;
+            AddHier(tris, x, y, z, yaw, bodyR, bodyG, bodyB, accentR, accentG, accentB, card);
+            AddContact(tris, x, y, z);
+        }
+
+        static void StampShadow(List<Tri> tris, int from, float[] shadow,
+            float sox, float soy, float soz, float srx, float sry, float srz,
+            float sux, float suy, float suz, float lsx, float lsy, float lsz, float half)
+        {
+            for (int t = from; t < tris.Count; t++)
+            {
+                if (tris[t].A < 0.99f) continue;
+                ShadowTri(tris[t], shadow, 768, sox, soy, soz, srx, sry, srz, sux, suy, suz, lsx, lsy, lsz, half);
+            }
         }
     }
 }

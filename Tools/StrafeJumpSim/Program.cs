@@ -14,6 +14,15 @@ static class Program
             Console.WriteLine(Tag.Level.ArenaStill.WriteHudChases(folder));
             return 0;
         }
+        if (args != null && args.Length > 0 && args[0] == "--pass26")
+        {
+            string repo = RepoRoot();
+            string raw = args.Length > 1 ? args[1] : "/tmp/pass26";
+            string poses = Path.Combine(raw, "poses");
+            Tag.Ui.Menu.MenuNoClip.ExportPoses(repo, poses);
+            Console.WriteLine(Tag.Level.ArenaStill.WritePass26(raw, poses));
+            return 0;
+        }
         if (args != null && args.Length > 0 && args[0] == "--no-clip")
         {
             string clipLine;

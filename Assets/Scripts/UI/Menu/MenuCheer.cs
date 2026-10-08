@@ -4,8 +4,8 @@ using UnityEngine;
 namespace Tag.Ui.Menu
 {
     /// <summary>
-    /// Results poses. The winner claims with the existing raise and chest beat.
-    /// The others give the round up, or stumble. No root motion.
+    /// Results poses. The winner leans back. The last place bows.
+    /// A raised arm and a clap sink on this rig. No root travel.
     /// Reduce motion holds one frame of that pose.
     /// </summary>
     public sealed class MenuCheer : MonoBehaviour
@@ -74,42 +74,28 @@ namespace Tag.Ui.Menu
 
         void Apply(float t)
         {
-            if (_win)
-            {
-                float u = _still ? 1f : 0.35f + 0.65f * Mathf.Abs(Mathf.Sin(t * 2.1f));
-                BecomeItPose.Sample s = BecomeItPose.Claim(u);
-                Pose(s.ThighL, s.ThighR, s.KneeL, s.KneeR, s.ArmPitchL, s.ArmPitchR, s.ArmYawL, s.ArmYawR, s.ArmRollL, s.ArmRollR, s.ElbowL, s.ElbowR, s.Hip, s.HipYaw, s.Spine, s.SpineYaw, s.Head, s.HeadYaw);
-                return;
-            }
-            if (_clap)
-            {
-                float elbow = _small ? -72f : -108f;
-                float pitch = _small ? -34f : -50f;
-                Pose(6f, 6f, -8f, -8f, pitch, pitch, -34f, 34f, 8f, -8f, elbow, elbow, 0f, 0f, -6f, 0f, -4f, 0f);
-                return;
-            }
-            BecomeItPose.Sample give = BecomeItPose.GiveUp();
-            Pose(give.ThighL, give.ThighR, give.KneeL, give.KneeR, give.ArmPitchL, give.ArmPitchR, give.ArmYawL, give.ArmYawR, give.ArmRollL, give.ArmRollR, give.ElbowL, give.ElbowR, give.Hip, give.HipYaw, give.Spine, give.SpineYaw, give.Head, give.HeadYaw);
+            float time = _still ? 1.2f : t;
+            MenuAlive.Angles a;
+            if (_win) a = MenuAlive.Cheer(time, 1f);
+            else if (_clap) a = MenuAlive.Cheer(time, _small ? 0.3f : 0.55f);
+            else a = MenuAlive.Slump(time);
+            Pose(a);
         }
 
-        void Pose(float thighL, float thighR, float kneeL, float kneeR, float armPitchL, float armPitchR, float armYawL, float armYawR, float armRollL, float armRollR, float elbowL, float elbowR, float hip, float hipYaw, float spine, float spineYaw, float head, float headYaw)
+        void Pose(MenuAlive.Angles a)
         {
-            float show = 0.012f;
-            thighL *= show; thighR *= show; kneeL *= show; kneeR *= show;
-            armPitchL *= show; armPitchR *= show; armYawL *= show; armYawR *= show;
-            armRollL *= show; armRollR *= show; elbowL *= show; elbowR *= show;
-            hip *= show; hipYaw *= show; spine *= show; spineYaw *= show; head *= show; headYaw *= show;
-            Set(_hips, _hips0, hip, hipYaw, 0f);
-            Set(_spine, _spine0, spine, spineYaw, 0f);
-            Set(_head, _head0, head, headYaw, 0f);
-            Set(_armL, _armL0, armPitchL, armYawL, armRollL);
-            Set(_armR, _armR0, armPitchR, armYawR, armRollR);
-            Set(_foreL, _foreL0, elbowL, 0f, 0f);
-            Set(_foreR, _foreR0, elbowR, 0f, 0f);
-            Set(_thighL, _thighL0, thighL, 0f, 0f);
-            Set(_thighR, _thighR0, thighR, 0f, 0f);
-            Set(_kneeL, _kneeL0, kneeL, 0f, 0f);
-            Set(_kneeR, _kneeR0, kneeR, 0f, 0f);
+            transform.localRotation = Quaternion.Euler(a.RootPitch, a.RootYaw, a.RootRoll);
+            Set(_hips, _hips0, a.Hip, a.HipYaw, a.HipRoll);
+            Set(_spine, _spine0, a.Spine, a.SpineYaw, a.SpineRoll);
+            Set(_head, _head0, a.Head, a.HeadYaw, 0f);
+            Set(_armL, _armL0, a.ArmPitchL, a.ArmYawL, a.ArmRollL);
+            Set(_armR, _armR0, a.ArmPitchR, a.ArmYawR, a.ArmRollR);
+            Set(_foreL, _foreL0, a.ElbowL, 0f, 0f);
+            Set(_foreR, _foreR0, a.ElbowR, 0f, 0f);
+            Set(_thighL, _thighL0, a.ThighL, 0f, 0f);
+            Set(_thighR, _thighR0, a.ThighR, 0f, 0f);
+            Set(_kneeL, _kneeL0, a.KneeL, 0f, 0f);
+            Set(_kneeR, _kneeR0, a.KneeR, 0f, 0f);
         }
 
         void Cache()

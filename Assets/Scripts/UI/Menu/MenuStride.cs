@@ -1,11 +1,11 @@
-using Tag.Art;
 using UnityEngine;
 
 namespace Tag.Ui.Menu
 {
     /// <summary>
-    /// Title parade. Run uses the existing stride. Vault uses the existing mantle.
-    /// No root motion. Reduce motion holds the first frame.
+        /// Title parade. A march and a step, leaned as a whole body.
+        /// A full stride and a vault knee sink on this rig. No root travel.
+        /// Reduce motion holds one frame.
     /// </summary>
     public sealed class MenuStride : MonoBehaviour
     {
@@ -37,36 +37,26 @@ namespace Tag.Ui.Menu
         void Apply(float t)
         {
             float age = t + _phase;
-            if (_vault)
-            {
-                float u = _still ? 0.4f : Mathf.Repeat(age * 0.28f, 1f);
-                MantlePose.Sample s = MantlePose.At(u, true);
-                Pose(s.ThighL, s.ThighR, s.KneeL, s.KneeR, s.ArmPitchL, s.ArmPitchR, s.ArmYawL, s.ArmYawR, 0f, 0f, s.ElbowL, s.ElbowR, s.Hip, 0f, s.Spine, 0f, s.Head, 0f);
-                return;
-            }
-            float cycle = _still ? 0.4f : age * 5.5f;
-            JumpPose.Sample run = JumpPose.Stride(12f, Mathf.Sin(cycle), cycle);
-            Pose(run.ThighL, run.ThighR, run.KneeL, run.KneeR, run.ArmPitchL, run.ArmPitchR, run.ArmYawL, run.ArmYawR, 0f, 0f, run.ElbowL, run.ElbowR, run.Hip, 0f, run.Spine, 0f, 0f, 0f);
+            MenuAlive.Angles a = _vault
+                ? MenuAlive.Step(_still ? 0.5f : age)
+                : MenuAlive.Run(_still ? 0.4f : age);
+            Pose(a);
         }
 
-        void Pose(float thighL, float thighR, float kneeL, float kneeR, float armPitchL, float armPitchR, float armYawL, float armYawR, float armRollL, float armRollR, float elbowL, float elbowR, float hip, float hipYaw, float spine, float spineYaw, float head, float headYaw)
+        void Pose(MenuAlive.Angles a)
         {
-            float show = 0.012f;
-            thighL *= show; thighR *= show; kneeL *= show; kneeR *= show;
-            armPitchL *= show; armPitchR *= show; armYawL *= show; armYawR *= show;
-            armRollL *= show; armRollR *= show; elbowL *= show; elbowR *= show;
-            hip *= show; hipYaw *= show; spine *= show; spineYaw *= show; head *= show; headYaw *= show;
-            Set(_hips, _hips0, hip, hipYaw, 0f);
-            Set(_spine, _spine0, spine, spineYaw, 0f);
-            Set(_head, _head0, head, headYaw, 0f);
-            Set(_armL, _armL0, armPitchL, armYawL, armRollL);
-            Set(_armR, _armR0, armPitchR, armYawR, armRollR);
-            Set(_foreL, _foreL0, elbowL, 0f, 0f);
-            Set(_foreR, _foreR0, elbowR, 0f, 0f);
-            Set(_thighL, _thighL0, thighL, 0f, 0f);
-            Set(_thighR, _thighR0, thighR, 0f, 0f);
-            Set(_kneeL, _kneeL0, kneeL, 0f, 0f);
-            Set(_kneeR, _kneeR0, kneeR, 0f, 0f);
+            transform.localRotation = Quaternion.Euler(a.RootPitch, a.RootYaw, a.RootRoll);
+            Set(_hips, _hips0, a.Hip, a.HipYaw, a.HipRoll);
+            Set(_spine, _spine0, a.Spine, a.SpineYaw, a.SpineRoll);
+            Set(_head, _head0, a.Head, a.HeadYaw, 0f);
+            Set(_armL, _armL0, a.ArmPitchL, a.ArmYawL, a.ArmRollL);
+            Set(_armR, _armR0, a.ArmPitchR, a.ArmYawR, a.ArmRollR);
+            Set(_foreL, _foreL0, a.ElbowL, 0f, 0f);
+            Set(_foreR, _foreR0, a.ElbowR, 0f, 0f);
+            Set(_thighL, _thighL0, a.ThighL, 0f, 0f);
+            Set(_thighR, _thighR0, a.ThighR, 0f, 0f);
+            Set(_kneeL, _kneeL0, a.KneeL, 0f, 0f);
+            Set(_kneeR, _kneeR0, a.KneeR, 0f, 0f);
         }
 
         void Cache()

@@ -60,36 +60,30 @@ namespace Tag.Ui.Menu
             if (MenuVideo.ReduceMotion)
             {
                 _blend = goal;
-                Apply(IdlePose.At(0f, 0f), _blend);
+                Pose(MenuAlive.Lerp(MenuAlive.Idle(0f, 0f), MenuAlive.Ready(), _blend));
                 return;
             }
             if (dt > 0.05f) dt = 0.05f;
             _blend = Mathf.MoveTowards(_blend, goal, dt / 0.18f);
             _shift += IdlePose.ShiftRate * dt;
             _breath += IdlePose.BreathRate * dt;
-            Apply(IdlePose.At(_shift, _breath), _blend);
+            Pose(MenuAlive.Lerp(MenuAlive.Idle(_shift, _breath), MenuAlive.Ready(), _blend));
         }
 
-        void Apply(IdlePose.Sample s, float ready)
+        void Pose(MenuAlive.Angles a)
         {
-            if (ready < 0f) ready = 0f;
-            if (ready > 1f) ready = 1f;
-            float idle = 1f - ready;
-            float show = 0.012f;
-            Set(_hips, _hips0, 0f, 0f, s.HipRoll * idle * show);
-            Set(_spine, _spine0, (s.ChestPitch * idle + (-8f * ready)) * show, 0f, s.ChestRoll * idle * show);
-            Set(_head, _head0, (s.HeadPitch * idle + (-4f * ready)) * show, 0f, 0f);
-            float hang = _primitive ? VerbPoseClips.IdleArmPitch : 0f;
-            float yaw = _primitive ? VerbPoseClips.IdleArmYaw : 0f;
-            float elbow = _primitive ? VerbPoseClips.IdleElbow : 0f;
-            Set(_armL, _armL0, ((hang + s.Shoulder) * idle + (-58f * ready)) * show, yaw * idle * show, 0f);
-            Set(_armR, _armR0, ((hang + s.Shoulder) * idle + (-58f * ready)) * show, -yaw * idle * show, 0f);
-            Set(_foreL, _foreL0, (elbow * idle + (42f * ready)) * show, 0f, 0f);
-            Set(_foreR, _foreR0, (elbow * idle + (42f * ready)) * show, 0f, 0f);
-            Set(_thighL, _thighL0, (s.ThighL * idle + (10f * ready)) * show, 0f, 0f);
-            Set(_thighR, _thighR0, (s.ThighR * idle + (10f * ready)) * show, 0f, 0f);
-            Set(_kneeL, _kneeL0, (s.KneeL * idle + (16f * ready)) * show, 0f, 0f);
-            Set(_kneeR, _kneeR0, (s.KneeR * idle + (16f * ready)) * show, 0f, 0f);
+            transform.localRotation = Quaternion.Euler(a.RootPitch, a.RootYaw, a.RootRoll);
+            Set(_hips, _hips0, a.Hip, a.HipYaw, a.HipRoll);
+            Set(_spine, _spine0, a.Spine, a.SpineYaw, a.SpineRoll);
+            Set(_head, _head0, a.Head, a.HeadYaw, 0f);
+            Set(_armL, _armL0, a.ArmPitchL, a.ArmYawL, a.ArmRollL);
+            Set(_armR, _armR0, a.ArmPitchR, a.ArmYawR, a.ArmRollR);
+            Set(_foreL, _foreL0, a.ElbowL, 0f, 0f);
+            Set(_foreR, _foreR0, a.ElbowR, 0f, 0f);
+            Set(_thighL, _thighL0, a.ThighL, 0f, 0f);
+            Set(_thighR, _thighR0, a.ThighR, 0f, 0f);
+            Set(_kneeL, _kneeL0, a.KneeL, 0f, 0f);
+            Set(_kneeR, _kneeR0, a.KneeR, 0f, 0f);
         }
 
         static Quaternion Rest(Transform t)
