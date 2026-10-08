@@ -23,6 +23,21 @@ namespace Tag.Ui.Menu
             TagSfx.UiBack();
         }
 
+        public static void Ready()
+        {
+            TagSfx.RoundWin();
+        }
+
+        public static void StartMatch()
+        {
+            TagSfx.RoundStart();
+        }
+
+        public static void EnsureBed()
+        {
+            AudioCuePlayer.Ensure()?.PlaygroundMusic();
+        }
+
         public static void NoteDevice(InputDeviceKind kind)
         {
             ControlGlyphs.Note(kind);

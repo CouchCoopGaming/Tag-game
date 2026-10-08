@@ -102,6 +102,35 @@ namespace Tag.Ui.Menu
             }
         }
 
+        public static Sprite Streak
+        {
+            get
+            {
+                if (_streak != null) return _streak;
+                const int w = 256;
+                const int h = 48;
+                var tex = new Texture2D(w, h, TextureFormat.RGBA32, false);
+                tex.wrapMode = TextureWrapMode.Clamp;
+                for (int y = 0; y < h; y++)
+                {
+                    float v = 1f - Mathf.Abs(y - (h * 0.5f)) / (h * 0.5f);
+                    for (int x = 0; x < w; x++)
+                    {
+                        float u = x / (w - 1f);
+                        float head = u < 0.15f ? u / 0.15f : 1f;
+                        float tail = Mathf.Clamp01((1f - u) / 0.55f);
+                        float a = head * tail * v;
+                        tex.SetPixel(x, y, new Color(1f, 0.95f, 0.7f, a));
+                    }
+                }
+                tex.Apply();
+                _streak = Sprite.Create(tex, new Rect(0f, 0f, w, h), new Vector2(0.5f, 0.5f), 100f);
+                return _streak;
+            }
+        }
+
+        static Sprite _streak;
+
         public static void Plate(Image image, Color color, bool sliced)
         {
             if (image == null) return;

@@ -147,7 +147,9 @@ namespace Tag.Ui.Menu
         Text _arenaShotName;
         Text _arenaShotBlurb;
         readonly Image[] _glyphChip = new Image[3];
+        readonly Image[] _glyphIcon = new Image[3];
         readonly Text[] _glyphWord = new Text[3];
+        float _actAt;
         readonly Text[] _readyStamp = new Text[4];
         readonly Image[] _castPlate = new Image[4];
         readonly MenuPodium.Row[] _rows = new MenuPodium.Row[4];
@@ -222,6 +224,16 @@ namespace Tag.Ui.Menu
         void Update()
         {
             EatPause = false;
+            if (MenuCapture.Drive(this)) return;
+            if (_actAt > 0f)
+            {
+                if (_screen == MenuScreenId.Pause || _pauseChild)
+                    EatPause = true;
+                if (Time.unscaledTime < _actAt) return;
+                _actAt = 0f;
+                Activate();
+                return;
+            }
             if (_screen == MenuScreenId.Hidden) return;
             MenuInput.Poll();
             switch (_screen)
@@ -247,6 +259,7 @@ namespace Tag.Ui.Menu
         void LateUpdate()
         {
             Animate();
+            if (MenuCapture.Running) return;
             if (_screen == MenuScreenId.Loading)
             {
                 FinishLoad();
@@ -317,6 +330,13 @@ namespace Tag.Ui.Menu
             }
             else if (id != MenuScreenId.Results && _preview != null)
                 _preview.Hide();
+            if (id != MenuScreenId.Hidden)
+                MenuAudio.EnsureBed();
+        }
+
+        public void Present(MenuScreenId id)
+        {
+            Open(id);
         }
 
         void BuildShell()
@@ -464,7 +484,19 @@ namespace Tag.Ui.Menu
             if (!Allow(index)) return;
             _focus = index;
             RefreshFocus();
-            Activate();
+            ArmActivate();
+        }
+
+        void ArmActivate()
+        {
+            MenuTile tile = TileAt(_focus);
+            if (tile != null) tile.PunchIn();
+            if (MenuVideo.ReduceMotion || MenuCapture.Running)
+            {
+                Activate();
+                return;
+            }
+            _actAt = Time.unscaledTime + 0.12f;
         }
 
         bool Allow(int index)
@@ -558,7 +590,7 @@ namespace Tag.Ui.Menu
                 GoBack();
                 return;
             }
-            if (confirm || start) Activate();
+            if (confirm || start) ArmActivate();
         }
 
         void Activate()
@@ -666,6 +698,7 @@ namespace Tag.Ui.Menu
             _loadPractice = practice;
             _loadFired = false;
             _loadAt = Time.unscaledTime + 0.9f;
+            MenuAudio.StartMatch();
             Open(MenuScreenId.Loading);
         }
 
@@ -679,7 +712,14 @@ namespace Tag.Ui.Menu
                 MenuArt.Plate(image, MenuTheme.Navy, true);
                 image.raycastTarget = false;
                 _glyphChip[i] = image;
+                var iconRt = MenuWidgets.Place(chip, "Icon", 10f, 8f, 36f, 36f);
+                var icon = iconRt.gameObject.AddComponent<Image>();
+                icon.sprite = MenuIcons.Keys;
+                icon.preserveAspect = true;
+                icon.raycastTarget = false;
+                _glyphIcon[i] = icon;
                 _glyphWord[i] = MenuWidgets.Words(chip, words[i], 22, TextAnchor.MiddleCenter, MenuTheme.Cream, Vector2.zero, Vector2.one);
+                _glyphWord[i].rectTransform.offsetMin = new Vector2(48f, 4f);
             }
         }
 
@@ -698,11 +738,17 @@ namespace Tag.Ui.Menu
             {
                 if (_glyphWord[i] != null) _glyphWord[i].text = words[i];
                 if (_glyphChip[i] != null) _glyphChip[i].color = chip;
+                if (_glyphIcon[i] != null) _glyphIcon[i].sprite = pad ? MenuIcons.Pad : MenuIcons.Keys;
             }
         }
 
         void Animate()
         {
+            if (MenuCapture.Running)
+            {
+                _fade = 1f;
+                _slide = 0f;
+            }
             if (_group != null && _screen != MenuScreenId.Hidden)
             {
                 _fade = Mathf.MoveTowards(_fade, 1f, Time.unscaledDeltaTime / 0.2f);
@@ -929,7 +975,10 @@ namespace Tag.Ui.Menu
                     if (edge.Confirm || edge.Start)
                     {
                         MenuSession.Ready[seat] = !MenuSession.Ready[seat];
-                        MenuAudio.Confirm();
+                        MenuTile picked = TileAt(MenuSession.Cursor[seat]);
+                        if (picked != null) picked.PunchIn();
+                        if (MenuSession.Ready[seat]) MenuAudio.Ready();
+                        else MenuAudio.Back();
                     }
                     if (edge.Back)
                     {
@@ -984,7 +1033,7 @@ namespace Tag.Ui.Menu
             }
             if (dy != 0) MoveRules(dy);
             if (dx != 0) StepRules(dx);
-            if (confirm || start) ActivateRules();
+            if (confirm || start) ArmActivate();
         }
 
         void TickArena()
@@ -1002,7 +1051,7 @@ namespace Tag.Ui.Menu
                 Move(dx, dy);
                 ShowArenaPreview();
             }
-            if (confirm || start) ActivateArena();
+            if (confirm || start) ArmActivate();
         }
 
         void TickLoading()
@@ -1034,7 +1083,7 @@ namespace Tag.Ui.Menu
                 return;
             }
             if (dx != 0 || dy != 0) Move(dx, dy);
-            if (confirm) ActivatePause();
+            if (confirm) ArmActivate();
         }
 
         void TickOptions()
@@ -1057,7 +1106,7 @@ namespace Tag.Ui.Menu
             }
             if (dy != 0) MoveOptions(dy);
             if (dx != 0) StepOptions(dx);
-            if (confirm) ActivateOptions();
+            if (confirm) ArmActivate();
         }
 
         void TickControls()
@@ -1097,7 +1146,7 @@ namespace Tag.Ui.Menu
                 return;
             }
             if (dy != 0) MoveOptions(dy);
-            if (confirm) ActivateControls();
+            if (confirm) ArmActivate();
             if (dx != 0) { }
         }
 
@@ -1119,7 +1168,7 @@ namespace Tag.Ui.Menu
                 MenuAudio.Move();
                 PaintPractice();
             }
-            if (confirm || start) ActivatePractice();
+            if (confirm || start) ArmActivate();
         }
 
         void BuildTitle()
@@ -1129,13 +1178,12 @@ namespace Tag.Ui.Menu
             if (_banner != null) _banner.text = "";
             if (_dim != null) _dim.color = MenuTheme.Veil;
             ShowFlyover(MenuSession.Arena, 0.9f);
-            var plate = MenuWidgets.Place(_body, "LogoPlate", 360f, 70f, 1100f, 250f);
+            var plate = MenuWidgets.Place(_body, "LogoPlate", 360f, 40f, 1100f, 280f);
             var plateImage = plate.gameObject.AddComponent<Image>();
-            MenuArt.Plate(plateImage, new Color(0.05f, 0.12f, 0.32f, 0.78f), true);
+            MenuArt.Plate(plateImage, new Color(0.05f, 0.12f, 0.32f, 0.55f), true);
             plateImage.raycastTarget = false;
-            Text word = MenuWidgets.Words(_body, "TAG", 180, TextAnchor.MiddleCenter, MenuTheme.Gold, new Vector2(0.08f, 0.40f), new Vector2(0.92f, 0.92f));
-            word.alignment = TextAnchor.MiddleCenter;
-            Text sub = MenuWidgets.Words(_body, "COUCH TAG", 42, TextAnchor.MiddleCenter, MenuTheme.Cream, new Vector2(0.2f, 0.28f), new Vector2(0.8f, 0.42f));
+            MenuWidgets.Logo(_body, 410f, 50f, 1000f, 240f, 150);
+            Text sub = MenuWidgets.Words(_body, "COUCH TAG", 42, TextAnchor.MiddleCenter, MenuTheme.Cream, new Vector2(0.2f, 0.22f), new Vector2(0.8f, 0.36f));
             sub.alignment = TextAnchor.MiddleCenter;
             _press = MenuWidgets.Words(_body, "Press  Start   /   South   /   Space", 32, TextAnchor.MiddleCenter, MenuTheme.Cream, new Vector2(0.1f, 0.08f), new Vector2(0.9f, 0.22f));
         }
@@ -1147,8 +1195,8 @@ namespace Tag.Ui.Menu
             if (_header != null) _header.text = "  TAG";
             if (_banner != null) _banner.text = "";
             if (_dim != null) _dim.color = MenuTheme.Veil;
-            Text word = MenuWidgets.Words(_body, "TAG", 120, TextAnchor.MiddleLeft, MenuTheme.Gold, new Vector2(0f, 0.45f), new Vector2(0.48f, 0.92f));
-            MenuWidgets.Words(_body, "Local couch. One keyboard, four pads.", 28, TextAnchor.UpperLeft, MenuTheme.Cream, new Vector2(0f, 0.28f), new Vector2(0.46f, 0.48f));
+            MenuWidgets.Logo(_body, 24f, 24f, 860f, 220f, 120);
+            MenuWidgets.Words(_body, "Local couch. One keyboard, four pads.", 28, TextAnchor.UpperLeft, MenuTheme.Cream, new Vector2(0f, 0.22f), new Vector2(0.46f, 0.42f));
             float y = 8f;
             AddTile(980f, y, 760f, 96f, 0, "Play", "Local couch", true); y += 108f;
             AddTile(980f, y, 760f, 96f, 1, "Practice", "Free arena, routes you already have", true); y += 108f;
@@ -1157,6 +1205,12 @@ namespace Tag.Ui.Menu
             AddTile(980f, y, 360f, 96f, 4, "Credits", "", true);
             AddTile(1380f, y, 360f, 96f, 5, "Quit", "", true); y += 108f;
             AddTile(980f, y, 760f, 80f, 6, "Online", "Coming soon", false);
+            MenuWidgets.Mark(TileAt(0), MenuIcons.Play, MenuIcons.PlayTint, 72f);
+            MenuWidgets.Mark(TileAt(1), MenuIcons.Cone, MenuIcons.PracticeTint, 72f);
+            MenuWidgets.Mark(TileAt(2), MenuIcons.Gear, MenuIcons.OptionsTint, 72f);
+            MenuWidgets.Mark(TileAt(3), MenuIcons.Pad, MenuIcons.ControlsTint, 72f);
+            MenuWidgets.Mark(TileAt(4), MenuIcons.Star, MenuIcons.CreditsTint, 64f);
+            MenuWidgets.Mark(TileAt(5), MenuIcons.Door, MenuIcons.QuitTint, 64f);
             _count = 7;
         }
 
@@ -1181,8 +1235,10 @@ namespace Tag.Ui.Menu
                 float x = 16f + s * 448f;
                 AddTile(x, 36f, 428f, 520f, s, title, detail, true);
                 MenuTile tile = TileAt(s);
-                if (tile != null && tile.Plate != null && human)
-                    tile.Plate.color = Color.Lerp(MenuTheme.Panel, MenuTheme.Seat(s), 0.45f);
+                bool pad = human && CouchPlay.DeviceOf(s) != CouchPlay.DeviceKeyboard;
+                MenuWidgets.Glyph(tile, human ? (pad ? MenuIcons.Pad : MenuIcons.Keys) : MenuIcons.Either, MenuTheme.Seat(s));
+                if (tile != null && human)
+                    tile.Tint(Color.Lerp(MenuTheme.Panel, MenuTheme.Seat(s), 0.45f));
             }
             _count = 4;
             if (_banner != null)
@@ -1218,13 +1274,16 @@ namespace Tag.Ui.Menu
             {
                 int col = c % 3;
                 int row = c / 3;
-                float x = 180f + col * 500f;
-                float y = 450f + row * 150f;
+                float x = 140f + col * 540f;
+                float y = 446f + row * 172f;
                 string name = c < LocalProfiles.HierNames.Length ? LocalProfiles.HierNames[c] : "Color";
-                AddTile(x, y, 460f, 136f, c, name, "", true);
+                AddTile(x, y, 500f, 160f, c, name.ToUpperInvariant(), "", true);
                 MenuTile tile = TileAt(c);
                 if (tile != null)
+                {
+                    MenuWidgets.Portrait(tile, MenuPortraits.Of(c), MenuPortraits.Tint(c));
                     _castMark[c] = tile.Detail;
+                }
             }
             _count = 6;
             _castSig = int.MinValue;
