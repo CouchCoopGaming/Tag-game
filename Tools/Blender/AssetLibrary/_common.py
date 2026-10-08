@@ -57,6 +57,8 @@ PALETTE = {
     "Lib_ContainerRed": ((0.58, 0.16, 0.13), 0.18, 0.30),
     "Lib_ContainerBlue": ((0.12, 0.28, 0.48), 0.18, 0.30),
     "Lib_Black": ((0.07, 0.07, 0.08), 0.15, 0.40),
+    # Dark powder coat. Flat color, not a baked tile.
+    "Lib_Iron": ((0.09, 0.16, 0.10), 0.18, 0.42),
     "Lib_Rust": ((0.45, 0.24, 0.14), 0.28, 0.24),
     "Lib_Water": ((0.025, 0.07, 0.09), 0.02, 0.55),
     "Lib_Brass": ((0.74, 0.58, 0.28), 0.85, 0.55),
@@ -1301,7 +1303,7 @@ def load_asset_modules():
     if ROOT not in sys.path:
         sys.path.insert(0, ROOT)
     skip = {
-        "_common", "build_all", "render_pass1", "render_pass2", "render_pass3", "render_pass4", "render_pass5", "render_pass6", "render_pass7", "render_pass8", "render_pass9", "render_pass10", "render_pass11", "render_pass12", "render_pass13", "render_pass14", "render_pass15", "render_pass16",
+        "_common", "build_all", "render_pass1", "render_pass2", "render_pass3", "render_pass4", "render_pass5", "render_pass6", "render_pass7", "render_pass8", "render_pass9", "render_pass10", "render_pass11", "render_pass12", "render_pass13", "render_pass14", "render_pass15", "render_pass16", "render_pass17",
         "write_unity", "_kit",
     }
     names = []

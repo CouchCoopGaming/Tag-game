@@ -34,7 +34,8 @@ def create():
         joists = lod_pick(lod, 7, 4)
         for i in range(joists):
             z = -2.4 + i * (4.8 / (joists - 1))
-            g.box((0, 0.535, z), (2.55, 0.07, 0.08), "Lib_Wood", uv_scale=1.0)
+            # Joist top bites the plank soffit so the boards are not floating.
+            g.box((0, 0.555, z), (2.55, 0.09, 0.08), "Lib_Wood", uv_scale=1.0)
         _planks(g, lod, bev)
         g.box((0, 0.50, -2.94), (2.84, 0.22, 0.06), "Lib_WoodDark", uv_scale=1.0)
         g.box((0, 0.50, 2.94), (2.84, 0.22, 0.06), "Lib_WoodDark", uv_scale=1.0)
