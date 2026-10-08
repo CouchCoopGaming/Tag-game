@@ -51,8 +51,13 @@ namespace Tag.Ui.Menu
         /// <summary>The light step. It lives on the band, not in the diamond.</summary>
         public static readonly Color LavenderBand = new Color(0.82f, 0.70f, 0.98f, 1f);
 
-        /// <summary>Base costume lavender. The shape fill, so the diamond stays purple.</summary>
-        public static readonly Color LavenderFill = new Color(0.70f, 0.58f, 0.88f, 1f);
+        /// <summary>
+        /// Shape fill. Lifted in brightness from (0.70, 0.58, 0.88) so every
+        /// seat pair clears 0.35 under protan, deutan, and tritan. Hue stays
+        /// lavender: blue above red, red above green. The diamond mark is unchanged.
+        /// The light band stays <see cref="LavenderBand"/>, which ui-cvd measures.
+        /// </summary>
+        public static readonly Color LavenderFill = new Color(0.80f, 0.72f, 0.92f, 1f);
 
         /// <summary>P1 red, P2 blue, P3 orange, P4 lavender. The costume swatches, not a second table.</summary>
         public static Color SeatColor(int seat)

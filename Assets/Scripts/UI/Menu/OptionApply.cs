@@ -28,6 +28,7 @@ namespace Tag.Ui.Menu
         public static int Armed = -1;
         public static string BusLine = "";
         public static string CvdLine = "";
+        public static string FillLine = "";
         public static string QualityLine = "";
         public static string SeatLine = "";
 
@@ -142,6 +143,7 @@ namespace Tag.Ui.Menu
                     + " tritan=" + tritan.ToString("0.00", CultureInfo.InvariantCulture)
                     + " " + tritanPair
                     + " floor=" + AccessibilityPalette.MinPairDistance.ToString("0.00", CultureInfo.InvariantCulture);
+                FillLine = SeatCvd.FillLine();
                 GameSettings edited = GameSettings.Defaults();
                 edited.Master = 0.5f;
                 edited.Sfx = 0.75f;

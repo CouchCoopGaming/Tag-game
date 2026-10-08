@@ -18,6 +18,8 @@ static class Program
                 Console.WriteLine(Tag.Ui.Menu.OptionApply.BusLine);
             if (!string.IsNullOrEmpty(Tag.Ui.Menu.OptionApply.CvdLine))
                 Console.WriteLine(Tag.Ui.Menu.OptionApply.CvdLine);
+            if (!string.IsNullOrEmpty(Tag.Ui.Menu.OptionApply.FillLine))
+                Console.WriteLine(Tag.Ui.Menu.OptionApply.FillLine);
             if (!string.IsNullOrEmpty(Tag.Ui.Menu.OptionApply.QualityLine))
                 Console.WriteLine(Tag.Ui.Menu.OptionApply.QualityLine);
             if (!string.IsNullOrEmpty(Tag.Ui.Menu.OptionApply.SeatLine))

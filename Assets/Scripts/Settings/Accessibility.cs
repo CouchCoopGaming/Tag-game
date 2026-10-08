@@ -438,6 +438,53 @@ namespace Tag.Settings
                 + " floor=" + AccessibilityPalette.MinPairDistance.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture);
         }
 
+        /// <summary>Seat fills, not the band. Lavender's brightness has to clear the floor here.</summary>
+        public static string FillLine()
+        {
+            var culture = System.Globalization.CultureInfo.InvariantCulture;
+            WorstFill(AccessibilityPalette.CvdProtanopia, out float protan, out string protanPair);
+            WorstFill(AccessibilityPalette.CvdDeuteranopia, out float deutan, out string deutanPair);
+            WorstFill(AccessibilityPalette.CvdTritanopia, out float tritan, out string tritanPair);
+            return "ui-fill protan=" + protan.ToString("0.00", culture)
+                + " " + protanPair
+                + " deutan=" + deutan.ToString("0.00", culture)
+                + " " + deutanPair
+                + " tritan=" + tritan.ToString("0.00", culture)
+                + " " + tritanPair
+                + " floor=" + AccessibilityPalette.MinPairDistance.ToString("0.00", culture);
+        }
+
+        public static bool FillClears()
+        {
+            WorstFill(AccessibilityPalette.CvdProtanopia, out float protan, out _);
+            WorstFill(AccessibilityPalette.CvdDeuteranopia, out float deutan, out _);
+            WorstFill(AccessibilityPalette.CvdTritanopia, out float tritan, out _);
+            float floor = AccessibilityPalette.MinPairDistance;
+            return protan >= floor && deutan >= floor && tritan >= floor;
+        }
+
+        static void WorstFill(int cvd, out float distance, out string pair)
+        {
+            float worst = 99f;
+            pair = "";
+            distance = worst;
+            for (int a = 0; a < 4; a++)
+            {
+                Color ba = Tag.Ui.Menu.MenuMannequin.SeatFill(a);
+                for (int b = a + 1; b < 4; b++)
+                {
+                    Color bb = Tag.Ui.Menu.MenuMannequin.SeatFill(b);
+                    float d = AccessibilityPalette.PairDistance(cvd, ba.r, ba.g, ba.b, bb.r, bb.g, bb.b);
+                    if (d < worst)
+                    {
+                        worst = d;
+                        pair = SeatWord(a) + "/" + SeatWord(b);
+                    }
+                }
+            }
+            distance = worst;
+        }
+
         public static void Worst(int mode, int cvd, out float distance, out string pair)
         {
             float worst = 99f;

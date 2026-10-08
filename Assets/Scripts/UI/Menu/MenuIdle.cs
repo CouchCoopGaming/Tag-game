@@ -17,6 +17,7 @@ namespace Tag.Ui.Menu
         Quaternion _thighL0, _thighR0, _kneeL0, _kneeR0;
         bool _primitive;
         bool _ready;
+        bool _hold;
         float _blend;
         float _shift;
         float _breath;
@@ -24,6 +25,15 @@ namespace Tag.Ui.Menu
         public void SetReady(bool ready)
         {
             _ready = ready;
+        }
+
+        /// <summary>Relaxed idle held on pose sample 0. No breath, no new clip.</summary>
+        public void HoldRest()
+        {
+            _hold = true;
+            _ready = false;
+            _blend = 0f;
+            Apply(IdlePose.At(0f, 0f), 0f);
         }
 
         public void Capture(bool primitive)
@@ -55,6 +65,11 @@ namespace Tag.Ui.Menu
 
         void Update()
         {
+            if (_hold)
+            {
+                Apply(IdlePose.At(0f, 0f), 0f);
+                return;
+            }
             float dt = Time.unscaledDeltaTime;
             float goal = _ready ? 1f : 0f;
             if (MenuVideo.ReduceMotion)

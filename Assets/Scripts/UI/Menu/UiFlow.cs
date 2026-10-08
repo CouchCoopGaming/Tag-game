@@ -83,6 +83,9 @@ namespace Tag.Ui.Menu
             bool sheet = MenuSheet.Holds(Root());
             bool one = MenuSheet.OneFocus() && HostFocus(Root());
             if (!one) Fail(ref report, "two focused");
+            bool readyBanner = MenuSheet.JoinBannerHolds() && HostBanner(Root());
+            if (!readyBanner) Fail(ref report, "ready banner");
+            if (!Tag.Settings.SeatCvd.FillClears()) Fail(ref report, "fill floor");
             report.ApplyLine = OptionApply.Holds();
             bool optionsLive = report.ApplyLine.IndexOf("persist=ok", StringComparison.Ordinal) >= 0
                 && report.ApplyLine.IndexOf("=no", StringComparison.Ordinal) < 0;
@@ -728,6 +731,23 @@ namespace Tag.Ui.Menu
             string backdrop = File.ReadAllText(Path.Combine(menu, "MenuBackdrop.cs"));
             if (backdrop.IndexOf("UI/Menu/MegaGrade", StringComparison.Ordinal) < 0) return false;
             return true;
+        }
+
+        static bool HostBanner(string root)
+        {
+            if (string.IsNullOrEmpty(root)) return false;
+            string host = File.ReadAllText(Path.Combine(root, "Assets", "Scripts", "UI", "Menu", "MenuHost.cs"));
+            int join = host.IndexOf("void BuildJoin()", StringComparison.Ordinal);
+            int sync = host.IndexOf("void SyncStartMarks()", StringComparison.Ordinal);
+            if (join < 0 || sync < join) return false;
+            string body = host.Substring(join, sync - join);
+            if (body.IndexOf("MenuSheet.JoinBanner(", StringComparison.Ordinal) < 0) return false;
+            if (body.IndexOf("CouchPlay.Humans > 0", StringComparison.Ordinal) >= 0) return false;
+            string old = MenuSheet.JoinBannerOld(2);
+            string now = MenuSheet.JoinBanner(2, 1);
+            if (old != MenuSheet.ReadyLine) return false;
+            if (now == old) return false;
+            return now == "Waiting for 1 player to ready up";
         }
 
         static string Root()

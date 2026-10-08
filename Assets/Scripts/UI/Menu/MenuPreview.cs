@@ -29,6 +29,12 @@ namespace Tag.Ui.Menu
         Transform _paradeRoot;
         Camera _paradeCam;
         RenderTexture _paradeRt;
+        Transform _pairRoot;
+        Camera _pairCam;
+        RenderTexture _pairRt;
+
+        /// <summary>Idle pose sample 0. Soles rest at this absolute world height, 0.5 cm.</summary>
+        public const float PlantY = 0.005f;
         readonly Transform[] _step = new Transform[Slots];
         readonly Transform[] _podiumAnchor = new Transform[Slots];
         readonly Transform[] _confetti = new Transform[18];
@@ -60,6 +66,7 @@ namespace Tag.Ui.Menu
             }
             BuildPodium();
             BuildParade();
+            BuildPair();
             gameObject.SetActive(false);
         }
 
@@ -78,6 +85,7 @@ namespace Tag.Ui.Menu
             }
             if (_podiumCam != null) _podiumCam.enabled = false;
             if (_paradeCam != null) _paradeCam.enabled = false;
+            if (_pairCam != null) _pairCam.enabled = false;
         }
 
         public void Hide()
@@ -88,6 +96,7 @@ namespace Tag.Ui.Menu
             }
             if (_podiumCam != null) _podiumCam.enabled = false;
             if (_paradeCam != null) _paradeCam.enabled = false;
+            if (_pairCam != null) _pairCam.enabled = false;
             gameObject.SetActive(false);
         }
 
@@ -101,9 +110,28 @@ namespace Tag.Ui.Menu
             }
             if (_podiumCam != null) _podiumCam.enabled = false;
             if (_paradeCam != null) _paradeCam.enabled = true;
+            if (_pairCam != null) _pairCam.enabled = false;
             if (view != null)
             {
                 view.texture = _paradeRt;
+                view.color = Color.white;
+            }
+        }
+
+        public void ShowMenuPair(RawImage view)
+        {
+            if (_pairRoot == null) BuildPair();
+            gameObject.SetActive(true);
+            for (int i = 0; i < Slots; i++)
+            {
+                if (_cam[i] != null) _cam[i].enabled = false;
+            }
+            if (_podiumCam != null) _podiumCam.enabled = false;
+            if (_paradeCam != null) _paradeCam.enabled = false;
+            if (_pairCam != null) _pairCam.enabled = true;
+            if (view != null && _pairRt != null)
+            {
+                view.texture = _pairRt;
                 view.color = Color.white;
             }
         }
@@ -164,6 +192,7 @@ namespace Tag.Ui.Menu
             }
             if (_podiumCam != null) _podiumCam.enabled = true;
             if (_paradeCam != null) _paradeCam.enabled = false;
+            if (_pairCam != null) _pairCam.enabled = false;
             if (view != null)
             {
                 view.texture = _podiumRt;
@@ -453,6 +482,116 @@ namespace Tag.Ui.Menu
             _paradeCam = cam;
         }
 
+        void BuildPair()
+        {
+            var root = new GameObject("MenuPair");
+            root.transform.SetParent(transform, false);
+            root.transform.position = new Vector3(0f, 0f, 48f);
+            _pairRoot = root.transform;
+            float[] x = { -1.15f, 1.15f };
+            string[] keys = { "Red", "Blue" };
+            for (int i = 0; i < 2; i++)
+            {
+                var stand = new GameObject("Seat" + i.ToString());
+                stand.transform.SetParent(_pairRoot, false);
+                stand.transform.localPosition = new Vector3(x[i], 0f, 0f);
+                var disc = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+                disc.name = "Pedestal";
+                disc.transform.SetParent(stand.transform, false);
+                Collider discCol = disc.GetComponent<Collider>();
+                if (discCol != null) DestroyImmediate(discCol);
+                disc.transform.localScale = new Vector3(1.15f, 0.04f, 1.15f);
+                disc.transform.position = new Vector3(stand.transform.position.x, PlantY - 0.04f, stand.transform.position.z);
+                Renderer discRend = disc.GetComponent<Renderer>();
+                if (discRend != null)
+                    discRend.sharedMaterial = DummyPrimitiveFactory.MakeMat(MenuTheme.Seat(i), 0.22f, 0.18f);
+                GameObject body = MenuMannequin.Spawn(stand.transform, keys[i], keys[i], false);
+                if (body == null) continue;
+                MenuIdle idle = body.GetComponent<MenuIdle>();
+                if (idle != null) idle.HoldRest();
+                float sole = Sole(body.transform);
+                Vector3 bp = body.transform.position;
+                bp.y += PlantY - sole;
+                body.transform.position = bp;
+                ChestMark(body.transform, i);
+            }
+            var camGo = new GameObject("PairCam");
+            camGo.transform.SetParent(transform, false);
+            var cam = camGo.AddComponent<Camera>();
+            cam.clearFlags = CameraClearFlags.SolidColor;
+            cam.backgroundColor = new Color(0f, 0f, 0f, 0f);
+            cam.fieldOfView = 28f;
+            cam.nearClipPlane = 0.05f;
+            cam.farClipPlane = 40f;
+            cam.depth = -17;
+            cam.enabled = false;
+            _pairRt = new RenderTexture(1280, 720, 16, RenderTextureFormat.ARGB32);
+            _pairRt.Create();
+            cam.targetTexture = _pairRt;
+            cam.transform.position = _pairRoot.position + new Vector3(0f, 1.05f, 4.8f);
+            cam.transform.LookAt(_pairRoot.position + new Vector3(0f, 0.9f, 0f));
+            _pairCam = cam;
+        }
+
+        static float Sole(Transform body)
+        {
+            Transform[] all = body.GetComponentsInChildren<Transform>(true);
+            float y = float.MaxValue;
+            bool found = false;
+            for (int i = 0; i < all.Length; i++)
+            {
+                string n = all[i].name;
+                if (n.IndexOf("Foot") < 0) continue;
+                float sole = all[i].position.y;
+                if (n.IndexOf("Mesh") >= 0)
+                    sole -= Mathf.Abs(all[i].lossyScale.y) * 0.5f;
+                if (sole < y) y = sole;
+                found = true;
+            }
+            return found ? y : body.position.y;
+        }
+
+        static void ChestMark(Transform body, int seat)
+        {
+            Transform chest = null;
+            Transform[] all = body.GetComponentsInChildren<Transform>(true);
+            for (int i = 0; i < all.Length; i++)
+            {
+                string n = all[i].name;
+                if (n == "Panel_Chest" || n == "ChestPlate" || n == "Spine" || n == "Chest")
+                {
+                    chest = all[i];
+                    if (n == "Panel_Chest" || n == "ChestPlate") break;
+                }
+            }
+            var go = GameObject.CreatePrimitive(PrimitiveType.Quad);
+            go.name = "ChestMark";
+            go.transform.SetParent(body, false);
+            if (chest != null)
+            {
+                Vector3 local = body.InverseTransformPoint(chest.position);
+                local.z += 0.18f;
+                go.transform.localPosition = local;
+            }
+            else
+                go.transform.localPosition = new Vector3(0f, 1.32f, 0.28f);
+            go.transform.localRotation = Quaternion.identity;
+            go.transform.localScale = new Vector3(0.22f, 0.22f, 1f);
+            Collider col = go.GetComponent<Collider>();
+            if (col != null) DestroyImmediate(col);
+            Sprite sprite = SeatShape.For(seat);
+            Shader shader = Shader.Find("Sprites/Default");
+            if (shader == null) shader = Shader.Find("UI/Default");
+            if (shader == null) shader = Shader.Find("Unlit/Transparent");
+            if (shader == null) shader = Shader.Find("Unlit/Color");
+            if (shader == null) return;
+            var mat = new Material(shader);
+            mat.color = MenuTheme.SeatFill(seat);
+            if (sprite != null && sprite.texture != null) mat.mainTexture = sprite.texture;
+            Renderer rend = go.GetComponent<Renderer>();
+            if (rend != null) rend.sharedMaterial = mat;
+        }
+
         void Aim(int i)
         {
             if (_cam[i] == null || _anchor[i] == null) return;
@@ -481,6 +620,12 @@ namespace Tag.Ui.Menu
                 _paradeRt.Release();
                 Destroy(_paradeRt);
                 _paradeRt = null;
+            }
+            if (_pairRt != null)
+            {
+                _pairRt.Release();
+                Destroy(_pairRt);
+                _pairRt = null;
             }
         }
     }

@@ -59,6 +59,48 @@ namespace Tag.Ui.Menu
             return true;
         }
 
+        public const string ReadyLine = "Everyone Ready? Press Start";
+
+        /// <summary>
+        /// Start line only when every joined seat is ready and at least two are in.
+        /// Otherwise the waiting line names how many still have to ready up.
+        /// </summary>
+        public static string JoinBanner(int joined, int readyCount)
+        {
+            if (joined < 0) joined = 0;
+            if (readyCount < 0) readyCount = 0;
+            if (readyCount > joined) readyCount = joined;
+            if (joined >= 2 && readyCount == joined) return ReadyLine;
+            if (joined == 0) return "Anyone can join";
+            int waiting = joined - readyCount;
+            if (waiting < 1) waiting = 2 - joined;
+            if (waiting < 1) waiting = 1;
+            if (waiting == 1) return "Waiting for 1 player to ready up";
+            return "Waiting for " + waiting.ToString() + " players to ready up";
+        }
+
+        /// <summary>The old drop-in rule. Any occupied seat printed the start line.</summary>
+        public static string JoinBannerOld(int humans)
+        {
+            return humans > 0 ? ReadyLine : "Anyone can join";
+        }
+
+        public static bool JoinBannerHolds()
+        {
+            string old = JoinBannerOld(2);
+            string now = JoinBanner(2, 1);
+            if (old != ReadyLine) return false;
+            if (now == old) return false;
+            if (now != "Waiting for 1 player to ready up") return false;
+            if (JoinBanner(2, 2) != ReadyLine) return false;
+            if (JoinBanner(4, 4) != ReadyLine) return false;
+            if (JoinBanner(1, 1) == ReadyLine) return false;
+            if (JoinBanner(2, 0) != "Waiting for 2 players to ready up") return false;
+            if (JoinBanner(3, 1) != "Waiting for 2 players to ready up") return false;
+            if (JoinBanner(0, 0) != "Anyone can join") return false;
+            return true;
+        }
+
         public static bool WantsPark(int screen)
         {
             return screen == Join
@@ -118,6 +160,22 @@ namespace Tag.Ui.Menu
             int next = preview.IndexOf("void EnsureDisc", StringComparison.Ordinal);
             if (show < 0 || next < show) return false;
             if (preview.Substring(show, next - show).IndexOf("MenuCheer.Dress", StringComparison.Ordinal) >= 0) return false;
+            if (preview.IndexOf("PlantY = 0.005f", StringComparison.Ordinal) < 0) return false;
+            if (preview.IndexOf("HoldRest()", StringComparison.Ordinal) < 0) return false;
+            string idle = File.ReadAllText(Path.Combine(menu, "MenuIdle.cs"));
+            if (idle.IndexOf("IdlePose.At(0f, 0f)", StringComparison.Ordinal) < 0) return false;
+            if (!JoinBannerHolds()) return false;
+            int main = host.IndexOf("void BuildMain()", StringComparison.Ordinal);
+            int joinAt = host.IndexOf("void BuildJoin()", StringComparison.Ordinal);
+            if (main < 0 || joinAt < main) return false;
+            string mainBody = host.Substring(main, joinAt - main);
+            if (mainBody.IndexOf("MenuBackdrop.Chase", StringComparison.Ordinal) >= 0) return false;
+            if (host.IndexOf("ShowMenuPair", StringComparison.Ordinal) < 0) return false;
+            int sync = host.IndexOf("void SyncStartMarks()", StringComparison.Ordinal);
+            if (sync < joinAt) return false;
+            string joinBody = host.Substring(joinAt, sync - joinAt);
+            if (joinBody.IndexOf("MenuSheet.JoinBanner(", StringComparison.Ordinal) < 0) return false;
+            if (joinBody.IndexOf("CouchPlay.Humans > 0", StringComparison.Ordinal) >= 0) return false;
             string rows = File.ReadAllText(Path.Combine(menu, "MenuPodium.cs"));
             if (rows.IndexOf("int[] body = { 5, 0, 2, 3 }", StringComparison.Ordinal) < 0) return false;
             if (rows.IndexOf("int[] accent = { 4, 1, 4, 1 }", StringComparison.Ordinal) < 0) return false;

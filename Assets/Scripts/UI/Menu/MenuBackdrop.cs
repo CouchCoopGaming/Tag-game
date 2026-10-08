@@ -14,6 +14,7 @@ namespace Tag.Ui.Menu
         static Texture2D _dusk;
         static Texture2D _gold;
         static Texture2D _grade;
+        static Texture2D _soft;
         static Texture2D _chase;
         static Texture2D _lockup;
         static Texture2D _ready;
@@ -39,6 +40,19 @@ namespace Tag.Ui.Menu
                 if (_gold != null) return _gold;
             }
             return Fly(arena);
+        }
+
+        /// <summary>
+        /// Title plate only. MegaGrade, blurred a little so the blocks fall back
+        /// and the logo carries the frame. Loading and pause stay on the sharp grade.
+        /// </summary>
+        public static Texture Soft
+        {
+            get
+            {
+                Load();
+                return _soft != null ? _soft : _grade;
+            }
         }
 
         public static Texture Shot(int arena)
@@ -81,6 +95,7 @@ namespace Tag.Ui.Menu
             _dusk = Resources.Load<Texture2D>("UI/Menu/MegaDusk");
             _gold = Resources.Load<Texture2D>("UI/Menu/MegaGold");
             _grade = Resources.Load<Texture2D>("UI/Menu/MegaGrade");
+            _soft = Resources.Load<Texture2D>("UI/Menu/MegaBlur");
             _chase = Resources.Load<Texture2D>("UI/Menu/Chase");
             _lockup = Resources.Load<Texture2D>("UI/Menu/TagLockup");
             _ready = Resources.Load<Texture2D>("UI/Menu/ReadyBurst");

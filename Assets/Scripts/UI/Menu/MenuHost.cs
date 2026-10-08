@@ -91,6 +91,7 @@ namespace Tag.Ui.Menu
         Image _dim;
         RectTransform _body;
         Text _header;
+        Image _menuChip;
         Text _footer;
         Text _banner;
         Image _bannerPlate;
@@ -101,7 +102,9 @@ namespace Tag.Ui.Menu
         Text _promptWord;
         Text _promptTail;
         GameObject _vignette;
+        GameObject _titleWash;
         RawImage _parade;
+        RawImage _hero;
         CanvasGroup _group;
         MenuPreview _preview;
         readonly List<MenuTile> _tiles = new List<MenuTile>(16);
@@ -383,8 +386,13 @@ namespace Tag.Ui.Menu
             {
                 if (_preview != null) _preview.ShowParade(_parade);
             }
+            else if (id == MenuScreenId.Main)
+            {
+                if (_preview != null) _preview.ShowMenuPair(_hero);
+            }
             else if (id != MenuScreenId.Results && _preview != null)
                 _preview.Hide();
+            if (_titleWash != null) _titleWash.SetActive(id == MenuScreenId.Title);
             if (id == MenuScreenId.Results)
                 MenuAudio.Results();
             if (id != MenuScreenId.Hidden)
@@ -539,7 +547,13 @@ namespace Tag.Ui.Menu
         void FitHeader()
         {
             if (_header == null) return;
+            _header.alignment = TextAnchor.MiddleLeft;
+            if (_menuChip != null) _menuChip.enabled = false;
             RectTransform headerRt = _header.rectTransform;
+            headerRt.anchorMin = new Vector2(0f, 1f);
+            headerRt.anchorMax = new Vector2(1f, 1f);
+            headerRt.pivot = new Vector2(0.5f, 1f);
+            headerRt.anchoredPosition = Vector2.zero;
             if (UiFit.IdentityText())
             {
                 _header.resizeTextForBestFit = true;
@@ -1825,6 +1839,76 @@ namespace Tag.Ui.Menu
             if (confirm || start) ArmActivate();
         }
 
+        void FitMainLabel()
+        {
+            if (_header == null) return;
+            _header.text = "Menu";
+            _header.alignment = TextAnchor.MiddleCenter;
+            RectTransform headerRt = _header.rectTransform;
+            headerRt.anchorMin = new Vector2(0f, 1f);
+            headerRt.anchorMax = new Vector2(0f, 1f);
+            headerRt.pivot = new Vector2(0f, 1f);
+            headerRt.anchoredPosition = new Vector2(UiFit.SafeX, -12f);
+            headerRt.sizeDelta = new Vector2(280f, 80f);
+            if (_menuChip == null)
+            {
+                Transform parent = _header.transform.parent;
+                var chip = MenuWidgets.Box(parent, "MenuChip", new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(0f, 1f));
+                chip.anchoredPosition = new Vector2(UiFit.SafeX, -12f);
+                chip.sizeDelta = new Vector2(280f, 80f);
+                _menuChip = chip.gameObject.AddComponent<Image>();
+                MenuArt.Plate(_menuChip, MenuTheme.Navy, true);
+                _menuChip.raycastTarget = false;
+                chip.SetSiblingIndex(_header.transform.GetSiblingIndex());
+            }
+            _menuChip.enabled = true;
+        }
+
+        void ShowTitleWash()
+        {
+            if (_titleWash == null)
+            {
+                Transform parent = _dim != null ? _dim.transform.parent : transform;
+                var rt = MenuWidgets.Box(parent, "TitleWash", Vector2.zero, Vector2.one, new Vector2(0.5f, 0.5f));
+                var image = rt.gameObject.AddComponent<RawImage>();
+                image.texture = TitleWashTex();
+                image.raycastTarget = false;
+                image.color = Color.white;
+                if (_body != null) rt.SetSiblingIndex(_body.GetSiblingIndex());
+                _titleWash = rt.gameObject;
+            }
+            _titleWash.SetActive(true);
+        }
+
+        static Texture2D _washTex;
+
+        static Texture2D TitleWashTex()
+        {
+            if (_washTex != null) return _washTex;
+            const int n = 128;
+            var tex = new Texture2D(n, n, TextureFormat.RGBA32, false);
+            tex.wrapMode = TextureWrapMode.Clamp;
+            tex.filterMode = FilterMode.Bilinear;
+            float cx = (n - 1) * 0.5f;
+            for (int y = 0; y < n; y++)
+            {
+                for (int x = 0; x < n; x++)
+                {
+                    float dx = (x - cx) / cx;
+                    float dy = (y - cx) / cx;
+                    float r = Mathf.Sqrt(dx * dx + dy * dy);
+                    float t = (r - 0.35f) / 0.95f;
+                    if (t < 0f) t = 0f;
+                    if (t > 1f) t = 1f;
+                    t = t * t;
+                    tex.SetPixel(x, y, new Color(0f, 0f, 0f, t * 0.42f));
+                }
+            }
+            tex.Apply(false, true);
+            _washTex = tex;
+            return tex;
+        }
+
         void BuildTitle()
         {
             _count = 0;
@@ -1832,7 +1916,10 @@ namespace Tag.Ui.Menu
             if (_banner != null) _banner.text = "";
             if (_dim != null) _dim.color = new Color(0f, 0f, 0f, 0.35f);
             ShowPark(ParkArena.Mega, 1f);
+            if (_flyover != null && MenuBackdrop.Soft != null)
+                _flyover.texture = MenuBackdrop.Soft;
             CoverFlyover();
+            ShowTitleWash();
             var paradeRt = MenuWidgets.Box(_body, "Parade", Vector2.zero, Vector2.one, new Vector2(0.5f, 0.5f));
             _parade = paradeRt.gameObject.AddComponent<RawImage>();
             _parade.raycastTarget = false;
@@ -1923,7 +2010,7 @@ namespace Tag.Ui.Menu
         {
             _count = 0;
             _cols = 1;
-            if (_header != null) _header.text = "  Menu";
+            FitMainLabel();
             if (_banner != null) _banner.text = "";
             if (_dim != null) _dim.color = new Color(0f, 0f, 0f, 0.30f);
             ShowPark(ParkArena.Mega, 1f);
@@ -1948,9 +2035,9 @@ namespace Tag.Ui.Menu
             if (heroH < 88f) heroH = 88f;
             var heroRt = MenuWidgets.Place(_body, "Hero", 8f, heroY, logoW - 28f, heroH);
             var hero = heroRt.gameObject.AddComponent<RawImage>();
-            hero.texture = MenuBackdrop.Chase;
             hero.raycastTarget = false;
-            hero.color = hero.texture != null ? Color.white : new Color(1f, 1f, 1f, 0f);
+            hero.color = new Color(1f, 1f, 1f, 0f);
+            _hero = hero;
             float tipY = heroY + heroH + 6f;
             if (tipY + tipH > bodyH) tipY = bodyH - tipH;
             if (tipY < heroY) tipY = heroY;
@@ -1994,6 +2081,8 @@ namespace Tag.Ui.Menu
             ShowPark(ParkArena.Mega, 1f);
             CoverFlyover();
             _joinSig = JoinSig();
+            int joined = 0;
+            int readySeats = 0;
             float span = UiFit.BodyW(UiFit.Current());
             float bodyH = UiFit.BodyH(UiFit.Current());
             float cardH = 420f;
@@ -2001,6 +2090,11 @@ namespace Tag.Ui.Menu
             for (int s = 0; s < 4; s++)
             {
                 bool human = CouchPlay.HumanAt(s);
+                if (human)
+                {
+                    joined++;
+                    if (MenuSession.Ready[s]) readySeats++;
+                }
                 string title = "P" + (s + 1).ToString();
                 string detail = human ? "" : "Press a button to join";
                 string profile = human ? LocalProfiles.SeatName(s) : "";
@@ -2030,11 +2124,7 @@ namespace Tag.Ui.Menu
             }
             _count = 4;
             if (_banner != null)
-            {
-                _banner.text = CouchPlay.Humans > 0
-                    ? "Everyone Ready? Press Start"
-                    : "Anyone can join";
-            }
+                _banner.text = MenuSheet.JoinBanner(joined, readySeats);
             float hintY = 24f + cardH + 12f;
             float hintH = 44f;
             if (hintY + hintH < bodyH - 8f)
@@ -2051,7 +2141,7 @@ namespace Tag.Ui.Menu
 
         void SyncStartMarks()
         {
-            bool show = _banner != null && _banner.text == "Everyone Ready? Press Start";
+            bool show = _banner != null && _banner.text == MenuSheet.ReadyLine;
             if (show && _bannerSpace == null) BuildStartMarks();
             if (_bannerSpace != null) _bannerSpace.enabled = show;
             if (_bannerStart != null) _bannerStart.enabled = show;
