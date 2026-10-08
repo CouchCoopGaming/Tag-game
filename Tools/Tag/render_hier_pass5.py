@@ -109,8 +109,18 @@ def _u(i, n):
 
 
 def _hero(spec, smooth):
+    n = len(smooth["knee_flex_L"])
+    if spec.get("hero_i") is not None and n:
+        i = max(0, min(n - 1, int(spec["hero_i"])))
+        return (0.0 if n <= 1 else i / (n - 1)), i
     u, idx = sp.hero_u(spec["id"], smooth)
     return u, idx
+
+
+def _facing_at(facing, i):
+    if callable(facing):
+        return facing(i)
+    return facing
 
 
 def _facing_for(spec, smooth):
@@ -121,14 +131,22 @@ def _facing_for(spec, smooth):
     return rh._facing_euler(spec, trunk)
 
 
-def _pose_frame(arm, smooth, i, facing, capsule):
+def _pose_frame(arm, smooth, i, facing, capsule, spec=None):
     """Curve pose. Capsule location is preview-only; Root stays put."""
     import bpy
     n = len(smooth["knee_flex_L"])
     ch = sp.sample_raw(smooth, _u(i, n))
     rh._apply_eulers(arm, sp.blender_euler(sp.unity_pose(ch)))
     arm.location = capsule
-    arm.rotation_euler = facing
+    arm.rotation_euler = _facing_at(facing, i)
+    # Optional whole-body yaw on Hips (local Y is up). Not a Root key.
+    if spec is not None and spec.get("hip_yaw") is not None:
+        hips = arm.pose.bones.get("Hips")
+        if hips is not None:
+            hips.rotation_mode = "XYZ"
+            e = hips.rotation_euler
+            extra = spec["hip_yaw"](i) if callable(spec["hip_yaw"]) else spec["hip_yaw"]
+            hips.rotation_euler = (e.x, e.y + math.radians(float(extra)), e.z)
     root = arm.pose.bones.get("Root")
     if root is not None:
         root.location = (0.0, 0.0, 0.0)
@@ -378,7 +396,7 @@ def _apply_pin(arm, kind, side, lock, surface, pole):
 
 def _limb_keys(spec):
     keys = [("foot", "L"), ("foot", "R")]
-    if spec["verb"] == "cling":
+    if spec["verb"] in ("cling", "slide"):
         keys.extend((("hand", "L"), ("hand", "R")))
     return keys
 
@@ -393,7 +411,7 @@ def _pole_for(spec, kind, side):
         # Elbows drop below the lip instead of spearing the face.
         y = 0.25 if side == "L" else -0.25
         return Vector((0.2, y, -0.9))
-    if kind == "foot" and spec["verb"] in ("wallrun", "walljump"):
+    if kind == "foot" and spec["verb"] in ("wallrun", "walljump", "vwall", "turn180"):
         y = 0.2 if side == "L" else -0.2
         return Vector((1.0, y, 0.35))
     return None
@@ -402,7 +420,7 @@ def _pole_for(spec, kind, side):
 def _hero_locals(arm, spec, smooth, facing, hero_i):
     """Limb and torso positions of the hero pose, armature at the origin."""
     from mathutils import Vector
-    _pose_frame(arm, smooth, hero_i, facing, Vector((0.0, 0.0, 0.0)))
+    _pose_frame(arm, smooth, hero_i, facing, Vector((0.0, 0.0, 0.0)), spec)
     pose = sp.unity_pose(sp.sample_raw(smooth, _u(hero_i, len(smooth["knee_flex_L"]))))
     loc = {"foot": {}, "foot_z": {}, "palm": {}, "palm_z": {}, "chest": None, "head": None, "pose": pose}
     for side in ("L", "R"):
@@ -431,6 +449,9 @@ def _fit_path(spec, path, hero_i, loc):
     because that channel is the crouch and the image rise is mostly camera.
     """
     from mathutils import Vector
+    custom = spec.get("fit")
+    if custom is not None:
+        return custom(spec, path, hero_i, loc)
     n = path["frames"]
     fwd = path["fwd"]
     rise = path["rise"]
@@ -515,6 +536,9 @@ def _fit_path(spec, path, hero_i, loc):
 def _forced_target(spec, key, i, hero_i, pt, face, lip_z, meta):
     """World point a story contact has to hold, or None to use the 4 cm test."""
     from mathutils import Vector
+    custom = spec.get("force")
+    if custom is not None:
+        return custom(spec, key, i, hero_i, pt, face, lip_z, meta)
     kind, side = key
     if spec["verb"] == "cling" and abs(i - hero_i) <= 8:
         if kind == "hand" and lip_z is not None:
@@ -535,7 +559,7 @@ def _surface_of(spec, kind, face, lip_z):
         return "lip", Vector((1.0, 0.0, 0.0)), Vector((face, 0.0, lip_z))
     if kind == "foot" and spec["verb"] == "cling":
         return "wall", Vector((1.0, 0.0, 0.0)), Vector((face, 0.0, 1.0))
-    if kind == "foot" and spec["verb"] == "wallrun":
+    if kind == "foot" and spec["verb"] in ("wallrun", "vwall"):
         return "wall", Vector((1.0, 0.0, 0.0)), Vector((face, 0.0, 1.0))
     # Tic-tac trail foot can meet the floor. The kick is forced onto the face.
     return "floor", Vector((0.0, 0.0, 1.0)), Vector((0.0, 0.0, 0.0))
@@ -706,7 +730,7 @@ def solve_clip(arm, spec, smooth, facing, path):
     beats = set(_beats(spec, n, hero_i))
     for i in range(n):
         cap = capsule[i]
-        _pose_frame(arm, smooth, i, facing, cap)
+        _pose_frame(arm, smooth, i, facing, cap, spec)
         # Curve eulers, so a partial pin can blend back toward the clip.
         names = [pb.name for pb in arm.pose.bones if pb.name != "Root"]
         curve_e = _save_eulers(arm, names)
@@ -716,7 +740,8 @@ def solve_clip(arm, spec, smooth, facing, path):
             if kind == "hand" and lip_z is not None and face is not None:
                 pt = _palm_point(arm, side, Vector((face, 0.0, lip_z)))
             else:
-                pt = _foot_point(_token(kind, side), "floor" if spec["verb"] == "softland" else "wall")
+                on_floor = spec["verb"] in ("softland", "slide")
+                pt = _foot_point(_token(kind, side), "floor" if on_floor else "wall")
             if pt is None:
                 continue
             forced, fkind = _forced_target(spec, key, i, hero_i, pt, face, lip_z, meta)
@@ -773,7 +798,8 @@ def solve_clip(arm, spec, smooth, facing, path):
                     st["normal"] = normal.copy()
                     st["floor_lifts"] = 0
                     st["plant_at"] = None
-                    st["w"] = 1.0 if dist < 0.0 else 1.0 / BLEND_FRAMES
+                    # A story contact (forced) is on immediately. A near-miss still blends.
+                    st["w"] = 1.0 if dist < 0.0 or forced is not None else 1.0 / BLEND_FRAMES
             elif forced is not None and st["lock"] is not None and (
                 abs(st["lock"].x - proj.x) > 0.02 or abs(st["lock"].z - proj.z) > 0.05
             ):
@@ -783,6 +809,7 @@ def solve_clip(arm, spec, smooth, facing, path):
                 st["normal"] = normal.copy()
                 st["floor_lifts"] = 0
                 st["plant_at"] = None
+                st["w"] = 1.0
             elif catching:
                 step = 1.0 if dist < 0.0 else 1.0 / BLEND_FRAMES
                 st["w"] = min(1.0, st["w"] + step)
@@ -790,6 +817,12 @@ def solve_clip(arm, spec, smooth, facing, path):
                 st["w"] = st["w"] - 1.0 / BLEND_FRAMES
                 if st["w"] <= 0.0:
                     st.update(_blank_pin())
+            # A slide contact travels with the foot. Update the lock every
+            # frame so the sole stays down without sticking to the ground.
+            if spec.get("sliding_feet") and forced is not None and st.get("kind") == "floor" and st.get("lock") is not None:
+                st["lock"] = proj.copy()
+                st["normal"] = normal.copy()
+                st["w"] = 1.0
             if st["w"] > 0.0 and st["lock"] is not None:
                 _apply_pin(arm, kind, side, st["lock"], st["kind"], _pole_for(spec, kind, side))
                 ik_e = _save_eulers(arm, names)
@@ -838,8 +871,24 @@ def solve_clip(arm, spec, smooth, facing, path):
             floor_pen, wall_pen, torso, head, _limb, _hand, _foot = _scan(lip_z, face)
         cap = _unstick_feet(arm, face, pins, spec, cap)
         capsule[i] = cap
+        if spec.get("sliding_feet"):
+            # The floor lift carries pinned feet with the capsule. Put them back
+            # on the moving contact, then lift once more if the torso is still through.
+            for _ in range(2):
+                for key, st in pins.items():
+                    if st.get("kind") != "floor" or st.get("w", 0) < 0.5 or st.get("lock") is None:
+                        continue
+                    kind, side = key
+                    _apply_pin(arm, kind, side, st["lock"], st["kind"], _pole_for(spec, kind, side))
+                    ik_e = _save_eulers(arm, names)
+                    _blend_eulers(arm, curve_e, ik_e, list(_chain(kind, side)), st["w"])
+                floor_now, _w, _t, _h, _l, _ha, _f = _scan(lip_z, face)
+                if floor_now <= 0.008:
+                    break
+                cap = _lift_floor(arm, cap)
+                capsule[i] = cap
         floor_pen, wall_pen, torso, head, _limb, _hand, _foot = _scan(lip_z, face)
-        if spec["verb"] == "softland":
+        if spec["verb"] in ("softland", "slide"):
             frame_pen = floor_pen
         else:
             frame_pen = max(floor_pen, wall_pen)
@@ -869,6 +918,12 @@ def solve_clip(arm, spec, smooth, facing, path):
             normal = st["normal"]
             # A foot that missed the surface is not a plant, so it is not slide.
             if abs((vert - st["lock"]).dot(normal)) > 0.02:
+                continue
+            if spec.get("sliding_feet") and st["kind"] == "floor":
+                # Skate against this frame's moving contact, not body travel.
+                delta = vert - st["lock"]
+                along = delta - normal * delta.dot(normal)
+                slide[key] = max(slide[key], along.length)
                 continue
             if st["plant_at"] is None:
                 st["plant_at"] = vert.copy()
@@ -922,7 +977,7 @@ def solve_clip(arm, spec, smooth, facing, path):
 
 
 def _beats(spec, n, hero_i):
-    frames = [i for i in BEATS.get(spec["id"], []) if 0 <= i < n]
+    frames = [i for i in spec.get("beats", BEATS.get(spec["id"], [])) if 0 <= i < n]
     if hero_i not in frames:
         frames.append(hero_i)
     frames = sorted(set(frames))
@@ -940,8 +995,8 @@ def _shot_at(arm, spec, ortho):
     cap = arm.location
     # The armature origin sits near the root, well below the chest. Aim at the hips.
     focus_z = cap.z + 0.90
-    if spec["verb"] == "softland":
-        focus_z = cap.z + 0.70
+    if spec["verb"] in ("softland", "slide"):
+        focus_z = cap.z + (0.55 if spec["verb"] == "slide" else 0.70)
         if ortho:
             return (cap.x + 3.4, cap.y, focus_z), (cap.x, cap.y, focus_z), 2.35
         return (cap.x + 2.4, cap.y - 3.4, focus_z + 0.15), (cap.x, cap.y, focus_z - 0.05), None
