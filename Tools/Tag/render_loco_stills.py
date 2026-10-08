@@ -16,7 +16,10 @@ from mathutils import Euler, Vector
 from mathutils.bvhtree import BVHTree
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
-FBX = os.path.join(ROOT, "Assets", "Art", "Characters", "HiPoly", "Dummy_Mannequin_Tan_Hier_Hi.fbx")
+FBX = os.environ.get(
+    "LOCO_FBX",
+    os.path.join(ROOT, "Assets", "Art", "Characters", "HiPoly", "Dummy_Mannequin_Tan_Hier_Hi.fbx"),
+)
 PASS = os.environ.get("LOCO_PASS", "pass1")
 OUT = os.environ.get("LOCO_OUT", os.path.join(ROOT, "Docs", "LocoStills", PASS))
 ONLY = set(filter(None, os.environ.get("LOCO_ONLY", "").split(",")))
@@ -41,6 +44,13 @@ MESHES = [
     "Mesh_UpperLeg_R", "Mesh_LowerLeg_R", "Mesh_Foot_R",
 ]
 BONE_OF = {m: m[5:] for m in MESHES}
+# Candidate hinge spheres. Absent on the shipped mannequin, ignored unless the object exists.
+CAP_BONES = {
+    "Mesh_ElbowCap_L": "LowerArm_L",
+    "Mesh_ElbowCap_R": "LowerArm_R",
+    "Mesh_KneeCap_L": "LowerLeg_L",
+    "Mesh_KneeCap_R": "LowerLeg_R",
+}
 PARENT = {
     "Spine": "Hips", "Chest": "Spine", "Neck": "Chest", "Head": "Neck",
     "Shoulder_L": "Chest", "UpperArm_L": "Shoulder_L", "LowerArm_L": "UpperArm_L", "Hand_L": "LowerArm_L",
@@ -101,12 +111,65 @@ def sole_of(name):
     return acc / len(band), zmin
 
 
-def apply_leg(arm, side, thigh, knee, foot, yaw=0.0):
-    # A little turnout, plus whatever the plant needs to hold the sole laterally.
-    z = (-5.0 if side == "L" else 5.0) + yaw
-    set_e(arm, "UpperLeg_" + side, thigh, 0.0, z)
+# Walk, run, and sprint set these so the knees stay on separate tracks.
+# Other clips leave the turnout the bind pose uses.
+ABDUCT = {"L": 0.0, "R": 0.0}
+USE_TURNOUT = True
+
+
+def reset_leg_style():
+    global USE_TURNOUT
+    USE_TURNOUT = True
+    ABDUCT["L"] = 0.0
+    ABDUCT["R"] = 0.0
+
+
+def apply_leg(arm, side, thigh, knee, foot, yaw=0.0, abduct=None):
+    abd = ABDUCT[side] if abduct is None else abduct
+    # Positive abduct opens the knee away from the midline (left thigh -Y).
+    y = -abd if side == "L" else abd
+    base = (-5.0 if side == "L" else 5.0) if USE_TURNOUT else 0.0
+    set_e(arm, "UpperLeg_" + side, thigh, y, base + yaw)
     set_e(arm, "LowerLeg_" + side, knee, 0.0, 0.0)
     set_e(arm, "Foot_" + side, foot, 0.0, 0.0)
+
+
+def chain_step(current, goal, budget=22.0, foot_cap=8.0):
+    """Step toward goal. Thigh, knee, and foot share one sagittal budget.
+
+    The foot bone inherits the thigh and the knee, so those three local
+    X deltas are capped as a sum. That is what keeps the world step under 25°.
+    """
+    d = [goal[i] - current[i] for i in range(3)]
+    scale = 1.0
+    limits = (
+        abs(d[0]),
+        abs(d[0] + d[1]),
+        abs(d[0] + d[1] + d[2]),
+    )
+    for mag in limits:
+        if mag > budget:
+            scale = min(scale, budget / mag)
+    if abs(d[2]) > foot_cap:
+        scale = min(scale, foot_cap / abs(d[2]))
+    return tuple(current[i] + d[i] * scale for i in range(3))
+
+
+def build_swing(release, keys, count, budget, foot_cap):
+    goals = []
+    prev = 0
+    for end, pose in keys:
+        for _ in range(end - prev):
+            goals.append(pose)
+        prev = end
+    if len(goals) != count:
+        raise RuntimeError("swing keys cover {0} frames, cycle wants {1}".format(len(goals), count))
+    cursor = (release[0], release[1], release[2])
+    out = []
+    for goal in goals:
+        cursor = chain_step(cursor, goal, budget, foot_cap)
+        out.append(cursor)
+    return out
 
 
 def clear_ground(arm, side, curve, floor=0.012):
@@ -197,8 +260,36 @@ def quat_deg(a, b):
     return ang
 
 
+def _pitch(s, fwd, back):
+    # s = -1 is the hand in front, s = +1 is the hand back by the hip.
+    return lerp(fwd, back, (s + 1.0) * 0.5)
+
+
 def upper(phase, parm, bank=0.0, breath=0.0, shift=0.0):
     s = math.sin(2.0 * math.pi * phase)
+    if "hip_lean" in parm:
+        # Lean lives on the hips. The head counters so the face stays up.
+        # The elbow stays bent; the shoulder does the pump.
+        twist = parm.get("twist", 0.0) * s
+        fwd = parm["arm_fwd"]
+        back = parm["arm_back"]
+        elbow = parm["elbow"]
+        return {
+            "Hips": (parm["hip_lean"] + breath * 0.25, 0.0, shift),
+            "Spine": (parm.get("spine_lean", 0.0) + breath * 0.3, 0.0, -twist * 0.35 - shift * 0.3),
+            "Chest": (parm.get("chest_lean", 0.0) + breath * 0.4, 0.0, -twist + bank),
+            "Neck": (breath * 0.2, 0.0, 0.0),
+            "Head": (-parm["hip_lean"] * parm.get("head_counter", 0.55) - breath * 0.3, 0.0, -bank * 0.35),
+            "Shoulder_L": (0.0, 0.0, 2.0),
+            "Shoulder_R": (0.0, 0.0, -2.0),
+            # Y opens the elbow away from the ribs. X is the pump.
+            "UpperArm_L": (_pitch(s, fwd, back), -parm["arm_out"], 0.0),
+            "UpperArm_R": (_pitch(-s, fwd, back), parm["arm_out"], 0.0),
+            "LowerArm_L": (elbow, 0.0, 0.0),
+            "LowerArm_R": (elbow, 0.0, 0.0),
+            "Hand_L": (0.0, 0.0, 0.0),
+            "Hand_R": (0.0, 0.0, 0.0),
+        }
     lean = parm["lean"]
     arm = parm["arm"]
     # Left heel-strike is phase 0, so the left arm is back (positive X).
@@ -232,6 +323,14 @@ def set_root(arm, y, z, yaw_deg=0.0):
 # Strike pose: foot forward, knee soft, sole near the ground. Tuned on the mesh.
 STRIKE = (-20.0, 44.0, -16.0)
 
+# Start, stop, skid, and the blend still use the pass-2 sprint shape.
+LEGACY_SPRINT = {
+    "lean": 16.0, "arm": 12.0, "arm_out": 10.0, "hip": 0.0, "chest": 10.0,
+    "root_z": -0.05, "lift": 36.0, "n": 8, "stance": 1,
+    "strike": (-22.0, 46.0, -14.0), "cap": 18.0, "foot_cap": 8.0,
+    "lift_floor": 0.55,
+}
+
 
 def gait_parm(speed, crouch=False):
     if crouch:
@@ -243,31 +342,65 @@ def gait_parm(speed, crouch=False):
             "swing_thigh": -4.0,
         }
     if speed >= 12.0:
-        # 13.8 m/s moves the hips 46 cm per frame. A two-frame plant turns the
-        # foot more than 25 degrees, so the shoe taps for one frame.
+        # 13.8 m/s moves the hips 46 cm a frame, so the shoe taps for one frame.
+        # The swing is long enough for a heel kick and a 65° thigh under 25°/frame.
         return {
-            "lean": 16.0, "arm": 12.0, "arm_out": 10.0, "hip": 0.0, "chest": 10.0,
-            "root_z": -0.05, "lift": 36.0, "n": 8, "stance": 1,
-            "strike": (-22.0, 46.0, -14.0), "cap": 18.0, "foot_cap": 8.0,
-            "lift_floor": 0.55,
+            "lean": 18.0, "arm": 12.0,
+            "hip_lean": 18.0, "spine_lean": 4.0, "chest_lean": 2.0,
+            "head_counter": 0.55, "twist": 6.0,
+            "elbow": -85.0, "arm_fwd": -78.0, "arm_back": 56.0, "arm_out": 28.0,
+            "abduct": 14.0,
+            "root_z": -0.04, "n": 18, "stance": 1,
+            "strike": (-22.0, 46.0, -14.0), "cap": 16.0, "foot_cap": 8.0,
+            "budget": 22.0,
+            "keys": [
+                (7, (16.0, 122.0, 3.0)),
+                (14, (-85.0, 108.0, -2.0)),
+                (17, (-26.0, 56.0, -12.0)),
+            ],
         }
     if speed >= 9.0:
         return {
-            "lean": 12.0, "arm": 12.0, "arm_out": 8.0, "hip": 0.0, "chest": 8.5,
-            "root_z": -0.035, "lift": 31.0, "n": 8, "stance": 1,
-            "strike": STRIKE, "cap": 18.0, "foot_cap": 8.0, "snap": True,
-            "lift_floor": 0.55,
+            "lean": 9.0, "arm": 12.0,
+            "hip_lean": 9.0, "spine_lean": 3.0, "chest_lean": 1.5,
+            "head_counter": 0.55, "twist": 5.0,
+            "elbow": -85.0, "arm_fwd": -78.0, "arm_back": 56.0, "arm_out": 28.0,
+            "abduct": 12.0,
+            "root_z": -0.03, "n": 18, "stance": 1,
+            "strike": STRIKE, "cap": 16.0, "foot_cap": 8.0,
+            "budget": 22.0,
+            "keys": [
+                (7, (16.0, 126.0, 4.0)),
+                (13, (-72.0, 102.0, -4.0)),
+                (17, (-22.0, 52.0, -14.0)),
+            ],
         }
     return {
-        "lean": 8.0, "arm": 12.0, "arm_out": 8.0, "hip": 0.0, "chest": 7.0,
-        "root_z": -0.02, "lift": 28.0, "n": 10, "stance": 2,
-        "strike": STRIKE, "cap": 22.0, "foot_cap": 8.0, "snap": True,
+        "lean": 5.0, "arm": 12.0,
+        "hip_lean": 5.0, "spine_lean": 2.0, "chest_lean": 1.0,
+        "head_counter": 0.5, "twist": 4.0,
+        "elbow": -85.0, "arm_fwd": -78.0, "arm_back": 56.0, "arm_out": 28.0,
+        "abduct": 11.0,
+        "root_z": -0.02, "n": 18, "stance": 1,
+        "strike": (-18.0, 40.0, -12.0), "cap": 16.0, "foot_cap": 8.0,
+        "budget": 18.0,
+        "keys": [
+            (5, (4.0, 68.0, -2.0)),
+            (11, (-50.0, 82.0, -4.0)),
+            (17, (-18.0, 52.0, -14.0)),
+        ],
     }
 
 
 def bake_gait(arm, speed, crouch=False, bank_fn=None, yaw_fn=None):
     """One looping cycle. Stance frames lock the sole. Swing frames ease back."""
+    global USE_TURNOUT
+    reset_leg_style()
     parm = gait_parm(speed, crouch)
+    if "abduct" in parm:
+        USE_TURNOUT = False
+        ABDUCT["L"] = parm["abduct"]
+        ABDUCT["R"] = parm["abduct"]
     n = parm["n"]
     stance = parm["stance"]
     strike = parm["strike"]
@@ -295,22 +428,24 @@ def bake_gait(arm, speed, crouch=False, bank_fn=None, yaw_fn=None):
         seed = solve_leg(arm, "L", target, seed, cap=cap, foot_cap=foot_cap)
         plant.append(seed)
     release = plant[-1]
-    # Swing keys, returning to the strike. Knee rises in the middle.
     swing = []
     swing_n = n - stance
-    for j in range(swing_n):
-        u = (j + 1) / swing_n
-        s = smooth(u)
-        lift_u = math.sin(math.pi * u)
-        # Keep the shoe up through the last swing frame. The stance frame is the contact.
-        if u > 0.5:
-            lift_u = max(lift_u, parm.get("lift_floor", 0.0))
-        thigh = lerp(release[0], strike[0], s)
-        if "swing_thigh" in parm:
-            thigh = lerp(thigh, parm["swing_thigh"], lift_u)
-        knee = lerp(release[1], strike[1], s) + parm["lift"] * lift_u
-        foot = lerp(release[2], strike[2], s)
-        swing.append((thigh, clamp(knee, 8.0, 78.0), foot))
+    if "keys" in parm:
+        swing = build_swing(release, parm["keys"], swing_n, parm["budget"], foot_cap)
+    else:
+        for j in range(swing_n):
+            u = (j + 1) / swing_n
+            s = smooth(u)
+            lift_u = math.sin(math.pi * u)
+            # Keep the shoe up through the last swing frame. The stance frame is the contact.
+            if u > 0.5:
+                lift_u = max(lift_u, parm.get("lift_floor", 0.0))
+            thigh = lerp(release[0], strike[0], s)
+            if "swing_thigh" in parm:
+                thigh = lerp(thigh, parm["swing_thigh"], lift_u)
+            knee = lerp(release[1], strike[1], s) + parm["lift"] * lift_u
+            foot = lerp(release[2], strike[2], s)
+            swing.append((thigh, clamp(knee, 8.0, 78.0), foot))
     left = plant + swing
     # Right leg uses the same shape, half a cycle later. Stance frames are
     # solved again so the sole stays in the world while the hips move past it.
@@ -343,7 +478,9 @@ def bake_gait(arm, speed, crouch=False, bank_fn=None, yaw_fn=None):
                     print(" STANCE", side, i, [round(v, 1) for v in seed[side]], "zmin", round(zmin, 3))
             else:
                 hold[side] = None
-                if parm.get("snap"):
+                if "keys" in parm:
+                    posed = chain_step(seed[side], curve, parm["budget"], foot_cap)
+                elif parm.get("snap"):
                     posed = curve
                 else:
                     gap = max(abs(seed[side][k] - curve[k]) for k in range(3))
@@ -353,6 +490,15 @@ def bake_gait(arm, speed, crouch=False, bank_fn=None, yaw_fn=None):
                         posed = step_toward(seed[side], curve, (cap, cap, foot_cap))
                 seed[side] = clear_ground(arm, side, posed)
         bpy.context.view_layer.update()
+        if os.environ.get("LOCO_DEBUG") == "1":
+            la = arm.pose.bones["UpperArm_L"].rotation_euler
+            print(
+                " GAIT", i,
+                "L", [round(v, 1) for v in seed["L"]],
+                "R", [round(v, 1) for v in seed["R"]],
+                "arm", round(math.degrees(la.x), 1),
+                "plant", int(stance_l), int(stance_r),
+            )
         frames.append(capture(arm, i * DT, stance_l=stance_l, stance_r=stance_r))
     return frames
 
@@ -396,6 +542,7 @@ def settle_both(arm, seed, root_z):
 
 def bake_idle(arm):
     """Breath and a small weight shift. Both soles stay where they were set down."""
+    reset_leg_style()
     n = 48
     parm = {"lean": 2.0, "arm": 3.0, "arm_out": 16.0, "hip": 0.0, "chest": 0.0, "root_z": -0.02}
     holds, seed = settle_both(arm, (4.0, 22.0, -8.0), parm["root_z"])
@@ -419,6 +566,7 @@ def bake_idle(arm):
 
 def bake_turn(arm):
     """Chest and head lead a turn in place. Hips stay nearly square so the planted shoe can hold."""
+    reset_leg_style()
     n = 22
     parm = {"lean": 2.0, "arm": 5.0, "arm_out": 16.0, "hip": 0.0, "chest": 0.0}
     holds, seed = settle_both(arm, (3.0, 20.0, -6.0), -0.02)
@@ -464,6 +612,7 @@ def bake_turn(arm):
 
 def bake_land(arm):
     """A drop of about 0.4 m, under the roll. Knees take it and both soles stay put."""
+    reset_leg_style()
     n = 18
     parm = {"lean": 3.0, "arm": 6.0, "arm_out": 16.0, "hip": 0.0, "chest": 0.0}
     stand = (4.0, 22.0, -8.0)
@@ -520,7 +669,8 @@ def bake_land(arm):
 
 def bake_stop(arm, skid=False):
     """Sprint shape, then the brake shoe locks while the hips sit down. Skid pitches back."""
-    parm = gait_parm(SPRINT)
+    reset_leg_style()
+    parm = dict(LEGACY_SPRINT)
     prev = {"L": sprint_leg_at(0.0, parm), "R": sprint_leg_at(0.5, parm)}
     y = 0.0
     for i in range(4):
@@ -580,11 +730,12 @@ def bake_stop(arm, skid=False):
 
 def bake_start(arm):
     """Quiet stand, one push, then the sprint shape. Feet stay off the floor while the speed climbs."""
+    reset_leg_style()
     n = 16
     quiet_parm = {"lean": 2.0, "arm": 4.0, "arm_out": 8.0, "hip": 0.0, "chest": 0.0}
     quiet = upper(0.0, quiet_parm)
     holds, seed = settle_both(arm, (4.0, 22.0, -8.0), -0.02)
-    parm = gait_parm(SPRINT)
+    parm = dict(LEGACY_SPRINT)
     y = 0.0
     for i in range(n):
         u = smooth(i / (n - 1.0))
@@ -634,6 +785,7 @@ def sprint_leg_at(phase, parm):
 
 def bake_blend(arm):
     """Walk eases into the sprint. One continuous speed change, soles kept off the floor."""
+    reset_leg_style()
     n = 16
     prev = {"L": (4.0, 22.0, -8.0), "R": (4.0, 22.0, -8.0)}
     y = 0.0
@@ -669,20 +821,25 @@ def bake_lean(arm):
     return bake_gait(arm, RUN, bank_fn=bank)
 
 
-def summarize(frames):
+def summarize(frames, wrap=False):
     bone = 0.0
     bone_name = ""
+    bone_at = -1
     slide = 0.0
     drift = {"L": 0.0, "R": 0.0}
     anchor = {"L": None, "R": None}
     prev = None
-    for row in frames:
+    rows = frames
+    if wrap and len(frames) > 1:
+        rows = list(frames) + [frames[0]]
+    for index, row in enumerate(rows):
         if prev is not None:
             for name, q in row["quats"].items():
                 d = quat_deg(prev["quats"][name], q)
                 if d > bone:
                     bone = d
                     bone_name = name
+                    bone_at = index
             for side in ("L", "R"):
                 if row["planted"][side] and prev["planted"][side]:
                     dist = (row["contacts"][side] - prev["contacts"][side]).length * 100.0
@@ -709,6 +866,7 @@ def summarize(frames):
         "frames": len(frames),
         "bone": bone,
         "bone_name": bone_name,
+        "bone_at": bone_at,
         "slide": slide,
         "drift": max(drift.values()) if drift else 0.0,
         "rows": frames,
@@ -717,7 +875,7 @@ def summarize(frames):
 
 def noclip(arm):
     packed = {}
-    for name in MESHES:
+    for name in active_meshes():
         verts, polys = world_verts(name)
         packed[name] = (verts, BVHTree.FromPolygons(verts, polys))
     world = 0.0
@@ -740,10 +898,10 @@ def noclip(arm):
             vb, bb = packed[b]
             if not boxes_near(va, vb):
                 continue
-            joined = bones_joined(BONE_OF[a], BONE_OF[b])
+            joined = bones_joined(a, b)
             joint = None
             if joined:
-                child = BONE_OF[b] if PARENT.get(BONE_OF[b]) == BONE_OF[a] else BONE_OF[a]
+                child = hinge_bone(a, b)
                 joint = arm.matrix_world @ arm.pose.bones[child].head
             depth = max(
                 side_depth(va, bb, joined, joint, direction),
@@ -757,8 +915,50 @@ def noclip(arm):
     return world, self_max, gnote + " " + note, pairs
 
 
-def bones_joined(a, b):
-    return PARENT.get(a) == b or PARENT.get(b) == a
+def bone_name(mesh):
+    if mesh in CAP_BONES:
+        return CAP_BONES[mesh]
+    return BONE_OF[mesh]
+
+
+def bones_joined(mesh_a, mesh_b):
+    """True when the two meshes share a hinge. Caps count for both bones of that hinge."""
+    ba = bone_name(mesh_a)
+    bb = bone_name(mesh_b)
+    if ba == bb:
+        return True
+    if PARENT.get(ba) == bb or PARENT.get(bb) == ba:
+        return True
+    caps = CAP_BONES
+    for mesh, other in ((mesh_a, bb), (mesh_b, ba)):
+        if mesh not in caps:
+            continue
+        hinge = caps[mesh]
+        if other == hinge or other == PARENT.get(hinge):
+            return True
+    return False
+
+
+def hinge_bone(mesh_a, mesh_b):
+    caps = CAP_BONES
+    if mesh_a in caps:
+        return caps[mesh_a]
+    if mesh_b in caps:
+        return caps[mesh_b]
+    ba = bone_name(mesh_a)
+    bb = bone_name(mesh_b)
+    if PARENT.get(bb) == ba:
+        return bb
+    return ba
+
+
+def active_meshes():
+    names = [name for name in MESHES if name in bpy.data.objects]
+    extra = CAP_BONES
+    for name in extra:
+        if name in bpy.data.objects and name not in names:
+            names.append(name)
+    return names
 
 
 def boxes_near(va, vb):
@@ -892,12 +1092,26 @@ def scene_setup():
 
 
 def place_camera(cam, arm):
+    cam.data.type = "PERSP"
+    cam.data.lens = 48
     origin = arm.matrix_world @ Vector((0.0, 0.0, 0.98))
     yaw = arm.rotation_euler.z
     fwd = Vector((math.sin(yaw), -math.cos(yaw), 0.0))
     left = Vector((-fwd.y, fwd.x, 0.0))
     eye = origin + fwd * 2.05 + left * 1.30 + Vector((0.0, 0.0, 0.16))
     look = origin + Vector((0.0, 0.0, -0.08))
+    cam.location = eye
+    cam.rotation_euler = (look - eye).to_track_quat("-Z", "Y").to_euler()
+    bpy.context.view_layer.update()
+
+
+def place_camera_side(cam, arm):
+    """Orthographic profile. Forward (-Y) points to image left."""
+    cam.data.type = "ORTHO"
+    cam.data.ortho_scale = 2.55
+    origin = arm.matrix_world @ Vector((0.0, 0.0, 0.92))
+    eye = origin + Vector((3.4, 0.0, 0.02))
+    look = origin
     cam.location = eye
     cam.rotation_euler = (look - eye).to_track_quat("-Z", "Y").to_euler()
     bpy.context.view_layer.update()
@@ -924,7 +1138,7 @@ def pose_frame(arm, baked):
     raise RuntimeError("use log")
 
 
-def render_sheet(scene, cam, arm, name, log):
+def render_sheet(scene, cam, arm, name, log, view="threeq"):
     from PIL import Image, ImageDraw, ImageFont
     os.makedirs(OUT, exist_ok=True)
     n = len(log)
@@ -933,7 +1147,10 @@ def render_sheet(scene, cam, arm, name, log):
     for i in range(8):
         index = min(n - 1, int(round((n - 1) * i / 7.0)))
         apply_log(arm, log[index])
-        place_camera(cam, arm)
+        if view == "side":
+            place_camera_side(cam, arm)
+        else:
+            place_camera(cam, arm)
         fills.append(frame_fill(scene, cam))
         path = os.path.join(OUT, "_cell_{0}_{1}.png".format(name, i))
         scene.render.filepath = path
@@ -971,8 +1188,15 @@ def apply_log(arm, entry):
     clear_pose(arm)
     set_root(arm, entry["y"], entry["z"], entry["yaw"])
     apply_upper(arm, entry["upper"])
-    apply_leg(arm, "L", entry["L"][0], entry["L"][1], entry["L"][2], entry["L"][3] if len(entry["L"]) > 3 else 0.0)
-    apply_leg(arm, "R", entry["R"][0], entry["R"][1], entry["R"][2], entry["R"][3] if len(entry["R"]) > 3 else 0.0)
+    for side in ("L", "R"):
+        leg = entry[side]
+        if len(leg) >= 5:
+            set_e(arm, "UpperLeg_" + side, leg[0], leg[3], leg[4])
+            set_e(arm, "LowerLeg_" + side, leg[1], 0.0, 0.0)
+            set_e(arm, "Foot_" + side, leg[2], 0.0, 0.0)
+        else:
+            yaw = leg[3] if len(leg) > 3 else 0.0
+            apply_leg(arm, side, leg[0], leg[1], leg[2], yaw)
     bpy.context.view_layer.update()
 
 
@@ -1007,13 +1231,13 @@ def read_pose(arm):
         e = arm.pose.bones[name].rotation_euler
         upper[name] = tuple(math.degrees(v) for v in e)
     def leg(side):
-        upper = arm.pose.bones["UpperLeg_" + side].rotation_euler
-        turnout = -5.0 if side == "L" else 5.0
+        upper_leg = arm.pose.bones["UpperLeg_" + side].rotation_euler
         return (
-            math.degrees(upper.x),
+            math.degrees(upper_leg.x),
             math.degrees(arm.pose.bones["LowerLeg_" + side].rotation_euler.x),
             math.degrees(arm.pose.bones["Foot_" + side].rotation_euler.x),
-            math.degrees(upper.z) - turnout,
+            math.degrees(upper_leg.y),
+            math.degrees(upper_leg.z),
         )
     return log_current(arm, upper, leg("L"), leg("R"))
 
@@ -1067,6 +1291,90 @@ def write_table(rows, line):
     img.save(os.path.join(OUT, "pop-table.png"), "PNG", optimize=True)
 
 
+def thigh_world_deg(arm, side):
+    hip = arm.matrix_world @ arm.pose.bones["UpperLeg_" + side].head
+    knee = arm.matrix_world @ arm.pose.bones["LowerLeg_" + side].head
+    v = knee - hip
+    # Positive when the knee is forward of the hip. Forward is -Y.
+    return math.degrees(math.atan2(-v.y, -v.z)), knee, hip
+
+
+def shape_line(arm, log):
+    """Peak thigh, swing-shoe height, knee-track gap, heel height, hand height."""
+    peak = -999.0
+    peak_sole = 0.0
+    min_gap = 999.0
+    heel_z = -1.0
+    hip_z = 0.0
+    hand_front_z = 0.0
+    hand_front_y = 99.0
+    hand_back_z = 0.0
+    hand_back_y = -99.0
+    chin_z = 0.0
+    front_arm = 99.0
+    front_hand_z = 0.0
+    back_arm = -99.0
+    back_hand_z = 0.0
+    for entry in log:
+        apply_log(arm, entry)
+        tl, kl, _hl = thigh_world_deg(arm, "L")
+        tr, kr, _hr = thigh_world_deg(arm, "R")
+        gap = (kl.x - kr.x) * 100.0
+        if gap < min_gap:
+            min_gap = gap
+        hips = arm.matrix_world @ arm.pose.bones["Hips"].head
+        for side, ang in (("L", tl), ("R", tr)):
+            _c, zmin = sole_of("Mesh_Foot_" + side)
+            if ang > peak:
+                peak = ang
+                peak_sole = zmin * 100.0
+            pts, _p = world_verts("Mesh_Foot_" + side)
+            heel = max(pts, key=lambda p: (p.y - hips.y))
+            if heel.z > heel_z:
+                heel_z = heel.z
+                hip_z = hips.z
+        head_pts, _hp = world_verts("Mesh_Head")
+        z_mid = (min(p.z for p in head_pts) + max(p.z for p in head_pts)) * 0.5
+        chin_pool = [p for p in head_pts if p.z <= z_mid + 0.02] or list(head_pts)
+        chin = min(chin_pool, key=lambda p: p.y)
+        chin_z = chin.z
+        for side in ("L", "R"):
+            hand_pts, _pp = world_verts("Mesh_Hand_" + side)
+            fwd = min(hand_pts, key=lambda p: (p.y - hips.y))
+            back = max(hand_pts, key=lambda p: (p.y - hips.y))
+            rel_f = fwd.y - hips.y
+            rel_b = back.y - hips.y
+            if rel_f < hand_front_y:
+                hand_front_y = rel_f
+                hand_front_z = max(p.z for p in hand_pts)
+            if rel_b > hand_back_y:
+                hand_back_y = rel_b
+                hand_back_z = max(p.z for p in hand_pts)
+            ax = entry["upper"]["UpperArm_" + side][0]
+            top_z = max(p.z for p in hand_pts)
+            if ax < front_arm:
+                front_arm = ax
+                front_hand_z = top_z
+            if ax > back_arm:
+                back_arm = ax
+                back_hand_z = top_z
+    arms = []
+    elbows = []
+    for entry in log:
+        for side in ("L", "R"):
+            arms.append(entry["upper"]["UpperArm_" + side][0])
+            elbows.append(entry["upper"]["LowerArm_" + side][0])
+    return (
+        "thighPeak={0:.1f} swingSoleCm={1:.1f} kneeGapCm={2:.1f} "
+        "heelZ={3:.3f} hipZ={4:.3f} reachZ={5:.3f} rearZ={6:.3f} chinZ={7:.3f} "
+        "peakArmHandZ={8:.3f} peakRearHandZ={9:.3f} armX={10:.0f}/{11:.0f} elbow={12:.0f}"
+    ).format(
+        peak, peak_sole, min_gap, heel_z, hip_z, hand_front_z, hand_back_z, chin_z,
+        front_hand_z, back_hand_z,
+        min(arms), max(arms), max(elbows) if elbows else 0.0,
+    )
+
+
 def main():
     os.makedirs(OUT, exist_ok=True)
     bpy.ops.wm.read_factory_settings(use_empty=True)
@@ -1100,11 +1408,10 @@ def main():
     fails = 0
     for name, fn in jobs:
         frames, log = bake_with_log(arm, fn)
-        sim = summarize(frames)
-        # No-clip on every 30 fps frame of this clip.
-        # Bind already overlaps the hip and thigh by about 4 cm, past the 3 cm
-        # joint exemption. A frame fails when the ground bite or the extra
-        # overlap past that rest depth is over 0.5 cm.
+        cycles = name in ("idle", "walk", "run", "sprint", "crouch", "lean")
+        sim = summarize(frames, wrap=cycles)
+        # A frame fails when the ground bite or any pair is deeper than 0.5 cm.
+        # Joined neighbours are exempt inside 3 cm of their joint.
         w_clip = 0.0
         s_clip = 0.0
         a_clip = 0.0
@@ -1129,7 +1436,7 @@ def main():
             if added > a_clip:
                 a_clip = added
                 clip_added = added_name
-            if w > 0.5 or added > 0.5:
+            if w > 0.5 or s > 0.5:
                 f_clip += 1
         total_frames += len(log)
         world_max = max(world_max, w_clip)
@@ -1138,7 +1445,7 @@ def main():
         fails += f_clip
         print(
             "POP", name, "frames", sim["frames"],
-            "bone", sim["bone_name"], round(sim["bone"], 2),
+            "bone", sim["bone_name"], round(sim["bone"], 2), "at", sim["bone_at"],
             "slide", round(sim["slide"], 2),
             "drift", round(sim["drift"], 2),
             "world", round(w_clip, 2),
@@ -1153,13 +1460,18 @@ def main():
             "world": w_clip, "self": s_clip, "fails": f_clip,
         }
         table.append(row)
+        if name in ("walk", "run", "sprint"):
+            print("SHAPE", name, shape_line(arm, log))
         if DO_RENDER:
             path, fill = render_sheet(scene, cam, arm, name, log)
             print("SHEET", name, path, "bytes", os.path.getsize(path), "fill", round(fill, 3))
+            if name in ("walk", "run", "sprint"):
+                side, side_fill = render_sheet(scene, cam, arm, name + "-side", log, view="side")
+                print("SHEET", name + "-side", side, "bytes", os.path.getsize(side), "fill", round(side_fill, 3))
     line = "no-clip clips={0} frames={1} worldMax={2:.2f} selfMax={3:.2f} fails={4}".format(
         len(table), total_frames, world_max, self_max, fails,
     )
-    line += "\nbind-self={0:.2f} addedMax={1:.2f} fail=ground>0.5cm or pair depth more than 0.5cm past rest".format(
+    line += "\nbind-self={0:.2f} addedMax={1:.2f} fail=ground>0.5cm or pair depth>0.5cm, joined verts exempt within 3cm of the joint".format(
         rs, added_max,
     )
     print(line)
