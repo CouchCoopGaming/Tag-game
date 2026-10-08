@@ -14,6 +14,12 @@ static class Program
             Console.WriteLine(only.Line);
             return only.Ok ? 0 : 1;
         }
+        if (args != null && args.Length > 0 && args[0] == "--place-figures")
+        {
+            string folder = args.Length > 1 ? args[1] : Path.Combine("Docs", "UiStills", "screens2", "pass4", "figures");
+            Console.WriteLine(Tag.Level.ArenaStill.WritePlaceFigures(folder));
+            return 0;
+        }
         if (args != null && args.Length > 0 && args[0] == "--hud-chase")
         {
             string folder = args.Length > 1 ? args[1] : Path.Combine("Docs", "UiStills", "pass17", "figures");

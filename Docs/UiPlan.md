@@ -267,6 +267,16 @@ The layout drawings for this pass are in `Docs/UiStills/screens2/pass2/`. The ch
 
 The navy plate behind the banner turns on for every secondary screen that has a banner line, not only RESULTS. Title, the main menu, and character select do not use it. Records can scroll to Back. That last window is in `Docs/UiStills/screens2/pass3/`.
 
+## Screens 2, pass 4
+
+RESULTS runners are rasters of the posed Hier bake, the same path as the character cards: `hier-idle-0` through `hier-idle-3`, body on mat 0, accent on mat 1, soft joints. The sample pairs stay Red/Tan, Blue/Mint, Orange/Tan, and Lavender/Mint. Legs, torso, and head take the body color. The chest panel, the hands, and the feet take the accent. Stat cards are a dark navy with a quiet stroke. The winner's stroke is gold. The slot color sits only on the P badge, and the letter uses whichever of ink or cream clears that badge.
+
+Loading keeps the three real steps (Waiting 0, Starting 50, Ready 100). While it is waiting, a gold dash slides in the track and the caption reads `Waiting  0%`. The tip plate and the bar sit above the card's bottom edge. Each visit of the loading screen advances the tip. The first one is still "Jump again to leave the wall."
+
+Options hub buttons each have a one-line description. The hub banner no longer ends with the comic-words line. Comic words is a switch on Accessibility, `Comic words  On` by default, and the pause banner follows that switch.
+
+The Move marks are the keyboard arrows and the pad stick, the same caps the HUD draws. Stills are in `Docs/UiStills/screens2/pass4/`. Unity Editor 6000.3.24f1 is not installed here, so `MenuScreenCapture` cannot enter play mode. The runners are `ArenaStill.WritePlaceFigures`. The chrome is composited from the menu's colors, copy, and placement.
+
 ## Later passes
 
 - Left from a rule row returns to the modes even when that rule can still decrease. Right from the right-hand mode, and Left at the end of a rule, already move between the columns.

@@ -27,6 +27,12 @@ namespace Tag.Ui.Hud
         public static readonly string Score = "SCORE";
         public static readonly string Tags = "TAGS";
         public static readonly string ComicHint = "COMIC WORDS ON";
+        public static bool ComicWords = true;
+
+        public static string ComicLine()
+        {
+            return ComicWords ? ComicHint : "COMIC WORDS OFF";
+        }
         public static readonly string[] Seat = { "P1", "P2", "P3", "P4" };
         public static readonly string[] PreviewProfile = { "Keyboard", "Pad", "Pad", "Pad" };
 

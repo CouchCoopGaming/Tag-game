@@ -14,6 +14,7 @@ namespace Tag.Ui.Menu
         public Text Detail;
         public Image Bar;
         public bool KeepBar;
+        public bool WinnerStroke;
         public Color BarColor;
         public RectTransform Sweep;
         public float SweepSpan;
@@ -67,7 +68,7 @@ namespace Tag.Ui.Menu
             _hot = hot;
             if (hot && !MenuVideo.ReduceMotion) _punch = 1f;
             if (Plate != null) Plate.color = hot ? _hotColor : _base;
-            if (Stroke != null) Stroke.color = hot ? MenuTheme.Gold : MenuTheme.Stroke;
+            if (Stroke != null) Stroke.color = hot || WinnerStroke ? MenuTheme.Gold : MenuTheme.Stroke;
             if (Label != null) Label.color = hot ? MenuTheme.Ink : MenuTheme.Cream;
             if (Detail != null) Detail.color = hot ? MenuTheme.Ink : MenuTheme.Mute;
             if (Bar != null) Bar.color = hot ? MenuTheme.Ink : (KeepBar ? BarColor : new Color(1f, 1f, 1f, 0.35f));

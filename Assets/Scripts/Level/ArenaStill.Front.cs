@@ -590,6 +590,53 @@ namespace Tag.Level
         /// Character-card portraits. Same pairs as the chase runners. Joints
         /// stay charcoal here so the tint reads on the navy card.
         /// </summary>
+        /// <summary>
+        /// RESULTS runners. Same posed Hier bake and the same body/accent tint
+        /// as the character cards. Body is limbs, torso, and head. Accent is
+        /// the chest panel, the hands, and the feet. The plate behind them is
+        /// the portrait sky, keyed later only where it still matches that sky.
+        /// </summary>
+        public static string WritePlaceFigures(string folder)
+        {
+            if (string.IsNullOrEmpty(folder)) return "place-figures missing folder";
+            Directory.CreateDirectory(folder);
+            string docs = RepoDocs();
+            if (docs == null) return "place-figures missing docs";
+            int n = 0;
+            for (int seat = 0; seat < 4; seat++)
+            {
+                string src = Path.Combine(docs, "UiStills", "hier-idle-" + seat.ToString() + ".tris");
+                if (!LoadHierFile(src)) continue;
+                var tris = new List<Tri>(8);
+                AddBox(tris, 0f, -0.04f, 0f, 1.4f, 0.06f, 1.1f, 0.07f, 0.08f, 0.10f);
+                PlacePair(seat, out float bodyR, out float bodyG, out float bodyB, out float accentR, out float accentG, out float accentB);
+                AddHier(tris, 0f, 0f, 0f, 16f, bodyR, bodyG, bodyB, accentR, accentG, accentB, true);
+                AddContact(tris, 0f, 0f, 0f);
+                var shadow = new float[16 * 16];
+                for (int s = 0; s < shadow.Length; s++) shadow[s] = -1e20f;
+                PortraitPng(tris, Path.Combine(folder, "place_" + seat.ToString() + ".png"), 480, 720,
+                    0.55f, 1.05f, 3.35f, 0f, 0.92f, 0.02f, shadow);
+                n++;
+            }
+            return "place-figures " + folder + " n=" + n.ToString();
+        }
+
+        /// <summary>
+        /// Sample RESULTS pairs. P1 Red/Tan, P2 Blue/Mint, P3 Orange/Tan, P4 Lavender/Mint.
+        /// </summary>
+        static void PlacePair(int seat, out float bodyR, out float bodyG, out float bodyB, out float accentR, out float accentG, out float accentB)
+        {
+            float[] br = { 224f / 255f, 107f / 255f, 240f / 255f, 178f / 255f };
+            float[] bg = { 56f / 255f, 173f / 255f, 107f / 255f, 148f / 255f };
+            float[] bb = { 61f / 255f, 235f / 255f, 36f / 255f, 224f / 255f };
+            float[] ar = { 230f / 255f, 107f / 255f, 230f / 255f, 107f / 255f };
+            float[] ag = { 194f / 255f, 209f / 255f, 194f / 255f, 209f / 255f };
+            float[] ab = { 133f / 255f, 178f / 255f, 133f / 255f, 178f / 255f };
+            int i = seat < 0 ? 0 : (seat > 3 ? 3 : seat);
+            bodyR = br[i]; bodyG = bg[i]; bodyB = bb[i];
+            accentR = ar[i]; accentG = ag[i]; accentB = ab[i];
+        }
+
         static int WriteIdlePortraits(string folder)
         {
             int n = 0;

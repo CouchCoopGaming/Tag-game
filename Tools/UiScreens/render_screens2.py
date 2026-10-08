@@ -1,15 +1,19 @@
 #!/usr/bin/env python3
-"""Layout stills for the secondary couch screens.
+"""Secondary-screen stills.
 
-These are drawn from the menu code's colors, copy, and placement.
-Unity is not in this environment, so they are not editor captures.
+The runners are ArenaStill portraits of the posed Hier bake
+(Docs/UiStills/hier-idle-N.tris), the same raster worker 1 uses for
+the character cards. The menu chrome is composited from MenuHost's
+colors, copy, and placement. Unity Editor is not installed here, so
+MenuScreenCapture cannot enter play mode.
 """
 
 import os
 from PIL import Image, ImageDraw, ImageFont, ImageFilter, ImageEnhance
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
-OUT = os.path.join(ROOT, "Docs", "UiStills", "screens2", "pass3")
+OUT = os.path.join(ROOT, "Docs", "UiStills", "screens2", "pass4")
+FIG = os.path.join(OUT, "figures")
 W, H = 1920, 1080
 
 INK = (10, 18, 41)
@@ -40,9 +44,6 @@ HERO = {
     "Pocket Park": os.path.join(ROOT, "Assets", "UI", "ArenaThumbs", "Pocket.png"),
     "Stack Yard": os.path.join(ROOT, "Assets", "UI", "ArenaThumbs", "Stack.png"),
 }
-FIGURES = os.path.join(ROOT, "Docs", "UiStills", "pass23", "figures", "podium.png")
-
-
 def font(path, size):
     return ImageFont.truetype(path, size)
 
@@ -192,10 +193,15 @@ def footer(img, words):
 
 def draw_glyph(d, kind, x, y):
     if kind == "arrows":
-        rounded(d, (x, y + 14, x + 18, y + 32), 3, CREAM)
-        rounded(d, (x + 22, y, x + 40, y + 18), 3, CREAM)
-        rounded(d, (x + 22, y + 14, x + 40, y + 32), 3, CREAM)
-        rounded(d, (x + 44, y + 14, x + 62, y + 32), 3, CREAM)
+        # Same mark as MenuIcons.ArrowKeys: a key cap and a four-way arrow.
+        rounded(d, (x, y, x + 64, y + 48), 8, (15, 26, 46))
+        rounded(d, (x + 4, y + 4, x + 60, y + 44), 6, (245, 247, 255))
+        ink = (15, 26, 51)
+        d.polygon([(x + 32, y + 8), (x + 24, y + 18), (x + 40, y + 18)], fill=ink)
+        d.polygon([(x + 32, y + 40), (x + 24, y + 30), (x + 40, y + 30)], fill=ink)
+        d.polygon([(x + 10, y + 24), (x + 20, y + 16), (x + 20, y + 32)], fill=ink)
+        d.polygon([(x + 54, y + 24), (x + 44, y + 16), (x + 44, y + 32)], fill=ink)
+        d.rectangle((x + 28, y + 20, x + 36, y + 28), fill=ink)
     elif kind == "space":
         rounded(d, (x, y + 10, x + 62, y + 36), 6, CREAM)
         d.text((x + 8, y + 12), "space", font=font(FONT_B, 14), fill=INK)
@@ -203,8 +209,12 @@ def draw_glyph(d, kind, x, y):
         rounded(d, (x, y + 6, x + 48, y + 40), 6, CREAM)
         d.text((x + 8, y + 10), "esc", font=font(FONT_B, 18), fill=INK)
     elif kind == "stick":
-        d.ellipse((x + 8, y + 4, x + 48, y + 44), fill=(40, 48, 64), outline=CREAM, width=3)
-        d.ellipse((x + 20, y + 16, x + 36, y + 32), fill=CREAM)
+        # Same mark as MenuIcons.StickCap: cap, well, and the stick nub.
+        d.ellipse((x + 4, y + 6, x + 52, y + 54), fill=(26, 36, 56))
+        d.ellipse((x + 10, y + 12, x + 46, y + 48), fill=(209, 224, 245))
+        d.ellipse((x + 24, y + 26, x + 32, y + 34), fill=(26, 36, 56))
+        d.ellipse((x + 36, y + 2, x + 58, y + 24), fill=(15, 26, 51))
+        d.ellipse((x + 40, y + 6, x + 54, y + 20), fill=CREAM)
     elif kind == "a":
         d.ellipse((x, y + 2, x + 44, y + 46), fill=(30, 170, 70))
         d.text((x + 12, y + 6), "A", font=font(FONT_D, 28), fill=CREAM)
@@ -336,14 +346,55 @@ def arena(which):
     return img, min(ratios)
 
 
+def unsky(path):
+    im = Image.open(path).convert("RGBA")
+    px = im.load()
+    w, h = im.size
+    for y in range(h):
+        v = 1.0 - (y / float(h - 1))
+        sky = 0.55 + v * 0.45
+        br = int(255 * (0.95 * (1 - sky) + 0.45 * sky))
+        bgc = int(255 * (0.62 * (1 - sky) + 0.68 * sky))
+        bb = int(255 * (0.38 * (1 - sky) + 0.88 * sky))
+        for x in range(w):
+            r, g, b, a = px[x, y]
+            if abs(r - br) <= 6 and abs(g - bgc) <= 6 and abs(b - bb) <= 6:
+                px[x, y] = (r, g, b, 0)
+    return im
+
+
+def figure(seat):
+    path = os.path.join(FIG, "place_%d.png" % seat)
+    im = unsky(path)
+    px = im.load()
+    w, h = im.size
+    minx, miny, maxx, maxy = w, h, 0, 0
+    for y in range(h):
+        for x in range(w):
+            r, g, b, a = px[x, y]
+            if a < 20:
+                continue
+            if r + g + b < 90:
+                continue
+            if x < minx:
+                minx = x
+            if y < miny:
+                miny = y
+            if x > maxx:
+                maxx = x
+            if y > maxy:
+                maxy = y
+    if maxx <= minx or maxy <= miny:
+        return im
+    pad = 8
+    return im.crop((max(0, minx - pad), max(0, miny - pad), min(w, maxx + pad), min(h, maxy + pad)))
+
+
 def results():
     img = screen(0.85)
     header(img, "RESULTS", "Least It  ·  Red / Tan")
-    src = Image.open(FIGURES).convert("RGBA")
-    spans = [(143, 445), (466, 780), (827, 1091), (1102, 1444)]
-    order = [0, 1, 2, 3]
-    colors = [BODY["Blue"], BODY["Red"], BODY["Orange"], BODY["Lavender"]]
-    accents = [BODY["Mint"], BODY["Tan"], BODY["Tan"], BODY["Mint"]]
+    # Left to right matches the place order: 2nd, 1st, 3rd, 4th.
+    seats = [1, 0, 2, 3]
     places = ["2nd  P2", "1st  P1", "3rd  P3", "4th  P4"]
     stats = [
         "5 tags\n14.7s as It\n1 round win",
@@ -351,89 +402,43 @@ def results():
         "4 tags\n20.9s as It\n0 round wins",
         "3 tags\n27.1s as It\n0 round wins",
     ]
-    seats = [1, 0, 2, 3]
+    card = (15, 31, 71)
     rank_w = 420
     x0 = 96
     ratios = []
-    for col, src_i in enumerate(order):
-        crop = src.crop((spans[src_i][0], 80, spans[src_i][1], 620))
-        crop = tint_figure(crop, colors[col], accents[col])
-        crop.thumbnail((220, 320), Image.Resampling.LANCZOS)
+    for col, seat in enumerate(seats):
+        crop = figure(seat)
+        crop.thumbnail((240, 340), Image.Resampling.LANCZOS)
         fx = x0 + col * (rank_w + 20) + (rank_w - crop.size[0]) // 2
-        img.alpha_composite(crop, (fx, 175))
-        if col == 1:
+        img.alpha_composite(crop, (fx, 168))
+        winner = col == 1
+        if winner:
             d = ImageDraw.Draw(img)
             for k in range(10):
                 cx = x0 + col * (rank_w + 20) + 30 + (k * 41) % 340
-                cy = 180 + (k * 29) % 90
+                cy = 176 + (k * 29) % 70
                 d.rectangle((cx, cy, cx + 7, cy + 12), fill=GOLD if k % 2 == 0 else CREAM)
-        hot = False
         box = (x0 + col * (rank_w + 20), 520, x0 + col * (rank_w + 20) + rank_w, 760)
-        fill = mix(INK, SEAT[seats[col]], 0.4)
         shadow(img, box)
         d = ImageDraw.Draw(img)
-        rounded(d, box, 18, fill, GOLD if col == 1 else STROKE, 5 if col == 1 else 3)
-        d.rounded_rectangle((box[0] + 16, box[1] + 36, box[0] + 28, box[3] - 16), 4, fill=SEAT[seats[col]])
-        d.rounded_rectangle((box[0] + 36, box[1] + 16, box[0] + 110, box[1] + 48), 8, fill=NAVY)
-        d.text((box[0] + 48, box[1] + 16), "P" + str(seats[col] + 1), font=font(FONT_B, 24), fill=CREAM)
-        d.text((box[0] + 44, box[1] + 56), places[col], font=font(FONT_D, 32), fill=CREAM)
-        yy = box[1] + 100
+        rounded(d, box, 18, card, GOLD if winner else STROKE, 5 if winner else 3)
+        badge = SEAT[seat]
+        ink = INK if contrast(INK, badge) >= contrast(CREAM, badge) else CREAM
+        d.rounded_rectangle((box[0] + 28, box[1] + 16, box[0] + 96, box[1] + 52), 8, fill=badge)
+        d.text((box[0] + 44, box[1] + 18), "P" + str(seat + 1), font=font(FONT_B, 24), fill=ink)
+        d.text((box[0] + 112, box[1] + 16), places[col], font=font(FONT_D, 32), fill=CREAM)
+        yy = box[1] + 72
         for line in stats[col].split("\n"):
-            d.text((box[0] + 44, yy), line, font=font(FONT_B, 24), fill=CREAM)
+            d.text((box[0] + 28, yy), line, font=font(FONT_B, 24), fill=CREAM)
             yy += 28
-        ratios.append(contrast(CREAM, fill))
+        ratios.append(contrast(CREAM, card))
+        ratios.append(contrast(ink, badge))
     actions = [("Rematch", "Same setup", True), ("Change mode", "", False), ("Character select", "", False), ("Main menu", "", False)]
     for i, (title, sub, hot) in enumerate(actions):
         x = x0 + i * (rank_w + 20)
         ratios.append(button(img, (x, 790, x + rank_w, 900), title, sub, hot))
     footer_both(img)
     return img, min(ratios)
-
-
-def _shade(color, lum_v):
-    scale = 0.35 + lum_v * 1.05
-    return (
-        max(0, min(255, int(color[0] * scale))),
-        max(0, min(255, int(color[1] * scale))),
-        max(0, min(255, int(color[2] * scale))),
-    )
-
-
-def tint_figure(im, body, accent):
-    out = im.copy()
-    px = out.load()
-    w, h = out.size
-    body_h = int(h * 0.72)
-    torso = []
-    for y in range(body_h):
-        xs = []
-        for x in range(w):
-            r, g, b, a = px[x, y]
-            if a < 16:
-                continue
-            lum_v = (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255.0
-            if lum_v < 0.12:
-                continue
-            px[x, y] = _shade(body, lum_v) + (a,)
-            xs.append(x)
-        if 28 <= len(xs) <= 120:
-            torso.append((y, xs[0], xs[-1]))
-    if torso:
-        i0 = int(len(torso) * 0.34)
-        i1 = int(len(torso) * 0.52)
-        if i1 <= i0:
-            i1 = i0 + 1
-        chest = torso[i0:i1]
-        for y, x0, x1 in chest:
-            span = x1 - x0
-            a0 = x0 + int(span * 0.18)
-            a1 = x1 - int(span * 0.18)
-            for x in range(a0, a1 + 1):
-                r, g, b, a = px[x, y]
-                if a < 16:
-                    continue
-                px[x, y] = _shade(accent, 0.62) + (a,)
-    return out
 
 
 def loading():
@@ -455,13 +460,20 @@ def loading():
         d.text((260, y), label, font=font(FONT_B, 30), fill=MUTE)
         d.text((620, y), value, font=font(FONT_B, 30), fill=CREAM)
         y += 62
-    tip = (400, 730, 1520, 810)
+    tip = (400, 620, 1520, 692)
     rounded(d, tip, 16, GOLD, INK, 3)
-    d.text((428, 748), "TIP", font=font(FONT_D, 32), fill=INK)
-    d.text((540, 752), "Jump again to leave the wall.", font=font(FONT_B, 28), fill=INK)
-    d.rounded_rectangle((400, 830, 1520, 862), 10, fill=(0, 0, 0, 120))
-    d.text((900, 868), "Waiting", font=font(FONT_B, 28), fill=CREAM)
-    return img, min(contrast(CREAM, (8, 22, 58)), contrast(INK, GOLD))
+    d.text((428, 638), "TIP", font=font(FONT_D, 32), fill=INK)
+    d.text((540, 642), "Jump again to leave the wall.", font=font(FONT_B, 28), fill=INK)
+    track = (400, 724, 1520, 760)
+    rounded(d, track, 10, (5, 13, 31), STROKE, 2)
+    # Waiting is fill 0. The gold dash is the same 28% chip TickLoadDash slides.
+    span = 1520 - 400 - 12
+    dash = int(span * 0.28)
+    u = 0.36
+    dx = 400 + 6 + int((span - dash) * u)
+    rounded(d, (dx, 730, dx + dash, 754), 6, GOLD)
+    d.text((760, 776), "Waiting  0%", font=font(FONT_B, 28), fill=CREAM)
+    return img, min(contrast(CREAM, (8, 22, 58)), contrast(INK, GOLD), contrast(GOLD, (5, 13, 31)))
 
 
 def pause():
@@ -481,14 +493,14 @@ def pause():
 def options(page):
     img = screen(0.5)
     pages = {
-        "hub": ("Options", "Sound, picture, accessibility, controls, look, and credits.  COMIC WORDS ON", [
-            ("Sound", "Master, effects, UI, music", True),
-            ("Picture", "Resolution, fullscreen, vsync, scale", False),
-            ("Accessibility", "Motion, text, player colors", False),
-            ("Controls", "The bind list. Space still jumps.", False),
-            ("Look", "Shared sensitivity", False),
-            ("Credits", "Team, font, and tools", False),
-            ("Back", "", False),
+        "hub": ("Options", "Sound, picture, accessibility, controls, look, and credits.", [
+            ("Sound", "Master, effects, UI, and music.", True),
+            ("Picture", "Resolution, fullscreen, vsync, and scale.", False),
+            ("Accessibility", "Motion, text size, colors, and comic words.", False),
+            ("Controls", "Keyboard and pad binds. Space still jumps.", False),
+            ("Look", "One sensitivity for the whole couch.", False),
+            ("Credits", "Team, the font license, and the tools.", False),
+            ("Back", "Main menu", False),
         ], []),
         "sound": ("Sound", "Sliders step the volumes you already have.", [
             ("Master  0.80", "Left / Right", True),
@@ -506,11 +518,12 @@ def options(page):
             ("UI scale  100%", "80% to 130%, for a couch TV", False),
             ("Back", "", False),
         ], []),
-        "access": ("Accessibility", "Reduce motion, text size, and colorblind-safe player colors.", [
+        "access": ("Accessibility", "Reduce motion, text size, player colors, and comic words.", [
             ("Reduce motion  Off", "Menu slides and the title pulse only", True),
             ("Text size  1.00", "Menu and HUD text", False),
             ("Player  P1", "Left / Right", False),
             ("Colorblind palette  Default", "Left / Right", False),
+            ("Comic words  On", "Verb words during a match.", False),
             ("Back", "", False),
         ], []),
     }

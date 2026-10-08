@@ -582,7 +582,7 @@ namespace Tag.Ui.Menu
                 case Records: return 9;
                 case Options:
                     if (s.Page == 0) return 7;
-                    if (s.Page == 3) return 5;
+                    if (s.Page == 3) return 6;
                     return 6;
                 default: return 0;
             }

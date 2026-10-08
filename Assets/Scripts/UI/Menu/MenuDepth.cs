@@ -43,7 +43,7 @@ namespace Tag.Ui.Menu
             {
                 if (Page == Audio) return 6;
                 if (Page == Display) return 6;
-                if (Page == Access) return 5;
+                if (Page == Access) return 6;
                 if (Page == Look) return 6;
                 return 7;
             }
@@ -62,9 +62,9 @@ namespace Tag.Ui.Menu
         {
             if (Page == Audio) return "Sliders step the volumes you already have.";
             if (Page == Display) return "Resolution, fullscreen, vsync, and the couch UI scale.";
-            if (Page == Access) return "Reduce motion, text size, and colorblind-safe player colors.";
+            if (Page == Access) return "Reduce motion, text size, player colors, and comic words.";
             if (Page == Look) return "Look is shared by the couch.";
-            return "Sound, picture, accessibility, controls, look, and credits.  " + Tag.Ui.Hud.MatchHudText.ComicHint;
+            return "Sound, picture, accessibility, controls, look, and credits.";
         }
 
         public static string Title(int index)
@@ -102,7 +102,8 @@ namespace Tag.Ui.Menu
                 if (index == 0) return "Reduce motion  " + (MenuVideo.ReduceMotion ? "On" : "Off");
                 if (index == 1) return "Text size  " + s.HudScale.ToString("0.00", CultureInfo.InvariantCulture);
                 if (index == 2) return s.RowLabel(GameSettings.RowPlayer);
-                return s.RowLabel(GameSettings.RowColorblind);
+                if (index == 3) return s.RowLabel(GameSettings.RowColorblind);
+                return "Comic words  " + (Tag.Ui.Hud.MatchHudText.ComicWords ? "On" : "Off");
             }
             if (index == 0) return s.RowLabel(GameSettings.RowMouse);
             if (index == 1) return s.RowLabel(GameSettings.RowPad);
@@ -115,18 +116,19 @@ namespace Tag.Ui.Menu
         {
             if (Page == Hub)
             {
-                if (index == 0) return "Master, effects, UI, music";
-                if (index == 1) return "Resolution, fullscreen, vsync, scale";
-                if (index == 2) return "Motion, text, player colors";
-                if (index == 3) return "The bind list. Space still jumps.";
-                if (index == 4) return "Shared sensitivity";
-                if (index == 5) return "Team, font, and tools";
-                return "";
+                if (index == 0) return "Master, effects, UI, and music.";
+                if (index == 1) return "Resolution, fullscreen, vsync, and scale.";
+                if (index == 2) return "Motion, text size, colors, and comic words.";
+                if (index == 3) return "Keyboard and pad binds. Space still jumps.";
+                if (index == 4) return "One sensitivity for the whole couch.";
+                if (index == 5) return "Team, the font license, and the tools.";
+                return "Main menu";
             }
             if (index == Count - 1) return "";
             if (Page == Look && index == 4) return "Does not change the park or the binds";
             if (Page == Access && index == 0) return "Menu slides and the title pulse only";
             if (Page == Access && index == 1) return "Menu and HUD text";
+            if (Page == Access && index == 4) return "Verb words during a match.";
             if (Page == Display && index == 4) return "80% to 130%, for a couch TV";
             if (Page == Audio && index < 4) return "Left / Right";
             return "Left / Right";
@@ -215,7 +217,8 @@ namespace Tag.Ui.Menu
                 if (index == 0) MenuVideo.ToggleMotion();
                 else if (index == 1) s.Nudge(GameSettings.RowHud, dir);
                 else if (index == 2) s.Nudge(GameSettings.RowPlayer, dir);
-                else s.Nudge(GameSettings.RowColorblind, dir);
+                else if (index == 3) s.Nudge(GameSettings.RowColorblind, dir);
+                else Tag.Ui.Hud.MatchHudText.ComicWords = !Tag.Ui.Hud.MatchHudText.ComicWords;
             }
             else if (Page == Look)
             {

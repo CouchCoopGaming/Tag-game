@@ -1036,6 +1036,48 @@ namespace Tag.Ui.Menu
             rt.offsetMin = min;
         }
 
+        static void SeatBadge(Transform parent, float x, float y, int seat)
+        {
+            if (parent == null) return;
+            if (seat < 0) seat = 0;
+            if (seat > 3) seat = 3;
+            Color seatColor = MenuTheme.Seat(seat);
+            var rt = MenuWidgets.Place(parent, "SeatTag", x, y, 68f, 36f);
+            var plate = rt.gameObject.AddComponent<Image>();
+            MenuArt.Plate(plate, seatColor, true);
+            plate.raycastTarget = false;
+            Color ink = BadgeInk(seatColor);
+            Text word = MenuWidgets.Words(rt, "P" + (seat + 1).ToString(), UiFit.FloorFont, TextAnchor.MiddleCenter, ink, Vector2.zero, Vector2.one);
+            Snug(word);
+        }
+
+        static Color BadgeInk(Color seat)
+        {
+            return BadgeContrast(MenuTheme.Ink, seat) >= BadgeContrast(MenuTheme.Cream, seat)
+                ? MenuTheme.Ink
+                : MenuTheme.Cream;
+        }
+
+        static float BadgeContrast(Color a, Color b)
+        {
+            float la = BadgeLuma(a);
+            float lb = BadgeLuma(b);
+            float hi = la > lb ? la : lb;
+            float lo = la > lb ? lb : la;
+            return (hi + 0.05f) / (lo + 0.05f);
+        }
+
+        static float BadgeLuma(Color c)
+        {
+            return 0.2126f * BadgeLin(c.r) + 0.7152f * BadgeLin(c.g) + 0.0722f * BadgeLin(c.b);
+        }
+
+        static float BadgeLin(float u)
+        {
+            if (u <= 0.04045f) return u / 12.92f;
+            return Mathf.Pow((u + 0.055f) / 1.055f, 2.4f);
+        }
+
         static void SeatChip(Transform parent, float x, float y, int seat)
         {
             if (parent == null) return;
@@ -1052,6 +1094,7 @@ namespace Tag.Ui.Menu
         void Animate()
         {
             MenuJuice.Tick(Time.unscaledDeltaTime);
+            TickLoadDash();
             if (MenuCapture.Running)
             {
                 _fade = 1f;
@@ -2237,11 +2280,12 @@ namespace Tag.Ui.Menu
             }
             float bodyH = UiFit.BodyH(UiFit.Current());
             UiFit.RowBox(UiFit.Current(), 1120f, out float barX, out float barW);
-            float barY = bodyH - 92f;
-            if (barY < 24f) barY = 24f;
+            float barH = 36f;
+            float barY = bodyH - 168f;
+            if (barY < 220f) barY = 220f;
             float tipH = 72f;
-            float tipY = barY - tipH - 16f;
-            if (tipY < 16f) tipY = 16f;
+            float tipY = barY - tipH - 24f;
+            if (tipY < 24f) tipY = 24f;
             var tipRt = MenuWidgets.Place(_body, "TipPlate", barX, tipY, barW, tipH);
             Image tipPlate = tipRt.gameObject.AddComponent<Image>();
             MenuArt.Plate(tipPlate, MenuTheme.Gold, true);
@@ -2249,16 +2293,18 @@ namespace Tag.Ui.Menu
             MenuWidgets.Words(tipRt, "TIP", 28, TextAnchor.MiddleLeft, MenuTheme.Ink, new Vector2(0.02f, 0.08f), new Vector2(0.16f, 0.92f));
             MenuWidgets.Words(tipRt, MenuTips.At(_tip), UiFit.FloorFont, TextAnchor.MiddleLeft, MenuTheme.Ink, new Vector2(0.18f, 0.08f), new Vector2(0.98f, 0.92f));
             _tip++;
-            var track = MenuWidgets.Place(_body, "LoadTrack", barX, barY, barW, 28f);
+            var track = MenuWidgets.Place(_body, "LoadTrack", barX, barY, barW, barH);
             var trackImage = track.gameObject.AddComponent<Image>();
-            MenuArt.Plate(trackImage, new Color(0f, 0f, 0f, 0.45f), true);
+            MenuArt.Plate(trackImage, new Color(0.02f, 0.05f, 0.12f, 1f), true);
             trackImage.raycastTarget = false;
-            var fill = MenuWidgets.Place(track, "LoadFill", 4f, 4f, 0f, 28f);
+            var fill = MenuWidgets.Place(track, "LoadFill", 6f, 6f, barW * 0.28f, barH - 12f);
             _loadFill = fill.gameObject.AddComponent<Image>();
             MenuArt.Plate(_loadFill, MenuTheme.Gold, true);
             _loadFill.raycastTarget = false;
-            _loadFill.enabled = false;
-            _loadWord = MenuWidgets.Words(_body, LoadGate.Waiting, UiFit.FloorFont, TextAnchor.MiddleCenter, MenuTheme.Cream, new Vector2(0.2f, 0.01f), new Vector2(0.8f, 0.08f));
+            _loadFill.enabled = true;
+            float capY = barY + barH + 12f;
+            var capRt = MenuWidgets.Place(_body, "LoadCaption", barX, capY, barW, 40f);
+            _loadWord = MenuWidgets.Words(capRt, LoadCaption(false, false), UiFit.FloorFont, TextAnchor.MiddleCenter, MenuTheme.Cream, Vector2.zero, Vector2.one);
             _loadStep = -1;
             if (_banner != null) _banner.text = "";
         }
@@ -2274,7 +2320,7 @@ namespace Tag.Ui.Menu
             bool preview = MenuSplitPause.Preview > 0;
             string who = MenuSplitPause.SeatLabel(opener, preview);
             if (_header != null) _header.text = "  Paused by " + who;
-            if (_banner != null) _banner.text = Tag.Ui.Hud.MatchHudText.ComicHint;
+            if (_banner != null) _banner.text = Tag.Ui.Hud.MatchHudText.ComicLine();
             int n = MenuSplitPause.Fill(_cards);
             for (int c = 0; c < n; c++)
             {
@@ -2350,13 +2396,12 @@ namespace Tag.Ui.Menu
                 MenuTile tile = AddTile(8f + slot * (rankW + 8f), rankY, rankW, rankH, 20 + rank, MenuTheme.Place(rank) + "  " + _rows[rank].Name, detail, false);
                 if (tile != null)
                 {
-                    tile.KeepBar = true;
-                    tile.BarColor = MenuTheme.Seat(seat);
-                    if (tile.Bar != null) tile.Bar.color = tile.BarColor;
-                    tile.Tint(Color.Lerp(MenuTheme.Ink, MenuTheme.Seat(seat), UiSweep.SeatMix));
-                    if (tile.Stroke != null && _rows[rank].Winner)
-                        tile.Stroke.color = MenuTheme.Gold;
-                    SeatChip(tile.transform, 28f, UiFit.StripeClear(), seat);
+                    tile.KeepBar = false;
+                    tile.Tint(new Color(0.06f, 0.12f, 0.28f, 1f));
+                    tile.WinnerStroke = _rows[rank].Winner;
+                    if (tile.Stroke != null)
+                        tile.Stroke.color = tile.WinnerStroke ? MenuTheme.Gold : MenuTheme.Stroke;
+                    SeatBadge(tile.transform, 28f, UiFit.StripeClear(), seat);
                     Pull(tile.Label, 100f);
                     Pull(tile.Detail, 100f);
                     MenuReveal.Row(tile.transform as RectTransform);
@@ -2565,13 +2610,36 @@ namespace Tag.Ui.Menu
             if (step == _loadStep) return;
             _loadStep = step;
             float fill = LoadGate.Fill(_loadFired, live);
-            if (_loadFill != null)
+            if (_loadFill != null && fill > 0f)
             {
-                float w = 1112f * fill;
-                _loadFill.rectTransform.sizeDelta = new Vector2(w, 28f);
-                _loadFill.enabled = w > 1f;
+                RectTransform trackRt = _loadFill.rectTransform.parent as RectTransform;
+                float span = trackRt != null ? trackRt.sizeDelta.x - 12f : 1100f;
+                if (span < 40f) span = 40f;
+                _loadFill.rectTransform.anchoredPosition = new Vector2(6f, -6f);
+                _loadFill.rectTransform.sizeDelta = new Vector2(span * fill, 24f);
+                _loadFill.enabled = true;
             }
-            if (_loadWord != null) _loadWord.text = LoadGate.Caption(_loadFired, live);
+            if (_loadWord != null) _loadWord.text = LoadCaption(_loadFired, live);
+        }
+
+        static string LoadCaption(bool fired, bool roundActive)
+        {
+            int pct = (int)(LoadGate.Fill(fired, roundActive) * 100f);
+            return LoadGate.Caption(fired, roundActive) + "  " + pct.ToString() + "%";
+        }
+
+        void TickLoadDash()
+        {
+            if (_screen != MenuScreenId.Loading || _loadFill == null || _loadStep > 0) return;
+            RectTransform trackRt = _loadFill.rectTransform.parent as RectTransform;
+            float span = trackRt != null ? trackRt.sizeDelta.x - 12f : 1100f;
+            if (span < 40f) span = 40f;
+            float dash = span * 0.28f;
+            float u = MenuVideo.ReduceMotion ? 0.36f : Mathf.Repeat(Time.unscaledTime * 0.35f, 1f);
+            float x = 6f + (span - dash) * u;
+            _loadFill.rectTransform.anchoredPosition = new Vector2(x, -6f);
+            _loadFill.rectTransform.sizeDelta = new Vector2(dash, 24f);
+            _loadFill.enabled = true;
         }
 
         void BuildCredits()
