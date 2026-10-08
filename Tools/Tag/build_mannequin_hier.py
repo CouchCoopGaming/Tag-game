@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """
-HiPoly hierarchical mannequin v8.8 / Hier v0.7.8 resting-fist + shoulders in
+HiPoly hierarchical mannequin v8.8 / Hier v0.8.0 Storror proportions
 
 KEEP locked (v0.7.5 Bionicle + v0.7.6/b joint direction Landon-cleared):
   - FLAT continuous hard chest plate
-  - Dense dark accordion waist (~6-8 ribs) + hard pelvis
+  - Dense dark accordion waist + hard pelvis
   - Long hard limb shells / satin vinyl
   - Accordion neck rings / metal neck (NOT limb joints -- leave as-is)
   - Paint LOCKED: Runner cream #E8D9C0 / It warm tan + black nested Vs
@@ -15,16 +15,21 @@ KEEP locked (v0.7.5 Bionicle + v0.7.6/b joint direction Landon-cleared):
   - SOLID vinyl capsule/sleeve cover (NO thin torus hole) — metal barely peeks
   - NO Finger_ bones (finger detail mesh-only)
   - Hybrid III body volumes + MCP knuckles + PIP mid joints (from v0.7.7)
+  - v0.7.8 resting-fist finger curl and shoulders-in shelves
 
-CHANGE v0.7.8:
-  - Shoulders notably narrower: SHOULDER_X 0.285 → 0.235; chest/clav/shelf
-    girdle half-widths brought in so idle front reads less ape-shelf
-  - Resting-fist soft finger curl (mesh-only): tip_extra / segment endpoints
-    arc palm-ward (less -Y stretch, MCP+PIP flex); thumb tucked alongside
-    index — soft closed fist at rest, NOT outstretched/splayed, NOT clenched rock
+CHANGE v0.8.0 (full set from Docs/Storror/hier_comparison.md):
+  - HIP_Z 1.05 → 0.93 (torso gains the 12 cm the legs lose)
+  - UL_LEN 0.540 → 0.455, LL_LEN 0.490 → 0.455
+  - UA_LEN 0.370 → 0.340, LA_LEN 0.330 → 0.275
+  - SHOULDER_X 0.235 → 0.205; HIP_X stays 0.118
+  - Head shell (0.125, 0.114, 0.150) → (0.100, 0.108, 0.140), centre +0.010
+  - Shoulder height, neck, and crown stay. Total stature of the skeleton stays.
+  - Shoe sole and heel rest on z = 0 (they sat ~4 cm under the root)
+  - Pelvis follows the hip. The accordion keeps its fine rib pitch over the longer waist.
+  - Color variants the project uses: Tan, Blue, Mint, Orange, Lavender, Red.
 
 DummyLocomotor bones / hierarchy / GUIDs / FBX paths unchanged.
-GUID-safe FBX overwrite (do NOT rewrite .meta). NO git push.
+GUID-safe FBX overwrite (do NOT rewrite .meta).
 """
 import bpy
 import math
@@ -32,14 +37,28 @@ import os
 import uuid
 from mathutils import Vector, Euler
 
-OUT_DIR = "/workspace/tag-unity/Assets/Art/Characters/HiPoly"
-PREV = "/workspace/art-build/previews"
-BLEND = "/workspace/art-build/Dummy_Mannequin_Hier_Hi.blend"
-LOG = "/tmp/hipoly_v78_build.log"
+OUT_DIR = "/workspace/Assets/Art/Characters/HiPoly"
+PREV = "/tmp/hier_v080_previews"
+BLEND = "/tmp/Dummy_Mannequin_Hier_Hi_v080.blend"
+LOG = "/tmp/hipoly_v080_build.log"
 REF_CRASH = "/workspace/tag-gdd/art/refs/hybrid-iii-v03/ref_hybrid_iii_crash_dummy.jpg"
 
 GUID_TAN = "ad3f2fa97db94e72869d746ecdf8e87d"
 GUID_ORANGE = "b33974ad57284ef28a7564e3bdf00540"
+GUID_BLUE = "db12da2baae8b3f4290c14825b89ddd1"
+GUID_MINT = "f7c0cc58afda8ee4b8002d5fc98e0dbf"
+GUID_LAVENDER = "6277f46f0f4c6cb4099fd0db3cf2c2ca"
+GUID_RED = "144ec0004de6b9545b9d8f9e93412d12"
+
+# Runner swatches. Same keys as DummyPrimitiveFactory / DummyAvatarBinder.
+BLUE = (0.42, 0.68, 0.92, 1.0)
+MINT = (0.42, 0.82, 0.70, 1.0)
+LAVENDER = (0.70, 0.58, 0.88, 1.0)
+RED = (0.88, 0.22, 0.24, 1.0)
+BLUE_PANEL = (0.08, 0.32, 0.78, 1.0)
+MINT_PANEL = (0.06, 0.58, 0.48, 1.0)
+LAVENDER_PANEL = (0.48, 0.28, 0.82, 1.0)
+RED_PANEL = (0.72, 0.06, 0.10, 1.0)
 
 # Paint LOCKED (v8.2 stills read) — Runner cream / It warm tan — NOT ref orange.
 BONE = (0.95, 0.88, 0.76, 1.0)         # Runner cream #E8D9C0 stills read
@@ -64,18 +83,25 @@ CYL_V = 28
 # v0.7.6b: shoulders DOWN + BACK harder (Art: not clear vs tip 3322317).
 # Face = -Y so back = +Y.
 # v0.7.8: shoulders DOWN+BACK kept; girdle narrowed (SHOULDER_X 0.235)
+# v0.8.0: another 3 cm per side. Shoulder height (SHOULDER_Z) stays.
 SHOULDER_Z = 1.400
 SHOULDER_Y = 0.060
-SHOULDER_X = 0.235
-UA_LEN = 0.370
-LA_LEN = 0.330
+SHOULDER_X = 0.205
+UA_LEN = 0.340
+LA_LEN = 0.275
 ARM_OUT = math.radians(24.0)
 ARM_FWD = math.radians(10.0)
 
-HIP_Z = 1.05
+# Hip joint drops 12 cm. Thigh shortens more than the shin. HIP_X stays.
+# Ankle stays at 0.020: 0.93 - 0.455 - 0.455.
+HIP_Z = 0.93
 HIP_X = 0.118
-UL_LEN = 0.540
-LL_LEN = 0.490
+UL_LEN = 0.455
+LL_LEN = 0.455
+# v0.7.8 pelvis was authored against HIP_Z 1.05. Shift shells with the joint.
+HIP_DROP = 1.05 - HIP_Z
+# Heel bottom was ankle_z-0.064 = -0.044. This lift puts it on z = 0.
+SHOE_LIFT = 0.044
 
 os.makedirs(OUT_DIR, exist_ok=True)
 os.makedirs(PREV, exist_ok=True)
@@ -727,30 +753,35 @@ def shoe_foot(name, an, toe, sx, base_mat, joint_mat, rubber_mat=None):
     set_mat(anj, joint_mat)
     parts.append(anj)
     an_cover = joint_skin_cover(f"{name}_AnkleCover", an, axis="X", size=0.017)
+    # Sleeve radius ~0.026 around the ankle (z=0.020) used to poke ~6 mm under the sole.
+    # Slide the vinyl up so the sleeve bottom meets the sole on z = 0. The hinge stays.
+    an_cover.location.z += 0.0064
     set_mat(an_cover, base_mat)
     parts.append(an_cover)
+    # v0.8.0: whole shoe rises so the heel and the sole rest on z = 0.
+    # Ankle bone stays at 0.020. Sole gets 3 mm extra so its bottom matches the heel.
     heel = sph(f"{name}_Heel",
-               an + Vector((0, 0.038, -0.028)),
+               an + Vector((0, 0.038, -0.028 + SHOE_LIFT)),
                (0.042, 0.040, 0.036), seg=14, ring=7)
     set_mat(heel, rub)
     parts.append(heel)
     mid = sph(f"{name}_Mid",
-              an + Vector((0, -0.042, -0.030)),
+              an + Vector((0, -0.042, -0.030 + SHOE_LIFT)),
               (0.048, 0.078, 0.028), seg=16, ring=8)
     set_mat(mid, base_mat)  # upper shoe shell stays vinyl
     parts.append(mid)
     toe_pad = sph(f"{name}_Toe",
-                  an + Vector((0, -0.130, -0.018)),
+                  an + Vector((0, -0.130, -0.018 + SHOE_LIFT)),
                   (0.036, 0.044, 0.022), seg=12, ring=6)
     set_mat(toe_pad, rub)
     parts.append(toe_pad)
     sole = sph(f"{name}_Sole",
-               an + Vector((0, -0.045, -0.050)),
+               an + Vector((0, -0.045, -0.050 + SHOE_LIFT - 0.003)),
                (0.044, 0.098, 0.011), seg=14, ring=6)
     set_mat(sole, rub)
     parts.append(sole)
     instep = sph(f"{name}_Instep",
-                 an + Vector((0, -0.072, -0.008)),
+                 an + Vector((0, -0.072, -0.008 + SHOE_LIFT)),
                  (0.036, 0.042, 0.024), seg=12, ring=6)
     set_mat(instep, base_mat)
     parts.append(instep)
@@ -826,45 +857,47 @@ def hard_pelvis_shell(name):
     U-shaped side cutouts for hip hinges. HARD shell — NOT balloon soft flesh.
     """
     parts = []
-    # Main hard bowl — Hybrid III wider flatter front
+    # Main hard bowl — Hybrid III wider flatter front.
+    # v0.8.0: the whole shell drops with HIP_Z so the hip joint stays in the bowl.
+    dz = -HIP_DROP
     front = cube(
-        f"{name}_Front", (0.0, -0.062, 0.970),
+        f"{name}_Front", (0.0, -0.062, 0.970 + dz),
         (0.138, 0.028, 0.082), bevel=0.010)
     parts.append(front)
     back = cube(
-        f"{name}_Back", (0.0, 0.070, 0.970),
+        f"{name}_Back", (0.0, 0.070, 0.970 + dz),
         (0.128, 0.026, 0.076), bevel=0.010)
     parts.append(back)
     # Clear TOP rim into accordion (hard edge read)
     top_rim = cube(
-        f"{name}_TopRim", (0.0, 0.0, 1.058),
+        f"{name}_TopRim", (0.0, 0.0, 1.058 + dz),
         (0.140, 0.095, 0.014), bevel=0.004)
     parts.append(top_rim)
-    # Side wings — brief cutouts + hard hip bowl (match wider HIP_X)
+    # Side wings — brief cutouts + hard hip bowl (match HIP_X, unchanged)
     for sx in (1, -1):
         wing = cube(
-            f"{name}_Wing{sx}", (sx * 0.145, 0.006, 0.975),
+            f"{name}_Wing{sx}", (sx * 0.145, 0.006, 0.975 + dz),
             (0.042, 0.070, 0.072), bevel=0.010)
         parts.append(wing)
         # hard vinyl hip bowl — NOT soft flesh pillow
         hip_curve = sph(
             f"{name}_HipCurve{sx}",
-            (sx * 0.158, 0.010, 0.955),
+            (sx * 0.158, 0.010, 0.955 + dz),
             (0.062, 0.062, 0.055), seg=16, ring=8)
         parts.append(hip_curve)
         # brief-cutout lip (hard edge around hip joint pocket)
         cut_lip = cube(
-            f"{name}_CutLip{sx}", (sx * 0.168, 0.0, 0.990),
+            f"{name}_CutLip{sx}", (sx * 0.168, 0.0, 0.990 + dz),
             (0.012, 0.055, 0.048), bevel=0.004)
         parts.append(cut_lip)
     # Lower crotch plate
     crotch = cube(
-        f"{name}_Crotch", (0.0, 0.0, 0.895),
+        f"{name}_Crotch", (0.0, 0.0, 0.895 + dz),
         (0.080, 0.058, 0.034), bevel=0.007)
     parts.append(crotch)
     # Fill core — hard plate mass
     core = cube(
-        f"{name}_Core", (0.0, 0.006, 0.970),
+        f"{name}_Core", (0.0, 0.006, 0.970 + dz),
         (0.105, 0.058, 0.062), bevel=0.005)
     parts.append(core)
 
@@ -985,26 +1018,39 @@ def build_mesh_parts(is_it, mats):
         set_mat(ob, m)
         groups[bone].append(ob)
 
-    # --- Head: molded Hybrid III vinyl face — CORRECT human head scale (v0.7.4) ---
-    # Face toward -Y. Brow/nose/mouth/chin = relief IN shell. Eyes/temples = flush pits.
-    # Smaller than v0.7.3 toy egg — ~1/7.5 body, still hard-shell (not soft flesh).
-    head = sph("Head", (0, -0.008, 1.665), (0.125, 0.114, 0.150), seg=40, ring=20, sub=True)
+    # --- Head: v0.8.0 narrower / slightly shorter shell ---
+    # Face toward -Y. Features scale about the old centre so the face stays on the shell.
+    # Centre rises 1 cm (1.665 → 1.675) so the crown stays at 1.815.
+    # Old centre C0, new C1, scale (0.100/0.125, 0.108/0.114, 0.140/0.150).
+    head = sph("Head", (0, -0.008, 1.675), (0.100, 0.108, 0.140), seg=40, ring=20, sub=True)
+
+    def hp(x, y, z):
+        return (
+            (x - 0.0) * (0.100 / 0.125),
+            -0.008 + (y - (-0.008)) * (0.108 / 0.114),
+            1.675 + (z - 1.665) * (0.140 / 0.150),
+        )
+
+    def hs(sx, sy, sz):
+        return (sx * (0.100 / 0.125), sy * (0.108 / 0.114), sz * (0.140 / 0.150))
 
     # Brow — continuous low-relief ridge
-    brow = sph("BrowRidge", (0.0, -0.108, 1.730), (0.088, 0.012, 0.009), seg=28, ring=12)
+    brow = sph("BrowRidge", hp(0.0, -0.108, 1.730), hs(0.088, 0.012, 0.009), seg=28, ring=12)
 
-    # Nose — Hybrid III wedge: narrower/taller tip so profile breaks egg clearly.
+    # Nose — Hybrid III wedge, scaled about the head centre with the shell.
+    kx, ky, kz = (0.100 / 0.125), (0.108 / 0.114), (0.140 / 0.150)
+    nb = hs(0.008, 0.036, 0.034)
     nose_bridge = cube(
-        "NoseBridge", (0.0, -0.125, 1.685),
-        (0.008, 0.036, 0.034), bevel=0.0018)
+        "NoseBridge", hp(0.0, -0.125, 1.685),
+        nb, bevel=0.0018 * kx)
     bpy.ops.object.select_all(action="DESELECT")
     nose_bridge.select_set(True)
     bpy.context.view_layer.objects.active = nose_bridge
     nose_bridge.scale = (0.48, 1.05, 1.0)
     bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
     nose_tip = cone(
-        "NoseTip", (0.0, -0.148, 1.655),
-        r1=0.009, r2=0.0012, depth=0.042,
+        "NoseTip", hp(0.0, -0.148, 1.655),
+        r1=0.009 * kx, r2=0.0012 * kx, depth=0.042 * ky,
         rot=(math.radians(90), 0, 0), v=18)
     bpy.ops.object.select_all(action="DESELECT")
     nose_tip.select_set(True)
@@ -1013,9 +1059,9 @@ def build_mesh_parts(is_it, mats):
     bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
 
     # Mild chin / jaw break — hard shell, no cheek orbs
-    chin = sph("Chin", (0.0, -0.092, 1.555), (0.030, 0.020, 0.016), seg=12, ring=8)
-    jaw_l = sph("JawL", (-0.052, -0.068, 1.600), (0.028, 0.022, 0.022), seg=10, ring=6)
-    jaw_r = sph("JawR", (0.052, -0.068, 1.600), (0.028, 0.022, 0.022), seg=10, ring=6)
+    chin = sph("Chin", hp(0.0, -0.092, 1.555), hs(0.030, 0.020, 0.016), seg=12, ring=8)
+    jaw_l = sph("JawL", hp(-0.052, -0.068, 1.600), hs(0.028, 0.022, 0.022), seg=10, ring=6)
+    jaw_r = sph("JawR", hp(0.052, -0.068, 1.600), hs(0.028, 0.022, 0.022), seg=10, ring=6)
 
     head = boolean_union(head, [brow, nose_bridge, nose_tip, chin, jaw_l, jaw_r])
     light_smooth(head, iterations=1)
@@ -1025,41 +1071,44 @@ def build_mesh_parts(is_it, mats):
     recess_tools = []
     for dx in (-0.042, 0.042):
         recess_tools.append(
-            sph(f"EyeRecess_{dx}", (dx, -0.118, 1.672), (0.028, 0.024, 0.022), seg=16, ring=10)
+            sph(f"EyeRecess_{dx}", hp(dx, -0.118, 1.672), hs(0.028, 0.024, 0.022), seg=16, ring=10)
         )
     boolean_difference(head, recess_tools)
     for dx in (-0.042, 0.042):
         e = cube(
-            f"Eye_{dx}", (dx, -0.098, 1.670),
-            (0.022, 0.0006, 0.013), bevel=0.0012)
+            f"Eye_{dx}", hp(dx, -0.098, 1.670),
+            hs(0.022, 0.0006, 0.013), bevel=0.0012)
         add("Head", e, sensor)
 
     # Mouth — shallow horizontal SLIT
     mouth_carve = cube(
-        "MouthCarve", (0.0, -0.114, 1.605), (0.040, 0.028, 0.0030), bevel=0.0005)
+        "MouthCarve", hp(0.0, -0.114, 1.605), hs(0.040, 0.028, 0.0030), bevel=0.0005)
     boolean_difference(head, [mouth_carve])
     mouth = cube(
-        "MouthSlit", (0.0, -0.110, 1.605), (0.036, 0.0006, 0.0016), bevel=0.0002)
+        "MouthSlit", hp(0.0, -0.110, 1.605), hs(0.036, 0.0006, 0.0016), bevel=0.0002)
     add("Head", mouth, sensor)
 
     # Temple row of 3 — shallow PIT carve + flat dark disk
     temple_pits = []
     for i, z in enumerate([1.710, 1.670, 1.630]):
+        px, py, pz = hp(0.122, -0.038, z)
         temple_pits.append(
-            cyl(f"TemplePit_{i}", (0.122, -0.038, z), 0.010, 0.018,
+            cyl(f"TemplePit_{i}", (px, py, pz), 0.010 * kx, 0.018 * kx,
                 rot=(0, math.radians(90), 0), v=16)
         )
     boolean_difference(head, temple_pits)
     for i, z in enumerate([1.710, 1.670, 1.630]):
+        px, py, pz = hp(0.110, -0.038, z)
         t = cyl(
-            f"Temple_{i}", (0.110, -0.038, z), 0.008, 0.0014,
+            f"Temple_{i}", (px, py, pz), 0.008 * kx, 0.0014 * kx,
             rot=(0, math.radians(90), 0), v=16)
         add("Head", t, sensor)
 
-    # Temple cal — flat decal disk (scaled to smaller head)
+    # Temple cal — flat decal disk (scaled with the head)
+    cx, cy, cz = hp(-0.126, -0.014, 1.680)
     cal_t = cal_quadrant_disk(
-        "CalTemple", (-0.126, -0.014, 1.680),
-        radius=0.038, thick=0.006,
+        "CalTemple", (cx, cy, cz),
+        radius=0.038 * kx, thick=0.006 * kx,
         accent_mat=cal_accent, black_mat=sensor, axis="X")
     groups["Head"].append(cal_t)
 
@@ -1096,14 +1145,20 @@ def build_mesh_parts(is_it, mats):
                          thick=0.012, flare=1.08)
     add("Chest", chest_lip, joint)
 
-    # --- WAIST BELLOWS INSET (~8 fine dark ribs) — narrower human waist ---
-    bellows = waist_bellows("WaistBellows", z_top=1.115, z_bot=1.065, radius=0.092, n_ribs=8)
+    # --- WAIST BELLOWS — same fine rib pitch, longer because the hip dropped ---
+    # Chest bottom stays. The pelvis top dropped with HIP_Z, so the accordion
+    # spans the new gap. 8 ribs over 5 cm was ~6.25 mm; keep that pitch.
+    bellows_top = 1.115
+    bellows_bot = 1.065 - HIP_DROP
+    bellows_ribs = max(8, int(round((bellows_top - bellows_bot) / 0.00625)))
+    bellows = waist_bellows("WaistBellows", z_top=bellows_top, z_bot=bellows_bot,
+                            radius=0.092, n_ribs=bellows_ribs)
     add("Spine", bellows, bellows_mat)
 
     # --- DISTINCT PELVIS SHELL ---
     pelvis = hard_pelvis_shell("PelvisShell")
     add("Hips", pelvis, base)
-    pelvis_lip = bead_lip("PelvisTopLip", (0, 0.01, 1.068), radius=0.135, axis="Z",
+    pelvis_lip = bead_lip("PelvisTopLip", (0, 0.01, 1.068 - HIP_DROP), radius=0.135, axis="Z",
                           thick=0.012, flare=1.08)
     add("Hips", pelvis_lip, joint)
 
@@ -1206,8 +1261,8 @@ def build_mesh_parts(is_it, mats):
         ("Chest", (0.0, -0.130, 1.115), 0.012),
         ("Chest", (0.095, -0.118, 1.260), 0.009),
         ("Chest", (-0.095, -0.118, 1.260), 0.009),
-        ("Hips", (0.0, -0.105, 1.040), 0.011),
-        ("Hips", (0.090, -0.090, 0.960), 0.008),
+        ("Hips", (0.0, -0.105, 1.040 - HIP_DROP), 0.011),
+        ("Hips", (0.090, -0.090, 0.960 - HIP_DROP), 0.008),
         ("Spine", (0.070, -0.080, 1.070), 0.007),
         ("Spine", (-0.070, -0.080, 1.070), 0.007),
     ]
@@ -1739,6 +1794,99 @@ def measure_slide_grounding(arm_ob):
     return feet_z, hips.z
 
 
+def mesh_z_extent(name_part):
+    """World-space min/max Z of mesh vertices whose object name contains name_part."""
+    lo, hi = 1e9, -1e9
+    hit = False
+    for o in bpy.data.objects:
+        if o.type != "MESH" or name_part not in o.name:
+            continue
+        mw = o.matrix_world
+        for v in o.data.vertices:
+            w = mw @ v.co
+            if w.z < lo:
+                lo = w.z
+            if w.z > hi:
+                hi = w.z
+            hit = True
+    if not hit:
+        return None, None
+    return lo, hi
+
+
+def measure_body(arm_ob, tag):
+    """Log the v0.8.0 lengths the stills and the report use. Z up, metres."""
+    bpy.context.view_layer.update()
+    def head(name):
+        return Vector(arm_ob.matrix_world @ arm_ob.pose.bones[name].head)
+    def tail(name):
+        return Vector(arm_ob.matrix_world @ arm_ob.pose.bones[name].tail)
+    hip = head("UpperLeg_L")
+    knee = tail("UpperLeg_L")
+    ankle = tail("LowerLeg_L")
+    sh = head("UpperArm_L")
+    el = tail("UpperArm_L")
+    wr = tail("LowerArm_L")
+    shoulder_r = head("UpperArm_R")
+    hip_r = head("UpperLeg_R")
+    # Soles are joined into Mesh_Foot after parenting. Lowest vertex is the shoe bottom.
+    sole_lo, sole_hi = mesh_z_extent("Mesh_Foot")
+    heel_lo = sole_lo
+    head_lo, head_hi = mesh_z_extent("Mesh_Head")
+    thigh = (knee - hip).length
+    shin = (ankle - knee).length
+    ua = (el - sh).length
+    la = (wr - el).length
+    # Torso: mid-hip joint to mid-shoulder joint, same definition as hier_comparison.
+    hip_mid = (hip + hip_r) * 0.5
+    sh_mid = (sh + shoulder_r) * 0.5
+    torso = (sh_mid - hip_mid).length
+    shoulder_w = abs(sh.x - shoulder_r.x)
+    hip_w = abs(hip.x - hip_r.x)
+    crown = head_hi if head_hi is not None else 1.815
+    sole = sole_lo if sole_lo is not None else 0.0
+    heel = heel_lo if heel_lo is not None else sole
+    stature = crown - min(sole, heel)
+    log(f"MEASURE {tag}")
+    log(f"  hip_z={hip.z:.4f} shoulder_z={sh.z:.4f} ankle_z={ankle.z:.4f}")
+    log(f"  thigh={thigh:.4f} shin={shin:.4f} torso={torso:.4f}")
+    log(f"  upper_arm={ua:.4f} lower_arm={la:.4f}")
+    log(f"  shoulder_w={shoulder_w:.4f} hip_w={hip_w:.4f}")
+    log(f"  sole_z={sole:.4f} heel_z={heel:.4f} crown_z={crown:.4f} H={stature:.4f}")
+    if stature > 0.01:
+        log(f"  ratios torso={torso/stature:.4f} thigh={thigh/stature:.4f} shin={shin/stature:.4f} "
+            f"leg={(thigh+shin)/stature:.4f} ua={ua/stature:.4f} la={la/stature:.4f} "
+            f"arm={(ua+la)/stature:.4f} sh_w={shoulder_w/stature:.4f} hip_w={hip_w/stature:.4f}")
+    return {
+        "hip_z": hip.z, "shoulder_z": sh.z, "ankle_z": ankle.z,
+        "thigh": thigh, "shin": shin, "torso": torso,
+        "upper_arm": ua, "lower_arm": la,
+        "shoulder_w": shoulder_w, "hip_w": hip_w,
+        "sole_z": sole, "heel_z": heel, "crown_z": crown, "H": stature,
+    }
+
+
+def tint_material(mat_name, color):
+    m = bpy.data.materials.get(mat_name)
+    if m is None:
+        log(f"WARN missing material {mat_name}")
+        return
+    m.diffuse_color = color
+    bsdf = m.node_tree.nodes.get("Principled BSDF") if m.node_tree else None
+    if bsdf and "Base Color" in bsdf.inputs:
+        bsdf.inputs["Base Color"].default_value = color
+
+
+def export_tinted(color_name, base_col, accent_col, guid, arm_ob):
+    tint_material("Base", base_col)
+    tint_material("Accent", accent_col)
+    tint_material("CalAccent_Tan", accent_col)
+    path = os.path.join(OUT_DIR, f"Dummy_Mannequin_{color_name}_Hier_Hi.fbx")
+    export_fbx(path, arm_ob)
+    ensure_meta_guid(path, guid)
+    log(f"{color_name} FBX {os.path.getsize(path)} bytes guid={guid}")
+
+
 def build_variant(is_it, export_path, guid, do_stills=False):
     clear_scene()
     mats = make_mats(is_it)
@@ -1747,6 +1895,8 @@ def build_variant(is_it, export_path, guid, do_stills=False):
     parent_groups(groups, arm_ob)
     ok = verify_bones(arm_ob)
     ang, cx, cy = measure_a_pose(arm_ob)
+    if not is_it:
+        measure_body(arm_ob, "v0.8.0")
 
     tag = "it_" if is_it else ""
     if do_stills:
@@ -1789,13 +1939,19 @@ def write_readme():
     path = os.path.join(OUT_DIR, "README.md")
     text = """# HiPoly Hierarchical Mannequins
 
-DummyLocomotor-bindable **Hybrid III hard-shell** crash-test dummies (v0.7.8).
-Narrower shoulders; soft resting-fist finger curl; tiny Bionicle joints under SOLID vinyl capsule; knuckles + mid-finger mesh; shoulders down/back.
+DummyLocomotor-bindable **Hybrid III hard-shell** crash-test dummies (v0.8.0).
+Storror proportions: longer torso, shorter thigh and forearm, narrower shoulders, smaller head.
+Soles rest on z = 0. Resting-fist finger curl and shoulders-in joints are unchanged.
+Bone names and the hierarchy match v0.7.8.
 
 ## Assets
 | File | Paint |
 |------|-------|
 | `Dummy_Mannequin_Tan_Hier_Hi.fbx` | Runner — cream `#E8D9C0`, Accent teal tick. **ZERO nested Vs.** |
+| `Dummy_Mannequin_Blue_Hier_Hi.fbx` | Runner swatch — blue body, blue panel accent |
+| `Dummy_Mannequin_Mint_Hier_Hi.fbx` | Runner swatch — mint body, mint panel accent |
+| `Dummy_Mannequin_Lavender_Hier_Hi.fbx` | Runner swatch — lavender body, lavender panel accent |
+| `Dummy_Mannequin_Red_Hier_Hi.fbx` | Runner swatch — red body, red panel accent |
 | `Dummy_Mannequin_Orange_Hier_Hi.fbx` | It — warm tan body + black nested Vs chest + outer thighs (NOT #FF6A00) |
 
 ## Bind pose
@@ -1819,22 +1975,32 @@ Narrower shoulders; soft resting-fist finger curl; tiny Bionicle joints under SO
 
 
 def main():
-    log("=== hipoly hier v8.8 / Hier v0.7.8 resting-fist + shoulders in ===")
+    log("=== hipoly hier v8.8 / Hier v0.8.0 Storror proportions ===")
     tan = os.path.join(OUT_DIR, "Dummy_Mannequin_Tan_Hier_Hi.fbx")
     orn = os.path.join(OUT_DIR, "Dummy_Mannequin_Orange_Hier_Hi.fbx")
 
-    log("Building Tan/Runner Hier HiPoly v0.7.8 resting-fist + shoulders in…")
-    ok_t, ang_t, cx_t, cy_t = build_variant(False, tan, GUID_TAN, do_stills=True)
+    log("Building Tan/Runner Hier HiPoly v0.8.0…")
+    ok_t, ang_t, cx_t, cy_t = build_variant(False, tan, GUID_TAN, do_stills=False)
+    arm = bpy.data.objects.get("DummyArmature")
+    if arm is not None:
+        for name, base_col, accent_col, guid in (
+            ("Blue", BLUE, BLUE_PANEL, GUID_BLUE),
+            ("Mint", MINT, MINT_PANEL, GUID_MINT),
+            ("Lavender", LAVENDER, LAVENDER_PANEL, GUID_LAVENDER),
+            ("Red", RED, RED_PANEL, GUID_RED),
+        ):
+            log(f"Tinting {name} from the Tan mesh…")
+            export_tinted(name, base_col, accent_col, guid, arm)
 
-    log("Building It/Orange Hier HiPoly v0.7.8 resting-fist + shoulders in…")
-    ok_o, ang_o, cx_o, cy_o = build_variant(True, orn, GUID_ORANGE, do_stills=True)
+    log("Building It/Orange Hier HiPoly v0.8.0…")
+    ok_o, ang_o, cx_o, cy_o = build_variant(True, orn, GUID_ORANGE, do_stills=False)
 
     write_readme()
     log(f"Tan OK={ok_t} A-pose={ang_t:.1f}deg clear_x={cx_t:.3f} clear_y={cy_t:.3f}")
     log(f"It  OK={ok_o} A-pose={ang_o:.1f}deg clear_x={cx_o:.3f} clear_y={cy_o:.3f}")
     log(f"Tan FBX {os.path.getsize(tan)} bytes guid={GUID_TAN}")
     log(f"Orange FBX {os.path.getsize(orn)} bytes guid={GUID_ORANGE}")
-    log("DONE v0.7.8 resting-fist + shoulders in — no git push (await Art / Ororo; Eng HOLD)")
+    log("DONE v0.8.0 Storror proportions")
 
 
 if __name__ == "__main__":
