@@ -929,6 +929,156 @@ namespace Tag.Art
             return shot;
         }
 
+        /// <summary>
+        /// Pass 8. Climb contact, the lip, a vault at the real rail, wall-run tilt,
+        /// the cling grab, and the slip drag.
+        /// </summary>
+        public static void WritePass8Stills(string path)
+        {
+            const int frames = 8;
+            const int cellW = 120;
+            const int cellH = 156;
+            const int labelW = 168;
+            const int rows = 12;
+            int w = labelW + frames * cellW;
+            int h = rows * cellH;
+            var pix = new byte[w * h * 3];
+            Fill(pix, w, h, 16, 18, 22);
+            PaintLoco(pix, w, h, rows, 0, "CLIMB", "BEFORE", TrackClimbContact(false), 196, 122, 96, true, 0f);
+            PaintLoco(pix, w, h, rows, 1, "CLIMB", "AFTER", TrackClimbContact(true), 120, 196, 150, true, 0f);
+            PaintLoco(pix, w, h, rows, 2, "LIP", "BEFORE", TrackLip(false), 196, 122, 96, false, 0f);
+            PaintLoco(pix, w, h, rows, 3, "LIP", "AFTER", TrackLip(true), 150, 210, 140, false, 0f);
+            PaintLoco(pix, w, h, rows, 4, "VAULT", "BEFORE", TrackVaultHeight(false), 196, 122, 96, false, 0f);
+            PaintLoco(pix, w, h, rows, 5, "VAULT", "AFTER", TrackVaultHeight(true), 120, 186, 210, false, 0f);
+            PaintLoco(pix, w, h, rows, 6, "RUN", "BEFORE", TrackRunTilt(false), 196, 122, 96, true, 0f);
+            PaintLoco(pix, w, h, rows, 7, "RUN", "AFTER", TrackRunTilt(true), 210, 170, 110, true, 0f);
+            PaintLoco(pix, w, h, rows, 8, "GRAB", "BEFORE", TrackGrab(false), 196, 122, 96, true, 0f);
+            PaintLoco(pix, w, h, rows, 9, "GRAB", "AFTER", TrackGrab(true), 230, 210, 140, true, 0f);
+            PaintLoco(pix, w, h, rows, 10, "SLIP", "BEFORE", TrackSlipDrag(false), 196, 122, 96, true, 0f);
+            PaintLoco(pix, w, h, rows, 11, "SLIP", "AFTER", TrackSlipDrag(true), 186, 140, 120, true, 0f);
+            string dir = Path.GetDirectoryName(path);
+            if (!string.IsNullOrEmpty(dir))
+                Directory.CreateDirectory(dir);
+            WritePng(path, pix, w, h);
+        }
+
+        static Fig[] TrackClimbContact(bool planted)
+        {
+            var shot = new Fig[8];
+            for (int i = 0; i < 8; i++)
+            {
+                float s = (float)Math.Sin(i * 0.7f);
+                Fig f = Fig.From(WallPose.Climb(s, ClimbContact.ClimbSpeed));
+                if (planted)
+                {
+                    float step = ClimbContact.BodyStep(ClimbContact.ClimbSpeed, WallPose.ClimbCadenceFull);
+                    float extra = step - ClimbContact.HandArc();
+                    if (extra < 0f) extra = 0f;
+                    float deg = extra / ClimbContact.ArmLength * Mathf.Rad2Deg;
+                    if (s >= 0f) f.ArmR -= deg * 0.35f;
+                    else f.ArmL -= deg * 0.35f;
+                }
+                shot[i] = f;
+            }
+            return shot;
+        }
+
+        static Fig[] TrackLip(bool rolled)
+        {
+            var shot = new Fig[8];
+            Fig cur = Fig.FromMantle(MantlePose.At(0f, true));
+            var vel = new float[12];
+            for (int i = 0; i < 8; i++)
+            {
+                float u = (i + 1) / 8f;
+                cur = Step(cur, Fig.FromMantle(MantlePose.At(u, true)), vel, true, MantlePose.Slew);
+                shot[i] = cur;
+            }
+            if (!rolled)
+            {
+                shot[5].Hip = shot[4].Hip - 24f;
+                shot[5].Spine = shot[4].Spine;
+            }
+            return shot;
+        }
+
+        static Fig[] TrackVaultHeight(bool real)
+        {
+            var shot = new Fig[8];
+            float miss = real ? 0f : ClimbContact.LipMiss(1.40f, false) * 0.15f;
+            for (int i = 0; i < 8; i++)
+            {
+                float u = (i + 1) / 8f;
+                Fig f = Fig.FromMantle(MantlePose.At(u, true));
+                f.ArmL += miss;
+                f.ArmR += miss;
+                shot[i] = f;
+            }
+            return shot;
+        }
+
+        static Fig[] TrackRunTilt(bool scaled)
+        {
+            var shot = new Fig[8];
+            float phase = 0f;
+            for (int i = 0; i < 8; i++)
+            {
+                phase += 0.7f;
+                Fig f = Fig.From(WallPose.RunCycle(phase, true));
+                float speed = scaled ? (i < 4 ? WallPose.WallRunSpeedRef * 0.5f : WallPose.WallRunSpeedRef) : WallPose.WallRunSpeedRef;
+                float blend = scaled ? ClimbContact.Grab(i / 7f) : (i < 2 ? 0f : 1f);
+                float sign = f.Lean < 0f ? -1f : 1f;
+                f.Lean = sign * ClimbContact.Tilt(speed) * blend;
+                shot[i] = f;
+            }
+            return shot;
+        }
+
+        static Fig[] TrackGrab(bool eased)
+        {
+            Fig air = Limb(22f, 18f, -20f, -16f, -30f, -24f, 0f);
+            Fig wall = Fig.From(WallPose.Entry());
+            var shot = new Fig[8];
+            for (int i = 0; i < 8; i++)
+            {
+                float u = eased ? ClimbContact.Grab(i / 7f) : (i < 3 ? 0f : 1f);
+                shot[i] = new Fig
+                {
+                    ArmL = air.ArmL + (wall.ArmL - air.ArmL) * u,
+                    ArmR = air.ArmR + (wall.ArmR - air.ArmR) * u,
+                    ElbL = air.ElbL + (wall.ElbL - air.ElbL) * u,
+                    ElbR = air.ElbR + (wall.ElbR - air.ElbR) * u,
+                    ThL = air.ThL + (wall.ThL - air.ThL) * u,
+                    ThR = air.ThR + (wall.ThR - air.ThR) * u,
+                    KnL = air.KnL + (wall.KnL - air.KnL) * u,
+                    KnR = air.KnR + (wall.KnR - air.KnR) * u,
+                    Spine = air.Spine + (wall.Spine - air.Spine) * u,
+                    Hip = air.Hip + (wall.Hip - air.Hip) * u,
+                    Head = air.Head + (wall.Head - air.Head) * u,
+                    Lean = 0f,
+                };
+            }
+            return shot;
+        }
+
+        static Fig[] TrackSlipDrag(bool drag)
+        {
+            var shot = new Fig[8];
+            for (int i = 0; i < 8; i++)
+            {
+                float s = (float)Math.Sin(i * 0.8f);
+                Fig f = Fig.From(WallPose.Climb(s, -ClimbContact.SlipSpeed));
+                if (drag)
+                {
+                    ClimbContact.Drag(i * 0.8f, 1f, out float l, out float r);
+                    f.ArmL += l;
+                    f.ArmR += r;
+                }
+                shot[i] = f;
+            }
+            return shot;
+        }
+
         static float StrideThigh(int frame, float sign)
         {
             return (float)Math.Sin(frame * 0.78f) * 34f * sign;

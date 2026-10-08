@@ -742,6 +742,12 @@ static class Program
             Console.Error.WriteLine("respawn blink is not held");
             return 1;
         }
+        Console.WriteLine(Tag.Art.ClimbContact.ProofLine());
+        if (!Tag.Art.ClimbContact.Holds())
+        {
+            Console.Error.WriteLine("climb contact is not held");
+            return 1;
+        }
         if (!AssetHas("Assets/Scripts/Art/DummyLocomotor.cs",
                 "SmoothMotion.Smooth",
                 "SmoothMotion.SecondsForSlew",
@@ -888,6 +894,28 @@ static class Program
             Console.Error.WriteLine("respawn blink is not on the camera");
             return 1;
         }
+        if (!AssetHas("Assets/Scripts/Art/DummyLocomotor.cs",
+                "ClimbContact.Drag",
+                "ClimbContact.Tilt",
+                "ClimbContact.Grab",
+                "ApplyChestGap",
+                "TryLip"))
+        {
+            Console.Error.WriteLine("parkour contact is not on the mannequin");
+            return 1;
+        }
+        if (!AssetHas("Assets/TagArenaMovement/Scripts/Core/PlayerMotor.cs",
+                "LedgeStand"))
+        {
+            Console.Error.WriteLine("the lip point is not on the motor");
+            return 1;
+        }
+        if (!AssetHas("Assets/Scripts/Art/MotionGallery.cs",
+                "slip ? -1f"))
+        {
+            Console.Error.WriteLine("the gallery climb does not play the slip");
+            return 1;
+        }
 
         string stillDir = Path.Combine(RepoRoot(), "Docs", "SmoothStills", "pass1");
         Tag.Art.SmoothMotion.WriteStrip(Path.Combine(stillDir, "transitions.ppm"));
@@ -901,6 +929,8 @@ static class Program
         Tag.Art.SmoothMotion.WritePass5Stills(Path.Combine(still5, "layer-hang.png"));
         string still7 = Path.Combine(RepoRoot(), "Docs", "SmoothStills", "pass7");
         Tag.Art.SmoothMotion.WritePass7Stills(Path.Combine(still7, "plant-blink-yaw.png"));
+        string still8 = Path.Combine(RepoRoot(), "Docs", "SmoothStills", "pass8");
+        Tag.Art.SmoothMotion.WritePass8Stills(Path.Combine(still8, "climb-contact.png"));
         if (!File.Exists(Path.Combine(RepoRoot(), "Assets", "Scenes", "MotionGallery.unity")))
         {
             Console.Error.WriteLine("motion gallery scene is missing");
