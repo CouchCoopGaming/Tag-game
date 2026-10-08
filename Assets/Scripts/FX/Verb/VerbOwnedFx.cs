@@ -164,9 +164,10 @@ namespace Tag.FX
                     DustLook.Puff puff = DustLook.At(_groundSurf, speed, (int)DustLook.Kick.None);
                     puff.Count = VerbFxLook.Debris(impact, 1f);
                     puff.Size *= 0.75f + 0.5f * tier;
-                    _fx.PlayShaped(FxBurstKind.Land, pos, puff);
                     if (_cards != null)
                         _cards.Burst(pos, puff.Count, puff.Size * 2.4f, puff.R, puff.G, puff.B, 0.28f + tier * 0.35f);
+                    DustLook.Puff ring = DustLook.LandDust(_groundSurf, impact);
+                    EmitRing(pos, _ringR, ring);
                     if (VerbFxLook.RollSwirl(impact, speed))
                     {
                         _swirlAge = 0f;
@@ -195,6 +196,24 @@ namespace Tag.FX
                     if (_cards != null)
                         _cards.SpawnSwirl(p, swirl.R, swirl.G, swirl.B);
                 }
+            }
+        }
+
+        void EmitRing(Vector3 center, float radius, DustLook.Puff ring)
+        {
+            if (_fx == null || radius < 0.05f) return;
+            int n = ring.Count;
+            if (n < 6) n = 6;
+            if (n > 16) n = 16;
+            DustLook.Puff one = ring;
+            one.Count = 1;
+            one.Back = 0f;
+            float step = 6.2831855f / n;
+            for (int i = 0; i < n; i++)
+            {
+                float ang = i * step;
+                Vector3 p = center + new Vector3(Mathf.Cos(ang) * radius, 0.02f, Mathf.Sin(ang) * radius);
+                _fx.PlayShaped(FxBurstKind.Land, p, one);
             }
         }
 

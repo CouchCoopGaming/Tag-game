@@ -402,6 +402,18 @@ def pose_gait(arm, speed, phase):
     )
 
 
+def pose_slide(arm):
+    """VerbPoseClips.SlideBodyPose(leadLeft). The still grounds the lowest vertex."""
+    leg(arm, "L", 68.0, -10.0, 8.0)
+    leg(arm, "R", 40.0, -130.0, 24.0)
+    set_zxy(arm, "Foot_L", -(-58.0), 0.0, -6.0)
+    set_zxy(arm, "Foot_R", -(16.0), 0.0, -8.0)
+    arm_pose(arm, "L", 48.0, 22.0, -36.0, 0.0)
+    arm_pose(arm, "R", -36.0, 22.0, -28.0, 0.0)
+    torso(arm, -22.0, -14.0, -50.0)
+    print("RUNTIME slide SlideBody leadLeft")
+
+
 def pose_stagger(arm):
     """PunchStaggerPose.Stumble at Weight 1 (age 0.10, inside the hold)."""
     set_zxy(arm, "UpperLeg_L", -38.0, 0.0, 0.0)
@@ -2419,10 +2431,16 @@ def p11_link(mesh, name, mat):
     return obj
 
 
-def p11_ground(surface):
+def p11_ground(surface, light=False):
     p11_clear("P11")
     if surface == "concrete":
-        mat = p11_noise_mat(p11_name("Mat"), (0.26, 0.26, 0.25, 1), (0.38, 0.38, 0.36, 1), 9.0, 0.92)
+        if light:
+            dark = (0.58, 0.58, 0.55, 1)
+            pale = (0.78, 0.78, 0.74, 1)
+        else:
+            dark = (0.26, 0.26, 0.25, 1)
+            pale = (0.38, 0.38, 0.36, 1)
+        mat = p11_noise_mat(p11_name("Mat"), dark, pale, 9.0, 0.92)
         seam_mat = make_mat(p11_name("Mat"), (0.16, 0.16, 0.15, 1), 0.95)
     elif surface == "dirt":
         mat = p11_noise_mat(p11_name("Mat"), (0.24, 0.15, 0.08, 1), (0.40, 0.26, 0.13, 1), 7.0, 0.96)
@@ -3574,12 +3592,331 @@ def render_pass12(arm, cam):
     print("PASS12 stills", OUT)
 
 
+def p14_speed_u(speed):
+    run = 9.0
+    at_run = 0.42
+    if speed <= 6.9:
+        return 0.0
+    if speed >= 13.8:
+        return 1.0
+    if speed <= run:
+        return (speed - 6.9) / (run - 6.9) * at_run
+    return at_run + (speed - run) / (13.8 - run) * (1.0 - at_run)
+
+
+def p14_at(surface, speed, kick=1.0):
+    """Same anchors as DustLook.At. kick is the size multiplier."""
+    u = p14_speed_u(speed)
+    table = {
+        "grass": (0.04, 0.13, 0.20, 0.50, 2, 6, 0.14, 0.42, 0.07, 0.48, 0.10, (0.80, 0.76, 0.62)),
+        "dirt": (0.12, 0.34, 0.55, 0.88, 5, 11, 0.22, 0.58, 0.18, 0.90, 0.22, (0.84, 0.58, 0.30)),
+        "wood": (0.04, 0.10, 0.45, 0.78, 3, 8, 0.14, 0.40, 0.06, 0.38, 0.08, (1.0, 0.97, 0.88)),
+        "concrete": (0.05, 0.20, 0.28, 0.82, 2, 9, 0.16, 0.50, 0.10, 0.72, 0.16, (0.86, 0.84, 0.80)),
+    }
+    s0, s1, o0, o1, c0, c1, l0, l1, sp0, sp1, lift1, color = table[surface]
+    size = s0 + (s1 - s0) * u
+    opacity = o0 + (o1 - o0) * u
+    count = c0 + (c1 - c0) * u
+    life = l0 + (l1 - l0) * u
+    span = sp0 + (sp1 - sp0) * u
+    lift = 0.02 + (lift1 - 0.02) * u
+    back = span * (0.35 + 0.45 * u)
+    size *= kick
+    span *= kick
+    back *= kick
+    opacity = min(0.95, opacity * kick)
+    n = int(count + 0.5)
+    if n > 12:
+        n = 12
+    return {
+        "size": size,
+        "opacity": opacity,
+        "count": n,
+        "life": life,
+        "span": span,
+        "lift": lift,
+        "back": back,
+        "core": u,
+        "color": color,
+    }
+
+
+def p14_aim(cam, foot, yaw_deg):
+    """TpsMoveCamera at rest: pivot 1.4, boom (0.4, 0.45, -5.2), pitch +12°, look 1.25, fov 78°."""
+    fwd, left = p11_heading(yaw_deg)
+    cam.data.type = "PERSP"
+    cam.data.sensor_fit = "VERTICAL"
+    cam.data.sensor_height = 24.0
+    cam.data.lens = 14.8
+    cam.data.clip_start = 0.05
+    cam.data.clip_end = 80.0
+    cam.location = foot - left * 0.40 + Vector((0.0, 0.0, 2.921)) - fwd * 4.992
+    look_at(cam, foot + Vector((0.0, 0.0, 1.25)))
+    bpy.context.view_layer.update()
+    return (cam.location - foot).length
+
+
+def p14_mote(origin, fwd, left, spec, cam_loc, fade, salt):
+    n = spec["count"]
+    if n <= 0 or fade <= 0.02:
+        return 0
+    color = spec["color"]
+    made = 0
+    denom = max(n - 1, 1)
+    for i in range(n):
+        u = i / denom
+        along = spec["back"] * (0.12 + 0.88 * u)
+        side = (p11_rand(i, salt) - 0.5) * spec["span"] * 0.34
+        rise = spec["lift"] * (u ** 0.75)
+        pos = origin - fwd * along + left * side + Vector((0.0, 0.0, 0.03 + rise))
+        width = spec["size"] * (0.65 + 0.55 * math.sin(u * math.pi))
+        if width < 0.02:
+            width = 0.02
+        height = max(0.015, width * 0.42)
+        tint = 0.92 + 0.10 * p11_rand(i, salt + 3)
+        col = (color[0] * tint, color[1] * tint, color[2] * tint, 1.0)
+        op = spec["opacity"] * fade * (1.0 - 0.28 * u)
+        p11_puff(pos, width, height, col, op, cam_loc)
+        made += 1
+        if spec["core"] > 0.35 and u < 0.55:
+            grit = 0.62
+            core = (color[0] * grit, color[1] * grit, color[2] * grit, 1.0)
+            p11_puff(pos + Vector((0.0, 0.0, 0.02)), width * 0.48, height * 0.55, core, min(0.9, op + 0.12), cam_loc)
+            made += 1
+    return made
+
+
+def p14_cloud(foot, fwd, left, spec, cam_loc, step):
+    """Fresh heel puff plus one older step, so a sprint plume is still in the air."""
+    made = p14_mote(foot, fwd, left, spec, cam_loc, 1.0, 4)
+    if spec["life"] < 0.22:
+        return made
+    older = dict(spec)
+    older["opacity"] *= 0.45
+    made += p14_mote(foot - fwd * step, fwd, left, older, cam_loc, 0.55, 19)
+    return made
+
+
+def p14_ring_radius(impact):
+    gate = 36.5
+    t = impact / gate
+    if t < 0.0:
+        t = 0.0
+    if t > 1.35:
+        t = 1.35
+    base = 0.45 + t * 0.85
+    if impact < 12.0:
+        tier = 0.25
+    elif impact < 24.0:
+        tier = 0.55
+    else:
+        tier = 1.0
+    return base * (0.55 + 0.45 * tier), t
+
+
+def p14_ring(foot, spec, impact, cam_loc):
+    radius, t = p14_ring_radius(impact)
+    n = 8 + int(t * 8.0)
+    if n > 16:
+        n = 16
+    color = spec["color"]
+    size = 0.06 + t * 0.10
+    op = min(0.90, 0.45 + t * 0.35)
+    for i in range(n):
+        ang = i / n * math.tau
+        pos = foot + Vector((math.cos(ang) * radius, math.sin(ang) * radius, 0.04 + 0.05 * t))
+        p11_puff(pos, size * 1.6, size * 0.7, color + (1.0,), op, cam_loc)
+        if t > 0.45:
+            grit = tuple(c * 0.62 for c in color) + (1.0,)
+            p11_puff(pos + Vector((0.0, 0.0, 0.02)), size * 0.7, size * 0.35, grit, min(0.9, op + 0.1), cam_loc)
+    return radius, n
+
+
+def p14_jpeg(path, image):
+    from PIL import Image
+
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    image = image.convert("RGB")
+    for quality in (85, 75, 65, 55, 45):
+        image.save(path, format="JPEG", quality=quality, optimize=True)
+        if os.path.getsize(path) <= 400 * 1024:
+            print("SIZE", os.path.basename(path), os.path.getsize(path), "q", quality, image.size)
+            return
+    w, h = image.size
+    while os.path.getsize(path) > 400 * 1024 and w > 900:
+        w = int(w * 0.9)
+        h = int(h * 0.9)
+        image = image.resize((w, h), Image.Resampling.LANCZOS)
+        image.save(path, format="JPEG", quality=60, optimize=True)
+    print("SIZE", os.path.basename(path), os.path.getsize(path), "scaled", image.size)
+
+
+def p14_sheet(cells, titles, headline, path):
+    from PIL import Image, ImageDraw
+
+    font = p11_font(22)
+    small = p11_font(16)
+    head_h = 36
+    foot_h = 28
+    gap = 4
+    w = sum(im.width for im in cells) + gap * (len(cells) - 1)
+    h = head_h + cells[0].height + foot_h
+    sheet = Image.new("RGB", (w, h), (28, 26, 24))
+    draw = ImageDraw.Draw(sheet)
+    draw.text((8, 6), headline, font=font, fill=(255, 228, 140))
+    x = 0
+    for im, title in zip(cells, titles):
+        sheet.paste(im, (x, head_h))
+        draw.text((x + 8, head_h + im.height + 4), title, font=small, fill=(255, 246, 226))
+        x += im.width + gap
+    p14_jpeg(path, sheet)
+
+
+def p14_grid(cells, titles, headline, path, cols):
+    from PIL import Image, ImageDraw
+
+    font = p11_font(22)
+    small = p11_font(16)
+    head_h = 36
+    foot_h = 26
+    gap = 4
+    cell_w = cells[0].width
+    cell_h = cells[0].height
+    rows = (len(cells) + cols - 1) // cols
+    w = cols * cell_w + gap * (cols - 1)
+    h = head_h + rows * (cell_h + foot_h) + gap * (rows - 1)
+    sheet = Image.new("RGB", (w, h), (28, 26, 24))
+    draw = ImageDraw.Draw(sheet)
+    draw.text((8, 6), headline, font=font, fill=(255, 228, 140))
+    for i, (im, title) in enumerate(zip(cells, titles)):
+        col = i % cols
+        row = i // cols
+        x = col * (cell_w + gap)
+        y = head_h + row * (cell_h + foot_h + gap)
+        sheet.paste(im, (x, y))
+        draw.text((x + 8, y + cell_h + 2), title, font=small, fill=(255, 246, 226))
+    p14_jpeg(path, sheet)
+
+
+def render_pass14(arm, cam):
+    """Dust at the chase-cam height. Walk, run, and sprint are different clouds."""
+    for obj in bpy.data.objects:
+        if obj.type == "LIGHT" and obj.data.type == "SUN":
+            obj.data.energy = 2.6
+        elif obj.type == "LIGHT" and obj.data.type == "AREA":
+            obj.data.energy = 48
+        if obj.name in ("PropGround", "PropSlab") or "Seam" in obj.name:
+            obj.hide_render = True
+    bg = bpy.context.scene.world.node_tree.nodes["Background"]
+    bg.inputs["Strength"].default_value = 0.62
+    bpy.context.scene.eevee.taa_render_samples = 8
+    tmp = "/tmp/pass14-cells"
+    os.makedirs(tmp, exist_ok=True)
+    os.makedirs(OUT, exist_ok=True)
+    yaw = 32.0
+    fwd, left = p11_heading(yaw)
+    surfaces = ("concrete", "dirt", "grass", "wood")
+    speeds = (("walk", 6.9), ("run", 9.0), ("sprint", 13.8))
+    full = (960, 540)
+    sprint_frames = {}
+    for surface in surfaces:
+        p11_ground(surface, light=(surface == "concrete"))
+        cells = []
+        titles = []
+        for label, speed in speeds:
+            apply_pose(arm, p12_footfall(speed), 0.0, yaw)
+            foot = p11_foot(arm)
+            dist = p14_aim(cam, foot, yaw)
+            spec = p14_at(surface, speed)
+            step = 0.55 + 0.45 * p14_speed_u(speed)
+            print(
+                "DUST14", surface, label,
+                "size", round(spec["size"], 3),
+                "op", round(spec["opacity"], 3),
+                "n", spec["count"],
+                "span", round(spec["span"], 3),
+                "back", round(spec["back"], 3),
+                "lift", round(spec["lift"], 3),
+                "life", round(spec["life"], 3),
+                "cam", round(dist, 2),
+            )
+            p11_clear("P11Fx")
+            p14_cloud(foot, fwd, left, spec, cam.location, step)
+            if surface == "grass":
+                p12_flecks(foot, speed, left, -fwd)
+            frame = p11_grab(os.path.join(tmp, "%s-%s.png" % (surface, label)), full[0], full[1])
+            if label == "sprint":
+                sprint_frames[surface] = frame
+            cells.append(frame.resize((480, 270), __import__("PIL").Image.Resampling.LANCZOS))
+            titles.append("%s  %.0fcm  op %.2f  %.2fs" % (label, spec["span"] * 100.0, spec["opacity"], spec["life"]))
+        p14_sheet(cells, titles, "%s   chase cam   walk / run / sprint" % surface.upper(), os.path.join(OUT, "dust-%s.jpg" % surface))
+
+    crops = []
+    crop_titles = []
+    for surface in surfaces:
+        frame = sprint_frames[surface]
+        # Foot band of a 960x540 split pane, 1:1 pixels.
+        crop = frame.crop((240, 250, 760, 520))
+        crops.append(crop)
+        spec = p14_at(surface, 13.8)
+        crop_titles.append("%s sprint  %.0fcm" % (surface, spec["span"] * 100.0))
+    p14_grid(crops, crop_titles, "Split pane, sprint, foot crop", os.path.join(OUT, "dust-split.jpg"), 2)
+
+    land_cells = []
+    land_titles = []
+    lands = (
+        ("concrete", pose_land, 8.0, "concrete light"),
+        ("concrete", pose_land, 36.5, "concrete hard"),
+        ("dirt", pose_land, 36.5, "dirt hard"),
+        ("dirt", pose_roll, 36.5, "dirt roll"),
+    )
+    for surface, pose, impact, title in lands:
+        p11_ground(surface, light=(surface == "concrete"))
+        apply_pose(arm, pose, 0.0, yaw)
+        foot = p11_foot(arm)
+        p14_aim(cam, foot, yaw)
+        spec = p14_at(surface, 13.8)
+        p11_clear("P11Fx")
+        radius, n = p14_ring(foot, spec, impact, cam.location)
+        print("LAND14", title, "r", round(radius, 3), "n", n)
+        frame = p11_grab(os.path.join(tmp, "land-%s.png" % title.replace(" ", "-")), 640, 360)
+        land_cells.append(frame.resize((420, 236), __import__("PIL").Image.Resampling.LANCZOS))
+        land_titles.append("%s  r %.0fcm" % (title, radius * 100.0))
+    p14_sheet(land_cells, land_titles, "Land ring, scaled by fall speed", os.path.join(OUT, "dust-land.jpg"))
+
+    slide_cells = []
+    slide_titles = []
+    for surface in ("concrete", "dirt"):
+        p11_ground(surface, light=(surface == "concrete"))
+        apply_pose(arm, pose_slide, 0.0, yaw)
+        foot = p11_foot(arm)
+        p14_aim(cam, foot, yaw)
+        spec = p14_at(surface, 13.8, kick=1.25)
+        enter = p14_at(surface, 13.8, kick=2.10)
+        p11_clear("P11Fx")
+        p14_mote(foot, fwd, left, enter, cam.location, 0.7, 3)
+        for i in range(7):
+            aged = dict(spec)
+            aged["opacity"] *= 0.85 - i * 0.09
+            origin = foot - fwd * (0.32 * (i + 1))
+            p14_mote(origin, fwd, left, aged, cam.location, 1.0, 30 + i)
+        print("SLIDE14", surface, "span", round(spec["span"], 3), "enter", round(enter["span"], 3))
+        frame = p11_grab(os.path.join(tmp, "slide-%s.png" % surface), 720, 405)
+        slide_cells.append(frame)
+        slide_titles.append("%s trail" % surface)
+    p14_sheet(slide_cells, slide_titles, "Slide trail", os.path.join(OUT, "dust-slide.jpg"))
+    print("PASS14 stills", OUT)
+
+
 def main():
     os.makedirs(OUT, exist_ok=True)
     bpy.ops.wm.read_factory_settings(use_empty=True)
     bpy.ops.import_scene.fbx(filepath=FBX)
     arm = next(obj for obj in bpy.data.objects if obj.type == "ARMATURE")
     cam = setup_world(arm)
+    if os.environ.get("FX_PASS14") == "1":
+        render_pass14(arm, cam)
+        return
     if os.environ.get("FX_PASS12") == "1":
         render_pass12(arm, cam)
         return
