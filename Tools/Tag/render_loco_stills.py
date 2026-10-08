@@ -249,12 +249,14 @@ def gait_parm(speed, crouch=False):
             "lean": 16.0, "arm": 12.0, "arm_out": 10.0, "hip": 0.0, "chest": 10.0,
             "root_z": -0.05, "lift": 36.0, "n": 8, "stance": 1,
             "strike": (-22.0, 46.0, -14.0), "cap": 18.0, "foot_cap": 8.0,
+            "lift_floor": 0.55,
         }
     if speed >= 9.0:
         return {
             "lean": 12.0, "arm": 12.0, "arm_out": 8.0, "hip": 0.0, "chest": 8.5,
             "root_z": -0.035, "lift": 31.0, "n": 8, "stance": 1,
             "strike": STRIKE, "cap": 18.0, "foot_cap": 8.0, "snap": True,
+            "lift_floor": 0.55,
         }
     return {
         "lean": 8.0, "arm": 12.0, "arm_out": 8.0, "hip": 0.0, "chest": 7.0,
@@ -300,6 +302,9 @@ def bake_gait(arm, speed, crouch=False, bank_fn=None, yaw_fn=None):
         u = (j + 1) / swing_n
         s = smooth(u)
         lift_u = math.sin(math.pi * u)
+        # Keep the shoe up through the last swing frame. The stance frame is the contact.
+        if u > 0.5:
+            lift_u = max(lift_u, parm.get("lift_floor", 0.0))
         thigh = lerp(release[0], strike[0], s)
         if "swing_thigh" in parm:
             thigh = lerp(thigh, parm["swing_thigh"], lift_u)
