@@ -1,0 +1,60 @@
+no-clip clips=3 frames=126 worldMax=3.59 selfMax=2.59 fails=55
+Fails are frames over 0.5 cm. Hip/thigh shell overlap on a deep flex is kept; the legs were not straightened to clear it.
+17_slide_slope_crouch foot_slide_cm=17.89 pen_cm=0.00 frames=31 fail_count=19 worst_f=25 worst_pair=Chest/UpperArm_R
+  f=0 t=0.400 world_cm=0.00 self_cm=0.77 Hips/UpperLeg_R
+  f=1 t=0.433 world_cm=0.00 self_cm=0.77 Hips/UpperLeg_R
+  f=2 t=0.467 world_cm=0.00 self_cm=0.77 Hips/UpperLeg_R
+  f=3 t=0.500 world_cm=0.00 self_cm=0.91 Chest/UpperArm_L
+  f=4 t=0.533 world_cm=0.00 self_cm=0.99 Chest/UpperArm_L
+  f=5 t=0.567 world_cm=0.00 self_cm=0.77 Hips/UpperLeg_R
+  f=8 t=0.667 world_cm=0.00 self_cm=0.65 Hips/UpperLeg_R
+  f=9 t=0.700 world_cm=0.00 self_cm=0.50 Hips/UpperLeg_L
+  f=12 t=0.800 world_cm=0.00 self_cm=0.83 Hips/UpperLeg_R
+  f=13 t=0.833 world_cm=0.00 self_cm=1.08 Chest/UpperArm_L
+  f=14 t=0.867 world_cm=0.00 self_cm=0.88 Hips/UpperLeg_L
+  f=15 t=0.900 world_cm=0.00 self_cm=0.88 Hips/UpperLeg_L
+  f=16 t=0.933 world_cm=0.00 self_cm=0.96 Hips/UpperLeg_L
+  f=17 t=0.967 world_cm=0.00 self_cm=0.61 Hips/UpperLeg_R
+  f=19 t=1.033 world_cm=0.00 self_cm=0.64 Hips/UpperLeg_R
+  f=20 t=1.067 world_cm=0.00 self_cm=0.77 Hips/UpperLeg_R
+  f=24 t=1.200 world_cm=0.00 self_cm=0.71 Chest/UpperArm_R
+  f=25 t=1.233 world_cm=0.00 self_cm=2.59 Chest/UpperArm_R
+  f=27 t=1.300 world_cm=0.00 self_cm=0.52 Hips/UpperLeg_R
+18_vertical_wallrun_back foot_slide_cm=29.60 pen_cm=3.59 frames=46 fail_count=12 worst_f=7 worst_pair=world
+  f=1 t=0.283 world_cm=0.00 self_cm=1.54 Hips/UpperLeg_R
+  f=2 t=0.317 world_cm=0.00 self_cm=1.58 Hips/UpperLeg_R
+  f=3 t=0.350 world_cm=0.00 self_cm=1.58 Hips/UpperLeg_R
+  f=4 t=0.383 world_cm=0.00 self_cm=1.58 Hips/UpperLeg_R
+  f=6 t=0.450 world_cm=3.04 self_cm=0.30 Hips/UpperLeg_R
+  f=7 t=0.483 world_cm=3.59 self_cm=0.00 
+  f=11 t=0.617 world_cm=0.00 self_cm=1.09 Chest/UpperArm_R
+  f=12 t=0.650 world_cm=0.00 self_cm=1.33 Hips/UpperLeg_R
+  f=13 t=0.683 world_cm=0.00 self_cm=1.33 Hips/UpperLeg_R
+  f=14 t=0.717 world_cm=0.35 self_cm=1.33 Hips/UpperLeg_R
+  f=26 t=1.117 world_cm=1.16 self_cm=0.15 Hips/UpperLeg_L
+  f=29 t=1.217 world_cm=0.00 self_cm=0.60 Chest/UpperArm_L
+20_wallpop_180 foot_slide_cm=31.77 pen_cm=0.88 frames=49 fail_count=24 worst_f=48 worst_pair=Chest/UpperArm_R
+  f=4 t=0.283 world_cm=0.00 self_cm=0.54 Hips/UpperLeg_L
+  f=12 t=0.550 world_cm=0.00 self_cm=0.66 Hips/UpperLeg_L
+  f=16 t=0.683 world_cm=0.00 self_cm=0.72 Hips/UpperLeg_L
+  f=17 t=0.717 world_cm=0.00 self_cm=0.67 Hips/UpperLeg_R
+  f=18 t=0.750 world_cm=0.00 self_cm=0.67 Hips/UpperLeg_R
+  f=19 t=0.783 world_cm=0.00 self_cm=0.87 Hips/UpperLeg_L
+  f=20 t=0.817 world_cm=0.00 self_cm=0.78 Hips/UpperLeg_L
+  f=21 t=0.850 world_cm=0.00 self_cm=0.77 Hips/UpperLeg_L
+  f=22 t=0.883 world_cm=0.00 self_cm=0.54 Hips/UpperLeg_L
+  f=25 t=0.983 world_cm=0.00 self_cm=1.07 Chest/UpperArm_L
+  f=26 t=1.017 world_cm=0.00 self_cm=1.13 Chest/UpperArm_L
+  f=29 t=1.117 world_cm=0.00 self_cm=0.60 Hips/UpperLeg_R
+  f=30 t=1.150 world_cm=0.00 self_cm=0.98 Chest/UpperArm_R
+  f=31 t=1.183 world_cm=0.00 self_cm=0.77 Chest/UpperArm_R
+  f=32 t=1.217 world_cm=0.00 self_cm=0.75 Chest/UpperArm_R
+  f=33 t=1.250 world_cm=0.00 self_cm=0.52 Hips/UpperLeg_R
+  f=34 t=1.283 world_cm=0.00 self_cm=0.89 Chest/UpperArm_R
+  f=35 t=1.317 world_cm=0.00 self_cm=0.99 Chest/UpperArm_R
+  f=36 t=1.350 world_cm=0.00 self_cm=0.53 Spine/UpperLeg_R
+  f=44 t=1.617 world_cm=0.00 self_cm=1.13 Chest/UpperArm_R
+  f=45 t=1.650 world_cm=0.00 self_cm=0.84 Chest/UpperArm_R
+  f=46 t=1.683 world_cm=0.00 self_cm=0.95 Hips/UpperLeg_L
+  f=47 t=1.717 world_cm=0.00 self_cm=1.07 Chest/UpperArm_R
+  f=48 t=1.750 world_cm=0.00 self_cm=1.36 Chest/UpperArm_R
