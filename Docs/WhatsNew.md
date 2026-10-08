@@ -314,6 +314,8 @@ The twenty-second pass carries that color pair into the match and onto RESULTS. 
 
 The twenty-third pass makes the first color the body you see in the chase, and the second color the chest, the hands, and the feet. P2 and P4 no longer both read mint. A taken first color is gray on the other cards. The title and the menu sit on a pass over Mega Park with the four runners, and the menu buttons have room between them. Space still jumps. Mockups are in `Docs/UiStills/pass23/`.
 
+The twenty-fourth pass lifts the title camera so the fence stays under the frame and all four runners read on the path. The menu keeps that line clear of the lockup and the buttons. P2's card is the same solid body as the others. The seat color stays on the P badge, and the big frames stay a quiet stroke. Space still jumps. Mockups are in `Docs/UiStills/pass24/`.
+
 ## Motion, ninth pass
 
 The wall jump, the rope, the zip, the launch pad, a landing, the dash flash, a hard turnaround, and a punch while you run all ease instead of snapping. Speeds, the jump, and the dash length are the same.
