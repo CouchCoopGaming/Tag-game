@@ -85,6 +85,13 @@ MODULES = (
     "sk_barrel_traffic",
     "sk_bollard_fixed",
     "sk_bollard_removable",
+    "sign_stop",
+    "sk_sign_speed",
+    "sk_ac_condenser",
+    "sk_ac_condenser_large",
+    "sk_ac_roof",
+    "sk_ac_roof_large",
+    "sk_picnic_table",
 )
 
 

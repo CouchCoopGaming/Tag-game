@@ -48,6 +48,15 @@ PASSES = {
         ("bollard_fixed", "Bollard_Fixed", 12.0, (-0.85, 0.0, 0.35), 200.0),
         ("bollard_removable", "Bollard_Removable", 12.0, (-0.85, 0.0, 0.35), 200.0),
     ),
+    3: (
+        ("sign_stop", "Sign_Stop", 12.0, (-1.05, 0.0, 0.55), 200.0),
+        ("sign_speed", "Sign_Speed_25", 14.0, (-1.05, 0.0, 0.55), 200.0),
+        ("ac_small", "AC_Condenser_Small", 22.0, (-1.15, 0.0, 0.7), 200.0),
+        ("ac_large", "AC_Condenser_Large", 20.0, (-1.35, 0.0, 0.85), 200.0),
+        ("ac_roof_small", "AC_Roof_Small", 24.0, (-1.15, 0.0, 0.7), 200.0),
+        ("ac_roof_large", "AC_Roof_Large", 18.0, (-1.55, 0.0, 0.95), 200.0),
+        ("picnic_table", "PicnicTable_Wood", 16.0, (-1.7, 0.0, 1.05), 200.0),
+    ),
 }
 
 
@@ -66,6 +75,13 @@ def _load(names):
         "Barrel_Traffic": "sk_barrel_traffic",
         "Bollard_Fixed": "sk_bollard_fixed",
         "Bollard_Removable": "sk_bollard_removable",
+        "Sign_Stop": "sign_stop",
+        "Sign_Speed_25": "sk_sign_speed",
+        "AC_Condenser_Small": "sk_ac_condenser",
+        "AC_Condenser_Large": "sk_ac_condenser_large",
+        "AC_Roof_Small": "sk_ac_roof",
+        "AC_Roof_Large": "sk_ac_roof_large",
+        "PicnicTable_Wood": "sk_picnic_table",
     }
     for name in names:
         module = importlib.import_module(stems[name])

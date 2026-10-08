@@ -16588,41 +16588,43 @@
   {
     "name": "Sign_Stop",
     "category": "StreetFurniture",
-    "blurb": "STOP sign. Octagon 0.75 m across, bottom of the sign at 1.52 m.",
+    "blurb": "STOP sign. Octagon 0.75 m across, bottom at 1.52 m. STOP in Liberation Sans.",
     "size": [
-      0.739,
-      2.3,
-      0.064
+      0.776,
+      2.29,
+      0.22
     ],
     "min": [
-      -0.37,
+      -0.388,
       0.0,
-      -0.022
+      -0.11
     ],
     "max": [
-      0.37,
-      2.3,
-      0.042
+      0.388,
+      2.29,
+      0.11
     ],
     "lods": [
       {
         "lod": 0,
-        "tris": 368,
+        "tris": 812,
         "materials": [
+          "Lib_SteelDark",
           "Lib_Steel",
-          "Lib_PaintRed",
-          "Lib_PaintWhite"
+          "Lib_PaintWhite",
+          "Lib_PaintRed"
         ],
         "mesh": "LOD0",
         "fileID": -1633821710574564935
       },
       {
         "lod": 1,
-        "tris": 60,
+        "tris": 112,
         "materials": [
+          "Lib_SteelDark",
           "Lib_Steel",
-          "Lib_PaintRed",
-          "Lib_PaintWhite"
+          "Lib_PaintWhite",
+          "Lib_PaintRed"
         ],
         "mesh": "LOD1",
         "fileID": -179393741545503174
@@ -16630,15 +16632,34 @@
     ],
     "colliders": [
       {
+        "name": "Col_Base",
+        "type": "box",
+        "center": [
+          0,
+          0.015,
+          0
+        ],
+        "size": [
+          0.16,
+          0.02,
+          0.16
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
         "name": "Col_Pole",
         "type": "capsule",
         "center": [
           0,
-          1.15,
+          1.1,
           0
         ],
         "radius": 0.022,
-        "height": 2.3,
+        "height": 2.0,
         "direction": 1
       },
       {
@@ -16647,12 +16668,12 @@
         "center": [
           0,
           1.9,
-          0.02
+          0.066
         ],
         "size": [
-          0.56,
-          0.56,
-          0.03
+          0.4,
+          0.4,
+          0.008
         ],
         "euler": [
           0,
@@ -16672,7 +16693,7 @@
       "LOD0",
       "LOD1"
     ],
-    "slackCm": 1.94,
+    "slackCm": 0.6,
     "fbx": "Assets/Art/Props/Library/StreetFurniture/Sign_Stop.fbx"
   },
   {
@@ -37834,5 +37855,782 @@
     ],
     "slackCm": 0.88,
     "fbx": "Assets/Art/Props/Library/StreetFurniture/Bollard_Removable.fbx"
+  },
+  {
+    "name": "Sign_Speed_25",
+    "category": "StreetFurniture",
+    "blurb": "Speed sign 0.61 x 0.76 m, bottom at 1.52 m. Pole 60 mm OD. SPEED LIMIT 25 in Liberation Sans.",
+    "size": [
+      0.64,
+      2.415,
+      0.22
+    ],
+    "min": [
+      -0.32,
+      0.0,
+      -0.11
+    ],
+    "max": [
+      0.32,
+      2.415,
+      0.11
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 1380,
+        "materials": [
+          "Lib_SteelDark",
+          "Lib_Steel",
+          "Lib_PaintWhite",
+          "Lib_Black"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 104,
+        "materials": [
+          "Lib_SteelDark",
+          "Lib_Steel",
+          "Lib_PaintWhite"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_Base",
+        "type": "box",
+        "center": [
+          0,
+          0.015,
+          0
+        ],
+        "size": [
+          0.16,
+          0.02,
+          0.16
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Pole",
+        "type": "capsule",
+        "center": [
+          0,
+          1.1,
+          0
+        ],
+        "radius": 0.022,
+        "height": 2.0,
+        "direction": 1
+      },
+      {
+        "name": "Col_Sign",
+        "type": "box",
+        "center": [
+          0,
+          1.9,
+          0.052
+        ],
+        "size": [
+          0.5,
+          0.64,
+          0.01
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "climbable": false,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "Pole is 60 mm. Not a cling.",
+    "vaultNote": "Sign bottom is 1.52 m. No vault rail.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1"
+    ],
+    "slackCm": 0.6,
+    "fbx": "Assets/Art/Props/Library/StreetFurniture/Sign_Speed_25.fbx"
+  },
+  {
+    "name": "AC_Condenser_Small",
+    "category": "StreetFurniture",
+    "blurb": "Ground condenser, 0.66 m square, 0.70 m tall, one top fan, on a 40 mm pad.",
+    "size": [
+      0.864,
+      0.787,
+      0.78
+    ],
+    "min": [
+      -0.39,
+      0.0,
+      -0.39
+    ],
+    "max": [
+      0.474,
+      0.787,
+      0.39
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 532,
+        "materials": [
+          "Lib_Concrete",
+          "Lib_PaintWhite",
+          "Lib_SteelDark",
+          "Lib_Black",
+          "Lib_Steel",
+          "Lib_Rust"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 92,
+        "materials": [
+          "Lib_Concrete",
+          "Lib_PaintWhite",
+          "Lib_SteelDark",
+          "Lib_Black"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_Pad",
+        "type": "box",
+        "center": [
+          0,
+          0.02,
+          0
+        ],
+        "size": [
+          0.7000000000000001,
+          0.024,
+          0.7000000000000001
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Box",
+        "type": "box",
+        "center": [
+          0,
+          0.386,
+          0
+        ],
+        "size": [
+          0.54,
+          0.6,
+          0.54
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Top",
+        "type": "box",
+        "center": [
+          0,
+          0.746,
+          0
+        ],
+        "size": [
+          0.5800000000000001,
+          0.012,
+          0.5800000000000001
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "climbable": false,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "Louvered sheet metal. Not a cling wall.",
+    "vaultNote": "Top is low and full of fans. Not a vault.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1"
+    ],
+    "slackCm": 0.0,
+    "fbx": "Assets/Art/Props/Library/StreetFurniture/AC_Condenser_Small.fbx"
+  },
+  {
+    "name": "AC_Condenser_Large",
+    "category": "StreetFurniture",
+    "blurb": "Ground condenser, 0.96 m square, 0.92 m tall, two top fans, on a 40 mm pad.",
+    "size": [
+      1.164,
+      1.007,
+      1.08
+    ],
+    "min": [
+      -0.54,
+      0.0,
+      -0.54
+    ],
+    "max": [
+      0.624,
+      1.007,
+      0.54
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 732,
+        "materials": [
+          "Lib_Concrete",
+          "Lib_PaintWhite",
+          "Lib_SteelDark",
+          "Lib_Black",
+          "Lib_Steel",
+          "Lib_Rust"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 148,
+        "materials": [
+          "Lib_Concrete",
+          "Lib_PaintWhite",
+          "Lib_SteelDark",
+          "Lib_Black"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_Pad",
+        "type": "box",
+        "center": [
+          0,
+          0.02,
+          0
+        ],
+        "size": [
+          1.0,
+          0.024,
+          1.0
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Box",
+        "type": "box",
+        "center": [
+          0,
+          0.49600000000000005,
+          0
+        ],
+        "size": [
+          0.84,
+          0.8200000000000001,
+          0.84
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Top",
+        "type": "box",
+        "center": [
+          0,
+          0.9660000000000001,
+          0
+        ],
+        "size": [
+          0.88,
+          0.012,
+          0.88
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "climbable": false,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "Louvered sheet metal. Not a cling wall.",
+    "vaultNote": "Top is low and full of fans. Not a vault.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1"
+    ],
+    "slackCm": 0.0,
+    "fbx": "Assets/Art/Props/Library/StreetFurniture/AC_Condenser_Large.fbx"
+  },
+  {
+    "name": "AC_Roof_Small",
+    "category": "StreetFurniture",
+    "blurb": "Rooftop condenser 0.90 x 0.70 m, 0.62 m tall on 80 mm rails, one fan.",
+    "size": [
+      0.98,
+      0.74,
+      0.7
+    ],
+    "min": [
+      -0.45,
+      0.0,
+      -0.35
+    ],
+    "max": [
+      0.53,
+      0.74,
+      0.35
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 340,
+        "materials": [
+          "Lib_SteelDark",
+          "Lib_Steel",
+          "Lib_Black",
+          "Lib_Rust"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 92,
+        "materials": [
+          "Lib_SteelDark",
+          "Lib_Steel",
+          "Lib_Black"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_RailL",
+        "type": "box",
+        "center": [
+          -0.342,
+          0.04,
+          0
+        ],
+        "size": [
+          0.02,
+          0.03,
+          0.5399999999999999
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_RailR",
+        "type": "box",
+        "center": [
+          0.342,
+          0.04,
+          0
+        ],
+        "size": [
+          0.02,
+          0.03,
+          0.5399999999999999
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Box",
+        "type": "box",
+        "center": [
+          0,
+          0.39,
+          0
+        ],
+        "size": [
+          0.8200000000000001,
+          0.56,
+          0.62
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Top",
+        "type": "box",
+        "center": [
+          0,
+          0.69,
+          0
+        ],
+        "size": [
+          0.74,
+          0.02,
+          0.5399999999999999
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "climbable": false,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "Not a wall.",
+    "vaultNote": "Fan top. Not a vault.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1"
+    ],
+    "slackCm": 0.0,
+    "fbx": "Assets/Art/Props/Library/StreetFurniture/AC_Roof_Small.fbx"
+  },
+  {
+    "name": "AC_Roof_Large",
+    "category": "StreetFurniture",
+    "blurb": "Rooftop condenser 1.50 x 1.05 m, 0.78 m tall on 80 mm rails, two fans.",
+    "size": [
+      1.628,
+      0.9,
+      1.05
+    ],
+    "min": [
+      -0.75,
+      0.0,
+      -0.525
+    ],
+    "max": [
+      0.878,
+      0.9,
+      0.525
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 468,
+        "materials": [
+          "Lib_SteelDark",
+          "Lib_Steel",
+          "Lib_Black",
+          "Lib_Rust"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 148,
+        "materials": [
+          "Lib_SteelDark",
+          "Lib_Steel",
+          "Lib_Black"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_RailL",
+        "type": "box",
+        "center": [
+          -0.5700000000000001,
+          0.04,
+          0
+        ],
+        "size": [
+          0.02,
+          0.03,
+          0.89
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_RailR",
+        "type": "box",
+        "center": [
+          0.5700000000000001,
+          0.04,
+          0
+        ],
+        "size": [
+          0.02,
+          0.03,
+          0.89
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Box",
+        "type": "box",
+        "center": [
+          0,
+          0.47000000000000003,
+          0
+        ],
+        "size": [
+          1.42,
+          0.72,
+          0.9700000000000001
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Top",
+        "type": "box",
+        "center": [
+          0,
+          0.85,
+          0
+        ],
+        "size": [
+          1.34,
+          0.02,
+          0.89
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "climbable": false,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "Not a wall.",
+    "vaultNote": "Fan top. Not a vault.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1"
+    ],
+    "slackCm": 0.0,
+    "fbx": "Assets/Art/Props/Library/StreetFurniture/AC_Roof_Large.fbx"
+  },
+  {
+    "name": "PicnicTable_Wood",
+    "category": "StreetFurniture",
+    "blurb": "Picnic table, top 1.83 x 0.71 m at 0.76 m. Benches at 0.43 m.",
+    "size": [
+      1.83,
+      0.765,
+      1.38
+    ],
+    "min": [
+      -0.915,
+      0.0,
+      -0.69
+    ],
+    "max": [
+      0.915,
+      0.765,
+      0.69
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 388,
+        "materials": [
+          "Lib_Wood",
+          "Lib_WoodDark",
+          "Lib_Rust",
+          "Lib_SteelDark"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 144,
+        "materials": [
+          "Lib_Wood",
+          "Lib_WoodDark",
+          "Lib_SteelDark"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_Top",
+        "type": "box",
+        "center": [
+          0,
+          0.738,
+          0
+        ],
+        "size": [
+          1.68,
+          0.024,
+          0.58
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_BenchN",
+        "type": "box",
+        "center": [
+          0,
+          0.426,
+          0.55
+        ],
+        "size": [
+          1.2,
+          0.016,
+          0.2
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_BenchS",
+        "type": "box",
+        "center": [
+          0,
+          0.426,
+          -0.55
+        ],
+        "size": [
+          1.2,
+          0.016,
+          0.2
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Leg_0",
+        "type": "box",
+        "center": [
+          -0.7,
+          0.36,
+          0
+        ],
+        "size": [
+          0.04,
+          0.6,
+          0.04
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Leg_1",
+        "type": "box",
+        "center": [
+          0.7,
+          0.36,
+          0
+        ],
+        "size": [
+          0.04,
+          0.6,
+          0.04
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "climbable": false,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "Table edge is 0.76 m. Not a cling wall.",
+    "vaultNote": "Top is 0.76 m, under the vault band.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1"
+    ],
+    "slackCm": 0.0,
+    "fbx": "Assets/Art/Props/Library/StreetFurniture/PicnicTable_Wood.fbx"
   }
 ]
