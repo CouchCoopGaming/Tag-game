@@ -75,6 +75,26 @@ namespace Tag.FX
         }
 
         /// <summary>
+        /// Extra size on the word during the shared overshoot. 1 the rest of the life,
+        /// so the word and the burst are born together and then scale as one unit.
+        /// </summary>
+        public static float WordPunch(float age)
+        {
+            float peakAt = PopSeconds * 0.58f;
+            const float extra = 0.18f;
+            if (age <= 0f || age >= PopSeconds) return 1f;
+            if (age < peakAt)
+            {
+                float t = age / peakAt;
+                float e = t * t * (3f - 2f * t);
+                return 1f + extra * e;
+            }
+            float settle = (age - peakAt) / (PopSeconds - peakAt);
+            float down = settle * settle * (3f - 2f * settle);
+            return 1f + extra * (1f - down);
+        }
+
+        /// <summary>
         /// Starts at 0, overshoots to 1.25, is back at 1 by 0.05 s, then shrinks away by 0.45 s.
         /// </summary>
         public static float Scale(float age)

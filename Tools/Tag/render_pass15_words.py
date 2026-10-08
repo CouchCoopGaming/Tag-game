@@ -13,7 +13,7 @@ import bake_comic_layers as bake
 import render_comic_sheet as comic_sheet
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
-OUT = os.path.join(ROOT, "Docs", "FxStills", "pass16")
+OUT = os.path.join(ROOT, "Docs", "FxStills", "pass17")
 FONT = comic_sheet.FONT_PATH
 
 
@@ -179,6 +179,22 @@ def life_scale(age):
     return 1.0 - ease
 
 
+def word_punch(age):
+    """Word and burst share Scale. The word overshoots a little more, then matches."""
+    pop = 0.05
+    peak_at = pop * 0.58
+    extra = 0.18
+    if age <= 0.0 or age >= pop:
+        return 1.0
+    if age < peak_at:
+        t = age / peak_at
+        e = t * t * (3.0 - 2.0 * t)
+        return 1.0 + extra * e
+    settle = (age - peak_at) / (pop - peak_at)
+    down = settle * settle * (3.0 - 2.0 * settle)
+    return 1.0 + extra * (1.0 - down)
+
+
 def word_scale(age):
     start = 0.05
     span = 0.08
@@ -232,7 +248,7 @@ def frame_at(burst, word, age, box):
     """One moment. Burst and word share the tilt. The word is in front."""
     bg = Image.new("RGBA", box, (32, 30, 28, 255))
     bs = life_scale(age)
-    ws = word_scale(age) * bs
+    ws = bs * word_punch(age)
     a = life_alpha(age)
     if bs < 0.02 and ws < 0.02 or a <= 0.001:
         return bg.convert("RGB")
@@ -266,7 +282,7 @@ def life_strip():
     index = index_of("POW!")
     text, burst, word = posed_layers(index)
     ages = (0.00, 0.03, 0.09, 0.18, 0.33, 0.45)
-    labels = ("0.00 small", "0.03 past full", "0.09 word out", "0.18 shrinking", "0.33 smaller", "0.45 gone")
+    labels = ("0.00 born", "0.03 past full", "0.09 together", "0.18 shrinking", "0.33 smaller", "0.45 gone")
     font = ImageFont.truetype(FONT, 22)
     small = ImageFont.truetype(FONT, 16)
     box = (220, 220)
@@ -277,7 +293,7 @@ def life_strip():
     h = head + box[1] + foot + gap
     board = Image.new("RGB", (w, h), (22, 20, 18))
     draw = ImageDraw.Draw(board)
-    draw.text((12, 8), "POW!    burst life 0.45 s    small, past full, then gone", font=font, fill=(255, 220, 120))
+    draw.text((12, 8), "POW!    word and burst born together    then gone by 0.45 s", font=font, fill=(255, 220, 120))
     for n, (age, label) in enumerate(zip(ages, labels)):
         panel = frame_at(burst, word, age, box)
         x = gap + n * (box[0] + gap)
@@ -306,6 +322,7 @@ def main():
     angles = ("POW!", "BAM!", "WHAM!", "ZIP!", "SWISH!", "THWACK!", "KRAK!", "WHUMP!")
     save_jpeg(sheet("Angle variety   each word has its own tilt", [index_of(w) for w in angles], 4), "comic-angles.jpg")
     save_jpeg(life_strip(), "comic-life.jpg")
+    save_jpeg(sheet("Every word at full size", list(range(len(bake.WORDS))), 6), "comic-all.jpg")
     prev = None
     for i, (text, _k, _f) in enumerate(bake.WORDS):
         tilt = style_of(i)[0]

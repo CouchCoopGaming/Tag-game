@@ -4004,8 +4004,12 @@ def p16_hash(i, salt):
     return (x & 65535) / 65535.0
 
 
-def p16_motes(foot, fwd, left, spec, age):
-    """Low trail. Dense small motes at the plant, thinner and softer as it kicks back."""
+def p16_motes(foot, fwd, left, spec, age, curl=False):
+    """Low trail. Dense small motes at the plant, thinner and softer as it kicks back.
+
+    curl lifts concrete and wood sprint wisps into a small arch. Span and
+    diameter stay on the half-size curve.
+    """
     n = spec["count"]
     if n <= 0:
         return []
@@ -4038,6 +4042,9 @@ def p16_motes(foot, fwd, left, spec, age):
         pos = foot - fwd * along + left * side + Vector((0.0, 0.0, up))
         vel = kick * (0.35 + 0.25 * h2)
         pos = pos + vel * age + Vector((0.0, 0.0, -0.5 * grav * age * age))
+        if curl:
+            arch = math.sin(math.pi * min(1.0, max(0.0, t)))
+            pos = pos + Vector((0.0, 0.0, 0.11 * arch)) + left * (0.04 * arch)
         if pos.z < 0.018:
             pos.z = 0.018
         size = size0 * (0.55 + 0.45 * t) * (0.78 + 0.44 * h3)
@@ -4081,12 +4088,12 @@ def p15_move(foot, fwd, left, spec, along, side, up, age):
     return pos
 
 
-def p15_plume(foot, fwd, left, spec, cam_loc, age, salt):
+def p15_plume(foot, fwd, left, spec, cam_loc, age, salt, curl=False):
     """One footfall, aged. A puff whose life has ended is not drawn."""
     if spec["count"] <= 0 or spec["life"] <= age:
         return 0
     made = 0
-    for pos, size, col, op in p16_motes(foot, fwd, left, spec, age):
+    for pos, size, col, op in p16_motes(foot, fwd, left, spec, age, curl):
         p15_billboard(pos, size, col, op, cam_loc)
         made += 1
     return made
@@ -4282,12 +4289,15 @@ def render_pass15(arm, cam):
             reach = big["span"] * vis + drift + 0.05
             side = max(0.10, big["span"] * vis * 0.28 + 0.05)
             origin = foot
-            corners = p15_box(origin, fwd, left, reach, side, 0.14)
+            # 0.26 covers the sprint curl. The trail length is unchanged.
+            corners = p15_box(origin, fwd, left, reach, side, 0.26)
             rect = p15_rect(cam, corners, w, h)
 
-            def draw_foot(foot=foot, spec=spec, age=age, alive=alive, surface=surface, speed=speed):
+            puff = surface in ("concrete", "wood") and speed >= 13.0
+
+            def draw_foot(foot=foot, spec=spec, age=age, alive=alive, surface=surface, speed=speed, puff=puff):
                 if alive:
-                    p15_plume(foot, fwd, left, spec, cam.location, age, 4)
+                    p15_plume(foot, fwd, left, spec, cam.location, age, 4, puff)
                 if surface == "grass" and alive:
                     p12_flecks(foot - fwd * spec["span"] * 0.35, speed, left, -fwd, scale=0.45)
 
@@ -4475,14 +4485,16 @@ def render_pass15(arm, cam):
 
 def main():
     global OUT
-    if os.environ.get("FX_PASS16") == "1":
+    if os.environ.get("FX_PASS17") == "1":
+        OUT = os.path.join(ROOT, "Docs", "FxStills", "pass17")
+    elif os.environ.get("FX_PASS16") == "1":
         OUT = os.path.join(ROOT, "Docs", "FxStills", "pass16")
     os.makedirs(OUT, exist_ok=True)
     bpy.ops.wm.read_factory_settings(use_empty=True)
     bpy.ops.import_scene.fbx(filepath=FBX)
     arm = next(obj for obj in bpy.data.objects if obj.type == "ARMATURE")
     cam = setup_world(arm)
-    if os.environ.get("FX_PASS16") == "1" or os.environ.get("FX_PASS15") == "1":
+    if os.environ.get("FX_PASS17") == "1" or os.environ.get("FX_PASS16") == "1" or os.environ.get("FX_PASS15") == "1":
         render_pass15(arm, cam)
         return
     if os.environ.get("FX_PASS14") == "1":

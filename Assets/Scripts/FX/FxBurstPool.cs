@@ -272,6 +272,13 @@ namespace Tag.FX
                 float sideOff = (h1 - 0.5f) * spread + 0.05f;
                 float up = 0.02f + puff.Lift * vis * (0.10f + 0.28f * t) * (0.40f + 0.60f * h2);
                 Vector3 pos = foot - fwd * along + side * sideOff + Vector3.up * up;
+                // Concrete and wood sprints arch up a little. The span stays put.
+                float arch = 0f;
+                if (CurlPuff(puff))
+                {
+                    arch = Mathf.Sin(Mathf.PI * Mathf.Clamp01(t));
+                    pos += Vector3.up * (0.11f * arch) + side * (0.04f * arch);
+                }
                 if (pos.y < foot.y + 0.018f)
                     pos.y = foot.y + 0.018f;
                 float size = puff.Size * vis * (0.55f + 0.45f * t) * (0.78f + 0.44f * h3);
@@ -288,7 +295,7 @@ namespace Tag.FX
                 float tint = 0.90f + 0.16f * h1;
                 var ep = new ParticleSystem.EmitParams();
                 ep.position = pos;
-                ep.velocity = kick * (0.35f + 0.25f * h2);
+                ep.velocity = kick * (0.35f + 0.25f * h2) + Vector3.up * (arch * 0.55f);
                 ep.startSize = size / 0.55f;
                 ep.startLifetime = life;
                 ep.startColor = new Color(puff.R * tint, puff.G * tint, puff.B * tint, a);
@@ -302,6 +309,17 @@ namespace Tag.FX
                     _ps.Emit(ep, 1);
                 }
             }
+        }
+
+        static bool CurlPuff(DustLook.Puff puff)
+        {
+            bool grey = puff.B > 0.70f && Mathf.Abs(puff.R - puff.G) < 0.06f && puff.R > 0.70f;
+            bool tan = puff.R > 0.84f && puff.G > 0.70f && puff.B < 0.62f && puff.R > puff.G + 0.08f;
+            if (grey && puff.Life > 0.42f && puff.Span >= 0.60f && puff.Span < 1.40f)
+                return true;
+            if (tan && puff.Life > 0.34f && puff.Life < 0.48f && puff.Span >= 0.32f && puff.Span < 0.75f)
+                return true;
+            return false;
         }
 
         static float TrailHash(int i, int salt)

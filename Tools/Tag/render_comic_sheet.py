@@ -196,6 +196,70 @@ def fill_x_bounds(plate, fill):
     return lo, hi
 
 
+def face_rows(plate, fill):
+    """Face ink on each row. The shadow and the stroke are not the letter body."""
+    px = plate.load()
+    fr, fg, fb = fill
+    rows = {}
+    for y in range(plate.height):
+        lo = plate.width
+        hi = -1
+        for x in range(plate.width):
+            r, g, b, a = px[x, y]
+            if a > 140 and abs(r - fr) < 80 and abs(g - fg) < 80 and abs(b - fb) < 80:
+                if x < lo:
+                    lo = x
+                if x > hi:
+                    hi = x
+        if hi >= 0:
+            rows[y] = (lo, hi)
+    return rows
+
+
+def pair_gaps(prev_rows, prev_x, prev_top, rows, x, top):
+    """Closest face gap, and the closest gap in the top of this letter."""
+    if not prev_rows or not rows:
+        return None, None
+    ys = list(rows.keys())
+    y0 = min(ys)
+    y1 = max(ys)
+    cap_cut = top + y0 + max(1.0, (y1 - y0) * 0.45)
+    min_gap = None
+    cap_gap = None
+    for py, (lo, hi) in rows.items():
+        iy = top + py
+        prev = prev_rows.get(int(round(iy - prev_top)))
+        if prev is None:
+            continue
+        gap = (x + lo) - (prev_x + prev[1])
+        if min_gap is None or gap < min_gap:
+            min_gap = gap
+        if iy <= cap_cut and (cap_gap is None or gap < cap_gap):
+            cap_gap = gap
+    return min_gap, cap_gap
+
+
+def pair_shift(prev_rows, prev_x, prev_top, rows, x, top, cap):
+    """Slide this letter so the faces do not collide and the cap line does not split."""
+    min_gap, cap_gap = pair_gaps(prev_rows, prev_x, prev_top, rows, x, top)
+    if min_gap is None:
+        return 0.0
+    close = cap * 0.07
+    if min_gap < close:
+        return close - min_gap
+    if cap_gap is None:
+        return 0.0
+    if cap_gap > cap * 0.16:
+        pull = cap_gap - cap * 0.10
+        room = min_gap - close
+        if room < 0.0:
+            room = 0.0
+        if pull > room:
+            pull = room
+        return -pull
+    return 0.0
+
+
 def render_after(word, target_w, fill, stroke_frac=None, track=0.78, tilt=None):
     """Per-letter jitter, hard shadow, two-step extrude. Ink width is target_w.
 
@@ -214,7 +278,7 @@ def render_after(word, target_w, fill, stroke_frac=None, track=0.78, tilt=None):
     shadow = max(4, int(round(cap * 0.11)))
     pieces = []
     x = 0.0
-    prev_fill_right = None
+    prev = None
     dark_fill = tuple(max(0, int(c * 0.45)) for c in fill)
     mid_fill = tuple(min(255, c + 28) for c in dark_fill)
     for i, ch in enumerate(word):
@@ -231,25 +295,26 @@ def render_after(word, target_w, fill, stroke_frac=None, track=0.78, tilt=None):
                stroke_width=stroke, stroke_fill=(0, 0, 0, 255))
         jx, jy, rot = letter_jitter(i, word)
         plate = plate.rotate(rot, expand=True, resample=Image.Resampling.BICUBIC)
-        # Bangers side bearings leave a hole between H and A at 0.78. Pull only
-        # a pair whose ink does not already touch, so the other words stay put.
-        fb = fill_x_bounds(plate, fill)
-        if fb is not None and prev_fill_right is not None:
-            gap = (x + fb[0]) - prev_fill_right
-            # Only a cap-line hole gets pulled in. A normal word stays at 0.78.
-            if gap > cap * 0.14:
-                x -= gap - cap * 0.06
-        pieces.append((plate, x + jx * cap, jy * cap))
-        if fb is not None:
-            prev_fill_right = x + fb[1]
-        # 0.78 is about 13% tighter than the 0.90 advance, so the letters read as one word.
-        x += tw * track
-    width = int(x + pieces[-1][0].width) + 4
-    height = max(p.height for p, _, _ in pieces) + int(cap)
-    sheet = Image.new("RGBA", (width, height), (0, 0, 0, 0))
+        rows = face_rows(plate, fill)
+        visual = x + jx * cap
+        top = jy * cap
+        if prev is not None:
+            visual += pair_shift(prev[0], prev[1], prev[2], rows, visual, top, cap)
+        pieces.append((plate, visual, top))
+        prev = (rows, visual, top)
+        x = visual - jx * cap + tw * track
+    origin = min(px for _, px, _ in pieces)
+    if origin < 0.0:
+        pieces = [(p, px - origin, py) for p, px, py in pieces]
+    right = max(px + p.width for p, px, _ in pieces)
+    top_min = min(py for _, _, py in pieces)
+    y_shift = -top_min if top_min < 0.0 else 0.0
+    width = int(right) + 4
+    height = int(max(p.height + py for p, _, py in pieces) + y_shift + cap) + 4
+    sheet = Image.new("RGBA", (max(1, width), max(1, height)), (0, 0, 0, 0))
     base_y = int(cap * 0.40)
     for plate, px, py in pieces:
-        sheet.alpha_composite(plate, (max(0, int(px)), max(0, int(base_y + py))))
+        sheet.alpha_composite(plate, (max(0, int(px)), max(0, int(base_y + py + y_shift))))
     if tilt is None:
         tilt = hash01(len(word), 4) * 12 - 6
     if abs(tilt) > 0.05:
