@@ -2587,7 +2587,11 @@ namespace Tag.Ui.Menu
                 AddTile(16f, 12f + i * step, listW, row, i, ParkArena.NameOf(i), MenuArenaCard.Blurb(i), true);
                 MenuTile park = TileAt(i);
                 if (park != null)
+                {
                     MenuArenaCard.PaintAt(park.transform, i, 12f, 12f, thumbW, row - 24f);
+                    Pull(park.Label, thumbW + 36f);
+                    Pull(park.Detail, thumbW + 36f);
+                }
             }
             AddTile(16f, 12f + 3 * step, listW, row, 3, "Random", "One of Mega Park, Pocket Park, or Stack Yard.", true);
             float backW = listW * 0.5f;

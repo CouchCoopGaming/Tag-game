@@ -348,6 +348,8 @@ The fortieth pass makes every results block the same stone. The front band is th
 
 The forty-first pass reads the band from MenuMannequin.Swatch, so P4 is lavender with the figure. Every band is the same height, and the rank numeral is one bold size on each block. The results card drops the costume line and keeps the place, the seat, the name, and the two stat lines. The floor fades into the sky. The check is `Docs/UiStills/pass41/results-reveal.gif`. pose stays 0 and rigJoint stays 26. Space still jumps.
 
+Arena select is next. The park name and the size sit to the right of the map, with a gap, so the loop does not cover the words. The picture is `Docs/UiStills/pass42/arena.png`. Space still jumps.
+
 ## Motion, ninth pass
 
 The wall jump, the rope, the zip, the launch pad, a landing, the dash flash, a hard turnaround, and a punch while you run all ease instead of snapping. Speeds, the jump, and the dash length are the same.

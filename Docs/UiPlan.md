@@ -345,6 +345,8 @@ The seat band reads MenuMannequin.Swatch. P1 is red, P2 blue, P3 orange, P4 lave
 
 In `Docs/UiStills/pass41/` the figures are renders of `Dummy_Mannequin_Tan_Hier_Hi.fbx`. The cards, the summary, and the labels are composite. The BEFORE picture is the pass 40 results still. Each still is under 400 KB. The proof lines are unchanged.
 
+Arena select is the next screen. Each park row keeps its map on the left. The name and the size sit to the right of that map, with a gap, so the loop does not cover the words. `Docs/UiStills/pass42/arena.png` is that list. The proof lines are unchanged.
+
 ## Later passes
 
 - A 2D focus grid on rules so Left from a rule row lands on a mode tile.
