@@ -45357,5 +45357,770 @@
     ],
     "slackCm": 0.0,
     "fbx": "Assets/Art/Props/Library/StreetFurniture/WoodPole_Single.fbx"
+  },
+  {
+    "name": "Barricade_Type3",
+    "category": "StreetFurniture",
+    "blurb": "Type III barricade, 2.44 m rails, top at 1.52 m, folding A-frames.",
+    "size": [
+      2.44,
+      1.52,
+      0.492
+    ],
+    "min": [
+      -1.22,
+      0.0,
+      -0.22
+    ],
+    "max": [
+      1.22,
+      1.52,
+      0.272
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 756,
+        "materials": [
+          "Lib_Orange",
+          "Lib_PaintWhite",
+          "Lib_Steel",
+          "Lib_SteelDark"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 340,
+        "materials": [
+          "Lib_Orange",
+          "Lib_Steel",
+          "Lib_SteelDark"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_Rail_0",
+        "type": "box",
+        "center": [
+          0,
+          0.58,
+          0.25
+        ],
+        "size": [
+          2.4,
+          0.18,
+          0.024
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Rail_1",
+        "type": "box",
+        "center": [
+          0,
+          1.0,
+          0.25
+        ],
+        "size": [
+          2.4,
+          0.18,
+          0.024
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Rail_2",
+        "type": "box",
+        "center": [
+          0,
+          1.42,
+          0.25
+        ],
+        "size": [
+          2.4,
+          0.18,
+          0.024
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Post_0",
+        "type": "box",
+        "center": [
+          -0.9,
+          0.76,
+          0.19
+        ],
+        "size": [
+          0.034,
+          1.38,
+          0.034
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_FootA_0",
+        "type": "box",
+        "center": [
+          -0.9,
+          0.01,
+          -0.16999999999999998
+        ],
+        "size": [
+          0.08,
+          0.016,
+          0.07
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_FootB_0",
+        "type": "box",
+        "center": [
+          -0.9,
+          0.01,
+          0.10999999999999999
+        ],
+        "size": [
+          0.08,
+          0.016,
+          0.07
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_LegA_0",
+        "type": "box",
+        "center": [
+          -0.9,
+          0.6799999999999999,
+          -0.04500000000000001
+        ],
+        "size": [
+          0.011313708498984762,
+          0.011313708498984762,
+          1.090997729334625
+        ],
+        "euler": [
+          -78.7921261631644,
+          0.0,
+          0.0
+        ]
+      },
+      {
+        "name": "Col_LegB_0",
+        "type": "box",
+        "center": [
+          -0.9,
+          0.6799999999999999,
+          0.13
+        ],
+        "size": [
+          0.011313708498984762,
+          0.011313708498984762,
+          1.0704739700705428
+        ],
+        "euler": [
+          -88.30284381039972,
+          0.0,
+          0.0
+        ]
+      },
+      {
+        "name": "Col_Post_1",
+        "type": "box",
+        "center": [
+          0.9,
+          0.76,
+          0.19
+        ],
+        "size": [
+          0.034,
+          1.38,
+          0.034
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_FootA_1",
+        "type": "box",
+        "center": [
+          0.9,
+          0.01,
+          -0.16999999999999998
+        ],
+        "size": [
+          0.08,
+          0.016,
+          0.07
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_FootB_1",
+        "type": "box",
+        "center": [
+          0.9,
+          0.01,
+          0.10999999999999999
+        ],
+        "size": [
+          0.08,
+          0.016,
+          0.07
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_LegA_1",
+        "type": "box",
+        "center": [
+          0.9,
+          0.6799999999999999,
+          -0.04500000000000001
+        ],
+        "size": [
+          0.011313708498984762,
+          0.011313708498984762,
+          1.090997729334625
+        ],
+        "euler": [
+          -78.7921261631644,
+          0.0,
+          0.0
+        ]
+      },
+      {
+        "name": "Col_LegB_1",
+        "type": "box",
+        "center": [
+          0.9,
+          0.6799999999999999,
+          0.13
+        ],
+        "size": [
+          0.011313708498984762,
+          0.011313708498984762,
+          1.0704739700705428
+        ],
+        "euler": [
+          -88.30284381039972,
+          0.0,
+          0.0
+        ]
+      }
+    ],
+    "climbable": false,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "Open frame. The rails are boards, not a cling wall.",
+    "vaultNote": "Top rail is 1.52 m and 32 mm thick. Not a vault lip.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1"
+    ],
+    "slackCm": 0.0,
+    "fbx": "Assets/Art/Props/Library/StreetFurniture/Barricade_Type3.fbx"
+  },
+  {
+    "name": "Delineator_Post",
+    "category": "StreetFurniture",
+    "blurb": "Channelizer post, cap at 1.07 m, 76 mm tube, 0.40 m rubber base.",
+    "size": [
+      0.4,
+      1.07,
+      0.4
+    ],
+    "min": [
+      -0.2,
+      0.0,
+      -0.2
+    ],
+    "max": [
+      0.2,
+      1.07,
+      0.2
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 724,
+        "materials": [
+          "Lib_Rubber",
+          "Lib_SteelDark",
+          "Lib_PaintWhite",
+          "Lib_Orange"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 244,
+        "materials": [
+          "Lib_Rubber",
+          "Lib_SteelDark",
+          "Lib_PaintWhite",
+          "Lib_Orange"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_Base_0",
+        "type": "box",
+        "center": [
+          0.0,
+          0.02,
+          0.11
+        ],
+        "size": [
+          0.05,
+          0.032,
+          0.16
+        ],
+        "euler": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      {
+        "name": "Col_Base_1",
+        "type": "box",
+        "center": [
+          0.07778174593052022,
+          0.02,
+          0.07778174593052023
+        ],
+        "size": [
+          0.05,
+          0.032,
+          0.16
+        ],
+        "euler": [
+          0.0,
+          45.0,
+          0.0
+        ]
+      },
+      {
+        "name": "Col_Base_2",
+        "type": "box",
+        "center": [
+          0.11,
+          0.02,
+          6.735557395310442e-18
+        ],
+        "size": [
+          0.05,
+          0.032,
+          0.16
+        ],
+        "euler": [
+          0.0,
+          90.0,
+          0.0
+        ]
+      },
+      {
+        "name": "Col_Base_3",
+        "type": "box",
+        "center": [
+          0.07778174593052023,
+          0.02,
+          -0.07778174593052022
+        ],
+        "size": [
+          0.05,
+          0.032,
+          0.16
+        ],
+        "euler": [
+          0.0,
+          135.0,
+          0.0
+        ]
+      },
+      {
+        "name": "Col_Base_4",
+        "type": "box",
+        "center": [
+          1.3471114790620885e-17,
+          0.02,
+          -0.11
+        ],
+        "size": [
+          0.05,
+          0.032,
+          0.16
+        ],
+        "euler": [
+          0.0,
+          180.0,
+          0.0
+        ]
+      },
+      {
+        "name": "Col_Base_5",
+        "type": "box",
+        "center": [
+          -0.07778174593052022,
+          0.02,
+          -0.07778174593052024
+        ],
+        "size": [
+          0.05,
+          0.032,
+          0.16
+        ],
+        "euler": [
+          0.0,
+          225.0,
+          0.0
+        ]
+      },
+      {
+        "name": "Col_Base_6",
+        "type": "box",
+        "center": [
+          -0.11,
+          0.02,
+          -2.0206672185931326e-17
+        ],
+        "size": [
+          0.05,
+          0.032,
+          0.16
+        ],
+        "euler": [
+          0.0,
+          270.0,
+          0.0
+        ]
+      },
+      {
+        "name": "Col_Base_7",
+        "type": "box",
+        "center": [
+          -0.07778174593052024,
+          0.02,
+          0.07778174593052022
+        ],
+        "size": [
+          0.05,
+          0.032,
+          0.16
+        ],
+        "euler": [
+          0.0,
+          315.0,
+          0.0
+        ]
+      },
+      {
+        "name": "Col_PostA",
+        "type": "capsule",
+        "center": [
+          0,
+          0.3,
+          0
+        ],
+        "radius": 0.03,
+        "height": 0.4,
+        "direction": 1
+      },
+      {
+        "name": "Col_PostB",
+        "type": "capsule",
+        "center": [
+          0,
+          0.7,
+          0
+        ],
+        "radius": 0.03,
+        "height": 0.16,
+        "direction": 1
+      },
+      {
+        "name": "Col_PostC",
+        "type": "capsule",
+        "center": [
+          0,
+          0.928,
+          0
+        ],
+        "radius": 0.03,
+        "height": 0.1,
+        "direction": 1
+      }
+    ],
+    "climbable": false,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "76 mm post. Not a cling.",
+    "vaultNote": "Cap is 1.07 m and rounded. Not a vault.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1"
+    ],
+    "slackCm": 0.0,
+    "fbx": "Assets/Art/Props/Library/StreetFurniture/Delineator_Post.fbx"
+  },
+  {
+    "name": "Rail_Sidewalk",
+    "category": "StreetFurniture",
+    "blurb": "Pipe rail, grip top at 0.91 m, posts 1.80 m apart, returned ends.",
+    "size": [
+      2.278,
+      0.914,
+      0.16
+    ],
+    "min": [
+      -1.139,
+      0.0,
+      -0.08
+    ],
+    "max": [
+      1.139,
+      0.914,
+      0.08
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 552,
+        "materials": [
+          "Lib_Steel",
+          "Lib_SteelDark"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 280,
+        "materials": [
+          "Lib_Steel",
+          "Lib_SteelDark"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_Flange_0",
+        "type": "box",
+        "center": [
+          -0.9,
+          0.008,
+          0
+        ],
+        "size": [
+          0.12,
+          0.014,
+          0.12
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Post_0",
+        "type": "box",
+        "center": [
+          -0.9,
+          0.445,
+          0
+        ],
+        "size": [
+          0.036,
+          0.78,
+          0.036
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Flange_1",
+        "type": "box",
+        "center": [
+          0.9,
+          0.008,
+          0
+        ],
+        "size": [
+          0.12,
+          0.014,
+          0.12
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Post_1",
+        "type": "box",
+        "center": [
+          0.9,
+          0.445,
+          0
+        ],
+        "size": [
+          0.036,
+          0.78,
+          0.036
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Top",
+        "type": "box",
+        "center": [
+          0,
+          0.895,
+          0
+        ],
+        "size": [
+          1.96,
+          0.026,
+          0.026
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_ReturnL",
+        "type": "box",
+        "center": [
+          -1.12,
+          0.74,
+          0
+        ],
+        "size": [
+          0.026,
+          0.16,
+          0.026
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_ReturnR",
+        "type": "box",
+        "center": [
+          1.12,
+          0.74,
+          0
+        ],
+        "size": [
+          0.026,
+          0.16,
+          0.026
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Low",
+        "type": "box",
+        "center": [
+          0,
+          0.46,
+          0.055
+        ],
+        "size": [
+          1.64,
+          0.018,
+          0.018
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "climbable": false,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "38 mm grip. A handhold, not a flat cling.",
+    "vaultNote": "Top is 0.91 m. The rail is round.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1"
+    ],
+    "slackCm": 0.0,
+    "fbx": "Assets/Art/Props/Library/StreetFurniture/Rail_Sidewalk.fbx"
   }
 ]
