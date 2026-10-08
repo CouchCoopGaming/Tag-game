@@ -372,6 +372,8 @@ The twenty-seventh pass keeps the load card to the bottom third, so the dock, th
 
 The twenty-eighth pass puts that graded Mega Park on the plate the game loads, so loading and pause match the stills. Pause darkens the plate by about 35% and keeps the park readable behind the card. The title logo is large, and the prompt reads Press Space or Start from the action map. Drop-in join stamps the seat shape from the one mannequin table. The colour-blind floor still holds on the band: protan 0.41, deutan 0.52, tritan 0.41. Unity is not installed here, so the frames are that live plate with the menu drawn on it, in `Docs/UiStills/screens2/pass28/`. Space still jumps.
 
+The twenty-ninth pass fills the title and the main menu with the graded Mega Park, cropped to the frame instead of letterboxed, and darkens the title by about 35% so the logo sits on a blue sky. The main menu keeps a single gold focus. The grapple tip reads the bound key through the action map. An empty join seat shows a faint outlined figure, the seat shape, and the join prompt under it. Unity is not installed here, so the frames are that live plate with the menu drawn on it, in `Docs/UiStills/screens2/pass29/`. Space still jumps.
+
 ## Motion, ninth pass
 
 The wall jump, the rope, the zip, the launch pad, a landing, the dash flash, a hard turnaround, and a punch while you run all ease instead of snapping. Speeds, the jump, and the dash length are the same.

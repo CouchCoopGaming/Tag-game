@@ -393,6 +393,18 @@ The title logo keeps the lockup's shape and is large enough for the couch (860 b
 
 `ui-cvd protan=0.41 blue/lavender deutan=0.52 blue/lavender tritan=0.41 orange/lavender floor=0.35`. `ui-seat off=0.41/0.52/0.41`. The floor holds on the band. The lavender fill against blue is still under it (protan 0.23, deutan 0.34). `hot-path allocs before=101 after=0`. No new pose was animated: `no-clip pose=0`. Unity is not installed, so the frames in `Docs/UiStills/screens2/pass28/` are that live plate with the menu drawn on it.
 
+## Screens 2, pass 29
+
+Title and the main menu scale MegaGrade to cover the 16:9 frame and crop the overflow, so the plate is not sitting in a black letterbox. The edge vignette is off on those two screens. Title darkens the plate with black at 35% so the lockup sits on the graded yard. The sky on that still stays blue (blue channel above red). `MenuBackdrop.Bright` still loads `MegaGrade.png`.
+
+The main menu lights one row. Play is the focus. Records is quiet. `RefreshFocus` drops a second tile that shares the focus index. `ui-flow` fails the walk if `MenuSheet.OneFocus` is false or if `BuildMain` calls `SetHot(true)`. The printed line stays `focus=ok` when that holds.
+
+The main-menu grapple tip is `MenuTips.GrappleLine`. The glyph is `ActionBinds.Show` of the grapple key. Rebinding it to Q prints `[Q]` and drops the old `RMB` word. Loading tips use `Show` for that line too.
+
+An empty drop-in seat draws a faint outlined silhouette, the seat shape on its chest, and `Press Space or A to join` centred under it. The corner shape stays. Arena select, RESULTS, and Options are untouched.
+
+`ui-cvd` floor 0.35 still holds on the band. `hot-path allocs before=101 after=0`. No new pose was animated: `no-clip pose=0`. Unity is not installed, so the frames in `Docs/UiStills/screens2/pass29/` are the live plate with the menu drawn on it.
+
 ## Later passes
 
 - Left from a rule row returns to the modes even when that rule can still decrease. Right from the right-hand mode, and Left at the end of a rule, already move between the columns.
