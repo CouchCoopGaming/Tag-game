@@ -173,6 +173,14 @@ On character select each seat stands on a disc that turns. The figure idles. Rea
 
 The gold ring, the ink-on-highlight contrast, and the 80% to 130% scale stay. Mockups are in `Docs/UiStills/pass10/`.
 
+## Pass 11
+
+Character select, the title parade, and results use the Hier mannequin. The poses are idle, a ready hop, a claim, a give-up, and a stumble. Bone names stay the generic set. The title line is PRESS, the confirm glyph, and A on a pad, or PRESS START with the space glyph on a keyboard. It breathes. The TAG lockup is Bangers with a thick outline, an inner highlight, a halftone shadow, and a small tilt. READY! is the same comic burst, larger, and it pops once.
+
+The title and the main menu sit on a golden-hour render of Mega Park, softened, with a vignette. The four orbs stay, quieter. The main menu's left side is two mannequins mid-chase and a tip of the day. Character cards show a swatch row, the pad that joined, and the ready burst.
+
+The gold ring, the contrast pairs, the 80% to 130% scale, and the proof lines stay. Space still jumps. Mockups are in `Docs/UiStills/pass11/`.
+
 ## Later passes
 
 - A 2D focus grid on rules so Left from a rule row lands on a mode tile.

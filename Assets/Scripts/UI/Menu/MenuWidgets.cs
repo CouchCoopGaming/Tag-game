@@ -229,6 +229,17 @@ namespace Tag.Ui.Menu
             var root = Place(parent, "Logo", x, y, w, h);
             root.pivot = new Vector2(0.5f, 0.5f);
             root.anchoredPosition = new Vector2(x + w * 0.5f, -y - h * 0.5f);
+            Texture2D lockup = MenuBackdrop.Lockup;
+            if (lockup != null)
+            {
+                root.localRotation = Quaternion.identity;
+                var plate = Box(root, "Lockup", Vector2.zero, Vector2.one, new Vector2(0.5f, 0.5f));
+                var raw = plate.gameObject.AddComponent<RawImage>();
+                raw.texture = lockup;
+                raw.raycastTarget = false;
+                raw.color = Color.white;
+                return root;
+            }
             root.localRotation = Quaternion.Euler(0f, 0f, -8f);
             var streak = Place(root, "Streak", -30f, h * 0.42f, w * 1.15f, h * 0.22f);
             var streakImage = streak.gameObject.AddComponent<Image>();

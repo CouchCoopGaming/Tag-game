@@ -288,6 +288,8 @@ The tenth pass is the look. Tiles have a bevel, a gloss band, and a soft shadow.
 
 Each character stands on a turning disc, idles, and hops when that player hits Ready. The READY stamp, the 3-2-1, and GO all punch. Move, confirm, back, ready, and start still play through the menu sounds. Confirm and ready can buzz the pad when rumble is on. The gold ring and the couch type size stay. Mockups are in `Docs/UiStills/pass10/`.
 
+The eleventh pass puts the real Hier figure in the four player colors on the title, on character select, and on results. The title asks PRESS A on a pad and PRESS START on a keyboard, and the line pulses. TAG is a comic lockup: Bangers, a thick outline, a highlight, a dotted shadow, and a tilt. The page behind it is a golden-hour photo of Mega Park, a little soft, with a vignette. The main menu shows two figures mid-chase and a tip of the day. Each character card has the color row, the pad that joined, and a bigger READY! burst. Space still jumps. Mockups are in `Docs/UiStills/pass11/`.
+
 ## Motion, ninth pass
 
 The wall jump, the rope, the zip, the launch pad, a landing, the dash flash, a hard turnaround, and a punch while you run all ease instead of snapping. Speeds, the jump, and the dash length are the same.
