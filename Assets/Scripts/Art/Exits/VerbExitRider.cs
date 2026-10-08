@@ -392,8 +392,8 @@ namespace Tag.Art
             Blend(_uaR, _uaR0, s.ArmPitchR, s.ArmYawR, s.ArmRollR, show);
             Blend(_laL, _laL0, s.ElbowL, 0f, 0f, show);
             Blend(_laR, _laR0, s.ElbowR, 0f, 0f, show);
-            Blend(_ulL, _ulL0, s.ThighL, s.ThighYawL, 0f, show);
-            Blend(_ulR, _ulR0, s.ThighR, s.ThighYawR, 0f, show);
+            Blend(_ulL, _ulL0, s.ThighL, s.ThighYawL, s.ThighRollL, show);
+            Blend(_ulR, _ulR0, s.ThighR, s.ThighYawR, s.ThighRollR, show);
             Blend(_llL, _llL0, s.KneeL, 0f, 0f, show);
             Blend(_llR, _llR0, s.KneeR, 0f, 0f, show);
             Blend(_ftL, _ftL0, s.FootL, 0f, 0f, show);

@@ -179,7 +179,7 @@ namespace Tag.Art
                 prevW = step.Weight;
             }
 
-            if (VerbPoseClips.PunchCockPitch > -72f || VerbPoseClips.PunchCockYaw > -8f || VerbPoseClips.PunchCockSpineYaw > -50f) return false;
+            if (VerbPoseClips.PunchCockPitch > -32f || VerbPoseClips.PunchCockYaw > -16f || VerbPoseClips.PunchCockSpineYaw > -50f) return false;
             if (VerbPoseClips.PunchStrikePitch > -64f || VerbPoseClips.PunchStrikePitch < -90f || Mathf.Abs(VerbPoseClips.PunchStrikeElbow) > 8f) return false;
             if (VerbPoseClips.PunchGuardPitchStrike < 72f) return false;
             if (VerbPoseClips.PunchGuardPitchStrike - VerbPoseClips.PunchStrikePitch < 140f) return false;

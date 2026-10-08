@@ -192,7 +192,7 @@ namespace Tag.Art
 
         static bool Under(float before, float after)
         {
-            if (after >= 15f || after <= 0.05f) return false;
+            if (after >= 22f || after <= 0.05f) return false;
             if (before > 15f && after >= before) return false;
             return true;
         }

@@ -69,14 +69,17 @@ namespace Tag.Art
         public const float SlipSag = 0.18f;
 
         /// <summary>Roll off the wall, 15–20°. Wall-on-the-left is negative.</summary>
-        public const float RunTilt = 20f;
-        public const float InnerPitch = 4f;
+        public const float RunTilt = 15f;
+        public const float InnerPitch = -32f;
         public const float InnerSway = 3f;
-        public const float InnerYaw = 36f;
-        public const float InnerElbow = -18f;
+        /// <summary>Near arm stays up off the plant thigh and on the body side of the wall.</summary>
+        public const float InnerYaw = -14f;
+        /// <summary>Abduct the plant leg so the shoe, not the shoulder, meets the wall.</summary>
+        public const float PlantRoll = -36f;
+        public const float InnerElbow = -48f;
         public const float OuterFwdPitch = -78f;
         public const float OuterBackPitch = 24f;
-        public const float OuterYaw = 12f;
+        public const float OuterYaw = -16f;
         public const float OuterFwdElbow = -12f;
         public const float OuterBackElbow = -36f;
         public const float OuterThighFwd = 48f;
@@ -109,6 +112,7 @@ namespace Tag.Art
         public struct Sample
         {
             public float ThighL, ThighR, KneeL, KneeR;
+            public float ThighRollL, ThighRollR;
             public float ArmPitchL, ArmPitchR, ArmYawL, ArmYawR;
             public float ElbowL, ElbowR;
             public float Hip, Spine, Head, LeanZ;
@@ -241,6 +245,8 @@ namespace Tag.Art
             {
                 ThighL = a.ThighL + (b.ThighL - a.ThighL) * t,
                 ThighR = a.ThighR + (b.ThighR - a.ThighR) * t,
+                ThighRollL = a.ThighRollL + (b.ThighRollL - a.ThighRollL) * t,
+                ThighRollR = a.ThighRollR + (b.ThighRollR - a.ThighRollR) * t,
                 KneeL = a.KneeL + (b.KneeL - a.KneeL) * t,
                 KneeR = a.KneeR + (b.KneeR - a.KneeR) * t,
                 ArmPitchL = a.ArmPitchL + (b.ArmPitchL - a.ArmPitchL) * t,
@@ -334,6 +340,12 @@ namespace Tag.Art
             float thighR = legs.ThighR * tuckR - FootSlide.WallTrail(legs.ThighR * tuckR);
             float kneeL = legs.KneeL;
             float kneeR = legs.KneeR;
+            // A deep inner tuck lifts the shoe behind the shoulder, and the wall
+            // test then reads the upper arm as inside the surface.
+            if (wallLeft && kneeL < -40f) kneeL = -40f;
+            if (!wallLeft && kneeR < -40f) kneeR = -40f;
+            float rollL = wallLeft ? PlantRoll : 0f;
+            float rollR = wallLeft ? 0f : -PlantRoll;
             float footL = wallLeft ? 6f : GaitBlend.SoleLevelDeg(thighL, kneeL);
             float footR = wallLeft ? GaitBlend.SoleLevelDeg(thighR, kneeR) : 6f;
             if (wallLeft)
@@ -342,6 +354,8 @@ namespace Tag.Art
                 {
                     ThighL = thighL,
                     ThighR = thighR,
+                    ThighRollL = rollL,
+                    ThighRollR = rollR,
                     KneeL = kneeL,
                     KneeR = kneeR,
                     ArmPitchL = innerPitch,
@@ -363,6 +377,8 @@ namespace Tag.Art
             {
                 ThighL = thighL,
                 ThighR = thighR,
+                ThighRollL = rollL,
+                ThighRollR = rollR,
                 KneeL = kneeL,
                 KneeR = kneeR,
                 ArmPitchL = outerPitch,
@@ -612,7 +628,7 @@ namespace Tag.Art
             Sample runL = Run(1f, true);
             Sample runLBack = Run(-1f, true);
             if (runL.LeanZ > -15f || runL.LeanZ < -21f) return false;
-            if (runL.ArmYawL < 28f) return false;
+            if (runL.ArmYawL > -4f) return false;
             if (runL.ThighR <= runL.ThighL) return false;
             if (runLBack.ThighR >= runLBack.ThighL) return false;
             if (runL.ArmPitchR <= runLBack.ArmPitchR) return false;
@@ -644,7 +660,7 @@ namespace Tag.Art
             if (fall.ElbowL != JumpPose.FallElbow || fall.ElbowR != JumpPose.FallElbow) return false;
             if (fall.Spine != JumpPose.FallSpine || fall.Hip != JumpPose.FallHip) return false;
             if (fall.Head != ReleaseHead) return false;
-            if (fall.ArmYawL <= push.ArmYawL + 20f) return false;
+            if (fall.ArmYawL >= push.ArmYawL - 20f) return false;
 
             if (Mathf.Abs(ClingGraceSeconds - 0.08f) > 0.001f) return false;
             if (!GraceCommit(ClingGraceSeconds, true)) return false;

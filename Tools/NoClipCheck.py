@@ -33,7 +33,9 @@ import RenderPass14 as p14
 import RenderPass15 as p15
 
 FRAMES = os.environ.get("NOCLIP_FRAMES", "/tmp/noclip-frames.txt")
-OUT = os.environ.get("NOCLIP_OUT", os.path.join(ROOT, "Docs", "AnimStills", "pass15", "noclip"))
+OUT = os.environ.get("NOCLIP_OUT", os.path.join(ROOT, "Docs", "AnimStills", "pass16", "noclip"))
+# Before/after pairs the pass asked for. zip-drop is the exit clip.
+STILL_CLIPS = ("vault", "punch", "wall-run", "exit-ZipDrop")
 LIMIT = 0.005
 # 3 cm is the asked ball around the bone head. The rigid hinge overlap sits
 # about 4 to 6 cm from that head, so a bent elbow fails every clip. The env
@@ -70,7 +72,10 @@ def load_clips(path):
                 clips.append(current)
             elif parts[0] == "F" and current is not None:
                 nums = [float(x) for x in parts[2:]]
-                if len(nums) != len(CHANNELS):
+                # 26 authored channels, or 32 with knee/elbow/thigh roll appended.
+                if len(nums) == len(CHANNELS):
+                    nums = nums + [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+                elif len(nums) != len(CHANNELS) + 6:
                     raise SystemExit("bad frame " + current["name"])
                 current["frames"].append((float(parts[1]), nums))
     return clips
@@ -274,6 +279,31 @@ def self_worst(arm, pieces, parent):
             pair = key[0] + "/" + key[1]
             point = at
     return worst, pair, point, raw
+
+
+def split_self(arm, pieces, parent):
+    """Pose hits are non-neighbours. Rig hits are joined pairs past the bind overlap."""
+    pose = 0.0
+    pose_pair = ""
+    pose_at = None
+    rig = 0.0
+    rig_pair = ""
+    hits = []
+    for key, depth, is_joined, at in each_pair(arm, pieces, parent):
+        score = counted_depth(key, depth, is_joined)
+        name = key[0] + "/" + key[1]
+        if is_joined:
+            if score > rig:
+                rig = score
+                rig_pair = name
+            continue
+        if score > LIMIT:
+            hits.append((score, name))
+        if score > pose:
+            pose = score
+            pose_pair = name
+            pose_at = at
+    return pose, pose_pair, pose_at, rig, rig_pair, hits
 
 
 def add_cube(name, center, size):
@@ -633,10 +663,15 @@ def present(arm, base, name, nums):
 
 def check_clip(arm, base, parent, clip):
     worst = {"depth": 0.0, "kind": "", "t": 0.0, "pair": "", "point": None, "nums": None}
+    rig_worst = {"depth": 0.0, "pair": "", "t": 0.0}
     world_max = 0.0
-    self_max = 0.0
-    fails = 0
+    pose_max = 0.0
+    rig_max = 0.0
+    pose_fails = 0
+    rig_fails = 0
+    pose_pairs = {}
     hip_above = None
+    still_nums = None
     started = time.time()
     for t, nums in clip["frames"]:
         nums = clear_channels(clip["name"], nums)
@@ -645,15 +680,28 @@ def check_clip(arm, base, parent, clip):
         pieces, deps = pose_frame(arm, base, nums)
         if clip["solid"] == "ground":
             pieces = seat_feet(arm, pieces)
-        sdepth, spair, spoint, _raw = self_worst(arm, pieces, parent)
+        pdepth, ppair, ppoint, rdepth, rpair, hits = split_self(arm, pieces, parent)
         solids = place_solid(clip["solid"], pieces)
         bpy.context.view_layer.update()
         deps = bpy.context.evaluated_depsgraph_get()
         wdepth, wpair, wpoint = world_worst(pieces, solids, clip["solid"], deps)
-        if sdepth > self_max:
-            self_max = sdepth
+        if wdepth > pdepth:
+            pdepth, ppair, ppoint = wdepth, wpair, wpoint
+            kind = "world"
+        else:
+            kind = "self"
+        if wdepth > LIMIT:
+            pose_pairs[wpair] = max(pose_pairs.get(wpair, 0.0), wdepth)
+        for score, name in hits:
+            pose_pairs[name] = max(pose_pairs.get(name, 0.0), score)
         if wdepth > world_max:
             world_max = wdepth
+        if pdepth > pose_max:
+            pose_max = pdepth
+        if rdepth > rig_max:
+            rig_max = rdepth
+        if still_nums is None:
+            still_nums = nums
         if os.environ.get("NOCLIP_DEBUG") == "1" and abs(t - clip["frames"][len(clip["frames"]) // 2][0]) < 0.02:
             low = min(float(piece["world"][:, 2].min()) for piece in pieces if len(piece["world"]))
             def part_z(names):
@@ -678,15 +726,21 @@ def check_clip(arm, base, parent, clip):
             if len(hands) and len(hips):
                 above = float(hips[:, 2].min() - hands[:, 2].min())
                 hip_above = above if hip_above is None else min(hip_above, above)
-        if sdepth > LIMIT or wdepth > LIMIT:
-            fails += 1
-        if sdepth >= wdepth:
-            remember(worst, sdepth, "self", t, spair, spoint)
-        else:
-            remember(worst, wdepth, "world", t, wpair, wpoint)
-        if worst["depth"] in (sdepth, wdepth) and worst["t"] == t:
+        if pdepth > LIMIT:
+            pose_fails += 1
+        if rdepth > LIMIT:
+            rig_fails += 1
+        remember(worst, pdepth, kind, t, ppair, ppoint)
+        if worst["t"] == t and worst["depth"] == pdepth:
             worst["nums"] = nums
+            still_nums = nums
+        if rdepth > rig_worst["depth"]:
+            rig_worst["depth"] = rdepth
+            rig_worst["pair"] = rpair
+            rig_worst["t"] = t
     clear_solids()
+    worst["nums"] = worst["nums"] or still_nums
+    ranked_pairs = sorted(((depth, name) for name, depth in pose_pairs.items()), reverse=True)
     if os.environ.get("NOCLIP_DEBUG") == "1" and worst["nums"] is not None:
         pieces, _deps = pose_frame(arm, base, worst["nums"])
         ranked = []
@@ -716,84 +770,177 @@ def check_clip(arm, base, parent, clip):
         "name": clip["name"],
         "frames": len(clip["frames"]),
         "world": world_max,
-        "self": self_max,
-        "fails": fails,
+        "pose": pose_max,
+        "rig": rig_max,
+        "self": pose_max,
+        "pose_fails": pose_fails,
+        "rig_fails": rig_fails,
+        "fails": pose_fails,
+        "pose_pairs": ranked_pairs[:8],
+        "open": {"t": clip["frames"][0][0], "nums": still_nums, "pair": "", "kind": "", "point": None},
         "worst": worst,
+        "rig_worst": rig_worst,
         "seconds": time.time() - started,
         "hip_above": hip_above,
     }
 
 
-def face_verts(piece, poly):
-    center = piece["world"].mean(axis=0)
-    face = []
-    for index in poly:
-        sample = piece["world"][index]
-        outward = sample - center
-        length = float(np.linalg.norm(outward))
-        if length > 1e-6:
-            sample = sample + outward / length * 0.04
-        face.append(Vector((float(sample[0]), float(sample[1]), float(sample[2]))))
-    return face
+def penetrating_points(src, other, joint):
+    """Vertices of src that sit inside other, past the limit and outside the joint ball."""
+    found = []
+    if src["tree"] is None or other["tree"] is None or separated(src, other):
+        return found
+    overlap = src["tree"].overlap(other["tree"])
+    if not overlap:
+        return found
+    use = set()
+    for ia, _ib in overlap:
+        use.update(src["polys"][ia])
+    joint_v = None if joint is None else np.array((joint.x, joint.y, joint.z), dtype=np.float64)
+    for index in use:
+        point = src["world"][index]
+        if joint_v is not None and float(np.linalg.norm(point - joint_v)) <= JOINT:
+            continue
+        if inside_depth(point, other["tree"]) > LIMIT:
+            found.append((float(point[0]), float(point[1]), float(point[2])))
+    return found
+
+
+def pose_volume_points(arm, pieces, parent, solids, kind, deps):
+    """World hits and non-neighbour hits only. Joined hinge overlap stays off the red volume."""
+    cloud = []
+    for i in range(len(pieces)):
+        for j in range(i + 1, len(pieces)):
+            a = pieces[i]
+            b = pieces[j]
+            if joined(parent, bone_of(a["ob"]), bone_of(b["ob"])):
+                continue
+            cloud.extend(penetrating_points(a, b, None))
+            cloud.extend(penetrating_points(b, a, None))
+    skip = exempt_names(kind)
+    for solid in solids:
+        built = capture(solid, deps)
+        if built["tree"] is None:
+            continue
+        for piece in pieces:
+            if piece_name(piece["ob"]) in skip:
+                continue
+            cloud.extend(penetrating_points(piece, built, None))
+    return cloud
 
 
 def paint_overlap(arm, pieces, parent, solids, kind, deps):
-    """Red faces on the pieces that are inside something past the limit."""
-    tris = []
-    skip = exempt_names(kind)
-    solids_built = [capture(solid, deps) for solid in solids]
-
-    def add_poly(piece, poly):
-        face = face_verts(piece, poly)
-        if len(face) >= 3:
-            tris.append(face)
-
-    for key, depth, is_joined, _at in each_pair(arm, pieces, parent):
-        if counted_depth(key, depth, is_joined) <= LIMIT:
-            continue
-        a = next(piece for piece in pieces if piece_name(piece["ob"]) == key[0])
-        b = next(piece for piece in pieces if piece_name(piece["ob"]) == key[1])
-        if a["tree"] is None or b["tree"] is None or separated(a, b):
-            continue
-        overlap = a["tree"].overlap(b["tree"])
-        for ia, ib in overlap:
-            add_poly(a, a["polys"][ia])
-            add_poly(b, b["polys"][ib])
-    for piece in pieces:
-        if piece_name(piece["ob"]) in skip or piece["tree"] is None:
-            continue
-        for solid in solids_built:
-            if solid["tree"] is None or separated(piece, solid):
-                continue
-            overlap = piece["tree"].overlap(solid["tree"])
-            for ia, _ib in overlap:
-                depth = max(inside_depth(piece["world"][k], solid["tree"]) for k in piece["polys"][ia])
-                if depth > LIMIT:
-                    add_poly(piece, piece["polys"][ia])
-    print("OVERLAP_TRIS", len(tris))
-    if not tris:
+    """A hull of the vertices that are actually inside. The rest of the body stays grey."""
+    cloud = pose_volume_points(arm, pieces, parent, solids, kind, deps)
+    print("OVERLAP_VERTS", len(cloud))
+    if len(cloud) < 4:
         return None
-    verts = []
-    faces = []
-    for face in tris:
-        start = len(verts)
-        verts.extend(tuple(v) for v in face)
-        faces.append(tuple(range(start, start + len(face))))
-    mesh = bpy.data.meshes.new("OverlapFaces")
-    mesh.from_pydata(verts, [], faces)
+    # A few thousand inside verts is enough for the hull, and keeps the op fast.
+    if len(cloud) > 800:
+        step = int(len(cloud) / 800) + 1
+        cloud = cloud[::step]
+    mesh = bpy.data.meshes.new("OverlapVol")
+    mesh.from_pydata(cloud, [], [])
     mesh.update()
-    ob = bpy.data.objects.new("OverlapFaces", mesh)
+    ob = bpy.data.objects.new("OverlapVol", mesh)
     bpy.context.collection.objects.link(ob)
-    mat = p7.emissive("OverlapRed", (1.0, 0.02, 0.02, 1.0), 6.0)
+    bpy.context.view_layer.objects.active = ob
+    ob.select_set(True)
+    bpy.ops.object.mode_set(mode="EDIT")
+    bpy.ops.mesh.select_all(action="SELECT")
+    bpy.ops.mesh.convex_hull()
+    bpy.ops.object.mode_set(mode="OBJECT")
+    mat = p7.emissive("OverlapRed", (1.0, 0.02, 0.02, 1.0), 4.0)
     mat.blend_method = "OPAQUE"
     ob.data.materials.append(mat)
-    return tris
+    return ob
+
+
+def ensure_grey_scene():
+    """Flat grey studio. The park sky is not this pass; the still has to read as grey."""
+    scene = bpy.context.scene
+    scene.render.engine = "BLENDER_EEVEE"
+    scene.render.resolution_x = 1280
+    scene.render.resolution_y = 720
+    scene.render.film_transparent = False
+    scene.view_settings.view_transform = "Standard"
+    scene.eevee.taa_render_samples = 8
+    world = bpy.data.worlds.get("GreyStudio")
+    if world is None:
+        world = bpy.data.worlds.new("GreyStudio")
+    scene.world = world
+    world.use_nodes = True
+    nt = world.node_tree
+    nt.nodes.clear()
+    out = nt.nodes.new("ShaderNodeOutputWorld")
+    bg = nt.nodes.new("ShaderNodeBackground")
+    bg.inputs["Color"].default_value = (0.58, 0.58, 0.56, 1.0)
+    bg.inputs["Strength"].default_value = 1.0
+    nt.links.new(bg.outputs["Background"], out.inputs["Surface"])
+    if bpy.data.objects.get("GreySun") is None:
+        sun = bpy.data.objects.new("GreySun", bpy.data.lights.new("GreySun", "SUN"))
+        bpy.context.collection.objects.link(sun)
+        sun.rotation_euler = (math.radians(50), 0.1, math.radians(28))
+        sun.data.energy = 3.2
+        sun.data.angle = math.radians(8)
+        sun.data.color = (1.0, 0.98, 0.94)
+    if bpy.data.objects.get("GreyFill") is None:
+        fill = bpy.data.objects.new("GreyFill", bpy.data.lights.new("GreyFill", "AREA"))
+        bpy.context.collection.objects.link(fill)
+        fill.location = (2.4, -3.2, 2.6)
+        fill.data.energy = 180
+        fill.data.size = 4
+        fill.data.color = (0.9, 0.92, 0.95)
+    floor = bpy.data.objects.get("GreyFloor")
+    if floor is None:
+        bpy.ops.mesh.primitive_plane_add(size=16, location=(0.0, 0.0, FLOOR["z"]))
+        floor = bpy.context.active_object
+        floor.name = "GreyFloor"
+        floor.data.materials.append(p7.principled("GreyFloorMat", (0.46, 0.46, 0.44, 1), 0.85))
+    else:
+        floor.location.z = FLOOR["z"]
+
+
+def style_solid(ob, kind):
+    colors = {
+        "wall": (0.50, 0.50, 0.48, 1),
+        "box": (0.58, 0.44, 0.30, 1),
+        "zip": (0.18, 0.18, 0.20, 1),
+        "rope": (0.32, 0.26, 0.18, 1),
+        "ground": (0.42, 0.42, 0.40, 1),
+    }
+    ob.data.materials.append(p7.principled("Prop" + kind, colors.get(kind, (0.5, 0.5, 0.48, 1)), 0.7))
+
+
+def grey_mannequin(arm):
+    p7.paint(arm, p7.principled("MannequinGrey", (0.72, 0.72, 0.70, 1), 0.55))
+
+
+def body_fill(arm):
+    """Fraction of the frame the body spans on the longer screen axis."""
+    scene = bpy.context.scene
+    cam = scene.camera
+    xs = []
+    ys = []
+    for ob in p7.meshes(arm):
+        for corner in ob.bound_box:
+            x, y = p15.project(cam, ob.matrix_world @ Vector(corner))
+            xs.append(x)
+            ys.append(y)
+    if not xs:
+        return 0.0
+    span_x = (max(xs) - min(xs)) / scene.render.resolution_x
+    span_y = (max(ys) - min(ys)) / scene.render.resolution_y
+    return max(span_x, span_y)
 
 
 def render_worst(arm, base, parent, clip_name, worst, solid_kind):
+    """Grey mannequin, visible prop, red only on the penetrating volume."""
     os.makedirs(OUT, exist_ok=True)
     if not worst.get("nums"):
         return
+    ensure_grey_scene()
+    grey_mannequin(arm)
     clear_solids()
     for ob in list(bpy.data.objects):
         if ob.name.startswith("Overlap"):
@@ -802,36 +949,57 @@ def render_worst(arm, base, parent, clip_name, worst, solid_kind):
     if solid_kind == "ground":
         pieces = seat_feet(arm, pieces)
     solids = place_solid(solid_kind, pieces)
+    for solid in solids:
+        style_solid(solid, solid_kind)
     bpy.context.view_layer.update()
     pieces, deps = gather(arm)
-    faces = paint_overlap(arm, pieces, parent, solids, solid_kind, deps) or []
-    p14.side([arm], [], 48, 0.62, 0.28)
+    hull = paint_overlap(arm, pieces, parent, solids, solid_kind, deps)
+    # Frame the body, not the prop. A wall that is metres long would shrink the runner.
+    p9.frame_yaw([arm], (), yaw=math.pi / 2, lens=48, fill=0.60, lift=0.08)
     path = os.path.join(OUT, "%s-%s-t%0.3f.png" % (PHASE, clip_name, worst["t"]))
     scene = bpy.context.scene
     scene.render.filepath = path
+    scene.render.film_transparent = False
     scene.eevee.taa_render_samples = 8
+    if hull is not None:
+        hull.hide_render = True
     bpy.ops.render.render(write_still=True)
-    stamp_overlap(path, faces)
-    print("STILL", path, "faces", len(faces))
+    fill = body_fill(arm)
+    red_px = 0
+    if hull is not None:
+        for ob in p7.meshes(arm):
+            ob.hide_render = True
+        for solid in solids:
+            solid.hide_render = True
+        floor = bpy.data.objects.get("GreyFloor")
+        if floor is not None:
+            floor.hide_render = True
+        hull.hide_render = False
+        scene.render.film_transparent = True
+        over = path + ".over.png"
+        scene.render.filepath = over
+        bpy.ops.render.render(write_still=True)
+        scene.render.film_transparent = False
+        scene.render.filepath = path
+        for ob in p7.meshes(arm):
+            ob.hide_render = False
+        for solid in solids:
+            solid.hide_render = False
+        if floor is not None:
+            floor.hide_render = False
+        from PIL import Image
+        base_im = Image.open(path).convert("RGBA")
+        over_im = Image.open(over).convert("RGBA")
+        red = Image.new("RGBA", base_im.size, (220, 16, 16, 0))
+        # Keep only the hull's opaque pixels, so the grey body stays grey.
+        mask = over_im.getchannel("A")
+        red.putalpha(mask)
+        base_im = Image.alpha_composite(base_im, red)
+        base_im.convert("RGB").save(path)
+        red_px = sum(1 for px in mask.getdata() if px > 16)
+        os.remove(over)
+    print("STILL", path, "fill", round(fill, 3), "red_px", red_px, "hull", hull is not None)
     clear_solids()
-
-
-def stamp_overlap(path, faces):
-    """Paint the overlapping faces in pure red on the still. The mesh shell is easy to miss in EEVEE."""
-    if not faces or not os.path.exists(path):
-        return
-    from PIL import Image, ImageDraw
-    image = Image.open(path).convert("RGBA")
-    draw = ImageDraw.Draw(image, "RGBA")
-    cam = bpy.context.scene.camera
-    for face in faces:
-        pts = []
-        for point in face:
-            x, y = p15.project(cam, point)
-            pts.append((x, y))
-        if len(pts) >= 3:
-            draw.polygon(pts, fill=(255, 0, 0, 210))
-    image.convert("RGB").save(path)
 
 
 def cm(meters):
@@ -1263,33 +1431,39 @@ def main():
             if len(frames) > 3:
                 clip["frames"] = [frames[0], frames[len(frames) // 2], frames[-1]]
     rows = []
-    failing = []
     total_frames = 0
     world_max = 0.0
-    self_max = 0.0
-    fails = 0
+    pose_max = 0.0
+    rig_max = 0.0
+    pose_fails = 0
+    rig_fails = 0
     for clip in clips:
         row = check_clip(arm, base, parent, clip)
         rows.append((row, clip["solid"]))
         total_frames += row["frames"]
         world_max = max(world_max, row["world"])
-        self_max = max(self_max, row["self"])
-        fails += row["fails"]
+        pose_max = max(pose_max, row["pose"])
+        rig_max = max(rig_max, row["rig"])
+        pose_fails += row["pose_fails"]
+        rig_fails += row["rig_fails"]
         print(
             "WORST", clip["name"],
             "t", round(row["worst"]["t"], 3),
             "world_cm", cm(row["world"]),
-            "self_cm", cm(row["self"]),
-            "fails", row["fails"],
+            "pose_cm", cm(row["pose"]),
+            "rig_cm", cm(row["rig"]),
+            "poseFails", row["pose_fails"],
+            "rigJoint", row["rig_fails"],
             "pair", row["worst"]["pair"],
             "via", row["worst"]["kind"],
             "sec", round(row["seconds"], 2),
             "hip_cm", "" if row["hip_above"] is None else cm(row["hip_above"]),
         )
-        if row["fails"]:
-            failing.append((row, clip["solid"]))
-    proof = "no-clip clips=%d frames=%d worldMax=%.2f selfMax=%.2f fails=%d" % (
-        len(clips), total_frames, cm(world_max), cm(self_max), fails,
+        for depth, name in row["pose_pairs"][:4]:
+            print("POSEPAIR", clip["name"], name, "cm", cm(depth))
+    proof = (
+        "no-clip clips=%d frames=%d worldMax=%.2f poseMax=%.2f rigMax=%.2f poseFails=%d rigJoint=%d"
+        % (len(clips), total_frames, cm(world_max), cm(pose_max), cm(rig_max), pose_fails, rig_fails)
     )
     print("PROOF", proof)
     os.makedirs(OUT, exist_ok=True)
@@ -1299,13 +1473,22 @@ def main():
         for row, _solid in rows:
             w = row["worst"]
             handle.write(
-                "%s frames=%d world=%.2f self=%.2f fails=%d worst_t=%.3f pair=%s via=%s\n"
-                % (row["name"], row["frames"], cm(row["world"]), cm(row["self"]), row["fails"], w["t"], w["pair"], w["kind"])
+                "%s frames=%d world=%.2f pose=%.2f rig=%.2f poseFails=%d rigJoint=%d worst_t=%.3f pair=%s via=%s\n"
+                % (
+                    row["name"], row["frames"], cm(row["world"]), cm(row["pose"]), cm(row["rig"]),
+                    row["pose_fails"], row["rig_fails"], w["t"], w["pair"], w["kind"],
+                )
             )
-    if failing and os.environ.get("NOCLIP_RENDER", "1") == "1":
-        for row, solid in failing:
-            render_worst(arm, base, parent, row["name"], row["worst"], solid)
-    if fails:
+            for depth, name in row["pose_pairs"]:
+                handle.write("  pose %s %.2f\n" % (name, cm(depth)))
+    if os.environ.get("NOCLIP_RENDER", "1") == "1":
+        for row, solid in rows:
+            if row["name"] not in STILL_CLIPS:
+                continue
+            # After stills use the same t=0 the before pair used, so the fix is the same moment.
+            shot = row.get("open") if PHASE == "after" and row.get("open", {}).get("nums") else row["worst"]
+            render_worst(arm, base, parent, row["name"], shot, solid)
+    if pose_fails:
         raise SystemExit(proof)
 
 

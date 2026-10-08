@@ -16,6 +16,7 @@ namespace Tag.NoClipDump
         {
             public float Hip, HipYaw, HipRoll, Spine, SpineYaw, SpineRoll, Head, HeadYaw, HeadRoll;
             public float ThighL, ThighYawL, ThighR, ThighYawR, KneeL, KneeR;
+            public float ThighRollL, ThighRollR;
             public float ArmPitchL, ArmYawL, ArmRollL, ArmPitchR, ArmYawR, ArmRollR;
             public float ElbowL, ElbowR, FootL, FootR, Drop;
         }
@@ -24,7 +25,10 @@ namespace Tag.NoClipDump
         {
             CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
             foreach (VerbExitId id in VerbExitClock.Catalog)
-                Emit("exit-" + id, VerbExitClock.Duration(id), SolidForExit(id), u => FromExit(id, u));
+            {
+                float dur = VerbExitClock.Duration(id);
+                Emit("exit-" + id, dur, SolidForExit(id), t => FromExit(id, dur > 0.0001f ? t / dur : 0f));
+            }
 
             float runPeriod = (float)(2.0 * Math.PI / WallPose.RunCadenceFull);
             Emit("wall-run", runPeriod, "wall", t => FromWall(WallPose.RunCycle(WallPose.RunCadenceFull * t, true)));
@@ -137,6 +141,7 @@ namespace Tag.NoClipDump
                 Spine = s.Spine, SpineYaw = s.SpineYaw, SpineRoll = s.SpineRoll,
                 Head = s.Head, HeadYaw = s.HeadYaw,
                 ThighL = s.ThighL, ThighYawL = s.ThighYawL, ThighR = s.ThighR, ThighYawR = s.ThighYawR,
+                ThighRollL = s.ThighRollL, ThighRollR = s.ThighRollR,
                 KneeL = s.KneeL, KneeR = s.KneeR,
                 ArmPitchL = s.ArmPitchL, ArmYawL = s.ArmYawL, ArmRollL = s.ArmRollL,
                 ArmPitchR = s.ArmPitchR, ArmYawR = s.ArmYawR, ArmRollR = s.ArmRollR,
@@ -157,6 +162,7 @@ namespace Tag.NoClipDump
                 Head = s.Head,
                 HeadRoll = -s.LeanZ * WallPose.HeadRollShare,
                 ThighL = s.ThighL, ThighR = s.ThighR, KneeL = s.KneeL, KneeR = s.KneeR,
+                ThighRollL = s.ThighRollL, ThighRollR = s.ThighRollR,
                 ArmPitchL = s.ArmPitchL, ArmYawL = s.ArmYawL, ArmPitchR = s.ArmPitchR, ArmYawR = s.ArmYawR,
                 ElbowL = s.ElbowL, ElbowR = s.ElbowR, FootL = s.FootL, FootR = s.FootR,
             };
@@ -173,6 +179,7 @@ namespace Tag.NoClipDump
                 Head = s.Head,
                 HeadRoll = -s.LeanZ * WallPose.HeadRollShare,
                 ThighL = s.ThighL, ThighR = s.ThighR, KneeL = s.KneeL, KneeR = s.KneeR,
+                ThighRollL = s.ThighRollL, ThighRollR = s.ThighRollR,
                 ArmPitchL = s.ArmPitchL, ArmYawL = s.ArmYawL, ArmPitchR = s.ArmPitchR, ArmYawR = s.ArmYawR,
                 ElbowL = s.ElbowL, ElbowR = s.ElbowR,
             };
@@ -184,6 +191,7 @@ namespace Tag.NoClipDump
             {
                 Hip = s.Hip, Spine = s.Spine, Head = s.Head,
                 ThighL = s.ThighL, ThighR = s.ThighR, KneeL = s.KneeL, KneeR = s.KneeR,
+                ThighRollL = s.ThighRollL, ThighRollR = s.ThighRollR,
                 ArmPitchL = s.ArmPitchL, ArmYawL = s.ArmYawL, ArmPitchR = s.ArmPitchR, ArmYawR = s.ArmYawR,
                 ElbowL = s.ElbowL, ElbowR = s.ElbowR,
             };
@@ -226,8 +234,10 @@ namespace Tag.NoClipDump
                 Head = VerbPoseClips.SlideHead,
                 ThighL = VerbPoseClips.SlideLeadThigh,
                 ThighYawL = VerbPoseClips.SlideLeadYaw,
+                ThighRollL = -20f,
                 ThighR = VerbPoseClips.SlideTrailThigh,
                 ThighYawR = -VerbPoseClips.SlideTrailYaw,
+                ThighRollR = 22f,
                 KneeL = VerbPoseClips.SlideLeadKnee,
                 KneeR = VerbPoseClips.SlideTrailKnee,
                 FootL = VerbPoseClips.SlideLeadFoot,
@@ -355,6 +365,8 @@ namespace Tag.NoClipDump
             f.ThighYawR = Lerp(a.ThighYawR, b.ThighYawR, t);
             f.KneeL = Lerp(a.KneeL, b.KneeL, t);
             f.KneeR = Lerp(a.KneeR, b.KneeR, t);
+            f.ThighRollL = Lerp(a.ThighRollL, b.ThighRollL, t);
+            f.ThighRollR = Lerp(a.ThighRollR, b.ThighRollR, t);
             f.ArmPitchL = Lerp(a.ArmPitchL, b.ArmPitchL, t);
             f.ArmYawL = Lerp(a.ArmYawL, b.ArmYawL, t);
             f.ArmRollL = Lerp(a.ArmRollL, b.ArmRollL, t);
@@ -381,6 +393,7 @@ namespace Tag.NoClipDump
                 f.ThighL, f.ThighYawL, f.ThighR, f.ThighYawR, f.KneeL, f.KneeR,
                 f.ArmPitchL, f.ArmYawL, f.ArmRollL, f.ArmPitchR, f.ArmYawR, f.ArmRollR,
                 f.ElbowL, f.ElbowR, f.FootL, f.FootR, f.Drop,
+                0f, 0f, 0f, 0f, f.ThighRollL, f.ThighRollR,
             };
             string[] s = new string[v.Length];
             for (int i = 0; i < v.Length; i++) s[i] = v[i].ToString("0.###");

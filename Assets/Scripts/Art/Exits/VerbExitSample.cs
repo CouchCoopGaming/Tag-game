@@ -13,6 +13,7 @@ namespace Tag.Art
         public float Head, HeadYaw;
         public float ThighL, ThighR, KneeL, KneeR;
         public float ThighYawL, ThighYawR;
+        public float ThighRollL, ThighRollR;
         public float ArmPitchL, ArmPitchR, ArmYawL, ArmYawR, ArmRollL, ArmRollR;
         public float ElbowL, ElbowR;
         public float FootL, FootR;
@@ -40,6 +41,8 @@ namespace Tag.Art
             s.KneeR = a.KneeR * u + b.KneeR * t;
             s.ThighYawL = a.ThighYawL * u + b.ThighYawL * t;
             s.ThighYawR = a.ThighYawR * u + b.ThighYawR * t;
+            s.ThighRollL = a.ThighRollL * u + b.ThighRollL * t;
+            s.ThighRollR = a.ThighRollR * u + b.ThighRollR * t;
             s.ArmPitchL = a.ArmPitchL * u + b.ArmPitchL * t;
             s.ArmPitchR = a.ArmPitchR * u + b.ArmPitchR * t;
             s.ArmYawL = a.ArmYawL * u + b.ArmYawL * t;
@@ -63,6 +66,7 @@ namespace Tag.Art
             float thighL = s.ThighL;
             float kneeL = s.KneeL;
             float thighYawL = s.ThighYawL;
+            float thighRollL = s.ThighRollL;
             float armPitchL = s.ArmPitchL;
             float armYawL = s.ArmYawL;
             float armRollL = s.ArmRollL;
@@ -74,6 +78,8 @@ namespace Tag.Art
             s.KneeR = kneeL;
             s.ThighYawL = -s.ThighYawR;
             s.ThighYawR = -thighYawL;
+            s.ThighRollL = -s.ThighRollR;
+            s.ThighRollR = -thighRollL;
             s.ArmPitchL = s.ArmPitchR;
             s.ArmPitchR = armPitchL;
             s.ArmYawL = -s.ArmYawR;

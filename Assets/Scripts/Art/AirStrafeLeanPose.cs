@@ -24,7 +24,7 @@ namespace Tag.Art
         public const float SideDeadzone = 0.05f;
 
         /// <summary>Chest roll, degrees. Modest next to a wall-run tilt, readable at the chase boom.</summary>
-        public const float Roll = 18f;
+        public const float Roll = 14f;
         /// <summary>Hip roll into the same side, a little less so the chest leads.</summary>
         public const float HipLean = 12f;
         /// <summary>Head rolls against the chest so the face stays up.</summary>
@@ -188,7 +188,7 @@ namespace Tag.Art
             if (Mathf.Abs(plain.x - cfg.airAccel * dt) > 0.001f) return false;
             if (!(plain.magnitude > 12f)) return false;
             if (!(bonus.magnitude > plain.magnitude)) return false;
-            if (Mathf.Abs(JumpPose.FallArmYaw - 58f) > 0.01f) return false;
+            if (Mathf.Abs(JumpPose.FallArmYaw - (-58f)) > 0.01f) return false;
             if (Mathf.Abs(JumpPose.FallThigh - 16f) > 0.01f) return false;
             return true;
         }

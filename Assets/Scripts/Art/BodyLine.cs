@@ -277,8 +277,9 @@ namespace Tag.Art
             if (ZipMiss(false) < 40f || ZipMiss(true) > 0.05f) return false;
             if (ZipGrab(0f) < 0.05f || ZipGrab(0f) > 0.5f) return false;
             if (Mathf.Abs(ZipGrab(ZipPose.CatchSeconds) - 1f) > 0.001f) return false;
-            if (ZipDropStep(false) < 80f) return false;
-            if (ZipDropStep(true) > ZipDropStep(false) * 0.55f) return false;
+            // The let-go stays on the hang pitch. A pitch pop drags the cable through the body.
+            if (ZipDropStep(false) > 8f) return false;
+            if (ZipDropStep(true) < 12f) return false;
             if (PadStep(false) < 100f) return false;
             if (PadStep(true) > PadStep(false) * 0.45f) return false;
             if (PadOpen(0f) < 0.02f || PadOpen(PadSeconds) < 0.99f) return false;

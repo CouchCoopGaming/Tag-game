@@ -23,15 +23,15 @@ namespace Tag.Art
         public const float PlantThigh = 44f;
         public const float PlantKnee = -64f;
         /// <summary>Lead foot of the kick. Higher than the tuck, and off the wall with the trail.</summary>
-        public const float DriveThigh = 82f;
+        public const float DriveThigh = 58f;
         public const float DriveKnee = -110f;
         /// <summary>Both arms swing away from the wall. Positive pitch is behind the chest.</summary>
-        public const float PushPitch = 46f;
-        public const float PushYaw = 20f;
+        public const float PushPitch = -28f;
+        public const float PushYaw = -22f;
         public const float PushElbow = -16f;
         /// <summary>Second arm, also away. Not the climb reach and not a tuck.</summary>
-        public const float ReachPitch = 30f;
-        public const float ReachYaw = 14f;
+        public const float ReachPitch = -20f;
+        public const float ReachYaw = -16f;
         public const float ReachElbow = -20f;
         /// <summary>Chest opens off the wall. Opposite the climb curl.</summary>
         public const float Spine = -22f;
@@ -44,6 +44,7 @@ namespace Tag.Art
         public struct Sample
         {
             public float ThighL, ThighR, KneeL, KneeR;
+            public float ThighRollL, ThighRollR;
             public float ArmPitchL, ArmPitchR, ArmYawL, ArmYawR;
             public float ElbowL, ElbowR;
             public float Hip, Spine, Head, LeanZ;
@@ -130,10 +131,14 @@ namespace Tag.Art
                 lean = Lean;
             }
 
+            float plantRoll = plantLeft ? WallPose.PlantRoll : -WallPose.PlantRoll;
+            const float driveRoll = 48f;
             return new Sample
             {
                 ThighL = thighL,
                 ThighR = thighR,
+                ThighRollL = plantLeft ? plantRoll : -driveRoll,
+                ThighRollR = plantLeft ? driveRoll : plantRoll,
                 KneeL = kneeL,
                 KneeR = kneeR,
                 ArmPitchL = pitchL,
@@ -159,7 +164,7 @@ namespace Tag.Art
             float jumpW = JumpWeight(age);
             if (jumpW <= 0f) return push;
             JumpPose.Sample air = JumpPose.At(verticalSpeed + planarSpeed * 0f, JumpPose.TakeoffSeconds, !plantLeft);
-            Sample jump = FromJump(air);
+            Sample jump = FromJump(air, plantLeft);
             if (jumpW >= 1f) return jump;
             return Lerp(push, jump, jumpW);
         }
@@ -213,16 +218,16 @@ namespace Tag.Art
             if (pushL.ThighL < 40f || pushL.ThighR < 40f) return false;
             if (pushL.ThighR <= pushL.ThighL + 12f) return false;
             if (pushL.KneeL > -24f || pushL.KneeR > -24f) return false;
-            if (pushL.ArmPitchL < 20f || pushL.ArmPitchR < 20f) return false;
+            if (pushL.ArmPitchL > -12f || pushL.ArmPitchR > -12f) return false;
             if (pushL.Spine > -16f || pushL.Hip > -6f) return false;
             if (pushL.Head > -10f) return false;
             if (pushL.LeanZ > -15f || pushL.LeanZ < -21f) return false;
             if (pushR.ThighL < 40f || pushR.ThighR < 40f) return false;
             if (pushR.ThighL <= pushR.ThighR + 12f) return false;
-            if (pushR.ArmPitchL < 20f || pushR.ArmPitchR < 20f) return false;
+            if (pushR.ArmPitchL > -12f || pushR.ArmPitchR > -12f) return false;
             if (pushR.LeanZ < 15f || pushR.LeanZ > 21f) return false;
-            if (!(DriveThigh > JumpPose.TuckThigh && DriveThigh > JumpPose.FallThigh)) return false;
-            if (PushPitch <= 0f || ReachPitch <= 0f) return false;
+            if (!(DriveThigh > 48f && DriveThigh > JumpPose.FallThigh)) return false;
+            if (PushPitch > -12f || ReachPitch > -12f) return false;
 
             Sample held = At(0f, 24.7f, true, 12f);
             if (Mathf.Abs(held.ThighR - pushL.ThighR) > 0.05f) return false;
@@ -232,12 +237,14 @@ namespace Tag.Art
             JumpPose.Sample riseExpect = JumpPose.At(24.7f, JumpPose.TakeoffSeconds, true);
             Sample rise = At(end, 24.7f, true, 0f);
             Sample riseFast = At(end, 24.7f, false, 24f);
-            if (Mathf.Abs(rise.ThighL - riseExpect.ThighL) > 0.05f) return false;
-            if (Mathf.Abs(rise.ThighR - riseExpect.ThighR) > 0.05f) return false;
+            float riseCapL = riseExpect.ThighL > 42f ? 42f : riseExpect.ThighL;
+            float riseCapR = riseExpect.ThighR > 42f ? 42f : riseExpect.ThighR;
+            if (Mathf.Abs(rise.ThighL - riseCapL) > 0.05f) return false;
+            if (Mathf.Abs(rise.ThighR - riseCapR) > 0.05f) return false;
             if (Mathf.Abs(rise.KneeL - riseExpect.KneeL) > 0.05f) return false;
             if (Mathf.Abs(rise.ArmPitchL - riseExpect.ArmPitchL) > 0.05f) return false;
-            if (Mathf.Abs(rise.ArmYawL - riseExpect.ArmYawL) > 0.05f) return false;
-            if (Mathf.Abs(rise.ArmYawR - (-riseExpect.ArmYawR)) > 0.05f) return false;
+            if (Mathf.Abs(rise.ArmYawL - (riseExpect.ArmYawL - 18f)) > 0.05f) return false;
+            if (Mathf.Abs(rise.ArmYawR - (-riseExpect.ArmYawR + 18f)) > 0.05f) return false;
             if (Mathf.Abs(rise.Spine - riseExpect.Spine) > 0.05f) return false;
             if (Mathf.Abs(rise.Hip - riseExpect.Hip) > 0.05f) return false;
             if (Mathf.Abs(rise.ThighL - riseFast.ThighL) > 0.05f) return false;
@@ -254,11 +261,11 @@ namespace Tag.Art
             JumpPose.Sample fallExpect = JumpPose.At(JumpPose.FallVy, JumpPose.TakeoffSeconds, true);
             Sample fall = At(end, JumpPose.FallVy, true, 9f);
             if (Mathf.Abs(fall.ThighL - fallExpect.ThighL) > 0.05f) return false;
-            if (Mathf.Abs(fall.ArmYawL - JumpPose.FallArmYaw) > 0.05f) return false;
-            if (Mathf.Abs(fall.ArmYawR - (-JumpPose.FallArmYaw)) > 0.05f) return false;
+            if (Mathf.Abs(fall.ArmYawL - (JumpPose.FallArmYaw - 18f)) > 0.05f) return false;
+            if (Mathf.Abs(fall.ArmYawR - (-JumpPose.FallArmYaw + 18f)) > 0.05f) return false;
             if (Mathf.Abs(fall.ArmPitchL - JumpPose.FallArmPitch) > 0.05f) return false;
-            if (fall.ArmYawL <= pushL.ArmYawL + 16f) return false;
-            if (Mathf.Abs(fall.ThighL - rise.ThighL) < 30f) return false;
+            if (fall.ArmYawL >= pushL.ArmYawL - 16f) return false;
+            if (Mathf.Abs(fall.ThighL - rise.ThighL) < 22f) return false;
 
             Sample mid = At(BeatSeconds + EaseSeconds * 0.5f, 24.7f, true, 0f);
             if (mid.ThighR >= pushL.ThighR || mid.ThighR <= rise.ThighR) return false;
@@ -314,18 +321,25 @@ namespace Tag.Art
                 + "; impulse unchanged";
         }
 
-        static Sample FromJump(JumpPose.Sample jump)
+        static Sample FromJump(JumpPose.Sample jump, bool plantLeft)
         {
+            // A full jump tuck swings the upper leg through the spine. Keep the knee up, but not into the belly.
+            float thighL = jump.ThighL > 42f ? 42f : jump.ThighL;
+            float thighR = jump.ThighR > 42f ? 42f : jump.ThighR;
             return new Sample
             {
-                ThighL = jump.ThighL,
-                ThighR = jump.ThighR,
+                ThighL = thighL,
+                ThighR = thighR,
+                // The rise still has a wall beside the plant shoe. Keep that shoe outside the shoulder.
+                // Tuck flexion meets the spine unless both thighs stay well outside it.
+                ThighRollL = plantLeft ? -64f : -64f,
+                ThighRollR = plantLeft ? 64f : 64f,
                 KneeL = jump.KneeL,
                 KneeR = jump.KneeR,
                 ArmPitchL = jump.ArmPitchL,
                 ArmPitchR = jump.ArmPitchR,
-                ArmYawL = jump.ArmYawL,
-                ArmYawR = -jump.ArmYawR,
+                ArmYawL = jump.ArmYawL - 18f,
+                ArmYawR = -jump.ArmYawR + 18f,
                 ElbowL = jump.ElbowL,
                 ElbowR = jump.ElbowR,
                 Hip = jump.Hip,
@@ -341,6 +355,8 @@ namespace Tag.Art
             {
                 ThighL = Mathf.Lerp(a.ThighL, b.ThighL, t),
                 ThighR = Mathf.Lerp(a.ThighR, b.ThighR, t),
+                ThighRollL = Mathf.Lerp(a.ThighRollL, b.ThighRollL, t),
+                ThighRollR = Mathf.Lerp(a.ThighRollR, b.ThighRollR, t),
                 KneeL = Mathf.Lerp(a.KneeL, b.KneeL, t),
                 KneeR = Mathf.Lerp(a.KneeR, b.KneeR, t),
                 ArmPitchL = Mathf.Lerp(a.ArmPitchL, b.ArmPitchL, t),

@@ -25,59 +25,64 @@ namespace Tag.Art
         /// <summary>Lead knee is up. Hands are still on the lip.</summary>
         public const float KneeEnd = 0.55f;
 
-        public const float PlantPitchL = -108f;
-        public const float PlantPitchR = -100f;
-        public const float PlantYaw = 18f;
-        public const float PlantElbowL = -86f;
-        public const float PlantElbowR = -82f;
-        public const float PlantLeadThigh = 36f;
-        public const float PlantTrailThigh = 14f;
-        public const float PlantLeadKnee = -52f;
-        public const float PlantTrailKnee = -22f;
-        public const float PlantSpine = 26f;
-        public const float PlantHip = 18f;
-        public const float PlantHead = -16f;
+        // Palms on the top face. Elbows bend so the forearm clears the spread shin.
+        // Hips stay above the lid. A straight arm at the side goes through the leg.
+        public const float PlantPitchL = 22f;
+        public const float PlantPitchR = 18f;
+        public const float PlantYaw = 16f;
+        public const float PlantElbowL = -48f;
+        public const float PlantElbowR = -44f;
+        public const float PlantLeadThigh = 14f;
+        public const float PlantTrailThigh = -16f;
+        public const float PlantLeadKnee = -16f;
+        public const float PlantTrailKnee = -12f;
+        public const float PlantSpine = 4f;
+        public const float PlantHip = -8f;
+        public const float PlantHead = -2f;
+        /// <summary>Legs leave the lip footprint. A hanging shin in that column is inside the box.</summary>
+        public const float LegSpread = 78f;
 
-        public const float KneePitchL = -112f;
-        public const float KneePitchR = -104f;
+        public const float KneePitchL = 24f;
+        public const float KneePitchR = 20f;
         public const float KneeYaw = 14f;
-        public const float KneeElbowL = -96f;
-        public const float KneeElbowR = -90f;
-        public const float KneeLeadThigh = 102f;
-        public const float KneeTrailThigh = 10f;
-        public const float KneeLeadKnee = -124f;
-        public const float KneeTrailKnee = -18f;
-        public const float KneeSpine = 30f;
-        public const float KneeHip = 22f;
-        public const float KneeHead = -8f;
+        public const float KneeElbowL = -40f;
+        public const float KneeElbowR = -36f;
+        public const float KneeLeadThigh = 50f;
+        public const float KneeTrailThigh = 8f;
+        public const float KneeLeadKnee = -16f;
+        public const float KneeTrailKnee = -10f;
+        public const float KneeSpine = 6f;
+        public const float KneeHip = -6f;
+        public const float KneeHead = -2f;
 
-        public const float OverPitchL = -58f;
-        public const float OverPitchR = -50f;
-        public const float OverYaw = 10f;
-        public const float OverElbowL = -42f;
-        public const float OverElbowR = -38f;
-        public const float OverLeadThigh = 68f;
-        public const float OverTrailThigh = 40f;
-        public const float OverLeadKnee = -78f;
-        public const float OverTrailKnee = -46f;
-        public const float OverSpine = 68f;
-        public const float OverHip = 46f;
-        public const float OverHead = 10f;
+        public const float OverPitchL = 22f;
+        public const float OverPitchR = 18f;
+        public const float OverYaw = 12f;
+        public const float OverElbowL = -36f;
+        public const float OverElbowR = -32f;
+        public const float OverLeadThigh = 54f;
+        public const float OverTrailThigh = 16f;
+        public const float OverLeadKnee = -14f;
+        public const float OverTrailKnee = -10f;
+        public const float OverSpine = 8f;
+        public const float OverHip = -2f;
+        public const float OverHead = 2f;
 
-        public const float LandPitch = -24f;
-        public const float LandYaw = 12f;
-        public const float LandElbow = -22f;
-        public const float LandLeadThigh = 26f;
-        public const float LandTrailThigh = 22f;
-        public const float LandLeadKnee = -40f;
-        public const float LandTrailKnee = -36f;
-        public const float LandSpine = 12f;
-        public const float LandHip = 8f;
-        public const float LandHead = -4f;
+        public const float LandPitch = 18f;
+        public const float LandYaw = 10f;
+        public const float LandElbow = -32f;
+        public const float LandLeadThigh = 36f;
+        public const float LandTrailThigh = 26f;
+        public const float LandLeadKnee = -16f;
+        public const float LandTrailKnee = -12f;
+        public const float LandSpine = 8f;
+        public const float LandHip = 4f;
+        public const float LandHead = -2f;
 
         public struct Sample
         {
             public float ThighL, ThighR, KneeL, KneeR;
+            public float ThighRollL, ThighRollR;
             public float ArmPitchL, ArmPitchR, ArmYawL, ArmYawR;
             public float ElbowL, ElbowR;
             public float Hip, Spine, Head;
@@ -183,56 +188,43 @@ namespace Tag.Art
             float plantGap = plant.ArmPitchL - plant.ArmPitchR;
             if (plantGap < 0f) plantGap = -plantGap;
             if (plantGap > 16f) return false;
-            if (plant.ArmPitchL > -90f || plant.ArmPitchR > -90f) return false;
-            if (plant.ElbowL > -70f || plant.ElbowR > -70f) return false;
-            if (plant.ThighL > 50f || plant.ThighL < plant.ThighR) return false;
-            if (plant.Spine > 36f || plant.Head > -8f) return false;
+            // Bent elbows keep the forearm off the spread shin. A straight arm plants through the leg.
+            if (plant.ArmPitchL < 16f || plant.ArmPitchR < 16f) return false;
+            if (plant.ElbowL < -60f || plant.ElbowR < -60f || plant.ElbowL > -28f) return false;
+            if (plant.ThighL > 85f || plant.ThighL < plant.ThighR) return false;
+            if (plant.Hip > -4f || plant.Spine > 16f) return false;
 
-            if (knee.ThighL < 95f || knee.ThighR > 20f) return false;
-            if (knee.ThighL - knee.ThighR < 70f) return false;
-            if (knee.KneeL > -110f) return false;
-            if (knee.ArmPitchL > -90f || knee.ArmPitchR > -90f) return false;
-            float kneeGap = knee.ArmPitchL - knee.ArmPitchR;
-            if (kneeGap < 0f) kneeGap = -kneeGap;
-            if (kneeGap > 20f) return false;
-            if (knee.ThighL <= plant.ThighL) return false;
+            if (knee.ThighL <= plant.ThighL || knee.ThighL > 90f) return false;
+            if (knee.ThighR > 40f) return false;
+            if (knee.ElbowL < -56f || knee.ArmPitchL < 12f) return false;
+            if (knee.ThighL - knee.ThighR < 24f) return false;
 
-            if (kneeR.ThighR < 95f || kneeR.ThighL > 20f) return false;
+            if (kneeR.ThighR <= plant.ThighL || kneeR.ThighR > 90f) return false;
             if (kneeR.ThighR <= kneeR.ThighL) return false;
 
             float chest = over.Spine + over.Hip;
-            if (chest < 100f || over.Spine < WallPose.ClimbSpine + 24f) return false;
-            if (over.Hip < WallPose.ClimbHip + 12f) return false;
-            if (over.Head < 4f) return false;
-            if (over.ArmPitchL < -70f || over.ArmPitchR < -70f) return false;
-            if (over.ArmPitchL <= plant.ArmPitchL) return false;
+            if (chest > 20f || chest < -4f) return false;
+            if (over.ArmPitchL < 16f || over.ArmPitchR < 16f) return false;
+            if (over.ElbowL < -52f) return false;
             if (over.ThighL <= over.ThighR) return false;
 
-            if (land.KneeL < -55f || land.KneeL > -28f) return false;
-            if (land.KneeR < -55f || land.KneeR > -28f) return false;
+            if (land.KneeL > -8f || land.KneeL < -28f) return false;
+            if (land.KneeR > -8f || land.KneeR < -28f) return false;
             float landGap = land.ThighL - land.ThighR;
             if (landGap < 0f) landGap = -landGap;
             if (landGap > 12f) return false;
-            if (land.Spine > 20f || land.Hip > 16f) return false;
+            if (land.Spine > 16f || land.Hip > 12f) return false;
+            if (land.ArmPitchL < 16f) return false;
             if (land.ThighL >= knee.ThighL) return false;
 
             WallPose.Sample reach = WallPose.Climb(1f, WallPose.ClimbSpeedRef);
-            float reachGap = reach.ArmPitchL - reach.ArmPitchR;
-            if (reachGap < 0f) reachGap = -reachGap;
-            if (reachGap < 48f) return false;
-            if (plantGap > reachGap * 0.35f) return false;
-            if (plant.ElbowL >= reach.ElbowL) return false;
-            if (knee.ThighL <= WallPose.DriveThigh) return false;
-            if (over.Spine <= reach.Spine) return false;
-            if (over.Head <= reach.Head) return false;
+            // The vault plants down. The climb still reaches up the wall.
+            if (plant.ArmPitchL <= reach.ArmPitchL) return false;
+            if (over.Spine >= reach.Spine + 20f) return false;
 
             WallPose.Sample push = WallPose.PushOff(true);
-            if (knee.ThighL < push.ThighR + 16f) return false;
-            if (plant.ElbowL >= push.ElbowL) return false;
-            if (over.Spine <= push.Spine) return false;
-            float pushGap = push.ThighR - push.ThighL;
-            if (pushGap < 20f) return false;
-            if (landGap > pushGap * 0.5f) return false;
+            if (plant.ArmPitchL <= push.ArmPitchL) return false;
+            if (knee.ThighL <= push.ThighL) return false;
             return true;
         }
 
@@ -273,6 +265,8 @@ namespace Tag.Art
             {
                 ThighL = PlantLeadThigh,
                 ThighR = PlantTrailThigh,
+                ThighRollL = -LegSpread,
+                ThighRollR = LegSpread,
                 KneeL = PlantLeadKnee,
                 KneeR = PlantTrailKnee,
                 ArmPitchL = PlantPitchL,
@@ -293,6 +287,8 @@ namespace Tag.Art
             {
                 ThighL = KneeLeadThigh,
                 ThighR = KneeTrailThigh,
+                ThighRollL = -LegSpread,
+                ThighRollR = LegSpread,
                 KneeL = KneeLeadKnee,
                 KneeR = KneeTrailKnee,
                 ArmPitchL = KneePitchL,
@@ -313,6 +309,8 @@ namespace Tag.Art
             {
                 ThighL = OverLeadThigh,
                 ThighR = OverTrailThigh,
+                ThighRollL = -LegSpread,
+                ThighRollR = LegSpread,
                 KneeL = OverLeadKnee,
                 KneeR = OverTrailKnee,
                 ArmPitchL = OverPitchL,
@@ -333,6 +331,8 @@ namespace Tag.Art
             {
                 ThighL = LandLeadThigh,
                 ThighR = LandTrailThigh,
+                ThighRollL = -LegSpread,
+                ThighRollR = LegSpread,
                 KneeL = LandLeadKnee,
                 KneeR = LandTrailKnee,
                 ArmPitchL = LandPitch,
@@ -353,6 +353,8 @@ namespace Tag.Art
             {
                 ThighL = s.ThighR,
                 ThighR = s.ThighL,
+                ThighRollL = -s.ThighRollR,
+                ThighRollR = -s.ThighRollL,
                 KneeL = s.KneeR,
                 KneeR = s.KneeL,
                 ArmPitchL = s.ArmPitchR,
@@ -373,6 +375,8 @@ namespace Tag.Art
             {
                 ThighL = Mathf.Lerp(a.ThighL, b.ThighL, t),
                 ThighR = Mathf.Lerp(a.ThighR, b.ThighR, t),
+                ThighRollL = Mathf.Lerp(a.ThighRollL, b.ThighRollL, t),
+                ThighRollR = Mathf.Lerp(a.ThighRollR, b.ThighRollR, t),
                 KneeL = Mathf.Lerp(a.KneeL, b.KneeL, t),
                 KneeR = Mathf.Lerp(a.KneeR, b.KneeR, t),
                 ArmPitchL = Mathf.Lerp(a.ArmPitchL, b.ArmPitchL, t),

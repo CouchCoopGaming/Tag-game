@@ -158,7 +158,7 @@ namespace Tag.Art
             if (ChestStd(false) < 2f || ChestStd(true) > 0.05f) return false;
             if (Tilt(0f) > 0.01f) return false;
             if (Mathf.Abs(Tilt(WallPose.WallRunSpeedRef) - WallPose.RunTilt) > 0.01f) return false;
-            if (Tilt(WallPose.WallRunSpeedRef * 0.5f) < 8f || Tilt(WallPose.WallRunSpeedRef * 0.5f) > 12f) return false;
+            if (Tilt(WallPose.WallRunSpeedRef * 0.5f) < 6f || Tilt(WallPose.WallRunSpeedRef * 0.5f) > 9f) return false;
             if (Grab(0f) > 0.001f || Mathf.Abs(Grab(1f) - 1f) > 0.001f) return false;
             if (Mathf.Abs(Grab(0.5f) - 0.5f) > 0.001f) return false;
             if (LipMiss(1.40f, false) < 20f || LipMiss(1.40f, true) > 0.05f) return false;

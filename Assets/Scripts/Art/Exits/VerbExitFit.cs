@@ -297,7 +297,7 @@ namespace Tag.Art
             if (LipWeight(VerbExitId.ZipDrop, 0.1f) > 0.001f) return false;
 
             VerbExitSample roll0 = Frame(VerbExitId.Roll, 0f, 4f, 0f);
-            if (roll0.ArmYawL < 40f) return false;
+            if (roll0.ArmYawL > -40f) return false;
             if (roll0.RootSpin > 1f) return false;
             VerbExitSample rollMid = Frame(VerbExitId.Roll, 0.52f, 4f, 0f);
             if (rollMid.RootSpin < 170f) return false;

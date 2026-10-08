@@ -29,11 +29,11 @@ namespace Tag.Art
         // The free arm stays forward. The other hand trails back near the ground.
         // Crouch stays a symmetric forward guard. slideBoost is not in here. No root motion.
         // The pose does not take speed, so the read holds at slide-entry and at the end of decay.
-        public const float SlideHip = -22f;
-        public const float SlideSpine = -14f;
+        public const float SlideHip = -18f;
+        public const float SlideSpine = -12f;
         public const float SlideHead = 50f;
-        public const float SlideLeadThigh = 68f;
-        public const float SlideLeadYaw = 8f;
+        public const float SlideLeadThigh = 66f;
+        public const float SlideLeadYaw = 16f;
         public const float SlideLeadKnee = -10f;
         public const float SlideTrailThigh = 40f;
         public const float SlideTrailYaw = 24f;
@@ -41,11 +41,11 @@ namespace Tag.Art
         // Free arm. Negative pitch reaches toward +Z. Kept as SlideArmPitch
         // so a site that has not split the arms still reaches forward.
         public const float SlideLeadArmPitch = -36f;
-        public const float SlideLeadArmYaw = 22f;
+        public const float SlideLeadArmYaw = -22f;
         public const float SlideLeadElbow = -28f;
         // Trail hand. Positive pitch is behind the shoulder and down, near the ground.
         public const float SlideBalanceArmPitch = 48f;
-        public const float SlideBalanceArmYaw = 22f;
+        public const float SlideBalanceArmYaw = -22f;
         public const float SlideBalanceElbow = -36f;
         public const float SlideArmPitch = SlideLeadArmPitch;
         public const float SlideArmYaw = SlideLeadArmYaw;
@@ -93,15 +93,15 @@ namespace Tag.Art
         // elbow out from the chest. Pitch below about -150 wraps the fist through the
         // torso. Extra roll folds the hand into the pelvis, so the strike roll stays mild.
         // Positive pitch is the back arm. The right arm strikes. The left arm counters.
-        // The cock pulls the fist in beside the head. A wide positive yaw is a float, not a cock.
+        // The cock is a guard in front of the chin. The strike extends that line. A fist beside the ear sits inside the head.
         // The strike is the long chest-high line for reach 1.55. The recover folds that line
         // back to the ribs. It is not a second cock and it is not the idle hang.
-        public const float PunchCockPitch = -80f;
-        public const float PunchCockYaw = -16f;
-        public const float PunchCockRoll = -16f;
-        public const float PunchCockElbow = -110f;
-        public const float PunchStrikePitch = -74f;
-        public const float PunchStrikeYaw = 4f;
+        public const float PunchCockPitch = -42f;
+        public const float PunchCockYaw = -24f;
+        public const float PunchCockRoll = -14f;
+        public const float PunchCockElbow = -78f;
+        public const float PunchStrikePitch = -72f;
+        public const float PunchStrikeYaw = 6f;
         public const float PunchStrikeRoll = -10f;
         public const float PunchStrikeElbow = -4f;
         public const float PunchGuardPitchCock = -26f;
@@ -114,7 +114,7 @@ namespace Tag.Art
         public const float PunchRecoverPitch = -28f;
         public const float PunchRecoverYaw = -6f;
         public const float PunchRecoverRoll = -12f;
-        public const float PunchRecoverElbow = -84f;
+        public const float PunchRecoverElbow = -96f;
         public const float PunchRecoverGuardPitch = -18f;
         public const float PunchRecoverGuardYaw = -10f;
         public const float PunchRecoverGuardElbow = -52f;
@@ -146,11 +146,10 @@ namespace Tag.Art
         public const float PunchStrikeTrailKnee = -6f;
 
         // Both arms share one pitch. The gather bends them in front of the chest.
-        // The claim opens that bend to one contact. Stored yaw is the inward amount:
-        // the pose mirrors it, so the hands meet instead of floating out into a V.
-        // No hip or spine yaw, so it is not the punch coil. Not an overhead V, not one fist.
+        // The claim opens that bend toward the contact. Stored yaw is outward:
+        // positive left yaw enters the chest, so the pose mirrors a negative yaw.
         public const float TagWindupArmPitch = -36f;
-        public const float TagWindupArmYaw = 14f;
+        public const float TagWindupArmYaw = -14f;
         public const float TagWindupArmRoll = 6f;
         public const float TagWindupElbow = -96f;
         public const float TagWindupSpine = 4f;
@@ -161,7 +160,7 @@ namespace Tag.Art
         public const float TagWindupKnee = -18f;
         public const float TagWindupHead = -4f;
         public const float TagArmPitch = -60f;
-        public const float TagArmYaw = 22f;
+        public const float TagArmYaw = -22f;
         public const float TagArmRoll = 4f;
         public const float TagElbow = -8f;
         public const float TagSpine = 16f;
@@ -461,15 +460,15 @@ namespace Tag.Art
             foreach (string hit in ClearanceFailures())
                 fails.Add(hit);
 
-            // Punch: fist beside the head, then one chest-high line, then a rib chamber.
-            // A wide positive cock yaw is a float. Pitch below -140 wraps the fist through the torso.
-            if (PunchCockPitch > -72f || PunchCockPitch < -92f || PunchCockYaw > -8f || PunchCockYaw < -28f)
-                fails.Add("PunchStrike cock is not beside the head");
+            // Punch: guard in front of the chin, then one chest-high line, then a rib chamber.
+            // Pitch below -140 wraps the fist through the torso. A cock beside the ear sits in the head.
+            if (PunchCockPitch > -32f || PunchCockPitch < -55f || PunchCockYaw > -16f || PunchCockYaw < -36f)
+                fails.Add("PunchStrike cock is not a chin guard");
             if (Mathf.Abs(PunchCockRoll) < 8f || Mathf.Abs(PunchCockRoll) > 28f)
                 fails.Add("PunchStrike cock roll folds into the body");
-            if (PunchCockElbow > -96f || PunchCockElbow < -120f)
-                fails.Add("PunchStrike cock is not bent beside the head");
-            if (Mathf.Abs(PunchCockPitch - IdleArmPitch) < 50f || Mathf.Abs(PunchCockElbow - IdleElbow) < 70f)
+            if (PunchCockElbow > -64f || PunchCockElbow < -90f)
+                fails.Add("PunchStrike cock is not a guard bend");
+            if (Mathf.Abs(PunchCockPitch - IdleArmPitch) < 24f || Mathf.Abs(PunchCockElbow - IdleElbow) < 50f)
                 fails.Add("PunchStrike cock matches the idle hang");
             if (PunchStrikePitch > -64f || PunchStrikePitch < -90f)
                 fails.Add("PunchStrike strike is not a forward line");
@@ -479,7 +478,7 @@ namespace Tag.Art
                 fails.Add("PunchStrike strike roll folds the fist");
             if (Mathf.Abs(PunchStrikeElbow) > 8f)
                 fails.Add("PunchStrike strike elbow is folded");
-            if (Mathf.Abs(PunchStrikeElbow - PunchCockElbow) < 70f)
+            if (Mathf.Abs(PunchStrikeElbow - PunchCockElbow) < 60f)
                 fails.Add("PunchStrike does not open from the cock");
             if (Mathf.Abs(PunchStrikePitch - IdleArmPitch) < 48f)
                 fails.Add("PunchStrike is an arm twitch");
@@ -510,12 +509,12 @@ namespace Tag.Art
                 || Mathf.Abs(punchChest - chest) < 40f)
                 fails.Add("PunchStrike chest matches the slide");
 
-            // Tag: both hands gather at the chest, then both arms claim one contact.
-            // Stored yaw pulls inward. No twist, so it is not the punch or the crouch.
+            // Tag: both hands gather in front of the chest, then both arms claim one contact.
+            // Stored yaw is outward. Positive yaw on the left arm enters the chest.
             float tagChest = TagHip + TagSpine;
             if (TagArmPitch > -52f || TagArmPitch < -76f)
                 fails.Add("TagCatch arms are not a reach");
-            if (TagArmYaw < 12f || TagArmYaw > 32f)
+            if (TagArmYaw > -12f || TagArmYaw < -32f)
                 fails.Add("TagCatch hands do not meet in front");
             if (Mathf.Abs(TagElbow) > 16f || Mathf.Abs(TagElbow) < 4f)
                 fails.Add("TagCatch arms are folded");
@@ -628,7 +627,7 @@ namespace Tag.Art
             Vector3 gather = TagHand(TagWindupHip + TagWindupSpine, TagWindupArmPitch, TagWindupArmYaw, TagWindupElbow);
             Vector3 claim = TagHand(TagHip + TagSpine, TagArmPitch, TagArmYaw, TagElbow);
             return "punch-tag-polish"
-                + " windup=beside-head"
+                + " windup=chin-guard"
                 + " cockY=" + cock.y.ToString("0.00")
                 + " strike=forward-line"
                 + " strikeZ=" + strike.z.ToString("0.00")
@@ -636,7 +635,7 @@ namespace Tag.Art
                 + " homeZ=" + home.z.ToString("0.00")
                 + " tagGather=chest"
                 + " gatherZ=" + gather.z.ToString("0.00")
-                + " tagClaim=meet"
+                + " tagClaim=open"
                 + " claimZ=" + claim.z.ToString("0.00")
                 + " claimX=" + claim.x.ToString("0.00")
                 + " reach=" + PunchTagPose.ReachMeters.ToString("0.00")
@@ -665,11 +664,11 @@ namespace Tag.Art
             Vector3 home = StrikeHand(PunchRecoverPitch, PunchRecoverYaw, PunchRecoverElbow);
             Vector3 gather = TagHand(TagWindupHip + TagWindupSpine, TagWindupArmPitch, TagWindupArmYaw, TagWindupElbow);
             Vector3 claim = TagHand(TagHip + TagSpine, TagArmPitch, TagArmYaw, TagElbow);
-            if (strike.z < cock.z + 0.25f) return false;
+            if (strike.z < cock.z + 0.04f) return false;
             if (home.z > strike.z - 0.08f) return false;
-            if (home.y > cock.y - 0.12f) return false;
-            if (claim.z < gather.z + 0.20f) return false;
-            if (Mathf.Abs(claim.x) > Mathf.Abs(gather.x)) return false;
+            if (home.y > cock.y - 0.04f) return false;
+            if (claim.z < gather.z + 0.12f) return false;
+            if (Mathf.Abs(claim.x) < 0.30f) return false;
             return true;
         }
 
@@ -766,32 +765,32 @@ namespace Tag.Art
                     fails.Add(name + " arm clips the chest");
             }
 
-            Hand("punch windup", 1f, chest, PunchCockPitch, PunchCockYaw, PunchCockElbow, 1.48f, 1.78f, 0.05f, 0.42f, 0.48f);
+            Hand("punch windup", 1f, chest, PunchCockPitch, PunchCockYaw, PunchCockElbow, 1.28f, 1.62f, 0.42f, 0.74f, 0.48f);
             Hand("punch guard", -1f, chest, PunchGuardPitchCock, PunchGuardYawCock, PunchGuardElbowCock, 0.85f, 1.45f, 0.05f, 0.70f, 0.75f);
             Hand("punch strike", 1f, chest, PunchStrikePitch, PunchStrikeYaw, PunchStrikeElbow, 1.15f, 1.55f, 0.52f, 0.85f, 0.66f);
             Hand("punch off", -1f, chest, PunchGuardPitchStrike, PunchGuardYawStrike, PunchGuardElbowStrike, 0.70f, 1.35f, -0.80f, -0.25f, 0.55f);
             Hand("punch recover", 1f, chest, PunchRecoverPitch, PunchRecoverYaw, PunchRecoverElbow, 1.05f, 1.55f, 0.28f, 0.58f, 0.62f);
             float gatherChest = TagWindupHip + TagWindupSpine;
             float claimChest = TagHip + TagSpine;
-            Hand("tag gather", 1f, gatherChest, TagWindupArmPitch, -TagWindupArmYaw, TagWindupElbow, 1.15f, 1.58f, 0.25f, 0.58f, 0.52f);
-            Hand("tag gather L", -1f, gatherChest, TagWindupArmPitch, TagWindupArmYaw, TagWindupElbow, 1.15f, 1.58f, 0.25f, 0.58f, 0.52f);
-            Hand("tag claim", 1f, claimChest, TagArmPitch, -TagArmYaw, TagElbow, 1.10f, 1.55f, 0.60f, 0.95f, 0.42f);
-            Hand("tag claim L", -1f, claimChest, TagArmPitch, TagArmYaw, TagElbow, 1.10f, 1.55f, 0.60f, 0.95f, 0.42f);
+            Hand("tag gather", 1f, gatherChest, TagWindupArmPitch, -TagWindupArmYaw, TagWindupElbow, 1.28f, 1.48f, 0.28f, 0.48f, 0.72f);
+            Hand("tag gather L", -1f, gatherChest, TagWindupArmPitch, TagWindupArmYaw, TagWindupElbow, 1.28f, 1.48f, 0.28f, 0.48f, 0.72f);
+            Hand("tag claim", 1f, claimChest, TagArmPitch, -TagArmYaw, TagElbow, 1.12f, 1.34f, 0.46f, 0.66f, 0.84f);
+            Hand("tag claim L", -1f, claimChest, TagArmPitch, TagArmYaw, TagElbow, 1.12f, 1.34f, 0.46f, 0.66f, 0.84f);
 
             Vector3 strike = StrikeHand(PunchStrikePitch, PunchStrikeYaw, PunchStrikeElbow);
             Vector3 cock = StrikeHand(PunchCockPitch, PunchCockYaw, PunchCockElbow);
             Vector3 home = StrikeHand(PunchRecoverPitch, PunchRecoverYaw, PunchRecoverElbow);
-            if (strike.z < cock.z + 0.25f)
+            if (strike.z < cock.z + 0.04f)
                 fails.Add("punch strike does not leave the cock");
-            if (home.z > strike.z - 0.08f || home.y > cock.y - 0.12f)
+            if (home.z > strike.z - 0.08f || home.y > cock.y - 0.04f)
                 fails.Add("punch recover does not leave the strike");
             Vector3 gather = TagHand(gatherChest, TagWindupArmPitch, TagWindupArmYaw, TagWindupElbow);
             Vector3 claim = TagHand(claimChest, TagArmPitch, TagArmYaw, TagElbow);
-            if (claim.z < gather.z + 0.20f)
+            if (claim.z < gather.z + 0.12f)
                 fails.Add("tag claim does not leave the gather");
-            if (Mathf.Abs(claim.x) > Mathf.Abs(gather.x) - 0.04f)
-                fails.Add("tag claim hands do not meet");
-            if (Mathf.Abs(gather.x) < 0.12f)
+            if (Mathf.Abs(claim.x) < 0.30f)
+                fails.Add("tag claim hands cross the chest");
+            if (Mathf.Abs(gather.x) < 0.20f)
                 fails.Add("tag gather hands clip");
             return fails;
         }

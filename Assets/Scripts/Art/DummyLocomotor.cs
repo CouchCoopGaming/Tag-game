@@ -8093,8 +8093,9 @@ namespace Tag.Art
             else if (mantle)
             {
                 // Lead knee drives up, then both feet settle for the land.
-                _ulLT = _ulL0 * Quaternion.Euler(vault.ThighL, 0f, 0f);
-                _ulRT = _ulR0 * Quaternion.Euler(vault.ThighR, 0f, 0f);
+                // The spread keeps the shins outside the lip, not inside the box.
+                _ulLT = _ulL0 * Quaternion.Euler(vault.ThighL, 0f, vault.ThighRollL);
+                _ulRT = _ulR0 * Quaternion.Euler(vault.ThighR, 0f, vault.ThighRollR);
                 _llLT = _llL0 * Quaternion.Euler(vault.KneeL, 0f, 0f);
                 _llRT = _llR0 * Quaternion.Euler(vault.KneeR, 0f, 0f);
                 if (_mantleSnap && _mantleSnapIn < 0.98f)
@@ -15838,8 +15839,8 @@ namespace Tag.Art
 
         void ApplyWallLegs(WallPose.Sample pose)
         {
-            _ulLT = _ulL0 * Quaternion.Euler(pose.ThighL, 0f, 0f);
-            _ulRT = _ulR0 * Quaternion.Euler(pose.ThighR, 0f, 0f);
+            _ulLT = _ulL0 * Quaternion.Euler(pose.ThighL, 0f, pose.ThighRollL);
+            _ulRT = _ulR0 * Quaternion.Euler(pose.ThighR, 0f, pose.ThighRollR);
             _llLT = _llL0 * Quaternion.Euler(pose.KneeL, 0f, 0f);
             _llRT = _llR0 * Quaternion.Euler(pose.KneeR, 0f, 0f);
             if (pose.FootL != 0f || pose.FootR != 0f)

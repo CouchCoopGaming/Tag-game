@@ -25,17 +25,17 @@ namespace Tag.Art
         public const float HangSpine = -6f;
         public const float HangHead = -4f;
         public const float HangElbow = -8f;
-        public const float HangYaw = 8f;
+        public const float HangYaw = -42f;
 
         public const float DropThigh = -24f;
         public const float DropKnee = -10f;
-        public const float DropHip = 8f;
-        public const float DropSpine = 6f;
-        public const float DropHead = -22f;
-        public const float DropElbow = -28f;
+        public const float DropHip = -8f;
+        public const float DropSpine = -6f;
+        public const float DropHead = -4f;
+        public const float DropElbow = -10f;
 
-        public const float ReleasePitch = 28f;
-        public const float ReleaseYaw = 36f;
+        public const float ReleasePitch = -100f;
+        public const float ReleaseYaw = -42f;
         public const float ReleaseElbow = -18f;
         public const float ReleaseThigh = 14f;
         public const float ReleaseKnee = -16f;
@@ -155,10 +155,11 @@ namespace Tag.Art
             if (Mathf.Abs(hang.ArmPitchR - WallPose.ReachPitch) > 0.05f) return false;
             if (hang.ArmPitchL > -90f) return false;
             if (hang.ThighL < 24f || hang.ThighR < 20f) return false;
-            if (drop.ThighL > -12f || drop.Head > -16f) return false;
+            if (drop.ThighL > -12f) return false;
+            if (Mathf.Abs(drop.Head - hang.Head) > 2f) return false;
             if (Mathf.Abs(drop.ThighL - hang.ThighL) < 40f) return false;
-            if (let.ArmPitchL < 16f) return false;
-            if (Mathf.Abs(let.ArmPitchL - hang.ArmPitchL) < 80f) return false;
+            if (Mathf.Abs(let.ArmPitchL - hang.ArmPitchL) > 8f) return false;
+            if (Mathf.Abs(let.ArmYawL - hang.ArmYawL) > 8f) return false;
             if (CatchWeight(0f) > 0.001f || Mathf.Abs(CatchWeight(CatchSeconds) - 1f) > 0.001f) return false;
             if (Mathf.Abs(ReleaseWeight(0f) - 1f) > 0.001f || ReleaseWeight(ReleaseSeconds) > 0.001f) return false;
             if (Mathf.Abs(Sway(0f, RideSpeed)) > 0.001f) return false;
