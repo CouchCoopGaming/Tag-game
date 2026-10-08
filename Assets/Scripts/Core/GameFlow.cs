@@ -237,6 +237,29 @@ namespace Tag.Core
             }
         }
 
+        /// <summary>
+        /// Menu confirm. Reloads Play so the roster, looks, and arena spawn clean.
+        /// The countdown still belongs to TagModeController.StartRound.
+        /// </summary>
+        public void BeginFromMenu(bool fillRoster)
+        {
+            MarkBootSeen();
+            if (fillRoster)
+                FrontSession.Arm();
+            else if (!FrontSession.Armed)
+                FrontSession.Armed = true;
+            int humans = CouchPlay.Humans;
+            if (humans < 1) humans = 1;
+            if (humans > 4) humans = 4;
+            LocalPlayerRoster.SetCount(humans);
+            CloseMenuPanels();
+            State = GameFlowState.Play;
+            LookSensitivity.Load();
+            LookSensitivity.Apply();
+            Time.timeScale = 1f;
+            SceneManager.LoadScene(playSceneName);
+        }
+
         public void OnRoundEnded(string result = "")
         {
             CloseMenuPanels();
@@ -484,10 +507,10 @@ namespace Tag.Core
                 pauseEdge = true;
             if (CouchPlay.NeedsRejoin && State == GameFlowState.Play)
                 TogglePause();
-            else if (pauseEdge && (State == GameFlowState.Play || State == GameFlowState.Paused))
+            else if (pauseEdge && !Tag.Ui.Menu.MenuHost.EatPause && (State == GameFlowState.Play || State == GameFlowState.Paused))
                 TogglePause();
 
-            if (State == GameFlowState.Boot || State == GameFlowState.Setup)
+            if ((State == GameFlowState.Boot || State == GameFlowState.Setup) && !Tag.Ui.Menu.MenuHost.CoversFront)
                 PollFront();
             else if (State == GameFlowState.PlayerCount)
             {
@@ -565,7 +588,7 @@ namespace Tag.Core
                 if (UnityEngine.Input.GetKeyDown(KeyCode.Q) || UnityEngine.Input.GetKeyDown(KeyCode.Escape) || PadNav.Back)
                     QuitToMenu();
             }
-            else if (State == GameFlowState.Paused)
+            else if (State == GameFlowState.Paused && !Tag.Ui.Menu.MenuHost.CoversPause)
             {
                 if (UnityEngine.Input.GetKeyDown(KeyCode.LeftArrow) || PadNav.Left || PadNav.Up)
                     Nudge(ref _pauseFocus, -1, MenuGraph.PauseRows - 1);
@@ -621,6 +644,15 @@ namespace Tag.Core
                 DrawLookSettings();
                 return;
             }
+
+            if (Tag.Ui.Menu.MenuHost.CoversFront &&
+                (State == GameFlowState.Boot || State == GameFlowState.Setup
+                    || State == GameFlowState.PlayerCount || State == GameFlowState.ModeSelect))
+                return;
+            if (Tag.Ui.Menu.MenuHost.CoversPause && State == GameFlowState.Paused)
+                return;
+            if (Tag.Ui.Menu.MenuHost.CoversResults && State == GameFlowState.RoundEnd)
+                return;
 
             float cx = Screen.width * 0.5f, cy = Screen.height * 0.5f;
             if (State == GameFlowState.Boot || State == GameFlowState.Setup)

@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Tag.Gameplay;
+using Tag.Settings;
 using UnityEngine;
 
 namespace Tag.Modes
@@ -92,8 +93,12 @@ namespace Tag.Modes
             }
 
             _matchWinners.Clear();
+            int need = _tuning.winsToTakeMatch;
+            GameSettings menu = GameSettings.Current;
+            if (menu != null && menu.WinTarget != GameSettings.WinTargetDefault)
+                need = menu.WinTarget;
             foreach (var kv in _roundWins)
-                if (kv.Value >= _tuning.winsToTakeMatch)
+                if (kv.Value >= need)
                     _matchWinners.Add(kv.Key);
 
             bool hitMax = _roundIndex >= _tuning.maxRounds;
@@ -146,6 +151,17 @@ namespace Tag.Modes
         public void OnPlayerEliminated(TagModeContext ctx, ItController player) { }
         public bool ShouldEndRound(TagModeContext ctx) => _matchOver;
         public IReadOnlyList<string> GetWinnerIds(TagModeContext ctx) => _matchWinners;
+
+        /// <summary>1-based fuse round. Display only.</summary>
+        public int RoundIndex => _roundIndex < 1 ? 1 : _roundIndex;
+
+        /// <summary>Round wins already counted by the fuse. First to 2 takes the match.</summary>
+        public int RoundWins(string playerId)
+        {
+            if (string.IsNullOrEmpty(playerId)) return 0;
+            int wins;
+            return _roundWins.TryGetValue(playerId, out wins) ? wins : 0;
+        }
 
         public string GetHud(TagModeContext ctx)
         {

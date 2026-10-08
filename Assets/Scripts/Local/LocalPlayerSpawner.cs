@@ -1,5 +1,7 @@
 using Tag.Art;
 using Tag.Couch;
+using Tag.Profiles;
+using Tag.Ui.Menu;
 using Tag.Experimental;
 using Tag.Gameplay;
 using Tag.Level;
@@ -332,7 +334,10 @@ namespace Tag.Local
                 if (marker != null)
                 {
                     CouchPlay.Tint(i, out float r, out float g, out float b);
-                    marker.SetIdentity(CouchPlay.Name(i), new Color(r, g, b, 1f), i);
+                    Color plate = new Color(r, g, b, 1f);
+                    string body = LocalProfiles.HierKeyFor(CouchPlay.Name(i));
+                    if (!string.IsNullOrEmpty(body)) plate = MenuMannequin.Swatch(body);
+                    marker.SetIdentity(CouchPlay.Name(i), plate, i);
                 }
                 if (!ai)
                 {

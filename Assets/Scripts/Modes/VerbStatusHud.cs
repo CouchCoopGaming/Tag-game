@@ -54,6 +54,7 @@ namespace Tag.Modes
 
         void OnGUI()
         {
+            if (Tag.Ui.Hud.MatchHud.Active) return;
             if (motor == null) return;
             WarmStyles();
             if (DriveDevice >= 0 && View != null)

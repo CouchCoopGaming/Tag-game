@@ -672,6 +672,40 @@ namespace Tag.Profiles
             return Id[slot];
         }
 
+        public static int SlotId(int slot)
+        {
+            if (slot < 0 || slot >= Max || !Used[slot]) return 0;
+            return Id[slot];
+        }
+
+        public static int MatchesOf(int id)
+        {
+            int slot = Find(id);
+            return slot < 0 ? 0 : Matches[slot];
+        }
+
+        public static float LiveOf(int id)
+        {
+            int slot = Find(id);
+            return slot < 0 ? 0f : Live[slot];
+        }
+
+        public static int NameCol
+        {
+            get { return _col; }
+        }
+
+        public static int NameRow
+        {
+            get { return _row; }
+        }
+
+        public static char KeyAt(int col, int row)
+        {
+            if (col < 0 || row < 0 || col >= Cols || row >= Rows) return '\0';
+            return Grid[row * Cols + col];
+        }
+
         public static float TextScale(int seat)
         {
             if (seat >= 0 && seat < Seats)
@@ -1131,13 +1165,13 @@ namespace Tag.Profiles
             return true;
         }
 
-        static int WinsOf(int id)
+        public static int WinsOf(int id)
         {
             int slot = Find(id);
             return slot < 0 ? 0 : Wins[slot];
         }
 
-        static int TagsOf(int id)
+        public static int TagsOf(int id)
         {
             int slot = Find(id);
             return slot < 0 ? 0 : Tags[slot];

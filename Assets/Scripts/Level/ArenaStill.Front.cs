@@ -410,5 +410,782 @@ namespace Tag.Level
                 default: return "11111100011000110001100011111100000";
             }
         }
+
+        /// <summary>
+        /// Third-person chase frames for the couch HUD stills. Each seat stands
+        /// on its own loop point and looks along that seat's yaw. Not part of
+        /// the front-end proof stills.
+        /// The headless rasterizer cannot instance the Unity Hier prefab (no
+        /// AssetDatabase, and the FBX is binary). It reads the posed triangle
+        /// bake of that mesh instead.
+        /// </summary>
+        public static string WriteHudChases(string folder)
+        {
+            if (string.IsNullOrEmpty(folder)) return "hud-chases missing folder";
+            Directory.CreateDirectory(folder);
+            List<Tri> park = Gather(ParkArena.Mega);
+            LiftChaseGround(park);
+            float mapW = MegaParkP1Layout.MapW;
+            float mapD = MegaParkP1Layout.MapD;
+            Sun(out float lsx, out float lsy, out float lsz);
+            float half = Math.Max(mapW, mapD) * 0.70f + 28f;
+            var shadow = new float[768 * 768];
+            for (int i = 0; i < shadow.Length; i++) shadow[i] = -1e20f;
+            float sox = mapW * 0.5f;
+            float soy = 6f;
+            float soz = mapD * 0.5f;
+            Basis(lsx, lsy, lsz, out float srx, out float sry, out float srz, out float sux, out float suy, out float suz);
+            for (int i = 0; i < park.Count; i++)
+            {
+                if (park[i].A < 0.99f) continue;
+                ShadowTri(park[i], shadow, 768, sox, soy, soz, srx, sry, srz, sux, suy, suz, lsx, lsy, lsz, half);
+            }
+            bool hier = LoadHier();
+            for (int i = 0; i < 4; i++)
+            {
+                ParkArena.HumanSeat(ParkArena.Mega, i, out float px, out float py, out float pz, out float yaw);
+                var tris = new List<Tri>(park.Count + 64);
+                tris.AddRange(park);
+                LookPair(i, out float bodyR, out float bodyG, out float bodyB, out float accentR, out float accentG, out float accentB);
+                if (hier) AddHier(tris, px, py, pz, yaw, bodyR, bodyG, bodyB, accentR, accentG, accentB, false);
+                else AddRunner(tris, px, py, pz, bodyR, bodyG, bodyB);
+                AddContact(tris, px, py, pz);
+                var seatShadow = (float[])shadow.Clone();
+                for (int t = park.Count; t < tris.Count; t++)
+                {
+                    if (tris[t].A < 0.99f) continue;
+                    ShadowTri(tris[t], seatShadow, 768, sox, soy, soz, srx, sry, srz, sux, suy, suz, lsx, lsy, lsz, half);
+                }
+                ChaseEye(px, py, pz, yaw, out float ex, out float ey, out float ez, out float tx, out float ty, out float tz);
+                if (i < 2)
+                    ChasePng(tris, Path.Combine(folder, "chase2_" + i.ToString() + ".png"), 960, 1080,
+                        ex, ey, ez, tx, ty, tz, seatShadow, sox, soy, soz, srx, sry, srz, sux, suy, suz, lsx, lsy, lsz, half);
+                ChasePng(tris, Path.Combine(folder, "chase4_" + i.ToString() + ".png"), 960, 540,
+                    ex, ey, ez, tx, ty, tz, seatShadow, sox, soy, soz, srx, sry, srz, sux, suy, suz, lsx, lsy, lsz, half);
+            }
+            int idles = WriteIdlePortraits(folder);
+            string runBake = RepoDocs();
+            if (runBake != null) LoadHierFile(Path.Combine(runBake, "UiStills", "hier-run.tris"));
+            WriteMenuPans(folder, park, shadow, sox, soy, soz, srx, sry, srz, sux, suy, suz, lsx, lsy, lsz, half);
+            string posed = hier ? "hier=posed" : "hier=missing";
+            return "hud-chases " + folder + " " + posed + " idle=" + idles.ToString();
+        }
+
+        /// <summary>
+        /// Two frames of one pass along the south straight, for the title and
+        /// the main menu. Same runners, camera slid east. Not a proof still.
+        /// </summary>
+        static void WriteMenuPans(string folder, List<Tri> park, float[] shadow,
+            float sox, float soy, float soz, float srx, float sry, float srz,
+            float sux, float suy, float suz, float lsx, float lsy, float lsz, float half)
+        {
+            // A short broadside on the south straight. Spread them further and
+            // the outer two leave the frame before each one is tall enough.
+            float[] xs = { 75.45f, 77.15f, 78.85f, 80.55f };
+            float[] yaws = { 90f, 90f, 90f, 90f };
+            var tris = new List<Tri>(park.Count + 256);
+            tris.AddRange(park);
+            for (int i = 0; i < 4; i++)
+            {
+                LookPair(i, out float bodyR, out float bodyG, out float bodyB, out float accentR, out float accentG, out float accentB);
+                AddHier(tris, xs[i], 0.2f, 16f, yaws[i], bodyR, bodyG, bodyB, accentR, accentG, accentB, false);
+                AddContact(tris, xs[i], 0.2f, 16f);
+            }
+            var seatShadow = (float[])shadow.Clone();
+            for (int t = park.Count; t < tris.Count; t++)
+            {
+                if (tris[t].A < 0.99f) continue;
+                ShadowTri(tris[t], seatShadow, 768, sox, soy, soz, srx, sry, srz, sux, suy, suz, lsx, lsy, lsz, half);
+            }
+            // Raised, south of the straight, looking down onto the path. The rail
+            // and the crates sit under the frame instead of in front of it.
+            ChasePng(tris, Path.Combine(folder, "pan_title.png"), 1920, 1080,
+                78f, 7f, 4f, 78f, 1.4f, 16f, seatShadow, sox, soy, soz, srx, sry, srz, sux, suy, suz, lsx, lsy, lsz, half, 30f);
+            // Same eye height, stepped east and a touch wider, so the line sits
+            // in the open middle: right of the lockup, left of the buttons.
+            ChasePng(tris, Path.Combine(folder, "pan_main.png"), 1920, 1080,
+                86f, 7f, 4f, 78.4f, 2f, 16f, seatShadow, sox, soy, soz, srx, sry, srz, sux, suy, suz, lsx, lsy, lsz, half, 36f);
+        }
+
+        /// <summary>
+        /// Chase cameras sit on the dark zone paint, so the path reads maroon.
+        /// The locked swatches stay put for the contrast proof. Only upward
+        /// dirt and concrete in these stills move: tan about #C8A878, and a
+        /// lighter grey. The thin aslate border sits on that path and reads
+        /// as a purple lip, so those low faces become the same grey curb.
+        /// </summary>
+        static void LiftChaseGround(List<Tri> tris)
+        {
+            const float tanR = 183f / 255f;
+            const float tanG = 164f / 255f;
+            const float tanB = 114f / 255f;
+            const float greyR = 179f / 255f;
+            const float greyG = 195f / 255f;
+            const float greyB = 197f / 255f;
+            for (int i = 0; i < tris.Count; i++)
+            {
+                Tri t = tris[i];
+                float y = (t.Y0 + t.Y1 + t.Y2) / 3f;
+                if (y > 0.55f || y < -0.8f) continue;
+                if (t.Ny >= 0.72f && DirtPath(t.R, t.G, t.B))
+                {
+                    t.R = tanR; t.G = tanG; t.B = tanB;
+                    tris[i] = t;
+                }
+                else if (t.Ny >= 0.72f && SameInk(t.R, t.G, t.B, 46f / 255f, 52f / 255f, 58f / 255f))
+                {
+                    t.R = greyR; t.G = greyG; t.B = greyB;
+                    tris[i] = t;
+                }
+                else if (y < 0.22f && y > -0.05f && SameInk(t.R, t.G, t.B, 72f / 255f, 66f / 255f, 86f / 255f))
+                {
+                    t.R = greyR; t.G = greyG; t.B = greyB;
+                    tris[i] = t;
+                }
+            }
+        }
+
+        static bool DirtPath(float r, float g, float b)
+        {
+            if (SameInk(r, g, b, 40f / 255f, 22f / 255f, 22f / 255f)) return true;
+            if (SameInk(r, g, b, 70f / 255f, 43f / 255f, 30f / 255f)) return true;
+            if (SameInk(r, g, b, 0x3A / 255f, 0x22 / 255f, 0x18 / 255f)) return true;
+            if (SameInk(r, g, b, 66f / 255f, 36f / 255f, 32f / 255f)) return true;
+            // The other zone paints. From the shoulder they read as dried blood or dusk, not a path.
+            if (SameInk(r, g, b, 74f / 255f, 52f / 255f, 58f / 255f)) return true;
+            if (SameInk(r, g, b, 52f / 255f, 46f / 255f, 80f / 255f)) return true;
+            if (SameInk(r, g, b, 32f / 255f, 52f / 255f, 40f / 255f)) return true;
+            if (SameInk(r, g, b, 34f / 255f, 30f / 255f, 46f / 255f)) return true;
+            return false;
+        }
+
+        static bool SameInk(float r, float g, float b, float tr, float tg, float tb)
+        {
+            float dr = r - tr;
+            float dg = g - tg;
+            float db = b - tb;
+            return dr * dr + dg * dg + db * db < 0.0004f;
+        }
+
+        /// <summary>
+        /// One look per seat. The first color is the body: limbs, torso, head.
+        /// The second is the accent: chest panel, hands, and feet.
+        /// Red/Tan, Blue/Mint, Orange/Lavender, Lavender/Mint. The four first
+        /// colors stay apart, so a chase reads four different runners.
+        /// </summary>
+        static void LookPair(int seat, out float bodyR, out float bodyG, out float bodyB, out float accentR, out float accentG, out float accentB)
+        {
+            float[] br = { 224f / 255f, 107f / 255f, 240f / 255f, 178f / 255f };
+            float[] bg = { 56f / 255f, 173f / 255f, 107f / 255f, 148f / 255f };
+            float[] bb = { 61f / 255f, 235f / 255f, 36f / 255f, 224f / 255f };
+            float[] ar = { 230f / 255f, 107f / 255f, 178f / 255f, 107f / 255f };
+            float[] ag = { 194f / 255f, 209f / 255f, 148f / 255f, 209f / 255f };
+            float[] ab = { 133f / 255f, 178f / 255f, 224f / 255f, 178f / 255f };
+            int i = seat < 0 ? 0 : (seat > 3 ? 3 : seat);
+            bodyR = br[i]; bodyG = bg[i]; bodyB = bb[i];
+            accentR = ar[i]; accentG = ag[i]; accentB = ab[i];
+        }
+
+        /// <summary>
+        /// Character-card portraits. Same pairs as the chase runners. Joints
+        /// stay charcoal here so the tint reads on the navy card.
+        /// </summary>
+        static int WriteIdlePortraits(string folder)
+        {
+            int n = 0;
+            string docs = RepoDocs();
+            if (docs == null) return 0;
+            for (int i = 0; i < 4; i++)
+            {
+                string src = Path.Combine(docs, "UiStills", "hier-idle-" + i.ToString() + ".tris");
+                if (!LoadHierFile(src)) continue;
+                var tris = new List<Tri>(8);
+                AddBox(tris, 0f, -0.04f, 0f, 2.6f, 0.08f, 2.6f, 183f / 255f, 164f / 255f, 114f / 255f);
+                LookPair(i, out float bodyR, out float bodyG, out float bodyB, out float accentR, out float accentG, out float accentB);
+                AddHier(tris, 0f, 0f, 0f, 16f, bodyR, bodyG, bodyB, accentR, accentG, accentB, true);
+                AddContact(tris, 0f, 0f, 0f);
+                var shadow = new float[16 * 16];
+                for (int s = 0; s < shadow.Length; s++) shadow[s] = -1e20f;
+                PortraitPng(tris, Path.Combine(folder, "idle_" + i.ToString() + ".png"), 640, 800,
+                    0.62f, 1.08f, 3.55f, 0f, 0.90f, 0.02f, shadow);
+                n++;
+            }
+            return n;
+        }
+
+        static void PortraitPng(List<Tri> tris, string path, int w, int h,
+            float ex, float ey, float ez, float tx, float ty, float tz, float[] shadow, float fov = 28f)
+        {
+            var rgb = new byte[w * h * 3];
+            var depth = new float[w * h];
+            Paint(tris, rgb, depth, w, h, ex, ey, ez, tx, ty, tz, fov, true,
+                shadow, 16, 0f, 2f, 0f, 1f, 0f, 0f, 0f, 1f, 0f, 0f, 1f, 0f, 4f);
+            WritePng(path, rgb, w, h);
+        }
+
+        struct HierTri
+        {
+            public float X0, Y0, Z0, X1, Y1, Z1, X2, Y2, Z2;
+            public byte Mat;
+        }
+
+        static HierTri[] _hier;
+        static bool _hierTried;
+
+        static bool LoadHier()
+        {
+            if (_hierTried) return _hier != null;
+            _hierTried = true;
+            string docs = RepoDocs();
+            if (docs == null) return false;
+            return LoadHierFile(Path.Combine(docs, "UiStills", "hier-run.tris"));
+        }
+
+        static bool LoadHierFile(string path)
+        {
+            if (string.IsNullOrEmpty(path) || !File.Exists(path)) return false;
+            using (var fs = File.OpenRead(path))
+            using (var br = new BinaryReader(fs))
+            {
+                int magic = br.ReadInt32();
+                if (magic != 0x52454948) return false;
+                int n = br.ReadInt32();
+                if (n < 100 || n > 400000) return false;
+                var mesh = new HierTri[n];
+                for (int i = 0; i < n; i++)
+                {
+                    var t = new HierTri();
+                    t.Mat = br.ReadByte();
+                    t.X0 = br.ReadSingle();
+                    t.Y0 = br.ReadSingle();
+                    t.Z0 = br.ReadSingle();
+                    t.X1 = br.ReadSingle();
+                    t.Y1 = br.ReadSingle();
+                    t.Z1 = br.ReadSingle();
+                    t.X2 = br.ReadSingle();
+                    t.Y2 = br.ReadSingle();
+                    t.Z2 = br.ReadSingle();
+                    mesh[i] = t;
+                }
+                _hier = mesh;
+            }
+            return true;
+        }
+
+        static void AddHier(List<Tri> tris, float x, float y, float z, float yawDeg, float r, float g, float b)
+        {
+            AddHier(tris, x, y, z, yawDeg, r, g, b, r * 0.55f, g * 0.55f, b * 0.55f, false);
+        }
+
+        static void AddHier(List<Tri> tris, float x, float y, float z, float yawDeg,
+            float r, float g, float b, float pr, float pg, float pb, bool softJoints)
+        {
+            if (_hier == null) return;
+            float yaw = yawDeg * (float)(Math.PI / 180.0);
+            float fx = (float)Math.Sin(yaw);
+            float fz = (float)Math.Cos(yaw);
+            float rx = (float)Math.Cos(yaw);
+            float rz = -(float)Math.Sin(yaw);
+            for (int i = 0; i < _hier.Length; i++)
+            {
+                HierTri h = _hier[i];
+                HierTint(h.Mat, r, g, b, pr, pg, pb, softJoints, out float cr, out float cg, out float cb);
+                AddTri(tris,
+                    x + rx * h.X0 + fx * h.Z0, y + h.Y0, z + rz * h.X0 + fz * h.Z0,
+                    x + rx * h.X1 + fx * h.Z1, y + h.Y1, z + rz * h.X1 + fz * h.Z1,
+                    x + rx * h.X2 + fx * h.Z2, y + h.Y2, z + rz * h.X2 + fz * h.Z2,
+                    cr, cg, cb);
+            }
+        }
+
+        static void HierTint(byte mat, float r, float g, float b, float pr, float pg, float pb, bool softJoints,
+            out float cr, out float cg, out float cb)
+        {
+            if (mat == 4)
+            {
+                cr = 0.95f; cg = 0.06f; cb = 0.08f;
+                return;
+            }
+            if (mat == 2)
+            {
+                if (softJoints)
+                {
+                    cr = 0.34f; cg = 0.33f; cb = 0.32f;
+                }
+                else
+                {
+                    cr = 0.10f; cg = 0.10f; cb = 0.12f;
+                }
+                return;
+            }
+            if (mat == 3)
+            {
+                if (softJoints)
+                {
+                    cr = 0.20f; cg = 0.19f; cb = 0.20f;
+                }
+                else
+                {
+                    cr = 0.02f; cg = 0.02f; cb = 0.02f;
+                }
+                return;
+            }
+            if (mat == 1)
+            {
+                cr = pr; cg = pg; cb = pb;
+                return;
+            }
+            cr = r; cg = g; cb = b;
+        }
+
+        /// <summary>
+        /// Soft disc on the ground under the feet. The sun shadow map's bias
+        /// lifts the contact off the shoes, so the disc is what reads.
+        /// </summary>
+        static void AddContact(List<Tri> tris, float x, float y, float z)
+        {
+            int before = tris.Count;
+            const int seg = 16;
+            float y0 = y + 0.04f;
+            float ix = 0.26f;
+            float iz = 0.20f;
+            float ox = 0.70f;
+            float oz = 0.52f;
+            for (int i = 0; i < seg; i++)
+            {
+                float a0 = (float)(i * Math.PI * 2.0 / seg);
+                float a1 = (float)((i + 1) * Math.PI * 2.0 / seg);
+                float c0 = (float)Math.Cos(a0);
+                float s0 = (float)Math.Sin(a0);
+                float c1 = (float)Math.Cos(a1);
+                float s1 = (float)Math.Sin(a1);
+                // Wound so the normal points up. The chase camera sits above the feet.
+                AddTri(tris, x, y0, z,
+                    x + c1 * ix, y0, z + s1 * iz,
+                    x + c0 * ix, y0, z + s0 * iz,
+                    0.02f, 0.015f, 0.02f);
+                AddTri(tris,
+                    x + c1 * ix, y0, z + s1 * iz,
+                    x + c0 * ox, y0, z + s0 * oz,
+                    x + c0 * ix, y0, z + s0 * iz,
+                    0.02f, 0.015f, 0.02f);
+                AddTri(tris,
+                    x + c1 * ix, y0, z + s1 * iz,
+                    x + c1 * ox, y0, z + s1 * oz,
+                    x + c0 * ox, y0, z + s0 * oz,
+                    0.02f, 0.015f, 0.02f);
+            }
+            for (int i = before; i < tris.Count; i++)
+            {
+                Tri t = tris[i];
+                t.A = (i - before) < seg ? 0.58f : 0.26f;
+                tris[i] = t;
+            }
+        }
+
+        static void AddRunner(List<Tri> tris, float x, float y, float z, float r, float g, float b)
+        {
+            AddBox(tris, x, y + 0.46f, z, 0.34f, 0.92f, 0.24f, 0.12f, 0.14f, 0.18f);
+            AddBox(tris, x, y + 1.22f, z, 0.46f, 0.62f, 0.26f, r, g, b);
+            AddBox(tris, x, y + 1.66f, z, 0.24f, 0.28f, 0.24f, 0.93f, 0.74f, 0.60f);
+        }
+
+        static void ChaseEye(float px, float py, float pz, float yawDeg,
+            out float ex, out float ey, out float ez, out float tx, out float ty, out float tz)
+        {
+            float yaw = yawDeg * (float)(Math.PI / 180.0);
+            float fx = (float)Math.Sin(yaw);
+            float fz = (float)Math.Cos(yaw);
+            float rx = (float)Math.Cos(yaw);
+            float rz = -(float)Math.Sin(yaw);
+            float pitch = 12f * (float)(Math.PI / 180.0);
+            float cp = (float)Math.Cos(pitch);
+            float sp = (float)Math.Sin(pitch);
+            float lx = 0.4f;
+            float ly = 0.45f * cp - (-5.2f) * sp;
+            float lz = 0.45f * sp + (-5.2f) * cp;
+            ex = px + rx * lx + fx * lz;
+            ey = py + 1.4f + ly;
+            ez = pz + rz * lx + fz * lz;
+            tx = px + fx * 0.9f;
+            ty = py + 1.25f;
+            tz = pz + fz * 0.9f;
+        }
+
+        static void ChasePng(List<Tri> tris, string path, int w, int h,
+            float ex, float ey, float ez, float tx, float ty, float tz,
+            float[] shadow, float sox, float soy, float soz,
+            float srx, float sry, float srz, float sux, float suy, float suz,
+            float lsx, float lsy, float lsz, float half, float fov = 70f)
+        {
+            var rgb = new byte[w * h * 3];
+            var depth = new float[w * h];
+            Paint(tris, rgb, depth, w, h, ex, ey, ez, tx, ty, tz, fov, true,
+                shadow, 768, sox, soy, soz, srx, sry, srz, sux, suy, suz, lsx, lsy, lsz, half);
+            WritePng(path, rgb, w, h);
+        }
+
+        /// <summary>
+        /// Pass 26 captures. Title and main keep the raised south-straight camera.
+        /// Each runner is a menu pose baked by MenuNoClip, drawn with the same
+        /// rasterizer as the chase stills. No sky key.
+        /// </summary>
+        public static string WritePass26(string folder, string poses)
+        {
+            return WriteMenuPass(folder, poses, true, false);
+        }
+
+        /// <summary>
+        /// Pass 27 captures. Title keeps the seat colors. Character cards wear
+        /// the selected look. The overlap still marks the hip/thigh rest sink in red.
+        /// </summary>
+        public static string WritePass27(string folder, string poses)
+        {
+            return WriteMenuPass(folder, poses, false, true);
+        }
+
+        /// <summary>
+        /// Pass 28 captures. The title has no seated runners. RESULTS keeps the
+        /// same four looks. Chest close-ups use the match accent on Panel_Chest.
+        /// </summary>
+        public static string WritePass28(string folder, string poses)
+        {
+            if (string.IsNullOrEmpty(folder) || string.IsNullOrEmpty(poses)) return "pass28 missing folder";
+            Directory.CreateDirectory(folder);
+            List<Tri> park = Gather(ParkArena.Mega);
+            LiftChaseGround(park);
+            float mapW = MegaParkP1Layout.MapW;
+            float mapD = MegaParkP1Layout.MapD;
+            Sun(out float lsx, out float lsy, out float lsz);
+            float half = Math.Max(mapW, mapD) * 0.70f + 28f;
+            var shadow = new float[768 * 768];
+            for (int i = 0; i < shadow.Length; i++) shadow[i] = -1e20f;
+            float sox = mapW * 0.5f;
+            float soy = 6f;
+            float soz = mapD * 0.5f;
+            Basis(lsx, lsy, lsz, out float srx, out float sry, out float srz, out float sux, out float suy, out float suz);
+            for (int i = 0; i < park.Count; i++)
+            {
+                if (park[i].A < 0.99f) continue;
+                ShadowTri(park[i], shadow, 768, sox, soy, soz, srx, sry, srz, sux, suy, suz, lsx, lsy, lsz, half);
+            }
+            var clear = new List<Tri>(park.Count);
+            clear.AddRange(park);
+            ChasePng(clear, Path.Combine(folder, "title_clear.png"), 1920, 1080,
+                78f, 7f, 4f, 78f, 1.4f, 16f,
+                shadow, sox, soy, soz, srx, sry, srz, sux, suy, suz, lsx, lsy, lsz, half, 30f);
+            WritePass26Results(folder, poses, park, shadow, sox, soy, soz, srx, sry, srz, sux, suy, suz, lsx, lsy, lsz, half);
+            WriteChest(folder, poses, 1, "chest_blue.png");
+            WriteChest(folder, poses, 3, "chest_lavender.png");
+            return "pass28 " + folder;
+        }
+
+        static void WriteChest(string folder, string poses, int seat, string name)
+        {
+            var tris = new List<Tri>(8);
+            AddBox(tris, 0f, 1.3f, -2.4f, 28f, 18f, 0.3f, 8f / 255f, 16f / 255f, 36f / 255f);
+            AddBox(tris, 0f, -0.02f, 0.15f, 2.4f, 0.06f, 2.2f, 183f / 255f, 164f / 255f, 114f / 255f);
+            AddPosed(tris, Path.Combine(poses, "ready.tris"), 0f, 0.02f, 0f, 12f, seat, false);
+            var shade = new float[16 * 16];
+            for (int s = 0; s < shade.Length; s++) shade[s] = -1e20f;
+            PortraitPng(tris, Path.Combine(folder, name), 720, 900,
+                0.35f, 1.42f, 2.15f, 0f, 1.22f, 0.08f, shade, 26f);
+        }
+
+        static string WriteMenuPass(string folder, string poses, bool slotCards, bool overlap)
+        {
+            if (string.IsNullOrEmpty(folder) || string.IsNullOrEmpty(poses)) return "pass missing folder";
+            Directory.CreateDirectory(folder);
+            List<Tri> park = Gather(ParkArena.Mega);
+            LiftChaseGround(park);
+            float mapW = MegaParkP1Layout.MapW;
+            float mapD = MegaParkP1Layout.MapD;
+            Sun(out float lsx, out float lsy, out float lsz);
+            float half = Math.Max(mapW, mapD) * 0.70f + 28f;
+            var shadow = new float[768 * 768];
+            for (int i = 0; i < shadow.Length; i++) shadow[i] = -1e20f;
+            float sox = mapW * 0.5f;
+            float soy = 6f;
+            float soz = mapD * 0.5f;
+            Basis(lsx, lsy, lsz, out float srx, out float sry, out float srz, out float sux, out float suy, out float suz);
+            for (int i = 0; i < park.Count; i++)
+            {
+                if (park[i].A < 0.99f) continue;
+                ShadowTri(park[i], shadow, 768, sox, soy, soz, srx, sry, srz, sux, suy, suz, lsx, lsy, lsz, half);
+            }
+            WritePass26Line(folder, "pan_title.png", poses,
+                new[] { "run_pos.tris", "step.tris", "run_neg.tris", "step_b.tris" },
+                park, shadow, sox, soy, soz, srx, sry, srz, sux, suy, suz, lsx, lsy, lsz, half,
+                78f, 7f, 4f, 78f, 1.4f, 16f, 30f, true);
+            WritePass26Rail(folder, poses);
+            WritePass26Line(folder, "pan_main.png", poses,
+                new[] { "step_b.tris", "run_neg.tris", "step.tris", "run_pos.tris" },
+                park, shadow, sox, soy, soz, srx, sry, srz, sux, suy, suz, lsx, lsy, lsz, half,
+                86f, 7f, 4f, 78.4f, 2f, 16f, 36f, false);
+            WritePass26Portraits(folder, poses, slotCards);
+            WritePass26Results(folder, poses, park, shadow, sox, soy, soz, srx, sry, srz, sux, suy, suz, lsx, lsy, lsz, half);
+            WritePass26Pause(folder, poses, park, shadow, sox, soy, soz, srx, sry, srz, sux, suy, suz, lsx, lsy, lsz, half);
+            if (overlap) WriteOverlap(folder, poses);
+            return (overlap ? "pass27 " : "pass26 ") + folder;
+        }
+
+        static void WritePass26Line(string folder, string name, string poses, string[] files,
+            List<Tri> park, float[] shadow,
+            float sox, float soy, float soz, float srx, float sry, float srz,
+            float sux, float suy, float suz, float lsx, float lsy, float lsz, float half,
+            float ex, float ey, float ez, float tx, float ty, float tz, float fov, bool slot)
+        {
+            float[] xs = { 75.45f, 77.15f, 78.85f, 80.55f };
+            var tris = new List<Tri>(park.Count + 256);
+            tris.AddRange(park);
+            int from = tris.Count;
+            for (int i = 0; i < 4; i++)
+                AddPosed(tris, Path.Combine(poses, files[i]), xs[i], 0.2f, 16f, 90f, i, slot);
+            var seatShadow = (float[])shadow.Clone();
+            StampShadow(tris, from, seatShadow, sox, soy, soz, srx, sry, srz, sux, suy, suz, lsx, lsy, lsz, half);
+            ChasePng(tris, Path.Combine(folder, name), 1920, 1080,
+                ex, ey, ez, tx, ty, tz, seatShadow, sox, soy, soz, srx, sry, srz, sux, suy, suz, lsx, lsy, lsz, half, fov);
+        }
+
+        static void WritePass26Portraits(string folder, string poses, bool slot)
+        {
+            string[] files = { "idle_a.tris", "ready.tris", "idle_b.tris", "ready.tris" };
+            float[] yaw = { 22f, 14f, -22f, 10f };
+            for (int i = 0; i < 4; i++)
+            {
+                var tris = new List<Tri>(8);
+                AddBox(tris, 0f, 1.3f, -2.4f, 28f, 18f, 0.3f, 8f / 255f, 16f / 255f, 36f / 255f);
+                AddBox(tris, 0f, -0.02f, 0.15f, 2.4f, 0.06f, 2.2f, 183f / 255f, 164f / 255f, 114f / 255f);
+                AddPosed(tris, Path.Combine(poses, files[i]), 0f, 0.02f, 0f, yaw[i], i, slot);
+                var shadow = new float[16 * 16];
+                for (int s = 0; s < shadow.Length; s++) shadow[s] = -1e20f;
+                PortraitPng(tris, Path.Combine(folder, "idle_" + i.ToString() + ".png"), 720, 900,
+                    0.55f, 1.05f, 4.5f, 0f, 0.92f, 0.02f, shadow, 32f);
+            }
+        }
+
+        static void WritePass26Results(string folder, string poses,
+            List<Tri> park, float[] shadow,
+            float sox, float soy, float soz, float srx, float sry, float srz,
+            float sux, float suy, float suz, float lsx, float lsy, float lsz, float half)
+        {
+            float ground = 0.2f;
+            float z = 16f;
+            float origin = 77.27f;
+            float[] x = { origin, origin - 1.46f, origin + 1.50f, origin + 2.92f };
+            float[] h = { 0.72f, 0.50f, 0.34f, 0.20f };
+            float[] wide = { 1.16f, 1.06f, 1.06f, 1.28f };
+            string[] files = { "cheer.tris", "cheer_b.tris", "cheer_c.tris", "slump.tris" };
+            float[] sr = { 0.78f, 0.55f, 0.62f, 0.38f };
+            float[] sg = { 0.62f, 0.58f, 0.42f, 0.40f };
+            float[] sb = { 0.28f, 0.64f, 0.30f, 0.46f };
+            float[] fr = { 242f / 255f, 41f / 255f, 255f / 255f, 41f / 255f };
+            float[] fg = { 41f / 255f, 115f / 255f, 219f / 255f, 209f / 255f };
+            float[] fb = { 56f / 255f, 255f / 255f, 31f / 255f, 71f / 255f };
+            var tris = new List<Tri>(park.Count + 400);
+            tris.AddRange(park);
+            int from = tris.Count;
+            for (int i = 0; i < 4; i++)
+            {
+                AddBox(tris, x[i], ground + h[i] * 0.5f, z, wide[i], h[i], 1.02f, sr[i], sg[i], sb[i]);
+                AddBox(tris, x[i], ground + h[i] + 0.03f, z, wide[i] + 0.08f, 0.06f, 1.10f, sr[i] * 1.15f, sg[i] * 1.1f, sb[i] * 0.9f);
+                AddBox(tris, x[i], ground + h[i] * 0.45f, z - 0.54f, wide[i] * 0.72f, h[i] * 0.55f, 0.06f, fr[i], fg[i], fb[i]);
+                AddPosed(tris, Path.Combine(poses, files[i]), x[i], ground + h[i] + 0.06f, z, 180f, i, false);
+            }
+            for (int c = 0; c < 14; c++)
+            {
+                float ang = c * 0.55f;
+                float cx = origin + (float)Math.Sin(ang) * 1.15f;
+                float cy = 2.15f + (c % 4) * 0.22f;
+                float cz = z - 0.35f + (float)Math.Cos(ang) * 0.25f;
+                float cr = c % 3 == 0 ? 1f : (c % 3 == 1 ? 0.95f : 0.35f);
+                float cg = c % 3 == 0 ? 0.84f : (c % 3 == 1 ? 0.35f : 0.82f);
+                float cb = c % 3 == 0 ? 0.2f : (c % 3 == 1 ? 0.28f : 0.55f);
+                AddBox(tris, cx, cy, cz, 0.16f, 0.26f, 0.04f, cr, cg, cb);
+            }
+            var seatShadow = (float[])shadow.Clone();
+            StampShadow(tris, from, seatShadow, sox, soy, soz, srx, sry, srz, sux, suy, suz, lsx, lsy, lsz, half);
+            ChasePng(tris, Path.Combine(folder, "results.png"), 1920, 1080,
+                78.1f, 3.6f, 8.4f, 78.1f, 1.7f, 16f,
+                seatShadow, sox, soy, soz, srx, sry, srz, sux, suy, suz, lsx, lsy, lsz, half, 28f);
+        }
+
+        static void WritePass26Pause(string folder, string poses,
+            List<Tri> park, float[] shadow,
+            float sox, float soy, float soz, float srx, float sry, float srz,
+            float sux, float suy, float suz, float lsx, float lsy, float lsz, float half)
+        {
+            var tris = new List<Tri>(park.Count + 64);
+            tris.AddRange(park);
+            int from = tris.Count;
+            AddPosed(tris, Path.Combine(poses, "ready.tris"), 76.4f, 0.2f, 16f, 200f, 0, false);
+            var seatShadow = (float[])shadow.Clone();
+            StampShadow(tris, from, seatShadow, sox, soy, soz, srx, sry, srz, sux, suy, suz, lsx, lsy, lsz, half);
+            ChasePng(tris, Path.Combine(folder, "pause.png"), 1920, 1080,
+                73.5f, 1.85f, 11.6f, 76.4f, 1.2f, 16f,
+                seatShadow, sox, soy, soz, srx, sry, srz, sux, suy, suz, lsx, lsy, lsz, half, 32f);
+        }
+
+        static void AddPosed(List<Tri> tris, string file, float x, float y, float z, float yaw, int seat, bool slot)
+        {
+            if (!LoadHierFile(file)) return;
+            float bodyR, bodyG, bodyB, accentR, accentG, accentB;
+            if (slot) SlotPaint(seat, out bodyR, out bodyG, out bodyB, out accentR, out accentG, out accentB);
+            else LookPair(seat, out bodyR, out bodyG, out bodyB, out accentR, out accentG, out accentB);
+            bool card = file.IndexOf("idle", StringComparison.Ordinal) >= 0 || file.IndexOf("ready", StringComparison.Ordinal) >= 0;
+            AddHier(tris, x, y, z, yaw, bodyR, bodyG, bodyB, accentR, accentG, accentB, card);
+            AddContact(tris, x, y, z);
+        }
+
+        /// <summary>
+        /// Seat paint from MenuTheme, the same colors as the P badges.
+        /// P1 red, P2 blue, P3 yellow, P4 green.
+        /// </summary>
+        static void SlotPaint(int seat, out float bodyR, out float bodyG, out float bodyB, out float accentR, out float accentG, out float accentB)
+        {
+            float[] r = { 0.95f, 0.16f, 1f, 0.16f };
+            float[] g = { 0.16f, 0.45f, 0.86f, 0.82f };
+            float[] b = { 0.22f, 1f, 0.12f, 0.28f };
+            int i = seat < 0 ? 0 : (seat > 3 ? 3 : seat);
+            bodyR = r[i]; bodyG = g[i]; bodyB = b[i];
+            accentR = r[i]; accentG = g[i]; accentB = b[i];
+        }
+
+        /// <summary>
+        /// Orthographic top and side of the far-right title runner and the bar rail.
+        /// Top is X across and Z down the path. Side looks along X so the gap to the
+        /// south post is a gap along Z, not a perspective stack.
+        /// </summary>
+        static void WritePass26Rail(string folder, string poses)
+        {
+            var tris = new List<Tri>(256);
+            Albedo("steel", out float sr, out float sg, out float sb);
+            Albedo("concrete", out float cr, out float cg, out float cb);
+            MegaParkP1Layout.Solid[] world = MegaParkP1Layout.BuildSolids();
+            for (int i = 0; i < world.Length; i++)
+            {
+                MegaParkP1Layout.Solid s = world[i];
+                if (s.Kind != "post" && s.Kind != "bar" && s.Kind != "vault") continue;
+                if (s.X < 76f || s.X > 86f || s.Z < 10f || s.Z > 22f) continue;
+                float r = s.Kind == "vault" ? cr : sr;
+                float g = s.Kind == "vault" ? cg : sg;
+                float b = s.Kind == "vault" ? cb : sb;
+                AddBox(tris, s.X, s.Y, s.Z, s.Sx, s.Sy, s.Sz, r, g, b);
+            }
+            AddBox(tris, 80.55f, 0.02f, 16f, 6f, 0.04f, 8f, 183f / 255f, 164f / 255f, 114f / 255f);
+            AddPosed(tris, Path.Combine(poses, "step_b.tris"), 80.55f, 0.2f, 16f, 90f, 3, true);
+            OrthoPng(tris, Path.Combine(folder, "rail_top.png"), 960, 720, 0, 78.4f, 82.6f, 11.6f, 17.4f);
+            OrthoPng(tris, Path.Combine(folder, "rail_side.png"), 960, 720, 1, 11.6f, 17.4f, -0.1f, 2.3f);
+        }
+
+        /// <summary>
+        /// Close view of the rest hip shell where it sits inside the upper leg.
+        /// Those triangles are mat 4, drawn red.
+        /// </summary>
+        static void WriteOverlap(string folder, string poses)
+        {
+            var tris = new List<Tri>(8);
+            AddBox(tris, 0f, 1.1f, -1.2f, 8f, 6f, 0.2f, 18f / 255f, 20f / 255f, 24f / 255f);
+            AddBox(tris, 0f, -0.02f, 0.1f, 3f, 0.04f, 3f, 90f / 255f, 92f / 255f, 96f / 255f);
+            if (!LoadHierFile(Path.Combine(poses, "overlap.tris"))) return;
+            AddHier(tris, 0f, 0f, 0f, 55f, 0.78f, 0.74f, 0.68f, 0.55f, 0.52f, 0.48f, false);
+            var shadow = new float[16 * 16];
+            for (int s = 0; s < shadow.Length; s++) shadow[s] = -1e20f;
+            PortraitPng(tris, Path.Combine(folder, "overlap.png"), 960, 720,
+                1.35f, 0.72f, 1.15f, 0.0f, 0.82f, 0.02f, shadow, 26f);
+        }
+
+        static void OrthoPng(List<Tri> tris, string path, int w, int h, int axis, float u0, float u1, float v0, float v1)
+        {
+            var rgb = new byte[w * h * 3];
+            var depth = new float[w * h];
+            for (int i = 0; i < depth.Length; i++) depth[i] = -1e20f;
+            for (int y = 0; y < h; y++)
+            {
+                for (int x = 0; x < w; x++)
+                {
+                    int p = (y * w + x) * 3;
+                    rgb[p] = 214;
+                    rgb[p + 1] = 220;
+                    rgb[p + 2] = 224;
+                }
+            }
+            for (int i = 0; i < tris.Count; i++)
+                OrthoTri(tris[i], rgb, depth, w, h, axis, u0, u1, v0, v1);
+            WritePng(path, rgb, w, h);
+        }
+
+        static void OrthoTri(Tri t, byte[] rgb, float[] depth, int w, int h, int axis, float u0, float u1, float v0, float v1)
+        {
+            OrthoVert(t.X0, t.Y0, t.Z0, w, h, axis, u0, u1, v0, v1, out float x0, out float y0, out float d0);
+            OrthoVert(t.X1, t.Y1, t.Z1, w, h, axis, u0, u1, v0, v1, out float x1, out float y1, out float d1);
+            OrthoVert(t.X2, t.Y2, t.Z2, w, h, axis, u0, u1, v0, v1, out float x2, out float y2, out float d2);
+            float area = (x1 - x0) * (y2 - y0) - (y1 - y0) * (x2 - x0);
+            if (area < 0f)
+            {
+                float sx = x1, sy = y1, sd = d1;
+                x1 = x2; y1 = y2; d1 = d2;
+                x2 = sx; y2 = sy; d2 = sd;
+                area = -area;
+            }
+            if (area < 0.01f) return;
+            int minX = (int)Math.Floor(Math.Min(x0, Math.Min(x1, x2)));
+            int maxX = (int)Math.Ceiling(Math.Max(x0, Math.Max(x1, x2)));
+            int minY = (int)Math.Floor(Math.Min(y0, Math.Min(y1, y2)));
+            int maxY = (int)Math.Ceiling(Math.Max(y0, Math.Max(y1, y2)));
+            if (minX < 0) minX = 0;
+            if (minY < 0) minY = 0;
+            if (maxX >= w) maxX = w - 1;
+            if (maxY >= h) maxY = h - 1;
+            byte cr = (byte)(Math.Max(0f, Math.Min(1f, t.R)) * 255f);
+            byte cg = (byte)(Math.Max(0f, Math.Min(1f, t.G)) * 255f);
+            byte cb = (byte)(Math.Max(0f, Math.Min(1f, t.B)) * 255f);
+            float inv = 1f / area;
+            for (int y = minY; y <= maxY; y++)
+            {
+                for (int x = minX; x <= maxX; x++)
+                {
+                    float px = x + 0.5f;
+                    float py = y + 0.5f;
+                    float w0 = ((x1 - px) * (y2 - py) - (y1 - py) * (x2 - px)) * inv;
+                    float w1 = ((x2 - px) * (y0 - py) - (y2 - py) * (x0 - px)) * inv;
+                    float w2 = 1f - w0 - w1;
+                    if (w0 < -0.001f || w1 < -0.001f || w2 < -0.001f) continue;
+                    float d = d0 * w0 + d1 * w1 + d2 * w2;
+                    int i = y * w + x;
+                    if (d <= depth[i]) continue;
+                    depth[i] = d;
+                    int p = i * 3;
+                    rgb[p] = cr;
+                    rgb[p + 1] = cg;
+                    rgb[p + 2] = cb;
+                }
+            }
+        }
+
+        static void OrthoVert(float x, float y, float z, int w, int h, int axis, float u0, float u1, float v0, float v1,
+            out float px, out float py, out float depth)
+        {
+            float u = axis == 0 ? x : z;
+            float v = axis == 0 ? z : y;
+            depth = axis == 0 ? y : -x;
+            float su = u1 - u0;
+            float sv = v1 - v0;
+            if (Math.Abs(su) < 1e-4f) su = 1f;
+            if (Math.Abs(sv) < 1e-4f) sv = 1f;
+            px = (u - u0) / su * (w - 1);
+            py = (1f - (v - v0) / sv) * (h - 1);
+        }
+
+        static void StampShadow(List<Tri> tris, int from, float[] shadow,
+            float sox, float soy, float soz, float srx, float sry, float srz,
+            float sux, float suy, float suz, float lsx, float lsy, float lsz, float half)
+        {
+            for (int t = from; t < tris.Count; t++)
+            {
+                if (tris[t].A < 0.99f) continue;
+                ShadowTri(tris[t], shadow, 768, sox, soy, soz, srx, sry, srz, sux, suy, suz, lsx, lsy, lsz, half);
+            }
+        }
     }
 }

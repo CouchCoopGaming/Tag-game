@@ -4,6 +4,7 @@ using System.IO;
 using System.Text;
 using Tag.Practice;
 using Tag.Profiles;
+using Tag.Ui.Menu;
 
 namespace Tag.Settings
 {
@@ -33,6 +34,7 @@ namespace Tag.Settings
             Line(text, "music", s.Music);
             Line(text, "mute", s.Muted ? 1f : 0f);
             Line(text, "hud", s.HudScale);
+            Line(text, "uiScale", s.UiScale);
             Line(text, "colorblind", s.Colorblind ? 1f : 0f);
             Line(text, "minimap", s.Minimap ? 1f : 0f);
             Line(text, "accessSeat", s.AccessSeat);
@@ -51,6 +53,17 @@ namespace Tag.Settings
             Line(text, "rounds", s.RoundsPerMatch);
             Line(text, "split", s.SplitAxis);
             Line(text, "listen", s.Listener);
+            Line(text, "startIt", s.StartIt);
+            Line(text, "startSeat", s.StartSeat);
+            Line(text, "winTarget", s.WinTarget);
+            Line(text, "pads", s.HazardPads ? 1f : 0f);
+            Line(text, "zips", s.HazardZips ? 1f : 0f);
+            for (int i = 0; i < GameSettings.SeatCount; i++)
+            {
+                string n = i == 0 ? "" : i.ToString(CultureInfo.InvariantCulture);
+                Line(text, "confirm" + n, s.ConfirmFace[i]);
+                Line(text, "hand" + n, s.Handicap[i]);
+            }
             for (int i = 0; i < (int)PlayAction.Count; i++)
             {
                 var action = (PlayAction)i;
@@ -68,6 +81,7 @@ namespace Tag.Settings
             PracticeBests.Write(text);
             PracticeGhost.Write(text);
             LocalProfiles.Write(text);
+            MenuSession.Write(text);
             return text.ToString();
         }
 
@@ -142,6 +156,7 @@ namespace Tag.Settings
                 settings.ResetToDefaults();
                 binds.ResetToDefaults();
                 LocalProfiles.Clear();
+                MenuSession.Reset();
                 return;
             }
             PracticeBests.Clear();
@@ -178,9 +193,12 @@ namespace Tag.Settings
             if (key == "mouse" || key == "padLook" || key == "invertY" || key == "fov") return true;
             if (key == "stickInner" || key == "stickOuter" || key == "stickCurve" || key == "lookAccel") return true;
             if (key == "master" || key == "sfx" || key == "ui" || key == "music" || key == "mute") return true;
-            if (key == "hud" || key == "colorblind" || key == "minimap" || key == "accessSeat") return true;
+            if (key == "hud" || key == "uiScale" || key == "colorblind" || key == "minimap" || key == "accessSeat") return true;
             if (key == "arena" || key == "ai" || key == "diff" || key == "roundLen" || key == "rounds") return true;
             if (key == "split" || key == "listen") return true;
+            if (key == "startIt" || key == "startSeat" || key == "winTarget" || key == "pads" || key == "zips") return true;
+            if (SeatKey(key, "confirm", out _)) return true;
+            if (SeatKey(key, "hand", out _)) return true;
             if (key.StartsWith("kb.", StringComparison.Ordinal) || key.StartsWith("pad.", StringComparison.Ordinal))
                 return true;
             if (key.StartsWith("pb.", StringComparison.Ordinal) || key.StartsWith("sp.", StringComparison.Ordinal))
@@ -192,6 +210,7 @@ namespace Tag.Settings
             if (SeatKey(key, "rumble", out _)) return true;
             if (SeatKey(key, "flash", out _)) return true;
             if (LocalProfiles.IsKey(key)) return true;
+            if (MenuSession.IsKey(key)) return true;
             return false;
         }
 
@@ -211,6 +230,7 @@ namespace Tag.Settings
             else if (key == "music") settings.Music = Num(value, settings.Music);
             else if (key == "mute") settings.Muted = Flag(value);
             else if (key == "hud") settings.HudScale = Num(value, settings.HudScale);
+            else if (key == "uiScale") settings.UiScale = Num(value, settings.UiScale);
             else if (key == "colorblind") settings.Colorblind = Flag(value);
             else if (key == "minimap") settings.Minimap = Flag(value);
             else if (key == "accessSeat") settings.AccessSeat = (int)Num(value, settings.AccessSeat);
@@ -218,13 +238,24 @@ namespace Tag.Settings
             else if (SeatKey(key, "captions", out int captionSeat)) settings.Captions[captionSeat] = Flag(value);
             else if (SeatKey(key, "rumble", out int rumbleSeat)) settings.Rumble[rumbleSeat] = (int)Num(value, settings.Rumble[rumbleSeat]);
             else if (SeatKey(key, "flash", out int flashSeat)) settings.ReduceFlash[flashSeat] = Flag(value);
-            else if (key == "arena") settings.Arena = (int)Num(value, settings.Arena);
+            else if (key == "arena")
+            {
+                settings.Arena = (int)Num(value, settings.Arena);
+                MenuSession.Arena = settings.Arena;
+            }
             else if (key == "ai") settings.AiOpponents = (int)Num(value, settings.AiOpponents);
             else if (key == "diff") settings.DifficultyTier = (int)Num(value, settings.DifficultyTier);
             else if (key == "roundLen") settings.RoundLengthIndex = (int)Num(value, settings.RoundLengthIndex);
             else if (key == "rounds") settings.RoundsPerMatch = (int)Num(value, settings.RoundsPerMatch);
             else if (key == "split") settings.SplitAxis = (int)Num(value, settings.SplitAxis);
             else if (key == "listen") settings.Listener = (int)Num(value, settings.Listener);
+            else if (key == "startIt") settings.StartIt = (int)Num(value, settings.StartIt);
+            else if (key == "startSeat") settings.StartSeat = (int)Num(value, settings.StartSeat);
+            else if (key == "winTarget") settings.WinTarget = (int)Num(value, settings.WinTarget);
+            else if (key == "pads") settings.HazardPads = Flag(value);
+            else if (key == "zips") settings.HazardZips = Flag(value);
+            else if (SeatKey(key, "confirm", out int confirmSeat)) settings.ConfirmFace[confirmSeat] = (int)Num(value, settings.ConfirmFace[confirmSeat]);
+            else if (SeatKey(key, "hand", out int handSeat)) settings.Handicap[handSeat] = (int)Num(value, settings.Handicap[handSeat]);
             else if (key.StartsWith("kb.", StringComparison.Ordinal))
                 Assign(binds, key.Substring(3), value, true);
             else if (key.StartsWith("pad.", StringComparison.Ordinal))
@@ -235,7 +266,7 @@ namespace Tag.Settings
                 PracticeBests.SetSplits(key.Substring(3), value);
             else if (key.StartsWith("gh.", StringComparison.Ordinal))
                 PracticeGhost.Read(key.Substring(3), value);
-            else
+            else if (!MenuSession.ApplyKey(key, value))
                 LocalProfiles.ApplyKey(key, value);
         }
 

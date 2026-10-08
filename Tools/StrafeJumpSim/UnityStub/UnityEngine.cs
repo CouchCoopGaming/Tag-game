@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace UnityEngine
 {
@@ -149,6 +150,57 @@ namespace UnityEngine
     {
         public int value;
         public static implicit operator LayerMask(int v) => new LayerMask { value = v };
+    }
+
+    public static class Random
+    {
+        static int _n;
+
+        public static int Range(int min, int max)
+        {
+            if (max <= min) return min;
+            int span = max - min;
+            int v = min + (_n % span);
+            _n++;
+            return v;
+        }
+    }
+
+    public static class PlayerPrefs
+    {
+        static readonly Dictionary<string, int> Ints = new Dictionary<string, int>();
+        static readonly Dictionary<string, string> Strings = new Dictionary<string, string>();
+
+        public static void SetInt(string key, int value)
+        {
+            Ints[key] = value;
+        }
+
+        public static int GetInt(string key, int fallback)
+        {
+            int v;
+            return Ints.TryGetValue(key, out v) ? v : fallback;
+        }
+
+        public static void SetString(string key, string value)
+        {
+            Strings[key] = value;
+        }
+
+        public static string GetString(string key, string fallback)
+        {
+            string v;
+            return Strings.TryGetValue(key, out v) ? v : fallback;
+        }
+
+        public static bool HasKey(string key)
+        {
+            return Ints.ContainsKey(key) || Strings.ContainsKey(key);
+        }
+
+        public static void Save()
+        {
+        }
     }
 
     public class Object

@@ -338,6 +338,7 @@ namespace Tag.Art
 
         void OnGUI()
         {
+            if (Tag.Ui.Hud.MatchHud.Active) return;
             WarmStyle();
             if (_it == null || !_it.IsIt || !_it.IsAlive) return;
             var modes = TagModeController.Instance;

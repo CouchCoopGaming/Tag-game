@@ -6,8 +6,75 @@ using UnityEngine;
 
 static class Program
 {
-    static int Main()
+    static int Main(string[] args)
     {
+        if (args != null && args.Length > 0 && args[0] == "--hud-chase")
+        {
+            string folder = args.Length > 1 ? args[1] : Path.Combine("Docs", "UiStills", "pass17", "figures");
+            Console.WriteLine(Tag.Level.ArenaStill.WriteHudChases(folder));
+            return 0;
+        }
+        if (args != null && args.Length > 0 && args[0] == "--pairs")
+        {
+            Console.WriteLine(Tag.Ui.Menu.MenuNoClip.ProbePairs(RepoRoot()));
+            return 0;
+        }
+        if (args != null && args.Length > 0 && args[0] == "--pass36")
+        {
+            string raw = args.Length > 1 ? args[1] : "/tmp/pass36-overlap";
+            Tag.Ui.Menu.MenuNoClip.ExportCelebrate(RepoRoot(), raw);
+            Console.WriteLine("celebrate-overlap " + raw);
+            return 0;
+        }
+        if (args != null && args.Length > 0 && args[0] == "--rail")
+        {
+            Console.WriteLine(Tag.Ui.Menu.MenuNoClip.ProbeRail(RepoRoot()));
+            return 0;
+        }
+        if (args != null && args.Length > 0 && args[0] == "--pass26")
+        {
+            string repo = RepoRoot();
+            string raw = args.Length > 1 ? args[1] : "/tmp/pass26";
+            string poses = Path.Combine(raw, "poses");
+            Tag.Ui.Menu.MenuNoClip.ExportPoses(repo, poses);
+            Console.WriteLine(Tag.Level.ArenaStill.WritePass26(raw, poses));
+            return 0;
+        }
+        if (args != null && args.Length > 0 && args[0] == "--pass27")
+        {
+            string repo = RepoRoot();
+            string raw = args.Length > 1 ? args[1] : "/tmp/pass27";
+            string poses = Path.Combine(raw, "poses");
+            Tag.Ui.Menu.MenuNoClip.ExportPoses(repo, poses);
+            Tag.Ui.Menu.MenuNoClip.ExportOverlap(repo, Path.Combine(poses, "overlap.tris"));
+            Console.WriteLine(Tag.Level.ArenaStill.WritePass27(raw, poses));
+            return 0;
+        }
+        if (args != null && args.Length > 0 && args[0] == "--pass28")
+        {
+            string repo = RepoRoot();
+            string raw = args.Length > 1 ? args[1] : "/tmp/pass28";
+            string poses = Path.Combine(raw, "poses");
+            Tag.Ui.Menu.MenuNoClip.ExportPoses(repo, poses);
+            Console.WriteLine(Tag.Level.ArenaStill.WritePass28(raw, poses));
+            return 0;
+        }
+        if (args != null && args.Length > 0 && args[0] == "--handoff")
+        {
+            string repo = RepoRoot();
+            Console.WriteLine(Tag.Ui.Menu.MenuHandoff.HandoffLine(repo));
+            Console.WriteLine(Tag.Ui.Menu.MenuHandoff.ResultsLine(repo));
+            Console.WriteLine(Tag.Ui.Menu.MenuTravel.Line(repo));
+            return 0;
+        }
+        if (args != null && args.Length > 0 && args[0] == "--no-clip")
+        {
+            string clipLine;
+            bool probe = args.Length > 1 && args[1] == "probe";
+            bool clipOk = Tag.Ui.Menu.MenuNoClip.Run(RepoRoot(), out clipLine, true, probe);
+            Console.WriteLine(clipLine);
+            return clipOk ? 0 : 1;
+        }
         StrafeJumpReport report = StrafeJumpProof.Run60();
         Console.WriteLine(report.ToString());
         if (!report.Ok)
@@ -1046,6 +1113,43 @@ static class Program
             return 1;
         }
 
+        Tag.Ui.Menu.UiFlow.Report flow = Tag.Ui.Menu.UiFlow.Run();
+        Console.WriteLine(flow.Line);
+        if (!flow.Ok)
+        {
+            Console.Error.WriteLine(flow.Failure);
+            return 1;
+        }
+        string handoff = Tag.Ui.Menu.MenuHandoff.HandoffLine(RepoRoot());
+        Console.WriteLine(handoff);
+        string resultsHandoff = Tag.Ui.Menu.MenuHandoff.ResultsLine(RepoRoot());
+        Console.WriteLine(resultsHandoff);
+        string travel = Tag.Ui.Menu.MenuTravel.Line(RepoRoot());
+        Console.WriteLine(travel);
+        if (handoff != "handoff mode=ok rules=ok arena=ok"
+            || resultsHandoff != "results rematch=ok title=ok")
+        {
+            Console.Error.WriteLine("menu handoff missed");
+            return 1;
+        }
+        if (travel != "transitions=ok skip=ok")
+        {
+            Console.Error.WriteLine("menu transitions missed");
+            return 1;
+        }
+
+        string noClip;
+        if (!Tag.Ui.Menu.MenuNoClip.Run(RepoRoot(), out noClip, false))
+        {
+            Console.WriteLine(noClip);
+            if (!Tag.Ui.Menu.MenuNoClip.RestOverlapOnly)
+            {
+                Console.Error.WriteLine("no-clip rest overlaps");
+                return 1;
+            }
+        }
+        else
+            Console.WriteLine(noClip);
         Console.WriteLine("solo grapple on; opponent and couch off; jet off; clips and locks held");
         return 0;
     }
