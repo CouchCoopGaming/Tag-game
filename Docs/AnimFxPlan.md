@@ -79,6 +79,15 @@ Pass 1 is the exit poses and the terminal landing roll. Pass 2 deepens those pos
 - The dust still is one sprint on dirt beside one sprint on concrete, at the same speed, so the surface scale is visible.
 - Stills are in `Docs/AnimStills/pass9/` (`dash-ghosts.png`, `roll-swirl.png`, `roll-strip-side.png`, `roll-strip-three-quarter.png`, `tag-burst.png`, `running-dust.png`). Coyote, speeds, the 0.52 s roll, and the 65% gate stay.
 
+## Pass 10 (this branch)
+
+- The dash still looks down on the crown, where the Hier sensors and bolts face. The solid runner and the four ghosts are the same mesh (4115 head verts, same slots). Skin is the player color. Sensors stay black, joints stay dark, and the teal accent stays. Ghost alphas stay 0.60, 0.45, 0.30, 0.15.
+- The tag fist stops on the shoulder cap. The forearm stays clear of the chest. The burst sits on that contact, below the face.
+- Dust stills are soft clouds that grow and fade, not a line of dots. A sprint on dirt is a warm tan cloud about 0.45 to 0.75 m across. Concrete at the same sprint is a small pale gray puff. A third panel puts a walk beside a sprint on dirt. Grass is a few flecks and no cloud. The live `DustLook` numbers are unchanged.
+- A hard landing shows the 1.30 m ring and 12 debris bits. A slide shows the two 0.18 m scrape ribbons. A launch pad shows the 1.15 m cyan ring and the wind streak. A zip shows the cable with 0.43 m of sag and 8 violet sparks.
+- The roll stills from pass 9 stay. Time stays 0.52 s. The 65% gate stays.
+- Stills are in `Docs/AnimStills/pass10/` (`dash-ghosts.png`, `tag-burst.png`, `running-dust.png`, `landing-ring.png`, `slide-scrape.png`, `launch-pad.png`, `zip-line.png`).
+
 Pass 3 mockups stay in `Docs/AnimStills/pass3/`.
 
 ## FX queue

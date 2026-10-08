@@ -356,3 +356,12 @@ The dash trail uses the same bolted body as the runner. A fast landing stays low
 - The roll plants a hand, drops the lead shoulder, crosses the back toward the opposite hip, and comes up onto the feet. The hips stay low, and the head stays off the ground. It is still the same half second, and it still waits for the same fast fall. Try it: fall about 19 meters while running.
 - A tag draws the comic burst on the contact. No letters. The words still say POP, POW, BAM, and WHAM. Turning comic words off still hides the burst. Try it: tag the dummy.
 - Dirt throws a bigger, browner trail than concrete at the same sprint. Try it: sprint on the concrete, then onto dirt.
+
+## Dust you can see, and the rest of the effects
+
+The dash trail, the tag, and the dust pictures were taken again. A hard landing, a slide, a launch pad, and a zip each have a picture too. Speed, the roll timer, and the camera in play stay as they were.
+
+- The dash ghosts and the solid runner are the same bolted body. The bolts sit on the crown, so the picture looks down enough to show them on both. Try it: dash, and compare the trail to your own head.
+- A tag stops the fist on the shoulder. The comic burst sits on that contact, under the face, with no letters. Try it: tag the dummy and watch the hand meet the shoulder.
+- Dirt throws a warm cloud at each step when you sprint. Concrete throws a small pale puff. A walk on dirt is fainter than the sprint. Grass is a few flecks. Try it: walk, then sprint, and cross from dirt onto concrete.
+- A hard landing draws a ring and kicks up debris. A slide leaves two short scrape ribbons. A pad throws a cyan ring on the way up. A zip throws violet sparks along the cable. Try it: drop from a roof, slide, hit a pad, then take a zip.
