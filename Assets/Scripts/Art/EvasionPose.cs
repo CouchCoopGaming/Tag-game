@@ -6,9 +6,8 @@ using Tag.Gameplay;
 namespace Tag.Art
 {
     /// <summary>
-    /// In-place Hier clips for the four evasion moves. Entry blends out of the
-    /// sprint stride, the move plays, and the exit blends back. Root motion stays off:
-    /// the dump's drop is 0 and the motor owns translation.
+    /// In-place Hier clips for the four evasion moves. The capsule stays on the
+    /// motor. Sample.Drop is a visual pelvis offset, not root motion.
     /// Spin and juke have a left and a right. Stutter shoulders stay square.
     /// </summary>
     public static class EvasionPose
@@ -27,26 +26,28 @@ namespace Tag.Art
 
         public static bool Holds()
         {
-            if (RootMotion || Drop != 0f) return false;
+            if (RootMotion) return false;
             if (EvasionMoves.Duration(EvasionMoves.Kind.Spin) < 0.5f) return false;
-            Sample spinR = MovePose(EvasionMoves.Kind.Spin, 1, EvasionMoves.SpinSeconds * 0.2f, EvasionMoves.SpinSeconds);
-            Sample spinL = MovePose(EvasionMoves.Kind.Spin, -1, EvasionMoves.SpinSeconds * 0.2f, EvasionMoves.SpinSeconds);
-            if (spinR.HeadYaw < 8f || spinL.HeadYaw > -8f) return false;
+            Sample spinR = MovePose(EvasionMoves.Kind.Spin, 1, EvasionMoves.SpinSeconds * 0.15f, EvasionMoves.SpinSeconds);
+            Sample spinL = MovePose(EvasionMoves.Kind.Spin, -1, EvasionMoves.SpinSeconds * 0.15f, EvasionMoves.SpinSeconds);
+            if (spinR.HeadYaw < 12f || spinL.HeadYaw > -12f) return false;
             if (spinR.HipYaw < 40f || spinL.HipYaw > -40f) return false;
-            if (spinR.ThighL < 3f || spinL.ThighR < 3f) return false;
+            if (spinR.Drop > -0.08f || spinL.Lean > -8f) return false;
+            if (spinR.ElbowL > -25f) return false;
             Sample juke = MovePose(EvasionMoves.Kind.Juke, 1, 0.02f, EvasionMoves.JukeSeconds);
-            if (juke.HeadYaw >= 0f) return false;
-            if (juke.YawL < 8f || juke.YawR > -8f) return false;
-            if (Mathf.Abs(juke.SpineYaw) > 0.01f) return false;
-            Sample stutter = MovePose(EvasionMoves.Kind.Stutter, 1, 0.05f, EvasionMoves.MoveSeconds(EvasionMoves.Kind.Stutter));
-            if (Mathf.Abs(stutter.HipYaw) > 0.01f || Mathf.Abs(stutter.SpineYaw) > 0.01f || Mathf.Abs(stutter.HeadYaw) > 0.01f) return false;
-            if (stutter.Hip < 3f) return false;
-            Sample dive = MovePose(EvasionMoves.Kind.Dive, 1, EvasionMoves.DiveFlight * 0.85f, EvasionMoves.MoveSeconds(EvasionMoves.Kind.Dive));
-            if (dive.Hip < 40f) return false;
+            if (juke.HeadYaw >= 0f || juke.SpineYaw >= 0f) return false;
+            if (juke.KneeR > -40f || juke.Drop > -0.12f) return false;
+            Sample stutter = MovePose(EvasionMoves.Kind.Stutter, 1, 0.08f, EvasionMoves.MoveSeconds(EvasionMoves.Kind.Stutter));
+            if (Mathf.Abs(stutter.HipYaw) > 0.01f || Mathf.Abs(stutter.SpineYaw) > 0.01f) return false;
+            if (stutter.KneeL > -35f || stutter.KneeR > -35f) return false;
+            if (stutter.Drop > -0.14f || stutter.Drop < -0.21f) return false;
+            if (stutter.Hip < 10f) return false;
+            Sample dive = MovePose(EvasionMoves.Kind.Dive, 1, EvasionMoves.DiveFlight * 0.9f, EvasionMoves.MoveSeconds(EvasionMoves.Kind.Dive));
+            if (dive.Hip < 70f) return false;
+            if (dive.Drop > -0.25f) return false;
             if (dive.ArmL > -40f || dive.ArmR > -40f) return false;
-            if (dive.ElbowL < -8f || dive.ElbowR < -8f) return false;
             Sample exit = At(EvasionMoves.Kind.Stutter, 1, EvasionMoves.Duration(EvasionMoves.Kind.Stutter));
-            if (Mathf.Abs(exit.Drop) > 0.0001f) return false;
+            if (Mathf.Abs(exit.Drop) > 0.02f) return false;
             return true;
         }
 
@@ -112,28 +113,35 @@ namespace Tag.Art
             }
         }
 
-        /// <summary>
-        /// Short stride the Hier cuffs can hold. A sprint thigh past about 4° forward
-        /// or 6° back, a knee past 2°, or a spine pitch of 1° deepens a rest overlap.
-        /// The dive keeps the arms at the one forward pitch that clears the shoulder.
-        /// </summary>
         static Sample Run(float phase, bool reach)
         {
             float s = Mathf.Sin(phase);
             Sample sample = new Sample();
-            sample.ThighL = 4f * s;
-            sample.ThighR = -4f * s;
-            sample.KneeL = -2f;
-            sample.KneeR = -2f;
-            sample.FootL = s > 0.25f ? 3f : 0f;
-            sample.FootR = s < -0.25f ? 3f : 0f;
-            sample.ElbowL = reach ? 0f : -4f;
-            sample.ElbowR = sample.ElbowL;
-            sample.ArmL = reach ? -60f : 0f;
-            sample.ArmR = sample.ArmL;
-            sample.Head = reach ? -2f : -4f;
-            sample.Hip = reach ? 0f : 2f;
-            sample.Drop = Drop;
+            sample.ThighL = 18f * s;
+            sample.ThighR = -18f * s;
+            sample.KneeL = -22f - 8f * Mathf.Abs(s);
+            sample.KneeR = sample.KneeL;
+            sample.FootL = s > 0.2f ? 8f : 0f;
+            sample.FootR = s < -0.2f ? 8f : 0f;
+            if (reach)
+            {
+                sample.ArmL = 8f;
+                sample.ArmR = 8f;
+                sample.ElbowL = -20f;
+                sample.ElbowR = -20f;
+                sample.KneeL = -36f;
+                sample.KneeR = -32f;
+            }
+            else
+            {
+                sample.ArmL = -22f * s;
+                sample.ArmR = 22f * s;
+                sample.ElbowL = -22f;
+                sample.ElbowR = -22f;
+            }
+            sample.Head = -4f;
+            sample.Hip = 8f;
+            sample.Drop = 0f;
             return sample;
         }
 
@@ -148,7 +156,6 @@ namespace Tag.Art
             else if (kind == EvasionMoves.Kind.Spin) s = Spin(local, move, sign);
             else if (kind == EvasionMoves.Kind.Juke) s = Juke(local, move);
             else s = Dive(local);
-            s.Drop = Drop;
             if (sign < 0 && (kind == EvasionMoves.Kind.Juke))
                 s = Mirror(s);
             return s;
@@ -160,26 +167,23 @@ namespace Tag.Art
             float span = move - brake;
             if (span < 0.001f) span = 0.001f;
             float burst = local <= brake ? 0f : Smooth((local - brake) / span);
-            // High cadence, a few degrees of thigh. The knee cuff clips past 2°.
-            Sample s = Run(local * 22f, false);
-            s.Hip = Mathf.Lerp(5f, 8f, burst);
-            s.HipYaw = 0f;
-            s.Spine = 0f;
-            s.SpineYaw = 0f;
-            s.HeadYaw = 0f;
-            s.Lean = 0f;
-            s.YawL = 0f;
-            s.YawR = 0f;
-            s.ArmL = 0f;
-            s.ArmR = 0f;
-            s.ArmYawL = 0f;
-            s.ArmYawR = 0f;
-            s.Head = Mathf.Lerp(-5f, -8f, burst);
-            s.ElbowL = -6f;
-            s.ElbowR = -6f;
-            s.KneeL = -2f;
-            s.KneeR = -2f;
-            return s;
+            // Five short plants on the balls. Hips sit 17 cm down, chest over the knees.
+            float s = Mathf.Sin(local * 42f);
+            Sample sample = new Sample();
+            sample.Drop = -0.16f;
+            sample.Hip = Mathf.Lerp(18f, 28f, burst);
+            sample.Head = Mathf.Lerp(-6f, -14f, burst);
+            sample.ThighL = 8f + 5f * s;
+            sample.ThighR = 8f - 5f * s;
+            sample.KneeL = -52f - 3f * (s > 0f ? s : 0f);
+            sample.KneeR = -52f - 3f * (s < 0f ? -s : 0f);
+            sample.FootL = 12f + 2f * (s > 0f ? s : 0f);
+            sample.FootR = 12f + 2f * (s < 0f ? -s : 0f);
+            sample.ArmL = -20f * s;
+            sample.ArmR = 20f * s;
+            sample.ElbowL = -28f;
+            sample.ElbowR = -28f;
+            return sample;
         }
 
         static Sample Spin(float local, float move, int sign)
@@ -188,19 +192,28 @@ namespace Tag.Art
             if (u < 0f) u = 0f;
             if (u > 1f) u = 1f;
             float yaw = u >= 0.999f ? 360f * sign : 360f * u * sign;
-            float lead = u < 0.45f ? 26f * (1f - u / 0.45f) : 0f;
+            float lead = u < 0.40f ? 36f * (1f - u / 0.40f) : 0f;
+            float outDrive = u < 0.82f ? 0f : Smooth((u - 0.82f) / 0.18f);
             Sample s = new Sample();
             s.HipYaw = yaw;
             s.HeadYaw = lead * sign;
-            s.Head = -6f;
-            // Elbow past 2° deepens the cuff on part of the turn. This is the tuck that survives it.
-            s.ElbowL = -2f;
-            s.ElbowR = -2f;
-            s.ThighL = 4f;
-            s.ThighR = -5f;
-            s.KneeL = -2f;
-            s.KneeR = -2f;
+            s.Head = -8f;
+            s.Hip = 8f;
+            s.Lean = Mathf.Lerp(13f, 4f, outDrive) * sign;
+            s.Drop = Mathf.Lerp(-0.15f, -0.05f, outDrive);
+            float side = Mathf.Abs(Mathf.Sin(yaw * sign * 0.5f * 0.0174533f));
+            s.ThighL = Mathf.Lerp(12f, 8f, outDrive);
+            s.ThighR = Mathf.Lerp(2f, -4f, outDrive);
+            s.KneeL = Mathf.Lerp(-66f - 14f * side, -42f, outDrive);
+            s.KneeR = Mathf.Lerp(-62f - 14f * side, -38f, outDrive);
             s.FootL = 4f;
+            s.FootR = 2f;
+            s.ArmL = 6f;
+            s.ArmR = 6f;
+            s.RollL = Mathf.Lerp(-42f, -8f, outDrive);
+            s.RollR = Mathf.Lerp(42f, 8f, outDrive);
+            s.ElbowL = Mathf.Lerp(-64f, -28f, outDrive);
+            s.ElbowR = Mathf.Lerp(-64f, -28f, outDrive);
             if (sign < 0)
             {
                 float thigh = s.ThighL;
@@ -212,6 +225,18 @@ namespace Tag.Art
                 s.ThighR = thigh;
                 s.KneeR = knee;
                 s.FootR = foot;
+                float arm = s.ArmL;
+                float armYaw = s.ArmYawL;
+                float roll = s.RollL;
+                float elbow = s.ElbowL;
+                s.ArmL = s.ArmR;
+                s.ArmYawL = -s.ArmYawR;
+                s.RollL = -s.RollR;
+                s.ElbowL = s.ElbowR;
+                s.ArmR = arm;
+                s.ArmYawR = -armYaw;
+                s.RollR = -roll;
+                s.ElbowR = elbow;
             }
             return s;
         }
@@ -224,56 +249,119 @@ namespace Tag.Art
             float fake = 1f - Smooth(u);
             float commit = Smooth(u);
             Sample s = new Sample();
-            s.Hip = 6f;
-            s.YawL = 8f;
-            s.YawR = -8f;
-            s.ThighL = 0f;
-            s.ThighR = 0f;
-            s.KneeL = -2f;
-            s.KneeR = -2f;
-            s.FootL = 4f;
+            s.Drop = -0.16f;
+            s.Hip = Mathf.Lerp(14f, 20f, commit);
+            s.Lean = Mathf.Lerp(-10f, 14f, commit);
+            s.SpineYaw = -20f * fake + 12f * commit;
+            s.HeadYaw = -28f * fake + 12f * commit;
             s.Head = -6f;
-            s.HeadYaw = -22f * fake + 8f * commit;
-            s.ElbowL = -4f;
-            s.ElbowR = -4f;
+            s.YawL = 12f;
+            s.YawR = -16f;
+            s.ThighL = 4f;
+            s.ThighR = 10f;
+            s.KneeL = -64f;
+            s.KneeR = -54f;
+            s.FootL = 4f;
+            s.FootR = 10f;
+            s.ArmL = 14f * fake - 4f * commit;
+            s.ArmR = -6f * fake - 14f * commit;
+            s.ElbowL = -24f;
+            s.ElbowR = -30f;
             return s;
         }
 
         static Sample Dive(float local)
         {
-            const float flat = 78f;
-            Sample s = new Sample();
-            // -60° is a clear shoulder angle. The pitches between a hanging arm and this reach are not.
-            s.ArmL = -60f;
-            s.ArmR = -60f;
             float flight = EvasionMoves.DiveFlight;
+            Sample push = new Sample();
+            push.Drop = -0.08f;
+            push.Hip = 26f;
+            push.Head = -8f;
+            push.ThighL = 16f;
+            push.ThighR = 8f;
+            push.KneeL = -48f;
+            push.KneeR = -42f;
+            push.FootL = 12f;
+            push.FootR = 6f;
+            push.ArmL = 12f;
+            push.ArmR = 12f;
+            push.ElbowL = -22f;
+            push.ElbowR = -22f;
+            Sample air = new Sample();
+            air.Drop = -0.34f;
+            air.Hip = 82f;
+            air.Head = -12f;
+            air.ThighL = 2f;
+            air.ThighR = 0f;
+            air.KneeL = -12f;
+            air.KneeR = -10f;
+            air.ArmL = -55f;
+            air.ArmR = -55f;
+            air.ArmYawL = 22f;
+            air.ArmYawR = -22f;
+            air.ElbowL = -8f;
+            air.ElbowR = -8f;
             if (local <= flight)
             {
                 float u = Smooth(flight > 0f ? local / flight : 1f);
-                s.Hip = Mathf.Lerp(0f, flat, u);
-                s.Head = Mathf.Lerp(-2f, -8f, u);
-                return s;
+                Sample flown = Lerp(push, air, u);
+                float open = u < 0.50f ? 0f : Smooth((u - 0.50f) / 0.50f);
+                float pitch = open <= 0f ? Mathf.Lerp(12f, -32f, u / 0.50f) : Mathf.Lerp(-32f, -55f, open);
+                SetArms(ref flown, pitch, 22f * open, -22f);
+                return flown;
             }
+            Sample land = new Sample();
+            land.Drop = -0.525f;
+            land.Hip = 74f;
+            land.Head = -6f;
+            land.ThighL = 12f;
+            land.ThighR = 8f;
+            land.KneeL = -56f;
+            land.KneeR = -50f;
+            land.FootL = 4f;
+            land.FootR = 2f;
+            SetArms(ref land, -48f, 24f, -22f);
+            Sample roll = land;
+            roll.Drop = -0.50f;
+            roll.Hip = 96f;
+            roll.Head = -14f;
+            roll.ThighL = 18f;
+            roll.ThighR = 14f;
+            roll.KneeL = -68f;
+            roll.KneeR = -62f;
+            SetArms(ref roll, -48f, 24f, -22f);
             float recover = EvasionMoves.DiveRecover;
             float ru = recover > 0f ? (local - flight) / recover : 1f;
             if (ru < 0f) ru = 0f;
             if (ru > 1f) ru = 1f;
-            s.Hip = Mathf.Lerp(flat, 4f, Smooth(ru));
-            s.Head = Mathf.Lerp(-8f, -4f, ru);
-            float amp = s.Hip < 20f ? 4f * (20f - s.Hip) / 16f : 0f;
-            if (amp > 4f) amp = 4f;
-            float stride = Mathf.Sin(ru * 6.2f);
-            s.ThighL = amp * stride;
-            s.ThighR = -amp * stride;
-            if (amp > 0.5f)
+            if (ru < 0.36f)
             {
-                s.KneeL = -2f;
-                s.KneeR = -2f;
+                Sample down = Lerp(air, land, Smooth(ru / 0.36f));
+                SetArms(ref down, Mathf.Lerp(-55f, -48f, Smooth(ru / 0.36f)), 24f, Mathf.Lerp(-8f, -22f, Smooth(ru / 0.36f)));
+                return down;
             }
-            float foot = 3f * (amp / 4f);
-            s.FootL = stride > 0.25f ? foot : 0f;
-            s.FootR = stride < -0.25f ? foot : 0f;
-            return s;
+            if (ru < 0.55f)
+                return Lerp(land, roll, Smooth((ru - 0.36f) / 0.19f));
+            float pop = Smooth((ru - 0.55f) / 0.45f);
+            Sample up = Run(1.4f + ru * 3f, true);
+            up.Hip = 12f;
+            up.Drop = 0f;
+            Sample risen = Lerp(roll, up, pop);
+            if (pop < 0.58f)
+                SetArms(ref risen, -48f, 24f, -22f);
+            else
+                SetArms(ref risen, Mathf.Lerp(-48f, 8f, (pop - 0.58f) / 0.42f), 0f, -20f);
+            return risen;
+        }
+
+        static void SetArms(ref Sample s, float pitch, float yaw, float elbow)
+        {
+            s.ArmL = pitch;
+            s.ArmR = pitch;
+            s.ArmYawL = yaw;
+            s.ArmYawR = -yaw;
+            s.ElbowL = elbow;
+            s.ElbowR = elbow;
         }
 
         static Sample Mirror(Sample s)
@@ -340,7 +428,7 @@ namespace Tag.Art
             s.HeadYaw = LerpYaw(a.HeadYaw, b.HeadYaw, w);
             s.FootL = Mathf.Lerp(a.FootL, b.FootL, w);
             s.FootR = Mathf.Lerp(a.FootR, b.FootR, w);
-            s.Drop = Drop;
+            s.Drop = Mathf.Lerp(a.Drop, b.Drop, w);
             return s;
         }
 

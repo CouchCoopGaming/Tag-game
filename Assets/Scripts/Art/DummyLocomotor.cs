@@ -19383,7 +19383,14 @@ namespace Tag.Art
         void ApplyVisualRoot(float bob, Vector3 nudge)
         {
             Transform pivot = YawPivot();
-            Vector3 offset = new Vector3(0f, bob, 0f) + nudge + _visualLag + _chestLocal;
+            float evasion = 0f;
+            if (Tag.Gameplay.EvasionMoves.Enabled && _motor != null)
+            {
+                EvasionPose.Sample evasionPose;
+                if (Tag.Gameplay.EvasionMoves.TrySample(_motor.GetInstanceID(), out evasionPose))
+                    evasion = evasionPose.Drop;
+            }
+            Vector3 offset = new Vector3(0f, bob + evasion, 0f) + nudge + _visualLag + _chestLocal;
             if (pivot != null && pivot != transform)
             {
                 pivot.localPosition = _pivot0 + offset;

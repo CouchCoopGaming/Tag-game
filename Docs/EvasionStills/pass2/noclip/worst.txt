@@ -1,0 +1,2 @@
+no-clip clips=6 frames=115 worldMax=0.0 rigJoint=7.83 pose=0.0 fails=0
+none
