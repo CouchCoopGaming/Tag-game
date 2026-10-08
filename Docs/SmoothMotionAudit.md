@@ -444,11 +444,11 @@ Stills: `Docs/SmoothStills/pass17/vault.png`, `climb.png`, `slide.png`, `pad.png
 
 ## Pass 18
 
-The pass 17 strips were eight frames at 30 fps, so each one covered 0.27 s and the camera sat far enough that a roll filled about a third of the frame. These stills sample eight frames evenly across the whole clip, from a closer 3/4 or side camera. The runner fills at least half the frame height on every still (shortest blue span is 364 px of 720, 50.6%). Each still is stamped with the frame index and the time. A 4x2 sheet sits beside the frames.
+The pass 17 strips were eight frames at 30 fps, so each one covered 0.27 s and the camera sat far enough that a roll filled about a third of the frame. These stills sample eight frames evenly across the whole clip, from a closer 3/4 or side camera. The runner fills at least half the frame height on every still (shortest blue span is 366 px of 720, 50.8%). Each still is stamped with the frame index and the time. A 4x2 sheet sits beside the frames.
 
 The 30 fps check still walks every frame of the clip. No bone turns more than 25° between frames, and no planted contact slides more than 3 cm. Gameplay timers are unchanged. The roll gate stays 65% of terminal, and the land clock stays 0.52 s. The roll pose in the still is visual only: the spine pitches forward through 137.2° at 0.267 s, past horizontal and onto one shoulder. `HandoffFeel` angles and `RollWeight` are unchanged, so the printed roll step stays 8.5>2.1.
 
-Climb pelvis height on the eight stills, from the first hand contact to standing on the wall: 70.0, 95.8, 127.3, 158.8, 190.3, 221.7, 253.2, 284.7 cm. Frame 1 is the pass 17 lip plant: hands 0.0 cm on the lip, chest 0.0 cm on the face, lead foot 0.6 cm on the face. The camera stays on the runner's side of that face. The pad plant in pass 17 is unchanged.
+Climb pelvis height on the eight stills, from the first hand contact to standing on the wall: 102.8, 105.5, 139.9, 174.3, 208.7, 243.0, 277.4, 311.8 cm. Frame 1 is the lip plant with the body outside the wall: hands 0.0 cm on the lip, chest 0.0 cm on the face, lead foot 1.0 cm in front of the face. The camera stays on the runner's side of that face. The pad plant in pass 17 is unchanged.
 
 Vault is the 0.40 s mantle, from the reach to the plant to the landing. Slide is 0.26 s in, a short still plant, and 0.26 s out. Wall is a stride, the 0.12 s shove, then the jump off the wall into the air.
 
@@ -473,20 +473,20 @@ Vault is the 0.40 s mantle, from the reach to the plant to the landing. Slide is
 
 | Pair | Bone | Degrees | Contact | cm |
 |---|---|---|---|---|
-| 0–1 | Hand_L | 19.1 | - | 0.0 |
-| 1–2 | Hand_L | 19.1 | - | 0.0 |
-| 2–3 | Hand_R | 4.2 | - | 0.0 |
-| 3–4 | Hand_R | 14.9 | - | 0.0 |
-| 4–5 | Hand_R | 14.9 | - | 0.0 |
-| 5–6 | Hand_R | 14.9 | - | 0.0 |
-| 6–7 | Hand_R | 14.9 | - | 0.0 |
-| 7–8 | Hand_R | 14.9 | - | 0.0 |
-| 8–9 | Hand_R | 14.9 | - | 0.0 |
-| 9–10 | Hand_R | 14.9 | - | 0.0 |
-| 10–11 | Hand_R | 14.9 | - | 0.0 |
-| 11–12 | Hand_R | 14.9 | - | 0.0 |
-| 12–13 | Hand_R | 14.9 | - | 0.0 |
-| 13–14 | Hand_R | 14.9 | - | 0.0 |
+| 0–1 | LowerArm_L | 17.7 | - | 0.0 |
+| 1–2 | LowerArm_L | 17.7 | - | 0.0 |
+| 2–3 | LowerArm_R | 11.5 | - | 0.0 |
+| 3–4 | LowerArm_R | 11.5 | - | 0.0 |
+| 4–5 | LowerArm_R | 11.5 | - | 0.0 |
+| 5–6 | LowerArm_R | 11.5 | - | 0.0 |
+| 6–7 | LowerArm_R | 11.5 | - | 0.0 |
+| 7–8 | LowerArm_R | 11.5 | - | 0.0 |
+| 8–9 | LowerArm_R | 11.5 | - | 0.0 |
+| 9–10 | LowerArm_R | 11.5 | - | 0.0 |
+| 10–11 | LowerArm_R | 11.5 | - | 0.0 |
+| 11–12 | LowerArm_R | 11.5 | - | 0.0 |
+| 12–13 | LowerArm_R | 11.5 | - | 0.0 |
+| 13–14 | LowerArm_R | 11.5 | - | 0.0 |
 
 **Slide 0.62 s**
 
@@ -570,6 +570,33 @@ Vault is the 0.40 s mantle, from the reach to the plant to the landing. Slide is
 `body-line wall=35.6>16.6 rope=70.0>0.0 zip=58.0>0.0 drop=128.0>53.2 pad=155.0>30.6 land=104.0>0.0 tell=0.42>0.16 rev=82.6>15.3 reach=12.9>0.0 gameplayDelay=0 rootMotion=0`
 
 `loco-feel stride=52.0>28.9 foot=39.8>19.7 slideCm=51.7>0.0 lean=6.5>0.7 start=4.0>0.5 stop=32.0>5.9 turn=51.8>12.9 idle=14.0>2.4 crouch=7.8>6.4 drop=12.0>5.9 head=4.9>1.7 gameplayDelay=0 rootMotion=0`
+
+`no-clip clips=14 frames=472 worldMax=0.38 selfMax=0.4 fails=0`
+
+No clip puts a body part more than 0.5 cm inside a solid or inside another part. The check walks every 30 fps frame of vault, climb, slide, wall run into wall jump, roll, pad, zip, grapple, punch, tag, stagger, idle, and both locomotion cycles. Joined neighbours (upper arm and forearm, thigh and shin, and the same for the other joints) are exempt only inside 3 cm of the shared joint. The mannequin shells are relieved from the bind mesh on each frame, visual only, so a cuff that the rigid pieces overlap by more than that ball is pressed out to 0.40 cm. That relief is not subtracted from a rest pose: the rest hip-in-thigh overlap is about 7.7 cm and would fail on its own. Solids are the ground and the props for that clip. The deepest solid hit after the settle is 0.38 cm. Gameplay timers are unchanged.
+
+The climb lip keeps the chest on the face and the lead foot in front of it. The forearm cuff still crossed the face by about 6 cm with the hands on the lip, so that shell is pressed onto the wall. The root does not step back, and the 30 fps table above is the settled pose. Later passes keep this check by importing `Tools/Tag/noclip_check.py`.
+
+Worst frame of each clip, all of them the 0.40 cm self cuff:
+
+| Clip | Frame | Time | Pieces | Kind | cm |
+|---|---|---|---|---|---|
+| vault | 11 | 0.367 | LowerArm_R, UpperArm_R | self | 0.40 |
+| climb | 8 | 0.267 | Shoulder_R, UpperArm_R | self | 0.40 |
+| slide | 14 | 0.467 | Hips, UpperLeg_L | self | 0.40 |
+| wall | 17 | 0.567 | Shoulder_L, UpperArm_L | self | 0.40 |
+| roll | 0 | 0.000 | Shoulder_R, UpperArm_R | self | 0.40 |
+| pad | 10 | 0.333 | LowerLeg_R, UpperLeg_R | self | 0.40 |
+| zip | 5 | 0.167 | Hips, Spine | self | 0.40 |
+| grapple | 2 | 0.067 | Shoulder_L, UpperArm_L | self | 0.40 |
+| punch | 2 | 0.067 | LowerLeg_R, UpperLeg_R | self | 0.40 |
+| tag | 3 | 0.100 | LowerLeg_R, UpperLeg_R | self | 0.40 |
+| stagger | 6 | 0.200 | Shoulder_L, UpperArm_L | self | 0.40 |
+| idle | 167 | 5.567 | Hips, Spine | self | 0.40 |
+| loco | 3 | 0.100 | LowerLeg_R, UpperLeg_R | self | 0.40 |
+| sprint | 5 | 0.167 | Hips, UpperLeg_R | self | 0.40 |
+
+Debug stills of the overlaps, before the settle and after, are in `Docs/SmoothStills/pass18/noclip/`.
 
 Stills: `Docs/SmoothStills/pass18/` `vault-0.png` through `vault-7.png`, and the same eight frames for `climb`, `slide`, `wall`, and `roll`. Sheets: `vault-sheet.png`, `climb-sheet.png`, `slide-sheet.png`, `wall-sheet.png`, `roll-sheet.png`.
 

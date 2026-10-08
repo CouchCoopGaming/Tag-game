@@ -281,4 +281,4 @@ The vault and the slide are the same. The climb camera sits on your side of the 
 
 ## Motion, eighteenth pass
 
-The climb and the pad plant stay. Each clip is now the whole move, eight frames apart, close enough that the runner fills the frame. The climb rises from the first hand on the wall to standing on top. The roll goes over one shoulder. Vault, slide, and the wall jump run through to the landing or the air. Try it: watch a roll finish inverted, then a climb that actually goes up.
+The climb and the pad plant stay. Each clip is now the whole move, eight frames apart, close enough that the runner fills the frame. The climb rises from the first hand on the wall to standing on top. The roll goes over one shoulder. Vault, slide, and the wall jump run through to the landing or the air. No pose puts a limb inside the wall, the box, the bar, the floor, the rope, or another part of the body. Try it: watch a roll finish inverted, then a climb that actually goes up with the chest on the face.
