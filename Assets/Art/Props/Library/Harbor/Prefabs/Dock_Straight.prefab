@@ -89,7 +89,7 @@ LODGroup:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 100000}
   serializedVersion: 2
-  m_LocalReferencePoint: {x: -0.11, y: -0.106, z: 0}
+  m_LocalReferencePoint: {x: -0.1, y: -0.106, z: 0}
   m_Size: 5.95
   m_FadeMode: 0
   m_AnimateCrossFading: 0
@@ -117,7 +117,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Tag.Art.Library.LibraryPropMeta
   category: "Harbor"
-  summary: "Dock module 6.0 m long and 3.0 m wide. Deck top is 0.62 m. The side is open: gapped deck planks, one 5 by 20 cm stringer, then cross-braces bolted pile to pile. Piles are 30 cm rounds from below the water (darker under the line) up to the stringer. A round ladder on -X curves over the deck as grab handles and runs into the water. Cleats, two bollards, and a rope that lies on the deck. Butt the next module on the Z ends (center to center 6.0 m)."
+  summary: "Dock module 6.0 m long and 3.0 m wide. Deck top is 0.62 m. The side is open: gapped deck planks, one 5 by 20 cm stringer, then flat steel straps bolted pile to pile. Piles are 30 cm rounds from below the water (darker under the line) up to the stringer. A round ladder on -X is bolted to the stringer, curves over the deck as grab handles, and runs down into the water. Cleats, two bollards, and a rope that lies on the deck. Butt the next module on the Z ends (center to center 6.0 m)."
   climbable: 0
   vaultable: 0
   vaultHeightMeters: 0
@@ -2579,7 +2579,7 @@ Transform:
   m_GameObject: {fileID: 300420}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -1.52, y: -0.27, z: -0.17}
+  m_LocalPosition: {x: -1.5, y: -0.32, z: -0.17}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -2603,8 +2603,8 @@ CapsuleCollider:
   m_IsTrigger: 0
   m_ProvidesContacts: 0
   m_Enabled: 1
-  m_Radius: 0.014
-  m_Height: 1.5
+  m_Radius: 0.012
+  m_Height: 1.58
   m_Direction: 1
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300430
@@ -2633,7 +2633,7 @@ Transform:
   m_GameObject: {fileID: 300430}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -1.09, y: 0.84, z: -0.17}
+  m_LocalPosition: {x: -1.08, y: 0.862, z: -0.17}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -2657,8 +2657,8 @@ CapsuleCollider:
   m_IsTrigger: 0
   m_ProvidesContacts: 0
   m_Enabled: 1
-  m_Radius: 0.01
-  m_Height: 0.12
+  m_Radius: 0.008
+  m_Height: 0.1
   m_Direction: 0
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300440
@@ -2687,7 +2687,7 @@ Transform:
   m_GameObject: {fileID: 300440}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -1.52, y: -0.27, z: 0.17}
+  m_LocalPosition: {x: -1.5, y: -0.32, z: 0.17}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -2711,8 +2711,8 @@ CapsuleCollider:
   m_IsTrigger: 0
   m_ProvidesContacts: 0
   m_Enabled: 1
-  m_Radius: 0.014
-  m_Height: 1.5
+  m_Radius: 0.012
+  m_Height: 1.58
   m_Direction: 1
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300450
@@ -2741,7 +2741,7 @@ Transform:
   m_GameObject: {fileID: 300450}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -1.09, y: 0.84, z: 0.17}
+  m_LocalPosition: {x: -1.08, y: 0.862, z: 0.17}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -2765,7 +2765,7 @@ CapsuleCollider:
   m_IsTrigger: 0
   m_ProvidesContacts: 0
   m_Enabled: 1
-  m_Radius: 0.01
-  m_Height: 0.12
+  m_Radius: 0.008
+  m_Height: 0.1
   m_Direction: 0
   m_Center: {x: 0, y: 0, z: 0}

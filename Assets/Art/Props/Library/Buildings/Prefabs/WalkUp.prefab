@@ -50,7 +50,6 @@ Transform:
   - {fileID: 300131}
   - {fileID: 300141}
   - {fileID: 300151}
-  - {fileID: 300161}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!205 &100002
@@ -93,12 +92,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Tag.Art.Library.LibraryPropMeta
   category: "Buildings"
-  summary: "Brick walk-up, 8.0 x 6.4 m, three stories, parapet at 9.5 m. Brick is 13 courses per metre. Windows are recessed 13 cm with brick returns, a stone sill, and a lintel. A concrete corona projects past each wall under the parapet cap. Stoop and canopy on +Z. Fire-escape landings at 3.95 m and 6.85 m with a mid landing, switchback stairs, and a drop ladder. Rails are 1.02 m above each deck. Brackets tie the landings back to the brick."
+  summary: "Brick walk-up, 8.0 x 6.4 m, three stories, parapet at 9.5 m. Brick is 13 courses per metre. Windows are recessed 13 cm with brick returns, a stone sill, and a lintel. A concrete corona projects past each wall under the parapet cap. Stoop and canopy on +Z. One fire-escape landing per upper floor, each spanning two windows, at 4.02 m and 6.92 m. A stair with a stringer on both sides runs along the wall between them, and a drop ladder hangs from the lower landing. Rails are 1.02 m above each deck, on the street edge. Brackets bolt into the brick under each landing."
   climbable: 1
   vaultable: 1
   vaultHeightMeters: 1.02
   climbNote: "Brick walls are cling. Glass is solid. The escapes are the steel landings on +Z."
-  vaultNote: "Escape rail is 1.02 m above the lower landing (deck at 3.95 m, rail top at 4.97 m)."
+  vaultNote: "Escape rail is 1.02 m above the lower landing (deck at 4.02 m, rail top at 5.04 m)."
 --- !u!1 &200000
 GameObject:
   m_ObjectHideFlags: 0
@@ -1049,7 +1048,7 @@ Transform:
   m_GameObject: {fileID: 300120}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -2.52, y: 3.932, z: 3.84}
+  m_LocalPosition: {x: -2.53, y: 4, z: 3.82}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -1074,7 +1073,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 1.22, y: 0.018, z: 0.68}
+  m_Size: {x: 2.64, y: 0.022, z: 0.7}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300130
 GameObject:
@@ -1102,7 +1101,7 @@ Transform:
   m_GameObject: {fileID: 300130}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -2.52, y: 4.955, z: 4.195}
+  m_LocalPosition: {x: -2.53, y: 5.02, z: 4.175}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -1126,8 +1125,8 @@ CapsuleCollider:
   m_IsTrigger: 0
   m_ProvidesContacts: 0
   m_Enabled: 1
-  m_Radius: 0.012
-  m_Height: 1.05
+  m_Radius: 0.008
+  m_Height: 2.38
   m_Direction: 0
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300140
@@ -1141,7 +1140,7 @@ GameObject:
   - component: {fileID: 300141}
   - component: {fileID: 300142}
   m_Layer: 0
-  m_Name: Col_Deck_M
+  m_Name: Col_Deck_1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1156,7 +1155,7 @@ Transform:
   m_GameObject: {fileID: 300140}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.55, y: 5.382, z: 3.84}
+  m_LocalPosition: {x: 2.53, y: 6.9, z: 3.82}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -1181,7 +1180,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 1.1, y: 0.018, z: 0.68}
+  m_Size: {x: 2.64, y: 0.022, z: 0.7}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300150
 GameObject:
@@ -1194,7 +1193,7 @@ GameObject:
   - component: {fileID: 300151}
   - component: {fileID: 300152}
   m_Layer: 0
-  m_Name: Col_Deck_1
+  m_Name: Vault_Rail_1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1209,14 +1208,14 @@ Transform:
   m_GameObject: {fileID: 300150}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -2.52, y: 6.832, z: 3.84}
+  m_LocalPosition: {x: 2.53, y: 7.92, z: 4.175}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   m_Father: {fileID: 100001}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!65 &300152
-BoxCollider:
+--- !u!136 &300152
+CapsuleCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -1233,60 +1232,7 @@ BoxCollider:
   m_IsTrigger: 0
   m_ProvidesContacts: 0
   m_Enabled: 1
-  serializedVersion: 3
-  m_Size: {x: 1.22, y: 0.018, z: 0.68}
-  m_Center: {x: 0, y: 0, z: 0}
---- !u!1 &300160
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 300161}
-  - component: {fileID: 300162}
-  m_Layer: 0
-  m_Name: Vault_Rail_1
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &300161
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 300160}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -2.52, y: 7.855, z: 4.195}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children:
-  m_Father: {fileID: 100001}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!136 &300162
-CapsuleCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 300160}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  m_Radius: 0.012
-  m_Height: 1.05
+  m_Radius: 0.008
+  m_Height: 2.38
   m_Direction: 0
   m_Center: {x: 0, y: 0, z: 0}

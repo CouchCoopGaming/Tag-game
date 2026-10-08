@@ -9,7 +9,9 @@ from _volume import build_store
 
 PROFILE = {
     "name": "Store_Laundromat",
-    "blurb": "Laundromat, 9.2 x 6.8 m, walls 4.8 m under a parapet. White body, narrow WASH bays, a high kickplate, recessed door, teal sign and sloped awning, brick string course. Alley face is -Z.",
+    "blurb": "Laundromat, 9.2 x 6.8 m, walls 4.8 m under a parapet. White body, WASH bays, a high kickplate, recessed door, teal sign and sloped awning. Alley face is -Z.",
+    "quoin_pitch": 0.80,
+    "scallops": 3,
     "sx": 9.2,
     "sz": 6.8,
     "wall_h": 4.8,

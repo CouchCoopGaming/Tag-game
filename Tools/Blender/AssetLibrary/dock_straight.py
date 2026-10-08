@@ -36,9 +36,9 @@ def create():
         "Dock_Straight",
         "Harbor",
         "Dock module 6.0 m long and 3.0 m wide. Deck top is 0.62 m. "
-        "The side is open: gapped deck planks, one 5 by 20 cm stringer, then cross-braces bolted pile to pile. "
+        "The side is open: gapped deck planks, one 5 by 20 cm stringer, then flat steel straps bolted pile to pile. "
         "Piles are 30 cm rounds from below the water (darker under the line) up to the stringer. "
-        "A round ladder on -X curves over the deck as grab handles and runs into the water. "
+        "A round ladder on -X is bolted to the stringer, curves over the deck as grab handles, and runs down into the water. "
         "Cleats, two bollards, and a rope that lies on the deck. "
         "Butt the next module on the Z ends (center to center 6.0 m).",
     )
@@ -78,8 +78,8 @@ def create():
     for i, (x, z) in enumerate(((-0.55, -1.85), (0.85, 1.70))):
         a.capsule("Col_Bollard_%d" % i, (x, 0.82, z), 0.05, 0.26, 1)
     for i, dz in enumerate((-0.17, 0.17)):
-        a.capsule("Col_Ladder_%d" % i, (-1.52, -0.27, dz), 0.014, 1.50, 1)
-        a.capsule("Col_Grab_%d" % i, (-1.09, 0.84, dz), 0.010, 0.12, 0)
+        a.capsule("Col_Ladder_%d" % i, (-1.50, -0.32, dz), 0.012, 1.58, 1)
+        a.capsule("Col_Grab_%d" % i, (-1.08, 0.862, dz), 0.008, 0.10, 0)
     return a
 
 
@@ -145,43 +145,81 @@ def _one_timber(g, center, size):
 
 
 def _braces(g):
-    """X-braces above the water, bolted to the pile faces."""
+    """Flat steel straps above the water, with a bolt plate at each pile."""
     for x in (-PILE_XS[0], PILE_XS[0]):
         for z0, z1 in ((-2.40, 0.0), (0.0, 2.40)):
-            _x_brace(g, (x, z0), (x, z1))
+            _x_strap(g, (x, z0), (x, z1))
     edge = PILE_XS[2]
     for z in (-2.40, 2.40):
         for x0, x1 in ((-edge, 0.0), (0.0, edge)):
-            _x_brace(g, (x0, z), (x1, z))
+            _x_strap(g, (x0, z), (x1, z))
 
 
-def _x_brace(g, p0, p1):
+def _flat_bar(g, a, b, width, thick, normal, mat):
+    """Closed flat bar. `normal` is the thickness axis."""
+    d = (b[0] - a[0], b[1] - a[1], b[2] - a[2])
+    length = math.sqrt(d[0] * d[0] + d[1] * d[1] + d[2] * d[2])
+    if length < 0.04:
+        return
+    u = (d[0] / length, d[1] / length, d[2] / length)
+    sx = u[1] * normal[2] - u[2] * normal[1]
+    sy = u[2] * normal[0] - u[0] * normal[2]
+    sz = u[0] * normal[1] - u[1] * normal[0]
+    sl = math.sqrt(sx * sx + sy * sy + sz * sz)
+    if sl < 1e-6:
+        return
+    sx, sy, sz = sx / sl, sy / sl, sz / sl
+    hw, ht = width * 0.5, thick * 0.5
+    nx, ny, nz = normal
+
+    def corner(p, wu, tu):
+        return (
+            p[0] + sx * hw * wu + nx * ht * tu,
+            p[1] + sy * hw * wu + ny * ht * tu,
+            p[2] + sz * hw * wu + nz * ht * tu,
+        )
+
+    ring = ((-1.0, -1.0), (1.0, -1.0), (1.0, 1.0), (-1.0, 1.0))
+    verts = [corner(a, wu, tu) for wu, tu in ring] + [corner(b, wu, tu) for wu, tu in ring]
+    g.mesh(verts, (
+        (0, 3, 2, 1), (4, 5, 6, 7),
+        (0, 1, 5, 4), (1, 2, 6, 5), (2, 3, 7, 6), (3, 0, 4, 7),
+    ), mat)
+
+
+def _x_strap(g, p0, p1):
     dx, dz = p1[0] - p0[0], p1[1] - p0[1]
     length = math.hypot(dx, dz)
     ux, uz = dx / length, dz / length
-    lx, lz = -uz, ux
-    inset = PILE_R + 0.030
-    for sign, y0, y1 in ((1.0, 0.07, 0.30), (-1.0, 0.30, 0.07)):
-        ox, oz = lx * 0.055 * sign, lz * 0.055 * sign
+    # Thickness faces out of the pile row so the wide face reads from the side.
+    normal = (1.0, 0.0, 0.0) if abs(dz) >= abs(dx) else (0.0, 0.0, 1.0)
+    inset = PILE_R + 0.022
+    for sign, y0, y1 in ((1.0, 0.08, 0.28), (-1.0, 0.28, 0.08)):
+        # Offset each strap out of the other so the X does not share a volume.
+        ox, oz = -uz * 0.016 * sign, ux * 0.016 * sign
         a = (p0[0] + ux * inset + ox, y0, p0[1] + uz * inset + oz)
         b = (p1[0] - ux * inset + ox, y1, p1[1] - uz * inset + oz)
-        g.pipe(a, b, 0.016, "Lib_WoodDark", 6)
-        _bolt(g, p0, p1, y0, sign)
-        _bolt(g, p1, p0, y1, sign)
+        _flat_bar(g, a, b, 0.042, 0.010, normal, "Lib_SteelDark")
+        _bolt(g, p0, (ux, uz), y0, sign)
+        _bolt(g, p1, (-ux, -uz), y1, sign)
 
 
-def _bolt(g, pile, other, y, sign):
-    dx, dz = other[0] - pile[0], other[1] - pile[1]
-    length = math.hypot(dx, dz)
-    ux, uz = dx / length, dz / length
-    lx, lz = -uz * 0.055 * sign, ux * 0.055 * sign
-    cx = pile[0] + ux * (PILE_R + 0.014) + lx
-    cz = pile[1] + uz * (PILE_R + 0.014) + lz
+def _bolt(g, pile, direction, y, sign):
+    ux, uz = direction
+    lx, lz = -uz * 0.016 * sign, ux * 0.016 * sign
+    dist = PILE_R + 0.012
+    cx = pile[0] + ux * dist + lx
+    cz = pile[1] + uz * dist + lz
     if abs(ux) >= abs(uz):
-        size = (0.012, 0.055, 0.055)
+        size = (0.008, 0.046, 0.046)
+        axis = "X"
     else:
-        size = (0.055, 0.055, 0.012)
+        size = (0.046, 0.046, 0.008)
+        axis = "Z"
     g.box((cx, y, cz), size, "Lib_SteelDark")
+    hx = cx + ux * 0.012
+    hz = cz + uz * 0.012
+    g.cylinder((hx, y, hz), 0.009, 0.008, "Lib_Steel", 6, axis=axis)
 
 
 def _planks(g, lod, bev):
@@ -204,19 +242,30 @@ def _bollard(g, x, z, seg):
 
 
 def _ladder(g):
-    """Dark round rails, 4 cm across, with round rungs. The top bends over the deck."""
+    """Round rails into the water, bolted to the -X stringer, then over the deck."""
     rail_r = 0.020
+    x_rail = -1.50
     for dz in (-0.17, 0.17):
         g.tube([
-            (-1.52, -1.05, dz),
-            (-1.52, 0.50, dz),
-            (-1.38, 0.70, dz),
-            (-1.18, 0.82, dz),
-            (-1.00, 0.86, dz),
+            (x_rail, -1.18, dz),
+            (x_rail, 0.55, dz),
+            (-1.36, 0.74, dz),
+            (-1.16, 0.84, dz),
+            (-1.00, 0.88, dz),
         ], rail_r, "Lib_SteelDark", 8)
-    rung = -0.88
-    while rung < 0.42:
-        g.cylinder((-1.52, rung, 0.0), 0.011, 0.292, "Lib_SteelDark", 8, axis="Z")
+    rung = -0.95
+    while rung < 0.48:
+        g.pipe(
+            (x_rail, rung, -0.17 + rail_r + 0.008),
+            (x_rail, rung, 0.17 - rail_r - 0.008),
+            0.011, "Lib_SteelDark", 6,
+        )
+        rung += 0.26
+    # Stringer outer face is x=-1.185. A strap and a bolt plate tie each rail to it.
+    for dz in (-0.17, 0.17):
+        _flat_bar(g, (-1.470, 0.48, dz), (-1.206, 0.48, dz), 0.040, 0.010, (0.0, 1.0, 0.0), "Lib_SteelDark")
+        g.box((-1.196, 0.48, dz), (0.008, 0.050, 0.050), "Lib_SteelDark")
+        g.cylinder((-1.208, 0.48, dz), 0.009, 0.008, "Lib_Steel", 6, axis="X")
         rung += 0.28
 
 

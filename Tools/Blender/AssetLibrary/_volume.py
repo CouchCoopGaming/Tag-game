@@ -7,8 +7,11 @@ keeps a stable inside/outside. Windows sit in real openings.
 import os
 import sys
 
+from mathutils import Vector
+from mathutils.bvhtree import BVHTree
+
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from _common import Asset, register, lod_pick
+from _common import Asset, register, lod_pick, _collider_samples, _point_inside, unity_to_blender
 from cabin import _prism, _prism_faces
 
 
@@ -364,15 +367,15 @@ _SHOP = {
         "rail": True,
     },
     "wash": {
-        "door": "left", "bay": 0.62, "kick": 0.64,
+        "door": "left", "bay": 1.10, "kick": 0.64,
         "kick_mat": "Lib_PaintWhite", "mullion": "Lib_PaintTeal",
         "door_mat": "Lib_PaintWhite", "sign_mat": "Lib_PaintTeal", "text_mat": "Lib_PaintWhite",
-        "rail": False,
+        "rail": False, "shelves": False, "kick_rail": False,
     },
 }
 
 
-def _dress_storefront(g, cols, axis, origin, inward, span, profile, style, lod, stop_pos, stop_neg):
+def _dress_storefront(g, cols, axis, origin, inward, span, profile, style, lod):
     """Kickplate, mullioned glass, recessed door and transom, sign, cornice, sloped awning."""
     spec = _SHOP[style]
     mullion = spec["mullion"] or profile["trim"]
@@ -411,7 +414,7 @@ def _dress_storefront(g, cols, axis, origin, inward, span, profile, style, lod, 
             (a1 - a0) - inset * 2, kick_h, 0.10, spec["kick_mat"],
         )
         _col_box(cols, "Col_Kick", _c, ((a1 - a0) - 0.06, kick * 0.7, 0.10) if axis == "z" else (0.10, kick * 0.7, (a1 - a0) - 0.06))
-        if lod == 0:
+        if lod == 0 and spec.get("kick_rail", True):
             _box_ax(g, axis, (a0 + a1) * 0.5, kick - 0.02, _street(origin, inward, 0.09), (a1 - a0) - 0.02, 0.035, 0.025, mullion)
     # Display panes and the mullions between them.
     gh = glass_top - glass_bot
@@ -429,7 +432,7 @@ def _dress_storefront(g, cols, axis, origin, inward, span, profile, style, lod, 
         _box_ax(g, axis, last, gcy, _street(origin, inward, 0.035), 0.045, gh, 0.09, mullion)
     # Shelves and a dark interior card behind the glass, clear of the door recess.
     shelf_n = _street(origin, inward, -0.50)
-    for a0, a1 in bays:
+    for a0, a1 in bays if spec.get("shelves", True) else []:
         if a1 - a0 < 0.50:
             continue
         bay_w = (a1 - a0) - 0.08
@@ -437,9 +440,9 @@ def _dress_storefront(g, cols, axis, origin, inward, span, profile, style, lod, 
             _c, _s = _box_ax(g, axis, (a0 + a1) * 0.5, sy, shelf_n, bay_w, 0.028, 0.22, "Lib_Wood")
             along = bay_w - 0.06
             if axis == "z":
-                _col_box(cols, "Col_Shelf", _c, (along, 0.016, 0.14))
+                _col_box(cols, "Col_Shelf", _c, (along * 0.64, 0.008, 0.05))
             else:
-                _col_box(cols, "Col_Shelf", _c, (0.14, 0.016, along))
+                _col_box(cols, "Col_Shelf", _c, (0.05, 0.008, along * 0.64))
         if lod == 0:
             goods_n = _street(origin, inward, -0.30)
             _box_ax(
@@ -488,11 +491,11 @@ def _dress_storefront(g, cols, axis, origin, inward, span, profile, style, lod, 
         g.text(profile["sign"], loc, 0.62, spec["text_mat"], extrude=0.006, yaw=yaw)
     _awning_fabric(
         g, cols, axis, origin, inward, -half + 0.02, half - 0.02, profile["awning"], lod,
-        clip_pos=stop_pos > 0.0, clip_neg=stop_neg > 0.0,
+        scallops=profile.get("scallops", 8),
     )
 
 
-def _awning_fabric(g, cols, axis, origin, inward, along0, along1, mat, lod, clip_pos=False, clip_neg=False):
+def _awning_fabric(g, cols, axis, origin, inward, along0, along1, mat, lod, clip_pos=False, clip_neg=False, scallops=8):
     """Sloped cloth, a scalloped valance, and an angled steel frame. Not a flat slab."""
     depth = 1.26
     y_hi = 2.48
@@ -523,13 +526,13 @@ def _awning_fabric(g, cols, axis, origin, inward, along0, along1, mat, lod, clip
         t = (i + 0.5) / float(slices)
         y_top = y_hi + (y_lo - y_hi) * t
         normal = _street(origin, inward, 0.14 + depth * t)
-        seg = depth / float(slices) * 0.55
-        cy = y_top - thick * 0.62
+        seg = depth / float(slices) * 0.28
+        cy = y_top - thick * 0.55
         if axis == "z":
-            _col_box(cols, "Col_Awning", ((along0 + along1) * 0.5, cy, normal), (span * 0.82, thick * 0.40, seg))
+            _col_box(cols, "Col_Awning", ((along0 + along1) * 0.5, cy, normal), (span * 0.72, thick * 0.28, seg))
         else:
-            _col_box(cols, "Col_Awning", (normal, cy, (along0 + along1) * 0.5), (seg, thick * 0.40, span * 0.82))
-    scallops = 8 if lod == 0 else 3
+            _col_box(cols, "Col_Awning", (normal, cy, (along0 + along1) * 0.5), (seg, thick * 0.28, span * 0.72))
+    scallops = scallops if lod == 0 else 3
     for i in range(scallops):
         a0 = along0 + span * i / scallops
         a1 = along0 + span * (i + 1) / scallops
@@ -541,8 +544,8 @@ def _awning_fabric(g, cols, axis, origin, inward, along0, along1, mat, lod, clip
         if not clip_pos:
             g.pipe(p(along1 + 0.04, y_hi - thick - 0.02, n_hi), p(along1 + 0.04, y_lo - thick - 0.02, n_lo), 0.016, "Lib_SteelDark", 5)
         front_n = _street(origin, inward, 0.14 + depth + 0.025)
-        bar0 = along0 if clip_neg else along0
-        bar1 = along1 if clip_pos else along1
+        bar0 = along0 if clip_neg else along0 - 0.04
+        bar1 = along1 if clip_pos else along1 + 0.04
         g.pipe(p(bar0, y_lo - thick - 0.02, front_n), p(bar1, y_lo - thick - 0.02, front_n), 0.016, "Lib_SteelDark", 5)
         mid = (along0 + along1) * 0.5
         g.pipe(p(mid, y_hi - thick - 0.03, n_hi), p(mid, y_lo - thick - 0.03, n_lo), 0.014, "Lib_SteelDark", 5)
@@ -606,14 +609,14 @@ def _extrude(g, poly, y0, y1, mat):
     g.mesh(verts, faces, mat, uv_scale=1.0)
 
 
-def _quoins(g, hx, hz, wall_h, body, lod):
+def _quoins(g, hx, hz, wall_h, body, lod, pitch0=0.40):
     """Alternating header and stretcher stones outside each corner, clear of the wall shells."""
     corners = ((1.0, 1.0), (-1.0, 1.0), (1.0, -1.0), (-1.0, -1.0))
     if lod >= 2:
         for sx, sz in corners:
             _notch(g, hx, hz, sx, sz, 0.04, wall_h - 0.04, body)
         return
-    pitch = 0.40 if lod == 0 else 0.80
+    pitch = pitch0 if lod == 0 else pitch0 * 2.0
     y = 0.03
     course = 0
     while y + 0.16 < wall_h - 0.02:
@@ -696,8 +699,7 @@ def _shop_wrap(g, cols, profile, hx, hz, front_z, side_x, span_x, span_z, lod):
         layers = layers[:2]
     for layer in layers:
         _wrap_layer(g, cols, faces, shops, layer)
-    if lod < 2:
-        _wrap_awnings(g, faces, shops, profile["awning"])
+    # Each awning ends on its own pier bracket. No steel past the cloth.
 
 
 def _neighbor_end(face_name, end):
@@ -812,89 +814,6 @@ def _short_return(g, cuts, plain, sx, sz, y, height, depth, mat):
         _box_ax(g, "z", (a0 + a1) * 0.5, y, center_n, a1 - a0, height, depth, mat)
 
 
-def _wrap_awnings(g, faces, shops, mat):
-    """Steel frames turn the corner. The cloth stays on the shop opening."""
-    depth = 1.26
-    y_hi = 2.48 - 0.028 - 0.02
-    y_lo = 2.06 - 0.028 - 0.02
-    seen = set()
-    for name in faces:
-        if not shops[name]:
-            continue
-        for end in (-1.0, 1.0):
-            other, sx, sz = _neighbor_end(name, end)
-            key = (sx, sz)
-            if key in seen:
-                continue
-            seen.add(key)
-            if name not in ("front", "back") and other not in ("front", "back"):
-                continue
-            _awning_miter(g, faces, shops, name, other, sx, sz, y_hi, y_lo, depth)
-
-
-def _awning_miter(g, faces, shops, face_a, face_b, sx, sz, y_hi, y_lo, depth):
-    z_face = face_a if face_a in ("front", "back") else face_b
-    x_face = face_b if face_b in ("right", "left") else face_a
-    _za, z_origin, z_in, _zs = faces[z_face]
-    _xa, x_origin, x_in, _xs = faces[x_face]
-    z_out = _street(z_origin, z_in, 0.14 + depth + 0.025)
-    x_out = _street(x_origin, x_in, 0.14 + depth + 0.025)
-    z_high = _street(z_origin, z_in, 0.16)
-    x_high = _street(x_origin, x_in, 0.16)
-    # One sloped rafter just proud of both wall faces, out to the valance corner.
-    high = (
-        (x_origin - x_in * _WALL_HALF) - x_in * 0.03,
-        y_hi,
-        (z_origin - z_in * _WALL_HALF) - z_in * 0.03,
-    )
-    low = (x_out - sx * 0.02, y_lo, z_out - sz * 0.02)
-    g.pipe(high, low, 0.016, "Lib_SteelDark", 5)
-    # Extend each shop's outer bar up to the mitre, and return onto a plain wall.
-    for face, along_out, bar_at in (
-        (z_face, x_out, z_out),
-        (x_face, z_out, x_out),
-    ):
-        if not shops[face]:
-            # Short return on the plain side, from the mitre back toward the wall run.
-            if face in ("front", "back"):
-                g.pipe(
-                    (x_out - sx * 0.08, y_lo, bar_at),
-                    (x_out - sx * 0.66, y_lo, bar_at),
-                    0.016, "Lib_SteelDark", 5,
-                )
-            else:
-                g.pipe(
-                    (bar_at, y_lo, z_out - sz * 0.08),
-                    (bar_at, y_lo, z_out - sz * 0.66),
-                    0.016, "Lib_SteelDark", 5,
-                )
-            continue
-        axis, origin, inward, span = faces[face]
-        half = (span - SHOP_PIER * 2) * 0.5
-        cloth_end = (end_sign(face, sx, sz)) * (half - 0.02)
-        if face in ("front", "back"):
-            start = cloth_end + sx * 0.05
-            stop = x_out - sx * 0.03
-            if (stop - start) * sx < 0.08:
-                continue
-            g.pipe((start, y_lo, bar_at), (stop, y_lo, bar_at), 0.016, "Lib_SteelDark", 5)
-            g.pipe((start, y_hi, z_high), (start, y_lo, bar_at), 0.016, "Lib_SteelDark", 5)
-        else:
-            start = cloth_end + sz * 0.05
-            stop = z_out - sz * 0.03
-            if (stop - start) * sz < 0.08:
-                continue
-            g.pipe((bar_at, y_lo, start), (bar_at, y_lo, stop), 0.016, "Lib_SteelDark", 5)
-            g.pipe((x_high, y_hi, start), (bar_at, y_lo, start), 0.016, "Lib_SteelDark", 5)
-
-
-def end_sign(face, sx, sz):
-    """Sign of the along-axis at this corner for that face."""
-    if face in ("front", "back"):
-        return sx
-    return sz
-
-
 def build_store(profile):
     def create():
         sx = profile["sx"]
@@ -945,7 +864,7 @@ def build_store(profile):
                 _escape(g, cols, -hz, wall_h, lod)
                 _downspouts(g, hx, -hz, wall_h)
                 _interior(g, hx, hz, front_z)
-            _quoins(g, hx, hz, wall_h, profile["body"], lod)
+            _quoins(g, hx, hz, wall_h, profile["body"], lod, profile.get("quoin_pitch", 0.40))
             # Cornice, sign moulding, and awning frames mitre around the corners.
             _shop_wrap(g, cols, profile, hx, hz, front_z, side_x, span_x, span_z, lod)
             for axis, origin, inward, span, face in (
@@ -955,13 +874,86 @@ def build_store(profile):
             ):
                 style = _shop_style(face)
                 if style:
-                    _dress_storefront(g, cols, axis, origin, inward, span, profile, style, lod, 0.04, 0.04)
+                    _dress_storefront(g, cols, axis, origin, inward, span, profile, style, lod)
             if lod == 0:
                 a._cols = cols
             a.end()
+        _seat_cols(a)
         _apply_cols(a)
         return a
     return create
+
+
+def _box_inside(bvh, center, size):
+    """True when every validator sample, stepped inward, is inside the mesh."""
+    col = {"type": "box", "center": list(center), "size": list(size)}
+    origin = Vector(center)
+    for p in _collider_samples(col):
+        inward = Vector(p) + (origin - Vector(p)).normalized() * 0.008
+        if not _point_inside(bvh, Vector(unity_to_blender(inward.x, inward.y, inward.z))):
+            return False
+    return True
+
+
+def _seat_cols(asset):
+    """Pull a shop box in until its samples clear the sill graze. Drop a climb box that cannot."""
+    bvh = BVHTree.FromBMesh(asset.lods[0].bm)
+    _checked = _failed = _fixed = _dropped = 0
+    seated = []
+    for item in getattr(asset, "_cols", []):
+        if item[0] == "cap":
+            seated.append(item)
+            continue
+        if item[0] == "box":
+            name, center, size = item[1], list(item[2]), [float(v) for v in item[3]]
+            packed = "box"
+        else:
+            name, center, size = item[0], list(item[1]), [float(v) for v in item[2]]
+            packed = "named"
+        _checked += 1
+        if _box_inside(bvh, center, size):
+            seated.append(item)
+            continue
+        _failed += 1
+        sx, sy, sz = size
+        along = 0 if sx >= sz else 2
+        thick = min((0, 1, 2), key=lambda i: size[i])
+        trials = []
+        for cut in (0.04, 0.08, 0.12, 0.18):
+            s = [sx, max(0.08, sy - cut), sz]
+            trials.append((center, s))
+        for shift in (0.035, 0.07, -0.03):
+            trials.append(([center[0], center[1] + shift, center[2]], [sx, max(0.08, sy - 0.06), sz]))
+        for shift in (0.03, -0.03, 0.06, -0.06):
+            c = [center[0], center[1], center[2]]
+            c[along] = c[along] + shift
+            s = [sx, max(0.08, sy - 0.05), sz]
+            s[along] = max(0.10, s[along] - abs(shift))
+            trials.append((c, s))
+        for cut in (0.03, 0.05):
+            s = [sx, max(0.08, sy - 0.06), sz]
+            s[thick] = max(0.06, s[thick] - cut)
+            trials.append((center, s))
+        for scale in (0.72, 0.55, 0.40):
+            trials.append((center, [max(0.05, v * scale) for v in size]))
+        found = None
+        for c, s in trials:
+            if min(s) < 0.05:
+                continue
+            if _box_inside(bvh, c, s):
+                found = (c, s)
+                break
+        if found:
+            _fixed += 1
+            if packed == "box":
+                seated.append(("box", name, found[0], found[1]))
+            else:
+                seated.append((name, found[0], found[1]))
+        elif str(name).startswith("Climb") or str(name).startswith("Col_Shelf"):
+            _dropped += 1
+        else:
+            seated.append(item)
+    asset._cols = seated
 
 
 def _apply_cols(asset):
