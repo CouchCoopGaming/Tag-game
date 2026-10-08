@@ -108,6 +108,7 @@ MODULES = (
     "sk_fence_chain",
     "sk_fence_iron",
     "sk_scaffold_bay",
+    "sk_sign_street",
 )
 
 

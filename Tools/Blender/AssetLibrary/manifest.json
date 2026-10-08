@@ -40778,5 +40778,173 @@
     ],
     "slackCm": 0.0,
     "fbx": "Assets/Art/Props/Library/StreetFurniture/Scaffold_Bay.fbx"
+  },
+  {
+    "name": "Sign_StreetName",
+    "category": "StreetFurniture",
+    "blurb": "Street blades 0.90 x 0.23 m. Bottoms at 2.74 m and 3.01 m. Pole 60 mm. MAIN and 5TH in Liberation Sans.",
+    "size": [
+      0.9,
+      3.32,
+      0.9
+    ],
+    "min": [
+      -0.45,
+      0.0,
+      -0.45
+    ],
+    "max": [
+      0.45,
+      3.32,
+      0.45
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 916,
+        "materials": [
+          "Lib_SteelDark",
+          "Lib_Steel",
+          "Lib_PaintGreen",
+          "Lib_PaintWhite"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 192,
+        "materials": [
+          "Lib_SteelDark",
+          "Lib_Steel",
+          "Lib_PaintGreen",
+          "Lib_PaintWhite"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_Base",
+        "type": "box",
+        "center": [
+          0,
+          0.01,
+          0
+        ],
+        "size": [
+          0.12,
+          0.012,
+          0.12
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Pole",
+        "type": "capsule",
+        "center": [
+          0,
+          1.2,
+          0
+        ],
+        "radius": 0.018,
+        "height": 2.2,
+        "direction": 1
+      },
+      {
+        "name": "Col_MainL",
+        "type": "box",
+        "center": [
+          -0.26,
+          2.855,
+          0.044
+        ],
+        "size": [
+          0.32,
+          0.15,
+          0.006
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_MainR",
+        "type": "box",
+        "center": [
+          0.26,
+          2.855,
+          0.044
+        ],
+        "size": [
+          0.32,
+          0.15,
+          0.006
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_FifthS",
+        "type": "box",
+        "center": [
+          0.048,
+          3.125,
+          -0.24
+        ],
+        "size": [
+          0.006,
+          0.15,
+          0.32
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_FifthN",
+        "type": "box",
+        "center": [
+          0.048,
+          3.125,
+          0.24
+        ],
+        "size": [
+          0.006,
+          0.15,
+          0.32
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "climbable": false,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "60 mm pole. Not a cling.",
+    "vaultNote": "Blades are thin and high.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1"
+    ],
+    "slackCm": 0.51,
+    "fbx": "Assets/Art/Props/Library/StreetFurniture/Sign_StreetName.fbx"
   }
 ]
