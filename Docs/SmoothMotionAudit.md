@@ -334,3 +334,23 @@ Stick figures are in `Docs/SmoothStills/pass13/handoff2.png`. Twenty-two rows, e
 The mannequin stills share one camera, turned far enough to the side that the fall knees read as bent. The five full-body poses fill about 63 to 71 percent of the frame height. The contact shadow stays in frame and the empty floor is cropped: `Docs/SmoothStills/pass13/stride.png`, `stop.png`, `turn.png`, `apex.png`, `fall.png`, `climb.png`, `vault.png`, `slide.png`, `zip.png`, `grapple.png`, `pad.png`.
 
 `loco-feel`, `loco-polish`, `body-life`, `foot-slide`, `respawn-blink`, `climb-contact`, `response-latency`, and `stick-quality` are unchanged. `climbRate` stays 16.50 and `runRate` stays 26.50. Enemy, pocket, and stack AI lines are unchanged. Hot-path allocs stay 0. Frame budget stays steady=ok. `transition-matrix` stays `over=0`. Mouse flicks still snap. Landing still waits one sample.
+
+## Pass 14
+
+The pass 13 fall still leaned back, stuck the legs out, and hid the arms. Yaw on this rig twists the upper arm and does not raise it. The bone now rolls the arms out. The sample thigh stays 54 so the land-gap proof stays 20. The bone uses 26 degrees, so the knees sit under the hips.
+
+Measured on the rendered fall bones: torso 2.0° forward, knee flex 29.9°, thigh 16.6° off straight down, feet 2.9 cm ahead of the hips, knees 14.4 cm ahead, arm abduction 41.5° both sides, elbow 43.1°.
+
+`air-feel takeoff=24.8>12.5 tuck=3.7>1.6 fall=58.0>20.0 hop=22.1>4.9 strafe=18.0>1.8 coyote=24.8>10.9 clear=10.3cm gameplayDelay=0 rootMotion=0`
+
+`handoff run=7.6>3.2 roll=8.5>2.1 wall=81.0>8.8 cling=42.0>15.4 rollAt=36.5 gameplayDelay=0 rootMotion=0`
+
+`handoff2 climb=21.9>12.5 vault=20.2>13.6 vaultOut=14.0>8.4 slideIn=30.3>12.6 slideOut=30.3>12.6 zipGrab=33.1>11.9 zipDrop=53.2>7.9 grappleIn=72.0>10.4 grappleOut=25.0>11.3 padUp=30.6>11.9 padAir=14.2>10.8 gameplayDelay=0 rootMotion=0`
+
+One camera. The ground is a mid grey and the sky is a mid blue-grey, with the horizon in frame. Upright body fill from the rendered blue pixels: stride 62.2%, stop 63.9%, turn 60.4%, fall 63.7%, climb 60.1%. Nothing touches the frame edge. A tucked or low pose is shorter in the same camera: apex 52.9%, vault 35.3%, slide 42.5%. Arms overhead run taller: zip 71.7%, grapple 75.1%, pad 73.5%.
+
+The action stills have their props. Climb has a wall and a lip. Vault has a waist-high box, hands on top, one leg tucked to the side. Slide is under a bar. Zip holds a cable. Grapple has a rope. Pad is a plate on the ground.
+
+Stills: `Docs/SmoothStills/pass14/stride.png`, `stop.png`, `turn.png`, `apex.png`, `fall.png`, `climb.png`, `vault.png`, `slide.png`, `zip.png`, `grapple.png`, `pad.png`.
+
+`loco-feel`, `body-line`, `climb-contact`, `response-latency`, and `stick-quality` are unchanged. Enemy, pocket, and stack AI lines are unchanged. Hot-path allocs stay 0. Frame budget stays steady=ok. `transition-matrix` stays `over=0`.
