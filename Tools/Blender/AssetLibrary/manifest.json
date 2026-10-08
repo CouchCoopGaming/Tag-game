@@ -29903,51 +29903,45 @@
   {
     "name": "BusShelter_City",
     "category": "StreetFurniture",
-    "blurb": "3.2 m shelter, open on -Z. Roof top 2.48 m, framed glass, slat bench, poster, route blade.",
+    "blurb": "3.5 m shelter, open on -Z. Roof at 2.49 m with a drip lip, glass sides, slat bench, blank ad frame.",
     "size": [
-      3.4,
-      3.2,
-      1.62
+      3.548,
+      2.49,
+      1.668
     ],
     "min": [
-      -1.7,
+      -1.774,
       0.0,
-      -0.79
+      -0.814
     ],
     "max": [
-      1.7,
-      3.2,
-      0.83
+      1.774,
+      2.49,
+      0.854
     ],
     "lods": [
       {
         "lod": 0,
-        "tris": 884,
+        "tris": 1100,
         "materials": [
           "Lib_Steel",
           "Lib_SteelDark",
-          "Lib_Glass",
-          "Lib_PaintCream",
-          "Lib_PaintBlue",
+          "Lib_HonorGlass",
           "Lib_MetalWorn",
-          "Lib_PaintYellow",
-          "Lib_Black"
+          "Lib_PaintCream"
         ],
         "mesh": "LOD0",
         "fileID": -1633821710574564935
       },
       {
         "lod": 1,
-        "tris": 360,
+        "tris": 576,
         "materials": [
           "Lib_Steel",
           "Lib_SteelDark",
-          "Lib_Glass",
-          "Lib_PaintCream",
-          "Lib_PaintBlue",
+          "Lib_HonorGlass",
           "Lib_MetalWorn",
-          "Lib_PaintYellow",
-          "Lib_Black"
+          "Lib_PaintCream"
         ],
         "mesh": "LOD1",
         "fileID": -179393741545503174
@@ -29958,14 +29952,14 @@
         "name": "Col_Post_00",
         "type": "box",
         "center": [
-          -1.52,
-          1.18,
-          -0.62
+          -1.62,
+          1.15,
+          -0.7
         ],
         "size": [
-          0.07,
-          2.3,
-          0.07
+          0.05,
+          2.1,
+          0.05
         ],
         "euler": [
           0,
@@ -29977,14 +29971,14 @@
         "name": "Col_Foot_00",
         "type": "box",
         "center": [
-          -1.52,
-          0.02,
-          -0.62
+          -1.62,
+          0.016,
+          -0.7
         ],
         "size": [
-          0.14,
-          0.032,
-          0.14
+          0.12,
+          0.024,
+          0.12
         ],
         "euler": [
           0,
@@ -29996,14 +29990,14 @@
         "name": "Col_Post_01",
         "type": "box",
         "center": [
-          -1.52,
-          1.18,
-          0.62
+          -1.62,
+          1.15,
+          0.74
         ],
         "size": [
-          0.07,
-          2.3,
-          0.07
+          0.05,
+          2.1,
+          0.05
         ],
         "euler": [
           0,
@@ -30015,14 +30009,14 @@
         "name": "Col_Foot_01",
         "type": "box",
         "center": [
-          -1.52,
-          0.02,
-          0.62
+          -1.62,
+          0.016,
+          0.74
         ],
         "size": [
-          0.14,
-          0.032,
-          0.14
+          0.12,
+          0.024,
+          0.12
         ],
         "euler": [
           0,
@@ -30034,14 +30028,14 @@
         "name": "Col_Post_10",
         "type": "box",
         "center": [
-          1.52,
-          1.18,
-          -0.62
+          1.62,
+          1.15,
+          -0.7
         ],
         "size": [
-          0.07,
-          2.3,
-          0.07
+          0.05,
+          2.1,
+          0.05
         ],
         "euler": [
           0,
@@ -30053,14 +30047,14 @@
         "name": "Col_Foot_10",
         "type": "box",
         "center": [
-          1.52,
-          0.02,
-          -0.62
+          1.62,
+          0.016,
+          -0.7
         ],
         "size": [
-          0.14,
-          0.032,
-          0.14
+          0.12,
+          0.024,
+          0.12
         ],
         "euler": [
           0,
@@ -30072,14 +30066,14 @@
         "name": "Col_Post_11",
         "type": "box",
         "center": [
-          1.52,
-          1.18,
-          0.62
+          1.62,
+          1.15,
+          0.74
         ],
         "size": [
-          0.07,
-          2.3,
-          0.07
+          0.05,
+          2.1,
+          0.05
         ],
         "euler": [
           0,
@@ -30091,14 +30085,14 @@
         "name": "Col_Foot_11",
         "type": "box",
         "center": [
-          1.52,
-          0.02,
-          0.62
+          1.62,
+          0.016,
+          0.74
         ],
         "size": [
-          0.14,
-          0.032,
-          0.14
+          0.12,
+          0.024,
+          0.12
         ],
         "euler": [
           0,
@@ -30111,165 +30105,112 @@
         "type": "box",
         "center": [
           0,
-          2.44,
+          2.47,
           0.02
         ],
         "size": [
-          3.32,
-          0.05,
-          1.54
+          3.3,
+          0.03,
+          1.4
         ],
         "euler": [
           0,
           0,
           0
         ]
+      },
+      {
+        "name": "Col_GlassBL",
+        "type": "box",
+        "center": [
+          -0.78,
+          1.35,
+          0.62
+        ],
+        "size": [
+          1.2,
+          1.5,
+          0.012
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ],
+        "approx": true
+      },
+      {
+        "name": "Col_GlassBR",
+        "type": "box",
+        "center": [
+          0.78,
+          1.35,
+          0.62
+        ],
+        "size": [
+          1.2,
+          1.5,
+          0.012
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ],
+        "approx": true
       },
       {
         "name": "Col_GlassL",
         "type": "box",
         "center": [
-          -0.74,
-          1.7,
-          0.655
+          -1.5,
+          1.3,
+          0.02
         ],
         "size": [
-          1.36,
-          0.78,
-          0.01
+          0.012,
+          1.35,
+          0.9
         ],
         "euler": [
           0,
           0,
           0
-        ]
+        ],
+        "approx": true
       },
       {
         "name": "Col_GlassR",
         "type": "box",
         "center": [
-          0.74,
-          1.7,
-          0.655
-        ],
-        "size": [
-          1.36,
-          0.78,
-          0.01
-        ],
-        "euler": [
-          0,
-          0,
-          0
-        ]
-      },
-      {
-        "name": "Col_GlassSide",
-        "type": "box",
-        "center": [
-          1.56,
+          1.5,
           1.3,
-          0.0
+          0.02
         ],
         "size": [
-          0.01,
-          1.44,
-          1.0
+          0.012,
+          1.35,
+          0.9
         ],
         "euler": [
           0,
           0,
           0
-        ]
+        ],
+        "approx": true
       },
       {
-        "name": "Col_Slat_0",
+        "name": "Col_Seat_00",
         "type": "box",
         "center": [
-          0,
-          0.45,
-          -0.02
-        ],
-        "size": [
-          2.0,
-          0.02,
-          0.05
-        ],
-        "euler": [
-          0,
-          0,
-          0
-        ]
-      },
-      {
-        "name": "Col_Slat_1",
-        "type": "box",
-        "center": [
-          0,
-          0.45,
-          0.1
-        ],
-        "size": [
-          2.0,
-          0.02,
-          0.05
-        ],
-        "euler": [
-          0,
-          0,
-          0
-        ]
-      },
-      {
-        "name": "Col_Slat_2",
-        "type": "box",
-        "center": [
-          0,
-          0.45,
+          -0.42,
+          0.48,
           0.22
         ],
         "size": [
-          2.0,
-          0.02,
-          0.05
-        ],
-        "euler": [
-          0,
-          0,
-          0
-        ]
-      },
-      {
-        "name": "Col_BenchLeg_0",
-        "type": "box",
-        "center": [
-          -0.7,
-          0.22,
-          0.28
-        ],
-        "size": [
-          0.04,
-          0.4,
-          0.28
-        ],
-        "euler": [
-          0,
-          0,
-          0
-        ]
-      },
-      {
-        "name": "Col_BenchLeg_1",
-        "type": "box",
-        "center": [
           0.7,
-          0.22,
-          0.28
-        ],
-        "size": [
-          0.04,
-          0.4,
-          0.28
+          0.016,
+          0.04
         ],
         "euler": [
           0,
@@ -30278,17 +30219,264 @@
         ]
       },
       {
-        "name": "Col_Blade",
+        "name": "Col_Seat_01",
         "type": "box",
         "center": [
-          1.15,
-          3.05,
-          -0.62
+          0.42,
+          0.48,
+          0.22
         ],
         "size": [
-          0.66,
-          0.18,
-          0.02
+          0.7,
+          0.016,
+          0.04
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Seat_10",
+        "type": "box",
+        "center": [
+          -0.42,
+          0.48,
+          0.32
+        ],
+        "size": [
+          0.7,
+          0.016,
+          0.04
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Seat_11",
+        "type": "box",
+        "center": [
+          0.42,
+          0.48,
+          0.32
+        ],
+        "size": [
+          0.7,
+          0.016,
+          0.04
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Seat_20",
+        "type": "box",
+        "center": [
+          -0.42,
+          0.48,
+          0.42
+        ],
+        "size": [
+          0.7,
+          0.016,
+          0.04
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Seat_21",
+        "type": "box",
+        "center": [
+          0.42,
+          0.48,
+          0.42
+        ],
+        "size": [
+          0.7,
+          0.016,
+          0.04
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Back0",
+        "type": "box",
+        "center": [
+          0,
+          0.78,
+          0.5
+        ],
+        "size": [
+          2.05,
+          0.05,
+          0.018
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Back1",
+        "type": "box",
+        "center": [
+          0,
+          0.96,
+          0.5
+        ],
+        "size": [
+          2.05,
+          0.05,
+          0.018
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_LegF_0",
+        "type": "box",
+        "center": [
+          -0.85,
+          0.24,
+          0.3
+        ],
+        "size": [
+          0.028,
+          0.4,
+          0.028
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_LegB_0",
+        "type": "box",
+        "center": [
+          -0.85,
+          0.24,
+          0.48
+        ],
+        "size": [
+          0.028,
+          0.4,
+          0.028
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_LegF_1",
+        "type": "box",
+        "center": [
+          0.0,
+          0.24,
+          0.3
+        ],
+        "size": [
+          0.028,
+          0.4,
+          0.028
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_LegB_1",
+        "type": "box",
+        "center": [
+          0.0,
+          0.24,
+          0.48
+        ],
+        "size": [
+          0.028,
+          0.4,
+          0.028
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_LegF_2",
+        "type": "box",
+        "center": [
+          0.85,
+          0.24,
+          0.3
+        ],
+        "size": [
+          0.028,
+          0.4,
+          0.028
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_LegB_2",
+        "type": "box",
+        "center": [
+          0.85,
+          0.24,
+          0.48
+        ],
+        "size": [
+          0.028,
+          0.4,
+          0.028
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Ad",
+        "type": "box",
+        "center": [
+          -0.55,
+          1.45,
+          0.572
+        ],
+        "size": [
+          0.8,
+          1.05,
+          0.016
         ],
         "euler": [
           0,
@@ -30301,14 +30489,14 @@
     "vaultable": false,
     "vaultHeight": 0.0,
     "climbNote": "Posts are 8 cm. The roof is a landing, not a cling wall.",
-    "vaultNote": "Roof edge is 2.48 m. Too high to vault from the ground.",
+    "vaultNote": "Roof edge is 2.49 m. Too high to vault from the ground.",
     "warnings": [],
     "fbxNames": [
       "LODBoxS",
       "LOD0",
       "LOD1"
     ],
-    "slackCm": 0.97,
+    "slackCm": 0.09,
     "fbx": "Assets/Art/Props/Library/StreetFurniture/BusShelter_City.fbx"
   },
   {
