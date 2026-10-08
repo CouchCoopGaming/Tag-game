@@ -141,6 +141,7 @@ def load_window(spec):
         ch = _tame(ch)
         ch["trunk_lean_from_cam_vertical"] = _lookup_angle(data, t, "trunk_lean_from_cam_vertical")
         ch["root_height_m"] = _lookup_series(data, t, "root_height_above_feet_m")
+        ch["side_height_m"] = _side_pelvis_m(data, t)
         samples.append(ch)
         times.append(t)
     return samples, times, data
@@ -163,6 +164,63 @@ def _lookup_series(data, t_rel, key):
             a = vals[i] if vals[i] is not None else 0.0
             b = vals[i + 1] if vals[i + 1] is not None else a
             return float(a) * (1.0 - w) + float(b) * w
+    return 0.0
+
+
+def _side_pelvis_m(data, t_rel):
+    """Hip height above the foot line, in a side elevation of the world landmarks.
+
+    Camera-vertical root height collapses when the body is nearly horizontal in
+    the frame. The distance from the hip to each ankle-toe line is the height a
+    side view measures. Scaled onto the Hier leg.
+    """
+    times = data["times_s"]
+    worlds = data["world_xyz_m"]
+    t0 = float(times[0])
+    target = t0 + t_rel
+
+    def at(i):
+        W = worlds[i]
+        if not W or W[23] is None or W[31] is None:
+            return None
+        hip = (
+            (W[23][0] + W[24][0]) * 0.5,
+            (W[23][1] + W[24][1]) * 0.5,
+            (W[23][2] + W[24][2]) * 0.5,
+        )
+
+        def dist_line(a, b):
+            ab = (b[0] - a[0], b[1] - a[1], b[2] - a[2])
+            ap = (hip[0] - a[0], hip[1] - a[1], hip[2] - a[2])
+            cx = ap[1] * ab[2] - ap[2] * ab[1]
+            cy = ap[2] * ab[0] - ap[0] * ab[2]
+            cz = ap[0] * ab[1] - ap[1] * ab[0]
+            lab = math.sqrt(ab[0] ** 2 + ab[1] ** 2 + ab[2] ** 2) or 1.0
+            return math.sqrt(cx * cx + cy * cy + cz * cz) / lab
+
+        leg = (
+            math.dist(W[23], W[25]) + math.dist(W[25], W[27])
+        )
+        height = max(dist_line(W[27], W[31]), dist_line(W[28], W[32]))
+        return height * (0.91 / max(leg, 0.15))
+
+    if target <= times[0]:
+        return at(0) or 0.0
+    if target >= times[-1]:
+        return at(len(times) - 1) or 0.0
+    for i in range(len(times) - 1):
+        if times[i] <= target <= times[i + 1]:
+            a = at(i)
+            b = at(i + 1)
+            if a is None and b is None:
+                return 0.0
+            if a is None:
+                return b
+            if b is None:
+                return a
+            span = max(1.0e-6, times[i + 1] - times[i])
+            w = (target - times[i]) / span
+            return a * (1.0 - w) + b * w
     return 0.0
 
 
@@ -482,6 +540,10 @@ def _along(point, origin, direction):
 # --- world surfaces -------------------------------------------------------
 
 SLOPE_DEG = 36.0
+# A real low wall, about 1.1 m. Scale values are half-extents of a 2 m cube.
+LOW_WALL_TOP = 1.10
+LOW_WALL_HALF = (0.75, 0.65, 0.55)
+LOW_WALL_CX = 0.40
 
 
 def _slope_frame():
@@ -636,11 +698,11 @@ def show_wall_world(face_x, center_z, length_z=4.2, hide_ground=False):
 def show_turn_world(face_x, landing_top, landing_y):
     import bpy
     show_wall_world(face_x, 1.6, 3.6)
-    # Low wall he lands on, opposite the plant.
+    # Low wall he lands on. Height is LOW_WALL_TOP (about 1.1 m).
     _make_box(
         "LandingWall",
-        (0.35, landing_y, landing_top * 0.5),
-        (0.55, 0.38, landing_top * 0.5),
+        (LOW_WALL_CX, landing_y, landing_top * 0.5),
+        LOW_WALL_HALF,
         (0.46, 0.44, 0.40, 1),
     )
     slope = bpy.data.objects.get("ActionSlope")
@@ -728,6 +790,71 @@ def _seat_feet(arm, origin, normal):
     return gap
 
 
+def _bone_world_axis(arm, name, local=(0.0, 0.0, 1.0)):
+    from mathutils import Vector
+    pb = arm.pose.bones[name]
+    mw = arm.matrix_world @ pb.matrix
+    return (mw.to_3x3() @ Vector(local)).normalized()
+
+
+def _aim_bone_axis(arm, name, local, target):
+    """Point a bone's local axis along a world direction. Other joints stay."""
+    import bpy
+    from mathutils import Vector
+    pb = arm.pose.bones[name]
+    bpy.context.view_layer.update()
+    mw = arm.matrix_world @ pb.matrix
+    axis = (mw.to_3x3() @ Vector(local)).normalized()
+    tgt = Vector(target).normalized()
+    if axis.dot(tgt) > 0.995:
+        return
+    rot = axis.rotation_difference(tgt).to_matrix().to_4x4()
+    new_mw = rot @ mw
+    new_mw.translation = mw.translation
+    pb.matrix = arm.matrix_world.inverted() @ new_mw
+    bpy.context.view_layer.update()
+    pb.rotation_mode = "XYZ"
+    pb.rotation_euler = pb.matrix_basis.to_euler("XYZ")
+    pb.location = (0.0, 0.0, 0.0)
+    pb.scale = (1.0, 1.0, 1.0)
+    bpy.context.view_layer.update()
+
+
+def _sole_patch(arm, side):
+    """Vertices on the bottom of the shoe. Bone +Z points out through the sole."""
+    from mathutils import Vector
+    n = _bone_world_axis(arm, f"Foot_{side}", (0.0, 0.0, 1.0))
+    verts = [Vector(v) for v in _foot_verts(side)]
+    if not verts:
+        return n, []
+    scored = sorted(verts, key=lambda v: n.dot(v), reverse=True)
+    count = max(16, len(scored) // 8)
+    return n, scored[:count]
+
+
+def _sole_gap(arm, side, origin, normal):
+    """Signed distance of the sole patch to a plane. Positive is outside."""
+    from mathutils import Vector
+    _n, patch = _sole_patch(arm, side)
+    if not patch:
+        return 1.0e9
+    n = Vector(normal).normalized()
+    o = Vector(origin)
+    return min(n.dot(v - o) for v in patch)
+
+
+def _seat_sole(arm, side, origin, normal, clearance=0.006):
+    """Translate so this sole sits just outside the plane. Hip and knee stay."""
+    from mathutils import Vector
+    n = Vector(normal).normalized()
+    gap = _sole_gap(arm, side, origin, normal)
+    if gap > 1.0e8:
+        return gap
+    arm.location = arm.location + n * (clearance - gap)
+    bpy_update()
+    return _sole_gap(arm, side, origin, normal)
+
+
 def _hands_on_plane(arm, origin, normal):
     """If a hand is inside the solid, put that hand on the face. Legs stay put."""
     from mathutils import Vector
@@ -794,7 +921,11 @@ def _angle_row(ch, body):
     ref_hip = {}
     for side in ("L", "R"):
         ref_hip[side] = g(f"hip_elev_{side}")
-    ref_pelvis = g("root_height_m") * _PELVIS_SCALE
+    cam_h = g("root_height_m") * _PELVIS_SCALE
+    side_h = g("side_height_m")
+    # Camera-vertical height collapses when the body lies across the frame.
+    collapsed = side_h > 0.08 and cam_h < side_h * 0.75
+    ref_pelvis = side_h if collapsed else cam_h
     row = {
         "hip_L_ref": ref_hip["L"],
         "hip_L": body["hip_L"],
@@ -808,6 +939,9 @@ def _angle_row(ch, body):
         "spine": body["spine"],
         "pelvis_ref_cm": ref_pelvis * 100.0,
         "pelvis_cm": body["pelvis"] * 100.0,
+        "pelvis_src": "side" if collapsed else "camera",
+        "pelvis_cam_cm": cam_h * 100.0,
+        "pelvis_side_cm": side_h * 100.0,
     }
     return row
 
@@ -850,6 +984,10 @@ def solve_slide(arm, samples, times):
         _apply_faithful(arm, ch, anchor, facing)
         show_slide_world(arm.location.y)
         _seat_feet(arm, plane_o, nrm)
+        _hand_on_ramp(arm, plane_o, nrm)
+        _clear_pose_arms(arm)
+        _hand_on_ramp(arm, plane_o, nrm)
+        _seat_feet(arm, plane_o, nrm)
         gap = _min_plane(plane_o, nrm)
         pen = max(pen, max(0.0, -gap))
         for side in ("L", "R"):
@@ -870,6 +1008,12 @@ def solve_slide(arm, samples, times):
         row = _angle_row(ch, body)
         row["t"] = times[i]
         row["world_pen_cm"] = max(0.0, -gap) * 100.0
+        hand_gaps = []
+        for s in ("L", "R"):
+            vert = _deepest(f"Hand_{s}", nrm)
+            if vert is not None:
+                hand_gaps.append(nrm.dot(Vector(vert) - plane_o) * 100.0)
+        row["hand_cm"] = min(hand_gaps) if hand_gaps else 999.0
         rows.append(row)
         keys.append(_save_pose(arm))
         caps.append((arm.location.x, arm.location.y, arm.location.z))
@@ -977,96 +1121,316 @@ def _brush_hands(arm, face, normal):
         _pin_limb(arm, "hand", side, lock, nrm, pole)
 
 
+def _knee_plants(samples, hold=3):
+    """The stepping leg is the more bent knee. Hold it so the plant does not chatter."""
+    sides = []
+    current = None
+    pending = None
+    pending_n = 0
+    for ch in samples:
+        want = "L" if ch.get("knee_flex_L", 0.0) >= ch.get("knee_flex_R", 0.0) else "R"
+        if current is None:
+            current = want
+        if want != current:
+            if pending == want:
+                pending_n += 1
+            else:
+                pending = want
+                pending_n = 1
+            if pending_n >= hold:
+                current = want
+                pending = None
+                pending_n = 0
+        else:
+            pending = None
+            pending_n = 0
+        sides.append(current)
+    return sides
+
+
+def _swing_thigh(arm, side, deg):
+    """Turn the thigh around the torso. Elevation and knee flex stay put."""
+    import bpy
+    from mathutils import Quaternion, Matrix
+    if abs(deg) < 0.5:
+        return
+    pb = arm.pose.bones[f"UpperLeg_{side}"]
+    bpy.context.view_layer.update()
+    hips = p5._head_w(arm, "Hips")
+    chest = p5._head_w(arm, "Chest")
+    axis = chest - hips
+    if axis.length < 1.0e-6:
+        return
+    axis = axis.normalized()
+    mw = arm.matrix_world @ pb.matrix
+    rot = Quaternion(axis, math.radians(deg)).to_matrix().to_4x4()
+    spun = Matrix.Translation(mw.translation) @ rot @ Matrix.Translation(-mw.translation)
+    pb.matrix = arm.matrix_world.inverted() @ (spun @ mw)
+    bpy.context.view_layer.update()
+    pb.rotation_mode = "XYZ"
+    pb.rotation_euler = pb.matrix_basis.to_euler("XYZ")
+    pb.location = (0.0, 0.0, 0.0)
+    pb.scale = (1.0, 1.0, 1.0)
+    bpy.context.view_layer.update()
+
+
+def _retract_hands(arm, origin, normal):
+    """Put a hand that has entered the solid back on the face. The sole stays."""
+    from mathutils import Vector
+    n = Vector(normal).normalized()
+    for side in ("L", "R"):
+        verts = p5._verts(f"Hand_{side}")
+        if not verts:
+            continue
+        vert = min(verts, key=lambda v: n.dot(Vector(v) - Vector(origin)))
+        gap = n.dot(Vector(vert) - Vector(origin))
+        if gap >= 0.004:
+            continue
+        lock = Vector(vert) - n * (gap - 0.008)
+        pole = n * 0.9 + Vector((0.0, 0.35 if side == "L" else -0.35, 0.45))
+        _pin_limb(arm, "hand", side, lock, n, pole)
+
+
+def _swing_free_leg_out(arm, plant):
+    """The trail leg must not pass through the wall the plant foot is on."""
+    other = "R" if plant == "L" else "L"
+    base = _save_pose(arm)
+    loc = arm.location.copy()
+    best = None
+    for swing in (0, 30, -30, 60, -60, 90, -90, 120, -120):
+        rh._apply_eulers(arm, base)
+        _clear_pose_channels(arm)
+        rh._apply_eulers(arm, base)
+        arm.location = loc
+        bpy_update()
+        if swing:
+            _swing_thigh(arm, other, swing)
+        xs = [v.x for v in p5._verts(f"Foot_{other}")]
+        xs += [v.x for v in p5._verts(f"LowerLeg_{other}")]
+        if not xs:
+            continue
+        depth = min(xs)
+        if best is None or depth > best[0]:
+            best = (depth, _save_pose(arm), arm.location.copy())
+        if depth >= -0.002:
+            break
+    if best is None:
+        return
+    rh._apply_eulers(arm, best[1])
+    _clear_pose_channels(arm)
+    rh._apply_eulers(arm, best[1])
+    arm.location = best[2]
+    bpy_update()
+
+
+def _lift_shin_off_wall(arm, side, ch):
+    """Straighten the plant knee a few degrees if the shin has crossed the face."""
+    for _step in range(6):
+        xs = [v.x for v in p5._verts(f"LowerLeg_{side}")]
+        xs += [v.x for v in p5._verts(f"UpperLeg_{side}")]
+        if not xs or min(xs) >= -0.002:
+            return
+        pb = arm.pose.bones[f"LowerLeg_{side}"]
+        pb.rotation_mode = "XYZ"
+        e = pb.rotation_euler.copy()
+        pb.rotation_euler = (e.x - math.radians(2.0), e.y, e.z)
+        bpy_update()
+        _aim_bone_axis(arm, f"Foot_{side}", (0.0, 0.0, 1.0), (-1.0, 0.0, 0.0))
+        _seat_sole(arm, side, (0.0, 0.0, 0.0), (1.0, 0.0, 0.0), clearance=0.005)
+        body = _measure_body(arm)
+        err = abs(body[f"knee_{side}"] - float(ch.get(f"knee_flex_{side}", 0.0)))
+        if err > 9.5:
+            pb.rotation_euler = e
+            bpy_update()
+            _aim_bone_axis(arm, f"Foot_{side}", (0.0, 0.0, 1.0), (-1.0, 0.0, 0.0))
+            _seat_sole(arm, side, (0.0, 0.0, 0.0), (1.0, 0.0, 0.0), clearance=0.005)
+            return
+
+
+def _tilt_head_off_wall(arm):
+    """Tip the head back if the shell crosses the face. The legs stay."""
+    pb = arm.pose.bones.get("Head")
+    if pb is None:
+        return
+    for _step in range(8):
+        vs = p5._verts("Head")
+        if not vs or min(v.x for v in vs) >= 0.0:
+            return
+        pb.rotation_mode = "XYZ"
+        e = pb.rotation_euler.copy()
+        pb.rotation_euler = (e.x - math.radians(3.0), e.y, e.z)
+        bpy_update()
+
+
 def solve_wallrun(arm, samples, times):
-    """Run up a vertical face. The reference step shape is kept; the body rises."""
+    """Face the wall and plant the stepping sole on the vertical face."""
     from mathutils import Vector, Euler
     face = 0.0
     normal = Vector((1.0, 0.0, 0.0))
     wall_o = Vector((face, 0.0, 0.0))
+    into_wall = Vector((-1.0, 0.0, 0.0))
     n = len(samples)
     keys, caps, facings, rows = [], [], [], []
-    skate = 0.0
     pen = 0.0
-    prev = None
+    plants = []
     for i, ch in enumerate(samples):
         u = 0.0 if n == 1 else i / (n - 1)
-        trunk = float(ch.get("trunk_lean_from_cam_vertical") or 0.0)
-        climb = 0.20 + u * 2.35
-
-        def place(yaw_deg):
-            # Try both yaws. Keep the one that leaves the hips outside the soles.
-            facing_try = Euler(
-                (math.radians(max(6.0, trunk)), 0.0, math.radians(yaw_deg)), "XYZ"
-            )
-            _apply_faithful(arm, ch, Vector((0.55, 0.0, 1.0)), facing_try)
-            show_wall_world(face, 2.6, 6.0, hide_ground=True)
-            _seat_feet(arm, wall_o, normal)
-            low = _lowest_foot_z()
-            arm.location.z += climb - low
+        # First plant is about hip height, then the body drives up the face.
+        climb = 0.90 + u * 1.75
+        # Yaw -90 faces the brick. Pitch stays 0 so the chest is not pushed through
+        # the face; the spine bone still carries the reference trunk.
+        facing = Euler((0.0, 0.0, math.radians(-90.0)), "XYZ")
+        show_wall_world(face, 2.2, 5.4, hide_ground=True)
+        prefer = "L" if ch.get("knee_flex_L", 0.0) >= ch.get("knee_flex_R", 0.0) else "R"
+        order = (prefer, "R" if prefer == "L" else "L")
+        chosen = None
+        # Extra hip flex is only used when the reference step cannot reach the
+        # face ahead of the chest. Ten degrees is the reporting budget.
+        fallback = None
+        for extra in (0.0, 8.0):
+            if chosen is not None:
+                break
+            for side in order:
+                found = None
+                for swing in range(-90, 105, 15):
+                    _apply_faithful(arm, ch, Vector((0.70, 0.0, climb)), facing)
+                    if extra:
+                        pb = arm.pose.bones[f"UpperLeg_{side}"]
+                        pb.rotation_mode = "XYZ"
+                        e = pb.rotation_euler.copy()
+                        pb.rotation_euler = (e.x - math.radians(extra), e.y, e.z)
+                        bpy_update()
+                    _swing_thigh(arm, side, swing)
+                    _aim_bone_axis(arm, f"Foot_{side}", (0.0, 0.0, 1.0), into_wall)
+                    _n, patch = _sole_patch(arm, side)
+                    if patch:
+                        arm.location.z += climb - min(v.z for v in patch)
+                        bpy_update()
+                    _seat_sole(arm, side, wall_o, normal, clearance=0.005)
+                    chest_x = min((v.x for v in p5._verts("Chest")), default=-1.0)
+                    leg_x = min(
+                        [v.x for v in p5._verts(f"UpperLeg_{side}")]
+                        + [v.x for v in p5._verts(f"LowerLeg_{side}")]
+                        or [0.0]
+                    )
+                    body = _measure_body(arm)
+                    elev_err = abs(body[f"hip_{side}"] - float(ch.get(f"hip_elev_{side}", 0.0)))
+                    # Keep the least-inside pose even when the budget rejects it.
+                    rank = (chest_x, leg_x)
+                    if fallback is None or rank > fallback[0]:
+                        fallback = (rank, side, _save_pose(arm), arm.location.copy())
+                    if chest_x < 0.0 or leg_x < -0.005 or elev_err > 10.0:
+                        continue
+                    score = (chest_x, leg_x, -abs(swing))
+                    if found is None or score > found[0]:
+                        found = (score, _save_pose(arm), arm.location.copy())
+                if found is not None:
+                    chosen = (side, found)
+                    break
+        if chosen is None and fallback is not None:
+            _rank, side, pose, loc = fallback
+            chosen = (side, (None, pose, loc))
+        if chosen is None:
+            side = prefer
+            _apply_faithful(arm, ch, Vector((0.70, 0.0, climb)), facing)
+            _aim_bone_axis(arm, f"Foot_{side}", (0.0, 0.0, 1.0), into_wall)
+            _seat_sole(arm, side, wall_o, normal, clearance=0.005)
+        else:
+            side, (_score, pose, loc) = chosen
+            rh._apply_eulers(arm, pose)
+            _clear_pose_channels(arm)
+            rh._apply_eulers(arm, pose)
+            arm.location = loc
             bpy_update()
-            _seat_feet(arm, wall_o, normal)
-            floor_gap = _min_plane(Vector((0.0, 0.0, 0.0)), Vector((0.0, 0.0, 1.0)))
-            if floor_gap < 0.0:
-                arm.location.z -= floor_gap
-                bpy_update()
-                _seat_feet(arm, wall_o, normal)
-            _hands_on_plane(arm, wall_o, normal)
-            hip_x = p5._head_w(arm, "Hips").x
-            foot_x = min((v.x for side in ("L", "R") for v in _foot_verts(side)), default=0.0)
-            return hip_x - foot_x
-
-        score_pos = place(90.0)
-        score_neg = place(-90.0)
-        facing = Euler(
-            (
-                math.radians(max(6.0, trunk)),
-                0.0,
-                math.radians(90.0 if score_pos >= score_neg else -90.0),
-            ),
-            "XYZ",
-        )
-        place(90.0 if score_pos >= score_neg else -90.0)
+        _retract_hands(arm, wall_o, normal)
+        _swing_free_leg_out(arm, side)
+        _seat_sole(arm, side, wall_o, normal, clearance=0.005)
+        _lift_shin_off_wall(arm, side, ch)
+        _tilt_head_off_wall(arm)
+        _clear_pose_arms(arm)
+        _seat_sole(arm, side, wall_o, normal, clearance=0.005)
+        _lift_shin_off_wall(arm, side, ch)
+        _tilt_head_off_wall(arm)
         gap = _min_plane(wall_o, normal)
-        floor_gap = _min_plane(Vector((0.0, 0.0, 0.0)), Vector((0.0, 0.0, 1.0)))
-        pen = max(pen, max(0.0, -gap), max(0.0, -floor_gap))
-        vert = None
-        best = 1.0e9
-        for side in ("L", "R"):
-            v = _deepest(f"Foot_{side}", normal)
-            if v is not None and v.x < best:
-                best = v.x
-                vert = v
-        if vert is not None and abs(vert.x - face) < 0.04:
-            mark = Vector((vert.y, vert.z))
-            if prev is not None:
-                skate = max(skate, (mark - prev).length)
-            prev = mark
+        pen = max(pen, max(0.0, -gap))
         body = _measure_body(arm)
+        _n, patch = _sole_patch(arm, side)
+        if patch:
+            body["pelvis"] = body["hip_z"] - min(v.z for v in patch)
         row = _angle_row(ch, body)
         row["t"] = times[i]
+        row["plant"] = side
+        plants.append(side)
+        row["sole_L_cm"] = _sole_gap(arm, "L", wall_o, normal) * 100.0
+        row["sole_R_cm"] = _sole_gap(arm, "R", wall_o, normal) * 100.0
         rows.append(row)
         keys.append(_save_pose(arm))
         caps.append((arm.location.x, arm.location.y, arm.location.z))
         facings.append((facing.x, facing.y, facing.z))
-        if i % 10 == 0:
+        if i % 8 == 0:
             print(
-                f"  wall f={i} foot_z={_lowest_foot_z():.2f} "
-                f"knee={body['knee_L']:.0f}/{body['knee_R']:.0f}",
+                f"  wall f={i} plant={side} soleL={row['sole_L_cm']:.2f} "
+                f"soleR={row['sole_R_cm']:.2f} knee={body['knee_L']:.0f}/{body['knee_R']:.0f}",
                 flush=True,
             )
     return {
         "keys": keys, "capsule": caps, "facing": facings, "times": times,
-        "skate": skate, "pen": pen, "errors": rows, "world": {"kind": "wall"},
+        "skate": 0.0, "pen": pen, "errors": rows, "plants": plants,
+        "world": {"kind": "wall"},
         "note": (
-            "L/R swapped from the behind-camera take. Soles stay on the vertical "
-            "face while the reference step angles play and the body rises. "
+            "The runner faces the wall. The more bent knee is the plant: its sole "
+            "is aimed into the brick and seated on the face, starting about hip "
+            "height and driving up. Hip and knee angles stay on the reference. "
             "Clip 19 is not posed."
         ),
     }
 
 
 def _over_landing_xy(x, y, landing_y):
-    return -0.20 <= x <= 0.90 and abs(y - landing_y) <= 0.38
+    return abs(x - LOW_WALL_CX) <= LOW_WALL_HALF[0] and abs(y - landing_y) <= LOW_WALL_HALF[1]
+
+
+def _hang_off_low_wall(arm, landing_y, landing_top):
+    """Slide along the top so a shin in front of the feet is not inside the wall."""
+    from mathutils import Vector
+    center = (LOW_WALL_CX, landing_y, landing_top * 0.5)
+    base_y = arm.location.y
+    top_o = Vector((0.0, 0.0, landing_top))
+    floor_n = Vector((0.0, 0.0, 1.0))
+
+    def pen_now():
+        worst = 0.0
+        for v in _all_body_verts():
+            worst = max(worst, _box_pen(v, center, LOW_WALL_HALF))
+            worst = max(worst, max(0.0, -v.z), max(0.0, -v.x))
+        return worst
+
+    best = None
+    for dy in (0.0, -0.2, -0.35, -0.5, -0.65, 0.2, 0.35, 0.5):
+        arm.location.y = base_y + dy
+        bpy_update()
+        # The contact sole has to stay over the top, not past the edge.
+        on = False
+        for side in ("L", "R"):
+            _n, patch = _sole_patch(arm, side)
+            if not patch:
+                continue
+            c = sum(patch, Vector()) / len(patch)
+            if _over_landing_xy(c.x, c.y, landing_y) and abs(c.z - landing_top) < 0.04:
+                on = True
+        if not on:
+            continue
+        depth = pen_now()
+        if best is None or depth < best[0]:
+            best = (depth, arm.location.copy())
+        if depth <= 0.004:
+            break
+    if best is not None:
+        arm.location = best[1]
+        bpy_update()
+    gaps = [(_sole_gap(arm, s, top_o, floor_n), s) for s in ("L", "R")]
+    _gap, lower = min(gaps)
+    _seat_sole(arm, lower, top_o, floor_n, clearance=0.006)
 
 
 def _shift_above_box(arm, landing_y, landing_top):
@@ -1093,9 +1457,8 @@ def solve_turn(arm, samples, times):
     floor_n = Vector((0.0, 0.0, 1.0))
     wall_o = Vector((face, 0.0, 0.0))
     floor_o = Vector((0.0, 0.0, 0.0))
-    landing_top = 0.42
-    # Short platform so a crouched shin in front of the feet is not inside the box.
-    landing_y = 2.75
+    landing_top = LOW_WALL_TOP
+    landing_y = 2.40
     n = len(samples)
     keys, caps, facings, rows = [], [], [], []
     skate = 0.0
@@ -1133,7 +1496,7 @@ def solve_turn(arm, samples, times):
             y = 0.85 + u * (landing_y - 0.85)
             origin = Vector((0.35, y, z))
         else:
-            origin = Vector((0.28, landing_y - 0.05, landing_top + 0.55))
+            origin = Vector((LOW_WALL_CX, landing_y, landing_top + 0.35))
         _apply_faithful(arm, ch, origin, facing)
         show_turn_world(face, landing_top, landing_y)
         if phase == "run":
@@ -1168,9 +1531,32 @@ def solve_turn(arm, samples, times):
             _shift_above_box(arm, landing_y, landing_top)
             _shift_plane(arm, wall_o, wall_n, 0.0)
         else:
-            top_o = Vector((0.0, 0.0, landing_top))
-            _seat_feet(arm, top_o, floor_n)
+            # Lay both soles on the horizontal top, over the wall, not past it.
+            down = Vector((0.0, 0.0, -1.0))
+            for s in ("L", "R"):
+                _aim_bone_axis(arm, f"Foot_{s}", (0.0, 0.0, 1.0), down)
+            _nL, patch_l = _sole_patch(arm, "L")
+            _nR, patch_r = _sole_patch(arm, "R")
+            patches = [p for p in (patch_l, patch_r) if p]
+            if patches:
+                centers = []
+                for patch in patches:
+                    c = sum(patch, Vector()) / len(patch)
+                    centers.append(c)
+                contact = min(centers, key=lambda c: c.z)
+                arm.location.x += LOW_WALL_CX - contact.x
+                arm.location.y += landing_y - contact.y
+                arm.location.z += (landing_top + 0.005) - contact.z
+                bpy_update()
             _shift_plane(arm, wall_o, wall_n, 0.0)
+            # Keep the lower sole on the top after the wall push.
+            top_o = Vector((0.0, 0.0, landing_top))
+            gaps = [(_sole_gap(arm, s, top_o, floor_n), s) for s in ("L", "R")]
+            _gap, lower = min(gaps)
+            _seat_sole(arm, lower, top_o, floor_n, clearance=0.005)
+            _clear_pose_arms(arm)
+            _seat_sole(arm, lower, top_o, floor_n, clearance=0.005)
+            _hang_off_low_wall(arm, landing_y, landing_top)
         pen = max(pen, max(0.0, -_min_plane(wall_o, wall_n)))
         pen = max(pen, max(0.0, -_min_plane(floor_o, floor_n)))
         pen = max(
@@ -1189,10 +1575,15 @@ def solve_turn(arm, samples, times):
                 prev = mark
             else:
                 prev = None
+        if phase != "land":
+            _clear_pose_arms(arm)
         body = _measure_body(arm)
         row = _angle_row(ch, body)
         row["t"] = t
         row["phase"] = phase
+        top_o = Vector((0.0, 0.0, landing_top))
+        row["sole_L_cm"] = _sole_gap(arm, "L", top_o, floor_n) * 100.0
+        row["sole_R_cm"] = _sole_gap(arm, "R", top_o, floor_n) * 100.0
         rows.append(row)
         keys.append(_save_pose(arm))
         caps.append((arm.location.x, arm.location.y, arm.location.z))
@@ -1383,7 +1774,11 @@ def _analytical_world(verts, spec, world):
         pen = max(pen, max(0.0, -v.x))
         if spec["verb"] == "turn180":
             # Same box as show_turn_world. Scale is the half-extent of a 2 m cube.
-            pen = max(pen, _box_pen(v, (0.35, landing_y, landing_top * 0.5), (0.55, 0.38, landing_top * 0.5)))
+            pen = max(pen, _box_pen(
+                v,
+                (LOW_WALL_CX, landing_y, landing_top * 0.5),
+                LOW_WALL_HALF,
+            ))
     return pen
 
 
@@ -1557,6 +1952,111 @@ def _uncross(arm, repin=None, guard=None, rounds=5, allow_legs=False):
                 bpy_update()
 
 
+def _is_rig_pair(pair):
+    """Hip/thigh shell nesting is the rig joint, not a pose we straighten away."""
+    parts = str(pair).split("/")
+    if len(parts) != 2:
+        return False
+    a, b = parts
+    hips = {"Hips", "Spine"}
+    legs = {"UpperLeg_L", "UpperLeg_R"}
+    return (a in hips and b in legs) or (b in hips and a in legs)
+
+
+def _pair_depths(arm):
+    """Self crossings outside the 3 cm joint exemption. List of (metres, pair)."""
+    import bpy
+    rh._ensure_object()
+    deps = bpy.context.evaluated_depsgraph_get()
+    bodies = []
+    for ob in _body_objects():
+        tree, _verts, tris = _eval_bvh(ob, deps)
+        bodies.append((ob.parent_bone, tree, tris))
+    child_of = {child: parent for parent, child in NEIGHBORS}
+    found = []
+    for i, (bone_a, tree_a, tris_a) in enumerate(bodies):
+        for bone_b, tree_b, tris_b in bodies[i + 1:]:
+            joint = None
+            if child_of.get(bone_b) == bone_a:
+                joint = _joint_world(arm, bone_b)
+            elif child_of.get(bone_a) == bone_b:
+                joint = _joint_world(arm, bone_a)
+            depth = _cross_depth(tris_a, tris_b, tree_a, tree_b, joint)
+            if depth > 0.0:
+                found.append((depth, f"{bone_a}/{bone_b}"))
+    return found
+
+
+def _clear_pose_arms(arm):
+    """Yaw an arm out of the chest. Legs are not touched."""
+    for _step in range(10):
+        pose_hits = [
+            (d, p) for d, p in _pair_depths(arm)
+            if d > DEPTH_LIMIT_M and not _is_rig_pair(p)
+        ]
+        if not pose_hits:
+            return
+        _d, pair = max(pose_hits)
+        bone = None
+        for token in pair.split("/"):
+            if token.startswith(("UpperArm", "LowerArm", "Hand", "Shoulder")):
+                bone = token
+                break
+        if bone is None:
+            return
+        # A hand in the chest clears by swinging the upper arm, not the wrist.
+        if bone.startswith(("Hand", "LowerArm")):
+            bone = "UpperArm_" + bone[-1]
+        if bone not in arm.pose.bones:
+            return
+        pb = arm.pose.bones[bone]
+        pb.rotation_mode = "XYZ"
+        e = pb.rotation_euler
+        sign = 1.0 if bone.endswith("_L") else -1.0
+        pb.rotation_euler = (e.x, e.y, e.z + sign * 0.10)
+        pb.scale = (1.0, 1.0, 1.0)
+        bpy_update()
+
+
+def _hand_on_ramp(arm, origin, normal):
+    """Put the nearer hand on the ramp. Reject a pin that enters the chest."""
+    from mathutils import Vector
+    n = Vector(normal).normalized()
+    o = Vector(origin)
+    best = None
+    best_gap = 1.0e9
+    for side in ("L", "R"):
+        vert = _deepest(f"Hand_{side}", n)
+        if vert is None:
+            continue
+        gap = n.dot(Vector(vert) - o)
+        if gap < best_gap:
+            best_gap = gap
+            best = side
+    if best is None:
+        return None
+    if abs(best_gap) <= 0.012:
+        return best
+    vert = _deepest(f"Hand_{best}", n)
+    lock = Vector(vert) - n * (best_gap - 0.006)
+    before = _save_pose(arm)
+    loc = arm.location.copy()
+    pole = n * 0.75 + Vector((0.4 if best == "L" else -0.4, 0.1, 0.35))
+    _pin_limb(arm, "hand", best, lock, n, pole)
+    pose_hits = [
+        d for d, p in _pair_depths(arm)
+        if d > DEPTH_LIMIT_M and not _is_rig_pair(p)
+    ]
+    if pose_hits:
+        rh._apply_eulers(arm, before)
+        _clear_pose_channels(arm)
+        rh._apply_eulers(arm, before)
+        arm.location = loc
+        bpy_update()
+        return None
+    return best
+
+
 def noclip_frame(arm, spec, world_info=None):
     """World plane depth plus real triangle crossings. Metres."""
     import bpy
@@ -1621,90 +2121,139 @@ def _show_for(spec, arm, solved=None):
 
 def measure_noclip(arm, solved_all):
     frames = 0
-    fails = 0
+    rig_n = 0
+    pose_n = 0
     world_max = 0.0
-    self_max = 0.0
-    worst = ""
+    rig_max = 0.0
+    pose_max = 0.0
     for spec in SPECS:
         solved = solved_all[spec["id"]]
-        fail_frames = []
+        rig_frames = []
+        pose_frames = []
         worst_i = 0
         worst_depth = -1.0
         worst_pair = ""
         for i in range(len(solved["keys"])):
             pose_from_key(arm, solved, i, spec)
-            world, self_pen, pair = noclip_frame(arm, spec, solved.get("world"))
+            world, _self_pen, _pair = noclip_frame(arm, spec, solved.get("world"))
+            pairs = _pair_depths(arm)
+            rig_d, rig_p = 0.0, ""
+            pose_d, pose_p = 0.0, ""
+            for depth, pair in pairs:
+                if _is_rig_pair(pair):
+                    if depth > rig_d:
+                        rig_d, rig_p = depth, pair
+                elif depth > pose_d:
+                    pose_d, pose_p = depth, pair
+            if world > pose_d:
+                pose_d, pose_p = world, "world"
             frames += 1
-            depth = max(world, self_pen)
-            if depth > worst_depth:
-                worst_depth = depth
+            world_max = max(world_max, world)
+            rig_max = max(rig_max, rig_d)
+            pose_max = max(pose_max, pose_d)
+            if rig_d > worst_depth:
+                worst_depth = rig_d
                 worst_i = i
-                worst_pair = pair if self_pen >= world else (pair or "world")
-            if world > world_max:
-                world_max = world
-                worst = f"{spec['id']} f={i} {pair} world"
-            if self_pen > self_max:
-                self_max = self_pen
-                worst = f"{spec['id']} f={i} {pair}"
-            if world > DEPTH_LIMIT_M or self_pen > DEPTH_LIMIT_M:
-                fails += 1
-                fail_frames.append({
+                worst_pair = rig_p
+            if pose_d > DEPTH_LIMIT_M and pose_d >= worst_depth:
+                worst_depth = pose_d
+                worst_i = i
+                worst_pair = pose_p
+            if rig_d > DEPTH_LIMIT_M:
+                rig_n += 1
+                rig_frames.append({
                     "frame": i,
                     "t": round(solved["times"][i], 3),
-                    "world_cm": round(world * 100.0, 2),
-                    "self_cm": round(self_pen * 100.0, 2),
-                    "pair": pair,
+                    "cm": round(rig_d * 100.0, 2),
+                    "pair": rig_p,
+                    "kind": "rigJoint",
                 })
-        solved["fail_frames"] = fail_frames
+            if pose_d > DEPTH_LIMIT_M:
+                pose_n += 1
+                pose_frames.append({
+                    "frame": i,
+                    "t": round(solved["times"][i], 3),
+                    "cm": round(pose_d * 100.0, 2),
+                    "pair": pose_p,
+                    "kind": "pose",
+                })
+        solved["fail_frames"] = rig_frames + pose_frames
+        solved["rig_frames"] = rig_frames
+        solved["pose_frames"] = pose_frames
         solved["worst_i"] = worst_i
-        solved["worst_pair"] = worst_pair
+        solved["worst_pair"] = worst_pair or "world"
         print(
-            f"NOCLIP {spec['id']} fails={len(fail_frames)} worst_f={worst_i} "
-            f"pair={worst_pair} depth={worst_depth*100:.2f}cm",
+            f"NOCLIP {spec['id']} rigJoint={len(rig_frames)} pose={len(pose_frames)} "
+            f"worst_f={worst_i} pair={solved['worst_pair']}",
             flush=True,
         )
     line = (
         f"no-clip clips={len(SPECS)} frames={frames} "
-        f"worldMax={world_max*100:.2f} selfMax={self_max*100:.2f} fails={fails}"
+        f"worldMax={world_max*100:.2f} rigMax={rig_max*100:.2f} poseMax={pose_max*100:.2f} "
+        f"rigJoint={rig_n} pose={pose_n}"
     )
     print(line, flush=True)
-    if worst:
-        print("no-clip worst", worst, flush=True)
-    return line, fails, world_max, self_max
+    return line, pose_n, world_max, pose_max
 
 
 # --- stills ---------------------------------------------------------------
 
+def _body_bounds():
+    from mathutils import Vector
+    pts = _all_body_verts()
+    if not pts:
+        return Vector((0.0, 0.0, 0.0)), Vector((1.0, 1.0, 1.0))
+    return (
+        Vector((min(p.x for p in pts), min(p.y for p in pts), min(p.z for p in pts))),
+        Vector((max(p.x for p in pts), max(p.y for p in pts), max(p.z for p in pts))),
+    )
+
+
 def _shot_for(spec, arm):
-    cap = arm.location
+    """Perspective framed on the pelvis, wide enough for the whole body and the prop."""
+    from mathutils import Vector
+    pelvis = p5._head_w(arm, "Hips")
+    mn, mx = _body_bounds()
+    center = (mn + mx) * 0.5
+    focus = pelvis * 0.6 + center * 0.4
+    rad = max(0.9, (mx - mn).length * 0.55)
+    # 48 mm on a portrait frame. Stay back so nothing clips the cell edge.
+    dist = rad / math.sin(math.radians(18.0))
     if spec["verb"] == "slide":
-        focus = (cap.x, cap.y + 0.15, cap.z + 0.35)
-        loc = (cap.x + 2.2, cap.y - 2.4, cap.z + 0.9)
-        return loc, focus
-    if spec["verb"] == "wallrun_vertical":
-        # From the open side of the brick, so the vertical face is under the soles.
-        focus = (0.0, cap.y, cap.z + 0.55)
-        loc = (2.3, cap.y + 2.2, cap.z + 0.7)
-        return loc, focus
-    focus = (cap.x, cap.y, cap.z + 0.7)
-    loc = (cap.x + 2.6, cap.y - 3.0, cap.z + 1.15)
-    return loc, focus
+        direction = Vector((0.45, -0.8, 0.28)).normalized()
+    elif spec["verb"] == "wallrun_vertical":
+        direction = Vector((0.85, 0.55, 0.15)).normalized()
+        focus = Vector((0.05, pelvis.y, pelvis.z * 0.45 + center.z * 0.55))
+    else:
+        direction = Vector((0.7, -0.65, 0.25)).normalized()
+    loc = Vector(focus) + direction * dist
+    return (loc.x, loc.y, loc.z), (focus.x, focus.y, focus.z)
 
 
 def _side_shot(spec, arm):
-    """Orthographic profile. The prop is a line the body has to sit on."""
-    cap = arm.location
+    """Orthographic profile framed on the pelvis, with the prop and both feet."""
+    pelvis = p5._head_w(arm, "Hips")
+    mn, mx = _body_bounds()
     if spec["verb"] == "slide":
-        focus = (0.0, cap.y, cap.z + 0.35)
-        loc = (4.5, cap.y, cap.z + 0.35)
-        return loc, focus, 3.3
+        span_y = (mx.y - mn.y) + 0.9
+        span_z = (mx.z - mn.z) + 0.7
+        scale = max(span_y, span_z, 2.2)
+        focus = ((mn.x + mx.x) * 0.5, (mn.y + mx.y) * 0.5, pelvis.z)
+        loc = (focus[0] + 6.0, focus[1], focus[2])
+        return loc, focus, scale
     if spec["verb"] == "wallrun_vertical":
-        focus = (0.05, 0.0, cap.z + 0.55)
-        loc = (0.2, -4.6, cap.z + 0.55)
-        return loc, focus, 3.6
-    focus = (cap.x * 0.3, cap.y, cap.z + 0.45)
-    loc = (4.8, cap.y, cap.z + 0.45)
-    return loc, focus, 4.0
+        span_x = max(mx.x, 0.5) - min(mn.x, -0.35) + 0.4
+        span_z = (mx.z - mn.z) + 0.6
+        scale = max(span_x, span_z, 2.2)
+        focus = (0.1, 0.0, pelvis.z)
+        loc = (0.1, -6.0, pelvis.z)
+        return loc, focus, scale
+    span_y = (mx.y - mn.y) + 1.4
+    span_z = (mx.z - mn.z) + 0.8
+    scale = max(span_y, span_z, 2.6)
+    focus = ((mn.x + mx.x) * 0.5, (mn.y + mx.y) * 0.5, pelvis.z)
+    loc = (focus[0] + 6.5, focus[1], focus[2])
+    return loc, focus, scale
 
 
 def _mark_overlap(pair):
@@ -1838,8 +2387,9 @@ def composite(solved_all, noclip_line):
     for spec in SPECS:
         solved = solved_all[spec["id"]]
         brief = _angle_brief(solved)
-        fails = len(solved.get("fail_frames") or [])
-        title = f"{spec['label']}  {brief}  noclip fails {fails}"
+        rig_n = len(solved.get("rig_frames") or [])
+        pose_n = len(solved.get("pose_frames") or [])
+        title = f"{spec['label']}  {brief}  rigJoint {rig_n} pose {pose_n}"
         for kind, suffix in (("", ""), ("_side", " side")):
             frames = [
                 Image.open(os.path.join(PREV, f"{spec['verb']}{kind}_{s}.png")).convert("RGB")
@@ -1924,23 +2474,48 @@ def _write_reports(solved_all, noclip_line):
     with open(os.path.join(OUT, "noclip.txt"), "w") as f:
         f.write(noclip_line + "\n")
         f.write(
-            "Fails are frames over 0.5 cm. Hip/thigh shell overlap on a deep flex "
-            "is kept; the legs were not straightened to clear it.\n"
+            "rigJoint is the hip/thigh shell nesting (kept; legs are not straightened). "
+            "pose is every other self crossing, plus world penetration, over 0.5 cm.\n"
         )
         for spec in SPECS:
             s = solved_all[spec["id"]]
-            fails = s.get("fail_frames") or []
+            rig = s.get("rig_frames") or []
+            pose = s.get("pose_frames") or []
             f.write(
-                f"{spec['id']} foot_slide_cm={s['skate']*100:.2f} "
-                f"pen_cm={s['pen']*100:.2f} frames={len(s['keys'])} "
-                f"fail_count={len(fails)} worst_f={s.get('worst_i')} "
-                f"worst_pair={s.get('worst_pair')}\n"
+                f"{spec['id']} frames={len(s['keys'])} "
+                f"rigJoint={len(rig)} pose={len(pose)} "
+                f"worst_f={s.get('worst_i')} worst_pair={s.get('worst_pair')}\n"
             )
-            for row in fails:
+            for row in rig + pose:
                 f.write(
-                    f"  f={row['frame']} t={row['t']:.3f} "
-                    f"world_cm={row['world_cm']:.2f} self_cm={row['self_cm']:.2f} {row['pair']}\n"
+                    f"  {row['kind']} f={row['frame']} t={row['t']:.3f} "
+                    f"cm={row['cm']:.2f} {row['pair']}\n"
                 )
+    with open(os.path.join(OUT, "contact.txt"), "w") as f:
+        f.write(
+            "Sole-to-surface distance in cm. Wall-run plant frames must be 0-1 cm "
+            "from the vertical face. 180 land frames must be 0-1 cm from the low-wall top.\n"
+        )
+        for spec in SPECS:
+            rows = solved_all[spec["id"]].get("errors") or []
+            f.write(spec["id"] + "\n")
+            for i, r in enumerate(rows):
+                extra = ""
+                if "plant" in r:
+                    extra = f" plant={r['plant']}"
+                if "phase" in r:
+                    extra = f" phase={r['phase']}"
+                sl = r.get("sole_L_cm")
+                sr = r.get("sole_R_cm")
+                hand = r.get("hand_cm")
+                if sl is None and hand is None:
+                    continue
+                sole = ""
+                if sl is not None:
+                    sole = f" soleL={sl:.2f} soleR={sr:.2f}"
+                if hand is not None:
+                    sole += f" hand={hand:.2f}"
+                f.write(f"  f={i} t={r['t']:.3f}{sole}{extra}\n")
     header = (
         "t hipL_ref hipL dhipL hipR_ref hipR dhipR "
         "kneeL_ref kneeL dkneeL kneeR_ref kneeR dkneeR "
@@ -1950,8 +2525,9 @@ def _write_reports(solved_all, noclip_line):
         "Hip is elevation from the downward torso axis (the thigh pitch). "
         "Knee is 0 when straight. Spine is the torso angle from world vertical, "
         "matched to trunk_lean_from_cam_vertical. Pelvis is hip height above the "
-        "contact (ramp normal on the slide, hip above the lower sole otherwise) "
-        "versus root_height_above_feet scaled by 0.90/0.75.",
+        "contact. The reference is root_height_above_feet scaled by 0.90/0.75, "
+        "except on frames where that camera height collapses (under 75% of the "
+        "side-view hip-to-foot-line height). Those frames use the side height.",
         "",
     ]
     for spec in SPECS:
@@ -1987,6 +2563,12 @@ def _write_reports(solved_all, noclip_line):
                 over.append(f"  f={i} t={r['t']:.3f} " + " ".join(bad))
         lines.append(f"frames over 10 deg or 5 cm: {len(over)} / {len(rows)}")
         lines.extend(over)
+        collapsed = [
+            f"f={i} t={r['t']:.3f} cam={r['pelvis_cam_cm']:.1f} side={r['pelvis_side_cm']:.1f}"
+            for i, r in enumerate(rows) if r.get("pelvis_src") == "side"
+        ]
+        lines.append(f"pelvis from side view (camera height collapsed): {len(collapsed)}")
+        lines.extend("  " + c for c in collapsed)
         lines.append("")
     text = "\n".join(lines) + "\n"
     with open(os.path.join(OUT, "angle_error.txt"), "w") as f:
