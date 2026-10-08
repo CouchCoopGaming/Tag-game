@@ -31,12 +31,12 @@ namespace Tag.Ui.Menu
         static Sprite SpriteOf(int seat)
         {
             if (_sprites == null) _sprites = new Sprite[4];
-            int i = seat;
-            if (i < 0) i = 0;
-            if (i > 3) i = 3;
-            if (_sprites[i] != null) return _sprites[i];
-            _sprites[i] = Build(i);
-            return _sprites[i];
+            int kind = MenuMannequin.SeatMark(seat);
+            if (kind < 0) kind = 0;
+            if (kind > 3) kind = 3;
+            if (_sprites[kind] != null) return _sprites[kind];
+            _sprites[kind] = Build(kind);
+            return _sprites[kind];
         }
 
         static Sprite Build(int kind)

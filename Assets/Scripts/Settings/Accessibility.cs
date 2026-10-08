@@ -89,8 +89,9 @@ namespace Tag.Settings
 
         public static string Glyph(int slot)
         {
-            if (slot < 0 || slot >= PlayerGlyph.Length) return PlayerGlyph[0];
-            return PlayerGlyph[slot];
+            int mark = Tag.Ui.Menu.MenuMannequin.SeatMark(slot);
+            if (mark < 0 || mark >= PlayerGlyph.Length) return PlayerGlyph[0];
+            return PlayerGlyph[mark];
         }
 
         public static void Player(int palette, int slot, out float r, out float g, out float b)

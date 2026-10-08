@@ -28,15 +28,43 @@ namespace Tag.Ui.Menu
             return LocalProfiles.HierNames[index];
         }
 
-        static readonly string[] SeatBody = { "Red", "Blue", "Orange", "Lavender" };
+        public const int Circle = 0;
+        public const int Triangle = 1;
+        public const int Square = 2;
+        public const int Diamond = 3;
+
+        struct SeatRow
+        {
+            public string Body;
+            public int Mark;
+        }
+
+        // One seat table. P1 circle, P2 triangle, P3 square, P4 diamond.
+        static readonly SeatRow[] Seats =
+        {
+            new SeatRow { Body = "Red", Mark = Circle },
+            new SeatRow { Body = "Blue", Mark = Triangle },
+            new SeatRow { Body = "Orange", Mark = Square },
+            new SeatRow { Body = "Lavender", Mark = Diamond },
+        };
 
         /// <summary>P1 red, P2 blue, P3 orange, P4 lavender. The costume swatches, not a second table.</summary>
         public static Color SeatColor(int seat)
         {
-            int i = seat;
-            if (i < 0) i = 0;
-            if (i > 3) i = 3;
-            return Swatch(SeatBody[i]);
+            return Swatch(Seats[SeatIndex(seat)].Body);
+        }
+
+        /// <summary>The shape that sits with this seat. 0 circle, 1 triangle, 2 square, 3 diamond.</summary>
+        public static int SeatMark(int seat)
+        {
+            return Seats[SeatIndex(seat)].Mark;
+        }
+
+        static int SeatIndex(int seat)
+        {
+            if (seat < 0) return 0;
+            if (seat > 3) return 3;
+            return seat;
         }
 
         public static Color Swatch(string key)
@@ -46,7 +74,7 @@ namespace Tag.Ui.Menu
                 case "Blue": return new Color(0.20f, 0.48f, 0.88f, 1f);
                 case "Mint": return new Color(0.42f, 0.82f, 0.70f, 1f);
                 case "Orange": return new Color(1.00f, 0.62f, 0.18f, 1f);
-                case "Lavender": return new Color(0.90f, 0.82f, 1.00f, 1f);
+                case "Lavender": return new Color(0.82f, 0.70f, 0.98f, 1f);
                 case "Red": return new Color(0.90f, 0.18f, 0.20f, 1f);
                 default: return new Color(0.90f, 0.76f, 0.52f, 1f);
             }
