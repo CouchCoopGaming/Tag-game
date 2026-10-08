@@ -7469,46 +7469,58 @@
   {
     "name": "GasCanopy",
     "category": "Buildings",
-    "blurb": "Fuel canopy 9.0 x 6.8 m, roof at 3.50 m, two pumps on an asphalt pad. FUEL sign faces +Z.",
+    "blurb": "Fuel canopy 9.0 x 6.8 m, roof at 3.50 m with a fascia, two pumps and bollards. MART shop on -Z, price sign on +X, ICE machine beside the shop. FUEL sign faces +Z.",
     "size": [
-      9.0,
+      10.01,
       3.81,
-      6.928
+      12.228
     ],
     "min": [
       -4.5,
       0.0,
-      -3.4
+      -8.7
     ],
     "max": [
-      4.5,
+      5.51,
       3.81,
       3.528
     ],
     "lods": [
       {
         "lod": 0,
-        "tris": 856,
+        "tris": 2272,
         "materials": [
           "Lib_Asphalt",
           "Lib_PaintWhite",
           "Lib_PaintRed",
           "Lib_Steel",
           "Lib_Black",
-          "Lib_SteelDark"
+          "Lib_SteelDark",
+          "Lib_PaintYellow",
+          "Lib_Concrete",
+          "Lib_Siding",
+          "Lib_Roof",
+          "Lib_WoodDark",
+          "Lib_ShopGlass"
         ],
         "mesh": "LOD0",
         "fileID": -1633821710574564935
       },
       {
         "lod": 1,
-        "tris": 384,
+        "tris": 1064,
         "materials": [
           "Lib_Asphalt",
           "Lib_PaintWhite",
           "Lib_PaintRed",
           "Lib_Steel",
-          "Lib_Black"
+          "Lib_Black",
+          "Lib_PaintYellow",
+          "Lib_Concrete",
+          "Lib_Siding",
+          "Lib_Roof",
+          "Lib_WoodDark",
+          "Lib_ShopGlass"
         ],
         "mesh": "LOD1",
         "fileID": -179393741545503174
@@ -7666,20 +7678,175 @@
           0,
           0
         ]
+      },
+      {
+        "name": "Col_Bollard_0",
+        "type": "capsule",
+        "center": [
+          -1.6,
+          0.42,
+          0.95
+        ],
+        "radius": 0.045,
+        "height": 0.58,
+        "direction": 1
+      },
+      {
+        "name": "Col_Bollard_1",
+        "type": "capsule",
+        "center": [
+          -1.6,
+          0.42,
+          -0.75
+        ],
+        "radius": 0.045,
+        "height": 0.58,
+        "direction": 1
+      },
+      {
+        "name": "Col_Bollard_2",
+        "type": "capsule",
+        "center": [
+          1.6,
+          0.42,
+          0.95
+        ],
+        "radius": 0.045,
+        "height": 0.58,
+        "direction": 1
+      },
+      {
+        "name": "Col_Bollard_3",
+        "type": "capsule",
+        "center": [
+          1.6,
+          0.42,
+          -0.75
+        ],
+        "radius": 0.045,
+        "height": 0.58,
+        "direction": 1
+      },
+      {
+        "name": "Climb_ShopBack",
+        "type": "box",
+        "center": [
+          0,
+          1.6,
+          -8.15
+        ],
+        "size": [
+          5.4,
+          2.7,
+          0.06
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_ShopSideL",
+        "type": "box",
+        "center": [
+          -2.95,
+          1.6,
+          -6.35
+        ],
+        "size": [
+          0.06,
+          2.7,
+          3.2
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_ShopSideR",
+        "type": "box",
+        "center": [
+          2.95,
+          1.6,
+          -6.35
+        ],
+        "size": [
+          0.06,
+          2.7,
+          3.2
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_ShopFront",
+        "type": "box",
+        "center": [
+          0,
+          1.6,
+          -4.72
+        ],
+        "size": [
+          5.4,
+          2.7,
+          0.08
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Ice",
+        "type": "box",
+        "center": [
+          3.55,
+          0.7,
+          -5.6
+        ],
+        "size": [
+          0.55,
+          1.15,
+          0.4
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Price",
+        "type": "capsule",
+        "center": [
+          5.15,
+          1.45,
+          1.6
+        ],
+        "radius": 0.05,
+        "height": 2.5,
+        "direction": 1
       }
     ],
-    "climbable": false,
+    "climbable": true,
     "vaultable": false,
     "vaultHeight": 0.0,
-    "climbNote": "Columns are 22 cm. Not a cling wall.",
-    "vaultNote": "No rail. The roof is at 3.50 m.",
+    "climbNote": "Columns are 22 cm. The shop walls are cling.",
+    "vaultNote": "No rail. The roof is at 3.50 m. Shop wall top is 3.15 m.",
     "warnings": [],
     "fbxNames": [
       "LODBoxS",
       "LOD0",
       "LOD1"
     ],
-    "slackCm": 0.0,
+    "slackCm": 1.06,
     "fbx": "Assets/Art/Props/Library/Buildings/GasCanopy.fbx"
   },
   {
@@ -24796,47 +24963,47 @@
   {
     "name": "WalkUp",
     "category": "Buildings",
-    "blurb": "Brick walk-up, 8.0 x 6.4 m, three stories, parapet at 9.5 m. Door and two fire-escape landings face +Z. Landings at 3.15 m and 6.20 m, rail 1.05 m above each deck.",
+    "blurb": "Brick walk-up, 8.0 x 6.4 m, three stories, parapet at 9.5 m. Brick is 13 courses per metre. Windows are recessed 13 cm with sills and lintels. Stoop and canopy on +Z. Fire-escape landings at 3.95 m and 6.85 m, brackets back to the wall, rail 1.05 m above each deck.",
     "size": [
-      8.24,
+      8.46,
       10.08,
-      7.52
+      7.77
     ],
     "min": [
-      -4.12,
+      -4.23,
       0.0,
-      -3.29
+      -3.45
     ],
     "max": [
-      4.12,
+      4.23,
       10.08,
-      4.23
+      4.32
     ],
     "lods": [
       {
         "lod": 0,
-        "tris": 1184,
+        "tris": 1832,
         "materials": [
           "Lib_Brick",
-          "Lib_PaintCream",
-          "Lib_WoodDark",
-          "Lib_Concrete",
           "Lib_ShopGlass",
-          "Lib_Steel",
-          "Lib_SteelDark"
+          "Lib_PaintCream",
+          "Lib_Concrete",
+          "Lib_WoodDark",
+          "Lib_SteelDark",
+          "Lib_Steel"
         ],
         "mesh": "LOD0",
         "fileID": -1633821710574564935
       },
       {
         "lod": 1,
-        "tris": 548,
+        "tris": 1300,
         "materials": [
           "Lib_Brick",
-          "Lib_PaintCream",
-          "Lib_WoodDark",
-          "Lib_Concrete",
           "Lib_ShopGlass",
+          "Lib_PaintCream",
+          "Lib_Concrete",
+          "Lib_WoodDark",
           "Lib_Steel",
           "Lib_SteelDark"
         ],
@@ -24845,13 +25012,13 @@
       },
       {
         "lod": 2,
-        "tris": 428,
+        "tris": 680,
         "materials": [
           "Lib_Brick",
-          "Lib_PaintCream",
-          "Lib_WoodDark",
-          "Lib_Concrete",
           "Lib_ShopGlass",
+          "Lib_PaintCream",
+          "Lib_Concrete",
+          "Lib_WoodDark",
           "Lib_Steel",
           "Lib_SteelDark"
         ],
@@ -24865,13 +25032,13 @@
         "type": "box",
         "center": [
           0,
-          4.65,
-          0
+          4.55,
+          -0.08
         ],
         "size": [
-          7.84,
-          9.14,
-          6.24
+          7.7,
+          8.8,
+          5.9
         ],
         "euler": [
           0,
@@ -24885,10 +25052,10 @@
         "center": [
           0,
           4.4,
-          3.12
+          2.96
         ],
         "size": [
-          7.4,
+          7.2,
           8.0,
           0.08
         ],
@@ -24907,7 +25074,7 @@
           -3.12
         ],
         "size": [
-          7.4,
+          7.2,
           8.0,
           0.08
         ],
@@ -24921,14 +25088,14 @@
         "name": "Climb_SideL",
         "type": "box",
         "center": [
-          -3.92,
+          -3.88,
           4.4,
-          0
+          -0.08
         ],
         "size": [
           0.08,
           8.0,
-          5.800000000000001
+          5.6
         ],
         "euler": [
           0,
@@ -24940,14 +25107,14 @@
         "name": "Climb_SideR",
         "type": "box",
         "center": [
-          3.92,
+          3.88,
           4.4,
-          0
+          -0.08
         ],
         "size": [
           0.08,
           8.0,
-          5.800000000000001
+          5.6
         ],
         "euler": [
           0,
@@ -24960,13 +25127,32 @@
         "type": "box",
         "center": [
           0,
-          0.08,
-          3.6100000000000003
+          0.09,
+          3.62
         ],
         "size": [
-          1.3,
-          0.1,
-          0.64
+          1.55,
+          0.12,
+          0.6
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Canopy",
+        "type": "box",
+        "center": [
+          0,
+          2.52,
+          3.66
+        ],
+        "size": [
+          1.6,
+          0.05,
+          0.62
         ],
         "euler": [
           0,
@@ -24979,13 +25165,13 @@
         "type": "box",
         "center": [
           0,
-          9.42,
-          0
+          9.48,
+          -0.06
         ],
         "size": [
-          8.08,
-          0.1,
-          6.44
+          8.1,
+          0.12,
+          6.4
         ],
         "euler": [
           0,
@@ -24998,13 +25184,13 @@
         "type": "box",
         "center": [
           -2.35,
-          3.105,
-          3.64
+          3.9,
+          3.7
         ],
         "size": [
           1.05,
           0.02,
-          0.05
+          0.08
         ],
         "euler": [
           0,
@@ -25017,11 +25203,11 @@
         "type": "capsule",
         "center": [
           -2.35,
-          4.2,
-          3.96
+          4.97,
+          4.06
         ],
         "radius": 0.012,
-        "height": 0.9,
+        "height": 0.95,
         "direction": 0
       },
       {
@@ -25029,13 +25215,13 @@
         "type": "box",
         "center": [
           -2.35,
-          6.155,
-          3.64
+          6.8,
+          3.7
         ],
         "size": [
           1.05,
           0.02,
-          0.05
+          0.08
         ],
         "euler": [
           0,
@@ -25048,11 +25234,11 @@
         "type": "capsule",
         "center": [
           -2.35,
-          7.25,
-          3.96
+          7.87,
+          4.06
         ],
         "radius": 0.012,
-        "height": 0.9,
+        "height": 0.95,
         "direction": 0
       },
       {
@@ -25061,12 +25247,12 @@
         "center": [
           -2.35,
           0.14,
-          4.12
+          4.16
         ],
         "size": [
-          0.4,
-          0.22,
-          0.16
+          0.38,
+          0.2,
+          0.14
         ],
         "euler": [
           0,
@@ -25079,7 +25265,7 @@
     "vaultable": true,
     "vaultHeight": 1.05,
     "climbNote": "Brick walls are cling. Glass is solid. The escapes are the steel landings on +Z.",
-    "vaultNote": "Escape rail is 1.05 m above the lower landing (deck at 3.15 m, rail top at 4.20 m).",
+    "vaultNote": "Escape rail is 1.05 m above the lower landing (deck at 3.95 m, rail top at 5.00 m).",
     "warnings": [],
     "fbxNames": [
       "LODBoxS",
@@ -25087,7 +25273,7 @@
       "LOD1",
       "LOD2"
     ],
-    "slackCm": 0.42,
+    "slackCm": 0.0,
     "fbx": "Assets/Art/Props/Library/Buildings/WalkUp.fbx"
   },
   {
@@ -25431,5 +25617,648 @@
     ],
     "slackCm": 0.64,
     "fbx": "Assets/Art/Props/Library/Buildings/WoodFence.fbx"
+  },
+  {
+    "name": "FishingBoat",
+    "category": "Harbor",
+    "blurb": "Open fishing skiff, 4.2 m long and 1.5 m across, gunwale at 0.72 m. Bow is -Z. Outboard on the stern.",
+    "size": [
+      1.58,
+      0.89,
+      3.915
+    ],
+    "min": [
+      -0.79,
+      0.03,
+      -2.04
+    ],
+    "max": [
+      0.79,
+      0.92,
+      1.875
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 204,
+        "materials": [
+          "Lib_PaintWhite",
+          "Lib_Wood",
+          "Lib_WoodDark",
+          "Lib_SteelDark",
+          "Lib_Steel",
+          "Lib_Black"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 120,
+        "materials": [
+          "Lib_PaintWhite",
+          "Lib_Wood",
+          "Lib_WoodDark"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_Keel",
+        "type": "box",
+        "center": [
+          0,
+          0.12,
+          0.05
+        ],
+        "size": [
+          0.72,
+          0.12,
+          2.9
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_SideL",
+        "type": "box",
+        "center": [
+          -0.58,
+          0.42,
+          0.1
+        ],
+        "size": [
+          0.035,
+          0.38,
+          2.95
+        ],
+        "euler": [
+          0,
+          -4.0,
+          0
+        ]
+      },
+      {
+        "name": "Col_SideR",
+        "type": "box",
+        "center": [
+          0.58,
+          0.42,
+          0.1
+        ],
+        "size": [
+          0.035,
+          0.38,
+          2.95
+        ],
+        "euler": [
+          0,
+          4.0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Transom",
+        "type": "box",
+        "center": [
+          0,
+          0.4,
+          1.85
+        ],
+        "size": [
+          1.0,
+          0.42,
+          0.035
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Bow",
+        "type": "box",
+        "center": [
+          0,
+          0.36,
+          -1.85
+        ],
+        "size": [
+          0.32,
+          0.36,
+          0.28
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Deck",
+        "type": "box",
+        "center": [
+          0,
+          0.55,
+          0.15
+        ],
+        "size": [
+          0.82,
+          0.025,
+          2.45
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "climbable": false,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "The hull is a solid prop. Not a cling wall.",
+    "vaultNote": "Gunwale is 0.72 m. Under the vault band.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1"
+    ],
+    "slackCm": 0.0,
+    "fbx": "Assets/Art/Props/Library/Harbor/FishingBoat.fbx"
+  },
+  {
+    "name": "HarborShed",
+    "category": "Harbor",
+    "blurb": "Wood shed, 3.6 x 2.8 m, walls at 2.35 m, gable ridge at 3.15 m. Door and a small window face +Z.",
+    "size": [
+      4.0,
+      3.11,
+      3.16
+    ],
+    "min": [
+      -2.0,
+      0.0,
+      -1.58
+    ],
+    "max": [
+      2.0,
+      3.11,
+      1.58
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 156,
+        "materials": [
+          "Lib_Concrete",
+          "Lib_WoodWeather",
+          "Lib_WoodDark",
+          "Lib_ShopGlass",
+          "Lib_Roof"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 144,
+        "materials": [
+          "Lib_Concrete",
+          "Lib_WoodWeather",
+          "Lib_WoodDark",
+          "Lib_Roof"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_Floor",
+        "type": "box",
+        "center": [
+          0,
+          0.04,
+          0
+        ],
+        "size": [
+          3.5500000000000003,
+          0.05,
+          2.75
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Back",
+        "type": "box",
+        "center": [
+          0,
+          1.22,
+          -1.3599999999999999
+        ],
+        "size": [
+          3.2,
+          1.9,
+          0.04
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_SideL",
+        "type": "box",
+        "center": [
+          -1.76,
+          1.22,
+          0
+        ],
+        "size": [
+          0.04,
+          1.9,
+          2.4
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_SideR",
+        "type": "box",
+        "center": [
+          1.76,
+          1.22,
+          0
+        ],
+        "size": [
+          0.04,
+          1.9,
+          2.4
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_FrontL",
+        "type": "box",
+        "center": [
+          -0.85,
+          1.22,
+          1.3599999999999999
+        ],
+        "size": [
+          1.05,
+          1.7,
+          0.03
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Door",
+        "type": "box",
+        "center": [
+          0.15,
+          1.05,
+          1.42
+        ],
+        "size": [
+          0.78,
+          1.65,
+          0.025
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "climbable": true,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "The board walls are cling. The door is closed.",
+    "vaultNote": "No rail. Wall top is 2.35 m.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1"
+    ],
+    "slackCm": 2.32,
+    "fbx": "Assets/Art/Props/Library/Harbor/HarborShed.fbx"
+  },
+  {
+    "name": "Pond",
+    "category": "Park",
+    "blurb": "Sunken pond about 10.7 x 7.7 m over the banks. Water sits 0.32 m below grade. Grass crest, dirt slope, stone lip, and reeds. The mesh continues 0.52 m below the pivot.",
+    "size": [
+      10.537,
+      0.86,
+      7.7
+    ],
+    "min": [
+      -5.269,
+      -0.52,
+      -3.85
+    ],
+    "max": [
+      5.269,
+      0.34,
+      3.85
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 748,
+        "materials": [
+          "Lib_FoliageLite",
+          "Lib_Water",
+          "Lib_Concrete",
+          "Lib_Soil",
+          "Lib_FoliageDark",
+          "Lib_PaintTeal",
+          "Lib_Foliage"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 336,
+        "materials": [
+          "Lib_FoliageLite",
+          "Lib_Water",
+          "Lib_Concrete"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_BankN",
+        "type": "box",
+        "center": [
+          0.0,
+          -0.22,
+          3.55
+        ],
+        "size": [
+          1.0,
+          0.16,
+          0.28
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_BankS",
+        "type": "box",
+        "center": [
+          0.0,
+          -0.22,
+          -3.55
+        ],
+        "size": [
+          1.0,
+          0.16,
+          0.28
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_BankE",
+        "type": "box",
+        "center": [
+          4.55,
+          -0.22,
+          0.0
+        ],
+        "size": [
+          0.28,
+          0.16,
+          0.8
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_BankW",
+        "type": "box",
+        "center": [
+          -4.55,
+          -0.22,
+          0.0
+        ],
+        "size": [
+          0.28,
+          0.16,
+          0.8
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "climbable": false,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "The bank is a slope, not a cling wall.",
+    "vaultNote": "No rail. Water has no collider.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1"
+    ],
+    "slackCm": 0.0,
+    "fbx": "Assets/Art/Props/Library/Park/Pond.fbx"
+  },
+  {
+    "name": "Rowboat",
+    "category": "Harbor",
+    "blurb": "Rowboat, 2.6 m long and 0.95 m across, gunwale at 0.42 m. Bow is -Z. Two seats. Oars rest across the gunwales.",
+    "size": [
+      1.4,
+      0.49,
+      2.26
+    ],
+    "min": [
+      -0.675,
+      0.02,
+      -1.19
+    ],
+    "max": [
+      0.725,
+      0.51,
+      1.07
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 164,
+        "materials": [
+          "Lib_Wood",
+          "Lib_WoodDark"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 108,
+        "materials": [
+          "Lib_Wood",
+          "Lib_WoodDark"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_Keel",
+        "type": "box",
+        "center": [
+          0,
+          0.08,
+          0
+        ],
+        "size": [
+          0.46,
+          0.08,
+          1.65
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_SideL",
+        "type": "box",
+        "center": [
+          -0.36,
+          0.24,
+          0.02
+        ],
+        "size": [
+          0.025,
+          0.18,
+          1.75
+        ],
+        "euler": [
+          0,
+          -6.0,
+          0
+        ]
+      },
+      {
+        "name": "Col_SideR",
+        "type": "box",
+        "center": [
+          0.36,
+          0.24,
+          0.02
+        ],
+        "size": [
+          0.025,
+          0.18,
+          1.75
+        ],
+        "euler": [
+          0,
+          6.0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Transom",
+        "type": "box",
+        "center": [
+          0,
+          0.22,
+          1.05
+        ],
+        "size": [
+          0.5,
+          0.2,
+          0.028
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Bow",
+        "type": "box",
+        "center": [
+          0,
+          0.2,
+          -1.05
+        ],
+        "size": [
+          0.2,
+          0.16,
+          0.2
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "climbable": false,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "Too small to cling.",
+    "vaultNote": "Gunwale is 0.42 m. Not a vault.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1"
+    ],
+    "slackCm": 0.0,
+    "fbx": "Assets/Art/Props/Library/Harbor/Rowboat.fbx"
   }
 ]
