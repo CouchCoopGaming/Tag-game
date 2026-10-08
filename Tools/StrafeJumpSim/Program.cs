@@ -748,6 +748,8 @@ static class Program
             return 1;
         }
 
+        Tag.Art.VerbExitStills.Write(Path.Combine(RepoRoot(), "Docs", "AnimStills", "pass2"));
+
         Console.WriteLine("solo grapple on; opponent and couch off; jet off; clips and locks held");
         return 0;
     }

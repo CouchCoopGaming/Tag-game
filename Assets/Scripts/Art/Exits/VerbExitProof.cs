@@ -89,6 +89,7 @@ namespace Tag.Art
             if (!VerbExitPick.CancelsState(VerbExitId.Punch, true, false, false, false, false, false)) return false;
 
             if (!LandingRollPose.Holds()) return false;
+            if (!VerbExitChain.Holds()) return false;
             if (ChaseCam.FovPop != 0f || ChaseCam.Shake != 0f || ChaseCam.SlowMo != 0f) return false;
 
             MovementConfig cfg = ScriptableObject.CreateInstance<MovementConfig>();
@@ -122,7 +123,8 @@ namespace Tag.Art
                 + " punch lunge zip launch grapple-arrive grapple-release"
                 + " stagger tagback softland"
                 + " roll=" + LandingRollPose.Seconds.ToString("0.00")
-                + " input-waits=0";
+                + " input-waits=0"
+                + " " + VerbExitChain.ProofLine();
         }
     }
 }

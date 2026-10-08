@@ -42,6 +42,13 @@ namespace Tag.Art
         bool _shoulderLeft;
         float _travelYaw;
         bool _dusted;
+        VerbExitSample _shown;
+        VerbExitSample _from;
+        float _blendAge;
+        bool _chain;
+        int _alternate;
+        bool _onLeftWall;
+        bool _trailLeft;
 
         bool _primed;
         MoveState _prevState;
@@ -118,7 +125,7 @@ namespace Tag.Art
                 if (done)
                     Clear();
                 else
-                    Apply(w);
+                    Apply(w, dt);
             }
 
             Remember();
@@ -132,6 +139,9 @@ namespace Tag.Art
             float vy = _motor.Velocity.y;
             VerbExitId pick = VerbExitId.None;
 
+            if (st == MoveState.WallRun || st == MoveState.WallClimb)
+                _onLeftWall = _motor.WallLeft;
+
             bool wasWall = _prevState == MoveState.WallRun || _prevState == MoveState.WallClimb;
             if (wasWall && st != _prevState)
             {
@@ -144,6 +154,7 @@ namespace Tag.Art
                 if (wall != VerbExitId.None)
                 {
                     _stepDown = VerbExitPick.StepDown(grounded, vy);
+                    _shoulderLeft = _onLeftWall;
                     pick = wall;
                 }
             }
@@ -152,15 +163,22 @@ namespace Tag.Art
             {
                 _mantleFromClimb = _prevState == MoveState.WallClimb;
                 _mantlePlanar = _motor.HorizontalSpeed;
+                _trailLeft = NextLead();
             }
             if (_prevState == MoveState.Mantle && st != MoveState.Mantle)
+            {
+                _shoulderLeft = _trailLeft;
                 pick = VerbExitPick.MantleLeave(_mantleFromClimb, _mantlePlanar);
+            }
 
             if (_prevState == MoveState.Slide && st != MoveState.Slide)
             {
                 bool intoAir = st == MoveState.Air || st == MoveState.Jet;
                 if (VerbExitPick.PlaySlideExit(intoAir, vy))
+                {
+                    _shoulderLeft = NextLead();
                     pick = VerbExitId.Slide;
+                }
             }
 
             if (_prevDash && !_motor.IsAirDashing)
@@ -190,7 +208,7 @@ namespace Tag.Art
                 if (LandingRollPose.Triggered(impact))
                 {
                     bool still = LandingRollPose.Stationary(planar);
-                    _shoulderLeft = !still && ShoulderLeft();
+                    _shoulderLeft = !still && NextLead();
                     _travelYaw = still ? 0f : TravelYaw();
                     _fallScale = 1f;
                     _stepDown = false;
@@ -207,7 +225,7 @@ namespace Tag.Art
                 }
                 else if (impact >= LandingRollPose.SoftFloor)
                 {
-                    _fallScale = LandingRollPose.SoftScale(impact);
+                    _fallScale = LandingRollPose.TierScale(impact);
                     _travelYaw = 0f;
                     _shoulderLeft = false;
                     pick = VerbExitId.SoftLand;
@@ -252,17 +270,27 @@ namespace Tag.Art
         void Begin(VerbExitId id)
         {
             if (id == VerbExitId.None) return;
+            bool chaining = _id != VerbExitId.None;
+            if (chaining)
+            {
+                _from = _shown;
+                _blendAge = 0f;
+                _chain = true;
+            }
+            else
+                _chain = false;
             _id = id;
             _age = 0f;
             _cancel = -1f;
             _dusted = false;
             if (id != VerbExitId.SoftLand && id != VerbExitId.Roll && id != VerbExitId.RollAbsorb)
                 _fallScale = 1f;
-            if (id != VerbExitId.Roll)
-            {
-                _travelYaw = 0f;
+            bool keepSide = id == VerbExitId.Roll || id == VerbExitId.WallRun
+                || id == VerbExitId.Vault || id == VerbExitId.Slide || id == VerbExitId.ClimbTopOut;
+            if (!keepSide)
                 _shoulderLeft = false;
-            }
+            if (id != VerbExitId.Roll)
+                _travelYaw = 0f;
         }
 
         void ArmCancel()
@@ -279,33 +307,67 @@ namespace Tag.Art
             _dusted = false;
         }
 
-        void Apply(float w)
+        void Apply(float w, float dt)
         {
             if (w <= 0.001f)
                 return;
-            VerbExitSample s = VerbExitClips.At(_id, Unit(_age), _fallScale, _stepDown, _shoulderLeft);
-            Blend(_hips, _hips0, s.Hip, s.HipYaw, s.HipRoll, w);
-            Blend(_spine, _spine0, s.Spine, s.SpineYaw, s.SpineRoll, w);
-            Blend(_head, _head0, s.Head, s.HeadYaw, 0f, w);
-            Blend(_uaL, _uaL0, s.ArmPitchL, s.ArmYawL, s.ArmRollL, w);
-            Blend(_uaR, _uaR0, s.ArmPitchR, s.ArmYawR, s.ArmRollR, w);
-            Blend(_laL, _laL0, s.ElbowL, 0f, 0f, w);
-            Blend(_laR, _laR0, s.ElbowR, 0f, 0f, w);
-            Blend(_ulL, _ulL0, s.ThighL, s.ThighYawL, 0f, w);
-            Blend(_ulR, _ulR0, s.ThighR, s.ThighYawR, 0f, w);
-            Blend(_llL, _llL0, s.KneeL, 0f, 0f, w);
-            Blend(_llR, _llR0, s.KneeR, 0f, 0f, w);
-            Blend(_ftL, _ftL0, s.FootL, 0f, 0f, w);
-            Blend(_ftR, _ftR0, s.FootR, 0f, 0f, w);
-            // EaseFacing already wrote the yaw this frame. Pitch, roll, and the
-            // roll's travel yaw sit on top of it for this frame only.
-            transform.localRotation = transform.localRotation
-                * Quaternion.Euler(s.RootPitch * w, _travelYaw * w, s.RootRoll * w);
-            if (s.Drop > 0f)
+            float show = w;
+            if (!_chain)
             {
+                float enter = _age / VerbExitChain.BlendSeconds;
+                if (enter < 0f) enter = 0f;
+                if (enter > 1f) enter = 1f;
+                show *= PoseHandoff.Ease(enter);
+            }
+            if (show <= 0.001f)
+                return;
+            VerbExitSample target = VerbExitClips.At(_id, Unit(_age), _fallScale, _stepDown, _shoulderLeft);
+            VerbExitSample s = target;
+            if (_chain)
+            {
+                _blendAge += dt;
+                s = VerbExitChain.Blend(_from, target, _blendAge);
+                if (_blendAge >= VerbExitChain.BlendSeconds)
+                    _chain = false;
+            }
+            _shown = s;
+            Blend(_hips, _hips0, s.Hip, s.HipYaw, s.HipRoll, show);
+            Blend(_spine, _spine0, s.Spine, s.SpineYaw, s.SpineRoll, show);
+            Blend(_head, _head0, s.Head, s.HeadYaw, 0f, show);
+            Blend(_uaL, _uaL0, s.ArmPitchL, s.ArmYawL, s.ArmRollL, show);
+            Blend(_uaR, _uaR0, s.ArmPitchR, s.ArmYawR, s.ArmRollR, show);
+            Blend(_laL, _laL0, s.ElbowL, 0f, 0f, show);
+            Blend(_laR, _laR0, s.ElbowR, 0f, 0f, show);
+            Blend(_ulL, _ulL0, s.ThighL, s.ThighYawL, 0f, show);
+            Blend(_ulR, _ulR0, s.ThighR, s.ThighYawR, 0f, show);
+            Blend(_llL, _llL0, s.KneeL, 0f, 0f, show);
+            Blend(_llR, _llR0, s.KneeR, 0f, 0f, show);
+            Blend(_ftL, _ftL0, s.FootL, 0f, 0f, show);
+            Blend(_ftR, _ftR0, s.FootR, 0f, 0f, show);
+            // EaseFacing already wrote the yaw this frame. The exit sits on top of it.
+            if (_id == VerbExitId.Roll)
+            {
+                float spin = s.RootSpin * show;
+                Vector3 axis = LandingRollPose.Axis(_shoulderLeft);
+                Quaternion q = Quaternion.AngleAxis(spin, axis);
+                transform.localRotation = transform.localRotation
+                    * Quaternion.Euler(0f, _travelYaw * show, 0f)
+                    * q;
                 Vector3 p = transform.localPosition;
-                p.y -= s.Drop * w;
+                p += LandingRollPose.OrbitDelta(LandingRollPose.Pivot(_shoulderLeft), axis, spin);
+                p.y += LandingRollPose.FloorShift(s, spin, _shoulderLeft);
                 transform.localPosition = p;
+            }
+            else
+            {
+                transform.localRotation = transform.localRotation
+                    * Quaternion.Euler(s.RootPitch * show, 0f, s.RootRoll * show);
+                if (s.Drop > 0f)
+                {
+                    Vector3 p = transform.localPosition;
+                    p.y -= s.Drop * show;
+                    transform.localPosition = p;
+                }
             }
             MaybeDust(s);
         }
@@ -415,11 +477,18 @@ namespace Tag.Art
             return Mathf.Atan2(cross, dot) * Mathf.Rad2Deg;
         }
 
-        bool ShoulderLeft()
+        bool NextLead()
         {
-            Vector3 v = _motor.Velocity;
-            Vector3 r = _motor.transform.right;
-            return v.x * r.x + v.z * r.z < -0.35f;
+            float lateral = 0f;
+            if (_motor != null)
+            {
+                Vector3 v = _motor.Velocity;
+                Vector3 r = _motor.transform.right;
+                lateral = v.x * r.x + v.z * r.z;
+            }
+            if (lateral >= -0.45f && lateral <= 0.45f)
+                _alternate = _alternate == 0 ? 1 : 0;
+            return LandingRollPose.LeadLeft(lateral, _alternate);
         }
 
         void CacheBones()

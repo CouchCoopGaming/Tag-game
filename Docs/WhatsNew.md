@@ -189,3 +189,13 @@ Each move now has a short recovery you can see as it ends. The body eases back i
 - Ordinary landings: a knee bend that gets deeper as the fall gets faster.
 
 A fall that reaches 65% of terminal speed (36.50 m/s down, a drop of about 18.69 m from a dead stop at the current fall gravity) plays a shoulder roll along your travel. Standing almost still at that speed is a short crouch instead. You keep your speed. There is no extra stun. The camera does not roll. A small dust puff and the hard-land sound mark the shoulder. Try it: fall from high enough that the drop is about 19 meters, land while running, then land again with no stick. Jump during the roll and the jump should win immediately.
+
+## Deeper exits and a real shoulder roll
+
+The recoveries from the last pass now move like a person changing their mind, and the fast landing is a parkour roll instead of a crouch with a tip.
+
+- The roll turns the mesh a full circle over the lead shoulder. The chin tucks, the lead arm sweeps, the shoulder touches, the back crosses, the legs come over, a foot plants, and you are running at the speed you landed with. The body stays on the ground. The capsule does not roll, and the camera does not roll. Try it: fall about 19 meters while running, and watch the shoulder. Strafe as you land and the other shoulder leads. Land again with the stick straight and the lead shoulder swaps.
+- Standing still at that same fall puts both hands on the ground, then you stand up. Try it: the same drop, but let go of the stick before you hit.
+- Shorter falls have three landings. A small hop keeps the chest up. A medium fall bends the knees. A hard fall, still under the roll, brings the hands down near the ground. None of them change your speed. Try it: step off a curb, then a first-floor roof, then something just under the roll.
+- Leaving a wall, a vault, a slide, or a climb plays the matching side. The arms follow the chest, and the head is the last thing to settle. Try it: wall-run the left wall and the right wall, then vault and pop into a slide. The slide should arrive without a snap.
+- Jump during the roll and the jump shows within a blink. The roll does not make you wait.

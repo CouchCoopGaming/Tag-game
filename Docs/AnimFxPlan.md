@@ -1,6 +1,16 @@
 # Animation and FX plan
 
-Pass 1 is the exit poses and the terminal landing roll. Later passes add FX on top. Exits and the roll stay visual: they do not change speed, stun, coyote, cling, slide, or the camera.
+Pass 1 is the exit poses and the terminal landing roll. Pass 2 deepens those poses. FX waits until pass 3. Exits and the roll stay visual: they do not change speed, stun, coyote, cling, slide, or the camera.
+
+## Pass 2 (this branch)
+
+- The landing roll is a full turn of the mesh about the line from the lead shoulder to the opposite hip. Chin tucks, the lead arm sweeps, the shoulder meets the ground, the back crosses, the legs fold over, a foot plants, and the stride takes the speed you already have. The lowest point of the mesh sits on the floor. The capsule does not move.
+- Strafe picks the lead shoulder. A straight landing alternates left and right.
+- A near-stop at the same fall speed puts both hands on the ground, then stands.
+- Landings under the roll gate are three reads: a light hop, a medium knee bend, and a heavy absorb with the hands near the ground.
+- Each exit eases through its keys. The arms lag the torso. The head settles last. Wall-run, vault, slide, and climb top-out mirror for the other side.
+- A vault into a slide, a wall jump into the next wall run, and a roll into a jump ease across. They do not pop. Jump still peels the roll inside 0.08 s.
+- Stick figures with a floor line are in `Docs/AnimStills/pass2/`.
 
 ## Pass 1 (this branch)
 
@@ -11,9 +21,11 @@ Pass 1 is the exit poses and the terminal landing roll. Later passes add FX on t
 
 ## FX queue
 
+FX waits for pass 3. Do not start it until the animation depth above is in.
+
 ### 1. Running dust clouds
 
-Next FX item. Foot dust while running, pooled, no allocations on the hot path.
+First FX item, after pass 2. Foot dust while running, pooled, no allocations on the hot path.
 
 - Size, color, and density scale with planar speed. A walk is a light puff. A sprint is a thicker cloud.
 - Surface picks the look: grass, dirt/sand, concrete/asphalt, wood, metal, wet. Use the existing footstep surface names where they already match, and add dirt/sand, asphalt, and wet as labels on top of that map.

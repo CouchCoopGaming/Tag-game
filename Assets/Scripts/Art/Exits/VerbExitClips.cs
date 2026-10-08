@@ -1,3 +1,5 @@
+using UnityEngine;
+
 namespace Tag.Art
 {
     /// <summary>
@@ -8,15 +10,71 @@ namespace Tag.Art
     public static class VerbExitClips
     {
         public const bool RootMotion = false;
+        /// <summary>Arms trail the torso. The head trails further and settles last.</summary>
+        public const float ArmLag = 0.10f;
+        public const float HeadLag = 0.16f;
 
         public static VerbExitSample At(VerbExitId id, float u, float fallScale, bool stepDown, bool shoulderLeft)
         {
-            if (id == VerbExitId.Roll)
-                return LandingRollPose.RollAt(u, shoulderLeft);
-            if (id == VerbExitId.RollAbsorb)
-                return LandingRollPose.AbsorbAt(u);
             if (u < 0f) u = 0f;
             if (u > 1f) u = 1f;
+            if (id == VerbExitId.Roll || id == VerbExitId.RollAbsorb)
+                return LagRoll(id, u, shoulderLeft);
+            float e = PoseHandoff.Ease(u);
+            float armU = e - ArmLag;
+            float headU = e - HeadLag;
+            if (armU < 0f) armU = 0f;
+            if (headU < 0f) headU = 0f;
+            VerbExitSample torso = Raw(id, e, fallScale, stepDown, shoulderLeft);
+            VerbExitSample arms = Raw(id, armU, fallScale, stepDown, shoulderLeft);
+            VerbExitSample head = Raw(id, headU, fallScale, stepDown, shoulderLeft);
+            torso.ArmPitchL = arms.ArmPitchL;
+            torso.ArmPitchR = arms.ArmPitchR;
+            torso.ArmYawL = arms.ArmYawL;
+            torso.ArmYawR = arms.ArmYawR;
+            torso.ArmRollL = arms.ArmRollL;
+            torso.ArmRollR = arms.ArmRollR;
+            torso.ElbowL = arms.ElbowL;
+            torso.ElbowR = arms.ElbowR;
+            torso.Head = head.Head;
+            torso.HeadYaw = head.HeadYaw;
+            float wobble = Mathf.Sin(e * 3.14159265f);
+            torso.HipYaw += 8f * wobble;
+            return torso;
+        }
+
+        static VerbExitSample LagRoll(VerbExitId id, float u, bool shoulderLeft)
+        {
+            float armU = u - 0.08f;
+            float headU = u - 0.12f;
+            if (armU < 0f) armU = 0f;
+            if (headU < 0f) headU = 0f;
+            VerbExitSample torso = id == VerbExitId.Roll
+                ? LandingRollPose.RollAt(u, shoulderLeft)
+                : LandingRollPose.AbsorbAt(u);
+            VerbExitSample arms = id == VerbExitId.Roll
+                ? LandingRollPose.RollAt(armU, shoulderLeft)
+                : LandingRollPose.AbsorbAt(armU);
+            VerbExitSample head = id == VerbExitId.Roll
+                ? LandingRollPose.RollAt(headU, shoulderLeft)
+                : LandingRollPose.AbsorbAt(headU);
+            torso.ArmPitchL = arms.ArmPitchL;
+            torso.ArmPitchR = arms.ArmPitchR;
+            torso.ArmYawL = arms.ArmYawL;
+            torso.ArmYawR = arms.ArmYawR;
+            torso.ArmRollL = arms.ArmRollL;
+            torso.ArmRollR = arms.ArmRollR;
+            torso.ElbowL = arms.ElbowL;
+            torso.ElbowR = arms.ElbowR;
+            torso.Head = head.Head;
+            torso.HeadYaw = head.HeadYaw;
+            return torso;
+        }
+
+        static VerbExitSample Raw(VerbExitId id, float u, float fallScale, bool stepDown, bool shoulderLeft)
+        {
+            if (id == VerbExitId.SoftLand)
+                return LandingRollPose.LandAt(u, fallScale);
             VerbExitSample a;
             VerbExitSample b;
             VerbExitSample c;
@@ -24,9 +82,8 @@ namespace Tag.Art
             VerbExitSample s = u < 0.5f
                 ? VerbExitSample.Lerp(a, b, u * 2f)
                 : VerbExitSample.Lerp(b, c, (u - 0.5f) * 2f);
-            if (id == VerbExitId.SoftLand)
-                s = VerbExitSample.ScaleBend(s, fallScale);
-            if (shoulderLeft && id == VerbExitId.WallRun)
+            if (shoulderLeft && (id == VerbExitId.WallRun || id == VerbExitId.Vault
+                || id == VerbExitId.Slide || id == VerbExitId.ClimbTopOut))
                 s = VerbExitSample.Mirror(s);
             return s;
         }

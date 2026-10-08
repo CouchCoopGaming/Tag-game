@@ -17,6 +17,8 @@ namespace Tag.Art
         public float ElbowL, ElbowR;
         public float FootL, FootR;
         public float RootPitch, RootRoll, Drop;
+        /// <summary>Degrees about the diagonal shoulder axis. 0 and 360 are the same stand.</summary>
+        public float RootSpin;
 
         public static VerbExitSample Lerp(VerbExitSample a, VerbExitSample b, float t)
         {
@@ -51,6 +53,7 @@ namespace Tag.Art
             s.RootPitch = a.RootPitch * u + b.RootPitch * t;
             s.RootRoll = a.RootRoll * u + b.RootRoll * t;
             s.Drop = a.Drop * u + b.Drop * t;
+            s.RootSpin = a.RootSpin * u + b.RootSpin * t;
             return s;
         }
 
@@ -129,7 +132,42 @@ namespace Tag.Art
             d += Abs(a.ElbowR - b.ElbowR);
             d += Abs(a.RootPitch - b.RootPitch);
             d += Abs(a.RootRoll - b.RootRoll);
+            d += Abs(a.RootSpin - b.RootSpin);
             return d;
+        }
+
+        /// <summary>Largest single-channel step. A chain uses this to catch a one-frame pop.</summary>
+        public static float MaxStep(VerbExitSample a, VerbExitSample b)
+        {
+            float m = 0f;
+            m = Bigger(m, a.Hip - b.Hip);
+            m = Bigger(m, a.HipYaw - b.HipYaw);
+            m = Bigger(m, a.HipRoll - b.HipRoll);
+            m = Bigger(m, a.Spine - b.Spine);
+            m = Bigger(m, a.SpineYaw - b.SpineYaw);
+            m = Bigger(m, a.SpineRoll - b.SpineRoll);
+            m = Bigger(m, a.Head - b.Head);
+            m = Bigger(m, a.HeadYaw - b.HeadYaw);
+            m = Bigger(m, a.ThighL - b.ThighL);
+            m = Bigger(m, a.ThighR - b.ThighR);
+            m = Bigger(m, a.KneeL - b.KneeL);
+            m = Bigger(m, a.KneeR - b.KneeR);
+            m = Bigger(m, a.ArmPitchL - b.ArmPitchL);
+            m = Bigger(m, a.ArmPitchR - b.ArmPitchR);
+            m = Bigger(m, a.ArmYawL - b.ArmYawL);
+            m = Bigger(m, a.ArmYawR - b.ArmYawR);
+            m = Bigger(m, a.ElbowL - b.ElbowL);
+            m = Bigger(m, a.ElbowR - b.ElbowR);
+            m = Bigger(m, a.RootPitch - b.RootPitch);
+            m = Bigger(m, a.RootRoll - b.RootRoll);
+            m = Bigger(m, a.RootSpin - b.RootSpin);
+            return m;
+        }
+
+        static float Bigger(float m, float d)
+        {
+            if (d < 0f) d = -d;
+            return d > m ? d : m;
         }
 
         static float Abs(float v)
