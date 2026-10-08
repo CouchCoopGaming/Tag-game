@@ -1488,8 +1488,8 @@ def bank_degrees(spin):
     if spin > 360:
         spin = 360
     if spin <= 110.0:
-        return 122.0 * math.sin(spin / 110.0 * math.pi * 0.5)
-    return 122.0 * math.sin((360.0 - spin) / 250.0 * math.pi * 0.5)
+        return 135.0 * math.sin(spin / 110.0 * math.pi * 0.5)
+    return 135.0 * math.sin((360.0 - spin) / 250.0 * math.pi * 0.5)
 
 
 def main():

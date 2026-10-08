@@ -152,6 +152,31 @@ Pass 1 is the exit poses and the terminal landing roll. Pass 2 deepens those pos
 - Wall run uses a shorter plant-leg roll (-20°, run only; exits keep -36°) and swings the inner arm on bone Z (InnerRoll -12° plus the 4–8° gait roll). Yaw still only twists along the arm. Sampled hip clearance off the foot's wall face is 29.4–41.0 cm on the left and 33.0–42.1 cm on the right. The tightest left frame is 29.4 cm at t=0.2. No piece penetrates either wall.
 - Checker, both wall sides included: `no-clip clips=36 frames=329 worldMax=0.00 poseMax=0.49 rigMax=3.40 poseFails=0 rigJoint=322`. Grey-scene strips with the prop are in `Docs/AnimStills/pass16/addon/`. Gameplay proof lines stayed byte-identical with the pass 16 sim.
 
+## Pass 16 C2 (wall clearance and shoulder plant)
+
+C2 measured the runtime poses. This pass re-authored the wall run and the landing roll against that spec.
+
+Wall run, both sides, every 30 fps frame of the cycle. The wall face is the stepping sole. Nothing else is inside that plane.
+
+- Hips sit 29.9–30.2 cm off the left wall and 29.8–33.1 cm off the right wall.
+- The torso leans out 12.9°. The run's ±15° lean had been applied with the sign that cancelled the hip roll, so the chest was upright and the shoulder rolled toward the wall. The spine roll for that 15° band is flipped. Wall-jump lean is left alone.
+- The nearest non-sole piece is the plant shin, 1.2–4.1 cm outside the face. World penetration is 0.
+- The wall-side arm swings on bone Z (`InnerRoll` ±10° with the step). Yaw still only twists along the arm. The trail thigh is abducted 14° so the outward lean does not put it through the spine.
+
+Landing roll. Elbows in the tuck sit at an interior angle of about 100–107° (euler −72°/−66°). Thighs stay abducted. The bank peaks at 135° near t=0.16. Measured on the banked mesh, lowest vertex on the floor:
+
+- t=0.133: lead shoulder on the floor, head 16.9 cm up, chest 19.5 cm, hip 22.1 cm, foot 60 cm.
+- t=0.167: lead shoulder on the floor, head 11.4 cm up, chest 18.5 cm, hip 27.2 cm.
+- t=0.520: foot on the floor, lead shoulder 1.37 m up.
+
+The shoulder is the contact from t=0.133 through t=0.300. The back and the opposite hip do not take a turn on the floor. On this mannequin the shoulder mesh, and then the head, stick out past the spine and the pelvis on every axis the roll is allowed to use, so the curve comes back to the feet before the head becomes the contact. The closest the head gets while the shoulder is still down is 2.8 cm at t=0.267. Duration stays 0.52 s, the trigger stays 65% of terminal, root motion stays off.
+
+Gameplay proof lines stayed byte-identical with the previous sim, including `landing-roll` and `verb-exit` `roll=0.52`. The rig is untouched.
+
+Checker, both wall sides and the roll included: `no-clip clips=36 frames=329 worldMax=0.00 poseMax=0.49 rigMax=3.40 poseFails=0 rigJoint=322`. Absolute depth on the roll is pose 0.33 cm and rig 2.81 cm. On the left wall run it is pose 0.35 cm and rig 2.09 cm. On the right wall run it is pose 0.29 cm and rig 2.22 cm. World depth is 0 on all three. `poseFails` is 0. The elbow hinge overlap stays in `rigJoint`.
+
+3/4 and side sheets, grey scene, prop visible, red only on penetrating volume: `Docs/AnimStills/pass16/c2/`.
+
 Pass 3 mockups stay in `Docs/AnimStills/pass3/`.
 
 ## FX queue

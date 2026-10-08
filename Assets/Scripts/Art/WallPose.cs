@@ -319,6 +319,38 @@ namespace Tag.Art
         }
 
         /// <summary>
+        /// Spine roll the bones actually use. Run lean of ±15° was applied with the
+        /// sign that rolls the chest into the wall. Flipping that one band leans
+        /// the torso out. Wall-jump lean stays on its own value.
+        /// </summary>
+        public static float SpineLean(float leanZ)
+        {
+            float abs = leanZ < 0f ? -leanZ : leanZ;
+            if (abs > RunTilt - 0.6f && abs < RunTilt + 0.6f)
+                return -leanZ;
+            return leanZ;
+        }
+
+        /// <summary>
+        /// Degrees added against the plant roll. Keyed on the plant leg's phase
+        /// so the hip mesh stays near 30 cm from the sole's wall face.
+        /// </summary>
+        public static float RunReachTrim(float phase)
+        {
+            const float turn = 6.2831853f;
+            float u = phase % turn;
+            if (u < 0f) u += turn;
+            float[] at = { 0f, 0.87f, 1.78f, 2.65f, 3.52f, 4.43f, 5.30f, 6.18f, 6.2831853f };
+            float[] trim = { 4.8f, 6.2f, 1.8f, 6.7f, 6.1f, 2.8f, -0.4f, 4.1f, 4.8f };
+            int i = 1;
+            while (i < at.Length && at[i] < u) i++;
+            if (i >= at.Length) return trim[trim.Length - 1];
+            float span = at[i] - at[i - 1];
+            float t = span > 0.001f ? (u - at[i - 1]) / span : 0f;
+            return trim[i - 1] + (trim[i] - trim[i - 1]) * t;
+        }
+
+        /// <summary>
         /// Same stride as the ground gait at the locked wall-run speed, rolled off the wall.
         /// The inner hand stays low and out, brushing the wall. The outer arm opposes the outer thigh.
         /// </summary>
@@ -351,10 +383,19 @@ namespace Tag.Art
             // test then reads the upper arm as inside the surface.
             if (wallLeft && kneeL < -40f) kneeL = -40f;
             if (!wallLeft && kneeR < -40f) kneeR = -40f;
-            float rollL = wallLeft ? RunPlantRoll : 0f;
-            float rollR = wallLeft ? 0f : -RunPlantRoll;
+            // The plant foot's gait swings its sole in and out. Trim that reach so
+            // the hip mesh stays about 30 cm off the wall on every step.
+            float plantPhase = wallLeft ? phase : phase + pi;
+            float trim = RunReachTrim(plantPhase);
+            // The outward chest lean meets the trail thigh. A short abduction keeps that pair apart.
+            const float outerClear = 14f;
+            float rollL = wallLeft ? RunPlantRoll + trim : -outerClear;
+            float rollR = wallLeft ? outerClear : -RunPlantRoll - trim;
             float footL = wallLeft ? 6f : GaitBlend.SoleLevelDeg(thighL, kneeL);
             float footR = wallLeft ? GaitBlend.SoleLevelDeg(thighR, kneeR) : 6f;
+            // Bone Z abducts. Yaw only twists along the arm. Swing out and back,
+            // staying on the wall side of the torso so the upper arm misses the chest.
+            float swung = InnerRoll + sin * 10f;
             if (wallLeft)
             {
                 return new Sample
@@ -369,7 +410,7 @@ namespace Tag.Art
                     ArmPitchR = outerPitch,
                     ArmYawL = InnerYaw,
                     ArmYawR = -OuterYaw,
-                    ArmRollL = InnerRoll,
+                    ArmRollL = swung,
                     ArmRollR = 0f,
                     ElbowL = InnerElbow,
                     ElbowR = outerElbow,
@@ -395,7 +436,7 @@ namespace Tag.Art
                 ArmYawL = OuterYaw,
                 ArmYawR = -InnerYaw,
                 ArmRollL = 0f,
-                ArmRollR = -InnerRoll,
+                ArmRollR = -swung,
                 ElbowL = outerElbow,
                 ElbowR = InnerElbow,
                 Hip = RunHip,

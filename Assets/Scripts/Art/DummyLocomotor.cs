@@ -15832,7 +15832,7 @@ namespace Tag.Art
             _uaRT = _uaR0 * Quaternion.Euler(pose.ArmPitchR, pose.ArmYawR, -armZ + pose.ArmRollR);
             _laLT = _laL0 * Quaternion.Euler(pose.ElbowL, 0f, 0f);
             _laRT = _laR0 * Quaternion.Euler(pose.ElbowR, 0f, 0f);
-            _spineT = _spine0 * Quaternion.Euler(pose.Spine, 0f, pose.LeanZ);
+            _spineT = _spine0 * Quaternion.Euler(pose.Spine, 0f, WallPose.SpineLean(pose.LeanZ));
             _hipsT = _hips0 * Quaternion.Euler(pose.Hip, 0f, -pose.LeanZ * WallPose.HipRollShare);
             _headT = _head0 * Quaternion.Euler(pose.Head, 0f, -pose.LeanZ * WallPose.HeadRollShare);
         }

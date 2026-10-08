@@ -106,9 +106,10 @@ namespace Tag.Art
             // Peak on the lead shoulder. Past this the head, not the back, becomes
             // the contact on this rig, so the turn comes back up onto the feet.
             const float halfPi = 1.5707963f;
+            // 135° puts the lead shoulder on the floor. Past ~150° the head, not the back, is the contact.
             if (spin <= 110f)
-                return 122f * Mathf.Sin(spin / 110f * halfPi);
-            return 122f * Mathf.Sin((360f - spin) / 250f * halfPi);
+                return 135f * Mathf.Sin(spin / 110f * halfPi);
+            return 135f * Mathf.Sin((360f - spin) / 250f * halfPi);
         }
 
         public static float SpinAt(float u)
@@ -325,8 +326,8 @@ namespace Tag.Art
             if (spin < 0f) spin = 0f;
             if (spin > 360f) spin = 360f;
             // Measured at 30 fps on the banked mesh: the drop that puts the lowest vertex on the floor.
-            float[] at = { 0f, 23f, 46f, 69f, 92f, 116f, 139f, 161f, 185f, 208f, 231f, 254f, 277f, 300f, 323f, 346f, 360f };
-            float[] drop = { -0.56f, -0.43f, -0.42f, -0.59f, -0.78f, -0.85f, -0.84f, -0.82f, -0.76f, -0.67f, -0.58f, -0.43f, -0.29f, -0.20f, -0.06f, 0.03f, 0.04f };
+            float[] at = { 0f, 23f, 46f, 69f, 92f, 115f, 139f, 162f, 185f, 208f, 231f, 254f, 277f, 300f, 323f, 346f, 360f };
+            float[] drop = { -0.261f, -0.335f, -0.785f, -1.061f, -1.005f, -0.963f, -0.962f, -0.949f, -0.955f, -0.948f, -0.773f, -0.533f, -0.373f, -0.249f, -0.078f, 0.023f, 0.036f };
             int i = 1;
             while (i < at.Length && at[i] < spin) i++;
             if (i >= at.Length) return drop[drop.Length - 1];
@@ -402,87 +403,96 @@ namespace Tag.Art
             VerbExitSample s = default;
             s.Hip = 28f;
             s.Spine = 22f;
-            s.Head = -40f;
-            s.ThighL = 70f;
-            s.ThighR = 64f;
-            s.KneeL = -100f;
-            s.KneeR = -94f;
+            s.Head = -28f;
+            s.ThighL = 34f;
+            s.ThighR = 28f;
+            s.KneeL = -90f;
+            s.KneeR = -84f;
             s.ArmPitchL = -42f;
             s.ArmPitchR = -40f;
             s.ArmYawL = -28f;
             s.ArmYawR = 32f;
-            s.ElbowL = -20f;
-            s.ElbowR = -18f;
-            s.ThighRollL = -50f;
-            s.ThighRollR = 50f;
-            s.SpineRoll = 8f;
+            s.ArmRollL = -18f;
+            s.ArmRollR = 18f;
+            // Interior angle near 100°. A deeper fold puts the forearm through the upper arm.
+            s.ElbowL = -72f;
+            s.ElbowR = -66f;
+            s.ThighRollL = -14f;
+            s.ThighRollR = 14f;
+            s.SpineRoll = 6f;
             return s;
         }
 
         static VerbExitSample Sweep()
         {
             VerbExitSample s = default;
-            s.Hip = 22f;
-            s.Spine = 26f;
-            s.Head = -36f;
-            s.ThighL = 70f;
-            s.ThighR = 64f;
-            s.KneeL = -100f;
-            s.KneeR = -94f;
+            s.Hip = 18f;
+            s.Spine = 24f;
+            s.Head = -24f;
+            s.ThighL = 32f;
+            s.ThighR = 26f;
+            s.KneeL = -88f;
+            s.KneeR = -82f;
             s.ArmPitchL = -28f;
             s.ArmPitchR = -36f;
             s.ArmYawL = -24f;
             s.ArmYawR = 28f;
-            s.ElbowL = -20f;
-            s.ElbowR = -18f;
-            s.ThighRollL = -50f;
-            s.ThighRollR = 50f;
-            s.SpineRoll = 14f;
+            s.ArmRollL = -16f;
+            s.ArmRollR = 16f;
+            s.ElbowL = -72f;
+            s.ElbowR = -66f;
+            s.ThighRollL = -10f;
+            s.ThighRollR = 10f;
+            s.SpineRoll = -22f;
             return s;
         }
 
         static VerbExitSample HandDown()
         {
             VerbExitSample s = default;
-            s.Hip = 14f;
-            s.Spine = 18f;
-            s.Head = -32f;
-            s.ThighL = 66f;
-            s.ThighR = 58f;
-            s.KneeL = -96f;
-            s.KneeR = -88f;
+            s.Hip = 12f;
+            s.Spine = 20f;
+            s.Head = -24f;
+            s.ThighL = 34f;
+            s.ThighR = 28f;
+            s.KneeL = -86f;
+            s.KneeR = -80f;
             s.ArmPitchL = -18f;
             s.ArmPitchR = -32f;
             s.ArmYawL = -20f;
             s.ArmYawR = 24f;
-            s.ElbowL = -20f;
-            s.ElbowR = -18f;
-            s.ThighRollL = -48f;
-            s.ThighRollR = 48f;
-            s.SpineRoll = 20f;
+            s.ArmRollL = -14f;
+            s.ArmRollR = 14f;
+            s.ElbowL = -70f;
+            s.ElbowR = -64f;
+            s.ThighRollL = -12f;
+            s.ThighRollR = 12f;
+            s.SpineRoll = -16f;
             return s;
         }
 
         static VerbExitSample Shoulder()
         {
             VerbExitSample s = default;
-            s.Hip = 8f;
-            s.Spine = 6f;
-            s.Head = -38f;
-            s.ThighL = 46f;
-            s.ThighR = 40f;
-            s.KneeL = -78f;
-            s.KneeR = -72f;
-            s.ArmPitchL = -12f;
-            s.ArmPitchR = -20f;
-            s.ArmYawL = -16f;
-            s.ArmYawR = 18f;
-            s.ElbowL = -28f;
-            s.ElbowR = -24f;
-            s.ThighRollL = -36f;
-            s.ThighRollR = 36f;
-            s.SpineRoll = 28f;
-            s.HipRoll = -10f;
+            s.Hip = 10f;
+            s.Spine = 16f;
+            s.Head = -24f;
+            s.ThighL = 36f;
+            s.ThighR = 30f;
+            s.KneeL = -84f;
+            s.KneeR = -78f;
+            s.ArmPitchL = -16f;
+            s.ArmPitchR = -22f;
+            s.ArmYawL = -18f;
+            s.ArmYawR = 20f;
+            s.ArmRollL = -12f;
+            s.ArmRollR = 12f;
+            s.ElbowL = -68f;
+            s.ElbowR = -62f;
+            s.ThighRollL = -12f;
+            s.ThighRollR = 12f;
+            s.SpineRoll = 20f;
+            s.HipRoll = -8f;
             return s;
         }
 

@@ -159,7 +159,7 @@ namespace Tag.NoClipDump
                 Hip = s.Hip,
                 HipRoll = -s.LeanZ * WallPose.HipRollShare,
                 Spine = s.Spine,
-                SpineRoll = s.LeanZ,
+                SpineRoll = WallPose.SpineLean(s.LeanZ),
                 Head = s.Head,
                 HeadRoll = -s.LeanZ * WallPose.HeadRollShare,
                 ThighL = s.ThighL, ThighR = s.ThighR, KneeL = s.KneeL, KneeR = s.KneeR,
