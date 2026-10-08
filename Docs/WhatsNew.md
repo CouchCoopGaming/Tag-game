@@ -360,6 +360,8 @@ The twenty-first pass adds the moments around that same match. Each pane counts 
 
 The twenty-second pass fills the standings card. Rank, the seat shape, It time, tags made, times tagged, and round wins sit on each row. The winner's row is gold, and the rows slide in by rank. During the count a pane shows the name and the seat chip, and the stat line returns at GO. LOCKED is small, under the digit, inside the pane. YOU'RE IT stays above an empty slot near the tagged player, left open for a comic word. Loading names the arena, rotates a controls tip on each seat, and draws a progress bar, from one pane up to four. Unity is not installed here, so the stills are composites in `Docs/UiStills/screens2/pass22/`. Space still jumps.
 
+The twenty-third pass uses those costume colors on the seat chrome: red, blue, orange, and lavender. Each standings chip sits on a dark well so it reads on the gold winner row. The name sits beside the shape, and the time header says IT TIME. Loading keeps the card at the bottom of the pane, with the park above, and the tip names the bound button, such as Hold [Left stick] against a wall to climb. Unity is not installed here, so the stills are composites in `Docs/UiStills/screens2/pass23/`. Space still jumps.
+
 ## Motion, ninth pass
 
 The wall jump, the rope, the zip, the launch pad, a landing, the dash flash, a hard turnaround, and a punch while you run all ease instead of snapping. Speeds, the jump, and the dash length are the same.

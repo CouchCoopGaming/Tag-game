@@ -349,6 +349,10 @@ The same scripted match now carries the beats around the chase. Each pane counts
 
 The standings card grows with the rows. Each row has a rank, the seat shape, the name, It time, tags made, times tagged, and round wins. The least It time is the winner, and that row is gold. The rows slide in by rank. During 3, 2, 1 a pane shows the name and the seat chip. The stat line comes back at GO. LOCKED is a small plate under the count, inside the pane, and the center card stays clear. YOU'RE IT sits above an empty slot near the tagged player. That slot is open for a comic word. Loading between the menu and the match names the arena over the park, rotates a controls tip on each seat, and fills a bar, from one pane to four. Stills are composites in `Docs/UiStills/screens2/pass22/`.
 
+## Screens 2, pass 23
+
+Seat chrome reads the costume swatches already used by the menu lane: P1 red, P2 blue, P3 orange, P4 lavender. `MenuMannequin.Swatch` is that table. Pane borders, chips, standings squares, and the loading card use it. The measured mark palette stays red, blue, yellow, and green, so the color-blind distances do not move. A color-blind seat set still replaces the chrome when that option is on. Each standings chip sits in a small dark rounded well, so the orange winner chip stays visible on the gold row. The shape stays ink on that row. A row reads rank, chip and shape, then the name, then It time, tags made, times tagged, and round wins. The time header says IT TIME. Loading cards sit in the bottom of the pane so Mega Park shows above them, and the bar stays. The tip names that seat's bound mark. A pad reads Hold [Left stick] against a wall to climb, and Hold [Left stick] + [A] to wall jump. A keyboard seat reads WASD and Space. Stills are composites in `Docs/UiStills/screens2/pass23/`.
+
 ## Later passes
 
 - Left from a rule row returns to the modes even when that rule can still decrease. Right from the right-hand mode, and Left at the end of a rule, already move between the columns.
