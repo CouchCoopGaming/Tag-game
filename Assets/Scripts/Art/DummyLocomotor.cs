@@ -36,6 +36,20 @@ namespace Tag.Art
         Quaternion _ulL0, _ulR0, _llL0, _llR0;
         Quaternion _ftL0, _ftR0;
         Vector3 _root0;
+        Vector3 _visualLag;
+        Vector3 _prevCapsule;
+        bool _hasCapsule;
+        float _lagVx, _lagVy, _lagVz;
+        float _visualYaw;
+        float _visualYawVel;
+        Quaternion _yawBasis;
+        bool _yawBasisSet;
+        float _slewSp, _slewHp, _slewHd;
+        float _slewUaL, _slewUaR, _slewLaL, _slewLaR;
+        float _slewUlL, _slewUlR, _slewLlL, _slewLlR;
+        float _slewFtL, _slewFtR;
+        float _landSquashGoal;
+        MoveState _popState;
         bool _bound;
         bool _loggedBindFail;
         float _cycle;
@@ -5812,10 +5826,13 @@ namespace Tag.Art
             _prevSpeed = speed;
             if (_landHold > 0f)
                 _landHold = Mathf.Max(0f, _landHold - dt);
-            else
+            if (_landSquash + 0.001f < _landSquashGoal)
+                _landSquash = Mathf.MoveTowards(_landSquash, _landSquashGoal, dt / SmoothMotion.ResponsiveSeconds);
+            else if (_landHold <= 0f)
             {
                 // ~0.4s from a full buckle back to the stride.
                 _landSquash = Mathf.MoveTowards(_landSquash, 0f, dt * 3.1f);
+                _landSquashGoal = _landSquash;
             }
             // Bible WallBounce ~0.22s kick flash - brief TP limb tell after OnWallBounced.
             _bouncePulse = Mathf.MoveTowards(_bouncePulse, 0f, dt / 0.22f);
@@ -15169,21 +15186,21 @@ namespace Tag.Art
                 SealPunchRight(phase, punchProg);
                 armSlewR = 2400f;
             }
-            Slew(ref _spine, _spineT, torsoSlew, dt);
-            Slew(ref _hips, _hipsT, torsoSlew, dt);
-            Slew(ref _head, _headT, slew, dt);
-            Slew(ref _upperArmL, _uaLT, armSlewL, dt);
-            Slew(ref _upperArmR, _uaRT, armSlewR, dt);
-            Slew(ref _lowerArmL, _laLT, armSlewL, dt);
-            Slew(ref _lowerArmR, _laRT, armSlewR, dt);
-            Slew(ref _upperLegL, _ulLT, legSlew, dt);
-            Slew(ref _upperLegR, _ulRT, legSlew, dt);
-            Slew(ref _lowerLegL, _llLT, legSlew, dt);
-            Slew(ref _lowerLegR, _llRT, legSlew, dt);
+            Slew(ref _spine, _spineT, ref _slewSp, torsoSlew, dt);
+            Slew(ref _hips, _hipsT, ref _slewHp, torsoSlew, dt);
+            Slew(ref _head, _headT, ref _slewHd, slew, dt);
+            Slew(ref _upperArmL, _uaLT, ref _slewUaL, armSlewL, dt);
+            Slew(ref _upperArmR, _uaRT, ref _slewUaR, armSlewR, dt);
+            Slew(ref _lowerArmL, _laLT, ref _slewLaL, armSlewL, dt);
+            Slew(ref _lowerArmR, _laRT, ref _slewLaR, armSlewR, dt);
+            Slew(ref _upperLegL, _ulLT, ref _slewUlL, legSlew, dt);
+            Slew(ref _upperLegR, _ulRT, ref _slewUlR, legSlew, dt);
+            Slew(ref _lowerLegL, _llLT, ref _slewLlL, legSlew, dt);
+            Slew(ref _lowerLegR, _llRT, ref _slewLlR, legSlew, dt);
             if (_footL != null && _footR != null)
             {
-                Slew(ref _footL, _ftLT, legSlew, dt);
-                Slew(ref _footR, _ftRT, legSlew, dt);
+                Slew(ref _footL, _ftLT, ref _slewFtL, legSlew, dt);
+                Slew(ref _footR, _ftRT, ref _slewFtR, legSlew, dt);
             }
 
 
@@ -15213,7 +15230,10 @@ namespace Tag.Art
             if (flinchAmt > 0.04f) bob -= 0.1f * flinchAmt;
             if (_motor != null && _motor.ZipRiding)
                 bob = 0f;
-            transform.localPosition = _root0 + new Vector3(0f, bob, 0f) + WallJumpNudge();
+            bool yawWall = wallRun || climb;
+            EaseFacing(dt, yawWall, climb, sliding);
+            AbsorbPop(dt);
+            transform.localPosition = _root0 + new Vector3(0f, bob, 0f) + WallJumpNudge() + _visualLag;
             float squash = 1f - 0.14f * _landSquash;
             // Air-dash: strong stretch then brief squash; tag flinch compresses
             float dashStretch = airDashing ? 0.32f : 0.18f;
@@ -17464,7 +17484,8 @@ namespace Tag.Art
             float t = Mathf.Clamp01(Mathf.InverseLerp(soft, hard, impact));
             // Ease-in so mid falls stay readable but terminal velocity punches.
             // Slightly stronger mid-band so a park hop-off reads without waiting for stun speed.
-            _landSquash = Mathf.Clamp(Mathf.Lerp(0.55f, 1.35f, t * t), 0.55f, 1.35f);
+            // The buckle eases in. The hold and the release stay on the old clock.
+            _landSquashGoal = Mathf.Clamp(Mathf.Lerp(0.55f, 1.35f, t * t), 0.55f, 1.35f);
             // Brief absorb, then the pose eases into the run instead of popping off.
             _landHold = Mathf.Lerp(0.05f, 0.11f, t);
             _landHard = t;
@@ -17476,6 +17497,7 @@ namespace Tag.Art
         void ClearHopLand()
         {
             _landSquash = 0f;
+            _landSquashGoal = 0f;
             _landHold = 0f;
             _landHard = 0f;
             _landPoseHard = false;
@@ -18583,10 +18605,110 @@ namespace Tag.Art
             return false;
         }
 
-        static void Slew(ref Transform t, Quaternion target, float speed, float dt)
+        static void Slew(ref Transform t, Quaternion target, ref float vel, float speed, float dt)
         {
             if (t == null) return;
-            t.localRotation = Quaternion.Slerp(t.localRotation, target, 1f - Mathf.Exp(-speed * dt));
+            float seconds = SmoothMotion.SecondsForSlew(speed);
+            if (seconds <= 0f)
+            {
+                vel = 0f;
+                t.localRotation = Quaternion.Slerp(t.localRotation, target, 1f - Mathf.Exp(-speed * dt));
+                return;
+            }
+            float angle = Quaternion.Angle(t.localRotation, target);
+            if (angle < 0.05f)
+            {
+                vel = 0f;
+                t.localRotation = target;
+                return;
+            }
+            float next = SmoothMotion.Smooth(angle, 0f, ref vel, seconds, dt);
+            float closed = angle - next;
+            if (closed < 0f) closed = 0f;
+            float u = closed / angle;
+            if (u > 1f) u = 1f;
+            t.localRotation = Quaternion.Slerp(t.localRotation, target, u);
+        }
+
+        /// <summary>
+        /// Visual yaw only. The capsule keeps the camera yaw, so wish direction stays instant.
+        /// Climb faces the wall. A wall run faces along it. On the ground the chest eases toward the move.
+        /// </summary>
+        void EaseFacing(float dt, bool wallRun, bool climb, bool sliding)
+        {
+            if (_motor == null || transform == _motor.transform) return;
+            Vector3 fwd = _motor.transform.forward;
+            Vector3 desired = fwd;
+            Vector3 n = _motor.WallNormal;
+            n.y = 0f;
+            // Ground strafe keeps the camera facing. Only the wall turns the mesh,
+            // and it eases. Climb looks into the wall. A run looks along it.
+            if (!sliding && (climb || wallRun) && n.sqrMagnitude > 0.0001f)
+            {
+                if (climb)
+                    desired = -n;
+                else
+                {
+                    Vector3 tangent = Vector3.Cross(Vector3.up, n);
+                    Vector3 vel = _motor.Velocity;
+                    vel.y = 0f;
+                    if (vel.sqrMagnitude > 0.04f)
+                    {
+                        if (Vector3.Dot(tangent, vel) < 0f) tangent = -tangent;
+                    }
+                    else if (Vector3.Dot(tangent, fwd) < 0f)
+                        tangent = -tangent;
+                    desired = tangent;
+                }
+            }
+            float target = SmoothMotion.PlanarDelta(fwd.x, fwd.z, desired.x, desired.z);
+            _visualYaw = SmoothMotion.Smooth(_visualYaw, target, ref _visualYawVel, SmoothMotion.YawSeconds, dt);
+            if (!_yawBasisSet)
+            {
+                _yawBasis = transform.localRotation;
+                _yawBasisSet = true;
+            }
+            transform.localRotation = _yawBasis * Quaternion.Euler(0f, _visualYaw, 0f);
+        }
+
+        /// <summary>
+        /// Capsule corrections (step, skin, the mantle-exit write) stay on the controller.
+        /// The mesh keeps the pre-pop spot and eases over. A respawn is too big to hide.
+        /// </summary>
+        void AbsorbPop(float dt)
+        {
+            if (_motor == null) return;
+            Vector3 now = _motor.transform.position;
+            if (!_hasCapsule)
+            {
+                _prevCapsule = now;
+                _hasCapsule = true;
+                return;
+            }
+            float dtUse = dt > 0.0001f ? dt : SmoothMotion.Dt;
+            Vector3 expect = _prevCapsule + _motor.Velocity * dtUse;
+            Vector3 pop = now - expect;
+            _prevCapsule = now;
+            var st = _motor.State;
+            bool stateChanged = st != _popState;
+            _popState = st;
+            float mag = pop.magnitude;
+            if (mag >= SmoothMotion.PopIgnore)
+            {
+                _visualLag = Vector3.zero;
+                _lagVx = 0f;
+                _lagVy = 0f;
+                _lagVz = 0f;
+            }
+            else if (mag > 0.004f)
+            {
+                Vector3 local = _motor.transform.InverseTransformDirection(pop);
+                if (stateChanged)
+                    _visualLag -= local;
+                else if (local.y > 0.004f || local.y < -0.004f)
+                    _visualLag -= new Vector3(0f, local.y, 0f);
+            }
+            _visualLag = SmoothMotion.Decay(_visualLag, ref _lagVx, ref _lagVy, ref _lagVz, SmoothMotion.PositionSeconds, dtUse);
         }
 
         void SealPunchRight(PunchPhase phase, float punchProg)

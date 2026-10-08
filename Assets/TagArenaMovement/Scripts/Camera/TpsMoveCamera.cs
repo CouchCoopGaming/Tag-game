@@ -41,6 +41,10 @@ namespace TagArena.Movement
         float _boomDist;
         float _lookAhead;
         float _lookH = 1.25f;
+        float _lookHVel;
+        float _wallLook;
+        float _wallLookVel;
+        Vector3 _wallLookDir;
         float _catchT;
         bool _wasLunging;
         MoveState _prevState = MoveState.Idle;
@@ -133,14 +137,27 @@ namespace TagArena.Movement
                 else if (motor.State == MoveState.WallClimb)
                     wantLookH = lookAtHeight + 0.28f;
                 float lookRate = ChaseCam.LookRateFor(_catchT);
-                _lookH = Mathf.Lerp(_lookH, wantLookH, 1f - Mathf.Exp(-lookRate * dt));
+                // Height and the wall offset ease. The catch rate still owns look-ahead direction.
+                _lookH = SmoothMotion.Smooth(_lookH, wantLookH, ref _lookHVel, SmoothMotion.SettleSeconds, dt);
                 Vector3 lookAt = motor.transform.position + Vector3.up * _lookH;
+                float wantWall = 0f;
+                Vector3 wallDir = _wallLookDir.sqrMagnitude > 0.001f ? _wallLookDir : motor.transform.forward;
                 if (motor.State == MoveState.WallRun && motor.WallNormal.sqrMagnitude > 0.01f)
                 {
                     Vector3 wallInto = Vector3.ProjectOnPlane(-motor.WallNormal, Vector3.up);
                     if (wallInto.sqrMagnitude > 0.01f)
-                        lookAt += wallInto.normalized * 0.42f;
+                    {
+                        wantWall = 0.42f;
+                        wallDir = wallInto.normalized;
+                    }
                 }
+                if (_wallLookDir.sqrMagnitude < 0.001f)
+                    _wallLookDir = wallDir;
+                _wallLook = SmoothMotion.Smooth(_wallLook, wantWall, ref _wallLookVel, SmoothMotion.YawSeconds, dt);
+                float wallU = 1f - Mathf.Exp(-SmoothMotion.Rate(SmoothMotion.YawSeconds) * dt);
+                _wallLookDir = Vector3.Slerp(_wallLookDir, wallDir, wallU);
+                if (_wallLook > 0.001f && _wallLookDir.sqrMagnitude > 0.001f)
+                    lookAt += _wallLookDir.normalized * _wallLook;
                 float lo = cfg != null ? cfg.walkSpeed : lookAheadSpeedLo;
                 float hi = lookAheadSpeedHi;
                 float speedT = Mathf.InverseLerp(lo, hi, motor.HorizSpeed);
