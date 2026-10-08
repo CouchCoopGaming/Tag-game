@@ -152,11 +152,10 @@ def _oarlock(g, x, z, seg):
     g.pipe((x, y + 0.022, z - 0.028), (x, y + 0.022, z + 0.028), 0.007, "Lib_Steel", seg)
 
 
-def _oar(g, side, z):
-    _half, _keel, sheer = profile(0.52)
-    y = sheer + 0.10
-    g.box((side * 0.55, y, z), (1.05, 0.016, 0.028), "Lib_Varnish")
-    g.box((side * 1.20, y, z), (0.28, 0.012, 0.09), "Lib_PaintCream")
+def _oar(g, side, x_lock, y_pin, z_lock):
+    """Shaft centered on the oarlock pin so the loom sits between the horns."""
+    g.box((x_lock, y_pin, z_lock), (1.16, 0.014, 0.022), "Lib_Varnish")
+    g.box((x_lock + side * 0.70, y_pin, z_lock), (0.30, 0.008, 0.078), "Lib_PaintCream")
 
 
 def _cleat(g, side, t):
@@ -183,7 +182,10 @@ def create():
         g = a.begin(lod)
         seg = lod_pick(lod, 8, 6)
         n = lod_pick(lod, 25, 17)
-        solid_hull(g, Z0, Z1, n, profile, _top, "Lib_Varnish", bow_extra=0.12, section_fn=section_smooth)
+        solid_hull(
+            g, Z0, Z1, n, profile, _top, "Lib_Varnish",
+            bow_extra=0.12, section_fn=section_smooth, bevel_stern=0.05,
+        )
         steps = lod_pick(lod, 18, 10)
         _strakes(g, steps)
         _gunwale(g, seg, steps)
@@ -194,10 +196,11 @@ def create():
             z_lock = Z0 + (Z1 - Z0) * t_lock
             _half, _keel, sheer = profile(t_lock)
             x_lock = beam_at(profile, t_lock, sheer, section_smooth) + 0.030
+            y_pin = sheer + 0.080
             _oarlock(g, x_lock, z_lock, seg)
             _oarlock(g, -x_lock, z_lock, seg)
-            _oar(g, 1.0, z_lock + 0.08)
-            _oar(g, -1.0, z_lock - 0.10)
+            _oar(g, 1.0, x_lock, y_pin, z_lock)
+            _oar(g, -1.0, -x_lock, y_pin, z_lock)
             _cleat(g, 1.0, 0.40)
             _cleat(g, -1.0, 0.40)
         a.end()
