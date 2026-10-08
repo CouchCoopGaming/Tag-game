@@ -51,6 +51,12 @@ namespace Tag.Art
         int _alternate;
         bool _onLeftWall;
         bool _trailLeft;
+        bool _fromMantle;
+        DummyLocomotor _loco;
+        Transform _handL, _handR;
+        bool _pinHandL, _pinHandR, _pinFootL, _pinFootR;
+        Vector3 _anchorHandL, _anchorHandR, _anchorFootL, _anchorFootR;
+        RaycastHit _plantHit;
 
         bool _primed;
         MoveState _prevState;
@@ -88,6 +94,7 @@ namespace Tag.Art
             _it = GetComponentInParent<ItController>();
             Transform host = _motor != null ? _motor.transform : transform;
             _fx = FxBurstPool.Ensure(host);
+            _loco = GetComponentInParent<DummyLocomotor>();
             _cancel = -1f;
         }
 
@@ -140,6 +147,7 @@ namespace Tag.Art
             bool grounded = _motor.IsGrounded;
             float vy = _motor.Velocity.y;
             VerbExitId pick = VerbExitId.None;
+            bool mantleExit = false;
 
             if (st == MoveState.WallRun || st == MoveState.WallClimb)
                 _onLeftWall = _motor.WallLeft;
@@ -177,6 +185,7 @@ namespace Tag.Art
             if (_prevState == MoveState.Mantle && st != MoveState.Mantle)
             {
                 _shoulderLeft = _trailLeft;
+                mantleExit = true;
                 pick = VerbExitPick.MantleLeave(_mantleFromClimb, _mantlePlanar);
             }
 
@@ -243,6 +252,8 @@ namespace Tag.Art
                     _launchPending = false;
             }
 
+            if (pick == VerbExitId.ClimbTopOut || pick == VerbExitId.Vault || pick == VerbExitId.Mantle)
+                _fromMantle = mantleExit;
             return pick;
         }
 
@@ -294,7 +305,7 @@ namespace Tag.Art
             _dusted = false;
             if (id != VerbExitId.SoftLand && id != VerbExitId.Roll && id != VerbExitId.RollAbsorb)
                 _fallScale = 1f;
-            bool keepSide = id == VerbExitId.Roll || id == VerbExitId.WallRun
+            bool keepSide = id == VerbExitId.Roll || id == VerbExitId.WallRun || id == VerbExitId.WallJump
                 || id == VerbExitId.Vault || id == VerbExitId.Slide || id == VerbExitId.ClimbTopOut;
             if (!keepSide)
                 _shoulderLeft = false;
@@ -314,12 +325,17 @@ namespace Tag.Art
             _age = 0f;
             _cancel = -1f;
             _dusted = false;
+            _fromMantle = false;
+            ReleasePins();
         }
 
         void Apply(float w, float dt)
         {
             if (w <= 0.001f)
+            {
+                ReleasePins();
                 return;
+            }
             float show = w;
             if (!_chain)
             {
@@ -329,8 +345,15 @@ namespace Tag.Art
                 show *= PoseHandoff.Ease(enter);
             }
             if (show <= 0.001f)
+            {
+                ReleasePins();
                 return;
-            VerbExitSample target = VerbExitClips.At(_id, Unit(_age), _fallScale, _stepDown, _shoulderLeft);
+            }
+            float unit = Unit(_age);
+            VerbExitSample target = VerbExitClips.At(_id, unit, _fallScale, _stepDown, _shoulderLeft);
+            float phase = _loco != null ? _loco.SurfPhase : 0f;
+            Facing(out float fwd, out float side);
+            target = VerbExitFit.Apply(target, _id, unit, _shoulderLeft, _fromMantle, phase, fwd, side);
             VerbExitSample s = target;
             if (_chain)
             {
@@ -379,6 +402,10 @@ namespace Tag.Art
                 }
             }
             MaybeDust(s);
+            if (_cancel >= 0f)
+                ReleasePins();
+            else
+                PlantContact(unit);
         }
 
         void MaybeDust(VerbExitSample s)
@@ -516,6 +543,8 @@ namespace Tag.Art
             _llR = Find(all, "LowerLeg_R", "RightLeg", "RightLowerLeg", "Calf_R");
             _ftL = Find(all, "Foot_L", "LeftFoot");
             _ftR = Find(all, "Foot_R", "RightFoot");
+            _handL = Find(all, "Hand_L", "Hand.L", "LeftHand", "mixamorig:LeftHand", "hand_l");
+            _handR = Find(all, "Hand_R", "Hand.R", "RightHand", "mixamorig:RightHand", "hand_r");
             _bones = _hips != null || _uaL != null || _ulL != null;
             if (!_bones) return;
             if (_hips) _hips0 = _hips.localRotation;
@@ -546,6 +575,149 @@ namespace Tag.Art
                 }
             }
             return null;
+        }
+
+        void Facing(out float fwd, out float side)
+        {
+            fwd = 1f;
+            side = 0f;
+            if (_motor == null) return;
+            Vector3 v = _motor.Velocity;
+            Vector3 f = _motor.transform.forward;
+            Vector3 r = _motor.transform.right;
+            fwd = v.x * f.x + v.z * f.z;
+            side = v.x * r.x + v.z * r.z;
+        }
+
+        void PlantContact(float u)
+        {
+            float lip = VerbExitFit.LipWeight(_id, u);
+            float hand = lip > 0.02f ? lip : VerbExitFit.HandGroundWeight(_id, u, _fallScale);
+            bool onLip = lip > 0.02f;
+            if (hand > 0.02f)
+            {
+                MoveHand(_handL, ref _pinHandL, ref _anchorHandL, hand, onLip);
+                MoveHand(_handR, ref _pinHandR, ref _anchorHandR, hand, onLip);
+            }
+            else
+            {
+                _pinHandL = false;
+                _pinHandR = false;
+            }
+            float foot = VerbExitFit.FootWeight(_id, u);
+            if (foot > 0.02f)
+            {
+                MoveFoot(_ftL, ref _pinFootL, ref _anchorFootL, foot);
+                MoveFoot(_ftR, ref _pinFootR, ref _anchorFootR, foot);
+            }
+            else
+            {
+                _pinFootL = false;
+                _pinFootR = false;
+            }
+        }
+
+        void ReleasePins()
+        {
+            _pinHandL = false;
+            _pinHandR = false;
+            _pinFootL = false;
+            _pinFootR = false;
+        }
+
+        void MoveHand(Transform bone, ref bool pin, ref Vector3 anchor, float weight, bool lip)
+        {
+            if (bone == null) return;
+            Vector3 posed = bone.position;
+            Vector3 hit;
+            if (lip)
+            {
+                if (!TryLip(posed, out hit))
+                {
+                    pin = false;
+                    return;
+                }
+            }
+            else if (!TryGround(posed, out hit))
+            {
+                pin = false;
+                return;
+            }
+            Stick(bone, posed, hit, ref pin, ref anchor, weight);
+        }
+
+        void MoveFoot(Transform bone, ref bool pin, ref Vector3 anchor, float weight)
+        {
+            if (bone == null) return;
+            Vector3 posed = bone.position;
+            Vector3 hit;
+            if (!TryGround(posed, out hit))
+            {
+                pin = false;
+                return;
+            }
+            Stick(bone, posed, hit, ref pin, ref anchor, weight);
+        }
+
+        void Stick(Transform bone, Vector3 posed, Vector3 hit, ref bool pin, ref Vector3 anchor, float weight)
+        {
+            if (!pin)
+            {
+                anchor = hit;
+                pin = true;
+            }
+            else
+                anchor.y = hit.y;
+            Vector3 delta = anchor - posed;
+            float mag = delta.magnitude;
+            float cap = ClimbContact.Palm(mag);
+            if (mag > 0.0001f) delta *= cap / mag;
+            bone.position = posed + delta * weight;
+        }
+
+        bool TryLip(Vector3 hand, out Vector3 lip)
+        {
+            lip = hand;
+            if (_motor == null) return false;
+            Vector3 n = _motor.WallNormal;
+            if (n.sqrMagnitude < 0.0001f) n = _motor.transform.forward;
+            else n.Normalize();
+            Vector3 origin = hand + Vector3.up * 0.55f - n * 0.12f;
+            if (Physics.Raycast(origin, Vector3.down, out _plantHit, 1.15f) && !Own(_plantHit.transform))
+            {
+                lip = _plantHit.point + Vector3.up * 0.02f;
+                return true;
+            }
+            if (_motor.LedgeHit)
+            {
+                Vector3 side = Vector3.Cross(Vector3.up, n);
+                if (side.sqrMagnitude < 0.0001f) side = _motor.transform.right;
+                else side.Normalize();
+                float along = Vector3.Dot(hand - _motor.LedgeStand, side);
+                if (along > 0.28f) along = 0.28f;
+                if (along < -0.28f) along = -0.28f;
+                lip = _motor.LedgeStand - n * 0.08f + side * along;
+                lip.y = _motor.LedgeStand.y;
+                return true;
+            }
+            return false;
+        }
+
+        bool TryGround(Vector3 bone, out Vector3 ground)
+        {
+            ground = bone;
+            Vector3 origin = bone + Vector3.up * 0.45f;
+            if (!Physics.Raycast(origin, Vector3.down, out _plantHit, 1.25f) || Own(_plantHit.transform))
+                return false;
+            ground = _plantHit.point + Vector3.up * 0.02f;
+            return true;
+        }
+
+        bool Own(Transform hit)
+        {
+            if (hit == null || _motor == null) return false;
+            Transform root = _motor.transform;
+            return hit == root || hit.IsChildOf(root);
         }
     }
 }

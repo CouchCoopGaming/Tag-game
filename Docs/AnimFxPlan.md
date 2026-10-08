@@ -1,6 +1,19 @@
 # Animation and FX plan
 
-Pass 1 is the exit poses and the terminal landing roll. Pass 2 deepens those poses. Pass 3 is running dust and comic contact words. Pass 4 redraws those words as a classic comic burst and adds the verb FX layer. Exits, the roll, and the FX stay visual: they do not change speed, stun, coyote, cling, slide, or the camera.
+Pass 1 is the exit poses and the terminal landing roll. Pass 2 deepens those poses. Pass 3 is running dust and comic contact words. Pass 4 redraws those words as a classic comic burst and adds the verb FX layer. Pass 5 refits those exits onto the live verbs and adds the remaining FX. Exits, the roll, and the FX stay visual: they do not change speed, stun, coyote, cling, slide, or the camera.
+
+## Pass 5 (this branch)
+
+- Exit first frames join the live end of the verb over 0.22 s, then the authored recovery plays. Wall jump opens in the push (arms out, not a tuck) and mirrors with the wall. Zip arms sit on the reach pitch (−100). Grapple arrive and release keep the left-hand pull. Pad opens in the launch pose. Climb top-out meets the climb, or the mantle land when the exit came from a mantle. Vault and mantle start on that land. The roll and the soft land open in the fall pose, then the shoulder turn plays. Root spin, pitch, roll, and drop are the authored ones, so the roll orbit is unchanged. Stagger and tag-back are not joined. Worst 60 Hz channel step is 56.2°, under the 96° budget.
+- Hands on a climb top-out, vault, or mantle stay on the lip through the first 28% and leave by 55%. A lip ray wins. If it misses, the hands use the real ledge stand, offset along the lip so they do not stack, the same 8 cm back from the face the climb uses. A roll, a near-stop absorb, and a heavy soft land put a palm on the ground. A planted sole pins its XZ and only follows the ground in Y, so the foot does not skate while the capsule keeps its speed. Skate at a full pin is 0 cm.
+- A backward landing (faster than 0.35 m/s back) eases the legs into the reversed stride over the last 38%. Air exits do not reverse. The sole levels while the foot is planted. Any input still cancels inside 0.08 s. The roll does not change velocity. The camera does not roll.
+- Speed lines appear at sprint (13.8) and faster: 4 at sprint, up to 8 as speed rises, half of that on Low, none at a walk, none when Effects is Off or Reduced flashing is on.
+- Wall-scrape sparks sit at the chest and the hand during a wall run or a climb, above the foot scuff. Metal sparks, wet drips, concrete is quieter, grass is none. The pool applies the Effects slider once.
+- A tag hit throws its own 8-point burst (4 on Low) with no letters. Comic words stay on their toggle. Effects Off and Reduced flashing hide the burst even when comic words are on. Comic words off still shows the burst.
+- Becoming It, or losing it, plays one swell on the body (0.40 s, player color when gained, cool white when lost) plus an expanding ring. The quad faces each camera, so every split pane that can see the body reads it. It is not a strobe.
+- A launch arc leaves a cyan trail. A zip ride leaves a violet trail. Both are 12 points, 6 on Low, and fade for 0.35 s after the ride. Pooled. No hot-path allocation.
+- Proof: `exit-fit join=0.22 wallJump=30 zip=-100 grapple=-134 lip=1>0 skate=12>0 reverse=1 rollOpen=58 step=56.2 budget=96` and `fx-pass5 lines=4/2 len=0.55 scrape=6 grass=0 tag=8 comicOff=1 flash=0.40 span=1.15 trail=12/6 alloc=0`.
+- Stills in `Docs/AnimStills/pass5/`: `walljump`, `climb`, `vault`, `zip`, `grapple`, `pad`, `roll`, and `reversal`, each as `-front.png` and `-three-quarter.png`, plus `speed-lines.png`, `wall-scrape.png`, `tag-burst.png`, `handoff-flash.png`, and `pad-zip-trails.png`.
 
 ## Pass 3 (this branch)
 
@@ -27,7 +40,7 @@ Pass 3 mockups stay in `Docs/AnimStills/pass3/`.
 
 ## FX queue
 
-Running dust, the comic words, and the verb layer are in. Do not add the later items until a later pass.
+Running dust, the comic words, the verb layer, and the pass-5 effects are in.
 
 ## Pass 2 (this branch)
 
@@ -48,8 +61,4 @@ Running dust, the comic words, and the verb layer are in. Do not add the later i
 
 ## Later
 
-- Speed lines.
-- Wall-scrape sparks beyond the foot scuff.
-- Tag hit burst (separate from the comic word).
-- It-handoff flash.
-- Pad and zip trails.
+Shipped in pass 5: speed lines, wall-scrape sparks beyond the foot scuff, a tag hit burst separate from the comic word, an It-handoff flash, and pad and zip trails.

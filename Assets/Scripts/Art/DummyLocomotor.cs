@@ -17342,6 +17342,8 @@ namespace Tag.Art
         {
             float reach = _punch != null ? _punch.Reach : PunchTagPose.ReachMeters;
             ComicBurst.Raise(origin, forward, reach, tag);
+            if (tag)
+                Pass5Burst.Raise(origin, forward, reach);
         }
 
         bool HitConfirmSolo()

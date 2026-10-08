@@ -995,6 +995,20 @@ static class Program
         }
         Tag.FX.VerbFxStills.Write(Path.Combine(RepoRoot(), "Docs", "AnimStills", "pass4"));
 
+        Console.WriteLine(Tag.Art.VerbExitFit.ProofLine());
+        if (!Tag.Art.VerbExitFit.Holds())
+        {
+            Console.Error.WriteLine("exit fit is not held");
+            return 1;
+        }
+        Console.WriteLine(Tag.FX.Pass5Look.ProofLine());
+        if (!Tag.FX.Pass5Look.Holds())
+        {
+            Console.Error.WriteLine("pass 5 fx is not held");
+            return 1;
+        }
+        Tag.FX.Pass5Stills.Write(Path.Combine(RepoRoot(), "Docs", "AnimStills", "pass5"));
+
         Console.WriteLine("solo grapple on; opponent and couch off; jet off; clips and locks held");
         return 0;
     }

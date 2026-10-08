@@ -82,8 +82,8 @@ namespace Tag.Art
             VerbExitSample s = u < 0.5f
                 ? VerbExitSample.Lerp(a, b, u * 2f)
                 : VerbExitSample.Lerp(b, c, (u - 0.5f) * 2f);
-            if (shoulderLeft && (id == VerbExitId.WallRun || id == VerbExitId.Vault
-                || id == VerbExitId.Slide || id == VerbExitId.ClimbTopOut))
+            if (shoulderLeft && (id == VerbExitId.WallRun || id == VerbExitId.WallJump
+                || id == VerbExitId.Vault || id == VerbExitId.Slide || id == VerbExitId.ClimbTopOut))
                 s = VerbExitSample.Mirror(s);
             return s;
         }
