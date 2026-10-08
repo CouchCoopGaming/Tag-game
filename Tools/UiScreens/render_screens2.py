@@ -1554,11 +1554,13 @@ def paint_lines(img, box, title, lines, scale, hot, grown):
     for line in lines:
         if not line:
             continue
-        d.text((left, yy), line, font=sf, fill=sub_c)
-        ok, bb = text_inside(d, (left, yy), line, sf, well)
-        if grown and not ok:
-            raise SystemExit("row sub clip %s %s well %s" % (line, bb, well))
-        yy += sub_px + 2
+        parts = wrap_words(d, line, sf, width) if grown else [line]
+        for part in parts:
+            d.text((left, yy), part, font=sf, fill=sub_c)
+            ok, bb = text_inside(d, (left, yy), part, sf, well)
+            if grown and not ok:
+                raise SystemExit("row sub clip %s %s well %s" % (part, bb, well))
+            yy += sub_px + 2
     return contrast(title_c, fill), title_px, sub_px
 
 
@@ -1601,7 +1603,7 @@ def board_cast(scale, grown):
     header(img, "Characters", "Text size  %.2f" % scale)
     name_px = type_px(30, scale)
     name_h = 78 if not grown else max(78, 12 + name_px * 2 + 8)
-    status_h = 52 if not grown else max(52, 16 + name_px)
+    status_h = 52 if not grown else max(52, 12 + name_px * 2 + 8)
     card_w = 420
     card_h = 400 if not grown else 430
     ratios = []
@@ -1619,12 +1621,17 @@ def board_cast(scale, grown):
         nf = font(FONT_B, face_px)
         d.text((name_box[0] + 12, name_box[1] + 6), "P%d" % (s + 1), font=nf, fill=CREAM)
         d.text((name_box[0] + 12, name_box[1] + 8 + face_px), "Red / Red", font=nf, fill=CREAM)
-        d.text((stat_box[0] + 12, stat_box[1] + 8), "Hat off    Not ready", font=nf, fill=CREAM)
+        if grown:
+            d.text((stat_box[0] + 12, stat_box[1] + 6), "Hat off", font=nf, fill=CREAM)
+            d.text((stat_box[0] + 12, stat_box[1] + 8 + face_px), "Not ready", font=nf, fill=CREAM)
+        else:
+            d.text((stat_box[0] + 12, stat_box[1] + 8), "Hat off   Not ready", font=nf, fill=CREAM)
         if grown:
             for word, xy, box in (
                 ("P%d" % (s + 1), (name_box[0] + 12, name_box[1] + 6), name_box),
                 ("Red / Red", (name_box[0] + 12, name_box[1] + 8 + face_px), name_box),
-                ("Hat off    Not ready", (stat_box[0] + 12, stat_box[1] + 8), stat_box),
+                ("Hat off", (stat_box[0] + 12, stat_box[1] + 6), stat_box),
+                ("Not ready", (stat_box[0] + 12, stat_box[1] + 8 + face_px), stat_box),
             ):
                 ok, bb = text_inside(d, xy, word, nf, (box[0] + 4, box[1] + 2, box[2] - 4, box[3] - 2))
                 if not ok:
@@ -1654,13 +1661,13 @@ def board_rules(scale, grown):
     header(img, "Mode and rules", "Text size  %.2f" % scale)
     title_px = type_px(40, scale)
     sub_px = type_px(30, scale)
-    mode_h = 152 if not grown else max(152, 24 + title_px + 6 + sub_px * 2 + 12)
+    mode_h = 152 if not grown else max(152, 24 + title_px + 6 + sub_px * 4 + 12)
     mode_step = 168 if not grown else mode_h + 16
     rule_h = 80 if not grown else max(80, 24 + title_px + 6 + sub_px + 12)
     rule_step = 84 if not grown else rule_h + 8
     modes = [
         ("Hot Potato", ["First to 2.", "Fuse 45 / 40 / 35s."], False),
-        ("Least It", ["Least time as It.", "Selected"], True),
+        ("Least It", ["Least time as It.", "Next punch breaks a tie.", "Selected"], True),
         ("Trail Tag", ["Ribbons eliminate.", "Last standing."], False),
         ("Free play", ["Punch transfers It.", "No timer."], False),
     ]
@@ -1668,9 +1675,9 @@ def board_rules(scale, grown):
     locked = []
     for i, (name, lines, hot) in enumerate(modes):
         col, row = i % 2, i // 2
-        x = 64 + col * 400
+        x = 40 + col * 450
         y = 168 + row * mode_step
-        ratio, tp, sp = paint_lines(img, (x, y, x + 380, y + mode_h), name, lines, scale, hot, grown)
+        ratio, tp, sp = paint_lines(img, (x, y, x + 430, y + mode_h), name, lines, scale, hot, grown)
         ratios.append(ratio)
         locked.append((tp, sp))
     rules = [
@@ -1681,7 +1688,7 @@ def board_rules(scale, grown):
     ]
     for i, (title, lines) in enumerate(rules):
         y = 168 + i * rule_step
-        ratio, tp, sp = paint_lines(img, (900, y, 1800, y + rule_h), title, lines, scale, False, grown)
+        ratio, tp, sp = paint_lines(img, (950, y, 1840, y + rule_h), title, lines, scale, False, grown)
         ratios.append(ratio)
         locked.append((tp, sp))
     return img, min(ratios), locked

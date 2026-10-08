@@ -321,7 +321,8 @@ namespace Tag.Ui.Menu
         public static float CastStatusBand()
         {
             if (IdentityText()) return CastStatusH;
-            float need = 16f + TextPx(FloorFont);
+            // The hat and ready line wraps at 1.50, so the band is two lines tall.
+            float need = 12f + TextPx(FloorFont) * 2f + 8f;
             return need > CastStatusH ? need : CastStatusH;
         }
 

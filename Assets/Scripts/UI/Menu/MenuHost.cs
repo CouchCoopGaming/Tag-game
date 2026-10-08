@@ -2147,7 +2147,7 @@ namespace Tag.Ui.Menu
                 int col = i % 2;
                 int row = i / 2;
                 string mark = MenuSession.Mode == id ? "Selected" : " ";
-                float modeH = UiFit.BlockH(152f, 2);
+                float modeH = UiFit.BlockH(152f, 4);
                 float modeStep = UiFit.IdentityText() ? 168f : modeH + 16f;
                 AddTile(leftX + col * (colW + 12f), 12f + row * modeStep, colW, modeH, i, MenuCatalog.ModeName(id), MenuCatalog.ModeBlurb(id) + "\n" + mark, true);
             }
