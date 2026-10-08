@@ -22,9 +22,10 @@ namespace Tag.Art
         public const bool LeadRight = false;
 
         /// <summary>
-        /// Extra outward yaw on both shoulders. The printed aim, latch, and pull
-        /// yaws stay the sample. This is applied when the body is posed so the
-        /// upper arm misses the chest. It is not a lift and it does not change a timer.
+        /// Outward yaw, measured as negative on the left arm and positive on the right.
+        /// The printed aim, latch, and pull yaws already sit on that side, so the
+        /// body does not add a second spread. The opposite sign pulls the forearm
+        /// through the chest. It is not a lift and it does not change a timer.
         /// </summary>
         public const float ShoulderFlare = 24f;
 
@@ -41,9 +42,35 @@ namespace Tag.Art
             float elbow = s.ElbowL;
             s.ElbowL = s.ElbowR;
             s.ElbowR = elbow;
-            s.ArmYawL += ShoulderFlare;
-            s.ArmYawR -= ShoulderFlare;
+            // Measured on the mesh: outward is a negative left yaw and a positive
+            // right yaw. These keys already sit on that side. Stacking another
+            // ShoulderFlare only makes a wider pose. The opposite sign pulls the
+            // forearm through the chest and the rope back through the head.
+            if (s.ArmYawL > 0f)
+                s.ArmYawL -= ShoulderFlare;
+            if (s.ArmYawR < 0f)
+                s.ArmYawR += ShoulderFlare;
+            // Both arms on the line. Pitch them further along that reach so the
+            // rope hand sits in front of the head. The extra eases off as the
+            // arm drops toward the fall. A miss keeps the other arm down, so
+            // this does not touch it.
+            if (s.ArmPitchL < -20f && s.ArmPitchR < -20f)
+            {
+                s.ArmPitchL += ForwardReach(s.ArmPitchL);
+                s.ArmPitchR += ForwardReach(s.ArmPitchR);
+            }
             return s;
+        }
+
+        /// <summary>
+        /// Extra pitch along the pull. 0 at the fall (−30°) and −32° at the pull (−80°).
+        /// </summary>
+        static float ForwardReach(float pitch)
+        {
+            float u = (pitch - (-30f)) / (-80f - (-30f));
+            if (u < 0f) u = 0f;
+            if (u > 1f) u = 1f;
+            return -32f * u;
         }
 
         /// <summary>Aim reach eases in. The aim preview stays on GrappleRopeTell.</summary>

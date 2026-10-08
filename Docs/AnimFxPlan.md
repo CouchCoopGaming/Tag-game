@@ -212,6 +212,24 @@ Grey stills, red only on the overlap: `Docs/AnimStills/pass17/c2/`. Before frame
 
 Pass 3 mockups stay in `Docs/AnimStills/pass3/`.
 
+## Pass 21 (grapple reach, launch V)
+
+The lane's shoulder flare was added on the inward sign. On these keys outward is a negative left yaw and a positive right yaw, and the samples already sit there. Stacking another 24° only makes a wider pose. The inward sign pulls the forearm through the chest and the rope back through the head. `ShoulderFlare` stays 24. It is not stacked, and it is not flipped into a wider spread.
+
+The rope hand is pitched further along the same reach: 0° extra at the fall (−30°) and −32° at the pull (−80°). It eases off as the arm drops. A miss keeps the other arm down, so that reach does not touch it. Printed aim, latch, and pull constants stay. The body pitch the exit fit reads moves with the reach.
+
+Per frame, absolute depth, 0.5 cm limit, joined pieces exempt inside 3 cm of the joint. World depth is 0. Pose fails are 0.
+
+- Grapple latch, 4 frames: pose 0.13–0.18 cm, rig up to 2.35 cm. The lead hand is 10–34 cm in front of the face. Before, at t=0.070, the head met the rope at 1.39 cm and the hand sat 32 cm behind the face.
+- Grapple hold, 15 frames: pose 0.15–0.39 cm, rig up to 2.34 cm. Yaw stays ±32. The left hand is 3.3 cm in front of the face and 38 cm in front of the chest. Before, that hand was 35 cm behind the face. The worst frame was already under 0.5 cm, so its before still has no red.
+- Grapple release, 4 frames: pose 0.00–0.17 cm, rig up to 1.57 cm. The hand stays in front through the fall. Before, at t=0, the head met the rope at 1.39 cm.
+- Grapple miss, 9 frames: pose 0.00–0.42 cm, rig up to 3.40 cm (the off-arm hinge). The throw hand is 33 cm in front of the face. Before, at t=0, the lead upper arm was 1.91 cm inside the chest.
+- Launch rise and both windmill frames: pose 0.24 cm, rig 0.89 cm on the rise and 1.18 cm on the mill. Before, both upper arms went through the head at 9.54 cm and the lower arms at 8.91 and 8.79 cm. After, the hands are at x ±0.47 and z 2.07, beside the head and above the crown.
+
+Side stills, grey scene, red only on the pose overlap: `Docs/AnimStills/pass21/`. Each PNG is 1024×576 and under 400 KB.
+
+StrafeJumpSim exits 0. Gameplay lines match the post-merge sim. One animation token moved because the exit fit prints this body pitch: `exit-fit` `grapple=-78` → `grapple=-109`.
+
 ## FX queue
 
 Running dust, the comic words, the verb layer, and the pass-5 effects are in.
