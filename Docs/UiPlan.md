@@ -345,6 +345,10 @@ One match state is shared by every pane. The script is P1 tags P2, then P2 tags 
 
 The same scripted match now carries the beats around the chase. Each pane counts 3, 2, 1, GO. Until GO the center card says LOCKED, and the opening It flashes on that player's pane. The last ten seconds turn the clock gold and pulse it. The tick is the existing round chime. ROUND OVER comes first. Standings then list the least It time first, with NEXT ROUND under them. The final round says RESULTS. A new It gets a short gold edge on that pane, and YOU'RE IT when comic words are on. A seat that leaves drops out of the split, and every remaining pane notes `P4 left`. Solo is one human pane against the AI. The headless line is `hud-state`. Stills are composites in `Docs/UiStills/screens2/pass21/`.
 
+## Screens 2, pass 22
+
+The standings card grows with the rows. Each row has a rank, the seat shape, the name, It time, tags made, times tagged, and round wins. The least It time is the winner, and that row is gold. The rows slide in by rank. During 3, 2, 1 a pane shows the name and the seat chip. The stat line comes back at GO. LOCKED is a small plate under the count, inside the pane, and the center card stays clear. YOU'RE IT sits above an empty slot near the tagged player. That slot is open for a comic word. Loading between the menu and the match names the arena over the park, rotates a controls tip on each seat, and fills a bar, from one pane to four. Stills are composites in `Docs/UiStills/screens2/pass22/`.
+
 ## Later passes
 
 - Left from a rule row returns to the modes even when that rule can still decrease. Right from the right-hand mode, and Left at the end of a rule, already move between the columns.

@@ -358,6 +358,8 @@ The twentieth pass gives every split the same match. P1 tags P2, then P2 tags P3
 
 The twenty-first pass adds the moments around that same match. Each pane counts 3, 2, 1, GO, and LOCKED stays up until GO. The opening It flashes on that pane. In the last ten seconds the clock turns gold and pulses. The tick is the round chime that already plays. ROUND OVER leads into standings ordered by least It time, then NEXT ROUND. The last round goes to RESULTS. A tag flashes the new It's pane and, when comic words are on, says YOU'RE IT. If P4 leaves, that pane closes and the feed says P4 left. Solo is one player against the AI. Unity is not installed here, so the stills are composites in `Docs/UiStills/screens2/pass21/`. Space still jumps.
 
+The twenty-second pass fills the standings card. Rank, the seat shape, It time, tags made, times tagged, and round wins sit on each row. The winner's row is gold, and the rows slide in by rank. During the count a pane shows the name and the seat chip, and the stat line returns at GO. LOCKED is small, under the digit, inside the pane. YOU'RE IT stays above an empty slot near the tagged player, left open for a comic word. Loading names the arena, rotates a controls tip on each seat, and draws a progress bar, from one pane up to four. Unity is not installed here, so the stills are composites in `Docs/UiStills/screens2/pass22/`. Space still jumps.
+
 ## Motion, ninth pass
 
 The wall jump, the rope, the zip, the launch pad, a landing, the dash flash, a hard turnaround, and a punch while you run all ease instead of snapping. Speeds, the jump, and the dash length are the same.
