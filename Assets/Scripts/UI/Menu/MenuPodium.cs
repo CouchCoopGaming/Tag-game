@@ -26,6 +26,7 @@ namespace Tag.Ui.Menu
             public int Hier;
             public int Accent;
             public int Hat;
+            public int Seat;
         }
 
         public static int Fill(Row[] rows)
@@ -56,6 +57,16 @@ namespace Tag.Ui.Menu
                     row.Tags = MatchBook.TagsMade[i];
                     row.Hier = 4;
                     row.Accent = i;
+                    row.Seat = -1;
+                    for (int s = 0; s < CouchPlay.Max; s++)
+                    {
+                        if (CouchPlay.Name(s) != row.Name) continue;
+                        row.Seat = s;
+                        row.Hier = MenuSession.Hier[s];
+                        row.Accent = MenuSession.Accent[s];
+                        row.Hat = MenuSession.Hat[s];
+                        break;
+                    }
                     rows[i] = row;
                 }
             }
@@ -100,6 +111,7 @@ namespace Tag.Ui.Menu
                 row.Winner = i == 0;
                 row.Hier = i;
                 row.Accent = (i + 1) % 4;
+                row.Seat = i;
                 rows[i] = row;
             }
             return n;
@@ -117,12 +129,14 @@ namespace Tag.Ui.Menu
             row.Hier = 4;
             row.Accent = 0;
             row.Hat = 0;
+            row.Seat = -1;
             for (int s = 0; s < CouchPlay.Max; s++)
             {
                 if (CouchPlay.Name(s) != row.Name) continue;
                 row.Hier = MenuSession.Hier[s];
                 row.Accent = MenuSession.Accent[s];
                 row.Hat = MenuSession.Hat[s];
+                row.Seat = s;
                 return row;
             }
             int h = 0;

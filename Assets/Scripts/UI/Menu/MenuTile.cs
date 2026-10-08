@@ -13,6 +13,10 @@ namespace Tag.Ui.Menu
         public Text Label;
         public Text Detail;
         public Image Bar;
+        public bool KeepBar;
+        public Color BarColor;
+        public RectTransform Sweep;
+        public float SweepSpan;
         public bool Allow = true;
         public Action<int> Hovered;
         public Action<int> Pressed;
@@ -63,7 +67,7 @@ namespace Tag.Ui.Menu
             if (hot && !MenuVideo.ReduceMotion) _punch = 1f;
             if (Plate != null) Plate.color = hot ? _hotColor : _base;
             if (Stroke != null) Stroke.color = hot ? MenuTheme.Gold : MenuTheme.Stroke;
-            if (Bar != null) Bar.color = hot ? MenuTheme.Gold : new Color(1f, 1f, 1f, 0.35f);
+            if (Bar != null) Bar.color = hot ? MenuTheme.Gold : (KeepBar ? BarColor : new Color(1f, 1f, 1f, 0.35f));
         }
 
         public void OnPointerEnter(PointerEventData eventData)
@@ -86,6 +90,7 @@ namespace Tag.Ui.Menu
             {
                 transform.localScale = new Vector3(target, target, 1f);
                 if (rt != null && _restSet) rt.anchoredPosition = _rest;
+                HideSweep();
                 return;
             }
             if (_punch > 0f)
@@ -115,6 +120,36 @@ namespace Tag.Ui.Menu
                 p.y += bob;
                 rt.anchoredPosition = Vector2.Lerp(rt.anchoredPosition, p, 1f - Mathf.Exp(-10f * Time.unscaledDeltaTime));
             }
+            SweepTick();
+        }
+
+        bool _sweepOn;
+
+        void HideSweep()
+        {
+            if (Sweep == null || !_sweepOn) return;
+            _sweepOn = false;
+            Sweep.gameObject.SetActive(false);
+        }
+
+        void SweepTick()
+        {
+            if (Sweep == null) return;
+            if (!_hot)
+            {
+                HideSweep();
+                return;
+            }
+            if (!_sweepOn)
+            {
+                _sweepOn = true;
+                Sweep.gameObject.SetActive(true);
+            }
+            float u = Mathf.Repeat(Time.unscaledTime * 0.45f, 1f);
+            float span = SweepSpan;
+            Vector2 p = Sweep.anchoredPosition;
+            p.x = Mathf.Lerp(-span, span, u);
+            Sweep.anchoredPosition = p;
         }
     }
 }

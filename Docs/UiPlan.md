@@ -58,15 +58,15 @@ MainMenu.unity is the same door without the park. It is third in the build list,
 
 | Screen | State |
 |---|---|
-| Title | Wordmark, sliding ribbons, press-start pulse. Any keyboard or pad advance. |
+| Title | Wordmark with a slow idle, arena photo drift, press-start pulse. Any keyboard or pad advance. |
 | Main | Chunky tiles. Online is disabled. Practice is the existing practice mode. |
 | Join | Four seats, device line, profile name, back leaves that device. |
 | Characters | Grid, per-seat cursor, ready, all-ready banner, render-texture idle mannequin. |
 | Mode and rules | The four modes that ship, plus the settings rows that already exist. |
-| Arena | Three parks and Random. Cards use name and blurb. Thumbnails are color blocks. |
+| Arena | Three parks and Random. Each card has a thumbnail, the name, the size, and a flavor line. |
 | Loading | Arena name and one control tip, then the existing match start. |
 | Pause | Opened by whoever pressed Start. Dim so the split stays visible. |
-| Results | Podium order by least time as It. Headline is the mode's result line. |
+| Results | Ranked figures on steps under a RESULTS heading. Headline is the mode's result line. |
 | Options | Existing look, audio, HUD, accessibility, plus video and reduce-motion for the menu. |
 | Controls | Rebind through ActionBinds. Unknown Jump keys are rejected. Space still jumps. |
 | Credits | Short original note. Built-in font. Existing UI sounds. |
@@ -79,7 +79,7 @@ Character previews load `Dummy_Mannequin_*_Hier_Hi` in the editor. The editor ba
 
 Arena cards use the overview stills in `Assets/UI/ArenaThumbs` (also under Resources so the build includes them). The hovered card fills the big preview.
 
-The podium orders players by the mode that ended: Hot Potato round wins (first to 2), Least It by time as It with that mode's winner first, Trail Tag last standing, Free play by tags and no winner stamp. The 3D steps use the same mannequin. Confetti plays only when there is a winner and reduce motion is off.
+Results orders players by the mode that ended: Hot Potato round wins (first to 2), Least It by time as It with that mode's winner first, Trail Tag last standing, Free play by tags and no winner stamp. The 3D steps use the same mannequin. The panel heading says RESULTS. Confetti plays only when there is a winner and reduce motion is off.
 
 ## Pass 3
 
@@ -112,6 +112,16 @@ Options opens onto Audio, Display, Accessibility, Controls, and Look. Audio step
 Screens slide for a fifth of a second and ignore input until the slide finishes. Back returns to the screen you came from, and an empty stack lands on the main menu or the title. A pad that drops shows Controller disconnected and that seat's reconnect line. Resume waits until the pad is back.
 
 `Docs/UiStills/pass5/` are mockups. Capture Screens also writes `17-pause-4`, `18-audio`, `19-display`, `20-access`, and `21-disconnect`.
+
+## Pass 6
+
+The title drifts the arena photo, bobs the TAG logo, and pulses Press Start. Reduce motion holds all three still. Tiles still scale on hover and squash on confirm, and a pale sweep crosses the highlighted tile. Move, confirm, back, join, and error each use a clip that was already on the bus. Join and confirm buzz the pad that pressed, and only when that seat's rumble is above 0 and reduce motion is off. A keyboard never buzzes.
+
+When every seated player is ready, the character screen counts Starting in 3, 2, 1. Anyone who unreadies or backs out cancels it. Mode select keeps a How to play card for the highlighted mode: one existing rule line and a small diagram.
+
+Arena cards show the overview, the measured size (160 x 100 m, 80 x 50 m, 110 x 70 m), a flavor line, and a top-down of that park's spawns and pads. Seat colors are the same red, blue, yellow, and green (or the accessibility palette once someone has joined) on the join card, the character card, the results row, and the figure.
+
+The results panel is headed RESULTS. First place stands in the center on the tall step, second on the left, third on the right, and fourth on the floor beside them. The winner uses the existing claim pose. The others use the give-up pose or the stumble. Confetti stays on the winner and stays off when reduce motion is on. The heading on that panel is RESULTS. Capture Screens still writes `09-results`. Mockups are in `Docs/UiStills/pass6/`.
 
 ## Later passes
 

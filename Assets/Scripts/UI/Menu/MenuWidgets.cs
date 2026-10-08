@@ -208,7 +208,7 @@ namespace Tag.Ui.Menu
             }
         }
 
-        public static void Logo(Transform parent, float x, float y, float w, float h, int size)
+        public static RectTransform Logo(Transform parent, float x, float y, float w, float h, int size)
         {
             var root = Place(parent, "Logo", x, y, w, h);
             root.pivot = new Vector2(0.5f, 0.5f);
@@ -230,6 +230,7 @@ namespace Tag.Ui.Menu
             }
             Text fill = Words(root, "TAG", size, TextAnchor.MiddleCenter, MenuTheme.Gold, Vector2.zero, Vector2.one);
             fill.alignment = TextAnchor.MiddleCenter;
+            return root;
         }
 
         static void Inset(Text label, float extra)

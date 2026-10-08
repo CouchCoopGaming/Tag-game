@@ -112,7 +112,6 @@ namespace Tag.Ui.Menu
         int _captureAction = -1;
         int _captureFrame = -1;
         string _conflict = "";
-        float _allReadyAt;
         int _joinSig = int.MinValue;
         int _castSig = int.MinValue;
         int _tip = 3;
@@ -265,6 +264,8 @@ namespace Tag.Ui.Menu
         {
             MenuFlow.Enter(_screen);
             MenuReveal.Clear();
+            MenuAttract.Clear();
+            MenuReady.Stop();
             _screen = id;
             if (_canvas != null) _canvas.enabled = true;
             _focus = 0;
@@ -483,6 +484,7 @@ namespace Tag.Ui.Menu
         MenuTile AddTile(float x, float y, float w, float h, int index, string label, string detail, bool allow)
         {
             MenuTile tile = MenuWidgets.Tile(_body, x, y, w, h, index, label, detail, allow, Hover, Press);
+            MenuJuice.AddSweep(tile);
             _tiles.Add(tile);
             if (index + 1 > _count) _count = index + 1;
             return tile;
@@ -724,7 +726,7 @@ namespace Tag.Ui.Menu
         void ShowCast()
         {
             _castSig = int.MinValue;
-            _allReadyAt = 0f;
+            MenuReady.Stop();
             MenuSession.ClearReady();
             for (int s = 0; s < 4; s++)
                 MenuSession.PullLook(s);
@@ -812,6 +814,7 @@ namespace Tag.Ui.Menu
 
         void Animate()
         {
+            MenuJuice.Tick(Time.unscaledDeltaTime);
             if (MenuCapture.Running)
             {
                 _fade = 1f;
@@ -847,9 +850,10 @@ namespace Tag.Ui.Menu
             }
             if (_flyover != null && _flyover.color.a > 0.01f && !MenuVideo.ReduceMotion)
             {
+                float amp = _screen == MenuScreenId.Title ? 0.07f : 0.04f;
                 Rect uv = _flyover.uvRect;
-                uv.x = 0.04f + Mathf.Sin(Time.unscaledTime * 0.15f) * 0.04f;
-                uv.y = 0.02f + Mathf.Cos(Time.unscaledTime * 0.11f) * 0.03f;
+                uv.x = 0.04f + Mathf.Sin(Time.unscaledTime * 0.12f) * amp;
+                uv.y = 0.02f + Mathf.Cos(Time.unscaledTime * 0.09f) * (amp * 0.7f);
                 uv.width = 0.92f;
                 uv.height = 0.92f;
                 _flyover.uvRect = uv;
@@ -864,12 +868,7 @@ namespace Tag.Ui.Menu
                 p.x = x;
                 _ribbons[i].anchoredPosition = p;
             }
-            if (_press != null && _screen == MenuScreenId.Title)
-            {
-                Color c = _press.color;
-                c.a = 0.35f + 0.65f * Mathf.Abs(Mathf.Sin(t * 2.6f));
-                _press.color = c;
-            }
+            if (_screen == MenuScreenId.Title) MenuAttract.Tick();
             MenuReveal.Tick();
             MenuFlow.Watch();
             MenuFlow.PaintLost();
@@ -948,7 +947,7 @@ namespace Tag.Ui.Menu
                         int slot = SeatOf(edge.Device);
                         if (slot >= 0 && LocalProfiles.SeatName(slot) == null)
                             LocalProfiles.SeatGuest(slot);
-                        MenuAudio.Confirm();
+                        MenuAudio.Join();
                     }
                     continue;
                 }
@@ -1010,7 +1009,7 @@ namespace Tag.Ui.Menu
                                 if (slot >= 0 && LocalProfiles.SeatName(slot) == null)
                                     LocalProfiles.SeatGuest(slot);
                                 if (slot >= 0) MenuSession.PullLook(slot);
-                                MenuAudio.Confirm();
+                                MenuAudio.Join();
                                 RefreshCast();
                             }
                         }
@@ -1079,22 +1078,12 @@ namespace Tag.Ui.Menu
                     }
                 }
             }
-            if (MenuSession.AllReady())
+            if (MenuReady.Advance(MenuSession.AllReady(), _banner))
             {
-                if (_allReadyAt <= 0f) _allReadyAt = Time.unscaledTime + 0.45f;
-                if (_banner != null) _banner.text = "ALL READY";
-                if (Time.unscaledTime >= _allReadyAt)
-                {
-                    MenuAudio.Confirm();
-                    MenuSession.CommitLooks();
-                    ShowRules();
-                    return;
-                }
-            }
-            else
-            {
-                _allReadyAt = 0f;
-                if (_banner != null) _banner.text = "";
+                MenuAudio.Confirm();
+                MenuSession.CommitLooks();
+                ShowRules();
+                return;
             }
             int sig = CastSig();
             if (sig != _castSig)
@@ -1268,10 +1257,11 @@ namespace Tag.Ui.Menu
             var plateImage = plate.gameObject.AddComponent<Image>();
             MenuArt.Plate(plateImage, new Color(0.05f, 0.12f, 0.32f, 0.55f), true);
             plateImage.raycastTarget = false;
-            MenuWidgets.Logo(_body, 410f, 50f, 1000f, 240f, 150);
-            Text sub = MenuWidgets.Words(_body, "COUCH TAG", 42, TextAnchor.MiddleCenter, MenuTheme.Cream, new Vector2(0.2f, 0.22f), new Vector2(0.8f, 0.36f));
+            RectTransform logo = MenuWidgets.Logo(_body, 410f, 50f, 1000f, 240f, 150);
+            Text sub = MenuWidgets.Words(_body, "COUCH TAG", MenuTokens.Title, TextAnchor.MiddleCenter, MenuTheme.Cream, new Vector2(0.2f, 0.22f), new Vector2(0.8f, 0.36f));
             sub.alignment = TextAnchor.MiddleCenter;
-            _press = MenuWidgets.Words(_body, "Press  Start   /   South   /   Space", 32, TextAnchor.MiddleCenter, MenuTheme.Cream, new Vector2(0.1f, 0.08f), new Vector2(0.9f, 0.22f));
+            _press = MenuWidgets.Words(_body, "Press  Start   /   South   /   Space", MenuTokens.Section, TextAnchor.MiddleCenter, MenuTheme.Cream, new Vector2(0.1f, 0.08f), new Vector2(0.9f, 0.22f));
+            MenuAttract.Bind(logo, _press);
         }
 
         void BuildMain()
@@ -1323,8 +1313,13 @@ namespace Tag.Ui.Menu
                 MenuTile tile = TileAt(s);
                 bool pad = human && CouchPlay.DeviceOf(s) != CouchPlay.DeviceKeyboard;
                 MenuWidgets.Glyph(tile, human ? (pad ? MenuIcons.Pad : MenuIcons.Keys) : MenuIcons.Either, MenuTheme.Seat(s));
-                if (tile != null && human)
-                    tile.Tint(Color.Lerp(MenuTheme.Panel, MenuTheme.Seat(s), 0.45f));
+                if (tile != null)
+                {
+                    tile.KeepBar = true;
+                    tile.BarColor = MenuTheme.Seat(s);
+                    if (tile.Bar != null) tile.Bar.color = tile.BarColor;
+                    tile.Tint(Color.Lerp(MenuTheme.Ink, MenuTheme.Seat(s), human ? 0.72f : 0.55f));
+                }
             }
             _count = 4;
             if (_banner != null)
@@ -1432,7 +1427,15 @@ namespace Tag.Ui.Menu
             for (int i = 0; i < labels.Length; i++)
                 AddTile(980f, 12f + i * 92f, 760f, 84f, 4 + i, labels[i], details[i], true);
             _count = 12;
+            ShowHow();
             RefreshFocus();
+        }
+
+        void ShowHow()
+        {
+            TagModeId id = MenuSession.Mode;
+            if (_focus >= 0 && _focus <= 3) id = (TagModeId)_focus;
+            MenuHowTo.Show(_body, id);
         }
 
         void BuildArena()
@@ -1447,7 +1450,7 @@ namespace Tag.Ui.Menu
             HideFlyover();
             for (int i = 0; i < ParkArena.Count; i++)
             {
-                AddTile(24f, 12f + i * 156f, 760f, 144f, i, ParkArena.NameOf(i), MenuCatalog.ArenaBlurb(i), true);
+                AddTile(24f, 12f + i * 156f, 760f, 144f, i, ParkArena.NameOf(i), MenuArenaCard.Blurb(i), true);
                 MenuWidgets.Thumb(TileAt(i), MenuArenaArt.Thumb(i), 18f, 18f, 200f, 108f);
             }
             AddTile(24f, 12f + 3 * 156f, 760f, 144f, 3, "Random", "One of Mega Park, Pocket Park, or Stack Yard.", true);
@@ -1459,8 +1462,8 @@ namespace Tag.Ui.Menu
             var view = MenuWidgets.Place(shot, "Shot", 18f, 18f, 944f, 460f);
             _arenaShot = view.gameObject.AddComponent<RawImage>();
             _arenaShot.raycastTarget = false;
-            _arenaShotName = MenuWidgets.Words(shot, "", 48, TextAnchor.MiddleLeft, MenuTheme.Gold, new Vector2(0f, 0.08f), new Vector2(1f, 0.28f));
-            _arenaShotBlurb = MenuWidgets.Words(shot, "", 26, TextAnchor.UpperLeft, MenuTheme.Cream, new Vector2(0f, 0f), new Vector2(1f, 0.14f));
+            _arenaShotName = MenuWidgets.Words(shot, "", MenuTokens.Display, TextAnchor.MiddleLeft, MenuTheme.Gold, new Vector2(0f, 0.08f), new Vector2(1f, 0.28f));
+            _arenaShotBlurb = MenuWidgets.Words(shot, "", MenuTokens.Body, TextAnchor.UpperLeft, MenuTheme.Cream, new Vector2(0f, 0f), new Vector2(1f, 0.14f));
             ShowArenaPreview();
         }
 
@@ -1477,7 +1480,11 @@ namespace Tag.Ui.Menu
             if (_arenaShotName != null)
                 _arenaShotName.text = random ? "Random" : ParkArena.NameOf(shown);
             if (_arenaShotBlurb != null)
-                _arenaShotBlurb.text = random ? "One of the three parks." : MenuCatalog.ArenaBlurb(shown);
+            {
+                string size = MenuArenaCard.Size(shown);
+                _arenaShotBlurb.text = random ? size + "\nOne of the three parks." : size + "\n" + MenuArenaCard.Flavor(shown);
+            }
+            MenuArenaCard.Paint(_arenaShot != null ? _arenaShot.transform.parent : null, shown);
         }
 
         void ShowFlyover(int arena, float alpha)
@@ -1572,22 +1579,32 @@ namespace Tag.Ui.Menu
             if (_header != null) _header.text = "  " + headline;
             if (_banner != null) _banner.text = MenuCatalog.ModeName(modeId);
             int n = FillRanks();
-            var stage = MenuWidgets.Place(_body, "PodiumView", 80f, 8f, 1680f, 460f);
+            var stage = MenuWidgets.Place(_body, "ResultsView", 80f, 8f, 1680f, 460f);
             var frame = stage.gameObject.AddComponent<Image>();
             MenuArt.Plate(frame, MenuTheme.Navy, true);
             frame.raycastTarget = false;
-            var viewRt = MenuWidgets.Place(stage, "View", 16f, 16f, 1648f, 360f);
+            var viewRt = MenuWidgets.Place(stage, "View", 16f, 16f, 1648f, 428f);
             var view = viewRt.gameObject.AddComponent<RawImage>();
             view.raycastTarget = false;
             if (_preview != null) _preview.ShowPodium(n, _rows, view);
+            Text results = MenuWidgets.Words(stage, "RESULTS", MenuTokens.Title, TextAnchor.MiddleCenter, MenuTheme.Gold, new Vector2(0f, 0.84f), new Vector2(1f, 1f));
+            results.alignment = TextAnchor.MiddleCenter;
             for (int rank = 0; rank < n; rank++)
             {
                 string detail = MenuPodium.Stats(_rows[rank]);
+                int seat = _rows[rank].Seat;
+                if (seat < 0) seat = rank;
                 MenuTile tile = AddTile(16f + rank * 452f, 470f, 436f, 136f, 20 + rank, MenuTheme.Place(rank) + "  " + _rows[rank].Name, detail, false);
-                if (tile != null && tile.Bar != null) tile.Bar.color = MenuTheme.Seat(rank);
-                if (tile != null && tile.Stroke != null && _rows[rank].Winner)
-                    tile.Stroke.color = MenuTheme.Gold;
-                if (tile != null) MenuReveal.Row(tile.transform as RectTransform);
+                if (tile != null)
+                {
+                    tile.KeepBar = true;
+                    tile.BarColor = MenuTheme.Seat(seat);
+                    if (tile.Bar != null) tile.Bar.color = tile.BarColor;
+                    tile.Tint(Color.Lerp(MenuTheme.Ink, MenuTheme.Seat(seat), 0.62f));
+                    if (tile.Stroke != null && _rows[rank].Winner)
+                        tile.Stroke.color = MenuTheme.Gold;
+                    MenuReveal.Row(tile.transform as RectTransform);
+                }
             }
             MenuTile rematch = AddTile(16f, 628f, 436f, 96f, 0, "Rematch", "Same setup", true);
             MenuTile modeBtn = AddTile(468f, 628f, 436f, 96f, 1, "Change mode", "", true);
@@ -1759,6 +1776,11 @@ namespace Tag.Ui.Menu
 
         void ActivateMain()
         {
+            if (_focus == 6)
+            {
+                MenuAudio.Error();
+                return;
+            }
             MenuAudio.Confirm();
             switch (_focus)
             {
@@ -2025,6 +2047,7 @@ namespace Tag.Ui.Menu
             _focus = next;
             MenuAudio.Move();
             RefreshFocus();
+            ShowHow();
         }
 
         void StepRules(int dir)
@@ -2038,6 +2061,7 @@ namespace Tag.Ui.Menu
                 _focus = next;
                 MenuAudio.Move();
                 RefreshFocus();
+                ShowHow();
                 return;
             }
             GameSettings s = GameSettings.Current ?? GameSettings.Defaults();
@@ -2103,7 +2127,7 @@ namespace Tag.Ui.Menu
             {
                 _conflict = "That key is not kept for Jump. Space stays jump.";
                 _capturing = false;
-                MenuAudio.Back();
+                MenuAudio.Error();
                 PaintControls();
                 return;
             }
@@ -2114,7 +2138,7 @@ namespace Tag.Ui.Menu
             {
                 _conflict = ActionBinds.Name(action) + " conflicts with " + ActionBinds.Name(other);
                 _capturing = false;
-                MenuAudio.Back();
+                MenuAudio.Error();
                 PaintControls();
                 return;
             }
@@ -2173,7 +2197,7 @@ namespace Tag.Ui.Menu
                 string ready = MenuSession.Ready[s] ? "READY" : "Not ready";
                 string hat = MenuSession.Hat[s] == 0 ? "Hat off" : "Hat on";
                 _castReady[s].text = CouchPlay.Name(s) + "   " + skin + " / " + trim + "   " + hat + "   " + ready;
-                _castReady[s].color = MenuSession.Ready[s] ? MenuTheme.Ready : MenuTheme.Cream;
+                _castReady[s].color = MenuTheme.Ink;
                 if (_readyStamp[s] != null)
                 {
                     _readyStamp[s].gameObject.SetActive(MenuSession.Ready[s]);
@@ -2184,7 +2208,7 @@ namespace Tag.Ui.Menu
                     }
                 }
                 if (_castPlate[s] != null)
-                    _castPlate[s].color = Color.Lerp(MenuTheme.Panel, MenuTheme.Seat(s), MenuSession.Ready[s] ? 0.75f : 0.45f);
+                    _castPlate[s].color = MenuTheme.Seat(s);
             }
         }
 

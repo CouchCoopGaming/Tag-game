@@ -116,6 +116,15 @@ namespace Tag.Ui.Menu
             }
             if (count < 0) count = 0;
             if (count > Slots) count = Slots;
+            bool crowned = false;
+            if (rows != null)
+            {
+                int look = count < rows.Length ? count : rows.Length;
+                for (int r = 0; r < look; r++)
+                {
+                    if (rows[r].Winner) crowned = true;
+                }
+            }
             for (int i = 0; i < Slots; i++)
             {
                 if (_podiumAnchor[i] == null) continue;
@@ -125,9 +134,14 @@ namespace Tag.Ui.Menu
                 _step[i].gameObject.SetActive(on);
                 if (!on) continue;
                 MenuPodium.Row row = rows[i];
-                MenuMannequin.Spawn(_podiumAnchor[i], MenuMannequin.NameOf(row.Hier), MenuMannequin.NameOf(row.Accent), row.Hat != 0);
+                GameObject body = MenuMannequin.Spawn(_podiumAnchor[i], MenuMannequin.NameOf(row.Hier), MenuMannequin.NameOf(row.Accent), row.Hat != 0);
+                int seat = row.Seat >= 0 ? row.Seat : i;
+                MenuCheer.Dress(body, MenuTheme.Seat(seat));
+                bool win = row.Winner;
+                bool lose = crowned && !win;
+                MenuCheer.Play(body, win, lose, lose && i >= 2);
             }
-            bool party = count > 0 && rows != null && rows[0].Winner && !MenuVideo.ReduceMotion;
+            bool party = crowned && !MenuVideo.ReduceMotion;
             for (int i = 0; i < _confetti.Length; i++)
             {
                 if (_confetti[i] != null) _confetti[i].gameObject.SetActive(party);
@@ -157,12 +171,14 @@ namespace Tag.Ui.Menu
 
         void BuildPodium()
         {
-            var root = new GameObject("Podium");
+            var root = new GameObject("Results");
             root.transform.SetParent(transform, false);
             root.transform.position = new Vector3(0f, -80f, 60f);
             _podiumRoot = root.transform;
-            float[] heights = { 1.15f, 0.78f, 0.52f, 0.36f };
-            float[] xs = { 0f, -1.7f, 1.7f, 3.2f };
+            float[] heights = new float[Slots];
+            float[] xs = new float[Slots];
+            for (int s = 0; s < Slots; s++)
+                MenuCheer.Slot(s, out xs[s], out heights[s]);
             Color[] paints =
             {
                 MenuTheme.Gold,
@@ -176,7 +192,9 @@ namespace Tag.Ui.Menu
                 step.name = "Step" + i.ToString();
                 step.transform.SetParent(_podiumRoot, false);
                 step.transform.localPosition = new Vector3(xs[i], heights[i] * 0.5f, 0f);
-                step.transform.localScale = new Vector3(1.35f, heights[i], 1.15f);
+                float wide = heights[i] < 0.2f ? 1.55f : 1.35f;
+                float deep = heights[i] < 0.2f ? 1.45f : 1.15f;
+                step.transform.localScale = new Vector3(wide, heights[i], deep);
                 var col = step.GetComponent<Collider>();
                 if (col != null) Destroy(col);
                 var rend = step.GetComponent<Renderer>();
@@ -202,12 +220,12 @@ namespace Tag.Ui.Menu
                 bit.SetActive(false);
                 _confetti[i] = bit.transform;
             }
-            var camGo = new GameObject("PodiumCam");
+            var camGo = new GameObject("ResultsCam");
             camGo.transform.SetParent(transform, false);
             var cam = camGo.AddComponent<Camera>();
             cam.clearFlags = CameraClearFlags.SolidColor;
             cam.backgroundColor = new Color(0.10f, 0.28f, 0.62f, 1f);
-            cam.fieldOfView = 32f;
+            cam.fieldOfView = 34f;
             cam.nearClipPlane = 0.05f;
             cam.farClipPlane = 40f;
             cam.depth = -19;
@@ -215,8 +233,8 @@ namespace Tag.Ui.Menu
             _podiumRt = new RenderTexture(1280, 720, 16, RenderTextureFormat.ARGB32);
             _podiumRt.Create();
             cam.targetTexture = _podiumRt;
-            cam.transform.position = _podiumRoot.position + new Vector3(0f, 2.4f, 7.2f);
-            cam.transform.LookAt(_podiumRoot.position + new Vector3(0.4f, 1.3f, 0f));
+            cam.transform.position = _podiumRoot.position + new Vector3(0.35f, 2.15f, 8.6f);
+            cam.transform.LookAt(_podiumRoot.position + new Vector3(0.35f, 1.15f, 0f));
             _podiumCam = cam;
         }
 

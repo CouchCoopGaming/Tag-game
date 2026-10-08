@@ -63,7 +63,7 @@ namespace Tag.Ui.Menu
                 + "Arenas on this build: Mega Park, Pocket Park, Stack Yard.\n"
                 + "Modes: Least It, Hot Potato, Trail Tag, Free play.\n\n"
                 + "Menu type is the Unity built-in font. No paid typefaces.\n"
-                + "Menu sounds are the existing UI bus (move, confirm, back).\n"
+                + "Menu sounds are the existing UI bus (move, confirm, back, join, error).\n"
                 + "One-shot audio under Assets/Audio is original synthesis, CC0.\n"
                 + "The playground music bed was already in the project.\n\n"
                 + "Space still jumps, even when Jump is rebound.\n"
