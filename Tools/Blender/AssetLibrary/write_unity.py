@@ -265,12 +265,14 @@ TextureImporter:
     return guid("tex", key)
 
 
-def write_materials(palette, textured, normals, ao_names, emissive):
+def write_materials(palette, textured, normals, ao_names, emissive, only=None):
     src = open(RUNNER_MAT, encoding="utf-8").read()
     # Drop the editor version sidecar; the material itself ends at the first document.
     src = src.split("--- !u!114")[0].rstrip() + "\n"
     out = {}
     for name, (color, metal, smooth) in palette.items():
+        if only is not None and name not in only:
+            continue
         body = src.replace("m_Name: Mat_Runner_Base", "m_Name: " + name)
         col = "{r: %s, g: %s, b: %s, a: 1}" % (num(color[0]), num(color[1]), num(color[2]))
         body = re.sub(r"- _BaseColor: \{[^}]+\}", "- _BaseColor: " + col, body)

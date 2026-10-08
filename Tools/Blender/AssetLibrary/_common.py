@@ -86,9 +86,24 @@ PALETTE = {
     "Lib_Window": ((0.14, 0.20, 0.26), 0.04, 0.82),
     # Display glass. Dark, slightly metallic, transmissive, and not a light panel.
     "Lib_ShopGlass": ((0.06, 0.09, 0.12), 0.22, 0.92),
+    # Car glass. Dark tint you can see a cabin through, no backing sheet.
+    "Lib_TintGlass": ((0.04, 0.075, 0.095), 0.08, 0.96),
+    "Lib_Headlamp": ((0.82, 0.88, 0.74), 0.04, 0.90),
+    "Lib_Taillamp": ((0.72, 0.04, 0.03), 0.04, 0.86),
+    "Lib_SignalAmber": ((0.86, 0.42, 0.05), 0.04, 0.88),
+    "Lib_SignalGreen": ((0.05, 0.48, 0.12), 0.04, 0.88),
     "Lib_WindowLit": ((0.55, 0.36, 0.16), 0.0, 0.40),
     "Lib_PaintCream": ((0.86, 0.78, 0.66), 0.0, 0.32),
     "Lib_PaintTeal": ((0.10, 0.36, 0.40), 0.0, 0.30),
+    # Factory paint for the midsize sedan line. Flat color, not a logo.
+    "Lib_PaintBlack": ((0.012, 0.012, 0.013), 0.55, 0.84),
+    "Lib_PaintGrey": ((0.30, 0.31, 0.33), 0.80, 0.78),
+    "Lib_PaintSilver": ((0.62, 0.64, 0.66), 0.92, 0.84),
+    "Lib_PaintNavy": ((0.04, 0.10, 0.32), 0.70, 0.82),
+    "Lib_PaintOcean": ((0.03, 0.36, 0.40), 0.45, 0.80),
+    # Deep clearcoat red. The older Lib_PaintRed reads salmon on a car.
+    "Lib_PaintCrimson": ((0.70, 0.012, 0.018), 0.28, 0.86),
+    "Lib_AutoGlass": ((0.012, 0.018, 0.022), 0.06, 0.96),
     "Lib_Interior": ((0.18, 0.13, 0.10), 0.0, 0.45),
     "Lib_CourtDecal": ((0.16, 0.16, 0.17), 0.0, 0.18),
     "Lib_Bark": ((0.34, 0.24, 0.14), 0.0, 0.22),
@@ -115,6 +130,10 @@ EMISSIVE = {
     "Lib_Lamp": ((1.0, 0.75, 0.38), 8.0),
     "Lib_Window": ((0.55, 0.75, 0.90), 0.22),
     "Lib_WindowLit": ((1.0, 0.68, 0.32), 0.20),
+    "Lib_Headlamp": ((1.0, 0.93, 0.72), 2.4),
+    "Lib_Taillamp": ((0.95, 0.04, 0.02), 1.8),
+    "Lib_SignalAmber": ((1.0, 0.48, 0.05), 1.6),
+    "Lib_SignalGreen": ((0.12, 0.85, 0.18), 1.6),
 }
 
 # Grayscale-or-color albedo multiplied is baked as full color. UV is meters.
@@ -661,9 +680,14 @@ class Geo:
         bmesh.ops.recalc_face_normals(out, faces=out.faces)
         self._ingest(out, mat, 1.0)
 
-    def text(self, body, location, size, mat, extrude=0.008, yaw=0.0):
-        """Centered text standing in the Unity XY plane, extruded toward +Z, then yawed."""
+    def text(self, body, location, size, mat, extrude=0.008, yaw=0.0, font=None):
+        """Centered text standing in the Unity XY plane, extruded toward +Z, then yawed.
+
+        Pass an OFL font path. The default Blender font is GPL and is not used for new signs.
+        """
         curve = bpy.data.curves.new("LibText", "FONT")
+        if font:
+            curve.font = bpy.data.fonts.load(font, check_existing=True)
         curve.body = body
         curve.align_x = "CENTER"
         curve.align_y = "CENTER"
@@ -987,6 +1011,43 @@ def _multiply_ao(nt, bsdf, path):
     nt.links.new(mix.outputs["Result"], base)
 
 
+# Clearcoat is a still-shader only. Unity materials stay the flat palette color.
+_CAR_CLEAR = {
+    "Lib_PaintWhite": (0.0, 0.16),
+    "Lib_PaintBlack": (0.55, 0.14),
+    "Lib_PaintSilver": (0.92, 0.12),
+    "Lib_PaintGrey": (0.80, 0.16),
+    "Lib_PaintNavy": (0.70, 0.14),
+    "Lib_PaintOcean": (0.45, 0.14),
+    "Lib_PaintCrimson": (0.12, 0.18),
+}
+_FLAKE = {"Lib_PaintSilver", "Lib_PaintGrey", "Lib_PaintNavy", "Lib_PaintOcean", "Lib_PaintCrimson"}
+
+
+def _car_clearcoat(nt, bsdf, name):
+    """Gloss coat plus a fine flake bump. Guarded so a second ensure does not stack nodes."""
+    if name not in _CAR_CLEAR:
+        return
+    metal, rough = _CAR_CLEAR[name]
+    bsdf.inputs["Metallic"].default_value = metal
+    bsdf.inputs["Roughness"].default_value = rough
+    if "Coat Weight" in bsdf.inputs:
+        bsdf.inputs["Coat Weight"].default_value = 0.72 if name == "Lib_PaintCrimson" else 1.0
+    if "Coat Roughness" in bsdf.inputs:
+        bsdf.inputs["Coat Roughness"].default_value = 0.045
+    if name not in _FLAKE or any(node.name == "CarFlake" for node in nt.nodes):
+        return
+    noise = nt.nodes.new("ShaderNodeTexNoise")
+    noise.name = "CarFlake"
+    noise.inputs["Scale"].default_value = 140.0
+    noise.inputs["Detail"].default_value = 2.0
+    bump = nt.nodes.new("ShaderNodeBump")
+    bump.inputs["Strength"].default_value = 0.08
+    bump.inputs["Distance"].default_value = 0.0015
+    nt.links.new(noise.outputs["Fac"], bump.inputs["Height"])
+    nt.links.new(bump.outputs["Normal"], bsdf.inputs["Normal"])
+
+
 def _ensure_materials():
     for name, (color, metal, smooth) in PALETTE.items():
         mat = bpy.data.materials.get(name)
@@ -1038,6 +1099,21 @@ def _ensure_materials():
             bsdf.inputs["Roughness"].default_value = 0.07
             if "IOR" in bsdf.inputs:
                 bsdf.inputs["IOR"].default_value = 1.45
+        if name == "Lib_TintGlass" and "Transmission Weight" in bsdf.inputs:
+            bsdf.inputs["Transmission Weight"].default_value = 0.42
+            bsdf.inputs["Roughness"].default_value = 0.04
+            if "IOR" in bsdf.inputs:
+                bsdf.inputs["IOR"].default_value = 1.45
+        if name == "Lib_AutoGlass" and "Transmission Weight" in bsdf.inputs:
+            bsdf.inputs["Transmission Weight"].default_value = 0.14
+            bsdf.inputs["Roughness"].default_value = 0.02
+            if "IOR" in bsdf.inputs:
+                bsdf.inputs["IOR"].default_value = 1.52
+            if "Coat Weight" in bsdf.inputs:
+                bsdf.inputs["Coat Weight"].default_value = 0.55
+            if "Coat Roughness" in bsdf.inputs:
+                bsdf.inputs["Coat Roughness"].default_value = 0.02
+        _car_clearcoat(nt, bsdf, name)
 
 
 def _object_from_geo(geo, name):
