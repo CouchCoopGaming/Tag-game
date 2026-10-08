@@ -24,8 +24,9 @@ GAP = 0.0035
 
 # bone, child mesh, parent meshes, ball radius, trim radius, cone length, fallback tube radius
 JOINTS = [
-    ("UpperLeg_L", "Mesh_UpperLeg_L", ("Mesh_Hips",), 0.045, 0.155, 0.18, 0.078),
-    ("UpperLeg_R", "Mesh_UpperLeg_R", ("Mesh_Hips",), 0.045, 0.155, 0.18, 0.078),
+    # 3.0 cm hip balls. The 4.5 cm balls held the lower spine inside the shell.
+    ("UpperLeg_L", "Mesh_UpperLeg_L", ("Mesh_Hips",), 0.030, 0.155, 0.18, 0.078),
+    ("UpperLeg_R", "Mesh_UpperLeg_R", ("Mesh_Hips",), 0.030, 0.155, 0.18, 0.078),
     ("LowerLeg_L", "Mesh_LowerLeg_L", ("Mesh_UpperLeg_L",), 0.036, 0.070, 0.12, 0.055),
     ("LowerLeg_R", "Mesh_LowerLeg_R", ("Mesh_UpperLeg_R",), 0.036, 0.070, 0.12, 0.055),
     ("Foot_L", "Mesh_Foot_L", ("Mesh_LowerLeg_L",), 0.030, 0.046, 0.07, 0.040),
@@ -504,6 +505,354 @@ def neck_joint(arm):
         print("neck-part", obj.name, "verts", len(obj.data.vertices), "boundary", boundary_edges(obj))
 
 
+# 140° fold leaves a 40° wedge. tan(20°) is 0.364; 0.27 leaves a few millimetres
+# so a float32 round trip does not close the gap. The cone is the allowed tube.
+KNEE_SLOPE = 0.27
+
+
+def fuse_solids(parts):
+    """Boolean-union closed cutters. A mesh join leaves internal faces and INTERSECT fails."""
+    parts = [obj for obj in parts if obj is not None]
+    if not parts:
+        return None
+    base = parts[0]
+    for extra in parts[1:]:
+        if not apply_bool(base, extra, "UNION", max_boundary=4000):
+            print("FUSE FAIL", base.name, flush=True)
+            return None
+    return base
+
+
+def wrap_limb(obj, pivot, axis, slope, d_end, ball_r, own_ball, protect):
+    """Replace the tube near a hinge with the clearance cone.
+
+    own_ball keeps the joint sphere (the child cap). The parent starts outside
+    that sphere so the cone cap does not fill the socket. A fat keeper past
+    d_end leaves the rest of the limb, including the ball at the other end.
+    """
+    d0 = ball_r * 0.40 if own_ball else (ball_r + GAP)
+    parts = []
+    if own_ball:
+        parts.append(new_sphere(obj.name + "keepball", pivot, ball_r + 0.002, 28))
+    parts.append(new_cone(
+        obj.name + "cone",
+        pivot + axis * d0,
+        pivot + axis * d_end,
+        max(0.006, slope * d0),
+        slope * d_end,
+    ))
+    parts.append(new_cone(
+        obj.name + "keep",
+        pivot + axis * (d_end - 0.02),
+        pivot + axis * (d_end + 1.35),
+        0.36,
+        0.36,
+    ))
+    solid = fuse_solids(parts)
+    if solid is None:
+        for part in parts:
+            if part is not None and part.name in bpy.data.objects:
+                _drop_cutter(part)
+        return False
+    before = len(obj.data.vertices)
+    ok = apply_bool(obj, solid, "INTERSECT", protect, max_boundary=400)
+    print(
+        "wrap", obj.name, before, "->", len(obj.data.vertices),
+        "ok", ok, "boundary", boundary_edges(obj), flush=True,
+    )
+    return ok
+
+
+def wrap_knees(arm):
+    """Thigh and shin both wrap the knee ball. A 140° bend stays inside the wedge."""
+    loco.clear_pose(arm)
+    loco.set_root(arm, 0.0, 0.0)
+    bpy.context.view_layer.update()
+    for side in ("L", "R"):
+        knee, shin_axis = world_head(arm, "LowerLeg_" + side)
+        hip, _hip_axis = world_head(arm, "UpperLeg_" + side)
+        toward_hip = hip - knee
+        if toward_hip.dot(-shin_axis) < 0.9 * toward_hip.length:
+            print("knee axis off", side, round(toward_hip.dot(-shin_axis), 3), flush=True)
+        shin = bpy.data.objects["Mesh_LowerLeg_" + side]
+        thigh = bpy.data.objects["Mesh_UpperLeg_" + side]
+        # The thigh bone is not exactly opposite the shin. A cone on the shin
+        # axis slices the upper thigh into the pelvis.
+        toward_hip = (hip - knee).normalized()
+        wrap_limb(shin, knee, shin_axis, KNEE_SLOPE, 0.28, 0.036, True, ((knee, 0.036),))
+        wrap_limb(thigh, knee, toward_hip, KNEE_SLOPE, 0.32, 0.036, False, ((hip, 0.045),))
+
+
+def slim_cone(obj, pivot, axis, slope, gap, d_min, d_max):
+    """Pull a tube inside a cone. The knee uses wrap_limb; hip and neck still taper."""
+    mw = obj.matrix_world
+    inv = mw.inverted()
+    moved = 0
+    for vert in obj.data.vertices:
+        world = mw @ vert.co
+        vec = world - pivot
+        along = vec.dot(axis)
+        if along < d_min or along > d_max:
+            continue
+        radial_vec = vec - axis * along
+        radial = radial_vec.length
+        if radial < 1e-6:
+            continue
+        limit = max(0.012, slope * along - gap)
+        if radial <= limit + 0.0008:
+            continue
+        vert.co = inv @ (pivot + axis * along + radial_vec * (limit / radial))
+        moved += 1
+    if moved:
+        obj.data.update()
+    return moved
+
+
+def shrink_shell(obj, pivot, old_r, new_r):
+    """Move a joint ball inward. Spanning verts between the two radii come with it."""
+    mw = obj.matrix_world
+    inv = mw.inverted()
+    moved = 0
+    for vert in obj.data.vertices:
+        world = mw @ vert.co
+        vec = world - pivot
+        dist = vec.length
+        if dist < 1e-6 or abs(dist - old_r) > 0.008:
+            continue
+        vert.co = inv @ (pivot + vec.normalized() * new_r)
+        moved += 1
+    if moved:
+        obj.data.update()
+    return moved
+
+
+def _pose_axis(arm, bone, flex, abd):
+    loco.clear_pose(arm)
+    y = -abd if bone.endswith("_L") else abd
+    loco.set_e(arm, bone, flex, y, 0.0)
+    bpy.context.view_layer.update()
+    return world_head(arm, bone)
+
+
+def carve_flex_cones(arm, bone, parent_name, flexes, abds, slope, reach, start_d):
+    """Hollow the parent along the swing. The cutter starts outside the joint ball."""
+    parent = bpy.data.objects[parent_name]
+    before = len(parent.data.vertices)
+    cones = []
+    for flex in flexes:
+        for abd in abds:
+            pivot, axis = _pose_axis(arm, bone, flex, abd)
+            start = pivot + axis * start_d
+            end = pivot + axis * reach
+            cones.append(new_cone(
+                bone + "flex", start, end,
+                max(0.012, slope * start_d),
+                max(0.02, slope * reach),
+            ))
+    loco.clear_pose(arm)
+    bpy.context.view_layer.update()
+    cutter = fuse_solids(cones)
+    ok = False
+    if cutter is not None:
+        ok = apply_bool(parent, cutter, "DIFFERENCE", protect_of(parent_name), max_boundary=240)
+        if ok and 0 < boundary_edges(parent) <= 80:
+            close_mesh(parent)
+    print(
+        "flex-cone", parent_name, bone, before, "->", len(parent.data.vertices),
+        "ok", ok, "boundary", boundary_edges(parent), flush=True,
+    )
+    return ok
+
+
+def notch_flex(arm, bone, parent_name, flex, abd, gap=0.008):
+    """Push parent verts that the posed limb contains out past that shell.
+
+    A boolean fan tears the open pelvis. Moving the penetrated verts keeps the
+    rest of the shell and opens a socket where the limb actually travels.
+    """
+    parent = bpy.data.objects[parent_name]
+    child_name = "Mesh_" + bone
+    loco.clear_pose(arm)
+    y = -abd if bone.endswith("_L") else abd
+    loco.set_e(arm, bone, flex, y, 0.0)
+    bpy.context.view_layer.update()
+    joint = arm.matrix_world @ arm.pose.bones[bone].head
+    verts, polys = loco.world_verts(child_name)
+    if len(verts) < 4:
+        return 0
+    bvh = BVHTree.FromPolygons(verts, polys)
+    inv = parent.matrix_world.inverted()
+    moved = 0
+    for vert in parent.data.vertices:
+        world = parent.matrix_world @ vert.co
+        # The official test exempts 3 cm. Verts just outside that still count.
+        if (world - joint).length <= 0.030:
+            continue
+        nearest, normal, _i, dist = bvh.find_nearest(world)
+        if nearest is None or dist is None or normal is None:
+            continue
+        if dist <= 0.004 or dist > 0.045:
+            continue
+        if (world - nearest).dot(normal) >= 0.0:
+            continue
+        if normal.length < 1e-8:
+            continue
+        vert.co = inv @ (nearest + normal.normalized() * gap)
+        moved += 1
+    parent.data.update()
+    loco.clear_pose(arm)
+    bpy.context.view_layer.update()
+    print("notch", parent_name, bone, flex, moved, flush=True)
+    return moved
+
+
+def clear_hips(arm):
+    """Taper the thigh from a 2.8 cm hip ball so 110° of flex clears the pelvis.
+
+    A vertex notch and a pelvis boolean both opened the reverse pair. Wrapping
+    the thigh along the bone, with its own ball, is the cut that stayed clear
+    at rest and at -110°.
+    """
+    loco.clear_pose(arm)
+    loco.set_root(arm, 0.0, 0.0)
+    bpy.context.view_layer.update()
+    for side in ("L", "R"):
+        pivot, _axis = world_head(arm, "UpperLeg_" + side)
+        knee, _shin = world_head(arm, "LowerLeg_" + side)
+        axis = (knee - pivot).normalized()
+        wrap_limb(
+            bpy.data.objects["Mesh_UpperLeg_" + side],
+            pivot, axis, 0.34, 0.18, 0.028, True, ((pivot, 0.028),),
+        )
+
+
+def clear_neck(arm):
+    """Short neck tube, and a head socket deep enough for ±40° of pitch."""
+    loco.clear_pose(arm)
+    loco.set_root(arm, 0.0, 0.0)
+    bpy.context.view_layer.update()
+    head, axis = world_head(arm, "Head")
+    neck = bpy.data.objects["Mesh_Neck"]
+    # Keep the neck ball. The tube below it is a narrow cone the recess can cover.
+    wrap_limb(neck, head, -axis, 0.22, 0.12, 0.038, True, ((head, 0.038),))
+    skull = bpy.data.objects["Mesh_Head"]
+    cones = []
+    for pitch in (-40.0, -20.0, 0.0, 20.0, 40.0):
+        _pivot, pitched = _pose_axis(arm, "Head", pitch, 0.0)
+        # The neck hangs down the head's -axis. Pitch swings that tube.
+        start = head - pitched * 0.042
+        end = head - pitched * 0.095
+        cones.append(new_cone("headpitch", start, end, 0.028, 0.072))
+    loco.clear_pose(arm)
+    bpy.context.view_layer.update()
+    cutter = fuse_solids(cones)
+    ok = False
+    if cutter is not None:
+        ok = apply_bool(skull, cutter, "DIFFERENCE", max_boundary=200)
+        if ok and 0 < boundary_edges(skull) <= 60:
+            close_mesh(skull)
+    print("head-recess", ok, "verts", len(skull.data.vertices), "boundary", boundary_edges(skull), flush=True)
+
+
+def narrow_lower_spine(arm, ball_r=0.045, goal=0.053):
+    """Shift lower-spine verts that sit in a hip ball toward the midline and up.
+
+    A 1.5 cm silhouette change is enough to put them outside the 4.5 cm ball.
+    """
+    spine = bpy.data.objects["Mesh_Spine"]
+    mw = spine.matrix_world
+    inv = mw.inverted()
+    balls = []
+    for side in ("L", "R"):
+        pivot, _axis = world_head(arm, "UpperLeg_" + side)
+        balls.append(pivot)
+    moved = 0
+    for vert in spine.data.vertices:
+        world = mw @ vert.co
+        shifted = world.copy()
+        did = False
+        for pivot in balls:
+            dist = (shifted - pivot).length
+            if dist >= goal or dist < 1e-4:
+                continue
+            medial = -1.0 if pivot.x > 0.0 else 1.0
+            direction = Vector((medial * 0.55, 0.0, 0.84)).normalized()
+            step = 0.0
+            for _ in range(16):
+                step += 0.003
+                trial = shifted + direction * step
+                if (trial - pivot).length >= goal:
+                    shifted = trial
+                    did = True
+                    break
+        if did:
+            vert.co = inv @ shifted
+            moved += 1
+    if moved:
+        spine.data.update()
+    print("narrow-spine", moved, flush=True)
+    return moved
+
+
+def clearance_pass(arm, stage):
+    """Taper one hinge so the tube clears the stated bend. Stages stack.
+
+    knee: 140° bend. hip: 110° flex. neck: ±40° pitch. spine: rest pair.
+    """
+    loco.clear_pose(arm)
+    loco.set_root(arm, 0.0, 0.0)
+    bpy.context.view_layer.update()
+    if stage == "spine":
+        narrow_lower_spine(arm)
+    if stage in ("knee", "hip", "neck"):
+        wrap_knees(arm)
+    if stage in ("hip", "hip-only", "neck"):
+        clear_hips(arm)
+    if stage == "neck":
+        clear_neck(arm)
+    loco.clear_pose(arm)
+    bpy.context.view_layer.update()
+
+
+def seat_sole(arm):
+    """Translate the rest skeleton so the sole is at z=0.
+
+    The bone-parent inverses stay as they were. A rigid armature-space move
+    carries the meshes with the bones. Rewriting matrix_world slides the ankles.
+    """
+    loco.clear_pose(arm)
+    loco.set_root(arm, 0.0, 0.0)
+    bpy.context.view_layer.update()
+    low = None
+    for name in ("Mesh_Foot_L", "Mesh_Foot_R"):
+        obj = bpy.data.objects[name]
+        z = min((obj.matrix_world @ v.co).z for v in obj.data.vertices)
+        low = z if low is None else min(low, z)
+    if low is None or abs(low) < 0.0008:
+        print("sole", round(low or 0.0, 4), flush=True)
+        return
+    delta = Vector((0.0, 0.0, -low))
+    # Leave the bone-parent inverses alone. Restoring the pre-move inverses
+    # puts the shells back on the old joints. A connected head is the parent
+    # tail, so adding delta to both applies the shift twice.
+    if arm.mode != "OBJECT":
+        bpy.ops.object.mode_set(mode="OBJECT")
+    bpy.ops.object.select_all(action="DESELECT")
+    arm.select_set(True)
+    bpy.context.view_layer.objects.active = arm
+    bpy.ops.object.mode_set(mode="EDIT")
+    for bone in arm.data.edit_bones:
+        if bone.parent is None or not bone.use_connect:
+            bone.head += delta
+        bone.tail += delta
+    bpy.ops.object.mode_set(mode="OBJECT")
+    bpy.context.view_layer.update()
+    obj = bpy.data.objects["Mesh_Foot_L"]
+    z = min((obj.matrix_world @ v.co).z for v in obj.data.vertices)
+    knee, _axis = world_head(arm, "LowerLeg_L")
+    print("sole", round(low, 4), "->", round(z, 4), "knee", [round(c, 3) for c in knee], flush=True)
+
+
 def build(arm):
     measured = []
     for bone, child_name, _parents, radius, trim, _length, fallback in JOINTS:
@@ -901,7 +1250,28 @@ def sample_rom(arm):
     loco.clear_pose(arm)
 
 
+def sync_eval_world():
+    """Write the evaluated bone-parent transform back before FBX export.
+
+    Boolean mode switches leave matrix_world stale. The overlap test reads the
+    evaluated mesh, so it stays clear, and the exported file then drops the head
+    onto the neck.
+    """
+    bpy.context.view_layer.update()
+    deps = bpy.context.evaluated_depsgraph_get()
+    for obj in bpy.data.objects:
+        if obj.type != "MESH" or not obj.name.startswith("Mesh_"):
+            continue
+        ev = obj.evaluated_get(deps)
+        obj.matrix_world = ev.matrix_world.copy()
+    bpy.context.view_layer.update()
+
+
 def export_fbx(arm):
+    loco.clear_pose(arm)
+    loco.set_root(arm, 0.0, 0.0)
+    bpy.context.view_layer.update()
+    sync_eval_world()
     os.makedirs(os.path.dirname(OUT_FBX), exist_ok=True)
     bpy.ops.object.mode_set(mode="OBJECT")
     bpy.ops.object.select_all(action="DESELECT")
@@ -925,6 +1295,11 @@ def export_fbx(arm):
 
 
 def main():
+    # The pass-5 mesh is the seated export, not a fresh rebuild. build() plus
+    # the old notch fan does not reproduce it, and this script writes the candidate.
+    if os.environ.get("REBUILD_CANDIDATE") != "1":
+        print("REFUSING rebuild. Set REBUILD_CANDIDATE=1 to regenerate from the shipped mannequin.")
+        return
     bpy.ops.wm.read_factory_settings(use_empty=True)
     bpy.ops.import_scene.fbx(filepath=SRC)
     arm = bpy.data.objects["DummyArmature"]
@@ -932,6 +1307,8 @@ def main():
     loco.set_root(arm, 0.0, 0.0)
     bpy.context.view_layer.update()
     build(arm)
+    clearance_pass(arm, "neck")
+    seat_sole(arm)
     sample_rom(arm)
     export_fbx(arm)
 

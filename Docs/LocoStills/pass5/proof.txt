@@ -1,0 +1,246 @@
+no-clip clips=77 frames=4557 worldMax=5.51 selfMax=4.00 rigJoint=0 pose=152
+joints knee=3 hip=10 neck=2 ankle=8 elbow=8 wrist=6 shoulder=8 other=107
+worldMax is the seated candidate. The rest sole is on the origin. No visual lift.
+
+per joint, after each geometry pass, same 77 clips and 4557 frames:
+after knee cones (sole still 4.3 cm low, spine rest pairs remain): rigJoint=2 pose=152 joints knee=3 hip=8 neck=2 ankle=8 elbow=8 wrist=6 shoulder=8 other=109 worldMax=9.86
+after hip taper and 2.8 cm thigh balls (sole still low): rigJoint=0 pose=156 joints knee=3 hip=11 neck=2 ankle=8 elbow=8 wrist=6 shoulder=8 other=110 worldMax=9.86
+after neck recess, sole seat, and pelvis notch: rigJoint=0 pose=152 joints knee=3 hip=10 neck=2 ankle=8 elbow=8 wrist=6 shoulder=8 other=107 worldMax=5.51
+
+The knee pose count is one same-leg pair at 155 degrees, past the 140 degree cone, plus two cross-leg pairs. The neck pose count first appears at head pitch 66 and 74 degrees, past the plus or minus 40 degree socket. Reimport rest pairs: none. Rest sole z=0.00, head z min=1.5649.
+
+no-clip clips=77 frames=4557 worldMax=5.51 selfMax=4.00 rigJoint=0 pose=152
+joints knee=3 hip=10 neck=2 ankle=8 elbow=8 wrist=6 shoulder=8 other=107
+absolute depth, no bind subtraction. rigJoint = directed pairs that fail at rest. pose = directed pairs that fail on a live frame and did not fail at rest.
+clip frames worldCm selfCm poseNew
+idle 48 0.00 4.00 10
+walk 18 0.00 4.00 16
+run 18 0.00 4.00 15
+sprint 18 0.00 4.00 16
+start 16 0.00 4.00 14
+stop 16 0.00 3.99 12
+skid 16 0.00 4.00 12
+turn 22 0.00 3.97 8
+lean 18 0.00 4.00 16
+crouch 12 0.00 3.99 14
+land 18 0.00 4.00 9
+blend 16 0.00 4.00 13
+exit-wall-run 3 0.24 4.00 14
+exit-wall-jump 3 0.00 4.00 19
+exit-climb-top 3 2.29 4.00 26
+exit-cling-drop 3 0.18 4.00 18
+exit-vault 3 0.00 3.96 10
+exit-mantle 3 0.00 3.99 22
+exit-slide-exit 3 0.18 3.92 10
+exit-air-dash 3 0.13 4.00 12
+exit-punch 3 0.34 4.00 8
+exit-lunge 3 0.25 3.97 11
+exit-zip-drop 3 0.13 4.00 27
+exit-launch-land 3 0.28 4.00 13
+exit-grapple-arrive 3 0.19 3.99 13
+exit-grapple-release 3 0.26 4.00 9
+exit-stagger 3 0.04 4.00 12
+exit-tag-back 3 1.01 4.00 7
+exit-soft-land 3 0.04 4.00 10
+exit-roll 7 0.18 4.00 27
+exit-roll-absorb 3 0.18 4.00 14
+menu-idle 1 0.21 3.88 3
+menu-ready 1 0.00 4.00 1
+menu-run 1 0.00 3.84 2
+menu-step 1 0.00 3.86 1
+menu-cheer 1 0.00 0.00 0
+menu-slump 1 0.00 3.78 2
+123-01_roll_grass 59 0.00 4.00 77
+123-02_drop_roll_gravel 69 0.00 4.00 65
+123-03_wall_drop_softland 51 0.00 4.00 34
+123-04_window_drop_softland 52 0.00 4.00 34
+123-05_window_jump_land_run 72 0.00 4.00 48
+123-06_run_walljump_climb_window 135 0.00 4.00 59
+123-07_wall_climb_traverse 180 0.00 4.00 43
+123-08_vault_block_close 63 0.00 4.00 44
+123-09_run_vault_park 135 2.28 4.00 32
+123-10_wallrun_slanted 127 4.56 4.00 28
+123-11_wallrun_slanted_34 164 5.51 4.00 33
+123-12_tictac_slanted_wall 169 0.00 4.00 62
+123-13_sprint_front 46 0.00 4.00 17
+123-14_rail_precisions 157 0.00 4.00 57
+123-15_cat_leap_wall 240 0.00 4.00 66
+123-16_sprint_dive_hole 108 0.00 4.00 79
+123-17_slide_slope_crouch 97 0.00 4.00 30
+123-18_vertical_wallrun_back 73 0.00 4.00 36
+123-19_vertical_wallrun_side 73 0.00 4.00 43
+123-20_wallpop_180 57 0.00 4.00 40
+124-01_roll_grass 59 0.00 4.00 77
+124-02_drop_roll_gravel 69 0.00 4.00 65
+124-03_wall_drop_softland 51 0.00 4.00 34
+124-04_window_drop_softland 52 0.00 4.00 34
+124-05_window_jump_land_run 72 0.00 4.00 48
+124-06_run_walljump_climb_window 135 0.00 4.00 59
+124-07_wall_climb_traverse 180 0.00 4.00 43
+124-08_vault_block_close 63 0.00 4.00 44
+124-09_run_vault_park 135 2.28 4.00 32
+124-10_wallrun_slanted 127 4.56 4.00 28
+124-11_wallrun_slanted_34 164 5.51 4.00 33
+124-12_tictac_slanted_wall 169 0.00 4.00 62
+124-13_sprint_front 46 0.00 4.00 17
+124-14_rail_precisions 157 0.00 4.00 57
+124-15_cat_leap_wall 240 0.00 4.00 66
+124-16_sprint_dive_hole 108 0.00 4.00 79
+124-17_slide_slope_crouch 97 0.00 4.00 30
+124-18_vertical_wallrun_back 73 0.00 4.00 36
+124-19_vertical_wallrun_side 73 0.00 4.00 43
+124-20_wallpop_180 57 0.00 4.00 40
+pose pairs
+knee Mesh_LowerLeg_L>Mesh_UpperLeg_L
+knee Mesh_LowerLeg_R>Mesh_UpperLeg_L
+knee Mesh_UpperLeg_L>Mesh_LowerLeg_R
+hip Mesh_Chest>Mesh_UpperLeg_L
+hip Mesh_Chest>Mesh_UpperLeg_R
+hip Mesh_Hips>Mesh_UpperLeg_L
+hip Mesh_Hips>Mesh_UpperLeg_R
+hip Mesh_Spine>Mesh_UpperLeg_L
+hip Mesh_Spine>Mesh_UpperLeg_R
+hip Mesh_UpperLeg_L>Mesh_Chest
+hip Mesh_UpperLeg_L>Mesh_Hips
+hip Mesh_UpperLeg_R>Mesh_Chest
+hip Mesh_UpperLeg_R>Mesh_Hips
+neck Mesh_Head>Mesh_Neck
+neck Mesh_Neck>Mesh_Head
+ankle Mesh_Foot_L>Mesh_LowerLeg_L
+ankle Mesh_Foot_L>Mesh_LowerLeg_R
+ankle Mesh_Foot_R>Mesh_LowerLeg_L
+ankle Mesh_Foot_R>Mesh_LowerLeg_R
+ankle Mesh_LowerLeg_L>Mesh_Foot_L
+ankle Mesh_LowerLeg_L>Mesh_Foot_R
+ankle Mesh_LowerLeg_R>Mesh_Foot_L
+ankle Mesh_LowerLeg_R>Mesh_Foot_R
+elbow Mesh_LowerArm_L>Mesh_UpperArm_L
+elbow Mesh_LowerArm_L>Mesh_UpperArm_R
+elbow Mesh_LowerArm_R>Mesh_UpperArm_L
+elbow Mesh_LowerArm_R>Mesh_UpperArm_R
+elbow Mesh_UpperArm_L>Mesh_LowerArm_L
+elbow Mesh_UpperArm_L>Mesh_LowerArm_R
+elbow Mesh_UpperArm_R>Mesh_LowerArm_L
+elbow Mesh_UpperArm_R>Mesh_LowerArm_R
+wrist Mesh_Hand_L>Mesh_LowerArm_L
+wrist Mesh_Hand_L>Mesh_LowerArm_R
+wrist Mesh_Hand_R>Mesh_LowerArm_L
+wrist Mesh_Hand_R>Mesh_LowerArm_R
+wrist Mesh_LowerArm_L>Mesh_Hand_R
+wrist Mesh_LowerArm_R>Mesh_Hand_L
+shoulder Mesh_Chest>Mesh_UpperArm_L
+shoulder Mesh_Chest>Mesh_UpperArm_R
+shoulder Mesh_Shoulder_L>Mesh_UpperArm_L
+shoulder Mesh_Shoulder_R>Mesh_UpperArm_R
+shoulder Mesh_UpperArm_L>Mesh_Chest
+shoulder Mesh_UpperArm_L>Mesh_Shoulder_L
+shoulder Mesh_UpperArm_R>Mesh_Chest
+shoulder Mesh_UpperArm_R>Mesh_Shoulder_R
+other Mesh_Chest>Mesh_Hand_L
+other Mesh_Chest>Mesh_Hand_R
+other Mesh_Chest>Mesh_Head
+other Mesh_Chest>Mesh_Hips
+other Mesh_Chest>Mesh_LowerArm_L
+other Mesh_Chest>Mesh_LowerArm_R
+other Mesh_Chest>Mesh_LowerLeg_L
+other Mesh_Foot_L>Mesh_Foot_R
+other Mesh_Foot_R>Mesh_Foot_L
+other Mesh_Hand_L>Mesh_Chest
+other Mesh_Hand_L>Mesh_Foot_L
+other Mesh_Hand_L>Mesh_Hand_R
+other Mesh_Hand_L>Mesh_Head
+other Mesh_Hand_L>Mesh_Hips
+other Mesh_Hand_L>Mesh_UpperArm_L
+other Mesh_Hand_L>Mesh_UpperArm_R
+other Mesh_Hand_L>Mesh_UpperLeg_L
+other Mesh_Hand_L>Mesh_UpperLeg_R
+other Mesh_Hand_R>Mesh_Hand_L
+other Mesh_Hand_R>Mesh_Head
+other Mesh_Hand_R>Mesh_Hips
+other Mesh_Hand_R>Mesh_UpperArm_L
+other Mesh_Hand_R>Mesh_UpperArm_R
+other Mesh_Hand_R>Mesh_UpperLeg_L
+other Mesh_Hand_R>Mesh_UpperLeg_R
+other Mesh_Head>Mesh_Chest
+other Mesh_Head>Mesh_Hand_L
+other Mesh_Head>Mesh_Hand_R
+other Mesh_Head>Mesh_LowerArm_L
+other Mesh_Head>Mesh_LowerArm_R
+other Mesh_Head>Mesh_LowerLeg_L
+other Mesh_Head>Mesh_Shoulder_L
+other Mesh_Head>Mesh_UpperArm_L
+other Mesh_Head>Mesh_UpperArm_R
+other Mesh_Head>Mesh_UpperLeg_L
+other Mesh_Head>Mesh_UpperLeg_R
+other Mesh_Hips>Mesh_Hand_L
+other Mesh_Hips>Mesh_Hand_R
+other Mesh_Hips>Mesh_LowerArm_L
+other Mesh_Hips>Mesh_UpperArm_L
+other Mesh_LowerArm_L>Mesh_Chest
+other Mesh_LowerArm_L>Mesh_Foot_L
+other Mesh_LowerArm_L>Mesh_Head
+other Mesh_LowerArm_L>Mesh_Hips
+other Mesh_LowerArm_L>Mesh_LowerArm_R
+other Mesh_LowerArm_L>Mesh_LowerLeg_L
+other Mesh_LowerArm_L>Mesh_LowerLeg_R
+other Mesh_LowerArm_L>Mesh_Shoulder_R
+other Mesh_LowerArm_L>Mesh_UpperLeg_L
+other Mesh_LowerArm_L>Mesh_UpperLeg_R
+other Mesh_LowerArm_R>Mesh_Chest
+other Mesh_LowerArm_R>Mesh_Head
+other Mesh_LowerArm_R>Mesh_LowerArm_L
+other Mesh_LowerArm_R>Mesh_LowerLeg_L
+other Mesh_LowerArm_R>Mesh_Shoulder_L
+other Mesh_LowerArm_R>Mesh_UpperLeg_L
+other Mesh_LowerArm_R>Mesh_UpperLeg_R
+other Mesh_LowerLeg_L>Mesh_Head
+other Mesh_LowerLeg_L>Mesh_LowerArm_L
+other Mesh_LowerLeg_L>Mesh_LowerArm_R
+other Mesh_LowerLeg_L>Mesh_LowerLeg_R
+other Mesh_LowerLeg_L>Mesh_Neck
+other Mesh_LowerLeg_L>Mesh_Shoulder_R
+other Mesh_LowerLeg_L>Mesh_UpperArm_R
+other Mesh_LowerLeg_R>Mesh_LowerArm_L
+other Mesh_LowerLeg_R>Mesh_LowerArm_R
+other Mesh_LowerLeg_R>Mesh_LowerLeg_L
+other Mesh_LowerLeg_R>Mesh_UpperArm_L
+other Mesh_LowerLeg_R>Mesh_UpperArm_R
+other Mesh_Neck>Mesh_LowerLeg_L
+other Mesh_Neck>Mesh_UpperArm_L
+other Mesh_Neck>Mesh_UpperArm_R
+other Mesh_Neck>Mesh_UpperLeg_L
+other Mesh_Shoulder_L>Mesh_LowerArm_R
+other Mesh_Shoulder_L>Mesh_UpperLeg_L
+other Mesh_Shoulder_R>Mesh_UpperLeg_R
+other Mesh_Spine>Mesh_Chest
+other Mesh_Spine>Mesh_Hand_L
+other Mesh_Spine>Mesh_Hips
+other Mesh_Spine>Mesh_LowerArm_L
+other Mesh_Spine>Mesh_LowerArm_R
+other Mesh_Spine>Mesh_UpperArm_L
+other Mesh_Spine>Mesh_UpperArm_R
+other Mesh_UpperArm_L>Mesh_Head
+other Mesh_UpperArm_L>Mesh_LowerLeg_R
+other Mesh_UpperArm_L>Mesh_UpperArm_R
+other Mesh_UpperArm_L>Mesh_UpperLeg_L
+other Mesh_UpperArm_L>Mesh_UpperLeg_R
+other Mesh_UpperArm_R>Mesh_Hand_L
+other Mesh_UpperArm_R>Mesh_Head
+other Mesh_UpperArm_R>Mesh_LowerLeg_L
+other Mesh_UpperArm_R>Mesh_UpperArm_L
+other Mesh_UpperArm_R>Mesh_UpperLeg_L
+other Mesh_UpperArm_R>Mesh_UpperLeg_R
+other Mesh_UpperLeg_L>Mesh_Hand_L
+other Mesh_UpperLeg_L>Mesh_Head
+other Mesh_UpperLeg_L>Mesh_LowerArm_L
+other Mesh_UpperLeg_L>Mesh_LowerArm_R
+other Mesh_UpperLeg_L>Mesh_UpperArm_L
+other Mesh_UpperLeg_L>Mesh_UpperArm_R
+other Mesh_UpperLeg_L>Mesh_UpperLeg_R
+other Mesh_UpperLeg_R>Mesh_Hand_L
+other Mesh_UpperLeg_R>Mesh_LowerArm_L
+other Mesh_UpperLeg_R>Mesh_LowerArm_R
+other Mesh_UpperLeg_R>Mesh_UpperArm_L
+other Mesh_UpperLeg_R>Mesh_UpperArm_R
+other Mesh_UpperLeg_R>Mesh_UpperLeg_L
+rest pairs

@@ -216,7 +216,8 @@ def build_swing(release, keys, count, budget, foot_cap):
 def clear_ground(arm, side, curve, floor=0.012):
     """Lift a swinging sole. The extra bend is capped so one frame cannot pop."""
     thigh, knee, foot = curve
-    knee_lim = min(78.0, knee + 12.0)
+    # Swing knees already pass 78° on a sprint. The extra bend is still capped at 12°.
+    knee_lim = min(130.0, knee + 12.0)
     foot_lim = min(16.0, foot + 6.0)
     thigh_lim = min(28.0, thigh + 8.0)
     for _ in range(5):
@@ -285,7 +286,7 @@ def solve_leg(arm, side, target, seed, cap=22.0, foot_cap=8.0):
     return best
 
 
-def solve_roll(arm, side, target, seed, foot, cap=16.0, lateral=False):
+def solve_roll(arm, side, target, seed, foot, cap=16.0, lateral=False, chain=22.0, abd_step=6.0, abd_abs=12.0):
     """Plant the ball. The foot angle is the heel-to-toe roll, not a free joint.
 
     Walk also nudges thigh abduction. An abducted leg arcs sideways as it
@@ -295,7 +296,12 @@ def solve_roll(arm, side, target, seed, foot, cap=16.0, lateral=False):
     names_mesh = "Mesh_Foot_" + side
     best = (seed[0], seed[1], foot)
     best_off = ABD_OFFSET[side]
-    chain = 22.0
+    thigh_lo, thigh_hi = (-48.0, 46.0)
+    knee_hi = 110.0
+    if chain > 40.0:
+        # Stance may whip the leg to keep the sole down while the hips travel.
+        thigh_lo, thigh_hi = (-80.0, 70.0)
+        knee_hi = 140.0
 
     def eval_loss(trial, offset):
         ABD_OFFSET[side] = offset
@@ -307,7 +313,7 @@ def solve_roll(arm, side, target, seed, foot, cap=16.0, lateral=False):
         dy = contact.y - target.y
         dz = contact.z - target.z
         bite = max(0.0, 0.008 - sole_z)
-        return dx * dx * 24.0 + dy * dy * 24.0 + dz * dz * 24.0 + bite * bite * 90.0
+        return dx * dx * 70.0 + dy * dy * 70.0 + dz * dz * 24.0 + bite * bite * 90.0
 
     def in_chain(trial):
         d0 = trial[0] - seed[0]
@@ -327,8 +333,8 @@ def solve_roll(arm, side, target, seed, foot, cap=16.0, lateral=False):
                     trial[axis] += sign * step
                     for a in range(2):
                         trial[a] = clamp(trial[a], seed[a] - cap, seed[a] + cap)
-                    trial[0] = clamp(trial[0], -48.0, 46.0)
-                    trial[1] = clamp(trial[1], 8.0, 110.0)
+                    trial[0] = clamp(trial[0], thigh_lo, thigh_hi)
+                    trial[1] = clamp(trial[1], 8.0, knee_hi)
                     if not in_chain(trial):
                         continue
                     trial_l = eval_loss(trial, cur_off)
@@ -339,8 +345,8 @@ def solve_roll(arm, side, target, seed, foot, cap=16.0, lateral=False):
                         improved = True
             if lateral:
                 for sign in (-1.0, 1.0):
-                    trial_off = clamp(cur_off + sign * min(step, 3.0), best_off - 6.0, best_off + 6.0)
-                    trial_off = clamp(trial_off, -12.0, 12.0)
+                    trial_off = clamp(cur_off + sign * min(step, abd_step), best_off - abd_step, best_off + abd_step)
+                    trial_off = clamp(trial_off, -abd_abs, abd_abs)
                     trial_l = eval_loss((cur[0], cur[1], foot), trial_off)
                     if trial_l + 1e-7 < loss:
                         loss = trial_l
@@ -350,7 +356,7 @@ def solve_roll(arm, side, target, seed, foot, cap=16.0, lateral=False):
             if not improved:
                 break
     # Coupled nudges. Axis-aligned search leaves a centimetre when thigh and knee trade off.
-    for step in (2.0, 1.0, 0.5):
+    for step in (2.0, 1.0, 0.5, 0.25):
         for _round in range(8):
             improved = False
             for d0, d1, doff in (
@@ -367,14 +373,14 @@ def solve_roll(arm, side, target, seed, foot, cap=16.0, lateral=False):
                     clamp(cur[1] + d1, seed[1] - cap, seed[1] + cap),
                     foot,
                 ]
-                trial[0] = clamp(trial[0], -48.0, 46.0)
-                trial[1] = clamp(trial[1], 8.0, 110.0)
+                trial[0] = clamp(trial[0], thigh_lo, thigh_hi)
+                trial[1] = clamp(trial[1], 8.0, knee_hi)
                 if not in_chain(trial):
                     continue
                 trial_off = cur_off
                 if lateral and doff != 0.0:
-                    trial_off = clamp(cur_off + doff, best_off - 6.0, best_off + 6.0)
-                    trial_off = clamp(trial_off, -12.0, 12.0)
+                    trial_off = clamp(cur_off + doff, best_off - abd_step, best_off + abd_step)
+                    trial_off = clamp(trial_off, -abd_abs, abd_abs)
                 trial_l = eval_loss(trial, trial_off)
                 if trial_l + 1e-9 < loss:
                     loss = trial_l
@@ -417,7 +423,12 @@ def heel_is_lowest(name):
 
 
 def lift_clear(arm, floor=0.004):
-    """Raise the visual root so the lowest shell is not biting the floor."""
+    """Raise the visual root so the lowest shell is not biting the floor.
+
+    The candidate sweep sets LOCO_LIFT=0. A lifted worldMax is not a clearance.
+    """
+    if os.environ.get("LOCO_LIFT", "1") == "0":
+        return
     low = None
     for name in active_meshes():
         verts, _polys = world_verts(name)
@@ -536,15 +547,21 @@ def gait_parm(speed, crouch=False):
             "head_counter": 0.55, "twist": 6.0,
             "elbow": -85.0, "arm_fwd": -78.0, "arm_back": 56.0, "arm_out": 28.0,
             "abduct": 14.0,
-            "root_z": -0.07, "n": 18, "stance": 3,
+            # Extra drop so a straight leg can still pin the shoe across 46 cm.
+            "root_z": -0.08, "root_swing": -0.08,
+            "root_stance": (-0.08, -0.20),
+            "n": 18, "stance": 2,
             "strike": (-22.0, 46.0, -14.0), "roll_toe": -2.0,
             "cap": 16.0, "foot_cap": 8.0,
             "budget": 22.0,
+            # The hips move 46 cm a frame. Stance may exceed 22° so the sole stays put.
+            "stance_cap": 80.0, "stance_chain": 100.0,
+            "lateral": True, "abd_step": 14.0, "abd_abs": 28.0,
             "keys": [
                 (2, (6.0, 70.0, -6.0)),
                 (5, (16.0, 122.0, 3.0)),
                 (12, (-85.0, 108.0, -2.0)),
-                (15, (-24.0, 50.0, -12.0)),
+                (16, (-24.0, 50.0, -12.0)),
             ],
         }
     if speed >= 9.0:
@@ -554,10 +571,15 @@ def gait_parm(speed, crouch=False):
             "head_counter": 0.55, "twist": 5.0,
             "elbow": -85.0, "arm_fwd": -78.0, "arm_back": 56.0, "arm_out": 28.0,
             "abduct": 12.0,
-            "root_z": -0.05, "n": 18, "stance": 3,
+            # Two stance intervals are 69 cm. The hips sit lower so the sole can stay.
+            "root_z": -0.08, "root_swing": -0.08,
+            "root_stance": (-0.08, -0.16, -0.26),
+            "n": 18, "stance": 3,
             "strike": STRIKE, "roll_toe": -6.0,
             "cap": 16.0, "foot_cap": 8.0,
             "budget": 22.0,
+            "stance_cap": 70.0, "stance_chain": 90.0,
+            "lateral": True, "abd_step": 12.0, "abd_abs": 24.0,
             "keys": [
                 (2, (-4.0, 55.0, -8.0)),
                 (5, (16.0, 120.0, 2.0)),
@@ -579,10 +601,25 @@ def gait_parm(speed, crouch=False):
         "keys": [
             (4, (-10.0, 36.0, -4.0)),
             (8, (2.0, 64.0, -2.0)),
-            (11, (-42.0, 72.0, -6.0)),
+            (11, (-36.0, 60.0, -6.0)),
             (15, (-18.0, 42.0, -12.0)),
         ],
     }
+
+
+def frame_root(parm, i, n, stance):
+    """Low hips on the later stance frames, so a long plant can still reach.
+
+    Swing frames use root_swing when it is set, which keeps the passing shoe up.
+    """
+    half = n // 2
+    levels = parm.get("root_stance")
+    if i < stance:
+        return levels[i] if levels else parm["root_z"]
+    if half <= i < half + stance:
+        phase = i - half
+        return levels[phase] if levels else parm["root_z"]
+    return parm.get("root_swing", parm["root_z"])
 
 
 def bake_gait(arm, speed, crouch=False, bank_fn=None, yaw_fn=None):
@@ -607,7 +644,7 @@ def bake_gait(arm, speed, crouch=False, bank_fn=None, yaw_fn=None):
     plant = []
     seed = strike
     clear_pose(arm)
-    set_root(arm, 0.0, parm["root_z"])
+    set_root(arm, 0.0, frame_root(parm, 0, n, stance))
     apply_upper(arm, upper(0.0, parm))
     apply_leg(arm, "L", *strike)
     apply_leg(arm, "R", 8.0, 36.0, -8.0)
@@ -634,11 +671,18 @@ def bake_gait(arm, speed, crouch=False, bank_fn=None, yaw_fn=None):
     for i in range(stance):
         y = -speed * i * DT
         clear_pose(arm)
-        set_root(arm, y, parm["root_z"])
+        set_root(arm, y, frame_root(parm, i, n, stance))
         apply_upper(arm, upper(i / n, parm))
         apply_leg(arm, "R", 8.0, 36.0, -8.0)
         if "roll_toe" in parm:
-            seed = solve_roll(arm, "L", target, seed, feet[i], cap=cap, lateral=parm.get("lateral", False))
+            seed = solve_roll(
+                arm, "L", target, seed, feet[i],
+                cap=parm.get("stance_cap", cap),
+                lateral=parm.get("lateral", False),
+                chain=parm.get("stance_chain", 22.0),
+                abd_step=parm.get("abd_step", 6.0),
+                abd_abs=parm.get("abd_abs", 12.0),
+            )
         else:
             seed = solve_leg(arm, "L", target, seed, cap=cap, foot_cap=foot_cap)
         plant.append(seed)
@@ -681,7 +725,7 @@ def bake_gait(arm, speed, crouch=False, bank_fn=None, yaw_fn=None):
         stance_l = i < stance
         stance_r = half <= i < half + stance
         clear_pose(arm)
-        set_root(arm, y, parm["root_z"], yaw)
+        set_root(arm, y, frame_root(parm, i, n, stance), yaw)
         pose = upper(i / n, parm, bank)
         apply_upper(arm, pose)
         apply_leg(arm, "L", *left[i])
@@ -699,7 +743,11 @@ def bake_gait(arm, speed, crouch=False, bank_fn=None, yaw_fn=None):
                 if "roll_toe" in parm:
                     seed[side] = solve_roll(
                         arm, side, hold[side], seed[side], feet[phase_i],
-                        cap=cap, lateral=parm.get("lateral", False),
+                        cap=parm.get("stance_cap", cap),
+                        lateral=parm.get("lateral", False),
+                        chain=parm.get("stance_chain", 22.0),
+                        abd_step=parm.get("abd_step", 6.0),
+                        abd_abs=parm.get("abd_abs", 12.0),
                     )
                 else:
                     seed[side] = solve_leg(arm, side, hold[side], seed[side], cap=cap, foot_cap=foot_cap)
@@ -762,9 +810,11 @@ def capture(arm, t, stance_l, stance_r):
     for side, flag in (("L", stance_l), ("R", stance_r)):
         # A heel-to-toe plant is scored at the ball. The sole centroid walks forward as the heel lifts.
         picker = forefoot_anchor if USE_BALL else sole_of
-        c, zmin = picker("Mesh_Foot_" + side)
+        c, _patch_z = picker("Mesh_Foot_" + side)
         _sole, zmin = sole_of("Mesh_Foot_" + side)
-        contacts[side] = c.copy()
+        # Slide tracks the sole. The forefoot centroid rises as the heel lifts,
+        # and that rise is the roll, not the shoe skating.
+        contacts[side] = Vector((c.x, c.y, zmin))
         planted[side] = flag and zmin < 0.02
     return {
         "t": t,

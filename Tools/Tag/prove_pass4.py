@@ -15,10 +15,13 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import render_loco_stills as loco
 
 ROOT = loco.ROOT
-CAND = os.path.join(
-    ROOT, "Assets", "Art", "Characters", "HiPoly", "Candidate", "Dummy_Mannequin_Tan_Hier_Clearance.fbx"
+CAND = os.environ.get(
+    "PROVE_FBX",
+    os.path.join(
+        ROOT, "Assets", "Art", "Characters", "HiPoly", "Candidate", "Dummy_Mannequin_Tan_Hier_Clearance.fbx"
+    ),
 )
-OUT = os.path.join(ROOT, "Docs", "LocoStills", "pass4")
+OUT = os.environ.get("PROVE_OUT", os.path.join(ROOT, "Docs", "LocoStills", "pass5"))
 STORROR = os.environ.get("STORROR_JSON", "/tmp/loco/storror")
 
 
@@ -58,9 +61,28 @@ def directed_fails(arm, packed):
     return fails
 
 
+def joint_bucket(pair):
+    name = pair
+    if "LowerLeg" in name and "UpperLeg" in name:
+        return "knee"
+    if "UpperLeg" in name and ("Hips" in name or "Spine" in name or "Chest" in name):
+        return "hip"
+    if ("Head" in name and "Neck" in name) or ("Neck" in name and "Chest" in name):
+        return "neck"
+    if "Foot" in name and "LowerLeg" in name:
+        return "ankle"
+    if "LowerArm" in name and "UpperArm" in name:
+        return "elbow"
+    if "Hand" in name and "LowerArm" in name:
+        return "wrist"
+    if "UpperArm" in name and ("Shoulder" in name or "Chest" in name):
+        return "shoulder"
+    return "other"
+
+
 def measure(arm):
+    """Absolute ground depth. The root is not lifted to hide a sole below the origin."""
     bpy.context.view_layer.update()
-    loco.lift_clear(arm, floor=0.004)
     world, self_max, _note, _pairs = loco.noclip(arm)
     fails = directed_fails(arm, pack(arm))
     return world, self_max, fails
@@ -194,7 +216,7 @@ EXITS = {
 }
 
 
-def clip_row(arm, name, samples, rest, pose_seen):
+def clip_row(arm, name, samples, rest, pose_seen, buckets):
     frames = 0
     world_max = 0.0
     self_max = 0.0
@@ -209,7 +231,18 @@ def clip_row(arm, name, samples, rest, pose_seen):
             if key in rest:
                 continue
             fresh.add(key)
+            if key not in pose_seen and joint_bucket(key) in ("knee", "hip", "neck"):
+                print(
+                    "PAIR", name, key, round(depth, 2),
+                    "kneeL", round(-sample.get("KneeL", 0.0), 1),
+                    "kneeR", round(-sample.get("KneeR", 0.0), 1),
+                    "thighL", round(sample.get("ThighL", 0.0), 1),
+                    "thighR", round(sample.get("ThighR", 0.0), 1),
+                    "head", round(sample.get("Head", 0.0), 1),
+                    flush=True,
+                )
             pose_seen.add(key)
+            buckets.setdefault(joint_bucket(key), set()).add(key)
             self_max = max(self_max, depth)
     print("CLIP", name, frames, round(world_max, 2), round(self_max, 2), len(fresh), flush=True)
     return {
@@ -291,6 +324,7 @@ def storror_clip(path):
 
 
 def main():
+    os.environ["LOCO_LIFT"] = "0"
     os.makedirs(OUT, exist_ok=True)
     arm = load()
     loco.clear_pose(arm)
@@ -301,6 +335,7 @@ def main():
     for key, depth in sorted(rest.items(), key=lambda item: -item[1]):
         print(" ", key, round(depth, 2), flush=True)
     pose_seen = set()
+    buckets = {}
     rows = []
     for name, log in loco_samples(arm):
         frames = 0
@@ -312,17 +347,20 @@ def main():
             frames += 1
             world_max = max(world_max, world)
             self_max = max(self_max, self_f)
-            for key in fails:
+            for key, depth in fails.items():
                 if key in rest:
                     continue
                 fresh.add(key)
+                if key not in pose_seen and joint_bucket(key) in ("knee", "hip", "neck"):
+                    print("PAIR", name, key, round(depth, 2), flush=True)
                 pose_seen.add(key)
+                buckets.setdefault(joint_bucket(key), set()).add(key)
         print("CLIP", name, frames, round(world_max, 2), round(self_max, 2), len(fresh), flush=True)
         rows.append({"name": name, "frames": frames, "world": world_max, "self": self_max, "pose": len(fresh)})
     for name, samples in EXITS.items():
-        rows.append(clip_row(arm, "exit-" + name, samples, rest, pose_seen))
+        rows.append(clip_row(arm, "exit-" + name, samples, rest, pose_seen, buckets))
     for name, samples in menu_samples():
-        rows.append(clip_row(arm, name, samples, rest, pose_seen))
+        rows.append(clip_row(arm, name, samples, rest, pose_seen, buckets))
     if os.path.isdir(STORROR):
         for lane in sorted(os.listdir(STORROR)):
             lane_dir = os.path.join(STORROR, lane)
@@ -334,21 +372,29 @@ def main():
                 samples = storror_clip(os.path.join(lane_dir, filename))
                 clip = lane + "-" + filename[:-5]
                 # Long clips: every frame is the request. Measure them.
-                rows.append(clip_row(arm, clip, samples, rest, pose_seen))
+                rows.append(clip_row(arm, clip, samples, rest, pose_seen, buckets))
     frames = sum(row["frames"] for row in rows)
     world_max = max((row["world"] for row in rows), default=0.0)
     self_max = max((row["self"] for row in rows), default=0.0)
     line = "no-clip clips={0} frames={1} worldMax={2:.2f} selfMax={3:.2f} rigJoint={4} pose={5}".format(
         len(rows), frames, world_max, self_max, len(rest), len(pose_seen),
     )
+    order = ("knee", "hip", "neck", "ankle", "elbow", "wrist", "shoulder", "other")
+    joint_line = "joints " + " ".join("{0}={1}".format(name, len(buckets.get(name, ()))) for name in order)
+    print(joint_line, flush=True)
     print(line, flush=True)
     path = os.path.join(OUT, "proof.txt")
     with open(path, "w", encoding="utf-8") as fh:
         fh.write(line + "\n")
+        fh.write(joint_line + "\n")
         fh.write("absolute depth, no bind subtraction. rigJoint = directed pairs that fail at rest. pose = directed pairs that fail on a live frame and did not fail at rest.\n")
         fh.write("clip frames worldCm selfCm poseNew\n")
         for row in rows:
             fh.write("{name} {frames} {world:.2f} {self:.2f} {pose}\n".format(**row))
+        fh.write("pose pairs\n")
+        for name in order:
+            for key in sorted(buckets.get(name, ())):
+                fh.write("{0} {1}\n".format(name, key))
         fh.write("rest pairs\n")
         for key, depth in sorted(rest.items(), key=lambda item: -item[1]):
             fh.write("{0} {1:.2f}\n".format(key, depth))

@@ -17,7 +17,7 @@ SHIP = os.path.join(ROOT, "Assets", "Art", "Characters", "HiPoly", "Dummy_Manneq
 CAND = os.path.join(
     ROOT, "Assets", "Art", "Characters", "HiPoly", "Candidate", "Dummy_Mannequin_Tan_Hier_Clearance.fbx"
 )
-OUT = os.path.join(ROOT, "Docs", "LocoStills", "pass4")
+OUT = os.path.join(ROOT, "Docs", "LocoStills", "pass5")
 
 
 def load(path):
@@ -35,15 +35,16 @@ def pose(arm, kind):
     loco.clear_pose(arm)
     loco.set_root(arm, 0.0, 0.0)
     if kind == "hip":
-        loco.set_e(arm, "UpperLeg_L", 110.0, -40.0, 0.0)
-        loco.set_e(arm, "LowerLeg_L", 100.0, 0.0, 0.0)
+        # Negative thigh X is hip flexion. 110° is the clearance target.
+        loco.set_e(arm, "UpperLeg_L", -110.0, 0.0, 0.0)
+        loco.set_e(arm, "LowerLeg_L", 40.0, 0.0, 0.0)
         focus = "UpperLeg_L"
     elif kind == "knee":
         loco.set_e(arm, "UpperLeg_L", -15.0, 0.0, 0.0)
-        loco.set_e(arm, "LowerLeg_L", 130.0, 0.0, 0.0)
+        loco.set_e(arm, "LowerLeg_L", 140.0, 0.0, 0.0)
         focus = "LowerLeg_L"
     else:
-        loco.set_e(arm, "Head", 35.0, 0.0, 25.0)
+        loco.set_e(arm, "Head", 40.0, 0.0, 0.0)
         focus = "Head"
     bpy.context.view_layer.update()
     return arm.matrix_world @ arm.pose.bones[focus].head
