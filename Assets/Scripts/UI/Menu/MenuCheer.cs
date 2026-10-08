@@ -17,16 +17,17 @@ namespace Tag.Ui.Menu
         Quaternion _armL0, _armR0, _foreL0, _foreR0;
         Quaternion _thighL0, _thighR0, _kneeL0, _kneeR0;
         bool _win;
-        bool _stumble;
+        bool _clap;
+        bool _small;
         bool _still;
 
         public static void Slot(int rank, out float x, out float height)
         {
-            if (rank <= 0) { x = 0.05f; height = 1.32f; return; }
-            if (rank == 1) { x = -1.55f; height = 0.9f; return; }
-            if (rank == 2) { x = 1.45f; height = 0.58f; return; }
-            x = 2.55f;
-            height = 0.1f;
+            if (rank <= 0) { x = 0.02f; height = 1.16f; return; }
+            if (rank == 1) { x = -1.32f; height = 0.78f; return; }
+            if (rank == 2) { x = 1.28f; height = 0.52f; return; }
+            x = 2.38f;
+            height = 0.30f;
         }
 
         public static void Dress(GameObject body, Color color)
@@ -45,20 +46,21 @@ namespace Tag.Ui.Menu
             }
         }
 
-        public static void Play(GameObject body, bool win, bool lose, bool stumble)
+        public static void Play(GameObject body, bool win, bool clap, bool small)
         {
-            if (body == null || (!win && !lose)) return;
+            if (body == null) return;
             MenuIdle idle = body.GetComponent<MenuIdle>();
             if (idle != null) idle.enabled = false;
             MenuCheer cheer = body.GetComponent<MenuCheer>();
             if (cheer == null) cheer = body.AddComponent<MenuCheer>();
-            cheer.Begin(win, stumble);
+            cheer.Begin(win, clap, small);
         }
 
-        public void Begin(bool win, bool stumble)
+        public void Begin(bool win, bool clap, bool small)
         {
             _win = win;
-            _stumble = stumble && !win;
+            _clap = clap && !win;
+            _small = small && _clap;
             _still = MenuVideo.ReduceMotion;
             Cache();
             Apply(0f);
@@ -79,10 +81,11 @@ namespace Tag.Ui.Menu
                 Pose(s.ThighL, s.ThighR, s.KneeL, s.KneeR, s.ArmPitchL, s.ArmPitchR, s.ArmYawL, s.ArmYawR, s.ArmRollL, s.ArmRollR, s.ElbowL, s.ElbowR, s.Hip, s.HipYaw, s.Spine, s.SpineYaw, s.Head, s.HeadYaw);
                 return;
             }
-            if (_stumble)
+            if (_clap)
             {
-                PunchStaggerPose.Sample s = PunchStaggerPose.Stumble();
-                Pose(s.ThighL, s.ThighR, s.KneeL, s.KneeR, s.ArmPitchL, s.ArmPitchR, s.ArmYawL, s.ArmYawR, s.ArmRollL, s.ArmRollR, s.ElbowL, s.ElbowR, s.Hip, s.HipYaw, s.Spine, s.SpineYaw, s.Head, s.HeadYaw);
+                float elbow = _small ? -72f : -108f;
+                float pitch = _small ? -34f : -50f;
+                Pose(6f, 6f, -8f, -8f, pitch, pitch, -34f, 34f, 8f, -8f, elbow, elbow, 0f, 0f, -6f, 0f, -4f, 0f);
                 return;
             }
             BecomeItPose.Sample give = BecomeItPose.GiveUp();

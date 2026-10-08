@@ -94,6 +94,7 @@ namespace Tag.Ui.Menu
         Text _banner;
         Image _startGlyph;
         CanvasGroup _startPrompt;
+        Text _promptWord;
         Text _promptTail;
         GameObject _vignette;
         RawImage _parade;
@@ -156,6 +157,7 @@ namespace Tag.Ui.Menu
 
         readonly Text[] _castMark = new Text[6];
         readonly RawImage[] _castView = new RawImage[4];
+        readonly Text[] _castName = new Text[4];
         readonly Text[] _castReady = new Text[4];
         readonly Text[] _loadRule = new Text[8];
         readonly Text[] _keyWord = new Text[40];
@@ -539,12 +541,14 @@ namespace Tag.Ui.Menu
             _tiles.Clear();
             _startGlyph = null;
             _startPrompt = null;
+            _promptWord = null;
             _promptTail = null;
             _parade = null;
             for (int i = 0; i < _castMark.Length; i++) _castMark[i] = null;
             for (int i = 0; i < _castView.Length; i++)
             {
                 _castView[i] = null;
+                _castName[i] = null;
                 _castReady[i] = null;
                 _castJoin[i] = null;
                 _castPlate[i] = null;
@@ -947,17 +951,52 @@ namespace Tag.Ui.Menu
                     if (!title) _glyphIcon[i].sprite = MenuIcons.Slot(family, i, face);
                 }
             }
-            if (_startGlyph != null)
+            bool keyboard = family == PadGlyph.Keyboard;
+            if (_startGlyph != null && !keyboard)
             {
-                _startGlyph.sprite = family == PadGlyph.Keyboard
-                    ? MenuIcons.KeySpace
-                    : MenuIcons.Slot(family, 1, face);
+                _startGlyph.sprite = MenuIcons.Slot(family, 1, face);
             }
-            if (_promptTail != null)
+            LayoutPrompt(keyboard);
+        }
+
+        void LayoutPrompt(bool keyboard)
+        {
+            if (_promptWord == null) return;
+            RectTransform word = _promptWord.rectTransform;
+            word.anchorMin = new Vector2(0.5f, 0.5f);
+            word.anchorMax = new Vector2(0.5f, 0.5f);
+            if (_promptTail != null) _promptTail.gameObject.SetActive(false);
+            if (keyboard)
             {
-                string tail = family == PadGlyph.Keyboard ? "START" : "A";
-                if (_promptTail.text != tail) _promptTail.text = tail;
+                if (_promptWord.text != "PRESS START") _promptWord.text = "PRESS START";
+                _promptWord.alignment = TextAnchor.MiddleCenter;
+                word.pivot = new Vector2(0.5f, 0.5f);
+                word.sizeDelta = new Vector2(720f, 110f);
+                word.anchoredPosition = Vector2.zero;
+                if (_startGlyph != null) _startGlyph.enabled = false;
+                return;
             }
+            if (_promptWord.text != "PRESS") _promptWord.text = "PRESS";
+            _promptWord.alignment = TextAnchor.MiddleRight;
+            word.pivot = new Vector2(1f, 0.5f);
+            word.sizeDelta = new Vector2(320f, 110f);
+            word.anchoredPosition = new Vector2(-12f, 0f);
+            if (_startGlyph == null) return;
+            _startGlyph.enabled = true;
+            RectTransform glyph = _startGlyph.rectTransform;
+            glyph.anchorMin = new Vector2(0.5f, 0.5f);
+            glyph.anchorMax = new Vector2(0.5f, 0.5f);
+            glyph.pivot = new Vector2(0f, 0.5f);
+            glyph.sizeDelta = new Vector2(92f, 92f);
+            glyph.anchoredPosition = new Vector2(12f, 0f);
+        }
+
+        static void Snug(Text label)
+        {
+            if (label == null) return;
+            RectTransform rt = label.rectTransform;
+            rt.offsetMin = new Vector2(8f, 2f);
+            rt.offsetMax = new Vector2(-8f, -2f);
         }
 
         void Animate()
@@ -1527,8 +1566,8 @@ namespace Tag.Ui.Menu
             _startPrompt = prompt.gameObject.AddComponent<CanvasGroup>();
             _startPrompt.blocksRaycasts = false;
             _startPrompt.interactable = false;
-            MenuWidgets.Heading(prompt, "PRESS", 72, TextAnchor.MiddleRight, MenuTheme.Cream, new Vector2(0f, 0f), new Vector2(0.36f, 1f));
-            var glyphRt = MenuWidgets.Box(prompt, "StartGlyph", new Vector2(0.38f, 0.12f), new Vector2(0.54f, 0.88f), new Vector2(0.5f, 0.5f));
+            _promptWord = MenuWidgets.Heading(prompt, "PRESS", 72, TextAnchor.MiddleRight, MenuTheme.Cream, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f));
+            var glyphRt = MenuWidgets.Box(prompt, "StartGlyph", new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, 0.5f));
             _startGlyph = glyphRt.gameObject.AddComponent<Image>();
             _startGlyph.preserveAspect = true;
             _startGlyph.raycastTarget = false;
@@ -1536,10 +1575,10 @@ namespace Tag.Ui.Menu
                 ? PadGlyph.Family(MenuInput.LastDevice)
                 : PadGlyph.Keyboard;
             int startDevice = MenuInput.LastKind == InputDeviceKind.Gamepad ? MenuInput.LastDevice : CouchPlay.DeviceKeyboard;
-            _startGlyph.sprite = startFamily == PadGlyph.Keyboard
-                ? MenuIcons.KeySpace
-                : MenuIcons.Slot(startFamily, 1, FaceFor(startDevice, startFamily));
-            _promptTail = MenuWidgets.Heading(prompt, startFamily == PadGlyph.Keyboard ? "START" : "A", 72, TextAnchor.MiddleLeft, MenuTheme.Cream, new Vector2(0.56f, 0f), new Vector2(1f, 1f));
+            if (startFamily != PadGlyph.Keyboard)
+                _startGlyph.sprite = MenuIcons.Slot(startFamily, 1, FaceFor(startDevice, startFamily));
+            _promptTail = null;
+            LayoutPrompt(startFamily == PadGlyph.Keyboard);
             MenuAttract.Bind(logo, _startPrompt);
         }
 
@@ -1727,22 +1766,28 @@ namespace Tag.Ui.Menu
                 MenuArt.Plate(plate, MenuTheme.Seat(s), true);
                 plate.raycastTarget = false;
                 _castPlate[s] = plate;
-                float viewH = cardH * 0.46f;
-                if (viewH > 240f) viewH = 240f;
-                if (viewH < 88f) viewH = 88f;
-                var viewRt = MenuWidgets.Place(card, "View", 12f, 12f, cardW - 24f, viewH);
+                float textH = UiFit.CastNameH + UiFit.CastStatusH;
+                float swH = 26f;
+                float textY = cardH - 8f - textH;
+                if (textY < 80f) textY = 80f;
+                float swY = textY - 8f - swH;
+                float viewRoom = swY - 16f;
+                float viewSide = cardW - 24f;
+                if (viewSide > viewRoom) viewSide = viewRoom;
+                if (viewSide < 88f) viewSide = 88f;
+                float viewX = (cardW - viewSide) * 0.5f;
+                float viewH = viewSide;
+                var viewRt = MenuWidgets.Place(card, "View", viewX, 10f, viewSide, viewH);
                 var raw = viewRt.gameObject.AddComponent<RawImage>();
                 raw.raycastTarget = false;
                 _castView[s] = raw;
-                var well = MenuWidgets.Place(card, "JoinWell", 12f, 12f, cardW - 24f, viewH);
+                var well = MenuWidgets.Place(card, "JoinWell", viewX, 10f, viewSide, viewH);
                 var wellImage = well.gameObject.AddComponent<Image>();
                 MenuArt.Plate(wellImage, MenuTheme.Navy, true);
                 wellImage.raycastTarget = false;
                 _castWell[s] = wellImage;
-                float swH = 26f;
-                float swY = 16f + viewH;
                 float chip = (cardW - 28f) / 6f;
-                if (chip > 40f) chip = 40f;
+                if (chip > 36f) chip = 36f;
                 float rowW = chip * 6f;
                 float swX = (cardW - rowW) * 0.5f;
                 var ring = MenuWidgets.Place(card, "SwatchRing", swX - 2f, swY - 3f, chip + 4f, swH + 6f);
@@ -1768,12 +1813,19 @@ namespace Tag.Ui.Menu
                 glyphImage.raycastTarget = false;
                 glyphImage.enabled = false;
                 _castGlyph[s] = glyphImage;
-                var band = MenuWidgets.Box(card, "NameBand", new Vector2(0.04f, 0.02f), new Vector2(0.96f, 0.26f), new Vector2(0.5f, 0.5f));
-                var bandImage = band.gameObject.AddComponent<Image>();
-                MenuArt.Plate(bandImage, MenuTheme.Navy, true);
-                bandImage.raycastTarget = false;
-                _castJoin[s] = MenuWidgets.Words(card, PadGlyph.Join(PadGlyph.Generic), 32, TextAnchor.MiddleCenter, MenuTheme.Cream, new Vector2(0.08f, 0.34f), new Vector2(0.92f, 0.78f));
-                _castReady[s] = MenuWidgets.Words(card, "", UiFit.FloorFont, TextAnchor.MiddleLeft, MenuTheme.Cream, new Vector2(0.04f, 0.02f), new Vector2(0.96f, 0.26f));
+                var nameRt = MenuWidgets.Place(card, "NameLine", 4f, textY, cardW - 8f, UiFit.CastNameH);
+                var namePlate = nameRt.gameObject.AddComponent<Image>();
+                MenuArt.Plate(namePlate, MenuTheme.Navy, true);
+                namePlate.raycastTarget = false;
+                _castName[s] = MenuWidgets.Words(nameRt, "", UiFit.FloorFont, TextAnchor.MiddleLeft, MenuTheme.Cream, Vector2.zero, Vector2.one);
+                Snug(_castName[s]);
+                var statRt = MenuWidgets.Place(card, "StatusLine", 4f, textY + UiFit.CastNameH, cardW - 8f, UiFit.CastStatusH);
+                var statPlate = statRt.gameObject.AddComponent<Image>();
+                MenuArt.Plate(statPlate, MenuTheme.Navy, true);
+                statPlate.raycastTarget = false;
+                _castReady[s] = MenuWidgets.Words(statRt, "", UiFit.FloorFont, TextAnchor.MiddleLeft, MenuTheme.Cream, Vector2.zero, Vector2.one);
+                Snug(_castReady[s]);
+                _castJoin[s] = MenuWidgets.Words(card, PadGlyph.Join(PadGlyph.Generic), 32, TextAnchor.MiddleCenter, MenuTheme.Cream, new Vector2(0.08f, 0.34f), new Vector2(0.92f, 0.72f));
                 float burstW = cardW * 0.92f;
                 float burstH = viewH * 0.78f;
                 var burst = MenuWidgets.Place(card, "ReadyBurst", (cardW - burstW) * 0.5f, 18f, burstW, burstH);
@@ -1792,8 +1844,10 @@ namespace Tag.Ui.Menu
                 burst.gameObject.SetActive(false);
                 _readyBurst[s] = burst;
             }
-            float colW = (span - 32f) / 3f;
-            if (colW > 500f) colW = 500f;
+            float colW = 220f;
+            float gridSpan = colW * 3f + 16f;
+            if (gridSpan > span - 16f)
+                colW = (span - 32f) / 3f;
             float gridX = (span - (colW * 3f + 16f)) * 0.5f;
             if (gridX < 8f) gridX = 8f;
             for (int c = 0; c < 6; c++)
@@ -1807,11 +1861,18 @@ namespace Tag.Ui.Menu
                 MenuTile tile = TileAt(c);
                 if (tile != null)
                 {
-                    MenuWidgets.Portrait(tile, MenuPortraits.Of(c), MenuPortraits.Tint(c));
+                    tile.KeepBar = true;
+                    tile.BarColor = MenuPortraits.Tint(c);
+                    if (tile.Bar != null) tile.Bar.color = tile.BarColor;
+                    tile.Tint(Color.Lerp(MenuTheme.Panel, MenuPortraits.Tint(c), UiSweep.PortraitMix));
                     _castMark[c] = tile.Detail;
                 }
             }
-            BuildKeys(gridTop, gridH + gridStep);
+            float keysH = 216f;
+            float keysRoom = UiFit.BodyH(UiFit.Current()) - gridTop;
+            if (keysH > keysRoom) keysH = keysRoom;
+            if (keysH < gridH) keysH = gridH;
+            BuildKeys(gridTop, keysH);
             _count = 6;
             _castSig = int.MinValue;
             RefreshCast();
@@ -2091,8 +2152,8 @@ namespace Tag.Ui.Menu
             _count = 4;
             _cols = 4;
             _focus = 0;
-            if (_dim != null) _dim.color = new Color(0.03f, 0.05f, 0.09f, 0.72f);
-            HideFlyover();
+            if (_dim != null) _dim.color = new Color(0.02f, 0.04f, 0.10f, 0.28f);
+            ShowFlyover(ParkArena.Mega, 1f);
             TagModeController mode = TagModeController.Instance;
             TagModeId modeId = mode != null ? mode.SelectedMode : MenuSession.Mode;
             string headline = "Results";
@@ -2108,14 +2169,12 @@ namespace Tag.Ui.Menu
             float stageX = (span - stageW) * 0.5f;
             var stage = MenuWidgets.Place(_body, "ResultsView", stageX, 8f, stageW, viewH);
             var frame = stage.gameObject.AddComponent<Image>();
-            MenuArt.Plate(frame, MenuTheme.Navy, true);
+            frame.color = new Color(0f, 0f, 0f, 0f);
             frame.raycastTarget = false;
-            var viewRt = MenuWidgets.Place(stage, "View", 12f, 12f, stageW - 24f, viewH - 24f);
+            var viewRt = MenuWidgets.Place(stage, "View", 0f, 0f, stageW, viewH);
             var view = viewRt.gameObject.AddComponent<RawImage>();
             view.raycastTarget = false;
             if (_preview != null) _preview.ShowPodium(n, _rows, view);
-            Text results = MenuWidgets.Heading(stage, "RESULTS", MenuTokens.Title, TextAnchor.MiddleCenter, MenuTheme.Gold, new Vector2(0f, 0.84f), new Vector2(1f, 1f));
-            results.alignment = TextAnchor.MiddleCenter;
             for (int rank = 0; rank < n; rank++)
             {
                 string detail = MenuPodium.Stats(_rows[rank]);
@@ -2132,6 +2191,20 @@ namespace Tag.Ui.Menu
                     tile.Tint(Color.Lerp(MenuTheme.Ink, MenuTheme.Seat(seat), UiSweep.SeatMix));
                     if (tile.Stroke != null && _rows[rank].Winner)
                         tile.Stroke.color = MenuTheme.Gold;
+                    if (tile.Label != null)
+                    {
+                        RectTransform titleRt = tile.Label.rectTransform;
+                        titleRt.anchorMin = new Vector2(0f, 0.62f);
+                        titleRt.anchorMax = new Vector2(1f, 1f);
+                    }
+                    if (tile.Detail != null)
+                    {
+                        RectTransform detailRt = tile.Detail.rectTransform;
+                        detailRt.anchorMin = new Vector2(0f, 0f);
+                        detailRt.anchorMax = new Vector2(1f, 0.60f);
+                        detailRt.offsetMin = new Vector2(10f, 4f);
+                        detailRt.offsetMax = new Vector2(-10f, -2f);
+                    }
                     MenuReveal.Row(tile.transform as RectTransform);
                 }
             }
@@ -2806,6 +2879,7 @@ namespace Tag.Ui.Menu
                 if (!human)
                 {
                     if (_readyBurst[s] != null) _readyBurst[s].gameObject.SetActive(false);
+                    if (_castName[s] != null) _castName[s].text = "";
                     if (_castReady[s] != null) _castReady[s].text = "";
                     if (_castJoin[s] != null)
                     {
@@ -2830,7 +2904,9 @@ namespace Tag.Ui.Menu
                     ? LocalProfiles.HierNames[MenuSession.Accent[s]] : skin;
                 string ready = MenuSession.Ready[s] ? "READY" : "Not ready";
                 string hat = MenuSession.Hat[s] == 0 ? "Hat off" : "Hat on";
-                _castReady[s].text = CouchPlay.Name(s) + "   " + skin + " / " + trim + "   " + hat + "   " + ready;
+                UiFit.CastLines(CouchPlay.Name(s), skin, trim, hat, ready, UiFit.CastInk(UiFit.Current()), out string top, out string bot);
+                if (_castName[s] != null && _castName[s].text != top) _castName[s].text = top;
+                if (_castReady[s].text != bot) _castReady[s].text = bot;
                 _castReady[s].color = MenuTheme.Cream;
                 if (_castGlyph[s] != null)
                 {

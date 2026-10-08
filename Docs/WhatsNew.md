@@ -290,6 +290,8 @@ Each character stands on a turning disc, idles, and hops when that player hits R
 
 The eleventh pass puts the real Hier figure in the four player colors on the title, on character select, and on results. The title asks PRESS A on a pad and PRESS START on a keyboard, and the line pulses. TAG is a comic lockup: Bangers, a thick outline, a highlight, a dotted shadow, and a tilt. The page behind it is a golden-hour photo of Mega Park, a little soft, with a vignette. The main menu shows two figures mid-chase and a tip of the day. Each character card has the color row, the pad that joined, and a bigger READY! burst. Space still jumps. Mockups are in `Docs/UiStills/pass11/`.
 
+The twelfth pass shows that prompt once: PRESS and the button, or PRESS START. Character cards keep the name, the colors, the hat, and ready on two lines that stay inside the card from 80% to 130%. Each figure stands full body on its disc. Results puts the four places on a stepped block in front of Mega Park, with a celebration, a clap, and a slump, and the first-place card shows the round wins in full. Space still jumps. Mockups are in `Docs/UiStills/pass12/`.
+
 ## Motion, ninth pass
 
 The wall jump, the rope, the zip, the launch pad, a landing, the dash flash, a hard turnaround, and a punch while you run all ease instead of snapping. Speeds, the jump, and the dash length are the same.

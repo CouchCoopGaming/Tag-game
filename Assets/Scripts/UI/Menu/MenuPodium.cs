@@ -88,12 +88,7 @@ namespace Tag.Ui.Menu
 
         public static string Stats(Row row)
         {
-            string tags = row.Tags == 1 ? "1 tag" : row.Tags.ToString() + " tags";
-            string time = row.Time.ToString("0.0") + "s It";
-            string wins = row.Wins == 1 ? "1 round win" : row.Wins.ToString() + " round wins";
-            string line = tags + "    " + time + "    " + wins;
-            if (row.Winner) return "WIN    " + line;
-            return line;
+            return UiFit.FormatStats(row.Winner, row.Tags, row.Time, row.Wins);
         }
 
         public static int Sample(Row[] rows)

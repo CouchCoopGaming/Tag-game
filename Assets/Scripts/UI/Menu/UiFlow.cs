@@ -68,7 +68,7 @@ namespace Tag.Ui.Menu
             int cues = MenuCue.Present(Root());
             if (cues != MenuCue.Count)
                 Fail(ref report, "menu cue slot missing");
-            bool text = UiFit.FontsHold() && UiFit.Remembers();
+            bool text = UiFit.FontsHold() && UiFit.Remembers() && UiFit.CardsHold();
             bool hud = Tag.Ui.Hud.HudCorner.ClearAll();
             bool glyphs = PadGlyph.Samples();
             bool feed = Tag.Ui.Hud.TagFeed.Holds();

@@ -181,6 +181,14 @@ The title and the main menu sit on a golden-hour render of Mega Park, softened, 
 
 The gold ring, the contrast pairs, the 80% to 130% scale, and the proof lines stay. Space still jumps. Mockups are in `Docs/UiStills/pass11/`.
 
+## Pass 12
+
+The title prompt shows the confirm glyph once. A pad reads PRESS and the face button. A keyboard reads PRESS START. The line stays centered under the lockup and keeps the pulse.
+
+Character cards use two lines. The name and the color pair sit on the first when they fit. Hat and ready sit on the second. A 12-letter name wraps inside the card. The check walks every card at 80%, 100%, and 130%. The figure is framed full body, feet on the turning disc, with a contact shadow. The six colors are a short legend under the cards, so the cards keep the height.
+
+Results stands the four figures on a stepped block with a number, a trim lip, and a confetti burst. First celebrates, second and third clap, fourth slumps. The park photo sits behind them. The inner RESULTS line is gone. The header is the only one. "2 round wins" has its own line on the first-place card. Mockups are in `Docs/UiStills/pass12/`.
+
 ## Later passes
 
 - A 2D focus grid on rules so Left from a rule row lands on a mode tile.

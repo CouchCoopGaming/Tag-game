@@ -177,41 +177,223 @@ namespace Tag.Ui.Menu
         public static void Bands(float scale, out float view, out float rankY, out float rankH, out float btnY, out float btnH)
         {
             float h = BodyH(scale);
-            view = h * 0.48f;
-            if (view > 460f) view = 460f;
+            view = h * 0.46f;
+            if (view > 420f) view = 420f;
             if (view < 180f) view = 180f;
-            rankH = 110f;
+            rankH = 156f;
             btnH = 88f;
             rankY = view + 10f;
             btnY = rankY + rankH + 10f;
             if (btnY + btnH > h)
             {
-                view = h - 96f - 80f - 28f;
+                view = h - 148f - 80f - 28f;
                 if (view < 160f) view = 160f;
-                rankH = 96f;
+                rankH = 148f;
                 btnH = 80f;
                 rankY = view + 8f;
                 btnY = rankY + rankH + 8f;
             }
         }
 
+        public const float CastNameH = 78f;
+        public const float CastStatusH = 44f;
+        public const float CastLine = 36f;
+
         public static void CastBands(float scale, out float cardH, out float gridTop, out float gridH, out float gridStep)
         {
             float h = BodyH(scale);
-            cardH = h * 0.46f;
-            if (cardH > 420f) cardH = 420f;
-            if (cardH < 200f) cardH = 200f;
-            gridTop = cardH + 16f;
-            float room = h - gridTop - 8f;
-            gridStep = room * 0.5f;
-            gridH = gridStep - 8f;
-            if (gridH > 160f)
+            gridH = 100f;
+            gridStep = 108f;
+            float keys = 216f;
+            cardH = h - keys - 12f;
+            if (cardH > 560f) cardH = 560f;
+            if (cardH < 220f) cardH = 220f;
+            gridTop = cardH + 12f;
+            if (gridTop + gridStep + gridH > h)
             {
-                gridH = 160f;
-                gridStep = 172f;
+                cardH = h - gridStep - gridH - 20f;
+                if (cardH < 220f) cardH = 220f;
+                gridTop = cardH + 12f;
             }
-            if (gridH < 64f) gridH = 64f;
         }
+
+        public static float CastCardW(float scale)
+        {
+            float span = BodyW(scale);
+            float cardW = (span - 16f * 5f) / 4f;
+            if (cardW > 428f) cardW = 428f;
+            return cardW;
+        }
+
+        public static float CastInk(float scale)
+        {
+            return CastCardW(scale) - 24f;
+        }
+
+        public static float RankInk(float scale)
+        {
+            float span = BodyW(scale);
+            float rankW = (span - 32f) / 4f;
+            if (rankW > 436f) rankW = 436f;
+            return rankW - 20f;
+        }
+
+        public static float RankBoxH(float scale)
+        {
+            Bands(scale, out _, out _, out float rankH, out _, out _);
+            return rankH * 0.60f - 8f;
+        }
+
+        public static bool CardsHold()
+        {
+            string wide = "WWWWWWWWWWWW";
+            string hat = "Hat off";
+            string ready = "Not ready";
+            string skin = "Lavender";
+            float[] scales = { 0.80f, 1f, 1.30f };
+            for (int seat = 0; seat < 4; seat++)
+            {
+                for (int i = 0; i < scales.Length; i++)
+                {
+                    float ink = CastInk(scales[i]);
+                    if (ink < 160f) return false;
+                    CastLines(wide, skin, skin, hat, ready, ink, out string top, out string bot);
+                    if (!BlockFits(top, ink, CastNameH)) return false;
+                    if (!BlockFits(bot, ink, CastStatusH)) return false;
+                    if (bot != "Hat off   Not ready") return false;
+                    if (LineCount(bot) != 1) return false;
+                    CastLines("P1", skin, skin, "Hat on", "READY", ink, out string named, out _);
+                    if (scales[i] < 1.2f && named.IndexOf("Lavender / Lavender") < 0) return false;
+                }
+            }
+            return RankCards();
+        }
+
+        public static void CastLines(string name, string skin, string trim, string hat, string ready, float ink, out string top, out string bot)
+        {
+            if (name == null) name = "";
+            if (skin == null) skin = "";
+            if (trim == null) trim = "";
+            if (hat == null) hat = "";
+            if (ready == null) ready = "";
+            bot = hat + "   " + ready;
+            string look = skin + " / " + trim;
+            if (Measure(name) <= ink && Measure(look) <= ink)
+                top = name + "\n" + look;
+            else
+                top = WrapName(name, ink);
+        }
+
+        public static string FormatStats(bool winner, int tags, float time, int wins)
+        {
+            string tagWord = tags == 1 ? "1 tag" : tags.ToString() + " tags";
+            string timeWord = time.ToString("0.0") + "s It";
+            string winWord = wins == 1 ? "1 round win" : wins.ToString() + " round wins";
+            string head = (winner ? "WIN  " : "") + tagWord + "  " + timeWord;
+            if (InkWidth(head) > RankInk(ScaleMax))
+                head = (winner ? "WIN  " : "") + tagWord;
+            return head + "\n" + winWord;
+        }
+
+        static bool RankCards()
+        {
+            float[] scales = { 0.80f, 1f, 1.30f };
+            string shown = FormatStats(true, 6, 8.5f, 2);
+            string wide = FormatStats(false, 12, 99.9f, 0);
+            for (int i = 0; i < scales.Length; i++)
+            {
+                float ink = RankInk(scales[i]);
+                float box = RankBoxH(scales[i]);
+                if (ink < 200f || box < CastLine * 2f) return false;
+                if (!RankFits(shown, ink, box)) return false;
+                if (!RankFits(wide, ink, box)) return false;
+            }
+            if (shown.IndexOf("2 round wins") < 0) return false;
+            return true;
+        }
+
+        static bool RankFits(string text, float ink, float box)
+        {
+            if (!BlockFits(text, ink, box)) return false;
+            int start = 0;
+            for (int i = 0; i <= text.Length; i++)
+            {
+                if (i < text.Length && text[i] != '\n') continue;
+                if (Measure(text, start, i - start) > ink) return false;
+                start = i + 1;
+            }
+            return true;
+        }
+
+        static bool BlockFits(string text, float ink, float box)
+        {
+            if (string.IsNullOrEmpty(text)) return box >= CastLine;
+            int lines = 0;
+            int start = 0;
+            for (int i = 0; i <= text.Length; i++)
+            {
+                if (i < text.Length && text[i] != '\n') continue;
+                int count = i - start;
+                if (count > 0 && Measure(text, start, count) > ink) return false;
+                lines++;
+                start = i + 1;
+            }
+            return lines * CastLine <= box + 0.5f;
+        }
+
+        static int LineCount(string text)
+        {
+            if (string.IsNullOrEmpty(text)) return 1;
+            int n = 1;
+            for (int i = 0; i < text.Length; i++)
+            {
+                if (text[i] == '\n') n++;
+            }
+            return n;
+        }
+
+        static string WrapName(string name, float ink)
+        {
+            if (Measure(name) <= ink) return name;
+            int cut = name.Length;
+            while (cut > 1 && Measure(name, 0, cut) > ink) cut--;
+            if (cut < 1) cut = 1;
+            if (cut >= name.Length) return name;
+            return name.Substring(0, cut) + "\n" + name.Substring(cut);
+        }
+
+        public static int InkWidth(string text)
+        {
+            if (string.IsNullOrEmpty(text)) return 0;
+            return Measure(text, 0, text.Length);
+        }
+
+        static int Measure(string text)
+        {
+            if (string.IsNullOrEmpty(text)) return 0;
+            return Measure(text, 0, text.Length);
+        }
+
+        static int Measure(string text, int start, int count)
+        {
+            int w = 0;
+            int end = start + count;
+            if (end > text.Length) end = text.Length;
+            for (int i = start; i < end; i++)
+                w += Advance(text[i]);
+            return w;
+        }
+
+        static int Advance(char c)
+        {
+            if (c < 32 || c > 126) return 24;
+            return Advances[c - 32];
+        }
+
+        static readonly int[] Advances =
+        {
+            9,10,15,17,17,27,22,8,10,10,12,18,9,10,9,9,17,17,17,17,17,17,17,17,17,17,10,10,18,18,18,19,30,22,22,22,22,21,19,24,22,9,17,22,19,25,22,24,21,24,22,21,19,22,21,29,21,21,19,10,9,10,18,17,10,17,19,17,19,17,10,19,19,9,9,17,9,27,19,19,19,19,12,17,10,19,17,24,17,17,15,12,9,12,18
+        };
 
         public static void RowBox(float scale, float maxW, out float x, out float w)
         {
