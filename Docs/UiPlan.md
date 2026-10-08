@@ -337,6 +337,10 @@ Shipped defaults no longer give Alt to both Air dash and Sprint. Air dash is Q a
 
 Each split pane shows who is It: a large IT plate on that player, and a gold arrow with an upright IT chip for everyone else. The chip stays inside the pane. A round timer sits at the top of each pane when the pane is not the full-width top of the screen; that case keeps the shared clock. The name plate carries the mode line and the tag count. After a tag, the previous It keeps the existing one-second immunity: the pane glows and the safe row reads SAFE plus the tenths. Dash shows DASH when it is ready, the cooldown digits while it fills, and GO while it fires. Comic words swaps the display face on those words and on the tag feed. The feed sentence stays, on an ink plate, with the tagger's colour and, when color-blind seat colors are on, that seat's shape. The 3-up score list uses the same cream line, colour chip, and shape. Text size still scales the HUD. Stills are composites in `Docs/UiStills/screens2/pass19/`.
 
+## Screens 2, pass 20
+
+One match state is shared by every pane. The script is P1 tags P2, then P2 tags P3. P3 is It. P2, the previous It, holds the 1.0 s tag-back window and the safe row reads the time left. The feed on every pane is the same two lines, newest first: `P2 tagged P3`, then `P1 tagged P2`. The pane border is that seat's colour. It adds a pulsing yellow inner frame, and only on the It pane. Safe adds a warm wash and the SAFE countdown, and only on the previous It. A runner who can see It gets an IT chip over that head. A runner who cannot gets an arrow on the pane rim, in that direction. The headless line is `hud-state`. Stills are composites in `Docs/UiStills/screens2/pass20/`.
+
 ## Later passes
 
 - Left from a rule row returns to the modes even when that rule can still decrease. Right from the right-hand mode, and Left at the end of a rule, already move between the columns.
