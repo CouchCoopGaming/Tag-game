@@ -32293,10 +32293,10 @@
   {
     "name": "Sign_Blades",
     "category": "StreetFurniture",
-    "blurb": "Crossed street blades at 2.70 m and 2.95 m. Each blade 0.90 x 0.22 m, pole 3.30 m.",
+    "blurb": "Crossed street blades at 2.70 m and 2.95 m. Each blade 0.90 x 0.22 m. Steel pole ends in a green collar.",
     "size": [
       0.9,
-      3.3,
+      3.18,
       1.0
     ],
     "min": [
@@ -32306,13 +32306,13 @@
     ],
     "max": [
       0.45,
-      3.3,
+      3.18,
       0.5
     ],
     "lods": [
       {
         "lod": 0,
-        "tris": 516,
+        "tris": 504,
         "materials": [
           "Lib_SteelDark",
           "Lib_Steel",
@@ -32360,11 +32360,11 @@
         "type": "capsule",
         "center": [
           0,
-          1.65,
+          1.3,
           0
         ],
-        "radius": 0.028,
-        "height": 3.16,
+        "radius": 0.022,
+        "height": 2.2,
         "direction": 1
       },
       {
@@ -32455,16 +32455,16 @@
       "LOD0",
       "LOD1"
     ],
-    "slackCm": 0.42,
+    "slackCm": 0.72,
     "fbx": "Assets/Art/Props/Library/StreetFurniture/Sign_Blades.fbx"
   },
   {
     "name": "Planter_Street",
     "category": "StreetFurniture",
-    "blurb": "Street planter 1.80 x 0.48 m, 0.46 m tall. Steel frame, wood slats, soil and one shrub mass.",
+    "blurb": "Street planter 1.80 x 0.48 m, 0.46 m tall. Steel frame, wood slats, soil and clustered shrubs.",
     "size": [
       1.86,
-      0.769,
+      0.749,
       0.528
     ],
     "min": [
@@ -32474,13 +32474,13 @@
     ],
     "max": [
       0.93,
-      0.769,
+      0.749,
       0.264
     ],
     "lods": [
       {
         "lod": 0,
-        "tris": 1356,
+        "tris": 1452,
         "materials": [
           "Lib_SteelDark",
           "Lib_Steel",
@@ -32635,7 +32635,7 @@
           0.54,
           0.0
         ],
-        "radius": 0.05
+        "radius": 0.035
       },
       {
         "name": "Col_ShrubR",
@@ -32645,7 +32645,7 @@
           0.52,
           -0.02
         ],
-        "radius": 0.04
+        "radius": 0.028
       }
     ],
     "climbable": false,
@@ -32659,7 +32659,7 @@
       "LOD0",
       "LOD1"
     ],
-    "slackCm": 1.6,
+    "slackCm": 1.5,
     "fbx": "Assets/Art/Props/Library/StreetFurniture/Planter_Street.fbx"
   },
   {
@@ -34071,48 +34071,50 @@
     "category": "StreetFurniture",
     "blurb": "Sedan shell, about 4.56 m long, roof 1.47 m. Closed body, pillars, glass, and fenders over the tires.",
     "size": [
-      1.86,
+      1.9,
       1.459,
       4.595
     ],
     "min": [
-      -0.93,
+      -0.95,
       0.0,
       -2.298
     ],
     "max": [
-      0.93,
+      0.95,
       1.459,
       2.297
     ],
     "lods": [
       {
         "lod": 0,
-        "tris": 13284,
+        "tris": 13696,
         "materials": [
           "Lib_PaintBlue",
+          "Lib_Interior",
           "Lib_TintGlass",
           "Lib_Black",
+          "Lib_Steel",
           "Lib_Headlamp",
           "Lib_SteelDark",
           "Lib_Taillamp",
-          "Lib_Rubber",
-          "Lib_Steel"
+          "Lib_Rubber"
         ],
         "mesh": "LOD0",
         "fileID": -1633821710574564935
       },
       {
         "lod": 1,
-        "tris": 2956,
+        "tris": 3304,
         "materials": [
           "Lib_PaintBlue",
+          "Lib_Interior",
           "Lib_TintGlass",
           "Lib_Black",
+          "Lib_Steel",
           "Lib_Headlamp",
           "Lib_Taillamp",
           "Lib_Rubber",
-          "Lib_Steel",
           "Lib_SteelDark"
         ],
         "mesh": "LOD1",
@@ -34292,48 +34294,50 @@
     "category": "StreetFurniture",
     "blurb": "Hatchback shell, about 4.00 m long, roof 1.52 m. Closed body, pillars, glass, and fenders over the tires.",
     "size": [
-      1.78,
+      1.82,
       1.509,
       4.035
     ],
     "min": [
-      -0.89,
+      -0.91,
       0.0,
       -1.998
     ],
     "max": [
-      0.89,
+      0.91,
       1.509,
       2.037
     ],
     "lods": [
       {
         "lod": 0,
-        "tris": 12190,
+        "tris": 12602,
         "materials": [
           "Lib_PaintRed",
+          "Lib_Interior",
           "Lib_TintGlass",
           "Lib_Black",
+          "Lib_Steel",
           "Lib_Headlamp",
           "Lib_SteelDark",
           "Lib_Taillamp",
-          "Lib_Rubber",
-          "Lib_Steel"
+          "Lib_Rubber"
         ],
         "mesh": "LOD0",
         "fileID": -1633821710574564935
       },
       {
         "lod": 1,
-        "tris": 2778,
+        "tris": 3126,
         "materials": [
           "Lib_PaintRed",
+          "Lib_Interior",
           "Lib_TintGlass",
           "Lib_Black",
+          "Lib_Steel",
           "Lib_Headlamp",
           "Lib_Taillamp",
           "Lib_Rubber",
-          "Lib_Steel",
           "Lib_SteelDark"
         ],
         "mesh": "LOD1",
@@ -34530,31 +34534,33 @@
     "lods": [
       {
         "lod": 0,
-        "tris": 10900,
+        "tris": 11168,
         "materials": [
           "Lib_PaintWhite",
+          "Lib_Interior",
           "Lib_TintGlass",
           "Lib_Black",
+          "Lib_Steel",
           "Lib_Headlamp",
           "Lib_SteelDark",
           "Lib_Taillamp",
-          "Lib_Rubber",
-          "Lib_Steel"
+          "Lib_Rubber"
         ],
         "mesh": "LOD0",
         "fileID": -1633821710574564935
       },
       {
         "lod": 1,
-        "tris": 2372,
+        "tris": 2576,
         "materials": [
           "Lib_PaintWhite",
+          "Lib_Interior",
           "Lib_TintGlass",
           "Lib_Black",
+          "Lib_Steel",
           "Lib_Headlamp",
           "Lib_Taillamp",
           "Lib_Rubber",
-          "Lib_Steel",
           "Lib_SteelDark"
         ],
         "mesh": "LOD1",

@@ -286,6 +286,16 @@ def _side_glass(g, spec, z0, z1, sign, mat):
         (3, 7, 4, 0),
     ]
     g.mesh(verts, faces, mat)
+    # Rubber surround just outboard of the pane, still under the drip rail.
+    z_lo, z_hi = (z0, z1) if z0 <= z1 else (z1, z0)
+    z_mid = (z_lo + z_hi) * 0.5
+    z_span = max(0.08, z_hi - z_lo)
+    x_seal = x_bot + 0.010
+    g.box((sign * x_seal, y0 + 0.008, z_mid), (0.012, 0.016, z_span + 0.016), "Lib_Black")
+    g.box((sign * (x_top + 0.008), y1 - 0.006, z_mid), (0.012, 0.014, z_span + 0.016), "Lib_Black")
+    x_pillar = (x_bot + x_top) * 0.5 + 0.006
+    for z_edge in (z_lo - 0.004, z_hi + 0.004):
+        g.box((sign * x_pillar, (y0 + y1) * 0.5, z_edge), (0.014, (y1 - y0) + 0.012, 0.014), "Lib_Black")
 
 
 def _raked(g, spec, z0, z1):
@@ -302,6 +312,20 @@ def _raked(g, spec, z0, z1):
         g, ya - 0.032, za, yb - 0.032, zb,
         max(0.16, xa - 0.08), max(0.16, xb - 0.08),
         0.008, "Lib_TintGlass",
+    )
+
+
+def _cabin(g, spec):
+    """Dark cabin behind the tint, inboard of the glass so the two meshes do not meet."""
+    z0, z1 = spec["roof_z"]
+    if z1 < z0:
+        z0, z1 = z1, z0
+    span = max(0.36, (z1 - z0) * 0.62)
+    half_x = max(0.28, spec["roof_x"] - 0.16)
+    g.box(
+        (0.0, spec["belt_y"] + 0.18, (z0 + z1) * 0.5),
+        (half_x * 2.0, 0.22, span),
+        "Lib_Interior",
     )
 
 
@@ -337,7 +361,17 @@ def _seams(g, spec):
         y0 = spec["rocker_y"] + 0.04
         y1 = spec["belt_y"] + 0.012
         for sign in (1.0, -1.0):
-            g.box((sign * (x - 0.004), (y0 + y1) * 0.5, z), (0.012, y1 - y0, 0.010), "Lib_Black")
+            g.box((sign * (x - 0.001), (y0 + y1) * 0.5, z), (0.018, y1 - y0, 0.016), "Lib_Black")
+    for z0, z1 in spec["windows"]:
+        lo, hi = (z0, z1) if z0 <= z1 else (z1, z0)
+        span = (hi - lo) - 0.06
+        if span < 0.16:
+            continue
+        zmid = (lo + hi) * 0.5
+        x = _flare(zmid, spec, spec["axles"])
+        for sign in (1.0, -1.0):
+            g.box((sign * (x - 0.001), spec["belt_y"] + 0.012, zmid), (0.018, 0.014, span), "Lib_Black")
+            g.box((sign * (x - 0.001), spec["rocker_y"] + 0.07, zmid), (0.016, 0.012, span), "Lib_Black")
 
 
 def _handles(g, spec):
@@ -349,7 +383,6 @@ def _handles(g, spec):
 
 
 def _lamps(g, spec, lod):
-    paint = spec["paint"]
     bev = 0.006 if lod == 0 else 0.0
     segs = 2 if lod == 0 else 0
     z_nose = spec["z1"]
@@ -374,8 +407,19 @@ def _lamps(g, spec, lod):
     g.box((0, spec["bumper_y"], spec["z1"] - 0.02), (spec["body_x"] * 1.92, 0.14, 0.07), "Lib_Black")
     width = spec["bed_x"] if spec.get("bed_z0") is not None else spec["body_x"]
     g.box((0, spec["bumper_y"], z_bump), (width * 1.92, 0.14, 0.07), "Lib_Black")
+
+
+def _mirrors(g, spec, lod):
+    """Stalk, black head, and a steel face just outside the front door."""
+    z = spec["a_pillar_z"] - 0.05
+    y = spec["belt_y"] + 0.045
+    x = _flare(z, spec, spec["axles"]) + 0.05
+    bev = 0.003 if lod == 0 else 0.0
+    segs = 1 if lod == 0 else 0
     for sign in (1.0, -1.0):
-        g.box((sign * (spec["body_x"] + 0.02), spec["belt_y"] + 0.08, spec["a_pillar_z"] - 0.02), (0.10, 0.07, 0.14), paint)
+        g.box((sign * (x - 0.028), y, z), (0.065, 0.014, 0.032), "Lib_Black")
+        g.box((sign * (x + 0.012), y + 0.012, z), (0.042, 0.058, 0.096), "Lib_Black", bevel=bev, segs=segs)
+        g.box((sign * (x + 0.036), y + 0.012, z), (0.008, 0.036, 0.060), "Lib_Steel")
 
 
 def _wheels(g, spec, lod, axles):
@@ -449,9 +493,11 @@ def build(g, spec, lod):
     level = 1 if lod == 0 else 0
     step = spec["step"] if lod == 0 else spec["step"] * 1.8
     _shell(g, spec, step, spec["paint"], spec["axles"], level)
+    _cabin(g, spec)
     _glass(g, spec)
     _seams(g, spec)
     _handles(g, spec)
+    _mirrors(g, spec, lod)
     _lamps(g, spec, lod)
     _wheels(g, spec, lod, spec["wheel_axles"])
     if spec.get("bed_z0") is not None:

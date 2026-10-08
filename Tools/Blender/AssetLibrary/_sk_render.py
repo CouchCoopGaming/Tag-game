@@ -333,7 +333,26 @@ def _pass9_lineup(found, path):
 def main():
     os.makedirs(STILL_DIR, exist_ok=True)
     found = _load()
-    if PASS >= 10:
+    if PASS >= 11:
+        shots = [
+            ("car_sedan", lambda: _shot(found["Car_Sedan"], os.path.join(STILL_DIR, "car_sedan.png"), kind="asphalt", fill=0.84)),
+            ("car_sedan_door", lambda: _close(
+                found["Car_Sedan"], os.path.join(STILL_DIR, "car_sedan_door.png"),
+                (1.55, 1.05, 1.15), (0.88, 0.92, 0.22), 46)),
+            ("car_sedan_nose", lambda: _close(
+                found["Car_Sedan"], os.path.join(STILL_DIR, "car_sedan_nose.png"),
+                (1.45, 0.85, 3.7), (0.15, 0.7, 1.6), 42)),
+            ("car_hatch", lambda: _shot(found["Car_Hatch"], os.path.join(STILL_DIR, "car_hatch.png"), kind="asphalt", fill=0.84)),
+            ("car_pickup", lambda: _shot(found["Car_Pickup"], os.path.join(STILL_DIR, "car_pickup.png"), kind="asphalt", fill=0.84)),
+            ("sign_blades", lambda: _close(
+                found["Sign_Blades"], os.path.join(STILL_DIR, "sign_blades.png"),
+                (1.15, 2.55, 1.35), (0.0, 2.92, 0.0), 42)),
+            ("planter_street", lambda: _close(
+                found["Planter_Street"], os.path.join(STILL_DIR, "planter_street.png"),
+                (1.45, 0.85, 1.25), (-0.05, 0.55, 0.0), 40)),
+            ("kit_lineup", lambda: _pass9_lineup(found, os.path.join(STILL_DIR, "kit_lineup.png"))),
+        ]
+    elif PASS >= 10:
         shots = [
             ("car_sedan", lambda: _shot(found["Car_Sedan"], os.path.join(STILL_DIR, "car_sedan.png"), kind="asphalt", fill=0.84)),
             ("car_sedan_nose", lambda: _close(

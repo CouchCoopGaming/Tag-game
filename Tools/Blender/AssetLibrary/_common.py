@@ -73,8 +73,8 @@ PALETTE = {
     "Lib_Window": ((0.14, 0.20, 0.26), 0.04, 0.82),
     # Display glass. Dark, slightly metallic, transmissive, and not a light panel.
     "Lib_ShopGlass": ((0.06, 0.09, 0.12), 0.22, 0.92),
-    # Car glass. One dark tint, no separate backing sheet.
-    "Lib_TintGlass": ((0.015, 0.03, 0.04), 0.08, 0.96),
+    # Car glass. Dark tint you can see a cabin through, no backing sheet.
+    "Lib_TintGlass": ((0.04, 0.075, 0.095), 0.08, 0.96),
     "Lib_Headlamp": ((0.82, 0.88, 0.74), 0.04, 0.90),
     "Lib_Taillamp": ((0.72, 0.04, 0.03), 0.04, 0.86),
     "Lib_WindowLit": ((0.55, 0.36, 0.16), 0.0, 0.40),
@@ -910,7 +910,7 @@ def _ensure_materials():
             if "IOR" in bsdf.inputs:
                 bsdf.inputs["IOR"].default_value = 1.45
         if name == "Lib_TintGlass" and "Transmission Weight" in bsdf.inputs:
-            bsdf.inputs["Transmission Weight"].default_value = 0.22
+            bsdf.inputs["Transmission Weight"].default_value = 0.42
             bsdf.inputs["Roughness"].default_value = 0.04
             if "IOR" in bsdf.inputs:
                 bsdf.inputs["IOR"].default_value = 1.45

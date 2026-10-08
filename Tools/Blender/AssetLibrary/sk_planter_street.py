@@ -26,17 +26,17 @@ def _shrub(g, origin, scale, seg, lod):
             mat, seg,
         )
     if lod == 0:
-        for k in range(6):
-            ang = k * 1.05 + 0.4
+        for k in range(10):
+            ang = k * 0.63 + 0.2
             g.box(
                 (
-                    ox + math.cos(ang) * scale * 0.10,
-                    oy + 0.20 * scale + (k % 3) * 0.03,
-                    oz + math.sin(ang) * scale * 0.07,
+                    ox + math.cos(ang) * scale * 0.13,
+                    oy + (0.08 + (k % 4) * 0.045) * scale,
+                    oz + math.sin(ang) * scale * 0.09,
                 ),
-                (0.10 * scale, 0.010, 0.045 * scale),
+                (0.16 * scale, 0.012, 0.07 * scale),
                 "Lib_FoliageLite" if k % 2 else "Lib_Foliage",
-                euler=(16, k * 36, 8),
+                euler=(22 + (k % 3) * 8, k * 36, 14),
             )
 
 
@@ -45,7 +45,7 @@ def create():
     a = Asset(
         "Planter_Street",
         "StreetFurniture",
-        "Street planter 1.80 x 0.48 m, 0.46 m tall. Steel frame, wood slats, soil and one shrub mass.",
+        "Street planter 1.80 x 0.48 m, 0.46 m tall. Steel frame, wood slats, soil and clustered shrubs.",
     )
     a.climb_note = "Rim is 0.46 m. Too low to cling."
     a.vault_note = "Too low to vault."
@@ -84,6 +84,6 @@ def create():
     a.box("Col_WallE", (0.88, 0.22, 0), (0.028, 0.36, 0.32))
     a.box("Col_Floor", (0, 0.045, 0), (1.60, 0.03, 0.32))
     a.box("Col_Rim", (0, 0.472, 0), (1.74, 0.014, 0.44))
-    a.sphere("Col_ShrubL", (-0.42, 0.54, 0.0), 0.05)
-    a.sphere("Col_ShrubR", (0.28, 0.52, -0.02), 0.04)
+    a.sphere("Col_ShrubL", (-0.42, 0.54, 0.0), 0.035)
+    a.sphere("Col_ShrubR", (0.28, 0.52, -0.02), 0.028)
     return a

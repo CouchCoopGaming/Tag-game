@@ -51,7 +51,7 @@ LODGroup:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 100000}
   serializedVersion: 2
-  m_LocalReferencePoint: {x: 0, y: 0.3845, z: 0}
+  m_LocalReferencePoint: {x: 0, y: 0.3745, z: 0}
   m_Size: 1.86
   m_FadeMode: 0
   m_AnimateCrossFading: 0
@@ -79,7 +79,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Tag.Art.Library.LibraryPropMeta
   category: "StreetFurniture"
-  summary: "Street planter 1.80 x 0.48 m, 0.46 m tall. Steel frame, wood slats, soil and one shrub mass."
+  summary: "Street planter 1.80 x 0.48 m, 0.46 m tall. Steel frame, wood slats, soil and clustered shrubs."
   climbable: 0
   vaultable: 0
   vaultHeightMeters: 0
@@ -648,7 +648,7 @@ SphereCollider:
   m_IsTrigger: 0
   m_ProvidesContacts: 0
   m_Enabled: 1
-  m_Radius: 0.05
+  m_Radius: 0.035
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300070
 GameObject:
@@ -700,5 +700,5 @@ SphereCollider:
   m_IsTrigger: 0
   m_ProvidesContacts: 0
   m_Enabled: 1
-  m_Radius: 0.04
+  m_Radius: 0.028
   m_Center: {x: 0, y: 0, z: 0}

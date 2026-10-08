@@ -93,10 +93,15 @@ def _prefabs(entries):
 
 
 def main():
+    only = None
+    if "--only" in sys.argv:
+        only = [part for part in sys.argv[sys.argv.index("--only") + 1].split(",") if part]
     entries = []
     failures = []
     worst = (0.0, "")
     for stem in MODULES:
+        if only and not any(part in stem for part in only):
+            continue
         try:
             module = importlib.import_module(stem)
             asset = module.create()
