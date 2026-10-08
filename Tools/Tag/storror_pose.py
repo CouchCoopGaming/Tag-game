@@ -237,31 +237,37 @@ def hero_u(clip_id, smooth):
                 best = score
                 best_i = i
     elif clip_id.startswith("12"):
-        # The opening frames are a bilateral tuck. Planted on the ground that
-        # reads as sitting. The kick is the asymmetric hip drive before the
-        # body goes horizontal and the root drops into the landing.
+        # One thigh kicked up, the other still down, root high. That is the
+        # plant at hip height. A later trunk-lean search picked a tuck where
+        # both feet had already dropped.
         raw = load_clip(clip_id)
-        angles = raw["joint_angles_deg"]
         heights = raw["root_height_above_feet_m"]
         for i in range(n):
-            ang = angles[i] or {}
-            trunk = ang.get("trunk_lean_from_cam_vertical")
             rh = heights[i] if i < len(heights) else None
-            if trunk is None or rh is None:
+            if rh is None or rh < 0.65:
                 continue
-            if trunk < 18.0 or trunk > 55.0 or rh < 0.55:
+            flex_l = smooth["hip_flex_L"][i]
+            flex_r = smooth["hip_flex_R"][i]
+            thigh_l = smooth["hip_elev_L"][i] if flex_l >= 0.0 else -smooth["hip_elev_L"][i]
+            thigh_r = smooth["hip_elev_R"][i] if flex_r >= 0.0 else -smooth["hip_elev_R"][i]
+            hi = thigh_l if thigh_l >= thigh_r else thigh_r
+            lo = thigh_r if thigh_l >= thigh_r else thigh_l
+            if hi < 70.0 or lo > 25.0:
                 continue
-            hip_l = ang.get("hip_flex_L") or 0.0
-            hip_r = ang.get("hip_flex_R") or 0.0
-            knee_l = ang.get("knee_flex_L") or 0.0
-            knee_r = ang.get("knee_flex_R") or 0.0
-            score = abs(hip_l - hip_r) + 0.35 * abs(knee_l - knee_r)
+            score = (hi - lo) + 30.0 * rh - 0.05 * i
             if score > best:
                 best = score
                 best_i = i
     elif clip_id.startswith("15"):
+        # Hands up with the elbows and both knees bent: the cling on the wall,
+        # not the straight-arm reach that spears the plane.
         for i in range(n):
-            score = smooth["shoulder_elev_L"][i] + smooth["shoulder_elev_R"][i]
+            elbow_lo = min(smooth["elbow_flex_L"][i], smooth["elbow_flex_R"][i])
+            knee_lo = min(smooth["knee_flex_L"][i], smooth["knee_flex_R"][i])
+            elev = smooth["shoulder_elev_L"][i] + smooth["shoulder_elev_R"][i]
+            if elbow_lo < 50.0 or knee_lo < 55.0 or elev < 160.0:
+                continue
+            score = elbow_lo + knee_lo + 0.1 * elev
             if score > best:
                 best = score
                 best_i = i
