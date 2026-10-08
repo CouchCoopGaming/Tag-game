@@ -425,11 +425,11 @@ namespace Tag.Ui.Hud
             if (pane.Badge != null) pane.Badge.enabled = it;
             if (pane.BadgeWord != null) pane.BadgeWord.enabled = it;
             if (pane.DashFill != null) pane.DashFill.fillAmount = it ? 1f : 0.4f;
-            Set(pane.DashWord, it ? MatchHudText.Ready : HudDigits.DashCd(18f));
-            Set(pane.RopeWord, index == 0 ? MatchHudText.Pull : (it ? MatchHudText.Hook : MatchHudText.Off));
+            Set(pane.DashWord, it ? MatchHudText.Blank : HudDigits.DashCd(18f));
+            Set(pane.RopeWord, MatchHudText.Blank);
             if (pane.RopeMark != null) pane.RopeMark.color = index == 0 ? MenuTheme.Ready : MenuTheme.Gold;
             if (pane.SafeFill != null) pane.SafeFill.fillAmount = index == 2 ? 0.6f : 0f;
-            Set(pane.SafeWord, index == 2 ? HudDigits.Tenth0(0.6f) : MatchHudText.Off);
+            Set(pane.SafeWord, index == 2 ? HudDigits.Tenth0(0.6f) : MatchHudText.Blank);
             bool call = it || (index == 0 && humans > 1);
             if (pane.Call != null)
             {
@@ -501,17 +501,16 @@ namespace Tag.Ui.Hud
             if (dashFill < 0f) dashFill = 0f;
             if (dashFill > 1f) dashFill = 1f;
             if (pane.DashFill != null) pane.DashFill.fillAmount = dashFill;
-            string dashWord = MatchHudText.Off;
+            string dashWord = MatchHudText.Blank;
             if (motor != null)
             {
                 if (dashing) dashWord = MatchHudText.DashGo;
-                else if (dashRem <= 0.05f) dashWord = MatchHudText.Ready;
-                else dashWord = HudDigits.DashCd(dashRem);
+                else if (dashRem > 0.05f) dashWord = HudDigits.DashCd(dashRem);
             }
             Set(pane.DashWord, dashWord);
 
             ExperimentalGrapple rope = Ropes[index];
-            string ropeWord = MatchHudText.Off;
+            string ropeWord = MatchHudText.Blank;
             Color ropeColor = new Color(0.55f, 0.62f, 0.72f, 0.4f);
             if (rope != null && rope.enableGrapple)
             {
@@ -542,7 +541,7 @@ namespace Tag.Ui.Hud
             if (safeFill < 0f) safeFill = 0f;
             if (safeFill > 1f) safeFill = 1f;
             if (pane.SafeFill != null) pane.SafeFill.fillAmount = safeFill;
-            Set(pane.SafeWord, safe > 0.001f ? HudDigits.Tenth0(safe) : MatchHudText.Off);
+            Set(pane.SafeWord, safe > 0.001f ? HudDigits.Tenth0(safe) : MatchHudText.Blank);
         }
 
         void PaintPawnCall(HudPane pane, int index, bool isIt)

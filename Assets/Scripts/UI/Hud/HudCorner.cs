@@ -11,8 +11,8 @@ namespace Tag.Ui.Hud
     /// </summary>
     public static class HudCorner
     {
-        public const float ClockW = 440f;
-        public const float ClockH = 112f;
+        public const float ClockW = 260f;
+        public const float ClockH = 70f;
         public const float Gap = 16f;
         public const float BadgeW = 112f;
         public const float BadgeH = 52f;

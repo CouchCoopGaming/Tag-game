@@ -2173,7 +2173,7 @@ namespace Tag.Ui.Menu
             bool preview = MenuSplitPause.Preview > 0;
             string who = MenuSplitPause.SeatLabel(opener, preview);
             if (_header != null) _header.text = "  Paused by " + who;
-            if (_banner != null) _banner.text = "";
+            if (_banner != null) _banner.text = Tag.Ui.Hud.MatchHudText.ComicHint;
             int n = MenuSplitPause.Fill(_cards);
             for (int c = 0; c < n; c++)
             {

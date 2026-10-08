@@ -410,5 +410,91 @@ namespace Tag.Level
                 default: return "11111100011000110001100011111100000";
             }
         }
+
+        /// <summary>
+        /// Third-person chase frames for the couch HUD stills. Each seat stands
+        /// on its own loop point and looks along that seat's yaw. Not part of
+        /// the front-end proof stills.
+        /// </summary>
+        public static string WriteHudChases(string folder)
+        {
+            if (string.IsNullOrEmpty(folder)) return "hud-chases missing folder";
+            Directory.CreateDirectory(folder);
+            List<Tri> park = Gather(ParkArena.Mega);
+            float mapW = MegaParkP1Layout.MapW;
+            float mapD = MegaParkP1Layout.MapD;
+            Sun(out float lsx, out float lsy, out float lsz);
+            float half = Math.Max(mapW, mapD) * 0.70f + 28f;
+            var shadow = new float[768 * 768];
+            for (int i = 0; i < shadow.Length; i++) shadow[i] = -1e20f;
+            float sox = mapW * 0.5f;
+            float soy = 6f;
+            float soz = mapD * 0.5f;
+            Basis(lsx, lsy, lsz, out float srx, out float sry, out float srz, out float sux, out float suy, out float suz);
+            for (int i = 0; i < park.Count; i++)
+            {
+                if (park[i].A < 0.99f) continue;
+                ShadowTri(park[i], shadow, 768, sox, soy, soz, srx, sry, srz, sux, suy, suz, lsx, lsy, lsz, half);
+            }
+            float[] sr = { 0.95f, 0.16f, 1f, 0.16f };
+            float[] sg = { 0.16f, 0.45f, 0.86f, 0.82f };
+            float[] sb = { 0.22f, 1f, 0.12f, 0.28f };
+            for (int i = 0; i < 4; i++)
+            {
+                ParkArena.HumanSeat(ParkArena.Mega, i, out float px, out float py, out float pz, out float yaw);
+                var tris = new List<Tri>(park.Count + 16);
+                tris.AddRange(park);
+                AddRunner(tris, px, py, pz, sr[i], sg[i], sb[i]);
+                ChaseEye(px, py, pz, yaw, out float ex, out float ey, out float ez, out float tx, out float ty, out float tz);
+                if (i < 2)
+                    ChasePng(tris, Path.Combine(folder, "chase2_" + i.ToString() + ".png"), 960, 1080,
+                        ex, ey, ez, tx, ty, tz, shadow, sox, soy, soz, srx, sry, srz, sux, suy, suz, lsx, lsy, lsz, half);
+                ChasePng(tris, Path.Combine(folder, "chase4_" + i.ToString() + ".png"), 960, 540,
+                    ex, ey, ez, tx, ty, tz, shadow, sox, soy, soz, srx, sry, srz, sux, suy, suz, lsx, lsy, lsz, half);
+            }
+            return "hud-chases " + folder;
+        }
+
+        static void AddRunner(List<Tri> tris, float x, float y, float z, float r, float g, float b)
+        {
+            AddBox(tris, x, y + 0.46f, z, 0.34f, 0.92f, 0.24f, 0.12f, 0.14f, 0.18f);
+            AddBox(tris, x, y + 1.22f, z, 0.46f, 0.62f, 0.26f, r, g, b);
+            AddBox(tris, x, y + 1.66f, z, 0.24f, 0.28f, 0.24f, 0.93f, 0.74f, 0.60f);
+        }
+
+        static void ChaseEye(float px, float py, float pz, float yawDeg,
+            out float ex, out float ey, out float ez, out float tx, out float ty, out float tz)
+        {
+            float yaw = yawDeg * (float)(Math.PI / 180.0);
+            float fx = (float)Math.Sin(yaw);
+            float fz = (float)Math.Cos(yaw);
+            float rx = (float)Math.Cos(yaw);
+            float rz = -(float)Math.Sin(yaw);
+            float pitch = 12f * (float)(Math.PI / 180.0);
+            float cp = (float)Math.Cos(pitch);
+            float sp = (float)Math.Sin(pitch);
+            float lx = 0.4f;
+            float ly = 0.45f * cp - (-5.2f) * sp;
+            float lz = 0.45f * sp + (-5.2f) * cp;
+            ex = px + rx * lx + fx * lz;
+            ey = py + 1.4f + ly;
+            ez = pz + rz * lx + fz * lz;
+            tx = px + fx * 0.9f;
+            ty = py + 1.25f;
+            tz = pz + fz * 0.9f;
+        }
+
+        static void ChasePng(List<Tri> tris, string path, int w, int h,
+            float ex, float ey, float ez, float tx, float ty, float tz,
+            float[] shadow, float sox, float soy, float soz,
+            float srx, float sry, float srz, float sux, float suy, float suz,
+            float lsx, float lsy, float lsz, float half)
+        {
+            var rgb = new byte[w * h * 3];
+            var depth = new float[w * h];
+            Paint(tris, rgb, depth, w, h, ex, ey, ez, tx, ty, tz, 70f, true,
+                shadow, 768, sox, soy, soz, srx, sry, srz, sux, suy, suz, lsx, lsy, lsz, half);
+            WritePng(path, rgb, w, h);
+        }
     }
 }

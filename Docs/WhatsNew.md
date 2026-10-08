@@ -300,6 +300,8 @@ The fifteenth pass keeps every button title on the comic face and every sublabel
 
 The sixteenth pass fills the tip of the day with three lines that match the binds, and Practice says you can free run any arena with no tagger. Controls scrolls, with the gold bar showing there is more past the first window, and the last window is in the same set. The arena cards use the daylight overview of each real park. A one-round match does not list a win target beside it, and handicaps read none until a seat is set. The loading card uses a blurred Mega Park photo. In a match the timer, the IT badge, and the verb words use the comic face, each seat shows its tag count, and a Comic words hint sits under the clock, on a two-player split and a four-player split. Space still jumps. Mockups are in `Docs/UiStills/pass16/`.
 
+The seventeenth pass puts the match HUD on a chase view for each seat, in the two-player split and the four-player split. The rings sit in the bottom-left corner and stay small, and a short label shows only while that ability is not ready. The clock is a slim plate on the seam. The options screen and pause read COMIC WORDS ON. A tag moves the IT badge, flashes the tagger's color on the screen edge, and ticks that seat's tag count. Space still jumps. Mockups are in `Docs/UiStills/pass17/`.
+
 ## Motion, ninth pass
 
 The wall jump, the rope, the zip, the launch pad, a landing, the dash flash, a hard turnaround, and a punch while you run all ease instead of snapping. Speeds, the jump, and the dash length are the same.

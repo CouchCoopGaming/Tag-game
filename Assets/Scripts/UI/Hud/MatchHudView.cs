@@ -25,15 +25,15 @@ namespace Tag.Ui.Hud
             RectTransform root = go.GetComponent<RectTransform>();
 
             RectTransform plateRt = MenuWidgets.Box(root, "ClockPlate", new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0.5f, 1f));
-            plateRt.sizeDelta = new Vector2(440f, 112f);
+            plateRt.sizeDelta = new Vector2(HudCorner.ClockW, HudCorner.ClockH);
             plateRt.anchoredPosition = new Vector2(0f, -UiFit.SafeY);
             Image plate = plateRt.gameObject.AddComponent<Image>();
             plate.sprite = MenuArt.Round;
             plate.type = Image.Type.Sliced;
             plate.color = new Color(0.04f, 0.08f, 0.16f, 0.90f);
             plate.raycastTarget = false;
-            hud.Clock = Label(plateRt, "Clock", 60, TextAnchor.MiddleCenter, new Vector2(0f, 0.36f), new Vector2(1f, 1f), true);
-            hud.RoundLabel = Label(plateRt, "Round", UiFit.FloorFont, TextAnchor.MiddleCenter, new Vector2(0f, 0f), new Vector2(1f, 0.40f));
+            hud.Clock = Label(plateRt, "Clock", 46, TextAnchor.MiddleCenter, new Vector2(0.02f, 0.08f), new Vector2(0.64f, 0.92f), true);
+            hud.RoundLabel = Label(plateRt, "Round", UiFit.FloorFont, TextAnchor.MiddleCenter, new Vector2(0.58f, 0.12f), new Vector2(0.98f, 0.88f));
             hud.RoundLabel.color = MenuTheme.Gold;
 
             RectTransform center = MenuWidgets.Box(root, "Center", new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f));
@@ -50,17 +50,6 @@ namespace Tag.Ui.Hud
             for (int i = 0; i < 4; i++)
                 hud.Panes[i] = BuildPane(root, i);
             hud.ScoreRoot = BuildScore(root, hud);
-            RectTransform hint = MenuWidgets.Box(root, "ComicHint", new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0.5f, 0f));
-            hint.sizeDelta = new Vector2(360f, 44f);
-            hint.anchoredPosition = new Vector2(0f, 16f);
-            Image hintPlate = hint.gameObject.AddComponent<Image>();
-            hintPlate.sprite = MenuArt.Round;
-            hintPlate.type = Image.Type.Sliced;
-            hintPlate.color = new Color(0.04f, 0.08f, 0.16f, 0.88f);
-            hintPlate.raycastTarget = false;
-            hud.ComicHint = Label(hint, "Hint", UiFit.FloorFont, TextAnchor.MiddleCenter, Vector2.zero, Vector2.one, true);
-            hud.ComicHint.text = MatchHudText.ComicHint;
-            hud.ComicHint.color = MenuTheme.Gold;
         }
 
         static HudPane BuildPane(Transform root, int index)
@@ -101,15 +90,15 @@ namespace Tag.Ui.Hud
             pane.Call = Label(rt, "Call", 64, TextAnchor.MiddleCenter, new Vector2(0.08f, 0.34f), new Vector2(0.92f, 0.68f), true);
             pane.Call.enabled = false;
 
-            pane.Verbs = MenuWidgets.Place(rt, "Verbs", 16f, 0f, 300f, 108f);
+            pane.Verbs = MenuWidgets.Place(rt, "Verbs", 16f, 0f, 168f, 72f);
             pane.Verbs.anchorMin = new Vector2(0f, 0f);
             pane.Verbs.anchorMax = new Vector2(0f, 0f);
             pane.Verbs.pivot = new Vector2(0f, 0f);
             pane.Verbs.anchoredPosition = new Vector2(16f, 16f);
             BuildVerb(pane.Verbs, 0f, out pane.DashBg, out pane.DashFill, out pane.DashWord);
-            BuildVerb(pane.Verbs, 100f, out pane.RopeMark, out Image ropeFill, out pane.RopeWord);
+            BuildVerb(pane.Verbs, 56f, out pane.RopeMark, out Image ropeFill, out pane.RopeWord);
             if (ropeFill != null) ropeFill.enabled = false;
-            BuildVerb(pane.Verbs, 200f, out pane.SafeBg, out pane.SafeFill, out pane.SafeWord);
+            BuildVerb(pane.Verbs, 112f, out pane.SafeBg, out pane.SafeFill, out pane.SafeWord);
             pane.DashFill.color = new Color(0.25f, 0.62f, 1f, 1f);
             pane.SafeFill.color = new Color(0.95f, 0.78f, 0.20f, 1f);
             pane.RopeMark.color = new Color(0.55f, 0.62f, 0.72f, 1f);
@@ -177,13 +166,13 @@ namespace Tag.Ui.Hud
 
         static void BuildVerb(Transform parent, float x, out Image back, out Image fill, out Text word)
         {
-            RectTransform rt = MenuWidgets.Place(parent, "Verb", x, 0f, 92f, 108f);
-            RectTransform disc = MenuWidgets.Place(rt, "Disc", 14f, 8f, 64f, 64f);
+            RectTransform rt = MenuWidgets.Place(parent, "Verb", x, 0f, 52f, 72f);
+            RectTransform disc = MenuWidgets.Place(rt, "Disc", 8f, 0f, 36f, 36f);
             back = disc.gameObject.AddComponent<Image>();
             back.sprite = MatchHudArt.Disc;
             back.color = new Color(0.10f, 0.12f, 0.16f, 0.92f);
             back.raycastTarget = false;
-            RectTransform pie = MenuWidgets.Place(disc, "Pie", 0f, 0f, 64f, 64f);
+            RectTransform pie = MenuWidgets.Place(disc, "Pie", 0f, 0f, 36f, 36f);
             fill = pie.gameObject.AddComponent<Image>();
             fill.sprite = MatchHudArt.Disc;
             fill.type = Image.Type.Filled;

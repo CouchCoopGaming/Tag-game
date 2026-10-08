@@ -64,7 +64,7 @@ namespace Tag.Ui.Menu
             if (Page == Display) return "Resolution, fullscreen, vsync, and UI scale.";
             if (Page == Access) return "Reduce motion, text size, and colorblind-safe player colors.";
             if (Page == Look) return "Look is shared by the couch.";
-            return "Audio, display, accessibility, controls, look, and credits.";
+            return "Audio, display, accessibility, controls, look, and credits.  " + Tag.Ui.Hud.MatchHudText.ComicHint;
         }
 
         public static string Title(int index)

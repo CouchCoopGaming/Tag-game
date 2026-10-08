@@ -6,8 +6,14 @@ using UnityEngine;
 
 static class Program
 {
-    static int Main()
+    static int Main(string[] args)
     {
+        if (args != null && args.Length > 0 && args[0] == "--hud-chase")
+        {
+            string folder = args.Length > 1 ? args[1] : Path.Combine("Docs", "UiStills", "pass17", "figures");
+            Console.WriteLine(Tag.Level.ArenaStill.WriteHudChases(folder));
+            return 0;
+        }
         StrafeJumpReport report = StrafeJumpProof.Run60();
         Console.WriteLine(report.ToString());
         if (!report.Ok)

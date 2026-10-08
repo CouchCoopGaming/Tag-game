@@ -213,6 +213,10 @@ The tip of the day lists three lines that match the binds: Space jumps, hold int
 
 Arena previews use the daylight overview of the real Mega Park, Pocket Park, and Stack Yard: the loop, the structures, the pads, and a zip. Loading hides the win target when the match is one round, and it says Handicaps none unless a seat is set. The card sits on a blurred Mega Park photo. The match HUD uses the comic face for the timer, the IT badge, and the verb words, with a tag count on each seat and a Comic words hint. Mockups are in `Docs/UiStills/pass16/`.
 
+## Pass 17
+
+Each seat in a match has its own chase view of Mega Park, with that seat's runner in the frame. Two players split left and right. Four players get a view in each quarter. The ability rings sit in a small cluster at the bottom-left of the view, and a short label shows only while that ring is not ready. The clock is a slim plate on the center seam, with the time and the round. The options banner and the pause banner read COMIC WORDS ON. A tag moves the IT badge, flashes the tagger's color on that view's edges, and ticks the tag count. Mockups are in `Docs/UiStills/pass17/`.
+
 ## Later passes
 
 - A 2D focus grid on rules so Left from a rule row lands on a mode tile.
