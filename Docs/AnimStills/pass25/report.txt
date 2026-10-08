@@ -1,0 +1,30 @@
+Pass 25. Climb top-out, vault landing, mantle exit. Slide was not re-keyed.
+
+Capsule, every frame of both exits. TickClimb sets standing height 1.80 m. TickMantle never sets height. The exit starts after the motor has already written the stand point and left Mantle. Bottom = ledge hit + 0.06 m. Center = bottom + 0.90 m. Standing pelvis = bottom + 1.05 m. No crouched frame. Mesh pelvis stays 89.7 to 89.9 cm above the bind sole. No Drop.
+
+ClimbTopOut, 0.32 s, 11 frames. Plant frames are the push. From t=0.200 the stride is cruise.
+
+t=0.000 plant back=9.2 hinge=4.00 hip=16 spine=4 soleUp=2.2/27.7 pelvisAboveSole=89.7
+t=0.033 plant back=9.4 hinge=3.97 soleUp=2.3/25.5
+t=0.067 plant back=10.0 hinge=3.89 soleUp=2.6/20.1
+t=0.100 plant back=10.9 hinge=3.77 soleUp=3.1/13.2
+t=0.133 plant back=10.6 hinge=3.62 soleUp=3.7/6.7
+t=0.167 plant back=9.0 hinge=3.44 soleUp=4.2/2.7
+t=0.200 cruise back=2.9 hinge=3.13
+t=0.233 cruise back=-2.5 hinge=2.86
+t=0.267 cruise back=-6.9 hinge=2.65
+t=0.300 cruise back=-9.4 hinge=2.52
+t=0.320 cruise back=-9.9 hinge=2.50
+
+The low hand at t=0 is 23 cm in front and 42 cm to the side, about 70 cm above the sole. It does not reach a foot-level lip without passing the 55 cm hand rule. The support knee stays behind the pelvis while the toes are ahead. A knee over the toes at this pelvis height lifts the sole off the lid.
+
+Vault plant back 13.2 to 25.2. Cruise back 15.1 to 18.9. Trail thigh stays 54. Widest hand 42 cm. Pose 0.35, world 0.
+Mantle, 0.28 s, 10 frames, all plants. Back 9.9 to 13.2. Hinge 3.0 to 3.5. Both feet on the lid. No thigh spread, no Drop. Pose 0.18, world 0. Hips about 87 cm above the sole.
+
+hip-sit clips=3 loadedFrames=31 pelvisBackMin=9.0 cm hingeMin=2.50 fails=0
+pelvisBackMin is the plant and landing frames. Climb cruise is listed above and is not in that minimum.
+
+no-clip clips=40 frames=337 worldMax=0.00 poseMax=0.49 rigMax=3.40 poseFails=0 rigJoint=330
+
+Sim: grapple=-118 closest=54 handoff2 grappleOut=21.2>9.6 step=49.5 unchanged.
+vault-slide 13.5 -> 18.3. Lane not merged.

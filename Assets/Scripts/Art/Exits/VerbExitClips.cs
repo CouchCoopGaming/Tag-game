@@ -216,15 +216,15 @@ namespace Tag.Art
             c.ArmRollR = 12f;
         }
 
-        /// <summary>Low crouch on the lid, both feet under the hips, then the chest rises.</summary>
+        /// <summary>Lead knee up on the lid, then both feet, then a stride. Pelvis stays at the standing capsule.</summary>
         static void ClimbTop(out VerbExitSample a, out VerbExitSample b, out VerbExitSample c)
         {
-            // Both knees stay deep and matched so the two soles share the lid.
-            // Opening either knee, or the hip fold, drops that foot through the top.
-            a = P(34f, 14f, -10f, 32f, 32f, -136f, -136f, -30f, -26f, 4f, -2f, -14f, -10f);
-            b = P(36f, 16f, -2f, 32f, 32f, -136f, -136f, -32f, -28f, 2f, -4f, -12f, -8f);
-            // One hand stays on the lip so the soles remain above it. The other arm leaves into the run.
-            c = P(36f, 16f, 10f, 32f, 32f, -136f, -136f, -50f, -28f, -8f, 2f, -18f, -10f);
+            // The exit starts after the mantle has already stood the capsule up.
+            // Hip flexion carries the chest. The spine stays a small share of that.
+            // The plant thigh reaches forward of the pelvis. No root drop.
+            a = P(16f, 4f, -8f, -10f, 16f, -24f, -86f, -36f, -10f, -6f, 2f, -16f, -14f);
+            b = P(14f, 4f, 0f, -8f, -4f, -32f, -28f, -34f, -16f, -6f, 2f, -16f, -14f);
+            c = P(10f, 4f, 6f, -4f, 12f, -22f, -16f, -50f, -18f, -6f, 2f, -16f, -14f);
         }
 
         /// <summary>Hands open off the wall and the body drops into the fall.</summary>
@@ -240,34 +240,32 @@ namespace Tag.Art
             c.ThighRollL = WallPose.PlantRoll;
         }
 
-        /// <summary>Trail leg clears, then both feet absorb in front of the obstacle.</summary>
+        /// <summary>Trail leg clears, then the landing sits the hips behind both feet.</summary>
         static void Vault(out VerbExitSample a, out VerbExitSample b, out VerbExitSample c)
         {
-            // The trail foot is high and behind the lead foot. A straighter trail
-            // thigh walks into the spine, so the clear stays at this bend.
-            // Both feet then meet the ground in front of that foot. A long run
-            // stride would put the heel back on the obstacle, so the arms carry the run.
-            a = P(8f, 4f, -12f, 0f, 54f, -20f, -82f, -22f, -10f, -6f, 2f, -16f, -14f);
-            b = P(18f, 10f, 4f, 0f, -2f, -38f, -34f, -32f, -16f, -6f, 2f, -16f, -14f);
-            c = P(12f, 6f, 8f, 4f, 0f, -28f, -24f, -46f, -18f, -6f, 2f, -16f, -14f);
+            // The trail thigh stays at 54°. Straighter than that walks into the spine.
+            // The lead foot is the support on the way over. Both feet then sit ahead
+            // of the pelvis. Arm pitches stay negative so the pump does not stick out.
+            a = P(12f, 4f, -12f, -12f, 54f, -32f, -82f, -22f, -10f, -6f, 2f, -16f, -14f);
+            // The trail knee stays deep until the thigh is already in front, so the
+            // foot does not land behind the pelvis on the way down.
+            b = P(20f, 6f, 4f, -12f, -12f, -34f, -72f, -78f, -42f, -6f, 2f, -16f, -14f);
+            b.SpineYaw = 16f;
+            c = P(16f, 5f, 8f, -12f, -10f, -32f, -28f, -64f, -22f, -6f, 2f, -16f, -14f);
+            c.SpineYaw = 8f;
         }
 
-        /// <summary>Both knees come up together. Not the climb's lead knee, not the vault's sweep.</summary>
+        /// <summary>Both feet on the lid, hips behind them. Not the climb's lead knee.</summary>
         static void Mantle(out VerbExitSample a, out VerbExitSample b, out VerbExitSample c)
         {
-            a = P(-12f, 8f, -6f, 18f, 16f, -20f, -18f, 20f, 22f, 14f, -16f, -50f, -46f);
-            a.ThighRollL = -MantlePose.LegSpread;
-            a.ThighRollR = MantlePose.LegSpread;
+            // No thigh spread and no visual drop. The pelvis stays on the standing
+            // capsule. A forward reach on the arms keeps this exit off the climb.
+            a = P(18f, 6f, -8f, -12f, -8f, -32f, -26f, -18f, -36f, -6f, 2f, -16f, -14f);
             a.SpineYaw = -6f;
-            b = P(-14f, 12f, 4f, 36f, 32f, -24f, -22f, 20f, 18f, 10f, -10f, -46f, -42f);
-            b.ThighRollL = -MantlePose.LegSpread;
-            b.ThighRollR = MantlePose.LegSpread;
-            b.Drop = 0.03f;
-            b.HipYaw = 6f;
-            b.SpineYaw = -12f;
-            c = P(2f, 6f, 0f, 24f, 22f, -14f, -12f, 16f, 18f, 8f, -8f, -30f, -28f);
-            c.ThighRollL = -MantlePose.LegSpread;
-            c.ThighRollR = MantlePose.LegSpread;
+            b = P(16f, 5f, 2f, -12f, -8f, -28f, -24f, -22f, -70f, -6f, 2f, -18f, -16f);
+            b.SpineYaw = -14f;
+            c = P(14f, 4f, 6f, -12f, -8f, -28f, -22f, -16f, -40f, -6f, 2f, -16f, -14f);
+            c.SpineYaw = -8f;
         }
 
         /// <summary>Rise through a forward lean. The arms pump. Slide boost is not here.</summary>

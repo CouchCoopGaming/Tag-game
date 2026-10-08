@@ -394,6 +394,23 @@ def place_solid(kind, pieces):
             ((x0 + x1) * 0.5, (y0 + y1) * 0.5, top - depth * 0.5),
             (x1 - x0, y1 - y0, depth),
         ))
+    elif kind == "lid":
+        feet = piece_cloud(pieces, ("Mesh_Foot_L", "Mesh_Foot_R"))
+        if len(feet) == 0:
+            return made
+        # Top sits 1 mm under the lowest sole. A planted foot touches.
+        # The deck runs back from the feet so the lip is in the test.
+        top = float(feet[:, 2].min()) - 0.001
+        x0 = float(feet[:, 0].min()) - 0.08
+        x1 = float(feet[:, 0].max()) + 0.08
+        y0 = float(feet[:, 1].min()) - 0.55
+        y1 = float(feet[:, 1].max()) + 0.08
+        height = 0.22
+        made.append(add_cube(
+            "SolidLid",
+            ((x0 + x1) * 0.5, (y0 + y1) * 0.5, top - height * 0.5),
+            (max(x1 - x0, 0.2), max(y1 - y0, 0.2), height),
+        ))
     elif kind == "zip":
         hands = piece_cloud(pieces, ("Mesh_Hand_L", "Mesh_Hand_R"))
         if len(hands) < 2:
@@ -759,6 +776,12 @@ def check_clip(arm, base, parent, clip):
             if len(hands) and len(hips):
                 above = float(hips[:, 2].min() - hands[:, 2].min())
                 hip_above = above if hip_above is None else min(hip_above, above)
+        elif clip["solid"] == "lid":
+            feet = piece_cloud(pieces, ("Mesh_Foot_L", "Mesh_Foot_R"))
+            hips = piece_cloud(pieces, ("Mesh_Hips",))
+            if len(feet) and len(hips):
+                above = float(hips[:, 2].min() - feet[:, 2].min())
+                hip_above = above if hip_above is None else min(hip_above, above)
         if pdepth > LIMIT:
             pose_fails += 1
         if rdepth > LIMIT:
@@ -939,6 +962,7 @@ def style_solid(ob, kind):
         "wall": (0.50, 0.50, 0.48, 1),
         "wall-right": (0.50, 0.50, 0.48, 1),
         "box": (0.58, 0.44, 0.30, 1),
+        "lid": (0.55, 0.38, 0.22, 1),
         "zip": (0.18, 0.18, 0.20, 1),
         "rope": (0.32, 0.26, 0.18, 1),
         "ground": (0.42, 0.42, 0.40, 1),

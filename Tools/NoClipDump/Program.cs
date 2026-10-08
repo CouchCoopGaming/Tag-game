@@ -112,7 +112,7 @@ namespace Tag.NoClipDump
                     return "wall";
                 case VerbExitId.Mantle:
                 case VerbExitId.ClimbTopOut:
-                    return "box";
+                    return "lid";
                 case VerbExitId.Vault:
                     return "ground";
                 case VerbExitId.ZipDrop:
