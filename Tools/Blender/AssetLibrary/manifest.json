@@ -31340,39 +31340,40 @@
   {
     "name": "Barrier_Water",
     "category": "StreetFurniture",
-    "blurb": "Water-filled plastic barrier, 1.82 m long, 0.48 m wide, 0.81 m tall. Fill cap and end knuckles.",
+    "blurb": "Water-filled barrier, 1.83 m long, 0.64 m at the foot, 0.82 m tall. Fill cap and end knuckles.",
     "size": [
-      1.92,
-      0.81,
-      0.48
+      2.04,
+      0.866,
+      0.635
     ],
     "min": [
-      -0.96,
+      -1.0,
       0.0,
-      -0.24
+      -0.318
     ],
     "max": [
-      0.96,
-      0.81,
-      0.24
+      1.04,
+      0.866,
+      0.318
     ],
     "lods": [
       {
         "lod": 0,
-        "tris": 504,
+        "tris": 516,
         "materials": [
           "Lib_Orange",
           "Lib_PaintYellow",
+          "Lib_PaintWhite",
           "Lib_Black",
           "Lib_SteelDark",
-          "Lib_PaintWhite"
+          "Lib_Rust"
         ],
         "mesh": "LOD0",
         "fileID": -1633821710574564935
       },
       {
         "lod": 1,
-        "tris": 276,
+        "tris": 196,
         "materials": [
           "Lib_Orange",
           "Lib_PaintYellow",
@@ -31385,17 +31386,17 @@
     ],
     "colliders": [
       {
-        "name": "Col_Low",
+        "name": "Col_Top",
         "type": "box",
         "center": [
           0,
-          0.22,
+          0.772,
           0
         ],
         "size": [
-          1.7,
-          0.38,
-          0.42
+          1.56,
+          0.08,
+          0.11
         ],
         "euler": [
           0,
@@ -31408,13 +31409,13 @@
         "type": "box",
         "center": [
           0,
-          0.52,
+          0.46,
           0
         ],
         "size": [
-          1.62,
-          0.16,
-          0.3
+          1.56,
+          0.28,
+          0.2
         ],
         "euler": [
           0,
@@ -31423,17 +31424,17 @@
         ]
       },
       {
-        "name": "Col_Top",
+        "name": "Col_Foot",
         "type": "box",
         "center": [
           0,
-          0.68,
+          0.1,
           0
         ],
         "size": [
-          1.54,
-          0.12,
-          0.16
+          1.56,
+          0.14,
+          0.4
         ],
         "euler": [
           0,
@@ -32471,34 +32472,37 @@
   {
     "name": "Planter_Street",
     "category": "StreetFurniture",
-    "blurb": "Street planter 1.80 x 0.48 m, 0.46 m tall. Steel frame, wood slats, soil and clustered shrubs.",
+    "blurb": "Street planter 1.83 x 0.46 m, rim at 0.46 m. Steel frame, wood slats, soil, two shrub canopies.",
     "size": [
-      1.86,
-      0.749,
-      0.528
+      1.88,
+      0.637,
+      0.505
     ],
     "min": [
-      -0.93,
+      -0.94,
       0.0,
-      -0.264
+      -0.252
     ],
     "max": [
-      0.93,
-      0.749,
-      0.264
+      0.94,
+      0.637,
+      0.252
     ],
     "lods": [
       {
         "lod": 0,
-        "tris": 1452,
+        "tris": 3424,
         "materials": [
           "Lib_SteelDark",
+          "Lib_Rust",
           "Lib_Steel",
           "Lib_Wood",
+          "Lib_WoodWeather",
           "Lib_Soil",
+          "Lib_Mulch",
           "Lib_Foliage",
-          "Lib_FoliageDark",
           "Lib_FoliageLite",
+          "Lib_FoliageDark",
           "Lib_PaintRed",
           "Lib_PaintCream",
           "Lib_Rubber"
@@ -32508,15 +32512,14 @@
       },
       {
         "lod": 1,
-        "tris": 356,
+        "tris": 844,
         "materials": [
           "Lib_SteelDark",
           "Lib_Steel",
           "Lib_Wood",
           "Lib_Soil",
-          "Lib_Foliage",
-          "Lib_FoliageDark",
-          "Lib_FoliageLite"
+          "Lib_Mulch",
+          "Lib_Foliage"
         ],
         "mesh": "LOD1",
         "fileID": -179393741545503174
@@ -32524,17 +32527,17 @@
     ],
     "colliders": [
       {
-        "name": "Col_WallN",
+        "name": "Col_Post_0",
         "type": "box",
         "center": [
-          0,
-          0.22,
-          0.22
+          -0.875,
+          0.24,
+          -0.2
         ],
         "size": [
-          1.68,
-          0.36,
-          0.028
+          0.034,
+          0.34,
+          0.034
         ],
         "euler": [
           0,
@@ -32543,17 +32546,17 @@
         ]
       },
       {
-        "name": "Col_WallS",
+        "name": "Col_Post_1",
         "type": "box",
         "center": [
-          0,
-          0.22,
-          -0.22
+          -0.875,
+          0.24,
+          0.2
         ],
         "size": [
-          1.68,
-          0.36,
-          0.028
+          0.034,
+          0.34,
+          0.034
         ],
         "euler": [
           0,
@@ -32562,17 +32565,17 @@
         ]
       },
       {
-        "name": "Col_WallW",
+        "name": "Col_Post_2",
         "type": "box",
         "center": [
-          -0.88,
-          0.22,
-          0
+          0.875,
+          0.24,
+          -0.2
         ],
         "size": [
-          0.028,
-          0.36,
-          0.32
+          0.034,
+          0.34,
+          0.034
         ],
         "euler": [
           0,
@@ -32581,17 +32584,55 @@
         ]
       },
       {
-        "name": "Col_WallE",
+        "name": "Col_Post_3",
         "type": "box",
         "center": [
-          0.88,
-          0.22,
-          0
+          0.875,
+          0.24,
+          0.2
         ],
         "size": [
-          0.028,
-          0.36,
-          0.32
+          0.034,
+          0.34,
+          0.034
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_RailN",
+        "type": "box",
+        "center": [
+          0,
+          0.44,
+          0.2
+        ],
+        "size": [
+          1.48,
+          0.022,
+          0.022
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_RailS",
+        "type": "box",
+        "center": [
+          0,
+          0.44,
+          -0.2
+        ],
+        "size": [
+          1.48,
+          0.022,
+          0.022
         ],
         "euler": [
           0,
@@ -32604,13 +32645,13 @@
         "type": "box",
         "center": [
           0,
-          0.045,
+          0.05,
           0
         ],
         "size": [
-          1.6,
-          0.03,
-          0.32
+          1.48,
+          0.028,
+          0.22
         ],
         "euler": [
           0,
@@ -32619,17 +32660,36 @@
         ]
       },
       {
-        "name": "Col_Rim",
+        "name": "Col_RimN",
         "type": "box",
         "center": [
           0,
-          0.472,
-          0
+          0.464,
+          0.225
         ],
         "size": [
-          1.74,
-          0.014,
-          0.44
+          1.7,
+          0.012,
+          0.028
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_RimS",
+        "type": "box",
+        "center": [
+          0,
+          0.464,
+          -0.225
+        ],
+        "size": [
+          1.7,
+          0.012,
+          0.028
         ],
         "euler": [
           0,
@@ -32642,20 +32702,20 @@
         "type": "sphere",
         "center": [
           -0.42,
-          0.54,
+          0.405,
           0.0
         ],
-        "radius": 0.035
+        "radius": 0.118
       },
       {
         "name": "Col_ShrubR",
         "type": "sphere",
         "center": [
-          0.28,
-          0.52,
-          -0.02
+          0.34,
+          0.382,
+          -0.015
         ],
-        "radius": 0.028
+        "radius": 0.09
       }
     ],
     "climbable": false,
@@ -32669,7 +32729,7 @@
       "LOD0",
       "LOD1"
     ],
-    "slackCm": 1.5,
+    "slackCm": 0.84,
     "fbx": "Assets/Art/Props/Library/StreetFurniture/Planter_Street.fbx"
   },
   {
@@ -36364,40 +36424,45 @@
   {
     "name": "FireSiamese_Post",
     "category": "StreetFurniture",
-    "blurb": "Siamese connection, 0.46 m tall. Two brass outlets face +Z.",
+    "blurb": "Siamese connection, 0.58 m tall. Body 152 mm OD. Two 65 mm outlets face +Z.",
     "size": [
-      0.32,
-      0.49,
-      0.258
+      0.363,
+      0.52,
+      0.332
     ],
     "min": [
-      -0.16,
+      -0.182,
       0.0,
-      -0.12
+      -0.14
     ],
     "max": [
-      0.16,
-      0.49,
-      0.138
+      0.182,
+      0.52,
+      0.192
     ],
     "lods": [
       {
         "lod": 0,
-        "tris": 276,
+        "tris": 1352,
         "materials": [
           "Lib_SteelDark",
+          "Lib_Rust",
+          "Lib_Steel",
           "Lib_Hydrant",
-          "Lib_Brass"
+          "Lib_Brass",
+          "Lib_PaintWhite",
+          "Lib_Chain"
         ],
         "mesh": "LOD0",
         "fileID": -1633821710574564935
       },
       {
         "lod": 1,
-        "tris": 148,
+        "tris": 428,
         "materials": [
           "Lib_SteelDark",
           "Lib_Hydrant",
+          "Lib_Steel",
           "Lib_Brass"
         ],
         "mesh": "LOD1",
@@ -36410,13 +36475,13 @@
         "type": "box",
         "center": [
           0,
-          0.012,
+          0.018,
           0
         ],
         "size": [
-          0.2,
-          0.016,
-          0.14
+          0.28,
+          0.024,
+          0.2
         ],
         "euler": [
           0,
@@ -36426,21 +36491,64 @@
       },
       {
         "name": "Col_Body",
-        "type": "box",
+        "type": "capsule",
         "center": [
           0,
-          0.24,
+          0.26,
           0
+        ],
+        "radius": 0.058,
+        "height": 0.28,
+        "direction": 1
+      },
+      {
+        "name": "Col_Cap",
+        "type": "capsule",
+        "center": [
+          0,
+          0.47,
+          0
+        ],
+        "radius": 0.045,
+        "height": 0.091,
+        "direction": 1
+      },
+      {
+        "name": "Col_OutL",
+        "type": "box",
+        "center": [
+          -0.095,
+          0.36,
+          0.1075
         ],
         "size": [
-          0.14,
-          0.28,
-          0.1
+          0.028284271247461905,
+          0.028284271247461905,
+          0.1728250529878222
         ],
         "euler": [
-          0,
-          0,
-          0
+          -41.02324685906632,
+          -46.46880071438582,
+          0.0
+        ]
+      },
+      {
+        "name": "Col_OutR",
+        "type": "box",
+        "center": [
+          0.095,
+          0.36,
+          0.1075
+        ],
+        "size": [
+          0.028284271247461905,
+          0.028284271247461905,
+          0.1728250529878222
+        ],
+        "euler": [
+          -41.02324685906632,
+          46.46880071438582,
+          0.0
         ]
       }
     ],
@@ -36455,7 +36563,7 @@
       "LOD0",
       "LOD1"
     ],
-    "slackCm": 0.0,
+    "slackCm": 0.69,
     "fbx": "Assets/Art/Props/Library/StreetFurniture/FireSiamese_Post.fbx"
   },
   {
@@ -36692,43 +36800,45 @@
   {
     "name": "DogBag_Post",
     "category": "StreetFurniture",
-    "blurb": "Bag dispenser. Post to 1.05 m, box at 0.95 m. BAGS in Liberation Sans.",
+    "blurb": "Bag dispenser. Post to 1.05 m. Head 0.17 x 0.26 x 0.11 m. BAGS in Liberation Sans.",
     "size": [
-      0.18,
+      0.2,
       1.09,
-      0.192
+      0.219
     ],
     "min": [
-      -0.09,
+      -0.1,
       0.0,
-      -0.09
+      -0.1
     ],
     "max": [
-      0.09,
+      0.1,
       1.09,
-      0.102
+      0.119
     ],
     "lods": [
       {
         "lod": 0,
-        "tris": 780,
+        "tris": 1064,
         "materials": [
           "Lib_SteelDark",
+          "Lib_Rust",
           "Lib_Steel",
-          "Lib_PaintBlue",
+          "Lib_PaintGreen",
           "Lib_Black",
-          "Lib_PaintWhite"
+          "Lib_PaintWhite",
+          "Lib_PaintCream"
         ],
         "mesh": "LOD0",
         "fileID": -1633821710574564935
       },
       {
         "lod": 1,
-        "tris": 64,
+        "tris": 124,
         "materials": [
           "Lib_SteelDark",
           "Lib_Steel",
-          "Lib_PaintBlue",
+          "Lib_PaintGreen",
           "Lib_Black"
         ],
         "mesh": "LOD1",
@@ -36741,13 +36851,13 @@
         "type": "box",
         "center": [
           0,
-          0.015,
+          0.012,
           0
         ],
         "size": [
-          0.12,
-          0.02,
-          0.12
+          0.14,
+          0.016,
+          0.14
         ],
         "euler": [
           0,
@@ -36760,25 +36870,25 @@
         "type": "capsule",
         "center": [
           0,
-          0.46,
+          0.48,
           0
         ],
         "radius": 0.02,
-        "height": 0.76,
+        "height": 0.84,
         "direction": 1
       },
       {
-        "name": "Col_Box",
+        "name": "Col_Head",
         "type": "box",
         "center": [
           0,
-          0.98,
+          0.96,
           0.055
         ],
         "size": [
-          0.1,
-          0.12,
-          0.04
+          0.13,
+          0.2,
+          0.07
         ],
         "euler": [
           0,
@@ -36798,35 +36908,37 @@
       "LOD0",
       "LOD1"
     ],
-    "slackCm": 0.63,
+    "slackCm": 0.62,
     "fbx": "Assets/Art/Props/Library/StreetFurniture/DogBag_Post.fbx"
   },
   {
     "name": "BusFlag_Stop",
     "category": "StreetFurniture",
-    "blurb": "Bus flag. Pole to 2.40 m, blade 0.46 m wide. BUS in Liberation Sans.",
+    "blurb": "Bus flag. Pole 2.44 m, 64 mm OD. Blade 0.457 x 0.305 m. BUS in Liberation Sans.",
     "size": [
-      0.61,
-      2.43,
-      0.2
+      0.639,
+      2.455,
+      0.22
     ],
     "min": [
-      -0.1,
+      -0.11,
       0.0,
-      -0.1
+      -0.11
     ],
     "max": [
-      0.51,
-      2.43,
-      0.1
+      0.529,
+      2.455,
+      0.11
     ],
     "lods": [
       {
         "lod": 0,
-        "tris": 656,
+        "tris": 1024,
         "materials": [
           "Lib_SteelDark",
           "Lib_Steel",
+          "Lib_Rust",
+          "Lib_PaintWhite",
           "Lib_PaintYellow",
           "Lib_Black"
         ],
@@ -36835,10 +36947,11 @@
       },
       {
         "lod": 1,
-        "tris": 64,
+        "tris": 132,
         "materials": [
           "Lib_SteelDark",
           "Lib_Steel",
+          "Lib_PaintWhite",
           "Lib_PaintYellow"
         ],
         "mesh": "LOD1",
@@ -36855,9 +36968,9 @@
           0
         ],
         "size": [
-          0.12,
+          0.16,
           0.02,
-          0.12
+          0.16
         ],
         "euler": [
           0,
@@ -36870,11 +36983,11 @@
         "type": "capsule",
         "center": [
           0,
-          1.1,
+          1.05,
           0
         ],
-        "radius": 0.022,
-        "height": 2.0,
+        "radius": 0.024,
+        "height": 1.9,
         "direction": 1
       },
       {
@@ -36882,13 +36995,13 @@
         "type": "box",
         "center": [
           0.3,
-          2.32,
-          0
+          2.2,
+          -0.004
         ],
         "size": [
-          0.32,
-          0.14,
-          0.016
+          0.34,
+          0.2,
+          0.005
         ],
         "euler": [
           0,
@@ -36900,15 +37013,15 @@
     "climbable": false,
     "vaultable": false,
     "vaultHeight": 0.0,
-    "climbNote": "Pole is 6 cm. Not a cling.",
-    "vaultNote": "Blade is 2.35 m. Too high to vault.",
+    "climbNote": "Pole is 64 mm. Not a cling.",
+    "vaultNote": "Blade center is 2.20 m. Too high to vault.",
     "warnings": [],
     "fbxNames": [
       "LODBoxS",
       "LOD0",
       "LOD1"
     ],
-    "slackCm": 0.63,
+    "slackCm": 0.3,
     "fbx": "Assets/Art/Props/Library/StreetFurniture/BusFlag_Stop.fbx"
   }
 ]

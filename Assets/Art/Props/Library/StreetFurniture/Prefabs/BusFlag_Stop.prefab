@@ -46,8 +46,8 @@ LODGroup:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 100000}
   serializedVersion: 2
-  m_LocalReferencePoint: {x: 0.205, y: 1.215, z: 0}
-  m_Size: 2.43
+  m_LocalReferencePoint: {x: 0.2095, y: 1.2275, z: 0}
+  m_Size: 2.455
   m_FadeMode: 0
   m_AnimateCrossFading: 0
   m_LastLODIsBillboard: 0
@@ -74,12 +74,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Tag.Art.Library.LibraryPropMeta
   category: "StreetFurniture"
-  summary: "Bus flag. Pole to 2.40 m, blade 0.46 m wide. BUS in Liberation Sans."
+  summary: "Bus flag. Pole 2.44 m, 64 mm OD. Blade 0.457 x 0.305 m. BUS in Liberation Sans."
   climbable: 0
   vaultable: 0
   vaultHeightMeters: 0
-  climbNote: "Pole is 6 cm. Not a cling."
-  vaultNote: "Blade is 2.35 m. Too high to vault."
+  climbNote: "Pole is 64 mm. Not a cling."
+  vaultNote: "Blade center is 2.20 m. Too high to vault."
 --- !u!1 &200000
 GameObject:
   m_ObjectHideFlags: 0
@@ -148,6 +148,8 @@ MeshRenderer:
   m_Materials:
   - {fileID: 2100000, guid: beb173626a35c30c1ff350a8ec04f0d1, type: 2}
   - {fileID: 2100000, guid: 3378749727762f35ade0a2e55dedd4ed, type: 2}
+  - {fileID: 2100000, guid: e98dae535b65b6212e7de4fed88f27b6, type: 2}
+  - {fileID: 2100000, guid: b47c340ca201ae754a5835c14bb84ad8, type: 2}
   - {fileID: 2100000, guid: 8a63964d15fa16988483419991831ff1, type: 2}
   - {fileID: 2100000, guid: b0ae13624c44bb51920d1571b19a6d8d, type: 2}
   m_StaticBatchInfo:
@@ -241,6 +243,7 @@ MeshRenderer:
   m_Materials:
   - {fileID: 2100000, guid: beb173626a35c30c1ff350a8ec04f0d1, type: 2}
   - {fileID: 2100000, guid: 3378749727762f35ade0a2e55dedd4ed, type: 2}
+  - {fileID: 2100000, guid: b47c340ca201ae754a5835c14bb84ad8, type: 2}
   - {fileID: 2100000, guid: 8a63964d15fa16988483419991831ff1, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
@@ -316,7 +319,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.12, y: 0.02, z: 0.12}
+  m_Size: {x: 0.16, y: 0.02, z: 0.16}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300010
 GameObject:
@@ -344,7 +347,7 @@ Transform:
   m_GameObject: {fileID: 300010}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 1.1, z: 0}
+  m_LocalPosition: {x: 0, y: 1.05, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -368,8 +371,8 @@ CapsuleCollider:
   m_IsTrigger: 0
   m_ProvidesContacts: 0
   m_Enabled: 1
-  m_Radius: 0.022
-  m_Height: 2
+  m_Radius: 0.024
+  m_Height: 1.9
   m_Direction: 1
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300020
@@ -398,7 +401,7 @@ Transform:
   m_GameObject: {fileID: 300020}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.3, y: 2.32, z: 0}
+  m_LocalPosition: {x: 0.3, y: 2.2, z: -0.004}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -423,5 +426,5 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.32, y: 0.14, z: 0.016}
+  m_Size: {x: 0.34, y: 0.2, z: 0.005}
   m_Center: {x: 0, y: 0, z: 0}
