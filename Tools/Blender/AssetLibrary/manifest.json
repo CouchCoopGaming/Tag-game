@@ -35947,5 +35947,344 @@
     ],
     "slackCm": 0.0,
     "fbx": "Assets/Art/Props/Library/StreetFurniture/SpeedCushion_Asphalt.fbx"
+  },
+  {
+    "name": "StreetClock_Post",
+    "category": "StreetFurniture",
+    "blurb": "Post clock. Pole to 2.35 m, face 0.46 m across, hands at 10:10.",
+    "size": [
+      0.46,
+      2.51,
+      0.28
+    ],
+    "min": [
+      -0.23,
+      0.0,
+      -0.14
+    ],
+    "max": [
+      0.23,
+      2.51,
+      0.14
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 276,
+        "materials": [
+          "Lib_SteelDark",
+          "Lib_Steel",
+          "Lib_PaintCream",
+          "Lib_Black"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 172,
+        "materials": [
+          "Lib_SteelDark",
+          "Lib_Steel",
+          "Lib_PaintCream",
+          "Lib_Black"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_Base",
+        "type": "box",
+        "center": [
+          0,
+          0.02,
+          0
+        ],
+        "size": [
+          0.18,
+          0.024,
+          0.18
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Pole",
+        "type": "capsule",
+        "center": [
+          0,
+          1.0,
+          0
+        ],
+        "radius": 0.026,
+        "height": 1.9,
+        "direction": 1
+      },
+      {
+        "name": "Col_HeadL",
+        "type": "box",
+        "center": [
+          -0.12,
+          2.28,
+          0.04
+        ],
+        "size": [
+          0.12,
+          0.18,
+          0.03
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_HeadR",
+        "type": "box",
+        "center": [
+          0.12,
+          2.28,
+          0.04
+        ],
+        "size": [
+          0.12,
+          0.18,
+          0.03
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "climbable": false,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "Pole is 8 cm. Not a cling.",
+    "vaultNote": "Too tall and smooth to vault.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1"
+    ],
+    "slackCm": 0.91,
+    "fbx": "Assets/Art/Props/Library/StreetFurniture/StreetClock_Post.fbx"
+  },
+  {
+    "name": "BikePump_Public",
+    "category": "StreetFurniture",
+    "blurb": "Bike pump. Post to 1.05 m, head and gauge, hose down to a holder.",
+    "size": [
+      0.22,
+      1.23,
+      0.22
+    ],
+    "min": [
+      -0.11,
+      0.0,
+      -0.11
+    ],
+    "max": [
+      0.11,
+      1.23,
+      0.11
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 248,
+        "materials": [
+          "Lib_SteelDark",
+          "Lib_Steel",
+          "Lib_Black",
+          "Lib_PaintCream",
+          "Lib_Rubber"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 140,
+        "materials": [
+          "Lib_SteelDark",
+          "Lib_Steel",
+          "Lib_Black",
+          "Lib_PaintCream",
+          "Lib_Rubber"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_Base",
+        "type": "box",
+        "center": [
+          0,
+          0.015,
+          0
+        ],
+        "size": [
+          0.14,
+          0.02,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Post",
+        "type": "capsule",
+        "center": [
+          0,
+          0.52,
+          0
+        ],
+        "radius": 0.024,
+        "height": 0.9,
+        "direction": 1
+      },
+      {
+        "name": "Col_Head",
+        "type": "box",
+        "center": [
+          0,
+          1.12,
+          0
+        ],
+        "size": [
+          0.07,
+          0.1,
+          0.05
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "climbable": false,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "Not a cling.",
+    "vaultNote": "Too short to vault.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1"
+    ],
+    "slackCm": 0.61,
+    "fbx": "Assets/Art/Props/Library/StreetFurniture/BikePump_Public.fbx"
+  },
+  {
+    "name": "MenuBoard_Aframe",
+    "category": "StreetFurniture",
+    "blurb": "A-frame board, 0.60 m wide and 0.86 m tall. MENU in Liberation Sans.",
+    "size": [
+      0.56,
+      0.835,
+      0.68
+    ],
+    "min": [
+      -0.28,
+      0.0,
+      -0.34
+    ],
+    "max": [
+      0.28,
+      0.835,
+      0.34
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 456,
+        "materials": [
+          "Lib_Wood",
+          "Lib_SteelDark",
+          "Lib_PaintWhite"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 84,
+        "materials": [
+          "Lib_Wood",
+          "Lib_SteelDark"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_Front",
+        "type": "box",
+        "center": [
+          0,
+          0.4,
+          0.16
+        ],
+        "size": [
+          0.4,
+          0.64,
+          0.012
+        ],
+        "euler": [
+          -19.0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Back",
+        "type": "box",
+        "center": [
+          0,
+          0.4,
+          -0.16
+        ],
+        "size": [
+          0.4,
+          0.64,
+          0.012
+        ],
+        "euler": [
+          19.0,
+          0,
+          0
+        ]
+      }
+    ],
+    "climbable": false,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "Not a cling.",
+    "vaultNote": "Too short to vault.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1"
+    ],
+    "slackCm": 0.0,
+    "fbx": "Assets/Art/Props/Library/StreetFurniture/MenuBoard_Aframe.fbx"
   }
 ]

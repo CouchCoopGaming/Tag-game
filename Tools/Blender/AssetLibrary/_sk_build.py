@@ -69,6 +69,9 @@ MODULES = (
     "sk_bike_locker",
     "sk_call_box",
     "sk_speed_cushion",
+    "sk_street_clock",
+    "sk_bike_pump",
+    "sk_menu_board",
 )
 
 
