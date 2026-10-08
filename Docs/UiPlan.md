@@ -237,6 +237,10 @@ Character select draws each runner from the color pair on its card. The chest is
 
 The match runner, the RESULTS figures, and the stat-card accent use the same color pair as character select. The seat color stays on the card border, the HUD edge, and the P# tag. P4 is Lavender / Mint, because Tan / Red is the same pair as Red / Tan. A chip whose pair is already taken is gray. READY sits under the swatches, not on the legs. Pause keeps COMIC WORDS ON inside the panel. Options puts that line on a navy plate. Mockups are in `Docs/UiStills/pass22/`.
 
+## Pass 23
+
+The first color is the body: limbs, torso, and head. The second color is the accent on the chest panel, the hands, and the feet. P1 reads red, P2 blue, P3 orange, and P4 lavender, so the four chase runners stay apart. A chip is gray when that first color is already taken. The title and the main menu are two frames of a pass along the south straight, with those four runners on the path. The lockup sits on that frame, and the main buttons keep an even gap. Mockups are in `Docs/UiStills/pass23/`.
+
 ## Later passes
 
 - A 2D focus grid on rules so Left from a rule row lands on a mode tile.

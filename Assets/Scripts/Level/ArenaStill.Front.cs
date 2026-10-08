@@ -446,9 +446,9 @@ namespace Tag.Level
                 ParkArena.HumanSeat(ParkArena.Mega, i, out float px, out float py, out float pz, out float yaw);
                 var tris = new List<Tri>(park.Count + 64);
                 tris.AddRange(park);
-                LookPair(i, out float chestR, out float chestG, out float chestB, out float bodyR, out float bodyG, out float bodyB);
-                if (hier) AddHier(tris, px, py, pz, yaw, bodyR, bodyG, bodyB, chestR, chestG, chestB, false);
-                else AddRunner(tris, px, py, pz, chestR, chestG, chestB);
+                LookPair(i, out float bodyR, out float bodyG, out float bodyB, out float accentR, out float accentG, out float accentB);
+                if (hier) AddHier(tris, px, py, pz, yaw, bodyR, bodyG, bodyB, accentR, accentG, accentB, false);
+                else AddRunner(tris, px, py, pz, bodyR, bodyG, bodyB);
                 AddContact(tris, px, py, pz);
                 var seatShadow = (float[])shadow.Clone();
                 for (int t = park.Count; t < tris.Count; t++)
@@ -464,8 +464,43 @@ namespace Tag.Level
                     ex, ey, ez, tx, ty, tz, seatShadow, sox, soy, soz, srx, sry, srz, sux, suy, suz, lsx, lsy, lsz, half);
             }
             int idles = WriteIdlePortraits(folder);
+            string runBake = RepoDocs();
+            if (runBake != null) LoadHierFile(Path.Combine(runBake, "UiStills", "hier-run.tris"));
+            WriteMenuPans(folder, park, shadow, sox, soy, soz, srx, sry, srz, sux, suy, suz, lsx, lsy, lsz, half);
             string posed = hier ? "hier=posed" : "hier=missing";
             return "hud-chases " + folder + " " + posed + " idle=" + idles.ToString();
+        }
+
+        /// <summary>
+        /// Two frames of one pass along the south straight, for the title and
+        /// the main menu. Same runners, camera slid east. Not a proof still.
+        /// </summary>
+        static void WriteMenuPans(string folder, List<Tri> park, float[] shadow,
+            float sox, float soy, float soz, float srx, float sry, float srz,
+            float sux, float suy, float suz, float lsx, float lsy, float lsz, float half)
+        {
+            float[] xs = { 56f, 68f, 82f, 98f };
+            float[] yaws = { 88f, 92f, 84f, 96f };
+            var tris = new List<Tri>(park.Count + 256);
+            tris.AddRange(park);
+            for (int i = 0; i < 4; i++)
+            {
+                LookPair(i, out float bodyR, out float bodyG, out float bodyB, out float accentR, out float accentG, out float accentB);
+                AddHier(tris, xs[i], 0.2f, 16f, yaws[i], bodyR, bodyG, bodyB, accentR, accentG, accentB, false);
+                AddContact(tris, xs[i], 0.2f, 16f);
+            }
+            var seatShadow = (float[])shadow.Clone();
+            for (int t = park.Count; t < tris.Count; t++)
+            {
+                if (tris[t].A < 0.99f) continue;
+                ShadowTri(tris[t], seatShadow, 768, sox, soy, soz, srx, sry, srz, sux, suy, suz, lsx, lsy, lsz, half);
+            }
+            // Down the south straight, so the four body colors read in a line.
+            ChasePng(tris, Path.Combine(folder, "pan_title.png"), 1920, 1080,
+                46f, 1.65f, 20.5f, 86f, 1.1f, 15.2f, seatShadow, sox, soy, soz, srx, sry, srz, sux, suy, suz, lsx, lsy, lsz, half, 38f);
+            // Same pass, yawed so the line sits left of the menu column.
+            ChasePng(tris, Path.Combine(folder, "pan_main.png"), 1920, 1080,
+                46f, 1.65f, 20.5f, 86f, 1.1f, 8f, seatShadow, sox, soy, soz, srx, sry, srz, sux, suy, suz, lsx, lsy, lsz, half, 38f);
         }
 
         /// <summary>
@@ -529,21 +564,22 @@ namespace Tag.Level
         }
 
         /// <summary>
-        /// One look per seat. Chest is the first color, body the second.
-        /// Red/Tan, Blue/Mint, Orange/Lavender, Lavender/Mint. The last pair
-        /// is not the reverse of the first, so the four reads stay apart.
+        /// One look per seat. The first color is the body: limbs, torso, head.
+        /// The second is the accent: chest panel, hands, and feet.
+        /// Red/Tan, Blue/Mint, Orange/Lavender, Lavender/Mint. The four first
+        /// colors stay apart, so a chase reads four different runners.
         /// </summary>
-        static void LookPair(int seat, out float chestR, out float chestG, out float chestB, out float bodyR, out float bodyG, out float bodyB)
+        static void LookPair(int seat, out float bodyR, out float bodyG, out float bodyB, out float accentR, out float accentG, out float accentB)
         {
-            float[] cr = { 224f / 255f, 107f / 255f, 240f / 255f, 178f / 255f };
-            float[] cg = { 56f / 255f, 173f / 255f, 107f / 255f, 148f / 255f };
-            float[] cb = { 61f / 255f, 235f / 255f, 36f / 255f, 224f / 255f };
-            float[] br = { 230f / 255f, 107f / 255f, 178f / 255f, 107f / 255f };
-            float[] bg = { 194f / 255f, 209f / 255f, 148f / 255f, 209f / 255f };
-            float[] bb = { 133f / 255f, 178f / 255f, 224f / 255f, 178f / 255f };
+            float[] br = { 224f / 255f, 107f / 255f, 240f / 255f, 178f / 255f };
+            float[] bg = { 56f / 255f, 173f / 255f, 107f / 255f, 148f / 255f };
+            float[] bb = { 61f / 255f, 235f / 255f, 36f / 255f, 224f / 255f };
+            float[] ar = { 230f / 255f, 107f / 255f, 178f / 255f, 107f / 255f };
+            float[] ag = { 194f / 255f, 209f / 255f, 148f / 255f, 209f / 255f };
+            float[] ab = { 133f / 255f, 178f / 255f, 224f / 255f, 178f / 255f };
             int i = seat < 0 ? 0 : (seat > 3 ? 3 : seat);
-            chestR = cr[i]; chestG = cg[i]; chestB = cb[i];
             bodyR = br[i]; bodyG = bg[i]; bodyB = bb[i];
+            accentR = ar[i]; accentG = ag[i]; accentB = ab[i];
         }
 
         /// <summary>
@@ -561,8 +597,8 @@ namespace Tag.Level
                 if (!LoadHierFile(src)) continue;
                 var tris = new List<Tri>(8);
                 AddBox(tris, 0f, -0.04f, 0f, 2.6f, 0.08f, 2.6f, 183f / 255f, 164f / 255f, 114f / 255f);
-                LookPair(i, out float chestR, out float chestG, out float chestB, out float bodyR, out float bodyG, out float bodyB);
-                AddHier(tris, 0f, 0f, 0f, 16f, bodyR, bodyG, bodyB, chestR, chestG, chestB, true);
+                LookPair(i, out float bodyR, out float bodyG, out float bodyB, out float accentR, out float accentG, out float accentB);
+                AddHier(tris, 0f, 0f, 0f, 16f, bodyR, bodyG, bodyB, accentR, accentG, accentB, true);
                 AddContact(tris, 0f, 0f, 0f);
                 var shadow = new float[16 * 16];
                 for (int s = 0; s < shadow.Length; s++) shadow[s] = -1e20f;
@@ -771,11 +807,11 @@ namespace Tag.Level
             float ex, float ey, float ez, float tx, float ty, float tz,
             float[] shadow, float sox, float soy, float soz,
             float srx, float sry, float srz, float sux, float suy, float suz,
-            float lsx, float lsy, float lsz, float half)
+            float lsx, float lsy, float lsz, float half, float fov = 70f)
         {
             var rgb = new byte[w * h * 3];
             var depth = new float[w * h];
-            Paint(tris, rgb, depth, w, h, ex, ey, ez, tx, ty, tz, 70f, true,
+            Paint(tris, rgb, depth, w, h, ex, ey, ez, tx, ty, tz, fov, true,
                 shadow, 768, sox, soy, soz, srx, sry, srz, sux, suy, suz, lsx, lsy, lsz, half);
             WritePng(path, rgb, w, h);
         }

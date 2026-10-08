@@ -312,6 +312,8 @@ The twenty-first pass keeps the tan chase path and the RESULTS cards. On charact
 
 The twenty-second pass carries that color pair into the match and onto RESULTS. The runner and the place figure use it, and the stat card accent uses the first color. The seat color stays on the card border, the screen edge, and the P# tag. P4 is Lavender / Mint, so it does not match P1. A taken pair is gray on the other cards. READY sits under the color row. Pause keeps COMIC WORDS ON inside the panel, and options puts that line on a navy plate. Space still jumps. Mockups are in `Docs/UiStills/pass22/`.
 
+The twenty-third pass makes the first color the body you see in the chase, and the second color the chest, the hands, and the feet. P2 and P4 no longer both read mint. A taken first color is gray on the other cards. The title and the menu sit on a pass over Mega Park with the four runners, and the menu buttons have room between them. Space still jumps. Mockups are in `Docs/UiStills/pass23/`.
+
 ## Motion, ninth pass
 
 The wall jump, the rope, the zip, the launch pad, a landing, the dash flash, a hard turnaround, and a punch while you run all ease instead of snapping. Speeds, the jump, and the dash length are the same.
