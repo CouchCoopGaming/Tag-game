@@ -26,7 +26,7 @@ JOINT = (0.16, 0.17, 0.18, 1.0)
 ACCENT = (0.45, 0.82, 0.86, 1.0)
 GROUND = (0.42, 0.43, 0.44, 1.0)
 SKY = (0.55, 0.64, 0.74, 1.0)
-DUST = (0.62, 0.46, 0.28, 1.0)
+DUST = (0.20, 0.17, 0.14, 1.0)
 SHOCK = (0.93, 0.90, 0.82, 1.0)
 SPARK = (1.0, 0.86, 0.38, 1.0)
 CYAN = (0.45, 0.88, 1.0, 1.0)
@@ -130,18 +130,62 @@ def pose_launch(arm):
     torso(arm, 2.0, -2.0, -2.0)
 
 
+def wall_run_angles():
+    """WallPose.Run(+1, wallLeft: true) at the locked 9.5 m/s gait.
+
+    The lane branch has no wall-run animation clip. The pose the game plays
+    is WallPose.RunCycle, phase 3π/2. LeanZ is the 20° roll toward the wall.
+    """
+    idle, sprint = 0.35, 12.0
+    t = (9.5 - idle) / (sprint - idle)
+    t = 0.0 if t < 0.0 else (1.0 if t > 1.0 else t)
+    weight = 1.0 - (1.0 - t) * (1.0 - t)
+    front = 26.0 + (48.0 - 26.0) * weight
+    back = 14.0 + (30.0 - 14.0) * weight
+    thigh_l = -back - 2.2
+    thigh_r = front
+    along = (thigh_r - (-22.0)) / (48.0 - (-22.0))
+    along = 0.0 if along < 0.0 else (1.0 if along > 1.0 else along)
+    return {
+        "thigh_l": thigh_l,
+        "knee_l": -5.0,
+        "foot_l": 6.0,
+        "thigh_r": thigh_r,
+        "knee_r": -5.0,
+        "foot_r": -(thigh_r + (-5.0)),
+        "pitch_l": 4.0 + (-1.0) * 3.0,
+        "yaw_l": 36.0,
+        "elbow_l": -18.0,
+        "pitch_r": -78.0 + (24.0 - (-78.0)) * along,
+        "yaw_r": -12.0,
+        "elbow_r": -12.0 + (-36.0 - (-12.0)) * along,
+        "hip": 6.0,
+        "spine": 12.0,
+        "head": -4.0,
+        "lean": -20.0,
+    }
+
+
 def pose_wall(arm):
-    # Hips pitched until the body is nearly horizontal: left foot leads into +Y,
-    # chest and head lean back toward -Y. Travel along +X, so a side camera
-    # sees the profile and the trailing leg.
-    leg(arm, "L", 12.0, -28.0, 8.0)
-    leg(arm, "R", 28.0, -20.0, -10.0)
-    arm_pose(arm, "L", 24.0, -22.0, -12.0, 0.0)
-    arm_pose(arm, "R", -18.0, -18.0, -10.0, 0.0)
-    torso(arm, 72.0, 8.0, -10.0)
-    set_euler(arm, "Chest", 14.0, 0.0, 0.0)
-    set_euler(arm, "Hips", 72.0, 0.0, 0.0)
-    set_euler(arm, "Foot_L", 48.0, 0.0, 0.0)
+    # Legs are WallPose.Run(+1, wallLeft). Unity's LeanZ does not roll this
+    # FBX, so the 20° lean is a hip roll toward the wall and the arms stay
+    # on the open side. The lane branch has no clip file to sample.
+    a = wall_run_angles()
+    leg(arm, "L", a["thigh_l"], -a["knee_l"])
+    leg(arm, "R", a["thigh_r"], -a["knee_r"])
+    set_euler(arm, "Foot_L", -a["foot_l"], 0.0, 0.0)
+    set_euler(arm, "Foot_R", -a["foot_r"], 0.0, 0.0)
+    arm_pose(arm, "L", 10.0, -20.0, -30.0, 0.0, 80.0)
+    arm_pose(arm, "R", -12.0, -14.0, -20.0, 0.0)
+    set_euler(arm, "Hips", a["hip"] + 2.0, 0.0, -a["lean"])
+    set_euler(arm, "Spine", 6.0, 0.0, 0.0)
+    set_euler(arm, "Chest", 0.0, 0.0, 0.0)
+    set_euler(arm, "Head", a["head"], 0.0, 0.0)
+    print(
+        "WALL_CLIP",
+        "thigh", round(a["thigh_l"], 1), round(a["thigh_r"], 1),
+        "lean", a["lean"],
+    )
 
 
 def pose_punch(arm):
@@ -491,7 +535,7 @@ def add_puff(name, location, size, color, strength=0.4):
 
 
 def dust_ring(origin, ring, count, color):
-    # Soft clouds outside the shock ring, rising to about knee height.
+    # Matte clouds outside the shock ring, rising to about knee height.
     for i in range(count):
         ang = (i + 0.37 * (i % 4)) / count * math.tau
         radial = ring * (1.22 + (i % 4) * 0.12) + 0.08
@@ -500,7 +544,7 @@ def dust_ring(origin, ring, count, color):
         height = 0.22 + (i % 6) * 0.05
         size = 0.28 + (i % 3) * 0.07
         pos = origin + Vector((math.cos(ang) * radial, math.sin(ang) * radial, height))
-        add_puff("FxPuff%d" % i, pos, size, color, 1.25)
+        add_puff("FxPuff%d" % i, pos, size, color, 1.0)
 
 
 def shockwave(origin, radius):
@@ -626,8 +670,8 @@ def rope_shimmer(hand, anchor):
         bell = 4 * t * (1 - t)
         wob = 0.028 * bell
         pts.append(hand + direction * (dist * t) + side * wob)
-    add_curve("FxRope", pts, 0.05, (1.0, 0.72, 0.28, 1), 0.95, 0.45)
-    add_curve("PropRope", [hand, anchor], 0.065, ROPE, 1.0, 0.04)
+    # One line, 1.8 cm across. bevel_depth is the radius.
+    add_curve("FxRope", pts, 0.009, ROPE, 1.0, 0.0)
 
 
 def chip(name, location, size, color):
@@ -685,20 +729,18 @@ def scuff_mat():
 def wall_fx(foot, normal):
     # Soft marks on the wall, trailing back along the run, plus dust off the face.
     tint = (0.40, 0.30, 0.18, 1.0)
+    trail = -WALL_TRAVEL if WALL_TRAVEL.length > 0.5 else Vector((-1.0, 0.0, 0.0))
     for i in range(5):
-        base = foot - Vector((0.05 + i * 0.18, 0.0, (i % 2) * 0.03)) - normal * 0.015
-        spec = (
-            (0.0, 0.0, 0.10, 1.05),
-            (0.06, 0.02, 0.07, 0.7),
-            (-0.04, -0.02, 0.055, 0.45),
-        )
-        for k, (dx, dz, size, strength) in enumerate(spec):
-            pos = base + Vector((dx, 0.0, dz)) - normal * (0.012 * k)
+        base = foot + trail * (0.05 + i * 0.18) + Vector((0.0, 0.0, (i % 2) * 0.03)) - normal * 0.015
+        for k, (along, dz, size, strength) in enumerate(
+            ((0.0, 0.10, 0.10, 1.05), (0.06, 0.07, 0.07, 0.7), (-0.04, 0.055, 0.055, 0.45))
+        ):
+            pos = base + trail * along + Vector((0.0, 0.0, dz)) - normal * (0.012 * k)
             obj = add_puff("FxPuffScuff%d_%d" % (i, k), pos, size, tint, strength)
-            obj.rotation_euler = Euler((rad(78), 0.0, rad(-12 + i * 7)), "XYZ")
+            obj.rotation_euler = normal.to_track_quat("-Z", "Y").to_euler()
     for i in range(8):
-        puff = foot - normal * (0.05 + (i % 3) * 0.025) - Vector((0.04 + i * 0.09, 0.0, -0.03 - (i % 3) * 0.02))
-        add_puff("FxPuffFoot%d" % i, puff, 0.12 + (i % 3) * 0.04, DUST, 1.35)
+        puff = foot - normal * (0.05 + (i % 3) * 0.025) + trail * (0.04 + i * 0.09) + Vector((0.0, 0.0, 0.03 + (i % 3) * 0.02))
+        add_puff("FxPuffFoot%d" % i, puff, 0.12 + (i % 3) * 0.04, (0.62, 0.46, 0.28, 1.0), 1.35)
 
 
 def ground_mat():
@@ -1092,45 +1134,83 @@ def body_extent(axis, mode):
     return 0.0 if val is None else val
 
 
+WALL_NORMAL = Vector((0.0, -1.0, 0.0))
+WALL_TRAVEL = Vector((1.0, 0.0, 0.0))
+
+
 def build_wall(arm, solids):
-    # Lift off the floor. The planted foot, not the ground, carries the body.
+    # Upright wall run. The left foot is the plant. The wall sits 2 mm past it.
+    global WALL_NORMAL, WALL_TRAVEL
     bpy.context.view_layer.update()
     low = lowest(arm)
-    arm.location.z += 0.72 - low
+    arm.location.z += 0.55 - low
     bpy.context.view_layer.update()
     foot = bpy.data.objects.get("Mesh_Foot_L")
     verts, _polys = mesh_world(foot)
-    foot_y = max(v.y for v in verts)
-    foot_x = sum(v.x for v in verts) / len(verts)
-    foot_z = sum(v.z for v in verts) / len(verts)
-    # 2 mm past the leading foot. The shin sits well behind that point.
-    face = foot_y + 0.002
-    bpy.ops.mesh.primitive_cube_add(size=1.0, location=(foot_x - 0.35, face + 0.14, 1.45))
+    hips = bone_pos(arm, "Hips")
+    foot_r = bone_pos(arm, "Foot_R")
+    foot_c = Vector((
+        sum(v.x for v in verts) / len(verts),
+        sum(v.y for v in verts) / len(verts),
+        sum(v.z for v in verts) / len(verts),
+    ))
+    # Stride runs along the wall. The wall is the character's left, from the left shoulder.
+    travel = Vector((foot_r.x - foot_c.x, foot_r.y - foot_c.y, 0.0))
+    if travel.length < 0.05:
+        travel = Vector((1.0, 0.0, 0.0))
+    travel.normalize()
+    side = foot_c - hips
+    side.z = 0.0
+    side = side - travel * side.dot(travel)
+    if side.length < 0.02:
+        side = Vector((-travel.y, travel.x, 0.0))
+    normal = side.normalized()
+    face = max(v.x * normal.x + v.y * normal.y for v in verts) + 0.002
+    center = normal * (face + 0.16)
+    center.z = 1.35
+    bpy.ops.mesh.primitive_cube_add(size=1.0, location=center)
     wall = bpy.context.active_object
     wall.name = "PropWall"
-    wall.scale = (3.4, 0.28, 2.6)
+    wall.rotation_euler = Vector((normal.x, normal.y, 0.0)).to_track_quat("Y", "Z").to_euler()
+    wall.scale = (3.2, 0.32, 2.8)
     wall.data.materials.append(make_mat("WallMat", (0.62, 0.64, 0.68, 1), 0.78))
     bpy.context.view_layer.update()
     solids.append(solid_of(wall))
-    wall_fx(Vector((foot_x, face, foot_z)), Vector((0.0, 1.0, 0.0)))
+    WALL_NORMAL = normal
+    WALL_TRAVEL = travel
+    wall_fx(foot_c, normal)
+    head = bone_pos(arm, "Head", tail=True)
+    hips = bone_pos(arm, "Hips")
+    foot_r = bone_pos(arm, "Foot_R")
+    hand_l = bone_pos(arm, "Hand_L")
+    up = head - hips
+    print(
+        "WALL_POSE",
+        "head", round(head.x, 2), round(head.y, 2), round(head.z, 2),
+        "hips", round(hips.x, 2), round(hips.y, 2), round(hips.z, 2),
+        "footL", round(foot_c.x, 2), round(foot_c.y, 2), round(foot_c.z, 2),
+        "footR", round(foot_r.x, 2), round(foot_r.y, 2), round(foot_r.z, 2),
+        "handL", round(hand_l.x, 2), round(hand_l.y, 2), round(hand_l.z, 2),
+        "up", round(up.x, 2), round(up.y, 2), round(up.z, 2),
+        "normal", round(normal.x, 2), round(normal.y, 2),
+    )
     return solids
 
 
 def frame_wall_side(cam, arm):
-    # Profile: the body runs along Y, the camera sits mostly on +X.
+    # Open side of the wall, so the upright body is in profile and the face is behind the plant.
     mn, mx = body_bounds()
+    height = max(mx.z - mn.z, 1.55)
     center = (mn + mx) * 0.5
-    center.y += 0.15
-    length = max(mx.y - mn.y, 1.5)
-    lens = 38.0
+    lens = 36.0
     cam.data.type = "PERSP"
     cam.data.lens = lens
     cam.data.clip_start = 0.04
     cam.data.clip_end = 40.0
-    tan_h = 18.0 / lens
-    dist = (length / 0.62) * 0.5 / tan_h
-    view = Vector((0.82, -0.42, 0.28))
-    view.normalize()
+    aspect = RES_Y / float(RES_X)
+    tan_v = (18.0 / lens) * aspect
+    dist = (height / 0.64) * 0.5 / tan_v
+    view = (-WALL_NORMAL * 0.78 + WALL_TRAVEL * 0.42 + Vector((0.0, 0.0, 0.28))).normalized()
     cam.location = center + view * dist
     look_at(cam, center)
     bpy.context.view_layer.update()
@@ -1138,36 +1218,27 @@ def frame_wall_side(cam, arm):
 
 
 def frame_wall_top(cam, arm):
-    # Orthographic plan. Screen right is world +X (travel). Screen up is
-    # world +Y, toward the wall, so the foot and the wall face share an edge.
+    # Plan view. Screen up is the wall normal, so the planted foot meets the face.
     mn, mx = body_bounds()
-    wall = bpy.data.objects.get("PropWall")
-    face_y = mx.y
-    if wall is not None:
-        face_y = min((wall.matrix_world @ Vector(corner)).y for corner in wall.bound_box)
-    foot = bpy.data.objects.get("Mesh_Foot_L")
-    fx = (mn.x + mx.x) * 0.5
-    if foot is not None:
-        verts, _polys = mesh_world(foot)
-        fx = sum(v.x for v in verts) / len(verts)
-    x0, x1 = fx - 1.05, fx + 0.85
-    y0, y1 = mn.y - 0.28, face_y + 0.42
-    center = Vector(((x0 + x1) * 0.5, (y0 + y1) * 0.5, (mn.z + mx.z) * 0.5))
-    span_x = (x1 - x0) * 1.12
-    span_y = (y1 - y0) * 1.15
+    normal = WALL_NORMAL
+    travel = WALL_TRAVEL
+    up = travel.cross(normal)
+    if up.z < 0.0:
+        travel = -travel
+    center = (mn + mx) * 0.5
+    span = max(mx.x - mn.x, mx.y - mn.y, 1.2) * 1.55
     cam.data.type = "ORTHO"
     cam.data.sensor_fit = "HORIZONTAL"
-    cam.data.ortho_scale = max(span_x, span_y / (RES_Y / float(RES_X)))
+    cam.data.ortho_scale = max(span, span / (RES_Y / float(RES_X)) * 0.85)
     cam.data.clip_start = 0.01
     cam.data.clip_end = 40.0
     cam.matrix_world = Matrix((
-        (1.0, 0.0, 0.0, center.x),
-        (0.0, 1.0, 0.0, center.y),
+        (travel.x, normal.x, 0.0, center.x),
+        (travel.y, normal.y, 0.0, center.y),
         (0.0, 0.0, 1.0, center.z + 8.0),
         (0.0, 0.0, 0.0, 1.0),
     ))
     bpy.context.view_layer.update()
-    print("WALLFACE", "y", round(face_y, 3), "body_max_y", round(mx.y, 3))
 
 
 def frame_grapple_shoulder(cam, arm):
@@ -1408,12 +1479,25 @@ def main():
         ("immunity-glow", pose_run, 20, 0.0, build_immune, None),
         ("punch-stagger", pose_stagger, -14, 0.0, build_stagger, None),
         ("launch-pad", pose_launch, 18, 0.55, build_launch, None),
-        ("wall-run", pose_wall, 0, 0.0, build_wall, frame_wall_side),
-        ("wall-run-top", pose_wall, 0, 0.0, build_wall, frame_wall_top),
+        ("wall-run", pose_wall, 90, 0.0, build_wall, frame_wall_side),
+        ("wall-run-top", pose_wall, 90, 0.0, build_wall, frame_wall_top),
     ]
+    only = os.environ.get("FX_ONLY", "")
+    only_set = set(part.strip() for part in only.split(",") if part.strip())
     totals = []
     for name, pose, yaw, lift, build, frame in shots:
+        if only_set and name not in only_set:
+            continue
         totals.append((name,) + shot(arm, cam, name, pose, yaw, lift, build, frame))
+    if only_set:
+        self_max = max(row[1] for row in totals) if totals else 0.0
+        world_max = max(row[2] for row in totals) if totals else 0.0
+        fails = sum(row[3] for row in totals)
+        print(
+            "no-clip clips=%d frames=%d worldMax=%.2f selfMax=%.2f fails=%d"
+            % (len(totals), len(totals), world_max * 100.0, self_max * 100.0, fails)
+        )
+        return
 
     clear_fx()
     punch_path = os.path.join(OUT, "_tagger.png")

@@ -305,7 +305,7 @@ namespace Tag.FX
             int n = _rope.positionCount;
             _rope.enabled = true;
             _rope.startWidth = 0.018f;
-            _rope.endWidth = 0.012f;
+            _rope.endWidth = 0.016f;
             Color c = new Color(1f, 0.9f, 0.55f, 0.45f);
             _rope.startColor = c;
             _rope.endColor = c;
