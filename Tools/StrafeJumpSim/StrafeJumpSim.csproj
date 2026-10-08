@@ -9,6 +9,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Program.cs" />
+    <Compile Include="PoseKeyDump.cs" />
     <Compile Include="../../Assets/Scripts/Level/MegaParkP1Layout.cs" />
     <Compile Include="../../Assets/Scripts/Level/MegaParkP1Layout.Pass6.cs" />
     <Compile Include="../../Assets/Scripts/Level/MegaParkP1Layout.Pass7.cs" />

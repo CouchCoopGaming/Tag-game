@@ -1,7 +1,9 @@
 using System.Globalization;
 using System.Text;
+using Tag.Art;
 using Tag.Couch;
 using Tag.Experimental;
+using UnityEngine;
 
 namespace Tag.Local
 {
@@ -89,7 +91,77 @@ namespace Tag.Local
             later.ResolvePending(GrappleClick.Window + 0.02f + GrappleClick.Window, GrappleClick.Window);
             if (!later.Pulling)
                 return false;
+            if (RopeBodyHits() != 0)
+                return false;
             return true;
+        }
+
+        /// <summary>
+        /// Pulling seats share one left-hand span. 0 means that span misses the body.
+        /// The hand is GrappleRopeTell's left hand. The anchor continues away from the chest.
+        /// </summary>
+        public static int RopeBodyHits()
+        {
+            Vector3 hand = GrappleRopeTell.Hand(Vector3.zero, Vector3.forward);
+            if (hand.x >= 0f)
+                return 2;
+            Vector3 chest = new Vector3(0f, 1.12f, 0.06f);
+            Vector3 away = hand - chest;
+            if (away.sqrMagnitude < 1e-6f)
+                return 2;
+            away.Normalize();
+            Vector3 anchor = hand + away * 7.5f;
+            if (ClearsBody(hand, anchor))
+                return 0;
+            return 2;
+        }
+
+        static bool ClearsBody(Vector3 hand, Vector3 anchor)
+        {
+            if (!ClearsCapsule(hand, anchor, new Vector3(0f, 0.82f, 0.02f), new Vector3(0f, 1.42f, 0.04f), 0.22f))
+                return false;
+            if (!ClearsCapsule(hand, anchor, new Vector3(0f, 0.42f, 0f), new Vector3(0f, 0.82f, 0.02f), 0.20f))
+                return false;
+            if (!ClearsSphere(hand, anchor, new Vector3(0f, 1.62f, 0.04f), 0.15f))
+                return false;
+            if (!ClearsCapsule(hand, anchor, new Vector3(0.11f, 0.72f, 0f), new Vector3(0.14f, 0.18f, 0.06f), 0.11f))
+                return false;
+            if (!ClearsCapsule(hand, anchor, new Vector3(-0.11f, 0.72f, 0f), new Vector3(-0.14f, 0.18f, 0.06f), 0.11f))
+                return false;
+            return true;
+        }
+
+        static bool ClearsCapsule(Vector3 hand, Vector3 anchor, Vector3 a, Vector3 b, float radius)
+        {
+            return SpanGap(hand, anchor, a, b) > radius;
+        }
+
+        static bool ClearsSphere(Vector3 hand, Vector3 anchor, Vector3 center, float radius)
+        {
+            Vector3 ab = anchor - hand;
+            float den = ab.sqrMagnitude;
+            float t = den < 1e-8f ? 0f : Vector3.Dot(center - hand, ab) / den;
+            if (t < 0.08f) t = 0.08f;
+            if (t > 1f) t = 1f;
+            return (hand + ab * t - center).magnitude > radius;
+        }
+
+        static float SpanGap(Vector3 hand, Vector3 anchor, Vector3 a, Vector3 b)
+        {
+            float best = 99f;
+            for (int i = 2; i <= 24; i++)
+            {
+                float t = i / 24f;
+                Vector3 p = hand + (anchor - hand) * t;
+                Vector3 ab = b - a;
+                float den = ab.sqrMagnitude;
+                float u = den < 1e-8f ? 0f : Vector3.Dot(p - a, ab) / den;
+                if (u < 0f) u = 0f;
+                if (u > 1f) u = 1f;
+                float dist = (p - (a + ab * u)).magnitude;
+                if (dist < best) best = dist;
+            }
+            return best;
         }
 
         public static string ProofLine()
@@ -102,6 +174,7 @@ namespace Tag.Local
             text.Append(" window=").Append(GrappleClick.Window.ToString("0.00", c));
             text.Append(" pull=").Append(GrappleClick.Pull.ToString("0", c));
             text.Append(" onRope=2 released=1 idle=1 gameplayDelay=0 rootMotion=0");
+            text.Append(" ropeBody=").Append(RopeBodyHits().ToString(c));
             return text.ToString();
         }
 

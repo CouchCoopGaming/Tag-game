@@ -8,6 +8,11 @@ static class Program
 {
     static int Main(string[] args)
     {
+        if (args != null && args.Length > 0 && args[0] == "--pose-keys")
+        {
+            PoseKeyDump.Write(Console.Out);
+            return 0;
+        }
         if (args != null && args.Length > 0 && args[0] == "--proofs")
         {
             Console.WriteLine(Tag.Art.AirFeel.ProofLine());

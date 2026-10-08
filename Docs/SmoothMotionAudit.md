@@ -571,9 +571,15 @@ Vault is the 0.40 s mantle, from the reach to the plant to the landing. Slide is
 
 `loco-feel stride=52.0>28.9 foot=39.8>19.7 slideCm=51.7>0.0 lean=6.5>0.7 start=4.0>0.5 stop=32.0>5.9 turn=51.8>12.9 idle=14.0>2.4 crouch=7.8>6.4 drop=12.0>5.9 head=4.9>1.7 gameplayDelay=0 rootMotion=0`
 
+`no-clip clips=14 frames=475 worldMax=12.91 rawSelfMax=8.63 rigJoint=7.72 pose=8.63 fails=14`
+
+That line is the clips the Unity build plays, every 30 fps frame, absolute depth. No bind subtraction, no lift, no clamp. rigJoint is the rest hip-in-thigh overlap, 7.72 cm, and it is not a pose fail. pose is the deepest self hit whose pair is absent from that rest map, or whose depth is past the rest depth. The rig is not edited here.
+
+Shoulder flare on the grapple (24 degrees outward), the launch swing and tuck yaw (-70, the right arm mirrored the way the pad pose applies it), and a 40 degree yaw on the cocked forearm are in the keys the locomotor writes. They are not in the printed feel lines. On the three frames that were worst before that flare, pose depth went from 10.35 cm to 2.42 cm on the pad, 9.48 cm to 4.67 cm on the grapple, and 9.42 cm to 7.84 cm on the punch. The clip maximum is still the tag chest-into-arm at 8.63 cm, and several clips sit a few millimetres past the 7.72 cm hip cuff, which this rule reports as the full depth. Pose is not 0.
+
 `no-clip clips=14 frames=472 worldMax=0.38 selfMax=0.4 fails=0`
 
-Those three numbers are proposed, not in game. They come from a render-only shell settle. The 0.40 cm figure is the relief clamp, not a measurement of the clips the Unity build plays. The rest hip-in-thigh overlap is rig joint, about 7.7 cm, and it is not a pose fail. Pose overlap on the in-game keys is still open on this branch. The rig is not edited here.
+Those three numbers are proposed, not in game. They come from a render-only shell settle. The 0.40 cm figure is the relief clamp, not a measurement of the clips the Unity build plays.
 
 The check walks every 30 fps frame of vault, climb, slide, wall run into wall jump, roll, pad, zip, grapple, punch, tag, stagger, idle, and both locomotion cycles. Joined neighbours (upper arm and forearm, thigh and shin, and the same for the other joints) are exempt only inside 3 cm of the shared joint. Gameplay timers are unchanged.
 
@@ -598,7 +604,7 @@ Worst frame of each clip from that render settle, proposed, not in game. Every r
 | loco | 3 | 0.100 | LowerLeg_R, UpperLeg_R | self | 0.40 |
 | sprint | 5 | 0.167 | Hips, UpperLeg_R | self | 0.40 |
 
-Debug stills of the overlaps, before the settle and after, are in `Docs/SmoothStills/pass18/noclip/`.
+In-game red-overlap stills of the three worst frames, same floor and camera, are in `Docs/SmoothStills/pass20/noclip/`. The pass 18 pair in `Docs/SmoothStills/pass18/noclip/` is the render settle, not this measurement.
 
 Stills: `Docs/SmoothStills/pass18/` `vault-0.png` through `vault-7.png`, and the same eight frames for `climb`, `slide`, `wall`, and `roll`. Sheets: `vault-sheet.png`, `climb-sheet.png`, `slide-sheet.png`, `wall-sheet.png`, `roll-sheet.png`.
 

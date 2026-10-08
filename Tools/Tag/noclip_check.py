@@ -7,6 +7,7 @@ are exempt only within 3 cm of the shared joint. Anything deeper than
 0.5 cm fails. Gameplay timers are not read here.
 """
 import math
+import os
 
 import bpy
 from mathutils import Vector
@@ -14,6 +15,8 @@ from mathutils.bvhtree import BVHTree
 
 LIMIT_M = 0.005
 JOINT_M = 0.03
+# Final reports use every vertex. A search may set NOCLIP_STRIDE to sample.
+STRIDE = max(1, int(os.environ.get("NOCLIP_STRIDE", "1")))
 
 
 def _pack(obj):
@@ -75,7 +78,10 @@ def _inside(bvh, point):
 
 def _depth_into(verts, bvh, exempt):
     worst = 0.0
-    for vert in verts:
+    step = STRIDE
+    for index, vert in enumerate(verts):
+        if step > 1 and (index % step) != 0:
+            continue
         if exempt is not None and (vert - exempt).length <= JOINT_M:
             continue
         inside, depth = _inside(bvh, vert)
@@ -679,6 +685,27 @@ def over_limit(hits, authored=None):
 
 def cm(depth):
     return round(depth * 100.0, 2)
+
+
+def rest_map(hits):
+    """Rest-pose self depth per piece pair. This is the rig, not the animation."""
+    found = {}
+    for hit in hits:
+        if hit["kind"] != "self":
+            continue
+        key = tuple(sorted((hit["a"], hit["b"])))
+        if hit["depth"] > found.get(key, 0.0):
+            found[key] = hit["depth"]
+    return found
+
+
+def pose_excess(hit, rest):
+    """Animation depth past that pair's rest overlap. World hits are unchanged."""
+    if hit["kind"] != "self":
+        return hit["depth"]
+    key = tuple(sorted((hit["a"], hit["b"])))
+    extra = hit["depth"] - rest.get(key, 0.0)
+    return extra if extra > 0.0 else 0.0
 
 
 def worst_of(hits):
