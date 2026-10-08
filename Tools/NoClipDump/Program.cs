@@ -141,6 +141,11 @@ namespace Tag.NoClipDump
         static Frame FromExit(VerbExitId id, float u)
         {
             VerbExitSample s = VerbExitClips.At(id, u, 1f, false, false);
+            // Grapple exits join the live yank. ForBody is what the first frames play.
+            if (id == VerbExitId.GrappleArrive || id == VerbExitId.GrappleRelease)
+            {
+                s = VerbExitFit.Apply(s, id, u, false, false, 0.4f, 1f, 0f, 0f, 0f, 0f, false);
+            }
             return new Frame
             {
                 Hip = s.Hip, HipYaw = s.HipYaw, HipRoll = s.HipRoll,

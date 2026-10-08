@@ -264,6 +264,25 @@ StrafeJumpSim exits 0. Gameplay lines match the pass 21 sim. Animation lines tha
 - handoff2: `grappleOut=13.0>5.9` → `grappleOut=21.2>9.6`
 - exit-fit: `grapple=-109` → `grapple=-118`
 
+## Pass 23 (trail knees, free arm, full clip set, exit stills)
+
+The full 40-clip set was re-run before the re-key and again after it. Both times:
+
+`no-clip clips=40 frames=337 worldMax=0.00 poseMax=0.49 rigMax=3.40 poseFails=0 rigJoint=330`
+
+Pose max is the punch at 0.49 cm. Nothing was over 0.5 cm, so nothing was straightened to clear the check. Grapple arrive and release now sample the live yank through `ForBody` for the first 22% of the clip. Their worst pose is 0.16 cm. The other exits stay the authored recoveries. The live poses they join (wall run, vault, zip, launch, fall) are already in the same 40.
+
+The pull at the hold speed was still a plank on the toes: knees about 30° on thighs of 15° and 10°, feet 21–25 cm behind the hips and 89–91 cm below them, and the free hand 8 cm below the hip. Both knees on the played pull are now 35° and 36°. The feet trail 50 cm and 56 cm behind the hips and sit 13–17 cm higher. The free arm swings forward and up: 68 cm in front of the chest and 45 cm above the hip, elbow bent, still out to the side. The rope hand stays just above the head. `ShoulderFlare` stays 24. The extra reach stays off while the rope hand is past −100°, so raising the free arm does not pop the rope hand.
+
+The map lane was not merged. It had moved past `9219d01`.
+
+Stills, same dark backdrop and mid-grey floor: `Docs/AnimStills/pass23/`. Sky about (89, 94, 101), floor about (150, 149, 146). Pull before and after, plus one 3/4 still for each movement exit. The roll still is the shoulder plant with the existing 135° bank. Red pixels are 0. Each PNG is under 400 KB.
+
+StrafeJumpSim exits 0. Gameplay lines match pass 22, including `exit-fit` `grapple=-118` and `handoff2` `grappleOut=21.2>9.6`. Animation lines that moved:
+
+- grapple pose: `pullPitch=-118/-12 pullYaw=28/-68 pullElbow=-46/-28 strideThigh=12/6 strideKnee=-28/-18 tuckThigh=16 tuckKnee=-36 pullRead=-12` → `pullPitch=-118/-68 pullYaw=28/-52 pullElbow=-46/-38 strideThigh=18/8 strideKnee=-32/-24 tuckThigh=52 tuckKnee=-40 pullRead=-68`
+- grapple-pose-polish: `pullPitch=-118/-12 pullZ=0.18/0.02` → `pullPitch=-118/-68 pullZ=0.18/0.24`
+
 ## FX queue
 
 Running dust, the comic words, the verb layer, and the pass-5 effects are in.
