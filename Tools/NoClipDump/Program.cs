@@ -95,6 +95,11 @@ namespace Tag.NoClipDump
                 float w = PunchStaggerPose.Weight(t);
                 return Scale(StaggerFrame(), w);
             });
+
+            Emit("launch-rise", 1f / Fps, "ground", t => FromLaunch(LaunchPose.At(24.7f), 0f));
+            Emit("launch-mill", 1f / Fps, "ground", t => FromLaunch(LaunchPose.At(24.7f), t < 0.02f ? -28f : 28f));
+            Emit("land-hard", 1f / Fps, "ground", t => FromLand(LandPose.Hard(true)));
+            Emit("run-speed9", 1f / Fps, "ground", t => RunSpeed9());
         }
 
         static string SolidForExit(VerbExitId id)
@@ -212,6 +217,54 @@ namespace Tag.NoClipDump
                 ThighL = s.ThighL, ThighR = s.ThighR, KneeL = s.KneeL, KneeR = s.KneeR,
                 ArmPitchL = s.ArmPitchL, ArmYawL = s.ArmYawL, ArmPitchR = s.ArmPitchR, ArmYawR = s.ArmYawR,
                 ElbowL = s.ElbowL, ElbowR = s.ElbowR,
+            };
+        }
+
+        static Frame FromLaunch(LaunchPose.Sample s, float mill)
+        {
+            return new Frame
+            {
+                Hip = s.Hip, Spine = s.Spine, Head = s.Head,
+                ThighL = s.ThighL, ThighR = s.ThighR, ThighRollL = s.ThighRollL, ThighRollR = s.ThighRollR,
+                KneeL = s.KneeL, KneeR = s.KneeR,
+                ArmPitchL = s.ArmPitchL + mill, ArmYawL = s.ArmYawL, ArmRollL = s.ArmRollL,
+                ArmPitchR = s.ArmPitchR - mill, ArmYawR = -s.ArmYawR, ArmRollR = s.ArmRollR,
+                ElbowL = s.ElbowL, ElbowR = s.ElbowR,
+            };
+        }
+
+        static Frame FromLand(LandPose.Sample s)
+        {
+            return new Frame
+            {
+                Hip = s.Hip, Spine = s.Spine, Head = s.Head,
+                ThighL = s.ThighL, ThighR = s.ThighR, ThighRollL = s.ThighRollL, ThighRollR = s.ThighRollR,
+                KneeL = s.KneeL, KneeR = s.KneeR,
+                ArmPitchL = s.ArmPitchL, ArmYawL = s.ArmYawL, ArmRollL = s.ArmRollL,
+                ArmPitchR = s.ArmPitchR, ArmYawR = s.ArmYawR, ArmRollR = s.ArmRollR,
+                ElbowL = s.ElbowL, ElbowR = s.ElbowR,
+                FootL = s.FootL, FootR = s.FootR, Drop = s.Drop,
+            };
+        }
+
+        static Frame RunSpeed9()
+        {
+            const float speed = 9f;
+            const float sin = 1f;
+            float gait = GaitBlend.PoseWeight(speed);
+            GaitBlend.Legs legs = GaitBlend.At(1.5707963f, speed);
+            float outY = gait * 8f + (1f - gait) * 12f;
+            float reachY = outY + 6f * gait;
+            float yR = outY + (reachY - outY) * sin * gait;
+            float elbowReach = VerbPoseClips.ElbowClear + (-6f - VerbPoseClips.ElbowClear) * gait;
+            float elbowL = elbowReach + (VerbPoseClips.ElbowClear - elbowReach) * sin * gait;
+            float armZ = 4f + 4f * gait;
+            return new Frame
+            {
+                ThighL = legs.ThighL, ThighR = legs.ThighR, KneeL = legs.KneeL, KneeR = legs.KneeR,
+                ArmPitchL = LocoFeel.ArmPitch(-sin, speed), ArmYawL = outY, ArmRollL = armZ,
+                ArmPitchR = LocoFeel.ArmPitch(sin, speed), ArmYawR = -yR, ArmRollR = -armZ,
+                ElbowL = elbowL, ElbowR = elbowReach,
             };
         }
 

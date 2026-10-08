@@ -168,8 +168,8 @@ namespace Tag.Art
             float reachY = Mathf.Lerp(outY, outY + 6f, gait);
             float yawL = Mathf.Lerp(outY, reachY, frontR * gait);
             float yawR = Mathf.Lerp(outY, reachY, frontL * gait);
-            float elbowReach = Mathf.Lerp(-10f, -6f, gait);
-            float elbowPull = Mathf.Lerp(-18f, -30f, gait);
+            float elbowReach = Mathf.Lerp(VerbPoseClips.ElbowClear, -6f, gait);
+            float elbowPull = VerbPoseClips.ElbowClear;
             return new Sample
             {
                 ThighL = thighL,

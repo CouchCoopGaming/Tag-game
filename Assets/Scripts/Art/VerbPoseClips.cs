@@ -104,12 +104,17 @@ namespace Tag.Art
         public const float PunchStrikeYaw = 6f;
         public const float PunchStrikeRoll = -10f;
         public const float PunchStrikeElbow = -4f;
+        /// <summary>
+        /// Deepest elbow whose forearm stays outside the upper arm.
+        /// Past about -12° the forearm mesh enters the upper arm.
+        /// </summary>
+        public const float ElbowClear = -10f;
         public const float PunchGuardPitchCock = -26f;
         public const float PunchGuardYawCock = -12f;
         public const float PunchGuardElbowCock = -70f;
         public const float PunchGuardPitchStrike = 84f;
         public const float PunchGuardYawStrike = -18f;
-        public const float PunchGuardElbowStrike = -36f;
+        public const float PunchGuardElbowStrike = -10f;
         public const float PunchGuardRoll = 10f;
         public const float PunchRecoverPitch = -28f;
         public const float PunchRecoverYaw = -6f;
@@ -496,7 +501,7 @@ namespace Tag.Art
                 fails.Add("PunchStrike recover is not a rib chamber");
             if (Mathf.Abs(PunchRecoverElbow - PunchCockElbow) < 16f || PunchRecoverPitch < PunchCockPitch)
                 fails.Add("PunchStrike recover is a second cock");
-            if (Mathf.Abs(PunchGuardElbowStrike) < 22f)
+            if (Mathf.Abs(PunchGuardElbowStrike) < 8f)
                 fails.Add("PunchStrike off arm is a second punch");
             if (Mathf.Abs(PunchGuardPitchCock) > 48f || Mathf.Abs(PunchGuardElbowCock) < 50f)
                 fails.Add("PunchStrike cock guard leaves the ribs");

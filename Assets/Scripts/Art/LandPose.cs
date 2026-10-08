@@ -31,24 +31,28 @@ namespace Tag.Art
         public const float SoftHead = -4f;
         public const float SoftArmPitch = -16f;
         public const float SoftArmYaw = 12f;
-        public const float SoftElbow = -14f;
+        public const float SoftElbow = VerbPoseClips.ElbowClear;
 
         public const float HardThigh = 74f;
+        /// <summary>Knee spread. The deep absorb otherwise puts the spine through both thighs.</summary>
+        public const float HardThighRoll = 40f;
         public const float HardKnee = -125f;
         public const float HardHip = 46f;
         public const float HardSpine = 28f;
         public const float HardHead = 8f;
         public const float HardHandPitch = 18f;
         public const float HardHandYaw = 16f;
-        public const float HardHandElbow = -16f;
+        public const float HardHandElbow = VerbPoseClips.ElbowClear;
         public const float HardFreePitch = -30f;
         public const float HardFreeYaw = 12f;
-        public const float HardFreeElbow = -40f;
+        public const float HardFreeElbow = VerbPoseClips.ElbowClear;
+        /// <summary>Free-arm bone Z. The open elbow otherwise enters the chest.</summary>
+        public const float HardFreeRoll = 14f;
 
         public struct Sample
         {
-            public float ThighL, ThighR, KneeL, KneeR;
-            public float ArmPitchL, ArmPitchR, ArmYawL, ArmYawR;
+            public float ThighL, ThighR, KneeL, KneeR, ThighRollL, ThighRollR;
+            public float ArmPitchL, ArmPitchR, ArmYawL, ArmYawR, ArmRollL, ArmRollR;
             public float ElbowL, ElbowR;
             public float Hip, Spine, Head;
             public float FootL, FootR;
@@ -102,16 +106,22 @@ namespace Tag.Art
             float yawR = handLeft ? -HardFreeYaw : -HardHandYaw;
             float elbowL = handLeft ? HardHandElbow : HardFreeElbow;
             float elbowR = handLeft ? HardFreeElbow : HardHandElbow;
+            float rollL = handLeft ? 0f : HardFreeRoll;
+            float rollR = handLeft ? -HardFreeRoll : 0f;
             return new Sample
             {
                 ThighL = HardThigh,
                 ThighR = HardThigh,
+                ThighRollL = -HardThighRoll,
+                ThighRollR = HardThighRoll,
                 KneeL = HardKnee,
                 KneeR = HardKnee,
                 ArmPitchL = pitchL,
                 ArmPitchR = pitchR,
                 ArmYawL = yawL,
                 ArmYawR = yawR,
+                ArmRollL = rollL,
+                ArmRollR = rollR,
                 ElbowL = elbowL,
                 ElbowR = elbowR,
                 Hip = HardHip,

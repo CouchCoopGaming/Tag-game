@@ -17,8 +17,16 @@ namespace Tag.Art
         public const float OpenVy = -10f;
 
         public const float SwingArmPitch = -155f;
-        public const float SwingArmYaw = 16f;
-        public const float SwingElbow = -14f;
+        /// <summary>Spread that puts the rise arms beside the head. Yaw alone stays on the arm axis.</summary>
+        public const float SwingArmYaw = 140f;
+        /// <summary>
+        /// Bone Z. Negative so the left arm rolls out and the right arm rolls out.
+        /// The hands sit above the crown and outside the head.
+        /// </summary>
+        public const float SwingArmRoll = -56f;
+        public const float SwingElbow = VerbPoseClips.ElbowClear;
+        /// <summary>Knee spread on the rise. The tucked legs otherwise meet the spine.</summary>
+        public const float SwingThighRoll = 14f;
         public const float SwingThigh = 42f;
         public const float SwingKnee = -52f;
         public const float SwingHip = 6f;
@@ -45,8 +53,8 @@ namespace Tag.Art
 
         public struct Sample
         {
-            public float ThighL, ThighR, KneeL, KneeR;
-            public float ArmPitchL, ArmPitchR, ArmYawL, ArmYawR;
+            public float ThighL, ThighR, KneeL, KneeR, ThighRollL, ThighRollR;
+            public float ArmPitchL, ArmPitchR, ArmYawL, ArmYawR, ArmRollL, ArmRollR;
             public float ElbowL, ElbowR;
             public float Hip, Spine, Head;
         }
@@ -69,19 +77,25 @@ namespace Tag.Art
             float open = OpenAmount(verticalSpeed);
             float pitch = Mathf.Lerp(Mathf.Lerp(SwingArmPitch, TuckArmPitch, apex), OpenArmPitch, open);
             float yaw = Mathf.Lerp(Mathf.Lerp(SwingArmYaw, TuckArmYaw, apex), OpenArmYaw, open);
+            float roll = Mathf.Lerp(Mathf.Lerp(SwingArmRoll, 0f, apex), 0f, open);
             float elbow = Mathf.Lerp(Mathf.Lerp(SwingElbow, TuckElbow, apex), OpenElbow, open);
             float thigh = Mathf.Lerp(Mathf.Lerp(SwingThigh, TuckThigh, apex), OpenThigh, open);
             float knee = Mathf.Lerp(Mathf.Lerp(SwingKnee, TuckKnee, apex), OpenKnee, open);
+            float thighRoll = Mathf.Lerp(Mathf.Lerp(SwingThighRoll, 0f, apex), 0f, open);
             return new Sample
             {
                 ThighL = thigh,
                 ThighR = thigh - 4f * (1f - open),
+                ThighRollL = -thighRoll,
+                ThighRollR = thighRoll,
                 KneeL = knee,
                 KneeR = knee + 6f * (1f - open),
                 ArmPitchL = pitch,
                 ArmPitchR = pitch,
                 ArmYawL = yaw,
                 ArmYawR = yaw,
+                ArmRollL = -roll,
+                ArmRollR = roll,
                 ElbowL = elbow,
                 ElbowR = elbow,
                 Hip = Mathf.Lerp(Mathf.Lerp(SwingHip, TuckHip, apex), OpenHip, open),

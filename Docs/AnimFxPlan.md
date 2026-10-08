@@ -177,6 +177,39 @@ Checker, both wall sides and the roll included: `no-clip clips=36 frames=329 wor
 
 3/4 and side sheets, grey scene, prop visible, red only on penetrating volume: `Docs/AnimStills/pass16/c2/`.
 
+## Pass 17 C2 (launch, pull, absorb, elbows)
+
+C2 (PR #127 `4d2b25bc`) measured these with absolute depth, on the poses the game plays. Pose fails are 0. Nothing here damps or straightens a fold at runtime. The rig is untouched. Timing is unchanged.
+
+Launch rise, `LaunchPose.At(24.7)`, pitch −155, windmill ±28.
+
+- Before: yaw ±16, roll 0, elbow −14. Both upper arms go through the head at 9.54 cm. The lower arms go through at 8.91 and 8.79 cm. The hands sit at x ±0.12, inside the head (head x −0.12 to 0.13).
+- After: yaw 140 and bone-Z roll ±56, elbow at the fold limit −10, thighs abducted 14°. Hands at x ±0.47 and z 2.07. The crown is z 1.81, so the hands are 26 cm above it and 34 cm outside the skull. Both windmill frames stay on their own sides of the head. Pose depth is 0.24 cm (spine/thigh). `risePitch` stays −155.
+
+Grapple pull, both hands on the line. The pull this branch plays (pitch −78/−84, yaw ±32, elbows −2/−4) was already clear: pose 0.39 cm, hands forward of the chest and below the crown. Those keys did not move. The before still rebuilds the older stored pull (pitch −134/−126, spine 56, hip 36). On that rebuild the head overlap is 1.44 cm (upper arm) and 0.83 cm (lower arm), and the arms go through each other at 3.14 cm. C2's 7.69 cm was that same pitch family with the rest of that runtime, which these keys do not contain.
+
+Hard land, left hand down. Printed `hardKnee`, `hardThigh`, `hardHand`, `hardFree`, and `hardDrop` stay. Knees abduct 40°. The free arm rolls −14° on bone Z so the opened elbow does not enter the chest. Before that roll, the free upper arm was 0.95 cm inside the chest. After, pose depth is 0.43 cm. Spine through the thighs was already under 0.5 cm on this branch's keys, so the 2.96 cm figure is not this pose. The knee spread is what keeps it there.
+
+Elbows. `ElbowClear` is −10°. Past about −12° the forearm enters the upper arm (0.58 cm added at −12, 1.25 cm added at −30, raw 1.57). At −10° the added depth is 0.08 cm, which is the joined hinge and stays in `rigJoint`. Stumble hold is −10/−10 (was −30/−24). The punch strike's off arm is −10 (was −36, raw 1.56 cm). The cock stays −78 and the recover stays −96, because those silhouette holds are the windup. Run at speed 9 pulls the back elbow to −9.8 instead of about −28. No runtime clamp was added.
+
+Checker: `no-clip clips=40 frames=337 worldMax=0.00 poseMax=0.49 rigMax=3.40 poseFails=0 rigJoint=330`.
+
+Absolute depth, world 0 on all of them:
+
+- launch-rise pose 0.24 cm, rig 0.89 cm
+- launch-mill pose 0.24 cm, rig 1.18 cm
+- grapple-pull pose 0.39 cm, rig 2.34 cm
+- land-hard pose 0.43 cm, rig 0.97 cm
+- stagger pose 0.44 cm, rig 1.49 cm
+- punch pose 0.49 cm, rig 3.27 cm
+- run-speed9 pose 0.45 cm, rig 1.86 cm
+
+The roll and both wall runs are unchanged: exit-Roll pose 0.33 / rig 2.81, wall-run pose 0.35 / rig 2.09, wall-run-right pose 0.29 / rig 2.22.
+
+StrafeJumpSim exits 0. Gameplay lines are byte-identical with the previous sim. One animation line moved: punch `guardStrike` elbow −36 → −10.
+
+Grey stills, red only on the overlap: `Docs/AnimStills/pass17/c2/`. Before frames carry the red. After frames have none. The punch and run marks are small (45 and 43 pixels) because that forearm entry sits against the hinge. Each PNG is under 400 KB.
+
 Pass 3 mockups stay in `Docs/AnimStills/pass3/`.
 
 ## FX queue

@@ -23,11 +23,11 @@ namespace Tag.Art
         public const float ArmPitchL = 46f;
         public const float ArmYawL = -28f;
         public const float ArmRollL = 14f;
-        public const float ElbowL = -30f;
+        public const float ElbowL = VerbPoseClips.ElbowClear;
         public const float ArmPitchR = 34f;
         public const float ArmYawR = 24f;
         public const float ArmRollR = -12f;
-        public const float ElbowR = -24f;
+        public const float ElbowR = VerbPoseClips.ElbowClear;
         public const float ThighL = 28f;
         public const float ThighR = -16f;
         public const float KneeL = -34f;
