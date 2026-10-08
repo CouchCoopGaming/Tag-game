@@ -1,8 +1,9 @@
-"""FIBA markings on the 22 x 12 m street slab, measured from the real rims.
+"""FIBA markings on the 22 x 15 m street slab, measured from the rims.
 
-The hoops stay where they are: rim centres at z = ±9.7125. Lengths are not
-scaled. A full FIBA court is 15 m wide, so the 6.75 m arc is clipped by a
-corner line 0.90 m in from this slab's sideline. Line centres are 5 cm wide.
+The slab is a standard 15 m wide. Rim centres sit 1.575 m inside the baseline
+(z = ±9.425), which is where the hoop rim lands when the backboard face is
+1.20 m inside that baseline. The 6.75 m arc meets a straight corner line
+0.90 m in from the sideline. Line centres are 5 cm wide.
 """
 
 import math
@@ -10,11 +11,11 @@ import os
 import struct
 import zlib
 
-W = 12.0
+W = 15.0
 L = 22.0
 LINE = 0.05
-# Painted basket the hoop already uses. South is negative.
-RIM = 9.7125
+# Rim centre, 1.575 m inside the baseline at |z| = 11. South is negative.
+RIM = 9.425
 # 100 px per meter. Not a power of two; the importer must not rescale it.
 PX_PER_M = 100
 WP = int(W * PX_PER_M)
@@ -24,7 +25,8 @@ HP = int(L * PX_PER_M)
 Z_IN = L * 0.5 - LINE
 X_IN = W * 0.5 - LINE
 
-ASPHALT = (38, 38, 40)
+# One acrylic grey. Darker than the lines, lighter than the old asphalt camo.
+ACRYLIC = (118, 120, 116)
 KEY = (28, 58, 92)
 WHITE = (236, 236, 228)
 
@@ -209,26 +211,20 @@ def _dist_seg(x, z, x0, z0, x1, z1):
 
 
 def _worn(xm, z):
-    """Cracks and pale patches. abs() keeps the four-way mirror the checker expects."""
+    """Even acrylic, with a little wear in the keys and at center court.
+
+    abs() keeps the four-way mirror the checker expects. No cracks.
+    """
     ax, az = abs(xm), abs(z)
-    cracks = (
-        ((1.1, 1.6), (2.6, 2.9), (2.2, 4.3)),
-        ((3.4, 6.1), (4.5, 7.0)),
-        ((0.6, 8.4), (1.8, 9.2)),
-    )
-    for pts in cracks:
-        for i in range(len(pts) - 1):
-            if _dist_seg(ax, az, pts[i][0], pts[i][1], pts[i + 1][0], pts[i + 1][1]) < 0.016:
-                return (18, 18, 20)
-    n = _noise(ax, az)
-    wear = _noise(ax * 0.37, az * 0.31)
-    lift = 16 if wear > 0.78 else 0
-    if ((ax - 2.4) ** 2) / 1.4 + ((az - 7.2) ** 2) / 0.55 < 1.0:
-        lift += 12
+    key = max(0.0, 1.0 - ax / 2.55) * max(0.0, 1.0 - abs(az - 7.7) / 3.1)
+    center = max(0.0, 1.0 - ax / 2.15) * max(0.0, 1.0 - az / 2.15)
+    wear = max(key, center * 0.8)
+    grain = (_noise(ax, az) - 0.5) * 4.0
+    shade = wear * 12.0 + grain
     return (
-        int(ASPHALT[0] + n * 8 + lift),
-        int(ASPHALT[1] + n * 8 + lift),
-        int(ASPHALT[2] + n * 6 + lift),
+        max(0, min(255, int(ACRYLIC[0] - shade))),
+        max(0, min(255, int(ACRYLIC[1] - shade))),
+        max(0, min(255, int(ACRYLIC[2] - shade * 0.85))),
     )
 
 

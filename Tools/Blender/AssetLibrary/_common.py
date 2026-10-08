@@ -43,6 +43,10 @@ PALETTE = {
     "Lib_AsphaltPatch": ((0.07, 0.07, 0.072), 0.0, 0.18),
     "Lib_Brick": ((0.64, 0.32, 0.24), 0.0, 0.28),
     "Lib_Mortar": ((0.72, 0.70, 0.66), 0.0, 0.20),
+    # Grey-tan chinking. Darker than the log face so the groove reads as mortar.
+    "Lib_Chink": ((0.40, 0.36, 0.30), 0.0, 0.14),
+    # Flat fallback under the growth-ring texture on a log end.
+    "Lib_LogEnd": ((0.55, 0.38, 0.22), 0.0, 0.22),
     "Lib_Wood": ((0.62, 0.42, 0.24), 0.0, 0.32),
     "Lib_WoodDark": ((0.36, 0.22, 0.13), 0.0, 0.28),
     "Lib_Mulch": ((0.361, 0.227, 0.18), 0.0, 0.15),
@@ -105,12 +109,12 @@ TEXTURED = (
     "Lib_Brick", "Lib_Asphalt", "Lib_Wood", "Lib_WoodDark", "Lib_Concrete",
     "Lib_Siding", "Lib_Roof", "Lib_Soil", "Lib_Hydrant", "Lib_WoodWeather",
     "Lib_CourtDecal", "Lib_Bark", "Lib_MetalWorn", "Lib_ContainerRed", "Lib_ContainerBlue",
-    "Lib_CraneYellow",
+    "Lib_CraneYellow", "Lib_LogEnd",
 )
 NORMALS = (
     "Lib_Brick", "Lib_Water", "Lib_Concrete", "Lib_Wood", "Lib_WoodDark",
     "Lib_Asphalt", "Lib_Bark", "Lib_MetalWorn", "Lib_ContainerRed", "Lib_ContainerBlue",
-    "Lib_CraneYellow",
+    "Lib_CraneYellow", "Lib_LogEnd",
 )
 ROUGHNESS = (
     "Lib_Brick", "Lib_Hydrant", "Lib_WoodWeather", "Lib_Asphalt", "Lib_Wood",
@@ -1295,7 +1299,7 @@ def load_asset_modules():
     if ROOT not in sys.path:
         sys.path.insert(0, ROOT)
     skip = {
-        "_common", "build_all", "render_pass1", "render_pass2", "render_pass3", "render_pass4", "render_pass5", "render_pass6", "render_pass7", "render_pass8", "render_pass9", "render_pass10", "render_pass11", "render_pass12", "render_pass13", "render_pass14", "render_pass15", "render_pass16", "render_pass17", "render_pass18", "render_pass19",
+        "_common", "build_all", "render_pass1", "render_pass2", "render_pass3", "render_pass4", "render_pass5", "render_pass6", "render_pass7", "render_pass8", "render_pass9", "render_pass10", "render_pass11", "render_pass12", "render_pass13", "render_pass14", "render_pass15", "render_pass16", "render_pass17", "render_pass18", "render_pass19", "render_pass20",
         "write_unity", "_kit",
     }
     names = []
