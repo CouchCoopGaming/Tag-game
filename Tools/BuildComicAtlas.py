@@ -353,7 +353,11 @@ def compose_word(ss, spec):
     total = sum(widths) + gap * (n - 1)
     burst_box = outer_key.getbbox()
     burst_w = (burst_box[2] - burst_box[0]) if burst_box else int(size * 0.8)
-    target = min(int(burst_w * 0.82), int(size * 0.80))
+    # BAM and WHAM sit about 10% larger in the burst so they match POP and POW.
+    speed = bool(spec.get("speed"))
+    frac = 0.902 if speed else 0.82
+    cap = 0.88 if speed else 0.80
+    target = min(int(burst_w * frac), int(size * cap))
     if total > 0 and abs(total - target) > 2:
         s = target / float(total)
         styled = [im.resize((max(1, int(im.width * s)), max(1, int(im.height * s))), Image.Resampling.LANCZOS) for im in styled]
@@ -637,6 +641,162 @@ WORDS = [
 ]
 
 
+DIZZY_SIZE = 512
+DIZZY_PNG = os.path.join(ROOT, "Assets", "Art", "FX", "ComicDizzy.png")
+DIZZY_CS = os.path.join(ROOT, "Assets", "Scripts", "FX", "Verb", "ComicDizzy.cs")
+PASS5_DIR = os.path.join(ROOT, "Docs", "AnimStills", "pass5")
+
+DIZZY_OUTER = [
+    (0, 1.08), (18, 0.38), (36, 0.96), (54, 0.34),
+    (72, 1.04), (90, 0.40), (108, 0.90), (126, 0.32),
+    (144, 1.06), (162, 0.38), (180, 0.94), (198, 0.34),
+    (216, 1.02), (234, 0.36), (252, 0.92), (270, 0.32),
+    (288, 1.08), (306, 0.40), (324, 0.96), (342, 0.34),
+]
+DIZZY_INNER = [
+    (8, 0.96), (52, 0.40), (98, 1.02), (146, 0.38),
+    (194, 0.94), (242, 0.42), (290, 1.00), (338, 0.36),
+]
+
+
+def compose_dizzy():
+    size = 1024
+    canvas = Image.new("RGBA", (size, size), (0, 0, 0, 0))
+    outer, outer_key, inner, inner_key = burst_masks(
+        size, DIZZY_OUTER, DIZZY_INNER, 1.0, 1.0, 26, 14, 0.42, 0, 0)
+    paint_burst(
+        canvas, outer, outer_key, inner, inner_key,
+        (255, 196, 0, 255), (255, 64, 16, 255),
+        26, 10, 16, None)
+    return canvas.resize((DIZZY_SIZE, DIZZY_SIZE), Image.Resampling.LANCZOS)
+
+
+def write_dizzy(im):
+    os.makedirs(os.path.dirname(DIZZY_CS), exist_ok=True)
+    im.save(DIZZY_PNG, "PNG", optimize=True)
+    raw = open(DIZZY_PNG, "rb").read()
+    b64 = base64.b64encode(raw).decode("ascii")
+    lines = [
+        "namespace Tag.FX",
+        "{",
+        "    /// <summary>",
+        "    /// One comic dizzy star. Same burst, outline, and print dots as the words.",
+        "    /// Built by Tools/BuildComicAtlas.py. Not a fifth atlas cell.",
+        "    /// </summary>",
+        "    public static class ComicDizzy",
+        "    {",
+        "        public const int Size = %d;" % DIZZY_SIZE,
+        "",
+        "        public static byte[] Png()",
+        "        {",
+        "            return System.Convert.FromBase64String(Data);",
+        "        }",
+        "",
+        "        const string Data =",
+    ]
+    for i in range(0, len(b64), 120):
+        lines.append('            "' + b64[i:i + 120] + '" +')
+    lines[-1] = lines[-1][:-2] + ";"
+    lines += ["    }", "}", ""]
+    with open(DIZZY_CS, "w") as f:
+        f.write("\n".join(lines))
+    print("dizzy", len(raw))
+
+
+def write_pass5(cells, dizzy):
+    os.makedirs(PASS5_DIR, exist_ok=True)
+    bg = Image.new("RGBA", (DIZZY_SIZE, DIZZY_SIZE), (28, 22, 40, 255))
+    bg.alpha_composite(dizzy)
+    bg.save(os.path.join(PASS5_DIR, "dizzy-star.png"))
+
+    label = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 28)
+    title = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 32)
+    small = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 22)
+    pair = Image.new("RGBA", (CELL * 2, CELL + 72), (18, 16, 28, 255))
+    pair.paste(cells[2], (0, 72), cells[2])
+    pair.paste(cells[3], (CELL, 72), cells[3])
+    draw = ImageDraw.Draw(pair)
+    draw.text((24, 18), "BAM! and WHAM!, about 10% larger in the burst", font=title, fill=(255, 236, 180, 255))
+    pair.save(os.path.join(PASS5_DIR, "bam-wham.png"))
+
+    sheet = Image.new("RGBA", (1920, 1080), (22, 18, 32, 255))
+    d = ImageDraw.Draw(sheet)
+    d.text((36, 22), "Pass 5   landing ring, roll swirl, dash ghosts, rope, dizzy stars, tag rim, wet drips", font=title, fill=(255, 236, 180, 255))
+    panels = [
+        (36, 80, 600, 460, "Landing tiers"),
+        (660, 80, 600, 460, "Roll swirl and dash ghosts"),
+        (1284, 80, 600, 460, "Rope sag, hook, snap"),
+        (36, 570, 600, 460, "Dizzy stars"),
+        (660, 570, 600, 460, "Tag-back rim"),
+        (1284, 570, 600, 460, "Wet drips and Effects"),
+    ]
+    for x, y, w, h, title in panels:
+        d.rounded_rectangle((x, y, x + w, y + h), radius=16, fill=(36, 30, 52, 255), outline=(90, 70, 110, 255), width=2)
+        d.text((x + 20, y + 16), title, font=label, fill=(255, 244, 210, 255))
+
+    # Light / medium / heavy rings. Radii follow LandRing * (0.55 + 0.45 * tier).
+    lands = [("Light", 8.0, 0.25, (210, 190, 150)), ("Medium", 18.0, 0.55, (196, 160, 96)), ("Heavy", 36.5, 1.0, (170, 120, 64))]
+    gate = 36.504
+    for i, (name, impact, tier, col) in enumerate(lands):
+        t = min(1.35, impact / gate)
+        radius = (0.45 + t * 0.85) * (0.55 + 0.45 * tier)
+        cx = 140 + i * 180
+        cy = 300
+        rad = int(28 + radius * 70)
+        d.ellipse((cx - rad, cy - int(rad * 0.42), cx + rad, cy + int(rad * 0.42)), outline=col + (255,), width=4)
+        bits = 4 + int(t * 8)
+        for k in range(min(bits, 12)):
+            a = k / 12.0 * math.tau
+            px = cx + math.cos(a) * (rad + 16)
+            py = cy + math.sin(a) * (rad * 0.45 + 10)
+            d.ellipse((px - 4, py - 4, px + 4, py + 4), fill=col + (255,))
+        d.text((cx - 36, 468), name, font=small, fill=(230, 220, 200, 255))
+
+    # Swirl along a travel line.
+    for k in range(8):
+        x = 720 + k * 28
+        y = 250 + int(math.sin(k * 0.9) * 28)
+        d.ellipse((x, y, x + 22, y + 14), fill=(168, 140, 96, 180))
+    d.text((700, 190), "roll dust", font=small, fill=(210, 190, 160, 255))
+
+    ghost_cols = [(242, 71, 82), (64, 140, 255), (255, 209, 38), (64, 230, 115)]
+    for i, col in enumerate(ghost_cols):
+        x = 760 + i * 70
+        y = 360
+        d.rounded_rectangle((x, y, x + 36, y + 78), radius=8, fill=col + (140,))
+    d.text((700, 456), "4 ghosts, player color", font=small, fill=(210, 200, 220, 255))
+
+    # Rope from hand to hook, sagging.
+    rope = [(1340, 360), (1460, 400), (1580, 300), (1720, 220)]
+    d.line(rope, fill=(230, 210, 150, 255), width=4)
+    d.ellipse((1704, 204, 1736, 236), fill=(255, 220, 80, 255))
+    d.line([(1400, 430), (1400, 470)], fill=(255, 230, 120, 255), width=3)
+    d.text((1320, 168), "sag and wobble", font=small, fill=(230, 220, 180, 255))
+    d.text((1660, 248), "hook", font=small, fill=(255, 230, 140, 255))
+    d.text((1360, 488), "release snap", font=small, fill=(255, 230, 140, 255))
+
+    star = dizzy.resize((150, 150), Image.Resampling.LANCZOS)
+    for i, (sx, sy) in enumerate(((120, 760), (250, 700), (360, 780))):
+        sheet.alpha_composite(star, (sx, sy))
+    d.text((80, 940), "same art as the words, 0.25 s", font=small, fill=(255, 220, 140, 255))
+
+    body = (860, 780)
+    d.rounded_rectangle((body[0], body[1], body[0] + 70, body[1] + 150), radius=16, fill=(80, 90, 120, 255))
+    d.ellipse((body[0] + 8, body[1] - 48, body[0] + 62, body[1] + 6), fill=(210, 170, 140, 255))
+    d.ellipse((body[0] - 28, body[1] + 10, body[0] + 98, body[1] + 70), outline=(242, 71, 82, 255), width=4)
+    d.ellipse((body[0] - 18, body[1] + 70, body[0] + 88, body[1] + 130), outline=(242, 71, 82, 180), width=3)
+    d.text((760, 960), "player color, one second", font=small, fill=(255, 180, 180, 255))
+
+    for k in range(6):
+        x = 1480 + (k % 3) * 28
+        y = 760 + k * 28
+        d.ellipse((x, y, x + 10, y + 16), fill=(70, 130, 190, 230))
+    d.text((1360, 690), "wet wall plants", font=small, fill=(160, 200, 230, 255))
+    d.rounded_rectangle((1360, 900, 1820, 980), radius=12, fill=(48, 40, 64, 255))
+    d.text((1380, 924), "Effects    Off     Low     Full", font=label, fill=(255, 236, 180, 255))
+    sheet.convert("RGB").save(os.path.join(PASS5_DIR, "owned-fx.png"), "PNG")
+
+
 def report(cells):
     for spec, im in zip(WORDS, cells):
         a = np.asarray(im.split()[-1])
@@ -663,6 +823,9 @@ def main():
     raw = open(PNG_PATH, "rb").read()
     write_cs(raw)
     write_stills(cells)
+    dizzy = compose_dizzy()
+    write_dizzy(dizzy)
+    write_pass5(cells, dizzy)
     bg = Image.new("RGBA", (CELL, CELL), (32, 24, 48, 255))
     bg.alpha_composite(cells[1])
     bg.save("/tmp/comic-pow.png")

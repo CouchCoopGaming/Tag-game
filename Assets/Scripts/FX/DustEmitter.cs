@@ -34,6 +34,7 @@ namespace Tag.FX
             ComicBurst.Ensure();
             Pass5Burst.Ensure();
             VerbFxHost.Ensure(host);
+            VerbOwnedFx.Ensure(host);
             Pass5Host.Ensure(host);
         }
 

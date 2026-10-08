@@ -224,6 +224,19 @@ Hands and feet meet the wall, the lip, and the rail. Climb speed, slip speed, an
 - A wall run leans into the wall more as you go faster, up to the same 20° at full speed. The lean eases in and out. The inner foot stays on the wall. Try it: join a wall run slowly, then at speed, then jump off.
 - Sliding down a wall drags the hands and adds a small wobble, like friction. The slip is still 3.7. Try it: climb, then pull back.
 
+## Motion, ninth pass
+
+The wall jump, the rope, the zip, the launch pad, a landing, the dash flash, a hard turnaround, and a punch while you run all ease instead of snapping. Speeds, the jump, and the dash length are the same.
+
+- A wall jump used to hold the shove, then throw the arms into the tuck in one step of about 36°. The arms now arc across the same shove and the same ease, and the biggest step is about 17°. Try it: wall-run, then jump off, and watch the arms through the push.
+- On a rope the chest used to kink about 70° off the line. It now lies along the rope, and letting go eases that line off. The pull is still one click, and the drop is still a double-click. Try it: latch a grapple, hang, then double-click to drop.
+- Grabbing a zip brings the hands up to the cable. They used to stop short by about 58°. Dropping off used to snap the arms in one frame (about 128°). The drop now eases, and the biggest step is about 53°. Ride speed is still 14. Try it: catch a zip, ride it, then let go.
+- A launch pad used to throw the arms into the full swing on the first frame (about 155°). They now open over a sixth of a second, and the knees soften on the way up. The pad wait is still 0.3 s. Try it: run over a launch pad and watch the takeoff.
+- Landing while you sprint used to fold the thighs about 104° off the stride. The legs now keep the stride, and the give stays in the knees. A hop that is faster than one frame still skips the thud. Try it: sprint off a ledge and land still running.
+- The air-dash flash used to pop on at full strength. It now opens over a short beat, and the ribbons follow it. The dash is still a tenth of a second. Try it: air dash and watch the flash on the first frames.
+- A hard stick reversal used to flip the stride in one frame, about 83° at a sprint. The legs now cross over about a seventh of a second. You still turn with the camera immediately. Try it: sprint, then snap the stick backward.
+- A punch or a tag while you run leans the chest so the fist comes forward about 13 cm. Standing still keeps the old strike. Reach and the lunge are unchanged. Try it: sprint and punch, then punch while you stand.
+
 ## Animation exits and the landing roll
 
 Each move now has a short recovery you can see as it ends. The body eases back into the run, the idle, or the air pose. Jump, slide, punch, dash, or lunge peels that recovery off in about six hundredths of a second, and the new move shows the same frame. Nothing here changes speed, coyote, cling, or the slide.
@@ -284,3 +297,27 @@ The wall jump, the rope, the zip, the launch pad, a landing, the dash flash, a h
 - The air-dash flash used to pop on at full strength. It now opens over a short beat, and the ribbons follow it. The dash is still a tenth of a second. Try it: air dash and watch the flash on the first frames.
 - A hard stick reversal used to flip the stride in one frame, about 83° at a sprint. The legs now cross over about a seventh of a second. You still turn with the camera immediately. Try it: sprint, then snap the stick backward.
 - A punch or a tag while you run leans the chest so the fist comes forward about 13 cm. Standing still keeps the old strike. Reach and the lunge are unchanged. Try it: sprint and punch, then punch while you stand.
+
+## Landing ring, dizzy stars, and a wet wall
+
+BAM! and WHAM! sit a little larger in their bursts, and the big moves you own in this pass read more clearly. Speed, slide, and the camera stay as they were.
+
+- BAM! and WHAM! are about a tenth bigger inside the explosion, so they match POP and POW. Try it: tag the dummy and look at the letters against the burst.
+- A small hop stamps a small ring. A medium fall stamps a wider one and throws more debris. A heavy fall, and the shoulder roll, stamp the full ring. The roll also swirls dust along the path. Try it: step off a curb, then a roof, then fall about 19 meters while running.
+- A dash leaves a short trail of ghosts in your color. Low effects draws one fewer. Try it: dash, then set Effects to Low and dash again.
+- The rope still sags and wobbles. The hook chips the surface, and letting go snaps. Try it: click to pull, then double-click to release.
+- A stagger puts three comic stars over the head for the same quarter second. They use the same burst, outline, and print dots as the words. Try it: let the dummy punch you.
+- Tag-back still lasts one second. A colored rim pulses on the safe body in every split pane. Try it: get tagged, then look at the body before you can be tagged again.
+- A wet wall drips when a foot plants. Try it: wall-run a surface named wet.
+- Pause → Settings → Effects is still Off, Low, or Full. Off and Reduced flashing hide these trails.
+
+## Softer trails and five quieter exits
+
+The landing ring, the dust, the dash ghosts, and the wet drips now read as printed art instead of a placeholder. Speed, slide, and the camera stay as they were.
+
+- A landing stamps a soft ring in the color of the ground. A heavy fall cracks that ring. Debris is a short puff that grows and fades. The shoulder roll leaves the same puff along the path. Try it: hop, then fall hard onto concrete, then onto dirt.
+- A dash leaves a tinted afterimage with a bright rim. It fades out instead of popping off. Try it: dash.
+- The rope still sags. The hook chips the surface with a small cracked stamp, and letting go eases the snap away. Try it: click to pull, then double-click to release.
+- Dizzy stars grow in and fade out over the same quarter second. Try it: let the dummy punch you.
+- A wet wall drips a real droplet when a foot plants. Try it: wall-run a surface named wet.
+- Leaving a zip, a hard standing land, a wall jump, a climb, or a mantle eases in a little longer. Jump, slide, punch, dash, and lunge still peel an exit off in the same short window.

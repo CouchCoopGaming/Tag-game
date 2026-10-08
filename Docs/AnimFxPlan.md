@@ -2,7 +2,7 @@
 
 Pass 1 is the exit poses and the terminal landing roll. Pass 2 deepens those poses. Pass 3 is running dust and comic contact words. Pass 4 redraws those words as a classic comic burst and adds the verb FX layer. Pass 5 refits those exits onto the live verbs and adds the remaining FX. Exits, the roll, and the FX stay visual: they do not change speed, stun, coyote, cling, slide, or the camera.
 
-## Pass 5 (this branch)
+## Pass 5 exit fit (this branch)
 
 - Exit first frames join the live end of the verb over 0.22 s, then the authored recovery plays. The wall-jump exit waits out the shove arc (0.27 s) and joins the risen pose, so the arc is not covered. Zip arms sit on the cable (−158). Grapple arrive and release keep the left-hand pull, and the chest stays on the rope when the line was live. A pad landing joins the open swing with the softened knees. A moving punch keeps the chest lead. A sprint landing keeps the stride in the thighs. Climb top-out meets the climb, or the mantle land when the exit came from a mantle. Vault and mantle start on that land. The roll and the soft land open in the fall pose, then the shoulder turn plays. Root spin, pitch, roll, and drop are the authored ones, so the roll orbit is unchanged. Stagger and tag-back are not joined.
 - Hands on a climb top-out, vault, or mantle stay on the lip through the first 28% and leave by 55%. A lip ray wins. If it misses, the hands use the real ledge stand, offset along the lip so they do not stack, the same 8 cm back from the face the climb uses. A roll, a near-stop absorb, and a heavy soft land put a palm on the ground. A planted sole pins its XZ and only follows the ground in Y, so the foot does not skate while the capsule keeps its speed. Skate at a full pin is 0 cm.
@@ -35,6 +35,25 @@ Pass 1 is the exit poses and the terminal landing roll. Pass 2 deepens those pos
 - Sprint and faster leave world-space wisps on the body.
 - Comic words, redrawn before the other effects: each word has its own jagged burst, a thick black outline, a second burst in a contrasting color, and a clear Ben-Day screen on both colors. Letters are the OFL font Bangers (`Assets/Art/FX/Fonts/Bangers-Regular.ttf`, license in `OFL.txt`): chunky, slanted, tight on one arch, a thick black stroke with a thin white inner stroke, an extruded shadow, and a highlight. The word fills most of the burst and crosses the inner edge. Each letter turns at most 6°. BAM and WHAM also throw speed lines behind the burst. The pop goes 0 to 1.25 to 1.0 inside 0.05 s, wobbles a little, then fades by 0.45 s. Cells are 1024 and sampled bilinear. Whole-word tilt stays within ±12°. Same toggle, pool, and Reduced flashing switch.
 - Camera fov pop, shake, and slow motion stay 0. No hitstop. Stills are in `Docs/AnimStills/pass4/` (`comic-before.png`, `comic-after.png`, `comic-park.png`, `verb-fx.png`).
+
+## Pass 5 (this branch)
+
+- BAM! and WHAM! are about 10% larger inside their bursts so they match POP and POW. The four-cell atlas is unchanged.
+- A hard landing grows a ring and a debris flick with the light, medium, and heavy fall tiers. The shoulder roll swirls dust along the travel. Both live in `VerbOwnedFx`.
+- A dash leaves 4 ghosts at Full and 3 at Low, in the player color, for the 0.10 s dash.
+- The rope still sags and wobbles. The hook chips the surface, and letting go snaps.
+- A stagger shows three comic dizzy stars, the same burst, outline, and print dots as the words, for the existing 0.25 s.
+- Tag-back keeps its 1.0 s. A soft rim in the player color pulses in every split pane. It is not a light.
+- A wet wall drips on the foot plant. The scuff streaks stay with the other trails.
+- Pause → Settings → Effects is still Off, Low, or Full. Off and Reduced flashing hide this layer. Low draws fewer ghosts and particles.
+- Stills are in `Docs/AnimStills/pass5/` (`owned-fx.png`, `dizzy-star.png`, `bam-wham.png`).
+
+## Pass 6 (this branch)
+
+- Dust puffs are an 8-frame flipbook. The landing ring is a soft decal, and a heavy fall uses the cracked variant for that surface (grass, dirt, concrete, wood, metal, wet). Wet plants use a drip sprite. Dash ghosts use an afterimage shader with a fresnel rim and the player color. Art is project-owned, in `Assets/Resources/FX`.
+- Alpha and scale ease in and out. A card starts at 0 and ends at 0.
+- Zip drop, the hands-down absorb, wall jump, climb top-out, and mantle ease in over 0.16 s. The other exits keep the 0.08 s onset. Cancel stays 0.06 s. Durations stay put.
+- Rendered stills are in `Docs/AnimStills/pass6/`.
 
 Pass 3 mockups stay in `Docs/AnimStills/pass3/`.
 
