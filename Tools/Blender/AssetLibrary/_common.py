@@ -68,6 +68,8 @@ PALETTE = {
     "Lib_WoodWeather": ((0.45, 0.38, 0.28), 0.0, 0.18),
     "Lib_Lamp": ((1.0, 0.86, 0.55), 0.0, 0.90),
     "Lib_Window": ((0.14, 0.20, 0.26), 0.04, 0.82),
+    # Display glass. Dark, slightly metallic, transmissive, and not a light panel.
+    "Lib_ShopGlass": ((0.06, 0.09, 0.12), 0.22, 0.92),
     "Lib_WindowLit": ((0.55, 0.36, 0.16), 0.0, 0.40),
     "Lib_PaintCream": ((0.86, 0.78, 0.66), 0.0, 0.32),
     "Lib_PaintTeal": ((0.10, 0.36, 0.40), 0.0, 0.30),
@@ -880,6 +882,11 @@ def _ensure_materials():
         if name == "Lib_Window" and "Transmission Weight" in bsdf.inputs:
             bsdf.inputs["Transmission Weight"].default_value = 0.55
             bsdf.inputs["Roughness"].default_value = 0.06
+        if name == "Lib_ShopGlass" and "Transmission Weight" in bsdf.inputs:
+            bsdf.inputs["Transmission Weight"].default_value = 0.48
+            bsdf.inputs["Roughness"].default_value = 0.07
+            if "IOR" in bsdf.inputs:
+                bsdf.inputs["IOR"].default_value = 1.45
 
 
 def _object_from_geo(geo, name):
@@ -1263,7 +1270,7 @@ def load_asset_modules():
     if ROOT not in sys.path:
         sys.path.insert(0, ROOT)
     skip = {
-        "_common", "build_all", "render_pass1", "render_pass2", "render_pass3", "render_pass4", "render_pass5",
+        "_common", "build_all", "render_pass1", "render_pass2", "render_pass3", "render_pass4", "render_pass5", "render_pass6",
         "write_unity", "_kit",
     }
     names = []

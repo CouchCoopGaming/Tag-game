@@ -99,9 +99,10 @@ def _fit_holes(span, wall_h, kind):
     open_w = span - SHOP_PIER * 2
     cy = (0.04 + SHOP_HEAD) * 0.5
     holes = [(0.0, cy, open_w, SHOP_HEAD - 0.04, False, "opening")]
-    win_bot = 3.68
+    # Above the taller sign band and the cornice. Short diners keep a parapet instead of a slit window.
+    win_bot = 3.96
     win_top = wall_h - 0.26
-    if win_top - win_bot >= 0.62:
+    if win_top - win_bot >= 0.50:
         if wall_h > 5.5:
             wh = 1.15
             wcy = wall_h - 0.30 - wh * 0.5
@@ -392,7 +393,7 @@ def _dress_storefront(g, cols, axis, origin, inward, span, profile, style, lod, 
     gh = glass_top - glass_bot
     gcy = (glass_top + glass_bot) * 0.5
     for i, (a0, a1) in enumerate(bays):
-        _c, _s = _box_ax(g, axis, (a0 + a1) * 0.5, gcy, glass_n, (a1 - a0) - 0.05, gh - 0.04, 0.012, "Lib_Window")
+        _c, _s = _box_ax(g, axis, (a0 + a1) * 0.5, gcy, glass_n, (a1 - a0) - 0.05, gh - 0.04, 0.012, "Lib_ShopGlass")
         _col_box(cols, "Col_Glass", _c, ((a1 - a0) - 0.08, gh - 0.08, 0.008) if axis == "z" else (0.008, gh - 0.08, (a1 - a0) - 0.08))
         if lod < 2:
             _box_ax(g, axis, a0, gcy, _street(origin, inward, 0.06), 0.04, gh, 0.04, mullion)
@@ -401,13 +402,38 @@ def _dress_storefront(g, cols, axis, origin, inward, span, profile, style, lod, 
     if bays and lod < 2:
         last = bays[-1][1]
         _box_ax(g, axis, last, gcy, _street(origin, inward, 0.06), 0.04, gh, 0.04, mullion)
+    # Shelves and a dark interior card behind the glass, clear of the door recess.
+    shelf_n = _street(origin, inward, -0.50)
+    for a0, a1 in bays:
+        if a1 - a0 < 0.50:
+            continue
+        bay_w = (a1 - a0) - 0.08
+        for sy in (1.08, 1.58):
+            _c, _s = _box_ax(g, axis, (a0 + a1) * 0.5, sy, shelf_n, bay_w, 0.028, 0.22, "Lib_Wood")
+            along = bay_w - 0.06
+            if axis == "z":
+                _col_box(cols, "Col_Shelf", _c, (along, 0.016, 0.14))
+            else:
+                _col_box(cols, "Col_Shelf", _c, (0.14, 0.016, along))
+        if lod == 0:
+            goods_n = _street(origin, inward, -0.30)
+            _box_ax(
+                g, axis, a0 + (a1 - a0) * 0.32, 1.20, goods_n,
+                min(0.26, (a1 - a0) * 0.32), 0.16, 0.14, "Lib_Orange",
+            )
+    card_n = _street(origin, inward, -0.82)
+    _c, _s = _box_ax(g, axis, 0.0, 1.28, card_n, max(0.4, half * 1.55), 1.50, 0.02, "Lib_Interior")
+    if axis == "z":
+        _col_box(cols, "Col_Interior", _c, (max(0.3, half * 1.45), 1.40, 0.012))
+    else:
+        _col_box(cols, "Col_Interior", _c, (0.012, 1.40, max(0.3, half * 1.45)))
     # Recessed door, jambs, and a transom in the storefront plane.
     dh = 2.00
     _c, _s = _box_ax(g, axis, dc, 0.05 + dh * 0.5, door_n, door_w - 0.08, dh, 0.045, spec["door_mat"])
     _col_box(cols, "Col_Door", _c, (door_w - 0.12, dh - 0.08, 0.03) if axis == "z" else (0.03, dh - 0.08, door_w - 0.12))
     if lod == 0:
         lite_n = _street(origin, inward, -0.145)
-        _box_ax(g, axis, dc, 1.45, lite_n, door_w * 0.55, 0.70, 0.012, "Lib_Window")
+        _box_ax(g, axis, dc, 1.45, lite_n, door_w * 0.55, 0.70, 0.012, "Lib_ShopGlass")
         _box_ax(g, axis, dc + door_w * 0.30, 1.05, _street(origin, inward, -0.14), 0.035, 0.12, 0.02, "Lib_Brass")
     # Jambs from the glass plane back to the door. They stay inside the opening.
     jamb_n = _street(origin, inward, -0.05)
@@ -417,30 +443,35 @@ def _dress_storefront(g, cols, axis, origin, inward, span, profile, style, lod, 
     _box_ax(g, axis, dc, 2.16, jamb_n, door_w - 0.02, 0.045, jamb_d, profile["trim"])
     th = glass_top - 2.20
     if th > 0.08:
-        _c, _s = _box_ax(g, axis, dc, 2.20 + th * 0.5, glass_n, door_w - 0.08, th - 0.03, 0.012, "Lib_Window")
+        _c, _s = _box_ax(g, axis, dc, 2.20 + th * 0.5, glass_n, door_w - 0.08, th - 0.03, 0.012, "Lib_ShopGlass")
         _col_box(cols, "Col_Transom", _c, (door_w - 0.14, max(0.04, th - 0.06), 0.008) if axis == "z" else (0.008, max(0.04, th - 0.06), door_w - 0.14))
         _box_ax(g, axis, dc, 2.175, _street(origin, inward, 0.065), door_w, 0.04, 0.035, mullion)
-    # Sign band, then a brick string course and a cornice between the floors.
-    sign_w = min(span * 0.72, 4.6 if style == "diner" else 3.4)
-    sign_n = _street(origin, inward, 0.175)
-    _c, _s = _box_ax(g, axis, 0.0, 2.88, sign_n, sign_w, 0.42, 0.055, spec["sign_mat"])
-    _col_box(cols, "Col_Sign", _c, (sign_w - 0.08, 0.32, 0.04) if axis == "z" else (0.04, 0.32, sign_w - 0.08))
+    # Sign band. Letters are about 2.5x the pass-5 size, on a dark plate wider than the board.
+    # Awning high edge is y=2.48. Backing starts at 2.52. Cornice stays under the upstairs sill.
+    sign_w = min(span * 0.78, 5.2 if style == "diner" else 4.2)
+    back_w = min(span - 0.20, sign_w + 0.28)
+    back_n = _street(origin, inward, 0.148)
+    sign_n = _street(origin, inward, 0.198)
+    _c, _s = _box_ax(g, axis, 0.0, 2.98, back_n, back_w, 0.92, 0.030, "Lib_SteelDark")
+    _col_box(cols, "Col_SignBack", _c, (back_w - 0.08, 0.82, 0.018) if axis == "z" else (0.018, 0.82, back_w - 0.08))
+    _c, _s = _box_ax(g, axis, 0.0, 2.98, sign_n, sign_w, 0.74, 0.048, spec["sign_mat"])
+    _col_box(cols, "Col_Sign", _c, (sign_w - 0.08, 0.64, 0.030) if axis == "z" else (0.030, 0.64, sign_w - 0.08))
     if lod == 0 and profile.get("sign"):
         yaw = 0.0 if axis == "z" else (90.0 if inward < 0.0 else -90.0)
-        text_n = _street(origin, inward, 0.22)
-        loc = (0.0, 2.88, text_n) if axis == "z" else (text_n, 2.88, 0.0)
-        g.text(profile["sign"], loc, 0.24, spec["text_mat"], extrude=0.006, yaw=yaw)
+        text_n = _street(origin, inward, 0.255)
+        loc = (0.0, 2.98, text_n) if axis == "z" else (text_n, 2.98, 0.0)
+        g.text(profile["sign"], loc, 0.62, spec["text_mat"], extrude=0.006, yaw=yaw)
     run0 = -span * 0.5 + 0.06 + stop_neg
     run1 = span * 0.5 - 0.06 - stop_pos
     if run1 - run0 > 0.8:
         mid = (run0 + run1) * 0.5
         rw = run1 - run0
-        _c, _s = _box_ax(g, axis, mid, 3.22, _street(origin, inward, 0.165), rw, 0.14, 0.07, "Lib_Brick")
-        _col_box(cols, "Col_String", _c, (rw - 0.08, 0.08, 0.04) if axis == "z" else (0.04, 0.08, rw - 0.08))
-        _c, _s = _box_ax(g, axis, mid, 3.44, _street(origin, inward, 0.21), rw, 0.12, 0.12, "Lib_Concrete")
-        _col_box(cols, "Col_Cornice", _c, (rw - 0.08, 0.07, 0.07) if axis == "z" else (0.07, 0.07, rw - 0.08))
+        _c, _s = _box_ax(g, axis, mid, 3.56, _street(origin, inward, 0.165), rw, 0.12, 0.06, "Lib_Brick")
+        _col_box(cols, "Col_String", _c, (rw - 0.08, 0.07, 0.035) if axis == "z" else (0.035, 0.07, rw - 0.08))
+        _c, _s = _box_ax(g, axis, mid, 3.74, _street(origin, inward, 0.21), rw, 0.11, 0.10, "Lib_Concrete")
+        _col_box(cols, "Col_Cornice", _c, (rw - 0.08, 0.06, 0.06) if axis == "z" else (0.06, 0.06, rw - 0.08))
         if lod < 2:
-            _box_ax(g, axis, mid, 3.54, _street(origin, inward, 0.175), rw, 0.05, 0.06, profile["trim"])
+            _box_ax(g, axis, mid, 3.86, _street(origin, inward, 0.175), rw, 0.05, 0.05, profile["trim"])
     _awning_fabric(g, cols, axis, origin, inward, -half + 0.02, half - 0.02, profile["awning"], lod)
 
 
