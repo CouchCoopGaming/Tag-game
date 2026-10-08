@@ -105,6 +105,9 @@ MODULES = (
     "sk_kiosk_charge",
     "sk_cafe_set",
     "sk_awning_door",
+    "sk_fence_chain",
+    "sk_fence_iron",
+    "sk_scaffold_bay",
 )
 
 

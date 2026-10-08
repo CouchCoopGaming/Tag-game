@@ -74,6 +74,11 @@ PASSES = {
         ("cafe_set", "CafeSet_Bistro", 24.0, (-1.55, 0.0, 0.2), 200.0),
         ("awning_door", "Awning_Door", 20.0, (-2.3, 0.0, 0.4), 200.0),
     ),
+    6: (
+        ("fence_chain", "Fence_ChainGate", 18.0, (-2.0, 0.0, 0.8), 200.0),
+        ("fence_iron", "Fence_Iron", 16.0, (-1.8, 0.0, 0.7), 200.0),
+        ("scaffold_bay", "Scaffold_Bay", 22.0, (-1.8, 0.0, 0.4), 200.0),
+    ),
 }
 
 
@@ -112,6 +117,9 @@ def _load(names):
         "Kiosk_Charge": "sk_kiosk_charge",
         "CafeSet_Bistro": "sk_cafe_set",
         "Awning_Door": "sk_awning_door",
+        "Fence_ChainGate": "sk_fence_chain",
+        "Fence_Iron": "sk_fence_iron",
+        "Scaffold_Bay": "sk_scaffold_bay",
     }
     for name in names:
         module = importlib.import_module(stems[name])
