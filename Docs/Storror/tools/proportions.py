@@ -1,9 +1,13 @@
 """Aggregate body proportions + joint ROM from extracted clips; compare to Hier v0.7.8 rig."""
 import json, glob, os, math, numpy as np
-ROOT='/workspace/storror'
+ROOT=os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 EXCLUDE={}
 # windows inside a clip that are known-bad (camera whip / subject leaving frame), from contact sheets + root-jump scan
-BAD_WINDOWS={'05_window_jump_land_run':[(184.25,184.5)]}
+# Times are absolute seconds, matching times_s. Clip 17's first 0.45 s is a noisy
+# small figure; clip 19's labels flip after ~1.6 s (48.0 + 1.6).
+BAD_WINDOWS={'05_window_jump_land_run':[(184.25,184.5)],
+             '17_slide_slope_crouch':[(13.30,13.75)],
+             '19_vertical_wallrun_side':[(49.60,50.40)]}
 VIS=0.70
 SEG={'upper_arm':[(11,13),(12,14)],'lower_arm':[(13,15),(14,16)],'thigh':[(23,25),(24,26)],'shin':[(25,27),(26,28)],
      'shoulder_width':[(11,12)],'hip_width':[(23,24)],'ear_to_ear':[(7,8)],'foot_heel_to_toe':[(29,31),(30,32)],
