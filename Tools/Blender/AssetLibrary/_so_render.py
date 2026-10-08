@@ -137,6 +137,9 @@ PASSES = {
         ("traffic_signal", "TrafficSignal_Mast", 18.0, (-1.15, 0.0, 1.05), 200.0),
         ("ped_signal", "PedSignal_Crosswalk", 24.0, (-0.95, 0.0, 0.55), 200.0),
     ),
+    19: (
+        ("mail_drop", "MailDrop_Corner", 180.0, (0.90, 0.0, 0.05), 20.0),
+    ),
 }
 
 # Pass 15 sits the prop on a sidewalk panel. Low camera, aim below center,
@@ -154,6 +157,8 @@ _FRAME15 = {
     "bus_shelter": (0.72, 11.0, 158.0, 0.42, 0.58, 0.36, 8.20),
     "traffic_signal": (0.78, 8.0, 38.0, 0.55, 0.70, 0.42, 9.0),
     "ped_signal": (0.62, 12.0, 36.0, 0.42, 0.48, 0.32, 4.20),
+    # Front faces the sun. 158 is a front 3/4; the side still is a separate shot.
+    "mail_drop": (0.70, 12.0, 158.0, 0.40, 0.58, 0.34, 3.60),
 }
 
 # Pass 11 frames the subject at about 70% and aims at the middle of the bounds.
@@ -410,6 +415,20 @@ def main():
         if PASS >= 11 and key == "sign_street":
             print("SHOT", key + "_blades")
             _blades(found[name], os.path.join(STILL_DIR, key + "_blades.png"), yaw=28.0)
+        if PASS == 19 and key == "mail_drop":
+            print("SHOT", key + "_side")
+            _scale(
+                found[name],
+                os.path.join(STILL_DIR, key + "_side.png"),
+                180.0,
+                (0.0, 0.0, -1.05),
+                270.0,
+                fill=0.58,
+                elevation=8.0,
+                azimuth=270.0,
+                aim_frac=0.36,
+                slab=4.2,
+            )
         print("SHOT", key + "_scale")
         _scale(
             found[name],

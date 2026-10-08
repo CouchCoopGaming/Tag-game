@@ -36890,46 +36890,45 @@
   {
     "name": "MailDrop_Corner",
     "category": "StreetFurniture",
-    "blurb": "Collection box, 0.54 m wide, 0.46 m deep, hood at 1.18 m. Slot, carrier door, blank frame. No legend.",
+    "blurb": "Collection box, 1.27 m, footprint 0.53 by 0.50 m, four legs. Half-cylinder top, front hopper, low carrier door. No legend.",
     "size": [
-      0.62,
-      1.175,
-      0.607
+      0.53,
+      1.27,
+      0.604
     ],
     "min": [
-      -0.31,
+      -0.265,
       0.0,
-      -0.297
+      -0.25
     ],
     "max": [
-      0.31,
-      1.175,
-      0.31
+      0.265,
+      1.27,
+      0.354
     ],
     "lods": [
       {
         "lod": 0,
-        "tris": 740,
+        "tris": 848,
         "materials": [
-          "Lib_SteelDark",
-          "Lib_Steel",
           "Lib_BoxBlue",
+          "Lib_SteelDark",
           "Lib_Black",
+          "Lib_Steel",
           "Lib_Brass",
-          "Lib_MetalWorn",
-          "Lib_Rust"
+          "Lib_MetalWorn"
         ],
         "mesh": "LOD0",
         "fileID": -1633821710574564935
       },
       {
         "lod": 1,
-        "tris": 320,
+        "tris": 372,
         "materials": [
-          "Lib_SteelDark",
-          "Lib_Steel",
           "Lib_BoxBlue",
+          "Lib_SteelDark",
           "Lib_Black",
+          "Lib_Steel",
           "Lib_Brass"
         ],
         "mesh": "LOD1",
@@ -36938,17 +36937,17 @@
     ],
     "colliders": [
       {
-        "name": "Col_Base",
+        "name": "Col_Body",
         "type": "box",
         "center": [
           0,
-          0.014,
+          0.54,
           0
         ],
         "size": [
-          0.48,
-          0.02,
-          0.4
+          0.4,
+          0.68,
+          0.36
         ],
         "euler": [
           0,
@@ -36957,16 +36956,16 @@
         ]
       },
       {
-        "name": "Col_Body",
+        "name": "Col_Crown",
         "type": "box",
         "center": [
           0,
-          0.5,
-          -0.02
+          1.2,
+          0
         ],
         "size": [
-          0.4,
-          0.76,
+          0.06,
+          0.1,
           0.28
         ],
         "euler": [
@@ -36976,17 +36975,150 @@
         ]
       },
       {
-        "name": "Col_Hood",
+        "name": "Col_Leg_00",
         "type": "box",
         "center": [
-          0,
-          1.045,
-          -0.06
+          -0.185,
+          0.07,
+          -0.16
         ],
         "size": [
-          0.32,
-          0.03,
+          0.024,
+          0.04,
+          0.024
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Foot_00",
+        "type": "box",
+        "center": [
+          -0.185,
+          0.014,
+          -0.16
+        ],
+        "size": [
+          0.04,
+          0.016,
+          0.04
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Leg_01",
+        "type": "box",
+        "center": [
+          -0.185,
+          0.07,
           0.16
+        ],
+        "size": [
+          0.024,
+          0.04,
+          0.024
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Foot_01",
+        "type": "box",
+        "center": [
+          -0.185,
+          0.014,
+          0.16
+        ],
+        "size": [
+          0.04,
+          0.016,
+          0.04
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Leg_10",
+        "type": "box",
+        "center": [
+          0.185,
+          0.07,
+          -0.16
+        ],
+        "size": [
+          0.024,
+          0.04,
+          0.024
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Foot_10",
+        "type": "box",
+        "center": [
+          0.185,
+          0.014,
+          -0.16
+        ],
+        "size": [
+          0.04,
+          0.016,
+          0.04
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Leg_11",
+        "type": "box",
+        "center": [
+          0.185,
+          0.07,
+          0.16
+        ],
+        "size": [
+          0.024,
+          0.04,
+          0.024
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Foot_11",
+        "type": "box",
+        "center": [
+          0.185,
+          0.014,
+          0.16
+        ],
+        "size": [
+          0.04,
+          0.016,
+          0.04
         ],
         "euler": [
           0,
@@ -36999,14 +37131,14 @@
     "vaultable": false,
     "vaultHeight": 0.0,
     "climbNote": "Not a cling.",
-    "vaultNote": "Too short to vault.",
+    "vaultNote": "Rounded top, under a vault.",
     "warnings": [],
     "fbxNames": [
       "LODBoxS",
       "LOD0",
       "LOD1"
     ],
-    "slackCm": 0.6,
+    "slackCm": 0.0,
     "fbx": "Assets/Art/Props/Library/StreetFurniture/MailDrop_Corner.fbx"
   },
   {
