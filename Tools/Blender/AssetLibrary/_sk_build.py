@@ -50,6 +50,15 @@ MODULES = (
     "sk_planter_street",
     "sk_manhole_ring",
     "sk_storm_curb",
+    "sk_roof_vent",
+    "sk_tank_saddle",
+    "sk_ladder_fixed",
+    "sk_satellite",
+    "sk_hydrant_red",
+    "sk_ac_split",
+    "sk_car_sedan",
+    "sk_car_hatch",
+    "sk_car_pickup",
 )
 
 

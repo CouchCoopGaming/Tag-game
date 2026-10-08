@@ -50,6 +50,15 @@ MODULES = (
     "sk_planter_street",
     "sk_manhole_ring",
     "sk_storm_curb",
+    "sk_roof_vent",
+    "sk_tank_saddle",
+    "sk_ladder_fixed",
+    "sk_satellite",
+    "sk_hydrant_red",
+    "sk_ac_split",
+    "sk_car_sedan",
+    "sk_car_hatch",
+    "sk_car_pickup",
     "mannequin",
 )
 
@@ -210,10 +219,74 @@ def _pass3_lineup(found, path):
     _fit(path)
 
 
+def _pass4_lineup(found, path):
+    r._reset_scene()
+    scene = bpy.context.scene
+    r._engine(scene, wide=True)
+    scene.render.resolution_x = 1280
+    scene.render.resolution_y = 720
+    scene.cycles.samples = 24
+    r._ensure_materials()
+    r._world(scene, night=False)
+    specs = [
+        ("Mannequin", (0.0, 0.0, 0.6), 200),
+        ("RoofVent_Turbine", (1.2, 0.0, 0.1), 20),
+        ("AC_MiniSplit", (2.5, 0.0, 0.1), 15),
+        ("FireHydrant_Red", (3.7, 0.0, 0.0), 25),
+        ("SatelliteDish", (5.1, 0.0, 0.2), 18),
+        ("WaterTank_Saddle", (7.2, 0.0, 0.2), 12),
+        ("Ladder_Fixed", (9.2, 0.0, 0.1), 8),
+    ]
+    objs = [r._spawn(found[name](), pos, yaw) for name, pos, yaw in specs]
+    r._ground("concrete", 80.0)
+    r._frame(scene, objs, fill=0.72, elevation=12.0, azimuth=22.0)
+    r._render(scene, path)
+    _fit(path)
+
+
+def _pass5_lineup(found, path):
+    r._reset_scene()
+    scene = bpy.context.scene
+    r._engine(scene, wide=True)
+    scene.render.resolution_x = 1280
+    scene.render.resolution_y = 720
+    scene.cycles.samples = 24
+    r._ensure_materials()
+    r._world(scene, night=False)
+    specs = [
+        ("Mannequin", (0.0, 0.0, 1.0), 200),
+        ("Car_Hatch", (3.4, 0.0, 0.0), 25),
+        ("Car_Sedan", (8.6, 0.0, 0.0), 20),
+        ("Car_Pickup", (14.6, 0.0, 0.0), 15),
+    ]
+    objs = [r._spawn(found[name](), pos, yaw) for name, pos, yaw in specs]
+    r._ground("asphalt", 80.0)
+    r._frame(scene, objs, fill=0.74, elevation=12.0, azimuth=28.0)
+    r._render(scene, path)
+    _fit(path)
+
+
 def main():
     os.makedirs(STILL_DIR, exist_ok=True)
     found = _load()
-    if PASS >= 3:
+    if PASS >= 5:
+        shots = [
+            ("car_sedan", lambda: _shot(found["Car_Sedan"], os.path.join(STILL_DIR, "car_sedan.png"), kind="asphalt", fill=0.8)),
+            ("car_hatch", lambda: _shot(found["Car_Hatch"], os.path.join(STILL_DIR, "car_hatch.png"), kind="asphalt", fill=0.8)),
+            ("car_pickup", lambda: _shot(found["Car_Pickup"], os.path.join(STILL_DIR, "car_pickup.png"), kind="asphalt", fill=0.82)),
+            ("kit_lineup", lambda: _pass5_lineup(found, os.path.join(STILL_DIR, "kit_lineup.png"))),
+        ]
+    elif PASS >= 4:
+        shots = [
+            ("roof_vent", lambda: _shot(found["RoofVent_Turbine"], os.path.join(STILL_DIR, "roof_vent.png"))),
+            ("tank_saddle", lambda: _shot(found["WaterTank_Saddle"], os.path.join(STILL_DIR, "tank_saddle.png"))),
+            ("ladder_fixed", lambda: _shot(found["Ladder_Fixed"], os.path.join(STILL_DIR, "ladder_fixed.png"), fill=0.8)),
+            ("satellite", lambda: _shot(found["SatelliteDish"], os.path.join(STILL_DIR, "satellite.png"), fill=0.78)),
+            ("hydrant_red", lambda: _shot(found["FireHydrant_Red"], os.path.join(STILL_DIR, "hydrant_red.png"))),
+            ("ac_split", lambda: _shot(found["AC_MiniSplit"], os.path.join(STILL_DIR, "ac_split.png"))),
+            ("kit_lineup", lambda: _pass4_lineup(found, os.path.join(STILL_DIR, "kit_lineup.png"))),
+        ]
+    elif PASS >= 3:
         shots = [
             ("power_pole", lambda: _shot(found["PowerPole_Span"], os.path.join(STILL_DIR, "power_pole.png"), fill=0.82)),
             ("sign_yield", lambda: _shot(found["Sign_Yield"], os.path.join(STILL_DIR, "sign_yield.png"), fill=0.78)),
