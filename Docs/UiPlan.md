@@ -697,7 +697,9 @@ U+2713 is in both UI fonts. Liberation is a reserved name, so the family inside 
 
 `ShowStacked` used to leave the previous screen root up. It now clears first, the same as `ShowOnly`. MenuHost still calls `ShowOnly` and destroys the body children before the next screen. `screen-roots stacked=1`. Two live roots would print `FAIL two roots`.
 
-P3 stays `(0.94, 0.42, 0.14)`. The load frame, the pause stripe, and the results bar keep that fill and draw a dark keyline. Circle, triangle, square, and diamond already differ, so the band pair distance adds that shape step. Colour alone was `0.34/0.29/0.26`. With the mark it is `ui-cvd protan=0.43 red/orange deutan=0.39 red/orange tritan=0.37 red/orange floor=0.35`. `ui-seat off=0.43/0.39/0.37`. `ui-fill` is unchanged. pose stays 0. no-clip fails stays 0.
+P3 stays `(0.94, 0.42, 0.14)`. The load frame, the pause stripe, and the results bar keep that fill and draw a dark keyline. Circle, triangle, square, and diamond already differ, so the band pair distance adds that shape step. Colour alone was `0.34/0.29/0.26`. With the mark it is `ui-cvd protan=0.43 red/orange deutan=0.39 red/orange tritan=0.37 red/orange floor=0.35`. `ui-seat off=0.43/0.39/0.37 pd=0.51/0.53/0.48 tritan=0.52/0.59/0.51 floor=0.35`. `ui-fill protan=0.43 blue/lavender deutan=0.53 red/orange tritan=0.42 orange/lavender floor=0.35`.
+
+`glyph-cover clean=0` and `glyph-cover check=0`. `screen-roots clean=1` and `screen-roots stacked=1`. The sim print has no FAIL line. `no-clip screens=5 frames=1778 worldMax=0.00 selfMax=0.08 fails=0 idle=0.00 ready=0.00 run=0.00 step=0.00 cheer=0.08 slump=0.00 rail=0.00 rigJoint=26 pose=0`.
 
 ## Later passes
 
