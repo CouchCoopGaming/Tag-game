@@ -110,6 +110,7 @@
     <Compile Include="../../Assets/Scripts/FX/DustLook.cs" />
     <Compile Include="../../Assets/Scripts/FX/ComicWords.cs" />
     <Compile Include="../../Assets/Scripts/FX/ComicArt.cs" />
+    <Compile Include="../../Assets/Scripts/FX/ComicPng.cs" />
     <Compile Include="../../Assets/Scripts/FX/ComicAtlas.cs" />
     <Compile Include="../../Assets/Scripts/FX/VerbFxLook.cs" />
     <Compile Include="../../Assets/Scripts/FX/VerbFxStills.cs" />
