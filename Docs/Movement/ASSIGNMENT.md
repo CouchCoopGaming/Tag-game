@@ -19,15 +19,15 @@ Evasion, the played roll, the played stagger, and the landing and roll exits.
 | spinL, spinR | E's plant sits | pose 1.4 cm on the pivot thigh |
 | jukeL | E's plant sits | clear |
 | jukeR | E's plant sits | pose 0.64 cm, spine into the outside thigh |
-| dive | 2, the roll-up | inside the 6-clip line |
+| dive | roll-up sits on this branch | pose 1.74 cm, spine into both thighs |
 
-Folded evasion lines, from `65aa8de0`, still stand:
+This branch already seats the dive roll-up, measured at `1adc2020`:
 
-`hip-sit clips=6 loadedFrames=115 pelvisBackMin=8.99 cm hingeMin=1.50 kneeMin=50.0 pelvisDropMin=8.9 cm fails=2`
+`hip-sit clips=6 fails=0 pelvisBackMin=9.27 hingeMin=1.50 kneeMin=50.0 pelvisDropMin=8.9`
 
-`no-clip clips=6 frames=115 worldMax=0.0 rigJoint=7.89 pose=1.4 fails=1`
+`no-clip clips=6 frames=115 worldMax=0.0 pose=1.74 rigJoint=7.89 fails=1`
 
-The lead scan's evasion rows are a column remap that does not match `EvasionPose.Apply`. They showed zero loaded frames on stutter, spin, and juke, and a dive world depth of 18.49 cm. Remeasure with the tightened rule. Do not replace the folded lines with that remap.
+The roll-up at 0.867 s and 0.900 s sits 13.6 cm behind the support foot, knee 79°, sole 0.2 cm, and clears the 20 cm drop. The thigh is 55°. The spine is 1.74 cm inside both upper legs. That pair stays rig-blocked. Spin stays 1.4 cm. `jukeR` stays 0.64 cm. The lead scan's evasion rows are a column remap that does not match `EvasionPose.Apply` (zero loaded frames on stutter, spin, and juke, dive world 18.49 cm). Those rows do not replace this measurement.
 
 Stagger contact at t=0.00: back −1.0 cm, knee 2.5°, drop 0, knee behind the pelvis. Exit-Roll contact at t=0.433: back 4.2 cm, knee 16.2°, drop 0. Exit-RollAbsorb contact at t=0.30: back 2.0 cm, knee 11.9°, drop 0.
 
@@ -51,4 +51,4 @@ The roll targets are for exit-Roll and exit-RollAbsorb. The played tuck is airbo
 
 `02` at 1.24 s is +68.2 cm with the shin at −42.2 cm. `02` at 1.44 s is −46.5 cm. `24_landing_roll` at 0.64 s is −9.0 cm with the knee at 152°, and that film is unlicensed. Those three stay out of the target.
 
-HIPREF has no stagger row and no dive row. The stagger landing and the dive roll-up stay open on the measurements above. The dive thigh enters the spine past about 48°, which is why the crouch cannot reach 12 cm behind the foot and 20 cm of drop together. The knee there is 68° and the shin points forward. Loosening `EvasionPose.Holds` is not the fix.
+HIPREF has no stagger row and no dive row. The stagger landing stays open on the measurement above. The dive roll-up is already seated on this branch, inside the +13 to +43 cm band at 13.6 cm with the knee at 79°. `EvasionPose.Holds` stays as folded.

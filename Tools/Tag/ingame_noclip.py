@@ -26,14 +26,20 @@ def rad(deg):
 
 def load_keys(path):
     frames = []
+    evasion = False
     with open(path, "r", encoding="utf-8") as handle:
         for line in handle:
             line = line.strip()
-            if not line or line.startswith("#"):
+            if not line:
+                continue
+            if line.startswith("#"):
+                # Evasion dumps put head yaw where locomotion dumps put the shoulder.
+                if "EvasionPose" in line:
+                    evasion = True
                 continue
             parts = line.split("\t")
             nums = [float(v) for v in parts[1:]]
-            frames.append({
+            row = {
                 "clip": parts[0],
                 "t": nums[0],
                 "thL": nums[1], "thR": nums[2], "knL": nums[3], "knR": nums[4],
@@ -46,11 +52,22 @@ def load_keys(path):
                 "footL": nums[21], "footR": nums[22], "drop": nums[23],
                 "elbYawL": nums[24] if len(nums) > 24 else 0.0,
                 "elbYawR": nums[25] if len(nums) > 25 else 0.0,
-                "shoulderL": nums[26] if len(nums) > 26 else 0.0,
-                "thRollL": nums[27] if len(nums) > 27 else 0.0,
-                "thRollR": nums[28] if len(nums) > 28 else 0.0,
-                "hipDrop": nums[29] if len(nums) > 29 else 0.0,
-            })
+                "shoulderL": 0.0,
+                "thRollL": 0.0,
+                "thRollR": 0.0,
+                "hipDrop": 0.0,
+                "headYaw": 0.0,
+            }
+            if evasion:
+                row["headYaw"] = nums[26] if len(nums) > 26 else 0.0
+                row["thRollL"] = nums[29] if len(nums) > 29 else 0.0
+                row["thRollR"] = nums[30] if len(nums) > 30 else 0.0
+            elif len(nums) > 26:
+                row["shoulderL"] = nums[26]
+                row["thRollL"] = nums[27] if len(nums) > 27 else 0.0
+                row["thRollR"] = nums[28] if len(nums) > 28 else 0.0
+                row["hipDrop"] = nums[29] if len(nums) > 29 else 0.0
+            frames.append(row)
     return frames
 
 
@@ -70,7 +87,7 @@ def apply_frame(arm, frame):
     clear_pose(arm)
     set_bone(arm, "Hips", frame["hip"], frame["hipYaw"], frame["lean"])
     set_bone(arm, "Spine", frame["spine"], frame["spineYaw"], 0.0)
-    set_bone(arm, "Head", frame["head"], 0.0, 0.0)
+    set_bone(arm, "Head", frame["head"], frame.get("headYaw", 0.0), 0.0)
     set_bone(arm, "UpperLeg_L", -frame["thL"], frame["yawL"], frame.get("thRollL", 0.0))
     set_bone(arm, "LowerLeg_L", -frame["knL"], frame.get("knYawL", 0.0), frame.get("knRollL", 0.0))
     set_bone(arm, "Foot_L", -frame["footL"], 0.0, 0.0)

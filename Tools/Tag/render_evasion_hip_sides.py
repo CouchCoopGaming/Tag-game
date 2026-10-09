@@ -29,6 +29,17 @@ PICKS = (
 )
 
 
+def chosen_picks():
+    raw = os.environ.get("PICKS", "")
+    if not raw:
+        return PICKS
+    picks = []
+    for bit in raw.split(","):
+        name, _, t = bit.partition(":")
+        picks.append((name, float(t)))
+    return tuple(picks)
+
+
 def nearest(frames, clip, t):
     name = "dive" if clip.startswith("dive") else clip
     pool = [f for f in frames if f["clip"] == name]
@@ -43,11 +54,12 @@ def main():
     scene.render.resolution_x = 720
     scene.render.resolution_y = 960
     tmp = os.path.join(OUT, "_frame.png")
-    for name, t in PICKS:
+    for name, t in chosen_picks():
         frame = nearest(frames, name, t)
         p4.apply_posed(arm, frame)
         stills.place_contact(shadow, arm)
-        stills.aim(cam, "side", arm)
+        view = os.environ.get("VIEW", "side")
+        stills.aim(cam, view, arm)
         scene.render.filepath = tmp
         bpy.ops.render.render(write_still=True)
         tile = Image.open(tmp).convert("RGB")
@@ -70,7 +82,7 @@ def main():
         draw.line((fx, 0, fx, h - 1), fill=(40, 220, 90), width=3)
         r = 10
         draw.ellipse((hx - r, hy - r, hx + r, hy + r), fill=(230, 40, 40))
-        path = os.path.join(OUT, "%s-side.png" % name)
+        path = os.path.join(OUT, "%s-%s.png" % (name, view))
         tile.save(path, "PNG", optimize=True)
         if os.path.getsize(path) > 390 * 1024:
             tile.quantize(colors=96, method=Image.Quantize.MEDIANCUT).save(path, "PNG", optimize=True)

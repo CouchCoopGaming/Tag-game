@@ -45,13 +45,26 @@ Per clip, same sit, pose fails 0, world 0: wall run 9, climb top-out 11, vault 1
 
 ## Evasion
 
-Owner E. Flag off. Measured on `65aa8de0` and folded unchanged.
+Owner E. Flag off. The six clips were folded from `65aa8de0`. The dive stretch and the roll-up seat below are measured on the evasion sub-branch and are not folded yet.
 
-`hip-sit clips=6 loadedFrames=115 pelvisBackMin=8.99 cm hingeMin=1.50 kneeMin=50.0 pelvisDropMin=8.9 cm fails=2`
+`hip-sit clips=6 fails=0 pelvisBackMin=9.27 hingeMin=1.50 kneeMin=50.0 pelvisDropMin=8.9`
 
-`no-clip clips=6 frames=115 worldMax=0.0 rigJoint=7.89 pose=1.4 fails=1`
+`no-clip clips=6 frames=115 worldMax=0.0 pose=1.74 rigJoint=7.89 fails=1`
 
-The two hip fails are the dive roll-up. The thigh enters the spine past about 48°, so the crouch cannot reach 12 cm behind the foot and 20 cm of drop together. The knee there is 68° and the shin points forward. Pose 1.4 cm is the spine into the spin pivot thigh. `jukeR` is 0.64 cm on that same pair. `jukeL` is clear. Those stay open.
+The roll-up at 0.867 s and 0.900 s sits 13.6 cm behind the support foot, knee 79°, sole 0.2 cm, and clears the 20 cm drop bar. The thigh is 55°. The spine is 1.74 cm inside both upper legs on those frames. That pair is rig-blocked. Spin stays 1.4 cm on the pivot thigh. `jukeR` stays 0.64 cm (0.55 cm at 0.333 s). `jukeL` is clear. Those poses were not retuned. `EvasionMoves.Enabled` stays false, and RT is sampled only while that flag is on.
+
+## Landings and the 65% roll
+
+Inventory on this sub-branch. `LandPose` and `HandoffFeel` were not edited. The land-pose proof line locks `softKnee=-26`, `softThigh=18`, `softDrop=0.02`, `hardKnee=-125`, `hardThigh=74`, `hardDrop=0.50`. `RollThigh` 62 changes `RollStep` and the handoff line. Game euler: positive thigh, knee already negative. Drop is the hips bone.
+
+| Pose | pelvisBack | knee | hinge | drop | sole | pose |
+|---|---|---|---|---|---|---|
+| Soft | −6.4 cm | 26° | 1.33 | 2.0 cm | −0.3 cm | 1.40 cm chest into upper arm |
+| Hard | −25.8 cm | 125° | 1.64 | 50 cm | 3.2 cm | 4.35 cm spine into thigh |
+| Roll peak | −34.2 cm | 88° | 0.78 | 25 cm | 6.1 cm / 14.3 cm | 6.91 cm hand into thigh; spine 1.86 cm |
+| Roll impact | −25.8 cm | 125° | 1.64 | 50 cm | 3.2 cm | 4.35 cm spine into thigh |
+
+Soft is proof-locked under the 45° knee and the 20 cm drop. Hard and the roll put the foot behind the pelvis, and the thigh is already through the spine. Same rig pair as the spin. Not retuned. Shin is forward on all four (soft +13.5 cm, hard +48.6 cm, roll peak +46.6 cm). `RollSpeed` stays 36.504.
 
 ## Full scan
 
@@ -63,7 +76,7 @@ Stride 1 on tip `8ff68bef`, every locomotion clip, every exit, and the six evasi
 
 Loaded frames are plants, landings, and crouches. Cruise and airborne frames are in the pose column and stay out of the hip fail count. A pose pass line is `pose=0` when every frame is at or under 0.5 cm. The number in parentheses is the deepest non-adjacent reading. `rigJoint` 7.97 cm is the hip cuff and stays with the rig lane. This is not a global `fails=0`. The pass-21 14-clip line stays historical.
 
-On the clips this scanner already agreed with the earlier exit rescan, the hip fails are 21: played slide 7, played stagger 8, exit-Roll 4, exit-RollAbsorb 2. The other 6 hip fails, `backMin -63.0`, and `worldMax 18.49` are the dive rows from a column remap that does not match `EvasionPose.Apply`. Stutter, spin, and juke came back with zero loaded frames in that remap. E's folded lines stay the evasion measurement until E remeasures on `cursor/tag-movement-evasion`.
+On the clips this scanner already agreed with the earlier exit rescan, the hip fails are 21: played slide 7, played stagger 8, exit-Roll 4, exit-RollAbsorb 2. The other 6 hip fails, `backMin -63.0`, and `worldMax 18.49` are the dive rows from a column remap that does not match `EvasionPose.Apply`. Stutter, spin, and juke came back with zero loaded frames in that remap. The evasion section above is the measurement on this sub-branch after the roll-up seat. The lead scan does not replace it.
 
 ## Clip table
 
@@ -106,7 +119,7 @@ On the clips this scanner already agreed with the earlier exit rescan, the hip f
 | spinL, spinR | E | E's plant sits | pose 1.4 on the pivot thigh |
 | jukeL | E | E's plant sits | clear |
 | jukeR | E | E's plant sits | pose 0.64 spine into the outside thigh |
-| dive | E | 2, the roll-up | inside E's 6-clip line |
+| dive | E | sits on this branch, 13.6 cm / knee 79° | pose 1.74 spine into both thighs |
 
 Slide crouch sample, t=0.10: back 39.1, hinge 1.57, knee 8.0, shin −32.1, drop 52.5, sole 0.00. Exit-Roll contact, t=0.433: back 4.2, knee 16.2, drop 0.0. Exit-RollAbsorb contact, t=0.30: back 2.0, knee 11.9, drop 0.0. Stagger land, t=0.00: back −1.0, knee 2.5, drop 0.0, knee behind the pelvis.
 
@@ -179,7 +192,7 @@ Stagger is absent from that measurement. E keeps the eight-frame landing fail as
 ## Helper queues
 
 - C1, branch `cursor/tag-movement-exits`, off this tip. Vault, climb, mantle, and every exit that is not a landing or a roll. Open on that list: played climb pose 3.74 cm, exit-Punch world 0.84 cm, exit-Lunge pose 0.74 cm and world 0.65 cm, exit-TagBackEnd world 0.86 cm. The eight sat recoveries stay as they are. The vault, climb, and mantle rows above are the target shapes. The filmed files stay on S1's branch.
-- E, branch `cursor/tag-movement-evasion`, off this tip. The six evasion clips, the played roll, the played stagger, and the landing and roll exits: exit-LaunchLand, exit-Stagger, exit-SoftLand, exit-Roll, exit-RollAbsorb. Open: stagger 8 hip fails and pose 0.95 cm, exit-Roll 4 hip fails and pose 0.94 cm, exit-RollAbsorb 2 hip fails and pose 3.32 cm, dive roll-up (E's two hip fails), spin pose 1.4 cm, jukeR pose 0.64 cm. The roll rows above are the target shape for the two roll exits. `EvasionPose.Holds` stays as folded. `leadKnee` stays −10 on the played slide, which is A1's clip.
+- E, branch `cursor/tag-movement-evasion`, off this tip. The six evasion clips, the played roll, the played stagger, and the landing and roll exits: exit-LaunchLand, exit-Stagger, exit-SoftLand, exit-Roll, exit-RollAbsorb. The dive roll-up on this branch sits 13.6 cm behind the foot, knee 79°, drop past 20 cm, with the spine 1.74 cm inside both thighs. That pose stays rig-blocked. Still open: stagger 8 hip fails and pose 0.95 cm, exit-Roll 4 hip fails and pose 0.94 cm, exit-RollAbsorb 2 hip fails and pose 3.32 cm, spin pose 1.4 cm, jukeR pose 0.64 cm. Soft, hard, and the 65% roll are inventoried above and stay as keyed. The roll rows in the target table are the shape for the two roll exits. `EvasionPose.Holds` stays as folded. `leadKnee` stays −10 on the played slide, which is A1's clip.
 
 A1 keeps idle, loco, sprint, slide, wall, punch, zip, pad, grapple, and tag. Slide and wall targets are above. Zip, punch, pad, idle, loco, and sprint were left on the measured keys: zip hang pitch is `WallPose.ReachPitch` and must stay at or under −90°, punch spine yaw is held, wall arm pitch and yaw are held, and the pad is `LaunchPose.At` on the ballistic arc. Gait arm yaw is the locomotor read, and this pass leaves it.
 
@@ -215,6 +228,6 @@ The four deepest pose clips on this scan are zip 5.52 cm, punch 5.09 cm, wall 4.
 - Played stagger landing measures back −1.0 cm, knee 2.5°, drop 0. HIPREF has no stagger row.
 - Exit-Roll and exit-RollAbsorb still fail the landing sit. E's target is the roll table above (+19.8 cm / 115°, +33.7 cm / 102°, +18.0 cm / 52°).
 - Pose still open on A1: zip 5.52, punch 5.09, wall 4.97, pad 4.28, idle 1.80, loco 0.97, sprint 0.97. Climb 3.74 is C1's. The printed holds on zip, punch, wall, and the pad arc were left in place.
-- Evasion dive roll-up is E's two hip fails. Spin pose is 1.4 cm. `jukeR` pose is 0.64 cm. This scan's evasion remap is not a replacement for those lines.
+- On this branch the dive roll-up sits 13.6 cm behind the foot, knee 79°, and the spine is 1.74 cm inside both thighs. Spin pose is 1.4 cm. `jukeR` pose is 0.64 cm. The lead scan's evasion remap is not a replacement for those lines.
 - Default red and orange are under 3:1 on wood. Shapes separate those seats. Palette 0 is the exemption.
 - Soles on the eight sits read 0.47 cm, inside the 0.5 cm window.
