@@ -2909,12 +2909,22 @@ namespace Tag.Ui.Menu
                 MenuWidgets.Words(card, MenuArenaCard.Size(fly), UiFit.FloorFont, TextAnchor.MiddleLeft, MenuTheme.Cream, new Vector2(0.24f, 0.68f), new Vector2(0.78f, 0.80f));
                 string who = i == 0 ? "P1" : i == 1 ? "P2" : i == 2 ? "P3" : "P4";
                 MenuWidgets.Words(card, who, UiFit.FloorFont, TextAnchor.MiddleRight, MenuTheme.Cream, new Vector2(0.80f, 0.74f), new Vector2(0.96f, 0.94f));
-                var tipRt = MenuWidgets.Box(card, "TipPlate", new Vector2(0.05f, 0.36f), new Vector2(0.95f, 0.58f), new Vector2(0.5f, 0.5f));
+                var tipRt = MenuWidgets.Box(card, "TipPlate", new Vector2(0.05f, 0.33f), new Vector2(0.95f, 0.64f), new Vector2(0.5f, 0.5f));
                 Image tipPlate = tipRt.gameObject.AddComponent<Image>();
                 MenuArt.Plate(tipPlate, MenuTheme.Gold, true);
                 tipPlate.raycastTarget = false;
                 Text tip = MenuWidgets.Words(tipRt, MenuTips.Shown(i, _tipBase), UiFit.FloorFont, TextAnchor.MiddleLeft, MenuTheme.Ink, new Vector2(0.04f, 0.12f), new Vector2(0.96f, 0.88f));
-                if (tip != null) tip.horizontalOverflow = HorizontalWrapMode.Wrap;
+                if (tip != null)
+                {
+                    // The 8 px Words inset left a band under two lines at the 30 px
+                    // floor, so best fit gave up and Truncate drew nothing.
+                    tip.horizontalOverflow = HorizontalWrapMode.Wrap;
+                    tip.rectTransform.offsetMin = new Vector2(18f, 2f);
+                    tip.rectTransform.offsetMax = new Vector2(-18f, -2f);
+                    tip.resizeTextForBestFit = false;
+                    tip.fontSize = UiFit.TextPx(UiFit.FloorFont);
+                    tip.verticalOverflow = VerticalWrapMode.Overflow;
+                }
                 _loadTip[i] = tip;
                 var track = MenuWidgets.Box(card, "Track", new Vector2(0.06f, 0.18f), new Vector2(0.94f, 0.30f), new Vector2(0.5f, 0.5f));
                 Image trackImage = track.gameObject.AddComponent<Image>();
@@ -3488,7 +3498,7 @@ namespace Tag.Ui.Menu
             Image plate = rt.gameObject.AddComponent<Image>();
             MenuArt.Plate(plate, hot ? MenuTheme.PanelHot : MenuTheme.Navy, true);
             plate.raycastTarget = true;
-            Text label = MenuWidgets.Words(rt, word, UiFit.FloorFont, TextAnchor.MiddleCenter, hot ? MenuTheme.Ink : MenuTheme.Cream, Vector2.zero, Vector2.one);
+            Text label = MenuWidgets.Words(rt, word, UiFit.FloorFont, TextAnchor.MiddleCenter, MenuTheme.Cream, Vector2.zero, Vector2.one);
             LockFit(label, UiFit.FloorFont);
             int chosen = pick;
             Button button = rt.gameObject.AddComponent<Button>();
@@ -3533,7 +3543,7 @@ namespace Tag.Ui.Menu
             pad.sprite = MenuIcons.Glyph(padToken);
             pad.preserveAspect = true;
             pad.raycastTarget = false;
-            Text label = MenuWidgets.Words(rt, word, UiFit.FloorFont, TextAnchor.MiddleLeft, hot ? MenuTheme.Ink : MenuTheme.Cream, Vector2.zero, Vector2.one);
+            Text label = MenuWidgets.Words(rt, word, UiFit.FloorFont, TextAnchor.MiddleLeft, MenuTheme.Cream, Vector2.zero, Vector2.one);
             label.rectTransform.offsetMin = new Vector2(132f, 4f);
             label.rectTransform.offsetMax = new Vector2(-12f, -4f);
             LockFit(label, UiFit.FloorFont);
@@ -3601,7 +3611,7 @@ namespace Tag.Ui.Menu
             pad.sprite = MenuIcons.Glyph(padToken);
             pad.preserveAspect = true;
             pad.raycastTarget = false;
-            Text label = MenuWidgets.Words(rt, word, UiFit.FloorFont, TextAnchor.MiddleLeft, hot ? MenuTheme.Ink : MenuTheme.Cream, Vector2.zero, Vector2.one);
+            Text label = MenuWidgets.Words(rt, word, UiFit.FloorFont, TextAnchor.MiddleLeft, MenuTheme.Cream, Vector2.zero, Vector2.one);
             label.rectTransform.offsetMin = new Vector2(132f, 4f);
             label.rectTransform.offsetMax = new Vector2(-12f, -4f);
             label.resizeTextForBestFit = false;

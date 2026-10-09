@@ -122,9 +122,10 @@ namespace Tag.Ui.Menu
             }
             if (Plate != null) Plate.color = _hotColor;
             if (Stroke != null) Stroke.color = MenuTheme.Gold;
-            if (Label != null) Label.color = MenuTheme.Ink;
-            if (Detail != null) Detail.color = MenuTheme.Ink;
-            if (Bar != null) Bar.color = MenuTheme.Ink;
+            // Cream on the deep hot plate; navy ink on light blue read too low.
+            if (Label != null) Label.color = MenuTheme.Cream;
+            if (Detail != null) Detail.color = MenuTheme.Cream;
+            if (Bar != null) Bar.color = MenuTheme.Gold;
         }
 
         void PaintRest()

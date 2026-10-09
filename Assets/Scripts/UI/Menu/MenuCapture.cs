@@ -141,6 +141,7 @@ namespace Tag.Ui.Menu
                 if (_wait == 1)
                 {
                     host.HideForMatch();
+                    Stage(HudPlayers[hud]);
                     MatchHud.Preview(HudPlayers[hud]);
                     return true;
                 }
@@ -299,8 +300,68 @@ namespace Tag.Ui.Menu
             else Object.DestroyImmediate(o);
         }
 
+        // HUD stills need the arena behind them. The front-end scene has none, so
+        // the capture builds Mega Park once and gives each pane a camera in its
+        // split rect (P1 top-left, P2 top-right, P3 bottom-left, P4 bottom-right).
+        static GameObject _stage;
+        static readonly System.Collections.Generic.List<GameObject> _paneCams = new System.Collections.Generic.List<GameObject>();
+
+        static readonly Vector3[] PaneEye =
+        {
+            new Vector3(83f, 3.2f, 45f), new Vector3(42f, 3.2f, 62f),
+            new Vector3(118f, 3.4f, 40f), new Vector3(62f, 3.2f, 78f)
+        };
+        static readonly Vector3[] PaneLook =
+        {
+            new Vector3(96f, 1.4f, 53f), new Vector3(34f, 1.2f, 47f),
+            new Vector3(140f, 2f, 49f), new Vector3(75f, 1.6f, 87f)
+        };
+
+        static void Stage(int humans)
+        {
+            if (_stage == null && Object.FindAnyObjectByType<Tag.Level.MegaParkP1Bootstrap>() == null)
+            {
+                _stage = new GameObject("MenuCaptureArena");
+                var boot = _stage.AddComponent<Tag.Level.MegaParkP1Bootstrap>();
+                try { boot.Build(); }
+                catch (System.Exception e) { Debug.LogWarning("[MenuCapture] arena build " + e.Message); }
+            }
+            ClearPaneCams();
+            int panes = humans <= 1 ? 1 : humans == 2 ? 2 : 4;
+            for (int i = 0; i < panes; i++)
+            {
+                if (humans == 3 && i == 3) break;
+                var go = new GameObject("MenuCapturePane" + (i + 1));
+                var cam = go.AddComponent<Camera>();
+                cam.fieldOfView = 62f;
+                cam.nearClipPlane = 0.1f;
+                cam.farClipPlane = 600f;
+                cam.depth = -5 + i;
+                go.transform.position = PaneEye[i];
+                go.transform.LookAt(PaneLook[i]);
+                if (panes == 1) cam.rect = new Rect(0f, 0f, 1f, 1f);
+                else if (panes == 2) cam.rect = new Rect(i * 0.5f, 0f, 0.5f, 1f);
+                else cam.rect = new Rect((i % 2) * 0.5f, i < 2 ? 0.5f : 0f, 0.5f, 0.5f);
+                _paneCams.Add(go);
+            }
+        }
+
+        static void ClearPaneCams()
+        {
+            for (int i = 0; i < _paneCams.Count; i++) Kill(_paneCams[i]);
+            _paneCams.Clear();
+        }
+
+        static void Unstage()
+        {
+            ClearPaneCams();
+            if (_stage != null) Kill(_stage);
+            _stage = null;
+        }
+
         static void Finish()
         {
+            Unstage();
             _run = false;
             Debug.Log("[MenuCapture] Wrote " + Absolute(_folder));
 #if UNITY_EDITOR

@@ -14,7 +14,8 @@ namespace Tag.Ui.Menu
         public static readonly Color Veil = new Color(0.04f, 0.10f, 0.28f, 0.38f);
         public static readonly Color Navy = new Color(0.06f, 0.16f, 0.40f, 1f);
         public static readonly Color Panel = new Color(0.08f, 0.32f, 0.86f, 1f);
-        public static readonly Color PanelHot = new Color(0.20f, 0.58f, 1f, 1f);
+        // Deep enough for cream text (5.0:1); the gold stroke marks focus.
+        public static readonly Color PanelHot = new Color(0.10f, 0.38f, 0.94f, 1f);
         public static readonly Color Gold = new Color(1f, 0.84f, 0.12f, 1f);
         public static readonly Color Cream = new Color(1f, 0.98f, 0.92f, 1f);
         public static readonly Color Mute = new Color(0.78f, 0.88f, 1f, 1f);

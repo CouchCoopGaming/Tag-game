@@ -13,6 +13,7 @@ namespace Tag.Ui.Menu
         Transform _armL, _armR, _foreL, _foreR;
         Transform _thighL, _thighR, _kneeL, _kneeR;
         Quaternion _hips0, _spine0, _head0;
+        Vector3 _hipsAt0;
         Quaternion _armL0, _armR0, _foreL0, _foreR0;
         Quaternion _thighL0, _thighR0, _kneeL0, _kneeR0;
         bool _vault;
@@ -52,7 +53,12 @@ namespace Tag.Ui.Menu
 
         void Pose(MenuAlive.Angles a)
         {
-            transform.localRotation = _basis * Quaternion.Euler(a.RootPitch, a.RootYaw, a.RootRoll);
+            // The body lean rides on the hips, pivoting at the root (the feet), so
+            // the root itself stays upright (FigureStandsUp: root within 5 deg).
+            if (_hips == null)
+                transform.localRotation = _basis * Quaternion.Euler(a.RootPitch, a.RootYaw, a.RootRoll);
+            else
+                transform.localRotation = _basis * Quaternion.Euler(0f, a.RootYaw, 0f);
             Set(_hips, _hips0, a.Hip, a.HipYaw, a.HipRoll);
             Set(_spine, _spine0, a.Spine, a.SpineYaw, a.SpineRoll);
             Set(_head, _head0, a.Head, a.HeadYaw, 0f);
@@ -64,6 +70,18 @@ namespace Tag.Ui.Menu
             Set(_thighR, _thighR0, a.ThighR, 0f, 0f);
             Set(_kneeL, _kneeL0, a.KneeL, 0f, 0f);
             Set(_kneeR, _kneeR0, a.KneeR, 0f, 0f);
+            Lean(a.RootPitch, a.RootRoll);
+        }
+
+        void Lean(float pitch, float roll)
+        {
+            if (_hips == null) return;
+            _hips.localPosition = _hipsAt0;
+            Quaternion frame = transform.rotation;
+            Quaternion lean = frame * Quaternion.Euler(pitch, 0f, roll) * Quaternion.Inverse(frame);
+            Vector3 pivot = transform.position;
+            _hips.position = pivot + lean * (_hips.position - pivot);
+            _hips.rotation = lean * _hips.rotation;
         }
 
         void Cache()
@@ -80,6 +98,7 @@ namespace Tag.Ui.Menu
             _kneeL = Find("LowerLeg_L", "LowerLeg.L");
             _kneeR = Find("LowerLeg_R", "LowerLeg.R");
             _hips0 = Rest(_hips);
+            _hipsAt0 = _hips != null ? _hips.localPosition : Vector3.zero;
             _spine0 = Rest(_spine);
             _head0 = Rest(_head);
             _armL0 = Rest(_armL);

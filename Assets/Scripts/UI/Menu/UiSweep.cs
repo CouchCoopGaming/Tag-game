@@ -4,7 +4,7 @@ namespace Tag.Ui.Menu
 {
     /// <summary>
     /// Contrast and fit for the couch screens. Body text needs 4.5:1.
-    /// A focused row uses ink on the hot plate, and a gold ring on navy.
+    /// A focused row uses cream on the hot plate, and a gold ring on navy.
     /// At 130% every listed block stays inside the safe body.
     /// </summary>
     public static class UiSweep
@@ -18,7 +18,7 @@ namespace Tag.Ui.Menu
             if (Ratio(1f, 0.98f, 0.92f, 0.06f, 0.16f, 0.40f) < 4.5f) return false;
             if (Ratio(0.78f, 0.88f, 1f, 0.08f, 0.32f, 0.86f) < 4.5f) return false;
             if (Ratio(1f, 0.84f, 0.12f, 0.06f, 0.16f, 0.40f) < 4.5f) return false;
-            if (Ratio(0.04f, 0.07f, 0.16f, 0.20f, 0.58f, 1f) < 4.5f) return false;
+            if (Ratio(1f, 0.98f, 0.92f, 0.10f, 0.38f, 0.94f) < 4.5f) return false;
             if (Ratio(1f, 0.84f, 0.12f, 0.06f, 0.16f, 0.40f) < 3f) return false;
             if (!SeatText()) return false;
             if (!PortraitText()) return false;
