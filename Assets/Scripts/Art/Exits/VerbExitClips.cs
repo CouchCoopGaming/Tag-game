@@ -307,20 +307,32 @@ namespace Tag.Art
             a = P(8f, 6f, -4f, 16f, -10f, -8f, -6f, -20f, -72f, -16f, 12f, -18f, -6f);
             a.HipYaw = 18f;
             a.SpineYaw = 16f;
+            a.FootR = 8f;
             b = P(-12f, -4f, 2f, 8f, -16f, -14f, -10f, -16f, -34f, -12f, 10f, -20f, -70f);
             b.HipYaw = -14f;
             b.SpineYaw = -8f;
             b.ArmRollR = -16f;
+            b.FootR = 8f;
             c = P(2f, 0f, 0f, 10f, 4f, -10f, -8f, -14f, -18f, -14f, 12f, -12f, -36f);
+            c.FootR = 8f;
         }
 
         /// <summary>The reach collapses, weight back, then the stride.</summary>
         static void Lunge(out VerbExitSample a, out VerbExitSample b, out VerbExitSample c)
         {
             a = P(12f, 16f, -6f, 36f, -8f, -20f, -10f, -40f, -32f, -14f, 12f, -16f, -12f);
+            a.ThighYawL = -36f;
+            a.ThighYawR = 36f;
+            a.FootR = 10f;
             b = P(-8f, -4f, 2f, 28f, 8f, -36f, -16f, -12f, -18f, -12f, 14f, -22f, -36f);
             b.HipYaw = -8f;
+            b.ThighYawL = -36f;
+            b.ThighYawR = 36f;
+            b.FootR = 10f;
             c = P(4f, 2f, 0f, 18f, 8f, -16f, -10f, -16f, -12f, -16f, 14f, -10f, -12f);
+            c.ThighYawL = -36f;
+            c.ThighYawR = 36f;
+            c.FootR = 10f;
         }
 
         /// <summary>Hands leave the cable and the body drops into the fall.</summary>
@@ -369,7 +381,8 @@ namespace Tag.Art
             a.HipYaw = -8f;
             b = P(2f, 2f, 2f, 6f, 4f, -8f, -6f, 6f, -10f, -16f, 14f, -12f, -16f);
             b.SpineRoll = 16f;
-            b.HipRoll = -6f;
+            // A roll of -6 sinks the left sole 0.86 cm. -2 stays inside 0.5 cm.
+            b.HipRoll = -2f;
             c = P(0f, 0f, 0f, 4f, 4f, -4f, -4f, -10f, -10f, -12f, 12f, -8f, -8f);
         }
 
