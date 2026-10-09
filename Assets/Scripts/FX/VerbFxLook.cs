@@ -153,6 +153,14 @@ namespace Tag.FX
             return env * wave;
         }
 
+        public const float InkR = 0.08f;
+        public const float InkG = 0.07f;
+        public const float InkB = 0.06f;
+        public const float InkA = 0.90f;
+        /// <summary>About 1 px of dark edge at the pass-28 chase.</summary>
+        public const float InkWorld = 0.028f;
+
+        /// <summary>Seat 0 red, 1 blue, 2 orange, 3 lavender. Same RGB as BodyFoam.</summary>
         public static void PlayerColor(int seat, out float r, out float g, out float b)
         {
             BodyFoam.Rgb c = BodyFoam.ForSeat(seat);

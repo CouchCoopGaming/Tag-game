@@ -127,6 +127,21 @@ namespace Tag.Settings
         /// Not one of the 21 rows, and not one of the seven FX-kit toggles.
         /// </summary>
         public bool WallMarks;
+        /// <summary>
+        /// Foam stroke on another runner when that body covers the owner in this pane.
+        /// Off until a seat turns it on. Not one of the 21 rows.
+        /// </summary>
+        public bool BodyStroke;
+        /// <summary>
+        /// Dark outline on the immunity shell, tag-back rings, handoff flash, and dash ghost.
+        /// Off until a seat turns it on. Not one of the 21 rows.
+        /// </summary>
+        public bool SeatInk;
+        /// <summary>
+        /// When two comic words overlap in one pane, keep the newer and retire the older.
+        /// Off until a seat turns it on. Not one of the 21 rows. Word count stays 36.
+        /// </summary>
+        public bool OneWord;
         /// <summary>0 off, 1 low, 2 full. Visual density only.</summary>
         public int Effects = 2;
 
@@ -197,6 +212,9 @@ namespace Tag.Settings
             EdgeStreaks = other.EdgeStreaks;
             ContactMarks = other.ContactMarks;
             WallMarks = other.WallMarks;
+            BodyStroke = other.BodyStroke;
+            SeatInk = other.SeatInk;
+            OneWord = other.OneWord;
             Effects = other.Effects;
         }
 
@@ -431,6 +449,21 @@ namespace Tag.Settings
         public string WallMarksLabel()
         {
             return WallMarks ? "Wall marks: On" : "Wall marks: Off";
+        }
+
+        public string BodyStrokeLabel()
+        {
+            return BodyStroke ? "Body stroke: On" : "Body stroke: Off";
+        }
+
+        public string SeatInkLabel()
+        {
+            return SeatInk ? "Seat ink: On" : "Seat ink: Off";
+        }
+
+        public string OneWordLabel()
+        {
+            return OneWord ? "One word: On" : "One word: Off";
         }
 
         public static string ArenaName(int arena)

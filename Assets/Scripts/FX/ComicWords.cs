@@ -215,6 +215,11 @@ namespace Tag.FX
             return Wham;
         }
 
+        public static bool RectsOverlap(float ax0, float ay0, float ax1, float ay1, float bx0, float by0, float bx1, float by1)
+        {
+            return ax0 < bx1 && ax1 > bx0 && ay0 < by1 && ay1 > by0;
+        }
+
         public static bool Holds()
         {
             if (Count != 4) return false;
@@ -343,6 +348,35 @@ namespace Tag.FX
             if (!wallMarkBack.WallMarks) return false;
             if (wallMarkBack.WallMarksLabel().IndexOf("Wall marks: On", System.StringComparison.Ordinal) < 0) return false;
             if (wallMarkBack.ComicWords) return false;
+            if (wallMarkBack.BodyStroke) return false;
+            if (wallMarkBack.BodyStrokeLabel().IndexOf("Body stroke: Off", System.StringComparison.Ordinal) < 0) return false;
+            wallMarkBack.BodyStroke = true;
+            string stroke = SettingsFile.Write(wallMarkBack, ActionBinds.Defaults());
+            GameSettings strokeBack = GameSettings.Defaults();
+            SettingsFile.Read(stroke, strokeBack, ActionBinds.Defaults());
+            if (!strokeBack.BodyStroke) return false;
+            if (strokeBack.BodyStrokeLabel().IndexOf("Body stroke: On", System.StringComparison.Ordinal) < 0) return false;
+            if (strokeBack.ComicWords) return false;
+            if (strokeBack.SeatInk) return false;
+            if (strokeBack.SeatInkLabel().IndexOf("Seat ink: Off", System.StringComparison.Ordinal) < 0) return false;
+            strokeBack.SeatInk = true;
+            string inkSeat = SettingsFile.Write(strokeBack, ActionBinds.Defaults());
+            GameSettings inkSeatBack = GameSettings.Defaults();
+            SettingsFile.Read(inkSeat, inkSeatBack, ActionBinds.Defaults());
+            if (!inkSeatBack.SeatInk) return false;
+            if (inkSeatBack.SeatInkLabel().IndexOf("Seat ink: On", System.StringComparison.Ordinal) < 0) return false;
+            if (inkSeatBack.ComicWords) return false;
+            if (inkSeatBack.OneWord) return false;
+            if (inkSeatBack.OneWordLabel().IndexOf("One word: Off", System.StringComparison.Ordinal) < 0) return false;
+            inkSeatBack.OneWord = true;
+            string one = SettingsFile.Write(inkSeatBack, ActionBinds.Defaults());
+            GameSettings oneBack = GameSettings.Defaults();
+            SettingsFile.Read(one, oneBack, ActionBinds.Defaults());
+            if (!oneBack.OneWord) return false;
+            if (oneBack.OneWordLabel().IndexOf("One word: On", System.StringComparison.Ordinal) < 0) return false;
+            if (oneBack.ComicWords) return false;
+            if (!RectsOverlap(0.10f, 0.10f, 0.55f, 0.55f, 0.40f, 0.40f, 0.80f, 0.80f)) return false;
+            if (RectsOverlap(0.10f, 0.10f, 0.30f, 0.30f, 0.55f, 0.55f, 0.80f, 0.80f)) return false;
             loaded.Nudge(GameSettings.RowComic, 1);
             if (!loaded.ComicWords) return false;
             loaded.Effects = 0;

@@ -187,6 +187,7 @@ namespace Tag.FX
                 return;
             }
             GameSettings settings = GameSettings.Current;
+            BodyStroke.Note(_cam, _root, _seat);
             if (!FxKitLook.Master(settings))
             {
                 WallRibbon.End(_seat);
@@ -384,6 +385,7 @@ namespace Tag.FX
                 Color c = new Color(_cr, _cg, _cb, a * 0.85f);
                 _block.SetColor("_Color", c);
                 _block.SetColor("_BaseColor", c);
+                _block.SetFloat("_Ink", settings != null && settings.SeatInk ? 1f : 0f);
                 _shell[i].SetPropertyBlock(_block);
             }
         }

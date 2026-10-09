@@ -3,6 +3,7 @@ Shader "Tag/FxKitRim"
     Properties
     {
         _Color ("Color", Color) = (0.95, 0.28, 0.32, 0.7)
+        _Ink ("Ink", Float) = 0
     }
     SubShader
     {
@@ -28,6 +29,7 @@ Shader "Tag/FxKitRim"
 
             CBUFFER_START(UnityPerMaterial)
                 float4 _Color;
+                float _Ink;
             CBUFFER_END
 
             struct Attributes
@@ -58,9 +60,14 @@ Shader "Tag/FxKitRim"
                 float3 n = normalize(i.normalWS);
                 float3 view = normalize(_WorldSpaceCameraPos - i.positionWS);
                 float fres = pow(saturate(1.0 - dot(n, view)), 2.2);
+                float edge = smoothstep(0.55, 1.0, fres);
+                float ink = saturate(_Ink);
+                float3 rgb = lerp(_Color.rgb, float3(0.08, 0.07, 0.06), edge * ink);
                 float a = _Color.a * fres;
+                if (ink > 0.5)
+                    a = max(a, edge * 0.90 * saturate(_Color.a));
                 if (a < 0.02) discard;
-                return half4(_Color.rgb, a);
+                return half4(rgb, a);
             }
             ENDHLSL
         }

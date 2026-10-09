@@ -40,6 +40,9 @@ namespace Tag.FX
         float[] _wide;
         float[] _tall;
         float[] _size;
+        Vector3[] _origin;
+        int[] _born;
+        int _serial;
         Texture2D _bursts;
         Texture2D _words;
 
@@ -112,6 +115,8 @@ namespace Tag.FX
             _wide = new float[Slots];
             _tall = new float[Slots];
             _size = new float[Slots];
+            _origin = new Vector3[Slots];
+            _born = new int[Slots];
             float clamp = RestSize * WordPeak;
             for (int i = 0; i < Slots; i++)
             {
@@ -140,6 +145,7 @@ namespace Tag.FX
         void LateUpdate()
         {
             if (_age == null) return;
+            RetireOverlaps();
             bool show = ComicWords.Visible(GameSettings.Current);
             float dt = Time.deltaTime;
             for (int i = 0; i < Slots; i++)
@@ -189,8 +195,11 @@ namespace Tag.FX
             _wide[slot] = wide;
             _tall[slot] = tall;
             _age[slot] = 0f;
+            _serial++;
+            _born[slot] = _serial;
             Vector3 contact = HitConfirmTell.Contact(origin, forward, reach);
             contact.y += 0.55f;
+            _origin[slot] = contact;
             _root[slot].transform.position = contact;
             _burst[slot].localScale = Vector3.zero;
             _word[slot].localScale = Vector3.zero;
@@ -228,6 +237,94 @@ namespace Tag.FX
             else ComicAtlas.Uv(index, out sx, out sy, out ox, out oy);
             mat.mainTextureScale = new Vector2(sx, sy);
             mat.mainTextureOffset = new Vector2(ox, oy);
+        }
+
+        void RetireOverlaps()
+        {
+            GameSettings settings = GameSettings.Current;
+            if (settings == null || !settings.OneWord || _origin == null) return;
+            for (int i = 0; i < Slots; i++)
+            {
+                if (_age[i] < 0f) continue;
+                for (int j = 0; j < Slots; j++)
+                {
+                    if (i == j || _age[j] < 0f) continue;
+                    if (_born[i] >= _born[j]) continue;
+                    if (!OverlapsAny(i, j)) continue;
+                    _age[i] = -1f;
+                    _root[i].SetActive(false);
+                    break;
+                }
+            }
+        }
+
+        bool OverlapsAny(int older, int newer)
+        {
+            int n = BodyStroke.Count;
+            for (int c = 0; c < n; c++)
+            {
+                Camera cam = BodyStroke.Cam[c];
+                if (cam == null || !cam.enabled) continue;
+                float ax0, ay0, ax1, ay1, bx0, by0, bx1, by1;
+                if (!WordRect(cam, older, out ax0, out ay0, out ax1, out ay1)) continue;
+                if (!WordRect(cam, newer, out bx0, out by0, out bx1, out by1)) continue;
+                if (ComicWords.RectsOverlap(ax0, ay0, ax1, ay1, bx0, by0, bx1, by1)) return true;
+            }
+            return false;
+        }
+
+        bool WordRect(Camera cam, int slot, out float x0, out float y0, out float x1, out float y1)
+        {
+            x0 = y0 = x1 = y1 = 0f;
+            float life = ComicWords.Scale(_age[slot]);
+            float punch = ComicWords.WordPunch(_age[slot]);
+            if (punch < 1f) punch = 1f;
+            float restHalf = RestSize * _size[slot] * _tall[slot];
+            float hyWorld = restHalf * life * punch;
+            float aspect = _tall[slot] > 0.001f ? _wide[slot] / _tall[slot] : 1f;
+            Vector3 origin = _origin[slot];
+            Vector3 vp = cam.WorldToViewportPoint(origin);
+            if (vp.z <= 0.001f) return false;
+            float side = vp.x > 0.5f ? -1f : 1f;
+            Vector3 right = cam.transform.right;
+            Vector3 up = cam.transform.up;
+            Vector3 center = origin + up * (BodyHeight * UpBodies) + right * (side * BodyHeight * SideBodies);
+            Vector3 cVp = cam.WorldToViewportPoint(center);
+            if (cVp.z <= 0.001f) return false;
+            Vector3 uVp = cam.WorldToViewportPoint(center + up * hyWorld);
+            float halfY = Mathf.Abs(uVp.y - cVp.y);
+            float halfX = halfY * aspect;
+            float s = Mathf.Abs(Mathf.Sin(_tilt[slot]));
+            float co = Mathf.Abs(Mathf.Cos(_tilt[slot]));
+            float padX = co * halfX + s * halfY + Mathf.Abs(_skew[slot]) * halfY;
+            float padY = s * halfX + co * halfY + Mathf.Abs(_arc[slot]) * halfY;
+            float worldNdc = halfY * 2f;
+            float desired = 0.30f * (life / 1.15f);
+            if (desired < 0f) desired = 0f;
+            if (desired > 0.30f) desired = 0.30f;
+            if (worldNdc > 0.0001f && worldNdc < desired)
+            {
+                float boost = desired / worldNdc;
+                padX *= boost;
+                padY *= boost;
+            }
+            float ndcX = cVp.x * 2f - 1f;
+            float ndcY = cVp.y * 2f - 1f;
+            float limitX = 1f - padX * 2f - 0.03f;
+            float limitY = 1f - padY * 2f - 0.03f;
+            if (limitX < 0f) limitX = 0f;
+            if (limitY < 0f) limitY = 0f;
+            if (ndcX < -limitX) ndcX = -limitX;
+            if (ndcX > limitX) ndcX = limitX;
+            if (ndcY < -limitY) ndcY = -limitY;
+            if (ndcY > limitY) ndcY = limitY;
+            float vx = ndcX * 0.5f + 0.5f;
+            float vy = ndcY * 0.5f + 0.5f;
+            x0 = vx - padX;
+            y0 = vy - padY;
+            x1 = vx + padX;
+            y1 = vy + padY;
+            return true;
         }
 
         int Free()
