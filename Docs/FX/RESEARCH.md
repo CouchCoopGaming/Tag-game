@@ -501,7 +501,8 @@ Pass 1 asked for six to eight streaks in the outer 12%, seat tint, from sprint, 
 
 - `Pass5Look.SpeedLines` returns 0 below sprint (13.8). At sprint and full density it returns 4. It adds lines as speed rises and stops at 8. At `FxAmount.LowDensity` (0.5) it halves that count and will not go below 2.
 - Those lines are not these streaks. `FxKitSim` draws 14 air `LineRenderer`s, life 0.15 s, peak alpha 0.35, and only when `GameSettings.SpeedLines` is on. That bool defaults off. The comment says the default is so four panes stay readable. Reduced flashing also hides them.
-- `VerbFxLook.PlayerColor` is the tint the kit already stores (`FxKitSim`, `Pass5Host`). Seat 0 is `(0.95, 0.28, 0.32)`. Seat 1 is `(0.25, 0.55, 1)`. Seat 2 is `(1, 0.82, 0.15)`. Seat 3 is `(0.25, 0.90, 0.45)`.
+- The four seat bodies are P1 red, P2 blue, P3 orange, and P4 lavender. Foam RGB in `DummyPrimitiveFactory`, verified from that file: red `(0.88, 0.22, 0.24)`, blue `(0.42, 0.68, 0.92)`, orange `(0.94, 0.42, 0.14)`, lavender `(0.70, 0.58, 0.88)`.
+- `VerbFxLook.PlayerColor` is what `FxKitSim` and `Pass5Host` store today. Seat 0 is a red `(0.95, 0.28, 0.32)` and seat 1 is a blue `(0.25, 0.55, 1)`. Seat 2 is `(1, 0.82, 0.15)` and seat 3 is `(0.25, 0.90, 0.45)`. Those two are not orange and lavender. Do not copy them onto P3 and P4.
 - `AccessibilityPalette.Player` is a different table, five palettes of four colors. Nothing under `Assets/Scripts/FX` reads it. Do not retint the streaks from that table in this build.
 
 **What to build.**
@@ -515,12 +516,13 @@ Pass 1 asked for six to eight streaks in the outer 12%, seat tint, from sprint, 
 | Margin | Outer 12% of the pane. At 640×360 that is 77 px on the left and right and 43 px on the top and bottom. Nothing inside that frame. |
 | Size at 640×360 | Each streak is 48 px long (0.075 of the width) and 4 px thick (4/360 of the height), with a 1 px dark outline. The colored core is what is left inside the outline. |
 | If the pane is 960×540 | Keep the fractions. The check pixels become 72 px long, 6 px thick, and a 2 px outline. The 12% margin stays 12%. |
-| Outline | RGB `(0.08, 0.07, 0.06)`, alpha 0.90, on every seat. Seat 1 blue and seat 2 yellow sit on sky. The outline is why they survive. Seat 0 red does not get to skip it. |
+| Tint | The seat body. P1 red, P2 blue, P3 orange, P4 lavender, using the foam RGB above. One seat, one color. |
+| Outline | RGB `(0.08, 0.07, 0.06)`, alpha 0.90, on every seat. P2 blue and P4 lavender sit on sky. P3 orange sits on brick. The outline is why they survive. P1 red does not get to skip it. |
 | Draw | 6 quads, one mesh, child of that seat’s camera. 1 draw. The other three cameras do not draw it. Four sprinters are 4 draws, one on each owner camera. 0 particles. Not 6 `LineRenderer`s. The kit already spends 14 of those on air streaks. |
 
 **Reference.** Same as pass 1. Spider-Man’s published camera notes are about field of view, which stays 0. Titanfall 2’s texture deck, verified in pass 1, refuses an extra full-screen pass. This mesh is the small version of that refusal. No new page was opened for the pixel table. The 48 px, the 4 px, the 0.55, and the 0.12 s are the build numbers for this pass. They are not a captured frame.
 
-**Readability risk.** High if the streaks are parented in the world: four panes would each draw every runner. High if the count follows `SpeedLines` and someone enables that toggle to “make the streaks appear.” High if seat 2 is a bare yellow stroke on the sky with no outline. Low if they stay in the 12% and the center of the pane stays empty.
+**Readability risk.** High if the streaks are parented in the world: four panes would each draw every runner. High if the count follows `SpeedLines` and someone enables that toggle to “make the streaks appear.” High if P2 blue or P4 lavender is a bare stroke on the sky with no outline. Low if they stay in the 12% and the center of the pane stays empty.
 
 ### 2. Contact ink card against the comic word
 

@@ -13,11 +13,12 @@ from PIL import Image, ImageDraw
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "research-pass1"))
 import make_stills as p1
 
+# DummyPrimitiveFactory foam. P1 red, P2 blue, P3 orange, P4 lavender.
 SEATS = (
-    (242, 71, 82),
-    (64, 140, 255),
-    (255, 209, 38),
-    (64, 230, 115),
+    (224, 56, 61),
+    (107, 173, 235),
+    (240, 107, 36),
+    (179, 148, 224),
 )
 INK = (20, 18, 16)
 CHIP = (16, 18, 22)
@@ -225,7 +226,7 @@ def main():
             "COUNT  6 full, 3 on low effects, 0 when effects are off or Reduced flashing is on.",
             "LIFE  0.12 s. Opacity peaks at 0.55. Do not turn the world speed lines on.",
             "MARGIN  Outer 12%. At this pane that is 77 px on the sides and 43 px on the top and bottom.",
-            "TINT  VerbFxLook.PlayerColor, plus a 1 px dark outline on every seat.",
+            "TINT  P1 red, P2 blue, P3 orange, P4 lavender. A 1 px dark outline on every seat.",
             "DRAW  1 mesh. The other three cameras do not draw it.",
         ],
     )
