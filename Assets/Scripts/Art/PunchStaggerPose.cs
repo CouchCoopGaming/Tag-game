@@ -4,10 +4,9 @@ using UnityEngine;
 namespace Tag.Art
 {
     /// <summary>
-    /// Visual stumble for a punch that did not tag. The head and the chest snap
-    /// back and one leg steps, then the weight eases onto the gait. The window
-    /// is the quarter second. Not the punch line and not the tag catch.
-    /// No root motion, no impulse.
+    /// Visual absorb for a punch that did not tag. The chest stays forward over
+    /// the knees for the quarter second, then the gait returns. Not the punch
+    /// line and not the tag catch. No root motion, no impulse.
     /// </summary>
     public static class PunchStaggerPose
     {
@@ -20,42 +19,59 @@ namespace Tag.Art
         /// <summary>Fast enough that the snap arrives inside the rise.</summary>
         public const float Slew = 280f;
 
-        public const float ArmPitchL = 46f;
-        public const float ArmYawL = 28f;
-        public const float ArmRollL = 14f;
-        public const float ElbowL = -30f;
-        public const float ArmPitchR = 34f;
-        public const float ArmYawR = -26f;
-        public const float ArmRollR = -12f;
-        public const float ElbowR = -24f;
-        public const float ThighL = 38f;
-        public const float ThighR = -16f;
-        public const float KneeL = -34f;
-        public const float KneeR = -8f;
-        public const float Hip = -18f;
-        public const float HipYaw = 8f;
-        public const float Spine = -16f;
-        public const float SpineYaw = -6f;
-        public const float Head = -24f;
-        public const float HeadYaw = 4f;
+        public const float ArmPitchL = 22f;
+        public const float ArmYawL = -46f;
+        public const float ArmRollL = 6f;
+        public const float ElbowL = -50f;
+        public const float ArmPitchR = 20f;
+        public const float ArmYawR = 46f;
+        public const float ArmRollR = -6f;
+        public const float ElbowR = -46f;
+        public const float ThighL = 116f;
+        public const float ThighR = 116f;
+        public const float ThighYawL = -56f;
+        public const float ThighYawR = 56f;
+        public const float ThighRollL = 20f;
+        public const float ThighRollR = -20f;
+        public const float KneeL = -96f;
+        public const float KneeR = -96f;
+        public const float FootL = 16f;
+        public const float FootR = 16f;
+        public const float Hip = 35f;
+        public const float HipYaw = 0f;
+        public const float Spine = 15f;
+        public const float SpineYaw = 0f;
+        public const float Head = -20f;
+        public const float HeadYaw = 0f;
+        /// <summary>Hips-bone drop, meters. The capsule does not move.</summary>
+        public const float BoneDrop = 0.491f;
 
         public struct Sample
         {
             public float ThighL, ThighR, KneeL, KneeR;
+            public float ThighYawL, ThighYawR, ThighRollL, ThighRollR;
+            public float FootL, FootR;
             public float ArmPitchL, ArmPitchR, ArmYawL, ArmYawR, ArmRollL, ArmRollR;
             public float ElbowL, ElbowR;
             public float Hip, HipYaw, Spine, SpineYaw, Head, HeadYaw;
+            public float Drop;
         }
 
-        /// <summary>Chest and head snap back. One leg steps. The other foot stays.</summary>
+        /// <summary>Chest forward over both knees, arms out, hips sat back. Holds for the quarter second.</summary>
         public static Sample Stumble()
         {
             return new Sample
             {
                 ThighL = ThighL,
                 ThighR = ThighR,
+                ThighYawL = ThighYawL,
+                ThighYawR = ThighYawR,
+                ThighRollL = ThighRollL,
+                ThighRollR = ThighRollR,
                 KneeL = KneeL,
                 KneeR = KneeR,
+                FootL = FootL,
+                FootR = FootR,
                 ArmPitchL = ArmPitchL,
                 ArmPitchR = ArmPitchR,
                 ArmYawL = ArmYawL,
@@ -70,6 +86,7 @@ namespace Tag.Art
                 SpineYaw = SpineYaw,
                 Head = Head,
                 HeadYaw = HeadYaw,
+                Drop = BoneDrop,
             };
         }
 
@@ -94,12 +111,14 @@ namespace Tag.Art
             if (Slew < 160f) return false;
 
             Sample pose = Stumble();
-            if (pose.ArmPitchL < 36f || pose.ArmPitchR < 24f) return false;
-            if (pose.ArmYawL < 18f || pose.ArmYawR > -18f) return false;
-            if (pose.ThighL < 28f || pose.ThighR > -8f) return false;
-            if (pose.KneeL > -24f || pose.KneeR < -20f) return false;
-            if (Mathf.Abs(pose.KneeL - pose.KneeR) < 16f) return false;
-            if (pose.Hip + pose.Spine > -28f) return false;
+            if (pose.ArmPitchL < 16f || pose.ArmPitchR < 16f) return false;
+            if (pose.ArmYawL > -30f || pose.ArmYawR < 30f) return false;
+            if (pose.ThighL < 45f || pose.ThighR < 45f) return false;
+            if (pose.ThighYawL > -30f || pose.ThighYawR < 30f) return false;
+            if (pose.KneeL > -45f || pose.KneeR > -45f) return false;
+            if (pose.Hip < 35f || pose.Spine < 15f) return false;
+            if (pose.Hip / pose.Spine < 1.5f) return false;
+            if (pose.Drop < 0.20f) return false;
             if (pose.Head > -16f) return false;
             if (Mathf.Abs(pose.ArmPitchL - VerbPoseClips.PunchStrikePitch) < 40f) return false;
             if (Mathf.Abs(pose.ArmPitchL - VerbPoseClips.TagArmPitch) < 40f) return false;
