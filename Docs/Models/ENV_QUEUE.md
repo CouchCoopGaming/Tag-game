@@ -6,7 +6,7 @@ A colour or paint sibling uses the base quartet when vertex positions, indices, 
 
 | Branch | Tip | Previous tightened run | This run |
 | --- | --- | --- | --- |
-| #122 | `7cee8bbf` | `pass=97/132` paper 7 / geom 28 at `1eec03a1` | `models-validate assets=132 pass=126 fail=6` / `models-split paperwork=5 geometry=1` |
+| #122 | `09958348` | `pass=126/132` paper 5 / geom 1 at `7cee8bbf` | `models-validate assets=132 pass=126 fail=6` / `models-split paperwork=5 geometry=1` |
 | #125 | `3040d2e5` | `pass=14/189` paper 136 / geom 39 at `29caae02` | `models-validate assets=189 pass=18 fail=171` / `models-split paperwork=136 geometry=35` |
 | #129 | `30af0ae6` | `pass=27/220` paper 176 / geom 17 at `cf295d9b` | `models-validate assets=220 pass=43 fail=177` / `models-split paperwork=161 geometry=16` |
 
@@ -22,7 +22,7 @@ A colour or paint sibling uses the base quartet when vertex positions, indices, 
 
 ## Buildings (#122)
 
-1. Leave the 126 passes. `7cee8bbf` cuts LOD2. Where LOD0 is at most 2000, LOD2 is gone (Alley 260/132, Driveway 72/48, RooftopAC 488/148). Where LOD2 is still required it is under 0.6×: Cabin 4972/1364/792, GasCanopy 2272/1064/120, Ranch_House 2604/2340/296, Dock_Straight 3720/672/336, FishingBoat 2932/1148/260, HarborShed 3296/504/120, Tree_Pine 2932/816/384.
+1. Leave the 126 passes. The count did not change at `09958348`. That tip puts LOD2 back on the six new pieces, under 0.6×, and leaves LOD0 and LOD1 alone: Alley 260/132/48, Subway_Entrance 300/180/96, Driveway 72/48/24, Bleachers 300/216/108, Restroom 208/144/60, Ferry 340/180/72. RooftopAC stays 488/148 with no LOD2. The required cuts from `7cee8bbf` still stand: Cabin 4972/1364/792, GasCanopy 2272/1064/120, Ranch_House 2604/2340/296, Dock_Straight 3720/672/336, FishingBoat 2932/1148/260, HarborShed 3296/504/120, Tree_Pine 2932/816/384.
 2. GasCanopy and Tree_Pine rewrote LOD0 index order. Vertex positions, UVs, and the face set are the same, including against #129. That is not a new cage.
 3. No third cabin. No second road junction. No second walk-up. The player Hiers on this branch are #128's work.
 
