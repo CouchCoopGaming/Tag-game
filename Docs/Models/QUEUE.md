@@ -1,10 +1,10 @@
 # Model queue
 
-Prioritized 8 Oct 2026 for the two sub-leads. Repair what the validator already fails, then fill holes. Do not open new body lines while a rejected mesh is still in the manifest.
+Prioritized again 9 Oct 2026 from the tips that were pushed. #128 had not moved. Repair what the validator still fails, then fill holes. Do not open new body lines while a rejected mesh is still in the manifest.
 
-The environment tips have diverged. #125 `3971a850` is not a descendant of #122 `af9ebd30`, and #129 `6fb88df` is not a descendant of either. Name the tip that owns a mesh before editing it. Do not rebase these branches onto each other from this lead branch, and do not merge them.
+The environment tips have diverged. #125 `fee26b67` is not a descendant of #122 `8576679b`, and #129 `8effda99` is not a descendant of either. Name the tip that owns a mesh before editing it. Do not rebase these branches onto each other from this lead branch, and do not merge them.
 
-#128 `35085db` and #131 `0273d82` are behind #118 `ac5ea8a3`. Leave them there. Landon accepts the clearance stills before anyone binds that rig into the map lane.
+#128 `35085db` and #131 `e5b34c0e` are behind #118 `ac5ea8a3`. Leave them there. Landon accepts the clearance stills before anyone binds that rig into the map lane.
 
 Run `python3 Tools/Models/validate_assets.py --root <checkout>` on the tip you touched. The summary line has to move. A still under 1280×720, or a still outside `passN`, does not move it.
 
@@ -12,9 +12,13 @@ Run `python3 Tools/Models/validate_assets.py --root <checkout>` on the tip you t
 
 Buildings worker, draft PR #122, is the sub-lead. Vehicles (#125) and street props (#129) are the helpers. Order inside this section is the order of work.
 
-### 1. One license row per asset
+### 1. License rows still missing on #125 and #129
 
-Every graded asset fails `license`. `Art/Vehicles/LICENSES.md` names the sedan family and does not name each mesh. Add a `license` object on the manifest entry, or a `LICENSES.md` row that contains the exact asset name and `CC0-1.0`. OFL is for a font only. Original procedural meshes use `"source": "original"`. This is the first commit on each of the three branches, because nothing else can pass while it is missing.
+#122 `8576679b` put a `license` object on every library row. That tip no longer fails `license`. Do not redo it.
+
+#125 and #129 still fail `license` on every shared name, because they are not stacked on that commit. `Art/Vehicles/LICENSES.md` names the sedan family in prose. A prose mention is not a row. Add one table row per asset, first cell the exact name, SPDX `CC0-1.0`, or copy the manifest object. OFL is for a font only. Original meshes use `"source": "original"`.
+
+#131's costume table is accepted. Leave it.
 
 ### 2. Still quartet, then mesh
 
@@ -40,7 +44,7 @@ Stop iterating on these. Remove them from the manifest on the branch that has th
 
 `Sedan_Mid_A_22` through `_25` and the six `_25` paints are one mesh: 4.894 × 1.975 × 1.434 m, about 14016 / 5296 / 2116 triangles, slack 0, land gap 12.4 cm. Width is 7.5 cm over the 1.90 m midsize cap, and 13.6 cm wider than the 1.839 m Camry-class width the lane used as a proportion reference. Pass 13 side, hero, front, scale, and rear are 1280×720 and under 400 KB. There is no fascia close-up. The body still reads as a soft loft: blunt nose, flush glass, not a 2022–2026 US fascia.
 
-Do not resample this loft for a 14th pass. Build a new shell that:
+`fee26b67` opened the rear quarter as dark glass. The envelope did not move: still 1.975 m wide, land gap still 12.4 cm. That pass does not count. Do not resample this loft again. Build a new shell that:
 
 - sits inside 4.70–5.05 × 1.75–1.90 × 1.38–1.50 m
 - carries one model year in the name, with 2026 as a real body rather than another paint of `_25`
@@ -59,8 +63,10 @@ Trains and trolleys are in the standard and absent. They wait until the sedan re
 Landable tops, collider within 8 cm of mesh max Y:
 
 - WalkUp, 42 cm gap on #122 and 54 cm on #129. The later tip is worse. Fix both, or pick one mesh and copy it.
+- Ranch_House, 40.4 cm on #122 after the rail pass. Pass 29 scale reads. The roof is not a landing until the collider is within 8 cm of the mesh.
 - Cabin, 22.3 cm on #122. #129 no longer reports the gap. Port that cabin back, or re-fix #122. Do not author a third cabin.
 - Gazebo, 22.2 cm on the tips that have it.
+- Boathouse on #122 now fails below-pivot. Pass 29 scale reads, and the base crosses Y=0. The #129 copy does not fail this. Pick one mesh. If the pivot is meant to be the waterline, say so in the module note. Do not leave it as an accident.
 - Container_20, both color variants, and Container_40. Climb_Body top is 2.36 m and the roof mesh is 2.59 m (23 cm). Same shell, one fix, then the enamel copies.
 
 LOD:
@@ -85,11 +91,13 @@ LOD2 missing, LOD0 still inside the class ceiling (dense props are allowed 6000)
 
 #129 does not contain the Vehicles shells. Do not re-import them here. After section 3, `Car_Sedan`, `Car_Hatch`, and `Car_Pickup` are gone from this branch too.
 
+Pass 24 added three props that read and are not geometry fails: `Barricade_Type3` (striped rails, no badges), `Delineator_Post` (orange post, white bands), `Rail_Sidewalk` (returned ends, figure in the scale still). Finish side and close-up, and the license row from section 1. Do not rebuild them. The court restore on this tip did not create a new geometry fail. `WoodFence_Corner`, `WoodFence_End`, and `WoodFence_Gate` landed on #122 only, with no quartet. Shoot them there.
+
 ### 7. Library gaps, after the fails above move
 
 City: alley walls, a subway stair entrance, an overpass span, a mid-block infill bay, a parking-garage face. Trains and trolleys from section 4.
 
-Suburb: a driveway apron that meets the existing curb and sidewalk, a fence gate matched to PicketFence, and `Ranch_House` ported off #122 so the suburb set is not stranded on one tip.
+Suburb: a driveway apron that meets the existing curb and sidewalk, and `Ranch_House` ported off #122 once the 40 cm roof gap is closed. `WoodFence_Gate` now exists on #122. It needs a quartet before anyone copies it.
 
 Park: a restroom building and bleachers. Court, hoop, gazebo, playground, pond, and trees already exist.
 
@@ -121,16 +129,16 @@ The ankle ball is already authored (Foot socket 3.0 cm). It still accounts for 8
 
 `worldMax=5.51` cm and `selfMax=4.00` cm are both over 0.5 cm. `rigJoint` stays reported separately and stays 0.
 
-### 3. Costumes on the clearance rig
+### 3. Costumes: pull the shells out of the body
 
-#131 `costume-fit` is `sets=12 frames=4128 worldMax=0.38 fails=0`, cloth band 0.60 cm, inside 0.3–1.0 cm. The clothes read as clothes: hoodie, sleeves, joggers, shoes, hood, cap, helmet, pack. No capes. That fit is against the old Hier. #131 has no clearance FBX and no pass5 proof, so every loadout fails `rig-not-clearance` and `rig-proof-missing`, and it has no LOD1 or LOD2.
+#131 `e5b34c0e` did the paperwork. The license table passes. LOD meshes are in the blend and the validator now reads them (`Reed_1_Hood` is 10858/5630/2592, not a missing LOD). `stillsCheck` passes: pass 3 quarter, side, knee close-up, and scale staff are 1280×720 and under 400 KB.
 
-After sections 1 and 2:
+The geometry does not pass. `shell-buried=1%` on all 12 loadouts. Pass 3 shows torn color patches on the grey body. The knee close-up is almost entirely grey. `worldMax=0.38` stayed under 0.5 cm and missed it. A clothed figure has to be at least 15% player color against the backdrop, and the shell has to sit 0.3–1.0 cm outside the hull.
 
-- Refit Reed, Pip, and Sol to the clearance candidate, one bone per garment, following the hip, knee, and ankle balls.
-- Bram is Reed's meshes with a blue PlayerColor. Leave that as a color until the rig is stable. A stockier Bram is a new sculpt, not another tint.
-- Add LOD1 and LOD2. Worn LOD0 is about 10858–11270 for Reed, Bram, and Sol, and 7464–7760 for Pip, under the 15000 costume ceiling.
-- Add a joint close-up and a 1.8 m scale still in `Docs/Characters/passN/`. The lineup three-quarter and side are already 1280×720.
-- License row per loadout.
+Do this before any refit onto the clearance rig:
 
-Do not bind the result into #118 from either player branch.
+- Move each piece off the body surface so the pass-3 frames read as solid clothes, not flecks.
+- Keep the open joint gaps. A gap is fine. A shell inside the chest is not.
+- Bram stays Reed's meshes with a blue PlayerColor until the rig is stable.
+
+Then, after sections 1 and 2, refit Reed, Pip, and Sol to the clearance candidate, one bone per garment. #131 still has no clearance FBX and no pass5 proof, so `rig-not-clearance` and `rig-proof-missing` stay until that rig is the body they fit. Do not bind either branch into #118.

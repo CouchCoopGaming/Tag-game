@@ -35,7 +35,7 @@ Meshes and textures are **CC0 1.0** only. **OFL 1.1** is allowed for a font and 
 Every asset has its own license record, in either place:
 
 - `license` on its `Tools/Blender/AssetLibrary/manifest.json` entry, or
-- a row in a `LICENSES.md` next to the art (`Art/Vehicles/LICENSES.md` and the same pattern for props and characters) that contains the **exact** asset name and `CC0-1.0` or `OFL-1.1`.
+- one row per asset in a `LICENSES.md` table next to the art. The first cell is the exact asset name (`Reed_1_Hood`, not the family). The row carries `CC0-1.0` or, for a font only, `OFL-1.1`. A sentence that mentions a family name is not a row.
 
 ```json
 "license": {
@@ -88,6 +88,8 @@ LOD meshes are named `LOD0`, `LOD1`, `LOD2`. LOD1 is required when LOD0 is over 
 | Costume, worn | 15000 | 8000 | 4000 | One loadout on the body |
 
 The car LOD0 band the sedan loft is aiming at is 12–15k after subdivision. A sidewalk A-frame does not get the dense-prop budget.
+
+The validator reads the LOD meshes, not a single worn total. Library, street, and vehicle meshes are the `LOD0` / `LOD1` / `LOD2` objects in the FBX. Costume LOD0 is the piece. Costume LOD1 and LOD2 are that piece named `*_LOD1` and `*_LOD2` in `Art/CharacterLab/CostumeLab.blend`, with the triangle counts on the loadout `lods` list and the `lod` lines in `Docs/Characters/pass1/fit.txt`. A level whose mesh is not in the file is missing.
 
 ## 5. Names and folders
 
@@ -158,6 +160,8 @@ Accepted folders, newest pass wins:
 
 A PNG or JPEG sitting outside a `passN` directory does not count. `before_` / `after_` pairs are comparison frames, not a substitute for a missing role unless the stem also carries the role token. Costume stills add `readability-30px` (a quarter of 1080p, figures about 30 px tall). That frame is extra. It does not replace the quartet.
 
+Every asset gets a `stillsCheck`. It is the quartet above: each role present in a `passN` folder, 1280×720 or larger, under 400 KB. The check record is on the validator row. A catalog frame at 960×540 fails it.
+
 ## 10. Player rig
 
 The gameplay body is the Hier mannequin: rigid pieces parented to bones, not a skin. The clearance candidate is rebuilt with real ball-and-socket joints. The knee work is the model for the other hinges. Current authored balls on the candidate (`Tools/Tag/build_ball_joints.py`):
@@ -198,7 +202,7 @@ A single deep fold (the 110° hip still) does not satisfy this. The check is the
 
 Costumes read as clothes on the Hier body, not as a second body. Hoodies, joggers, high-tops, caps, helmets, a small pack. No capes, scarves, or loose cloth. Hands stay bare. Who-is-who is a solid player color on the torso and the head: P1 Reed red, P2 Bram blue, P3 Pip orange, P4 Sol purple. Joggers, shoes, and the pack stay fixed colors.
 
-Each piece is its own mesh, weighted to **one** bone of the rig it was built for, and it has to be the clearance rig once that rig is the body. A costume fitted to the pre-ball Hier does not pass. Cloth sits in a **0.3–1.0 cm** band off the rendered hull. Costume-into-body and costume-into-costume stay under the same **0.5 cm** no-clip limit, measured on every 30 fps frame of idle, run, sprint, wall-run plant, slide, and landing roll. Worn LOD0 stays inside the costume budget above. Gaps left so a sleeve does not eat the joint are acceptable only while the ball is visible and the piece still reads as a garment. The lab lives in `Art/CharacterLab/` and `Docs/Characters/`. It is not in the player build, and it is not bound into the map lane.
+Each piece is its own mesh, weighted to **one** bone of the rig it was built for, and it has to be the clearance rig once that rig is the body. A costume fitted to the pre-ball Hier does not pass. Cloth sits in a **0.3–1.0 cm** band **outside** the rendered hull. A shell inside the body, or z-fighting with it, fails even when `worldMax` is under 0.5 cm. The still is the check: on the quartet, at least 15% of the figure (everything that is not the backdrop) is player color. Torn color patches on a grey body fail as `shell-buried`. Costume-into-body and costume-into-costume stay under the same **0.5 cm** no-clip limit, measured on every 30 fps frame of idle, run, sprint, wall-run plant, slide, and landing roll. Worn LOD0, LOD1, and LOD2 stay inside the costume budget above. Gaps left so a sleeve does not eat the joint are acceptable only while the ball is visible and the piece still reads as a garment. The lab lives in `Art/CharacterLab/` and `Docs/Characters/`. It is not in the player build, and it is not bound into the map lane.
 
 ## 12. What the validator grades
 
@@ -214,6 +218,8 @@ It grades, on that checkout:
 It does not grade the playground kit under `Assets/Art/Props/Playground/` or the flat `Dummy_Runner` / `Dummy_It` block-in. Those are not this library.
 
 With Blender on `PYTHONPATH` (or `blender --background --python Tools/Models/validate_assets.py -- --root <checkout>`), slack is measured again from the FBX and the manifest colliders. Without Blender, slack is the manifest's `slackCm` from that same 3 cm test, and a missing `slackCm` fails.
+
+A second line, `models-split paperwork=A geometry=B`, splits the fails. Paperwork is license and stills only. Geometry is a collider, a LOD mesh, an envelope, a rig proof, or a shell buried in the body. An asset with both counts as geometry.
 
 One line per asset, then:
 

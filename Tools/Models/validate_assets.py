@@ -21,6 +21,7 @@ import os
 import re
 import struct
 import sys
+import zlib
 from collections import defaultdict
 
 
@@ -448,8 +449,50 @@ class StillIndex(object):
         return best
 
 
+def _spdx_of(cell):
+    text = cell.upper().replace(" ", "")
+    if "CC0-1.0" in text or "CC01.0" in text:
+        return "CC0-1.0"
+    if "OFL-1.1" in text:
+        return "OFL-1.1"
+    return ""
+
+
+def parse_license_table(text):
+    """One markdown table row per asset. The first cell is the asset name.
+
+    A prose mention of a family name is not a row. The row counts only when
+    that cell is the asset and the row carries CC0-1.0 or OFL-1.1.
+    """
+    named = {}
+    lines = text.splitlines()
+    for index, line in enumerate(lines):
+        raw = line.strip()
+        if not raw.startswith("|"):
+            continue
+        cells = [cell.strip().strip("`").strip() for cell in raw.strip("|").split("|")]
+        if not cells or not cells[0]:
+            continue
+        if re.fullmatch(r":?-{3,}:?", cells[0].replace(" ", "")):
+            continue
+        # Header row: the next line is the markdown separator.
+        if index + 1 < len(lines):
+            nxt = lines[index + 1].strip().strip("|").split("|")[0].strip()
+            if re.fullmatch(r":?-{3,}:?", nxt.replace(" ", "")):
+                continue
+        spdx = ""
+        for cell in cells:
+            spdx = _spdx_of(cell)
+            if spdx:
+                break
+        if not spdx:
+            continue
+        named[cells[0]] = spdx
+    return named
+
+
 def license_names(root):
-    named = set()
+    named = {}
     for dirpath, _dirs, files in os.walk(root):
         if ".git" in dirpath.split(os.sep):
             continue
@@ -457,12 +500,7 @@ def license_names(root):
             if name != "LICENSES.md":
                 continue
             text = read_text(os.path.join(dirpath, name))
-            if "CC0" not in text and "OFL" not in text:
-                continue
-            for token in re.findall(r"[A-Z][A-Za-z0-9]*(?:_[A-Za-z0-9]+)+", text):
-                named.add(token)
-            for token in re.findall(r"`([A-Za-z0-9_]+)`", text):
-                named.add(token)
+            named.update(parse_license_table(text))
     return named
 
 
@@ -475,8 +513,11 @@ def entry_licensed(entry, named):
                 return False, "license-ofl-on-mesh"
             return True, ""
         return False, "license-bad"
-    if entry.get("name") in named:
+    spdx = named.get(entry.get("name") or "")
+    if spdx == "CC0-1.0":
         return True, ""
+    if spdx == "OFL-1.1":
+        return False, "license-ofl-on-mesh"
     return False, "license"
 
 
@@ -623,20 +664,36 @@ def check_materials(root, entry, tex_cache):
     return out
 
 
-def check_stills(index, keys, scope, extra_readability=False, category=None):
+def stills_check(index, keys, scope, extra_readability=False, category=None):
+    """Per-asset quartet check. PassN, 1280x720 or larger, each file under 400 KB.
+
+    Returns (reasons, stillsCheck). stillsCheck is the record a ledger row can quote.
+    """
     reasons = []
     matched = index.match(keys, scope, category)
+    roles = {}
     for role in ("quarter", "side", "close", "scale"):
         row = matched.get(role)
+        info = {"ok": False, "path": None, "pixels": None, "bytes": None, "pass": None}
         if row is None:
             reasons.append("stills-" + role)
-            continue
-        size = row.get("pixels")
-        nbytes = row.get("bytes")
-        if size is None or size[0] < STILL_MIN[0] or size[1] < STILL_MIN[1]:
-            reasons.append("stills-%s-res" % role)
-        elif nbytes is not None and nbytes > STILL_MAX_BYTES:
-            reasons.append("stills-%s-bytes" % role)
+        else:
+            info["path"] = row.get("rel")
+            info["full"] = row.get("path")
+            info["pass"] = row.get("pass")
+            size = row.get("pixels")
+            nbytes = row.get("bytes")
+            info["pixels"] = list(size) if size else None
+            info["bytes"] = nbytes
+            if not PASS_RE.search((row.get("rel") or "") + "/"):
+                reasons.append("stills-%s-pass" % role)
+            elif size is None or size[0] < STILL_MIN[0] or size[1] < STILL_MIN[1]:
+                reasons.append("stills-%s-res" % role)
+            elif nbytes is not None and nbytes > STILL_MAX_BYTES:
+                reasons.append("stills-%s-bytes" % role)
+            else:
+                info["ok"] = True
+        roles[role] = info
     if extra_readability:
         found = False
         for row in index.rows:
@@ -645,18 +702,88 @@ def check_stills(index, keys, scope, extra_readability=False, category=None):
                 break
         if not found:
             reasons.append("stills-readability")
+    report = {"ok": not any(r.startswith("stills-") for r in reasons), "roles": roles}
+    return reasons, report
+
+
+def check_stills(index, keys, scope, extra_readability=False, category=None):
+    reasons, _report = stills_check(index, keys, scope, extra_readability, category)
     return reasons
+
+
+_BLOB_CACHE = {}
+
+
+def file_blob(path):
+    if not path or not os.path.isfile(path):
+        return b""
+    cached = _BLOB_CACHE.get(path)
+    if cached is None:
+        with open(path, "rb") as handle:
+            cached = handle.read()
+        _BLOB_CACHE[path] = cached
+    return cached
+
+
+def mesh_in_file(path, mesh_name):
+    if not mesh_name:
+        return False
+    blob = file_blob(path)
+    if not blob:
+        return False
+    return mesh_name.encode("utf-8") in blob
+
+
+def lod_meshes(declared, path=None, piece_names=None):
+    """LOD rows from the meshes that exist, for every asset type.
+
+    Library, street, and vehicle assets name those meshes LOD0 / LOD1 / LOD2
+    inside the FBX. A costume's LOD0 is the piece itself. LOD1 and LOD2 are
+    the piece plus ``_LOD1`` / ``_LOD2`` in the lab blend. A single worn
+    triangle total is not a LOD list. A declared level whose mesh is missing
+    from the file is not counted, so the budget check reports it missing.
+    """
+    by_index = {}
+    for item in declared or []:
+        if item.get("lod") is None:
+            idx = len(by_index)
+        else:
+            idx = int(item["lod"])
+        by_index[idx] = item
+    if not by_index:
+        return []
+    out = []
+    file_ok = bool(path and os.path.isfile(path))
+    for idx in sorted(by_index):
+        item = by_index[idx]
+        if piece_names:
+            if not file_ok:
+                continue
+            if idx == 0:
+                names = list(piece_names)
+            else:
+                names = ["%s_LOD%d" % (piece, idx) for piece in piece_names]
+            if not names or not all(mesh_in_file(path, name) for name in names):
+                continue
+        elif file_ok:
+            mesh = str(item.get("mesh") or ("LOD%d" % idx))
+            if not mesh_in_file(path, mesh):
+                continue
+        out.append({
+            "lod": idx,
+            "tris": int(item.get("tris") or 0),
+            "mesh": item.get("mesh") or ("LOD%d" % idx),
+        })
+    return out
 
 
 def check_fbx_lods(path, lods):
     reasons = []
     if not os.path.isfile(path):
         return ["fbx-missing"]
-    with open(path, "rb") as handle:
-        blob = handle.read()
     for item in lods or []:
         mesh = str(item.get("mesh") or ("LOD%d" % int(item.get("lod") or 0)))
-        if mesh.encode("ascii") not in blob:
+        if not mesh_in_file(path, mesh):
             reasons.append("fbx-" + mesh.lower())
             break
     return reasons
@@ -927,14 +1054,179 @@ def costume_sets(root):
 def fit_table(root):
     path = os.path.join(root, "Docs", "Characters", "pass1", "fit.txt")
     table = {}
+    lods = {}
     if not os.path.isfile(path):
-        return table, ""
+        return table, lods, ""
     text = read_text(path)
     for line in text.splitlines():
         match = re.search(r"worn\s+(\S+)\s+tris=(\d+)", line)
         if match:
             table[match.group(1)] = int(match.group(2))
-    return table, text
+        levels = re.match(r"lod\s+(\S+)\s+(\d+)/(\d+)/(\d+)\s*$", line.strip())
+        if levels:
+            lods[levels.group(1)] = [int(levels.group(i)) for i in (2, 3, 4)]
+    return table, lods, text
+
+
+def _png_rgb(path):
+    """Decode an 8-bit RGB or RGBA PNG to (width, height, raw RGB bytes)."""
+    data = file_blob(path)
+    if len(data) < 24 or data[:8] != b"\x89PNG\r\n\x1a\n":
+        return None
+    pos = 8
+    width = height = color = None
+    idat = b""
+    plte = None
+    while pos + 8 <= len(data):
+        length, kind = struct.unpack(">I4s", data[pos:pos + 8])
+        pos += 8
+        chunk = data[pos:pos + length]
+        pos += length + 4
+        if kind == b"IHDR":
+            width, height, bit, color = struct.unpack(">IIBB", chunk[:10])
+            if bit != 8 or color not in (2, 3, 6):
+                return None
+        elif kind == b"PLTE":
+            plte = chunk
+        elif kind == b"IDAT":
+            idat += chunk
+        elif kind == b"IEND":
+            break
+    if not width or not idat:
+        return None
+    try:
+        raw = zlib.decompress(idat)
+    except zlib.error:
+        return None
+    channels = {2: 3, 3: 1, 6: 4}[color]
+    stride = width * channels
+    rows = []
+    cursor = 0
+    prev = bytearray(stride)
+    for _y in range(height):
+        if cursor >= len(raw):
+            return None
+        filt = raw[cursor]
+        cursor += 1
+        row = bytearray(raw[cursor:cursor + stride])
+        cursor += stride
+        if len(row) < stride:
+            return None
+        if filt == 1:
+            for x in range(stride):
+                left = row[x - channels] if x >= channels else 0
+                row[x] = (row[x] + left) & 255
+        elif filt == 2:
+            for x in range(stride):
+                row[x] = (row[x] + prev[x]) & 255
+        elif filt == 3:
+            for x in range(stride):
+                left = row[x - channels] if x >= channels else 0
+                row[x] = (row[x] + ((left + prev[x]) // 2)) & 255
+        elif filt == 4:
+            for x in range(stride):
+                left = row[x - channels] if x >= channels else 0
+                up = prev[x]
+                ul = prev[x - channels] if x >= channels else 0
+                pred = left + up - ul
+                pa, pb, pc = abs(pred - left), abs(pred - up), abs(pred - ul)
+                pick = left if pa <= pb and pa <= pc else (up if pb <= pc else ul)
+                row[x] = (row[x] + pick) & 255
+        elif filt != 0:
+            return None
+        rows.append(row)
+        prev = row
+    rgb = bytearray(width * height * 3)
+    out = 0
+    for row in rows:
+        if color == 2:
+            rgb[out:out + stride] = row
+            out += stride
+        elif color == 6:
+            for x in range(width):
+                i = x * 4
+                rgb[out] = row[i]
+                rgb[out + 1] = row[i + 1]
+                rgb[out + 2] = row[i + 2]
+                out += 3
+        else:
+            if not plte:
+                return None
+            for x in range(width):
+                idx = row[x] * 3
+                rgb[out:out + 3] = plte[idx:idx + 3]
+                out += 3
+    return width, height, bytes(rgb)
+
+
+def garment_coverage(rgb, width, height, step=3):
+    """Share of the figure that is player-color, not the grey body under it.
+
+    A shell sitting inside the body, or z-fighting with it, leaves the figure
+    grey with torn color flecks. worldMax can still be under 0.5 cm.
+    """
+    if width < 8 or height < 8:
+        return None
+    def px(x, y):
+        i = (y * width + x) * 3
+        return rgb[i], rgb[i + 1], rgb[i + 2]
+    corners = []
+    for y in (0, min(6, height - 1), height - 1):
+        for x in (0, min(6, width - 1), width - 1):
+            corners.append(px(x, y))
+    bg = tuple(sorted(channel[axis] for channel in corners)[len(corners) // 2] for axis in range(3))
+    figure = 0
+    garment = 0
+    for y in range(0, height, step):
+        for x in range(0, width, step):
+            red, green, blue = px(x, y)
+            chroma = max(red, green, blue) - min(red, green, blue)
+            dist = abs(red - bg[0]) + abs(green - bg[1]) + abs(blue - bg[2])
+            if dist < 30 and chroma < 18:
+                continue
+            figure += 1
+            if chroma >= 28:
+                garment += 1
+    if figure < 20:
+        return None
+    return garment / float(figure)
+
+
+# A clothed figure reads as a solid player color. Under this, the still is the
+# grey body with torn patches, which is a shell inside the surface.
+SHELL_COVERAGE_MIN = 0.15
+
+
+def shell_buried(stills):
+    """Fail when a costume still shows the shell inside the grey body."""
+    roles = (stills or {}).get("roles") or {}
+    coverages = []
+    saw_image = False
+    for role in ("quarter", "side", "close", "scale"):
+        info = roles.get(role) or {}
+        path = info.get("path")
+        if not path:
+            continue
+        # path is relative. Caller passes absolute via info when set.
+        full = info.get("full") or path
+        if not os.path.isfile(full):
+            continue
+        if not full.lower().endswith(".png"):
+            continue
+        decoded = _png_rgb(full)
+        if not decoded:
+            continue
+        saw_image = True
+        width, height, rgb = decoded
+        covered = garment_coverage(rgb, width, height)
+        if covered is not None:
+            coverages.append(covered)
+    if not coverages:
+        return ["shell-unmeasured"] if saw_image else []
+    worst = min(coverages)
+    if worst < SHELL_COVERAGE_MIN:
+        return ["shell-buried=%.0f%%" % (worst * 100.0)]
+    return []
 
 
 def evaluate_library(root, entry, index, licensed, tex_cache, use_bpy):
@@ -953,8 +1245,10 @@ def evaluate_library(root, entry, index, licensed, tex_cache, use_bpy):
     expect = "Assets/Art/Props/Library/%s/%s.fbx" % (category, name)
     if rel != expect:
         reasons.append("folder")
-    reasons.extend(check_fbx_lods(fbx, entry.get("lods")))
-    lod_reasons, lod_text = check_lod(cls, entry.get("lods") or [])
+    declared_lods = entry.get("lods") or []
+    reasons.extend(check_fbx_lods(fbx, declared_lods))
+    mesh_lods = lod_meshes(declared_lods, fbx)
+    lod_reasons, lod_text = check_lod(cls, mesh_lods)
     reasons.extend(lod_reasons)
     reasons.extend(check_scale(cls, name, entry.get("size")))
     reasons.extend(check_pivot(name, entry))
@@ -974,7 +1268,8 @@ def evaluate_library(root, entry, index, licensed, tex_cache, use_bpy):
     # Catalog stills are Category_Name. A few passes use a short stem.
     keys.append(category.lower() + "_" + keys[0])
     keys.extend(STILL_ALIASES.get(name, []))
-    reasons.extend(check_stills(index, keys, "Docs/AssetStills", category=category))
+    still_reasons, stills = stills_check(index, keys, "Docs/AssetStills", category=category)
+    reasons.extend(still_reasons)
     materials = []
     for lod in entry.get("lods") or []:
         materials.extend(lod.get("materials") or [])
@@ -995,6 +1290,7 @@ def evaluate_library(root, entry, index, licensed, tex_cache, use_bpy):
         "lod": lod_text,
         "size": entry.get("size"),
         "fbx": rel,
+        "stillsCheck": stills,
     }
 
 
@@ -1010,6 +1306,7 @@ def evaluate_unlisted(rel):
         "lod": "n/a",
         "size": None,
         "fbx": rel,
+        "stillsCheck": {"ok": False, "roles": {}},
     }
 
 
@@ -1018,15 +1315,22 @@ def evaluate_hier(root, path, index, licensed, proof, hip_text):
     is_candidate = "Clearance" in name or "Candidate" in path.replace("\\", "/")
     is_color = bool(re.search(r"_(Blue|Lavender|Mint|Orange|Red)_Hier", name))
     reasons = []
-    if name not in licensed:
+    spdx = licensed.get(name) if isinstance(licensed, dict) else None
+    if spdx == "CC0-1.0":
+        pass
+    elif spdx == "OFL-1.1":
+        reasons.append("license-ofl-on-mesh")
+    elif name not in licensed:
         reasons.append("license")
+    stills = {"ok": True, "roles": {}, "shared": "tan"}
     if is_color:
         # Same sculpture as the tan Hier. The tan line carries joints, no-clip, and stills.
         pass
     else:
         reasons.extend(check_rig_text(proof, hip_text, root, is_candidate))
         keys = ["hip_hinge_candidate", "clearance"] if is_candidate else ["hip_hinge_current", "hier"]
-        reasons.extend(check_stills(index, keys, "Docs/LocoStills"))
+        still_reasons, stills = stills_check(index, keys, "Docs/LocoStills")
+        reasons.extend(still_reasons)
     dedup = []
     for reason in reasons:
         if reason not in dedup:
@@ -1042,13 +1346,19 @@ def evaluate_hier(root, path, index, licensed, proof, hip_text):
         "lod": "n/a",
         "size": None,
         "fbx": os.path.relpath(path, root).replace("\\", "/"),
+        "stillsCheck": stills,
     }
 
 
-def evaluate_costume(root, item, index, licensed, fit, fit_text, proof):
+def evaluate_costume(root, item, index, licensed, fit, fit_lods, fit_text, proof):
     name = item.get("id") or "?"
     reasons = []
-    if name not in licensed:
+    spdx = licensed.get(name) if isinstance(licensed, dict) else None
+    if spdx == "CC0-1.0":
+        pass
+    elif spdx == "OFL-1.1":
+        reasons.append("license-ofl-on-mesh")
+    elif name not in licensed:
         reasons.append("license")
     pieces = item.get("pieces") or []
     if not pieces:
@@ -1061,12 +1371,20 @@ def evaluate_costume(root, item, index, licensed, fit, fit_text, proof):
         if not any(ok in low for ok in CLOTH_OK):
             reasons.append("not-clothing")
             break
-    tris = fit.get(name)
-    if tris is None:
+    declared = list(item.get("lods") or [])
+    if not declared and name in fit_lods:
+        counts = fit_lods[name]
+        declared = [
+            {"lod": index, "tris": counts[index], "mesh": "LOD%d" % index}
+            for index in range(len(counts))
+        ]
+    blend = os.path.join(root, "Art", "CharacterLab", "CostumeLab.blend")
+    mesh_lods = lod_meshes(declared, blend if os.path.isfile(blend) else None, pieces)
+    if not mesh_lods:
         reasons.append("lod-missing")
         lod_text = "n/a"
     else:
-        lod_reasons, lod_text = check_lod("costume", [{"tris": tris}])
+        lod_reasons, lod_text = check_lod("costume", mesh_lods)
         reasons.extend(lod_reasons)
     if not fit_text:
         reasons.append("fit-missing")
@@ -1097,7 +1415,9 @@ def evaluate_costume(root, item, index, licensed, fit, fit_text, proof):
             reasons.append("rig-pose=%s" % match.group(1))
     else:
         reasons.append("rig-proof-missing")
-    reasons.extend(check_stills(index, [], "Docs/Characters", extra_readability=True))
+    still_reasons, stills = stills_check(index, [], "Docs/Characters", extra_readability=True)
+    reasons.extend(still_reasons)
+    reasons.extend(shell_buried(stills))
     dedup = []
     for reason in reasons:
         if reason not in dedup:
@@ -1110,10 +1430,28 @@ def evaluate_costume(root, item, index, licensed, fit, fit_text, proof):
         "ok": not dedup,
         "reasons": dedup,
         "slack": "n/a",
-        "lod": lod_text if tris is not None else "n/a",
+        "lod": lod_text,
         "size": None,
         "fbx": "Art/CharacterLab/loadouts.json",
+        "stillsCheck": stills,
     }
+
+
+def is_paperwork(reason):
+    return reason == "license" or reason.startswith("license-") or reason.startswith("stills-")
+
+
+def split_fails(rows):
+    paperwork = 0
+    geometry = 0
+    for row in rows:
+        if row["ok"]:
+            continue
+        if all(is_paperwork(reason) for reason in row["reasons"]):
+            paperwork += 1
+        else:
+            geometry += 1
+    return paperwork, geometry
 
 
 def line_for(row):
@@ -1144,18 +1482,27 @@ def run(root, report_path=None):
         rows.append(evaluate_unlisted(rel))
     for path in hier_assets(root):
         rows.append(evaluate_hier(root, path, index, licensed, proof, hip_text))
-    fit, fit_text = fit_table(root)
+    fit, fit_lods, fit_text = fit_table(root)
     for item in costume_sets(root):
-        rows.append(evaluate_costume(root, item, index, licensed, fit, fit_text, proof))
+        rows.append(evaluate_costume(root, item, index, licensed, fit, fit_lods, fit_text, proof))
     rows.sort(key=lambda row: (row["category"], row["name"]))
     passed = sum(1 for row in rows if row["ok"])
     failed = len(rows) - passed
+    paperwork, geometry = split_fails(rows)
     for row in rows:
         print(line_for(row))
     print("models-validate assets=%d pass=%d fail=%d" % (len(rows), passed, failed))
+    print("models-split paperwork=%d geometry=%d" % (paperwork, geometry))
     if report_path:
         with open(report_path, "w", encoding="utf-8") as handle:
-            json.dump({"assets": len(rows), "pass": passed, "fail": failed, "rows": rows}, handle, indent=2)
+            json.dump({
+                "assets": len(rows),
+                "pass": passed,
+                "fail": failed,
+                "paperwork": paperwork,
+                "geometry": geometry,
+                "rows": rows,
+            }, handle, indent=2)
             handle.write("\n")
     return 0 if failed == 0 else 1
 
@@ -1178,6 +1525,39 @@ def self_test():
     assert role_of("fountain_bowl") == "close"
     assert role_of("wood_pole_scale") == "scale"
     assert role_of("lineup-three-quarter") == "quarter"
+    table = parse_license_table(
+        "\n".join([
+            "| Asset | SPDX | Source |",
+            "| --- | --- | --- |",
+            "| `Reed_1_Hood` | CC0-1.0 | original |",
+            "The shipped `Sedan_Mid_A` shell is original.",
+        ])
+    )
+    assert table == {"Reed_1_Hood": "CC0-1.0"}
+    assert "Sedan_Mid_A" not in table
+    declared = [
+        {"lod": 0, "tris": 100, "mesh": "LOD0"},
+        {"lod": 1, "tris": 40, "mesh": "LOD1"},
+        {"lod": 2, "tris": 10, "mesh": "LOD2"},
+    ]
+    assert len(lod_meshes(declared, None)) == 3
+    assert lod_meshes([{"tris": 100}], None, ["Lab_Hood"]) == []
+    # Grey body with a few red flecks is buried. A solid red figure is not.
+    grey = bytes([180, 178, 176])
+    body = bytes([90, 88, 86])
+    red = bytes([210, 40, 36])
+    side = 24
+    buried = bytearray(grey * (side * side))
+    solid = bytearray(grey * (side * side))
+    for y in range(4, 20):
+        for x in range(4, 20):
+            i = (y * side + x) * 3
+            buried[i:i + 3] = body
+            solid[i:i + 3] = red
+            if (x + y) % 11 == 0:
+                buried[i:i + 3] = red
+    assert garment_coverage(bytes(buried), side, side, step=1) < SHELL_COVERAGE_MIN
+    assert garment_coverage(bytes(solid), side, side, step=1) >= SHELL_COVERAGE_MIN
     print("self-test ok")
     return 0
 
