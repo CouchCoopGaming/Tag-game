@@ -90,11 +90,7 @@ namespace Tag.NoClipDump
             Emit("punch", punchStrike, "ground", t => PunchFrame(Smooth(t / punchStrike)));
             Emit("punch-recover", 0.15f, "ground", t => PunchRecover(t / 0.15f));
             Emit("tag", 0.20f, "ground", t => TagFrame(Smooth(t / 0.20f)));
-            Emit("stagger", PunchStaggerPose.Duration, "ground", t =>
-            {
-                float w = PunchStaggerPose.Weight(t);
-                return Scale(StaggerFrame(), w);
-            });
+            Emit("stagger", PunchStaggerPose.Duration, "ground", t => StaggerFrame());
 
             Emit("launch-rise", 1f / Fps, "ground", t => FromLaunch(LaunchPose.At(24.7f), 0f));
             Emit("launch-mill", 1f / Fps, "ground", t => FromLaunch(LaunchPose.At(24.7f), t < 0.02f ? -28f : 28f));
@@ -244,7 +240,8 @@ namespace Tag.NoClipDump
             return new Frame
             {
                 Hip = s.Hip, Spine = s.Spine, Head = s.Head,
-                ThighL = s.ThighL, ThighR = s.ThighR, ThighRollL = s.ThighRollL, ThighRollR = s.ThighRollR,
+                ThighL = s.ThighL, ThighYawL = s.ThighYawL, ThighR = s.ThighR, ThighYawR = s.ThighYawR,
+                ThighRollL = s.ThighRollL, ThighRollR = s.ThighRollR,
                 KneeL = s.KneeL, KneeR = s.KneeR,
                 ArmPitchL = s.ArmPitchL, ArmYawL = s.ArmYawL, ArmRollL = s.ArmRollL,
                 ArmPitchR = s.ArmPitchR, ArmYawR = s.ArmYawR, ArmRollR = s.ArmRollR,
@@ -398,11 +395,15 @@ namespace Tag.NoClipDump
                 Hip = PunchStaggerPose.Hip, HipYaw = PunchStaggerPose.HipYaw,
                 Spine = PunchStaggerPose.Spine, SpineYaw = PunchStaggerPose.SpineYaw,
                 Head = PunchStaggerPose.Head, HeadYaw = PunchStaggerPose.HeadYaw,
-                ThighL = PunchStaggerPose.ThighL, ThighR = PunchStaggerPose.ThighR,
+                ThighL = PunchStaggerPose.ThighL, ThighYawL = PunchStaggerPose.ThighYawL,
+                ThighR = PunchStaggerPose.ThighR, ThighYawR = PunchStaggerPose.ThighYawR,
+                ThighRollL = PunchStaggerPose.ThighRollL, ThighRollR = PunchStaggerPose.ThighRollR,
                 KneeL = PunchStaggerPose.KneeL, KneeR = PunchStaggerPose.KneeR,
+                FootL = PunchStaggerPose.FootL, FootR = PunchStaggerPose.FootR,
                 ArmPitchL = PunchStaggerPose.ArmPitchL, ArmYawL = PunchStaggerPose.ArmYawL, ArmRollL = PunchStaggerPose.ArmRollL,
                 ArmPitchR = PunchStaggerPose.ArmPitchR, ArmYawR = PunchStaggerPose.ArmYawR, ArmRollR = PunchStaggerPose.ArmRollR,
                 ElbowL = PunchStaggerPose.ElbowL, ElbowR = PunchStaggerPose.ElbowR,
+                Drop = PunchStaggerPose.BoneDrop,
             };
         }
 

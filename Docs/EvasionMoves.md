@@ -27,14 +27,14 @@ In-place clips on the shipped Tan Hier mannequin. Root motion is off, so the cap
 
 Joined parent/child overlap is `rigJoint`, at any depth, and it belongs to the rig lane. A knee at 55° or a hip pitched forward deepens those cuffs, and that depth is not a pose fail. `pose` is only non-adjacent pairs (chest into an arm, spine into a thigh, hand into the other forearm) plus anything into the floor. The absolute limit is 0.5 cm. Nothing was lifted, damped, or pushed apart to clear it. The pelvis bone is keyed down. That is a pose, not a capsule or root offset. The support sole stays within 0.5 cm.
 
-The support thigh stays near 48°. Past that the upper-leg mesh passes through the spine. A straight leg leaned backward is not used: the knee stays bent, and the shin points forward so the knee is over or ahead of the ankle.
+A straight leg leaned backward is not used. The knee stays bent, and the shin points forward so the knee is over or ahead of the ankle. Thigh yaw spreads the upper leg off the spine, so a 55° thigh can sit without the spine entering the mesh.
 
 | Clip | Read |
 |---|---|
 | `stutter` | Both plant frames sit. Hips are 14° over a 4° spine, the pelvis is 10.4 cm down, and the plant knee is 55°. The support sole is within 0.21 cm on all 12 move frames, including the two chops that used to leave the floor. Shoulders stay square. |
-| `spinL`, `spinR` | The pivot thigh is 48° and the knee is 55°. The pelvis is 10.4 cm down and the sole is within 0.21 cm on all 11 move frames. The trunk does not lean into the turn. A lean swings the pivot foot behind the pelvis. The head still leads the yaw. At a quarter turn and a half turn the existing overlap test reports the spine 1.4 cm into the pivot thigh. That is a pose miss, not the hip cuff. |
-| `jukeL`, `jukeR` | The outside thigh is 48°, the knee is 55°, and the pelvis is about 9 cm down. The outside sole is within 0.29 cm on all 7 move frames. The head turns into the cut. The spine stays square, because a spine yaw puts it through the thigh. `jukeR` still reports the spine 0.64 cm into the outside thigh. `jukeL` does not. The right thigh mesh sits closer to the spine than the left one at the same angle. |
-| `dive` | Face down. The takeoff holds a planted reach: hips 14°, knees 50°, pelvis 9.3 cm down, sole within 0.2 cm, arms forward, upper-arm yaw 0. The legs tuck up before the chest drops. Forearms meet the floor, then the body rolls to a shoulder and back up. No leg is kicked overhead. The roll-up is a crouch with the sole at 0.3 cm, knee 68°, shin forward, pelvis 14.1 cm down, and the pelvis 9.0 cm behind the foot. The crouch bar is 12 cm behind and 20 cm down. This rig cannot reach either while the thigh stays out of the spine and the foot stays in front. |
+| `spinL`, `spinR` | The pivot thigh is 48° and the knee is 55°, spread ±20° off the spine. The arms sit at −36° so the chest stays clear through the turn. The trunk does not lean. The head still leads the yaw. |
+| `jukeL`, `jukeR` | The outside thigh is 48°, the knee is 55°, and the outside thigh yaw is 0 so the spine stays out of that mesh. The head turns into the cut. The spine stays square. The outside sole is seated by the drop table. |
+| `dive` | One planted push-off, then a forward stretch. The plant is hips 14°, knees 50°, both soles within 0.5 cm. From 0.17 s through 0.53 s the chest is at 58° over a 4° spine, the arms reach ahead, and the legs trail. The knees fold while the chest is still leaning, the forearms meet the floor, then the body rolls to a shoulder and back up. No leg is kicked overhead. Root motion stays off. The roll-up crouch is thigh 55°, knee 79°, yaw ±20°, hips 6° over a 4° spine, both feet down. That clears the 12 cm crouch bar and the 20 cm drop bar, and the spine stays out of the thigh. |
 
 ## Bindings
 
@@ -67,24 +67,12 @@ Dive is a prototype behind the flag. It is the juke's flick rule on the forward 
 
 No-clip, every 30 fps frame of the six clips. A pair that shares a joint is `rigJoint`. `pose` is non-adjacent pairs plus the floor, and it is 0 when every one of those is at or under 0.5 cm:
 
-`no-clip clips=6 frames=115 worldMax=0.0 rigJoint=7.89 pose=1.4 fails=1`
+Pass 8 measures the six evasion clips together with the soft land, the hard land, the 65% roll, `stagger`, `exit-Roll`, and `exit-RollAbsorb`. Landings and the absorb use hip 35° over a spine of 15°. `pose` is 0 when every non-adjacent pair and the floor are at or under 0.5 cm. Knee and hip joint overlap stays `rigJoint`.
 
-`rigJoint` is the hip/thigh cuff, owned by the rig lane. The floor is clear. `pose` is not 0. The deepest report is 1.4 cm, the spine into the pivot thigh on the spin at a quarter turn and a half turn. `jukeR` reports 0.64 cm of the same pair. Knee and hip joint overlap stays `rigJoint`.
+`hip-sit clips=12 fails=0 pelvisBackMin=8.52 hingeMin=1.50 kneeMin=50.0 pelvisDropMin=8.4`
 
-Support soles, within 0.5 cm. Planted frames and the max gap, in centimetres:
+`no-clip clips=12 frames=164 worldMax=0.0 pose=0.0 rigJoint=7.91 fails=0`
 
-`ground-contact stutter planted=12/12 maxGap=0.21 frames=0.100:L:0.21,0.133:L:0.21,0.167:L:0.21,0.200:R:0.21,0.233:R:0.21,0.267:L:0.21,0.300:L:0.21,0.333:R:0.21,0.367:R:0.21,0.400:L:0.21,0.433:L:0.21,0.467:L:0.21`
+The airborne dive stretch is not a plant. Loaded frames keep the sole within 0.5 cm. When both soles are within 4 cm, both are support.
 
-`ground-contact spinL planted=11/11 maxGap=0.21 frames=0.100:R:0.21,0.133:R:0.21,0.167:R:0.21,0.200:R:0.21,0.233:R:0.21,0.267:R:0.21,0.300:R:0.21,0.333:R:0.21,0.367:R:0.21,0.400:R:0.21,0.433:R:0.21`
-
-`ground-contact spinR planted=11/11 maxGap=0.21 frames=0.100:L:0.21,0.133:L:0.21,0.167:L:0.21,0.200:L:0.21,0.233:L:0.21,0.267:L:0.21,0.300:L:0.21,0.333:L:0.21,0.367:L:0.21,0.400:L:0.21,0.433:L:0.21`
-
-`ground-contact jukeL planted=7/7 maxGap=0.29 frames=0.100:L:0.29,0.133:L:0.28,0.167:L:0.22,0.200:L:0.21,0.233:L:0.27,0.267:L:0.29,0.300:L:0.26`
-
-`ground-contact jukeR planted=7/7 maxGap=0.29 frames=0.100:R:0.29,0.133:R:0.28,0.167:R:0.22,0.200:R:0.21,0.233:R:0.27,0.267:R:0.29,0.300:R:0.26`
-
-Hip-sit on the stutter, juke, and spin plants, and on the dive takeoff and roll-up. `pelvisBack` is how far the pelvis sits behind the support foot. `hinge` is hip flexion over lumbar flexion. `kneeMin` is support-knee flexion. `pelvisDrop` is how far the pelvis bone is below its standing height. The two fails are the dive roll-up frames: the pelvis is 9.0 cm behind the foot (the crouch bar is 12) and 14.1 cm down (the bar is 20). The knee is 68° and the shin points forward.
-
-`hip-sit clips=6 loadedFrames=115 pelvisBackMin=8.99 cm hingeMin=1.50 kneeMin=50.0 pelvisDropMin=8.9 cm fails=2`
-
-Stills for this pass are in `Docs/EvasionStills/pass5/`. Side and three-quarter strips cover the stutter and the dive. `before/` and `after/` are side views with a vertical line through the support foot and a dot on the pelvis. Pass 4 is still in `Docs/EvasionStills/pass4/`. Pass 3 is still in `Docs/EvasionStills/pass3/`. Pass 2 is still in `Docs/EvasionStills/pass2/`. Pass 1 is still in `Docs/EvasionStills/pass1/`.
+Pass 8 side stills of the hard land, the roll absorb, and the stagger are in `Docs/Movement/evasion/pass8/`. Same camera before and after, whole figure. A vertical line runs through the support foot and a dot marks the pelvis. Pass 7 stills stay in `Docs/Movement/evasion/pass7/`. Pass 6 stills stay in `Docs/Movement/evasion-pass6/`. Pass 5 is still in `Docs/EvasionStills/pass5/`. Pass 4 is still in `Docs/EvasionStills/pass4/`. Pass 3 is still in `Docs/EvasionStills/pass3/`. Pass 2 is still in `Docs/EvasionStills/pass2/`. Pass 1 is still in `Docs/EvasionStills/pass1/`.
