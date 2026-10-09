@@ -381,6 +381,9 @@ def _cutters(spec):
     pockets = []
     prisms = []
     ws, bl, side = _windows(spec)
+    # Side-glass booleans dominate LOD2. The dark panes still sit on the skin.
+    if spec.get("_lod", 0) >= 2:
+        side = []
     y0, z0, y1, z1 = ws
     ny, nz = _rake_normal(y0, z0, y1, z1)
     hx0, hx1 = spec["ws_hx"]
@@ -570,7 +573,7 @@ def _wheels(g, spec, lod):
     if spec.get("tread"):
         _wheels_tread(g, spec, lod)
         return
-    seg = 16 if lod == 0 else (6 if lod >= 2 else 10)
+    seg = 16 if lod == 0 else (4 if lod >= 2 else 10)
     r = spec["tire_r"]
     half_w = spec["tire_half_w"]
     for z in spec["axles"]:
@@ -582,7 +585,8 @@ def _wheels(g, spec, lod):
             sign = 1.0 if x > 0 else -1.0
             face = x + sign * (half_w + 0.010)
             g.cylinder((face, spec["axle_y"], z), r * 0.68, 0.012, "Lib_Steel", seg, axis="X")
-            g.cylinder((face + sign * 0.008, spec["axle_y"], z), r * 0.20, 0.010, "Lib_SteelDark", max(8, seg // 2), axis="X")
+            if lod < 2:
+                g.cylinder((face + sign * 0.008, spec["axle_y"], z), r * 0.20, 0.010, "Lib_SteelDark", max(8, seg // 2), axis="X")
             if lod == 0:
                 for k in range(5):
                     theta = math.radians(k * 72.0 + 8.0)
@@ -887,7 +891,7 @@ def build_sedan(g, spec, lod):
     _glass(g, spec)
     if lod < 2:
         _door_lines(g, spec)
-    _mirrors(g, spec, lod)
+        _mirrors(g, spec, lod)
     _fascia(g, spec, lod)
     if spec.get("cladding"):
         z_a = spec["axles"][0] + spec["arch_r"] + 0.08
