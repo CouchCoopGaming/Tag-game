@@ -21,7 +21,7 @@ Mega Park is one cooker. Kickball (Z7) and the crash bowl (Z8) are the open midd
 
 - The CCW loop is `LoopLengthM = 472` m (`MegaParkP1Layout.LoopCcw`). At sprint 13.8 m/s that is 472 / 13.8 = 34.2 s.
 - Crossing A is the open rect x[52, 72] × z[40, 58]. No props. The Z7 dressing stays east of x=72 or south of z=40.
-- Crossing B is merry, x[22, 46] × z[44, 52]. Not dressed this pass.
+- Crossing B is merry, x[22, 46] × z[44, 52]. That band stays empty. Z3 dressing sits on the lawns north and south of it.
 - East spine x[130, 138] and the fort gap z[46, 54] inside x[118, 158] stay empty. Corridor minimum is 8 m.
 - A chase loop is a ground polyline. Floors (road, sidewalk, court, anything under the 0.30 m step) do not block. Clearance is the play capsule radius 0.40 m plus 0.10 m. `PawnRadius` and `PawnStep` are in `MegaParkP1Layout`.
 - A district chase is a shortcut around that district. It does not replace the 472 m loop and it does not move the spawn pads.
@@ -157,7 +157,7 @@ Four pads on 118 m arcs of the 472 m loop (`MegaParkP1Layout` spawn comment):
 
 The hot-path line stays `hot-path allocs before=101 after=0 flags=dropped`. Do not edit the scan or the movement code to chase that line.
 
-Graybox static draws after batching are capped at `MegaParkP1Layout.Pass7.DrawCap = 120`. Pocket is 60, Stack is 70. That cap is the graybox audit. Dressed props are marked static. `BatchDistrictMeshes` disables LOD1 and LOD2, disables the LODGroup, then calls `StaticBatchingUtility.Combine`. Z7, Z1, and Z2 all take that path. Four cameras still each submit the combined batch. LOD1 and LOD2 are not drawn on a dressed district.
+Graybox static draws after batching are capped at `MegaParkP1Layout.Pass7.DrawCap = 120`. Pocket is 60, Stack is 70. That cap is the graybox audit. Dressed props are marked static. `BatchDistrictMeshes` disables LOD1 and LOD2, disables the LODGroup, then calls `StaticBatchingUtility.Combine`. Z7, Z1, Z2, and Z3 all take that path. Four cameras still each submit the combined batch. LOD1 and LOD2 are not drawn on a dressed district.
 
 ## Scale versus the Hier player
 

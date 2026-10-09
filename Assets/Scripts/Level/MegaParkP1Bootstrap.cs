@@ -467,6 +467,7 @@ namespace Tag.Level
             BuildDistrict("WorldZ7", MegaParkWorldDistrict.Places, table, true);
             BuildDistrict("WorldZ1", MegaParkWorldDistrict.SoftPlay, table, true);
             BuildDistrict("WorldZ2", MegaParkWorldDistrict.Cling, table, true);
+            BuildDistrict("WorldZ3", MegaParkWorldDistrict.Merry, table, true);
         }
 
         void BuildDistrict(string group, MegaParkWorldDistrict.Place[] places, WorldPropTable table, bool batch)

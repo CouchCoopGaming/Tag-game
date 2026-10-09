@@ -1,18 +1,21 @@
+## Z7
+
 world-check routes=5 reachable=5/5 floatingProps=0 missingColliders=0 scaleFails=0
 jump apex 13.866 m  wall-jump flat 4.394 m  wall-run 5.89 m  air dash 1.50 m  grapple 28.0 m
 instances 46 unique 24
 static-batch yes
+gate-leaf hide yes
 wall-jump perp 0 deg 4.026 m  off-wall 30 deg 4.907 m  60 deg 5.551 m  into-wall -30 deg 3.145 m  -60 deg 2.501 m
 OK   WestClimb wall 3.20 m wall-run 4.00 m on a 8.00 m face (max 5.89) outer gap 3.22 m deck gap 4.39 m; +30 deg launch 0.05 m land (76.94, 34.93) perp 4.91 m; +60 deg launch 0.05 m land (77.54, 34.83) perp 5.55 m
 OK   WestGrapple rope 12.21 m from the south lane to the climb cornice (range 1.5–28.0)
 OK   GazeboVault rail 0.95 m above the deck (mantle 0.45–2.55, vault band 0.90–1.05) east walk-around open
 OK   SlideDash under-clear 1.68 / 1.68 m (crouch 1.05) air-dash gap 0.92 m (dash 1.50)
-OK   ChaseLoop length 129.5 m clearance 0.90 m at (91.3, 66.5) vs Planter_N samples 256 blocked 0; gate entry clearance 0.90 m vs Col_Fabric_E1
+OK   ChaseLoop length 132.5 m clearance 0.84 m at (80.7, 40.9) vs CourtFence samples 262 blocked 0; gate entry clearance 1.05 m vs Col_Fabric_E1
 --- bounds ---
-Court            x[82.60, 94.60] y[0.00, 0.12] z[42.20, 64.20]
-CourtFence       x[82.11, 95.08] y[-0.00, 3.04] z[41.72, 64.69]
-Hoop_S           x[87.74, 89.46] y[0.00, 3.97] z[40.80, 43.19]
-Hoop_N           x[87.74, 89.46] y[0.00, 3.97] z[63.21, 65.60]
+Court            x[81.10, 96.10] y[0.00, 0.12] z[42.20, 64.20]
+CourtFence       x[80.61, 96.58] y[-0.00, 3.04] z[41.72, 64.69]
+Hoop_S           x[87.74, 89.46] y[0.00, 3.97] z[40.80, 41.43]
+Hoop_N           x[87.74, 89.46] y[0.00, 3.97] z[64.97, 65.60]
 Road_0           x[82.03, 85.97] y[0.00, 0.11] z[31.03, 36.97]
 Road_1           x[86.03, 89.97] y[0.00, 0.11] z[31.03, 36.97]
 Road_2           x[90.03, 93.97] y[0.00, 0.11] z[31.03, 36.97]
@@ -36,40 +39,38 @@ Climb_A          x[71.56, 71.94] y[0.00, 3.20] z[31.00, 35.00]
 Climb_B          x[71.56, 71.94] y[0.00, 3.20] z[35.00, 39.00]
 Gazebo           x[75.16, 79.22] y[0.01, 3.05] z[33.05, 36.95]
 AC_Gazebo        x[76.90, 78.16] y[3.05, 3.87] z[34.55, 35.45]
-Car_Sedan        x[83.85, 88.06] y[0.27, 1.66] z[34.75, 36.35]
-Car_Hatch        x[90.15, 93.88] y[0.27, 1.60] z[34.79, 36.31]
-Car_Pickup       x[95.42, 99.76] y[0.30, 1.84] z[34.69, 36.41]
+Car_Sedan        x[83.75, 88.16] y[0.13, 1.54] z[34.74, 36.35]
+Car_Hatch        x[90.15, 93.88] y[0.13, 1.60] z[34.79, 36.31]
+Car_Pickup       x[95.42, 99.62] y[0.13, 1.84] z[34.68, 36.42]
 Light_W          x[80.71, 81.29] y[0.08, 5.45] z[28.94, 30.32]
 Light_E          x[109.91, 110.49] y[0.08, 5.45] z[29.08, 30.46]
-Hydrant          x[82.97, 83.43] y[0.27, 1.03] z[29.47, 29.81]
-Bench_A          x[85.75, 87.45] y[0.41, 1.06] z[29.54, 30.11]
-Trash_A          x[88.50, 88.70] y[0.46, 0.92] z[29.35, 29.70]
-Bench_B          x[94.15, 95.85] y[0.41, 1.06] z[29.54, 30.11]
-Trash_B          x[97.10, 97.30] y[0.46, 0.92] z[29.35, 29.70]
-Scaffold_A       x[99.29, 101.11] y[0.20, 1.70] z[38.99, 40.21]
-Scaffold_B       x[102.04, 103.86] y[0.20, 1.70] z[38.99, 40.21]
+Hydrant          x[82.97, 83.43] y[0.28, 1.03] z[29.49, 29.81]
+Bench_A          x[85.75, 87.45] y[0.29, 1.08] z[29.54, 30.10]
+Trash_A          x[88.42, 88.78] y[0.28, 0.97] z[29.27, 29.63]
+Bench_B          x[94.15, 95.85] y[0.29, 1.08] z[29.54, 30.10]
+Trash_B          x[97.02, 97.38] y[0.28, 0.97] z[29.27, 29.63]
+Scaffold_A       x[99.28, 101.12] y[0.02, 1.70] z[38.98, 40.22]
+Scaffold_B       x[102.03, 103.87] y[0.02, 1.70] z[38.98, 40.22]
 Tree_W           x[76.06, 76.34] y[0.00, 2.25] z[30.06, 30.34]
 Tree_N           x[85.03, 85.37] y[0.00, 2.25] z[67.73, 68.07]
 Planter_W        x[73.95, 74.85] y[0.00, 0.84] z[30.95, 31.85]
 Planter_N        x[90.75, 91.65] y[0.00, 0.84] z[67.40, 68.30]
-Picnic           x[87.36, 88.64] y[0.37, 0.78] z[67.40, 69.10]
+Picnic           x[87.36, 88.64] y[0.03, 0.78] z[67.40, 69.10]
 ParkLamp         x[93.25, 93.55] y[0.07, 3.35] z[67.55, 67.85]
-Shrub            x[79.30, 79.90] y[0.16, 0.76] z[31.50, 32.10]
+Shrub            x[79.32, 79.88] y[0.02, 0.58] z[31.52, 32.08]
 --- asset gaps (prefab local, placement y removed) ---
   Hoop.prefab: internal gap 2.95 m under a collider at y=2.99
   Brick_Window.prefab: internal gap 0.75 m under a collider at y=0.93
   Gazebo.prefab: internal gap 0.97 m under a collider at y=1.26
-  Car_Sedan.prefab: lowest collider y=0.15 (pivot is 0); internal gap 0.80 m under a collider at y=1.50
-  Car_Hatch.prefab: lowest collider y=0.15 (pivot is 0); internal gap 0.72 m under a collider at y=1.44
-  Car_Pickup.prefab: lowest collider y=0.18 (pivot is 0); internal gap 0.17 m under a collider at y=0.73
+  Car_Sedan_25.prefab: internal gap 0.25 m under a collider at y=0.30
+  Car_Hatch_25.prefab: internal gap 0.27 m under a collider at y=0.32
+  Car_Pickup_25.prefab: internal gap 0.49 m under a collider at y=0.54
   LightPost_Single.prefab: internal gap 0.36 m under a collider at y=0.60
-  Bench_Wood.prefab: lowest collider y=0.14 (pivot is 0); internal gap 0.18 m under a collider at y=0.65
-  TrashCan_Lidded.prefab: lowest collider y=0.19 (pivot is 0)
-  Scaffold_Bay.prefab: lowest collider y=0.20 (pivot is 0); internal gap 0.18 m under a collider at y=1.68
-  PicnicTable.prefab: lowest collider y=0.37 (pivot is 0); internal gap 0.28 m under a collider at y=0.74
   ParkLamp.prefab: internal gap 0.24 m under a collider at y=0.49
-  Shrub.prefab: lowest collider y=0.16 (pivot is 0)
 player-path missing=0
+
+## Z1
+
 world-check routes=5 reachable=5/5 floatingProps=0 missingColliders=0 scaleFails=0
 jump apex 13.866 m  wall-jump flat 4.394 m  wall-run 5.89 m  air dash 1.50 m  grapple 28.0 m
 wall-jump perp 0 deg 4.026 m  off-wall 30 deg 4.907 m  60 deg 5.551 m  into-wall -30 deg 3.145 m  -60 deg 2.501 m
@@ -79,20 +80,23 @@ OK   WestClimb climb 2.00 m onto DeckLow (wall 3.20 m) wall-run 4.00 m on a 4.00
 OK   WestGrapple rope 23.26 m from the east lawn to the climb cornice (range 1.5–28.0)
 OK   GazeboVault rail 0.95 m (mantle 0.45–2.55, vault band 0.90–1.05) east walk-around open
 OK   SlideDash under-clear 1.68 / 1.68 m (crouch 1.05) air-dash gap 0.92 m (dash 1.50)
-OK   ChaseLoop length 72.4 m clearance 0.90 m at (22.2, 16.4) vs Sp_Shrub samples 143 blocked 0
+OK   ChaseLoop length 72.4 m clearance 0.92 m at (22.2, 16.4) vs Sp_Shrub samples 143 blocked 0
 --- bounds ---
 Sp_ClimbA        x[4.96, 5.34] y[0.00, 3.20] z[21.00, 25.00]
 Sp_ClimbB        x[4.96, 5.34] y[0.00, 3.20] z[27.00, 31.00]
 Sp_Gazebo        x[30.31, 34.37] y[0.01, 3.05] z[13.65, 17.54]
-Sp_ScaffoldA     x[29.49, 31.31] y[0.20, 1.70] z[22.89, 24.11]
-Sp_ScaffoldB     x[32.24, 34.06] y[0.20, 1.70] z[22.89, 24.11]
+Sp_ScaffoldA     x[29.48, 31.32] y[0.02, 1.70] z[22.88, 24.12]
+Sp_ScaffoldB     x[32.23, 34.07] y[0.02, 1.70] z[22.88, 24.12]
 Sp_Tree          x[26.06, 26.34] y[0.00, 2.25] z[14.06, 14.34]
 Sp_Planter       x[28.15, 29.05] y[0.00, 0.84] z[13.55, 14.45]
-Sp_Bench         x[23.55, 25.25] y[0.14, 0.79] z[14.29, 14.86]
-Sp_Trash         x[34.90, 35.10] y[0.19, 0.65] z[19.10, 19.45]
+Sp_Bench         x[23.55, 25.25] y[0.02, 0.82] z[14.29, 14.85]
+Sp_Trash         x[34.82, 35.18] y[0.01, 0.70] z[19.02, 19.38]
 Sp_Light         x[33.31, 33.89] y[0.08, 5.45] z[19.28, 20.66]
-Sp_Shrub         x[23.10, 23.70] y[0.16, 0.76] z[15.90, 16.50]
-Sp_Picnic        x[26.56, 27.84] y[0.37, 0.78] z[29.75, 31.45]
+Sp_Shrub         x[23.12, 23.68] y[0.02, 0.58] z[15.92, 16.48]
+Sp_Picnic        x[26.56, 27.84] y[0.03, 0.78] z[29.75, 31.45]
+
+## Z2
+
 world-check routes=5 reachable=5/5 floatingProps=0 missingColliders=0 scaleFails=0
 jump apex 13.866 m  wall-jump flat 4.394 m  wall-run 5.89 m  air dash 1.50 m  grapple 28.0 m
 wall-jump perp 0 deg 4.026 m  off-wall 30 deg 4.907 m  60 deg 5.551 m  into-wall -30 deg 3.145 m  -60 deg 2.501 m
@@ -108,12 +112,39 @@ Cl_ClimbA        x[8.95, 9.33] y[0.00, 3.20] z[48.00, 52.00]
 Cl_ClimbB        x[8.95, 9.33] y[0.00, 3.20] z[52.00, 56.00]
 Cl_Gazebo        x[12.25, 16.31] y[0.01, 3.05] z[50.05, 53.95]
 Cl_AC            x[13.99, 15.25] y[3.05, 3.87] z[51.55, 52.45]
-Cl_ScaffoldA     x[11.89, 13.71] y[0.20, 1.70] z[42.19, 43.41]
-Cl_ScaffoldB     x[14.64, 16.46] y[0.20, 1.70] z[42.19, 43.41]
+Cl_ScaffoldA     x[11.88, 13.72] y[0.02, 1.70] z[42.18, 43.42]
+Cl_ScaffoldB     x[14.63, 16.47] y[0.02, 1.70] z[42.18, 43.42]
 Cl_Tree          x[12.66, 12.94] y[0.00, 2.25] z[63.36, 63.64]
 Cl_Planter       x[14.95, 15.85] y[0.00, 0.84] z[63.75, 64.65]
-Cl_Bench         x[10.35, 12.05] y[0.14, 0.79] z[60.49, 61.06]
-Cl_Trash         x[16.30, 16.50] y[0.19, 0.65] z[61.10, 61.45]
-Cl_Shrub         x[13.30, 13.90] y[0.16, 0.76] z[65.90, 66.50]
-Cl_Picnic        x[14.36, 15.64] y[0.37, 0.78] z[67.75, 69.45]
+Cl_Bench         x[10.35, 12.05] y[0.02, 0.82] z[60.49, 61.05]
+Cl_Trash         x[16.22, 16.58] y[0.01, 0.70] z[61.02, 61.38]
+Cl_Shrub         x[13.32, 13.88] y[0.02, 0.58] z[65.92, 66.48]
+Cl_Picnic        x[14.36, 15.64] y[0.03, 0.78] z[67.75, 69.45]
 Cl_Light         x[16.71, 17.29] y[0.08, 5.45] z[65.08, 66.46]
+
+## Z3
+
+world-check routes=5 reachable=5/5 floatingProps=0 missingColliders=0 scaleFails=0
+jump apex 13.866 m  wall-jump flat 4.394 m  wall-run 5.89 m  air dash 1.50 m  grapple 28.0 m
+wall-jump perp 0 deg 4.026 m  off-wall 30 deg 4.907 m  60 deg 5.551 m  into-wall -30 deg 3.145 m  -60 deg 2.501 m
+instances 13 unique 11 (Z7 instances 46 unique 24)
+smaller-than-z7 yes static-batch yes crossing-empty yes
+OK   WestClimb wall 3.20 m wall-run 4.00 m on a 8.00 m face (max 5.89) deck gap 4.09 m gray locked yes; +30 deg launch 0.05 m land (28.74, 39.23) perp 4.91 m; +60 deg launch 0.05 m land (29.34, 38.88) perp 5.55 m
+OK   NorthGrapple rope 22.19 m from the north strip to the climb cornice (range 1.5–28.0)
+OK   GazeboVault rail 0.95 m (mantle 0.45–2.55, vault band 0.90–1.05) east walk-around open
+OK   SlideDash under-clear 1.68 / 1.68 m (crouch 1.05) air-dash gap 0.92 m (dash 1.50)
+OK   ChaseLoop length 86.0 m clearance 0.95 m at (23.3, 34.1) vs My_ClimbA samples 171 blocked 0
+--- bounds ---
+My_ClimbA        x[23.36, 23.74] y[0.00, 3.20] z[35.05, 39.05]
+My_ClimbB        x[23.36, 23.74] y[0.00, 3.20] z[39.05, 43.05]
+My_Gazebo        x[26.66, 30.72] y[0.01, 3.05] z[37.10, 40.99]
+My_AC            x[28.40, 29.66] y[3.05, 3.87] z[38.60, 39.50]
+My_ScaffoldA     x[23.28, 25.12] y[0.02, 1.70] z[52.08, 53.32]
+My_ScaffoldB     x[26.03, 27.87] y[0.02, 1.70] z[52.08, 53.32]
+My_Bench         x[42.35, 44.05] y[0.02, 0.82] z[36.09, 36.65]
+My_Trash         x[42.32, 42.68] y[0.01, 0.70] z[38.02, 38.38]
+My_Tree          x[43.36, 43.64] y[0.00, 2.25] z[39.86, 40.14]
+My_Planter       x[41.95, 42.85] y[0.00, 0.84] z[41.05, 41.95]
+My_Shrub         x[43.32, 43.88] y[0.02, 0.58] z[42.12, 42.68]
+My_Picnic        x[42.56, 43.84] y[0.03, 0.78] z[56.85, 58.55]
+My_Light         x[44.01, 44.59] y[0.08, 5.45] z[56.14, 57.52]

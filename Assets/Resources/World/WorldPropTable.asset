@@ -35,11 +35,11 @@ MonoBehaviour:
     Prefab: {fileID: 100000, guid: 141193babb6c2107a875d298f21caf8e, type: 3}
   - Path: Assets/Art/Props/Library/Park/Prefabs/Gazebo.prefab
     Prefab: {fileID: 100000, guid: 5036a890427512c437f4eb2620cf009f, type: 3}
-  - Path: Assets/Art/Props/Library/StreetFurniture/Prefabs/Car_Sedan.prefab
+  - Path: Assets/Art/Props/Library/StreetFurniture/Prefabs/Car_Sedan_25.prefab
     Prefab: {fileID: 100000, guid: a738af9bcb8d4d2f7b8f54461c0341a1, type: 3}
-  - Path: Assets/Art/Props/Library/StreetFurniture/Prefabs/Car_Hatch.prefab
+  - Path: Assets/Art/Props/Library/StreetFurniture/Prefabs/Car_Hatch_25.prefab
     Prefab: {fileID: 100000, guid: 7752622152d1023583c32e86051fdd2a, type: 3}
-  - Path: Assets/Art/Props/Library/StreetFurniture/Prefabs/Car_Pickup.prefab
+  - Path: Assets/Art/Props/Library/StreetFurniture/Prefabs/Car_Pickup_25.prefab
     Prefab: {fileID: 100000, guid: 27f24a28bdbaa5f7cdeec2369088e6da, type: 3}
   - Path: Assets/Art/Props/Library/StreetFurniture/Prefabs/LightPost_Single.prefab
     Prefab: {fileID: 100000, guid: ce261c1deaac98cabf84d7f171a4223c, type: 3}

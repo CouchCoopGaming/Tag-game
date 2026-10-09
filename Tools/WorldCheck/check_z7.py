@@ -59,10 +59,10 @@ OFF_WALL_DEGREES = (30.0, 60.0)
 # Ground loop around the street and the court. South leg stays under the
 # planted median (z min 32.62). East leg stays west of the rail at x=114.
 # North leg clears the north hoop (z max 65.60) and the park row (z min ~66.85).
-# West leg stays east of the gazebo (x max 80.15).
-# North leg is 0.90 m past the north hoop (z max 65.60). West leg stays
-# 0.95 m off the fence's west face after the gate is yawed onto that side.
-CHASE = [(82.5, 31.55), (111.0, 31.55), (111.0, 66.50), (81.2, 66.50), (81.2, 31.55)]
+# The merged CourtFence west face is x=80.61. A straight west leg at x=81.2
+# runs through that face. The leg jogs out to x=79.70 beside the fence, then
+# back to x=81.2 south of the fence (z=40.88) so it stays east of the gazebo.
+CHASE = [(82.5, 31.55), (111.0, 31.55), (111.0, 66.50), (79.70, 66.50), (79.70, 40.88), (81.2, 40.88), (81.2, 31.55)]
 CHASE_CLEAR = 0.80
 
 # Graybox that the before still draws. Centers and full sizes from MegaParkP1Layout.
@@ -731,9 +731,13 @@ def main():
         JUMP_APEX, WALL_JUMP_FLAT, WALL_RUN_DIST, AIR_DASH, GRAPPLE_MAX))
     boot = open(os.path.join(ROOT, "Assets/Scripts/Level/MegaParkP1Bootstrap.cs"), encoding="utf-8").read()
     batch_ok = 'BuildDistrict("WorldZ7", MegaParkWorldDistrict.Places, table, true)' in boot
+    fence_path = os.path.join(ROOT, "Assets/Art/Props/Library/Park/Prefabs/CourtFence.prefab")
+    fence_text = open(fence_path, encoding="utf-8", errors="replace").read() if os.path.isfile(fence_path) else ""
     gate_hide = (
         'name != "Col_Gate" && name != "GateLeaf"' in boot
         and "CourtFence has no GateLeaf to hide" in boot
+        and "m_Name: GateLeaf" in fence_text
+        and "m_Name: Col_Gate" in fence_text
     )
     print("instances %d unique %d" % (len(instances), len(cache)))
     print("static-batch %s" % ("yes" if batch_ok else "NO"))
@@ -815,7 +819,7 @@ def player_path_gaps(src):
     if "WorldPropTable.Load" not in bootstrap:
         gaps.append("bootstrap does not load the Resources table")
     seen = set()
-    for array in ("Places", "SoftPlay", "Cling"):
+    for array in ("Places", "SoftPlay", "Cling", "Merry"):
         for p in parse_places(src, array):
             if p["path"] in seen:
                 continue

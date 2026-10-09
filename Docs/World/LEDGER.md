@@ -1,6 +1,6 @@
 # World ledger
 
-Status of each map area after pass 3. Gray means the live solids are still the Mega Park cubes from `MegaParkP1Layout.BuildSolids`. Polished means library prefabs are placed on top. Z7 hides its infield lumps in play. Z1 and Z2 leave their gray toys in place.
+Status of each map area after pass 3. Gray means the live solids are still the Mega Park cubes from `MegaParkP1Layout.BuildSolids`. Polished means library prefabs are placed on top. Z7 hides its infield lumps in play. Z1, Z2, and Z3 leave their gray toys in place. This head includes the `cursor/tag-street-objects` merge (`7dc3e222`), so the GateLeaf fence and the fixed prop colliders are the bytes in play.
 
 The headless audit still counts every solid. Hiding a lump in `MegaParkP1Bootstrap` does not change `BuildSolids`, so the Mega Park proof line stays the same.
 
@@ -12,7 +12,7 @@ Zone boxes are `MegaParkP1Layout.Pass6.ZoneBoxes`.
 |---|---|---|
 | Z1 Soft-play | x[2, 38] z[2, 36] | Polished pass 2. Decks, tubes, cubes, step, and rim stay gray. 12 props, static-batched. Wall-jump rechecked pass 3. |
 | Z2 Cling | x[2, 18] z[38, 78] | Polished pass 3. Gray cling faces stay. 13 props on the east lawn, static-batched. |
-| Z3 Merry | x[22, 46] z[34, 60] | Gray. Crossing B lives here. Leave it open. |
+| Z3 Merry | x[22, 46] z[34, 60] | Polished pass 3. Crossing B, x[22, 46] × z[44, 52], stays empty. 13 props on the south lawn and the north strip, static-batched. |
 | Z4 Slide mountain | x[22, 56] z[72, 98] | Gray. Decks stay on the rim when they are built. |
 | Z5 Swings | x[58, 100] z[78, 98] | Gray. |
 | Z6 Twin forts | x[118, 158] z[10, 90] | Gray. East spine x[130, 138] and gap z[46, 54] stay empty. |
@@ -41,13 +41,13 @@ Kept gray, because they are verb toys: `Rail_East` (0.90 m vault), the kick dugo
 
 Placed at scale 1, 46 instances, 24 unique prefabs:
 
-- Court at (88.6, 0, 53.2), 12 × 22 m. Hoops 1.2 m behind the end lines: south (88.6, 0, 41.0) yaw 0, north (88.6, 0, 65.4) yaw 180.
-- `CourtFence` on the same pivot, yaw 180, so the gate faces the west chase. Play disables `Col_Gate` and hides `GateLeaf`. The fabric gap is the entrance (entry clearance 0.90 m). The leaf mesh is the street-props child on #129. This lane does not edit the prefab.
+- Court at (88.6, 0, 53.2). After the street-objects merge the slab collider measures x[81.10, 96.10] z[42.20, 64.20], 15 × 22 m. The pivot did not move. Hoops stay at south (88.6, 0, 41.0) yaw 0 and north (88.6, 0, 65.4) yaw 180. Their colliders now end 0.77 m outside the slab.
+- `CourtFence` on the same pivot, yaw 180, so the gate faces the west chase. The merged prefab in this checkout has the child mesh `GateLeaf` and `Col_Gate`. Play disables `Col_Gate` and hides `GateLeaf`. The fabric gap is the entrance (entry clearance 1.05 m). This lane does not edit the prefab. The west face of the merged fence is x = 80.61.
 - Seven `StreetRoad_TwoLane` tiles, yaw 90, along z = 34 from x = 84 to 108. Planted median at (106.2, 0, 35.55).
 - Five sidewalk bays at z = 29.6. Brick row on the south edge at z = 28.15: door, window, wall, window, door. `RooftopAC` on the wall top at y = 3.2.
 - Two `Brick_Wall` climb faces, yaw 90, at x = 71.75, z = 33 and 37. Union face is 8.00 m, height 3.20 m.
 - Gazebo at (77.53, 0, 35), yaw 180, so the entry faces the climb. AC on the roof at y = 3.05, the measured roof top. Outer west face (the step) is x = 75.16. Deck west face stays x = 76.33.
-- Parked `Car_Sedan`, `Car_Hatch`, `Car_Pickup` on the north lane, yaw 90, pivot y = 0.12 (road crown is about 0.11).
+- Parked `Car_Sedan_25`, `Car_Hatch_25`, `Car_Pickup_25` on the north lane, yaw 90, pivot y = 0.12 (road crown is about 0.11). #129 deleted the old car files. These three are the fixed meshes from #125 (`b332ca8f`), checked out as files. Their prefab guids already matched `WorldPropTable`. This lane does not edit the prefabs. Wheel boxes start at local y = 0.012.
 - Lights, hydrant, two benches, two trash cans, two scaffold bays, two maples, two planters, a picnic table, a park lamp, a shrub.
 
 ### Routes
@@ -64,9 +64,9 @@ Envelopes the check used: jump apex 13.866 m, flat wall-jump 4.394 m, wall-run 5
 | WestGrapple | grapple | 12.21 m from the south lane to the climb cornice (range 1.5–28). |
 | GazeboVault | vault | Rail 0.95 m (mantle 0.45–2.55, vault band 0.90–1.05). East walk-around open. |
 | SlideDash | slide, air dash | Under-clear 1.68 m on both bays (crouch 1.05). Gap 0.92 m (dash 1.50). |
-| ChaseLoop | ground chase | 129.5 m. Worst clearance 0.90 m at (91.3, 66.5) against `Planter_N`. The north hoop (z max 65.60) is 0.90 m south of that leg. Gate entry clearance 0.90 m. Samples 256, blocked 0. |
+| ChaseLoop | ground chase | 132.5 m. Worst clearance 0.84 m at (80.7, 40.9) against the merged `CourtFence`. The north hoop (z max 65.60) is still 0.90 m south of the north leg. Gate entry clearance 1.05 m. Samples 262, blocked 0. |
 
-The chase is the rectangle (82.5, 31.55) → (111.0, 31.55) → (111.0, 66.50) → (81.2, 66.50) → close. South of the median, west of the east rail, north of the north hoop, east of the gazebo. Kept gray toys (rail, kick dugout, cover vaults) are blockers in the check. A line from (81.2, 53.2) on that west leg to midcourt passes the opened gate.
+The chase is (82.5, 31.55) → (111.0, 31.55) → (111.0, 66.50) → (79.70, 66.50) → (79.70, 40.88) → (81.2, 40.88) → (81.2, 31.55) → close. South of the median, west of the east rail, north of the north hoop. Beside the fence the leg steps out to x = 79.70, because a straight line at x = 81.2 now runs through the merged west face. South of the fence it returns to x = 81.2, east of the gazebo. Kept gray toys (rail, kick dugout, cover vaults) are blockers in the check. A separate probe from (81.2, 53.2) to midcourt passes the opened gate.
 
 No placement hits the open rect. None sits on the 472 m loop.
 
@@ -78,7 +78,7 @@ No placement hits the open rect. None sits on the 472 m loop.
 - The planted median's collider tops at 0.66 m, over the 0.30 m step and under the 0.90 m vault band. It is a trip. The chase goes around it.
 - AC units overhang the brick thickness. The pivot sits on the wall or the roof, so the support test passes.
 - District props load from `Resources/World/WorldPropTable`. A missing table or a missing entry is `Debug.LogError`, and the count line is an error when placed is short of the list. Z7 is 46 instances and 24 unique prefabs. Play disables LOD1 and LOD2 on that group and calls `StaticBatchingUtility.Combine`, the same path as Z1. `DrawCap` 120 is the graybox batch only. Four cameras still submit the combined batch.
-- Play hides `GateLeaf` in the same pass that turns `Col_Gate` off. A fence prefab without that child logs an error. The CourtFence bytes in this checkout are the older combined mesh; `GateLeaf` arrives with #129.
+- Play hides `GateLeaf` in the same pass that turns `Col_Gate` off. The merged CourtFence in this checkout has that child, so the missing-leaf error does not fire on these bytes. A fence prefab without the child would still log an error.
 - Stills in `Docs/WorldStills/pass1/` are collider rasterizations. Canopies, glass, and brick courses are not in the image. Unity and Blender are not in this environment.
 
 ## Z1 this pass
@@ -97,7 +97,7 @@ Check line:
 | WestGrapple | 23.26 m from the east lawn to the climb cornice. |
 | GazeboVault | Rail 0.95 m. East walk-around open. |
 | SlideDash | Under-clear 1.68 m. Air-dash gap 0.92 m. |
-| ChaseLoop | 72.4 m around the decks. Worst clearance 0.90 m against the shrub. |
+| ChaseLoop | 72.4 m around the decks. Worst clearance 0.92 m against the shrub. |
 
 Stills: `Docs/WorldStills/pass2/`. Collider rasters, same as pass 1. Pass 3 did not move these props. A look 30° or 60° back into the wall (ranges 3.145 m and 2.501 m) does not cross the 3.66 m gap.
 
@@ -121,37 +121,61 @@ Check line:
 
 The low launch is the one that clears the gazebo eave. A higher hop meets the roof, same limit as Z7. Into-wall looks at −30° and −60° miss the 4.09 m deck gap.
 
-Stills: `Docs/WorldStills/pass3/`. Collider rasters.
+Stills: `Docs/WorldStills/pass3/` (`before_*.png`, `after_*.png`, `split4.png`). Collider rasters. Regenerated after the merge so the scaffold, bench, picnic, and shrub boxes match the fixed prefabs.
+
+## Z3 this pass
+
+Placements: `Merry` in `Assets/Scripts/Level/MegaParkWorldDistrict.cs`. 13 instances, 11 unique prefabs. Z7 is 46 instances and 24 unique, so this set is smaller. Play static-batches the group the same way as Z7.
+
+Crossing B, x[22, 46] × z[44, 52], has no prop. The two strips outside it do hold five routes, so Z4 stays gray. Nothing overlaps the podium, the four posts, the two tables, `Merry_A`, `Merry_B`, the hook, or the landmark pole at (40, 36.6). Nothing sits in the bowl, the open rect, or on the 472 m loop.
+
+The south lawn is the climb: two `Brick_Wall` faces, yaw 90, at x = 23.55, z = 37.05 and 41.05. Gazebo at (29.03, 0, 39.05), yaw 180, entry toward the climb. AC on the roof at y = 3.05. The north strip, z = 52.70, holds two scaffold bays 2.75 m apart. Bench, trash, maple, planter, and shrub dress the southeast lawn. Picnic and light sit east of the north tables.
+
+Check line:
+
+`world-check routes=5 reachable=5/5 floatingProps=0 missingColliders=0 scaleFails=0`
+
+| Route | Measured |
+|---|---|
+| WestClimb | Wall 3.20 m. Wall-run 4.00 m on an 8.00 m face. Deck gap 4.09 m. At 30° off the wall the capsule leaves with feet at 0.05 m and lands at (28.74, 39.23). At 60° it lands at (29.34, 38.88). Both sit inside the deck by the 0.40 m radius. |
+| NorthGrapple | 22.19 m from the north strip to the climb cornice. The rope crosses the empty band. No prop is placed in it. |
+| GazeboVault | Rail 0.95 m. East walk-around open. The podium is 0.30 m, under a step, so it is not a cage. |
+| SlideDash | Under-clear 1.68 m. Air-dash gap 0.92 m. The bays start at z = 52.08, north of Crossing B. |
+| ChaseLoop | 86.0 m around both strips. Worst clearance 0.95 m against `My_ClimbA`. |
+
+The low launch is the one that clears the gazebo eave. A higher hop meets the roof, same limit as Z7. Into-wall looks at −30° and −60° miss the 4.09 m deck gap.
+
+Stills: `Docs/WorldStills/pass3/z3_*.png`. Collider rasters. The Z2 set in the same folder keeps its own names.
 
 ## Asset bugs for the models lane
 
-The world lane does not edit prefabs. The list below was remeasured on the street lanes, not on this checkout. This head still has the older prefab bytes, so `Tools/WorldCheck/check_z7.py` will keep printing the old gaps until those prefabs merge.
+The world lane does not edit prefabs. This checkout now has the merged street-objects bytes, and the three `_25` car prefabs checked out from #125. `Tools/WorldCheck/check_z7.py` was re-run on those files.
 
-Closed on `cursor/tag-street-objects` (`7dc3e222`) and, for the cars, on #125 `cursor/tag-asset-street-kit` (`b332ca8f`):
+Closed, remeasured here:
 
 | Prefab | Was | Now |
 |---|---|---|
-| `Scaffold_Bay` | Posts from y = 0.20. Deck 0.18 m above the posts. | Posts from y = 0.015 to y = 1.655. Deck starts at y = 1.680 (gap 0.025 m). |
+| `Scaffold_Bay` | Posts from y = 0.20. Deck 0.18 m above the posts. | Posts from y = 0.015 to y = 1.655. Deck starts at y = 1.680 (gap 0.025 m). The scanner no longer prints this prefab. |
 | `TrashCan_Lidded` | Lowest y = 0.19. | Base at y = 0.013. |
 | `Bench_Wood` | Lowest y = 0.14. Gap 0.18 m under y = 0.65. | Legs at y = 0.020. No internal gap over 0.15 m. |
 | `PicnicTable` | Lowest y = 0.37. Gap 0.28 m under y = 0.74. | Feet at y = 0.025. |
 | `Shrub` | Sphere bottom y = 0.16. | Sphere bottom y = 0.020. |
 | `Car_Sedan_25`, `Car_Hatch_25`, `Car_Pickup_25` | Wheel boxes from y = 0.15–0.18. | Wheel contact boxes at y = 0.012. |
 
-`CourtFence` on #129 draws the gate as the child mesh `GateLeaf`. Play hides that mesh and turns `Col_Gate` off. That leaf is not an open models bug.
+`CourtFence` in this checkout draws the gate as the child mesh `GateLeaf`. Play hides that mesh and turns `Col_Gate` off. That leaf is not an open models bug.
 
-Still open, same scan, not in the closed set:
+Still open. Relayed to the models lane. Not edited here:
 
 | Prefab | Exact gap |
 |---|---|
 | `LightPost_Single` | 0.36 m under the pole collider at y = 0.60. The base reaches y = 0.08. |
 | `ParkLamp` | 0.24 m under the pole collider at y = 0.49. The base reaches y = 0.07. |
-| `Car_Pickup_25` | 0.17 m under the tailgate at y = 0.73, above the bed. The wheels themselves meet the ground. |
+| `Car_Pickup_25` | `Col_Tailgate` starts at y = 0.73. `Col_Bed` tops at y = 0.56, so 0.17 m of air sits under the tailgate. The wheels meet the ground. |
 
-`Gangway` is catalog `vault 0.88 m`, under the 0.90–1.05 band, and is not placed.
+`Gangway` is not placed. `Docs/AssetLibrary.md` line 3 puts park vault rails at 0.90–1.05 m. `Docs/World/STANDARD.md` says a rail in that band is the one to build a route on, and names `Gangway` as `vault 0.88 m`, under the band. The prefab field is `vaultHeightMeters: 0.88` (`Assets/Art/Props/Library/Harbor/Prefabs/Gangway.prefab`). Mantle would physically accept 0.88 m (the mantle window is 0.45–2.55), and the layout audit's lip test is mantle ± 0.04. The world standard is the tighter catalog band. 0.88 is 0.02 m under it, so it does not fit a vault route. It stays in the library.
 
-Intentional openings, not bugs: hoop rim above the pole (2.95 m under y = 2.99), brick window glass (0.75 m under y = 0.93), gazebo rail above the deck (0.97 m under y = 1.26). Sedan and hatch roofs still sit above the body (0.68 m under y = 1.38, 0.72 m under y = 1.44). That is the greenhouse, not the wheel bug.
+The scanner's first internal gap on the cars is the opening under the body, not a wheel miss: sedan 0.25 m under `Col_Body` at y = 0.30, hatch 0.27 m under `Col_Body` at y = 0.32, pickup 0.49 m under `Col_Bed` at y = 0.54. Those are ground clearance. Intentional openings, same class: hoop rim above the pole (2.95 m under y = 2.99), brick window glass (0.75 m under y = 0.93), gazebo rail above the deck (0.97 m under y = 1.26). Sedan and hatch roofs still sit above the body (`Col_Roof` at y = 1.38 and y = 1.435). That is the greenhouse.
 
 ## Next district
 
-The next row is Z3 merry. Crossing B, x[22, 46] × z[44, 52], stays empty, so a Z3 dress has to live on the merry toys outside that band. Z4 slide is the following gray district if that band cannot hold five routes. Do not fill the bowl, the kickball sightline, the soft-play decks, or the cling lanes. Keep the next set batched, and keep loading it from `WorldPropTable`.
+The next gray row is Z4 slide, x[22, 56] z[72, 98]. Yellow chutes stay the slide. Do not recolor them. Do not fill the bowl, the kickball sightline, Crossing B, the soft-play decks, or the cling lanes. Keep the next set batched, and keep loading it from `WorldPropTable`.

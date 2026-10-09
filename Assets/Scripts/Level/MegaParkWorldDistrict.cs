@@ -5,9 +5,10 @@ namespace Tag.Level
     /// <summary>
     /// Dressed Mega Park districts. Z7 is the kickball field the four split
     /// cameras share. Z1 dresses around the soft-play decks. Z2 dresses the
-    /// east lawn of the cling lanes. Placements are real meters, yaw degrees,
-    /// scale 1. The headless layout audit still counts the gray solids; play
-    /// mode hides only the Z7 infield lumps. Feel locks are not stored here.
+    /// east lawn of the cling lanes. Z3 dresses the merry lawns outside
+    /// Crossing B. Placements are real meters, yaw degrees, scale 1. The
+    /// headless layout audit still counts the gray solids; play mode hides
+    /// only the Z7 infield lumps. Feel locks are not stored here.
     /// </summary>
     public static class MegaParkWorldDistrict
     {
@@ -45,7 +46,7 @@ namespace Tag.Level
         const string R = "Assets/Art/Props/Library/Roads/Prefabs/";
         const string P = "Assets/Art/Props/Library/Park/Prefabs/";
 
-        // Court center (88.6, 53.2). Slab is 12 x 22, so x[82.6, 94.6] z[42.2, 64.2].
+        // Court pivot (88.6, 53.2). The merged slab collider measures about 15 x 22.
         // Street is the east-west two-lane at z=34, south of that slab.
         // Climb walls and the gazebo sit in the southwest pocket, clear of the open rect (z < 40).
         public static readonly Place[] Places =
@@ -86,9 +87,10 @@ namespace Tag.Level
             new Place("Gazebo", P + "Gazebo.prefab", 77.53f, 0f, 35f, 180f),
             new Place("AC_Gazebo", B + "RooftopAC.prefab", 77.53f, 3.05f, 35f, 0f),
 
-            new Place("Car_Sedan", S + "Car_Sedan.prefab", 86f, 0.12f, 35.55f, 90f),
-            new Place("Car_Hatch", S + "Car_Hatch.prefab", 92f, 0.12f, 35.55f, 90f),
-            new Place("Car_Pickup", S + "Car_Pickup.prefab", 98f, 0.12f, 35.55f, 90f),
+            // #129 removed the old car files. These are the fixed _25 meshes.
+            new Place("Car_Sedan", S + "Car_Sedan_25.prefab", 86f, 0.12f, 35.55f, 90f),
+            new Place("Car_Hatch", S + "Car_Hatch_25.prefab", 92f, 0.12f, 35.55f, 90f),
+            new Place("Car_Pickup", S + "Car_Pickup_25.prefab", 98f, 0.12f, 35.55f, 90f),
 
             new Place("Light_W", S + "LightPost_Single.prefab", 81.0f, 0f, 29.0f, 0f),
             new Place("Light_E", S + "LightPost_Single.prefab", 110.2f, 0f, 30.4f, 180f),
@@ -153,9 +155,33 @@ namespace Tag.Level
             new Place("Cl_Light", S + "LightPost_Single.prefab", 17.0f, 0f, 66.4f, 180f),
         };
 
+        /// <summary>
+        /// Z3 merry. Crossing B, x[22, 46] × z[44, 52], stays empty. The south
+        /// lawn holds the climb and the gazebo. The north strip, above z = 52,
+        /// holds the scaffold dash. Gray podium, posts, tables, and decks stay.
+        /// The landmark pole at (40, 36.6) stays clear. Play batches the group.
+        /// </summary>
+        public static readonly Place[] Merry =
+        {
+            new Place("My_ClimbA", B + "Brick_Wall.prefab", 23.55f, 0f, 37.05f, 90f),
+            new Place("My_ClimbB", B + "Brick_Wall.prefab", 23.55f, 0f, 41.05f, 90f),
+            // Yaw 180 puts the open entry on the west, toward the climb.
+            new Place("My_Gazebo", P + "Gazebo.prefab", 29.03f, 0f, 39.05f, 180f),
+            new Place("My_AC", B + "RooftopAC.prefab", 29.03f, 3.05f, 39.05f, 0f),
+            new Place("My_ScaffoldA", S + "Scaffold_Bay.prefab", 24.20f, 0f, 52.70f, 0f),
+            new Place("My_ScaffoldB", S + "Scaffold_Bay.prefab", 26.95f, 0f, 52.70f, 0f),
+            new Place("My_Bench", S + "Bench_Wood.prefab", 43.2f, 0f, 36.4f, 0f),
+            new Place("My_Trash", S + "TrashCan_Lidded.prefab", 42.5f, 0f, 38.2f, 0f),
+            new Place("My_Tree", P + "Tree_Maple.prefab", 43.5f, 0f, 40.0f, 0f),
+            new Place("My_Planter", P + "Planter.prefab", 42.4f, 0f, 41.5f, 0f),
+            new Place("My_Shrub", P + "Shrub.prefab", 43.6f, 0f, 42.4f, 0f),
+            new Place("My_Picnic", P + "PicnicTable.prefab", 43.2f, 0f, 57.7f, 90f),
+            new Place("My_Light", S + "LightPost_Single.prefab", 44.3f, 0f, 56.2f, 0f),
+        };
+
         public static Place[] AllPlaces()
         {
-            var all = new Place[Places.Length + SoftPlay.Length + Cling.Length];
+            var all = new Place[Places.Length + SoftPlay.Length + Cling.Length + Merry.Length];
             int n = 0;
             for (int i = 0; i < Places.Length; i++)
                 all[n++] = Places[i];
@@ -163,6 +189,8 @@ namespace Tag.Level
                 all[n++] = SoftPlay[i];
             for (int i = 0; i < Cling.Length; i++)
                 all[n++] = Cling[i];
+            for (int i = 0; i < Merry.Length; i++)
+                all[n++] = Merry[i];
             return all;
         }
 
