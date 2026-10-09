@@ -52,3 +52,5 @@ Landon asked that the hips visibly sit back on every loaded frame. A loaded fram
 - A landing or a crouch has hip flexion of at least 35° and spine flexion of at least 15°.
 
 The 1.5 ratio stays, and so do the pelvis distances (8 cm behind on a plant or landing, 12 cm in a crouch), the 25° support knee with the shin forward, and the 8 cm pelvis drop on a plant. Knee 45° and a 20 cm landing drop are not part of this decision.
+
+Pass 4 measured the folded sits on #136 `9c0d3e7a`. The shared recovery is hip 18° and spine 8°. The climb plant is hip 18°. The dive roll-up is hip 6° over spine 4°. Those fail this decision. It is not a new question.

@@ -616,3 +616,202 @@ Movement. Oct 8, 6:01–6:03 PM CDT: the movement lanes are one lane. A1 leads o
 Hip floors. Oct 8, 5:58 PM CDT: hips visibly sit back on every loaded frame. Adopted and now in `DIRECTION.md`: a plant has hip flexion of at least 25°; a landing or a crouch has hip flexion of at least 35° and spine flexion of at least 15°. The 1.5 ratio stays. Knee 45° and a 20 cm landing drop are not the lock. The evasion hard landing at hip 6° over spine 4° fails the new floor.
 
 Next sample, around 11:30 PM CDT: re-sample every open lane against this direction, and check that each still shows the whole subject and a 1.8 m scale figure.
+
+## 2026-10-09 — pass 4
+
+Heads were read after `git fetch`. The requested tips matched, except #123: the note said `b74cca5e`, and the live head is `e06351c0` (one commit later). #136 `9c0d3e7a` and #137 `bca44c86` are unchanged. #139 moved to `5db5ffcf`. A fold into #136 is not drift. #126 stays merged. Do not unmerge it.
+
+Hip floors in force: hips sit back on every loaded frame. A plant has hip flexion of at least 25°. A landing or a crouch has hip flexion of at least 35° and spine flexion of at least 15°. The 1.5 ratio stays. Hero, side, and scale show the whole subject. The scale frame also shows a 1.8 m figure.
+
+### A1 shared movement — PR #136 — `9c0d3e7a`
+
+Unchanged since pass 3. `Docs/Movement/LEDGER.md` already scores the adopted floors.
+
+Aligned: feel locks match (coyote 0.10, jump speed 24.7, terminal 56.16, root motion off). The climb top-out still clears the older plant distances: pelvis 20.3 cm behind, knee 67.9°, drop 17.8 cm. This branch is the movement lane. Helper folds are not drift.
+
+Drift:
+
+- **Should-fix.** Every loaded frame fails the adopted floors. `HIP clips 39 frames 769 loaded 159 hipFails 159`. The shared recovery sit is hip 18° and spine 8° (ratio 2.25). The climb plant is hip 18°, under 25°. The dive roll-up is hip 6° over spine 4°. Exit-Roll late contact is hip 6° and spine 2°. Slide knee stays 8° with the shin behind.
+
+Correction: On every loaded frame, a plant has hip flexion of at least 25°, and a landing or a crouch has hip flexion of at least 35° and spine flexion of at least 15°, with the 1.5 ratio and the pelvis behind the support foot. C1 keys the vault, climb top-out, wall run, mantle, and slide. E keys the dive roll-up and the launch, stagger, and soft lands.
+
+### C1 exits — PR #139 — `5db5ffcf`
+
+Latest: `5db5ffcf` merges the lead hip floors and records C1's new fails. The merge into the movement lane is allowed.
+
+Aligned: `Docs/Movement/ASSIGNMENT.md` uses the adopted floors. Played climb and wall run are under 0.5 cm pose.
+
+Drift:
+
+- **Should-fix.** The same sits fail. Played vault: plant hip 18°, land hip 20° and spine 8°. `exit-ClimbTopOut`: 11 frames, plant hip 18°. `exit-WallRun`, `exit-Vault`, `exit-Mantle`, and `exit-Slide`: hip 18° and spine 8°.
+
+Correction: Same as #136. Re-key those loaded frames to the floors. Do not open a third copy on #120.
+
+### C1 old draft — PR #120 — `176983ee`
+
+Unchanged. `Docs/AnimFxPlan.md` pass 25 still keeps the climb-plant mesh pelvis at bind height, 89.7 to 89.9 cm, and says there is no drop.
+
+Drift: **should-fix**, stale. The working plant is the one on #139, and that one fails the 25° hip floor.
+
+Correction: Leave this draft open. Do not re-key it. The fix belongs on #139.
+
+### E old draft — PR #130 — `8d96a3f2`
+
+Unchanged. `Docs/EvasionMoves.md` still has `hip-sit fails=2` (dive roll-up 9.0 cm behind a 12 cm crouch) and `pose=1.4 fails=1` on the spin. The flag defaults off.
+
+Drift: **should-fix**. The folded read on #136 is the adopted-floor fail: hip 6° over spine 4°.
+
+Correction: Keep the flag off. The roll-up key that folds in has to clear hip 35° and spine 15°, with the pelvis at least 12 cm behind the support foot. Bring the spin pose to 0.
+
+### E helper — PR #137 — `bca44c86`
+
+Unchanged. Its pass 7 line is `hip-sit clips=11 fails=0 pelvisBackMin=9.72`. That line is the older bar. It is not a pass against hip 35° and spine 15°.
+
+Correction: Do not treat `fails=0` on that line as the adopted floor. The dive roll-up still has to clear hip 35° and spine 15°.
+
+### A1 play PR — PR #118 — `97f66cb8`
+
+Unchanged. Compile stub only.
+
+Drift:
+
+- **Should-fix.** `PlayerGlyph` is still `● ■ ▲ ◆`. Palette 0 is still yellow, green, white, cyan.
+- **Should-fix.** `Docs/Controls.md` still has no rope row.
+
+Correction: Default marks are P1 red circle, P2 blue triangle, P3 orange square, P4 lavender diamond. Add the rope row as RMB / LT, and say RT is free.
+
+### A2 Rig — PR #128 — `44fbff3f`
+
+Unchanged. The clearance candidate is still unbound. Pass 7 stills are still `Docs/Models/RigStills/pass7/`. The queue still says the scale still is waiting, and it still says #131 can refit.
+
+Drift: **should-fix**, same as pass 3. #131 did not refit.
+
+Correction: Leave the candidate unbound until Landon accepts the pass 7 stills. Costumes stay on the current rig.
+
+### D1 UI — PR #121 — `a925cbbe`
+
+Latest: `a925cbbe` guards the capture against flat figures, giant capsules, and a plate over Play.
+
+Aligned: `GrapplePadDefault` is `leftTrigger`. `PlayerGlyph` is `● ▲ ■ ◆`. The results body constant is still 1.8 m. `ResultsWord` is still `"RESULTS"`.
+
+Drift: **nit.** Pass 48 still says "Not on pad yet". Pass 50 still says "First is a little taller."
+
+Correction: none. Keep LT and the 1.8 m body.
+
+### B1 Environment — PR #122 — `4fd2472d`
+
+Latest: `4fd2472d` reshoots 94 quartets so the whole object stays in frame. `Docs/Models/ENV_QUEUE.md` on this tip states the camera rule: hero, side, and scale show the whole object, and the scale frame keeps the 1.8 m figure in view. Court text is still 22 × 15 m and 0.375 m.
+
+Aligned: sampled `Docs/AssetStills/pass36/brick_corner_quarter.jpg`, `brick_corner_side.jpg`, and `brick_corner_scale.jpg` (1280×720). The corner is fully in frame on all three. The scale frame has the figure beside the building.
+
+Drift:
+
+- **Should-fix.** Pass 36 names 94 assets and 39 of them are missing at least one of quarter, side, or scale in that folder. `courtfence` has no quarter and no scale there. The models-lead grade is one commit older (`c727dc0e`) and does not cover this reshoot.
+
+Correction: Finish quarter, side, and scale for each of those 39, whole subject, 1.8 m figure on the scale frame. Do not rebuild a mesh to fix a frame.
+
+### B2 Vehicles — PR #125 — `73fc3a78`
+
+Latest: `73fc3a78` reshoots pass 21 so each vehicle quartet shows the whole mesh. Court text is still 22 × 15 m and 0.375 m. `sedan_mid_a.py` still says no badges.
+
+Aligned: sampled `Docs/AssetStills/vehicles/sedan_mid_a_26/pass21/scale.png` and `hero.png`, and `bus_city40_25/pass21/scale.png` (1280×720). The whole vehicle is in frame with margin. Both scale frames show a standing figure beside the vehicle. 27 shells have a pass 21 scale frame.
+
+Drift:
+
+- **Should-fix.** 18 shells have no pass 21 scale frame: the unsuffixed `Bus_City40` and `Bus_City60`, `Bus_City40_Blue`, `Bus_City40_Red`, `Crossover_Compact_25`, `Hatch_Compact_25`, `Pickup_FullSize_25`, `Sedan_Compact_25`, `Sedan_Mid_A_22` through `Sedan_Mid_A_25`, and the six `Sedan_Mid_A_25` paints. The models-lead sentence that pass 21 has no 1.8 m figure was graded on `20f0d9fa`, before this reshoot.
+
+Correction: Shoot hero, side, and scale for those 18 the way `Sedan_Mid_A_26` is shot: whole mesh, 1.8 m figure on the scale frame. Keep the badges off.
+
+### B3 Props — PR #129 — `f0b41659`
+
+Latest: `f0b41659` gives the next street furniture its still quartets. Court text is still 22 × 15 m and 0.375 m. Pass 36 on this tip has 38 assets with quarter, side, scale, and close.
+
+Aligned: sampled `Docs/AssetStills/pass36/bench_metal_scale.png` (1280×720). The whole bench is in frame and a standing figure is beside it.
+
+Drift:
+
+- **Should-fix.** The new folder is 38 quartets. The models-lead grade of the previous tip `6716e242` still had 119 framing fails, including a missing 1.8 m figure on most of them. This commit does not replace that list.
+
+Correction: Keep the new quartets. Reshoot hero, side, and scale for the assets that still crop the subject or omit the 1.8 m figure. Do not rebuild a mesh to fix a frame.
+
+### World — PR #134 — `cb320d4e`
+
+Latest: `cb320d4e` reshoots Mega Park stills from library meshes. `Docs/World/STATUS.md` says the pass 10 stills are library LOD0 with a 1.8 m figure in frame. `world-check` reports `scaleFails=0`.
+
+Drift:
+
+- **Should-fix.** Sampled `Docs/WorldStills/pass10/z7_eye.png` (1280×720). The frame is the parked cars and the surrounding block. No 1.8 m figure is visible, and the block runs to the left and right edges. These are zone frames, not a hero/side/scale quartet, and the status line still claims the figure.
+
+Correction: Put a 1.8 m figure fully in each pass 10 eye frame, and keep the dressed subject inside the frame.
+
+### C2 Effects — PR #127 — `ff0a1e63`
+
+Latest: `ff0a1e63` reshoots pass 28 stills in the body-foam seat colors. The message names the dash flare blue, the grapple pull orange, and the wall ribbon red.
+
+Aligned: visual only. The named tints are seat colors.
+
+Drift: none on feel. These are not hero/side/scale asset frames.
+
+Correction: none.
+
+### F Costumes — PR #131 — `6dc8b9c4`
+
+Latest: `6dc8b9c4` opens the folded shells so sprint, slide, and roll stay under 0.5 cm. The brief says `worldMax=0.46 fails=0` on seven clips, P4 is lavender, and the clearance candidate is not in this branch. The scale still is `Docs/Characters/pass5/scale-figure.png`, a 1.80 m staff beside the figure.
+
+Aligned: still on the current rig. Pose line is under 0.5 cm.
+
+Drift:
+
+- **Should-fix.** Models lead graded this same tip and reports `models-validate assets=18 pass=0 fail=18` with 13 geometry fails (cloth coverage, shards, or a buried shell). The fit line and the validator are not the same pass.
+
+Correction: Clear the cloth-coverage and shard fails the models checker names. Do not refit onto the clearance rig.
+
+### Models lead — PR #133 — `00c8c739`
+
+Latest: `00c8c739` closes the costume shard and stray-still loopholes. The framing rule matches direction: hero, side, and scale keep the whole silhouette in frame, and the scale frame shows the 1.8 m figure.
+
+Aligned: the candidate stays unbound in `Docs/Models/STANDARD.md`. The court note is still 22 × 15 m and 0.375 m.
+
+Drift: **nit.** The validator table is one commit behind the reshoots: #122 `c727dc0e`, #125 `20f0d9fa`, #129 `6716e242`.
+
+Correction: Re-grade #122 `4fd2472d`, #125 `73fc3a78`, and #129 `f0b41659` before treating the old fail counts as current.
+
+### Effects research — PR #135 — `cd6a1fe6`
+
+Latest: `cd6a1fe6` adds pass-5 research on alley occlusion, seat tint, and word overlap. No gameplay scripts. Emotes stay parked.
+
+Drift: none.
+
+Correction: none.
+
+### S1 Motion reference — PR #123 — `e06351c0`
+
+Listed tip was `b74cca5e`. Live tip is `e06351c0`, "Record loaded-frame hip targets in the Hier chest-forward convention."
+
+Aligned: `Docs/Movement/pose/HIP_TARGETS.md` marks every quoted clip reference-only. It states the adopted floors and says a thigh angle is not hip flexion. Soft-land chest-forward of 47.9° cannot hold both a 35° hip and a 15° spine. No hip key is invented for that frame.
+
+Drift: none. This lane stays reference only.
+
+Correction: Stay reference only. Do not import the filmed keys. A frame whose chest sum cannot hold the floors is not a key.
+
+### S2 Motion clips — PR #124 — `80cd5f14`
+
+Unchanged. `hip_sit.txt` is still `fails=36`, `pelvisBackMin=-30.5 cm`. Those plants also miss the new hip floors.
+
+Drift: **should-fix.** This lane stays idle.
+
+Correction: Stay idle. Do not hand the four clips to A1.
+
+## Top of this pass
+
+Do not resend the movement-merge flag. A fold into #136 is the lane. Do not unmerge #126.
+
+Ororo, these are the five to send.
+
+1. **#136 and #139, should-fix.** Evidence: `Docs/Movement/LEDGER.md` on `9c0d3e7a`, `HIP clips 39 frames 769 loaded 159 hipFails 159`. Recovery sit hip 18° and spine 8°. Climb plant hip 18°. Dive roll-up hip 6° over spine 4°. `Docs/Movement/ASSIGNMENT.md` on `5db5ffcf` lists the same fails for the vault, climb top-out, wall run, mantle, and slide. Correction: On every loaded frame, a plant has hip flexion of at least 25°, and a landing or a crouch has hip flexion of at least 35° and spine flexion of at least 15°, ratio at least 1.5, pelvis behind the support foot. C1 keys the exits. E keys the dive roll-up and the launch, stagger, and soft lands.
+2. **B2 #125, should-fix.** Evidence: 27 of 45 shells have `pass21/scale.png`. The 18 without it include `Sedan_Mid_A_25`, its six paints, the unsuffixed buses, and the 2025 compact, hatch, crossover, and pickup. Sampled `sedan_mid_a_26/pass21/scale.png` shows the whole car and a 1.8 m figure. Correction: Shoot hero, side, and scale for those 18 the same way, whole mesh, 1.8 m figure on the scale frame.
+3. **B1 #122, should-fix.** Evidence: `Docs/AssetStills/pass36/` names 94 assets and 39 are missing quarter, side, or scale. `courtfence` has neither quarter nor scale. Sampled `brick_corner_scale.jpg` is in frame with the figure. Correction: Finish quarter, side, and scale for those 39. Whole subject. 1.8 m figure on the scale frame.
+4. **World #134, should-fix.** Evidence: `Docs/World/STATUS.md` says the pass 10 stills include a 1.8 m figure. Sampled `Docs/WorldStills/pass10/z7_eye.png` shows the parked cars and the block at the frame edge, and no figure. Correction: Put a 1.8 m figure fully in each pass 10 eye frame, and keep the dressed subject inside the frame.
+5. **A1 #118, should-fix.** Evidence: `Accessibility.cs` on `97f66cb8` still has `PlayerGlyph` `● ■ ▲ ◆` and palette 0 yellow, green, white, cyan. `Docs/Controls.md` still has no rope row. Correction: Default marks are P1 red circle, P2 blue triangle, P3 orange square, P4 lavender diamond. Add the rope row as RMB / LT, and say RT is free.
+
+Also still open, already sent: #128 leave the clearance rig unbound. #130 keep the evasion flag off until the roll-up clears the new floors. #124 stays idle.
