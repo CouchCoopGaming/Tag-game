@@ -32,7 +32,7 @@ namespace Tag.FX
         Transform _footL, _footR, _handL, _handR, _head, _spine, _hips, _armL, _armR;
         MaterialPropertyBlock _block;
         int _seat;
-        float _cr = 0.95f, _cg = 0.28f, _cb = 0.32f;
+        float _cr, _cg, _cb;
 
         bool _primed;
         bool _prevGround;

@@ -6208,12 +6208,12 @@ def pass29_edges(cam, tint):
     x = half_w * (1.0 - 0.06)
     y = half_h * (1.0 - 0.06)
     seats = (
-        (0.95, 0.28, 0.32),
-        (0.25, 0.55, 1.0),
-        (1.0, 0.58, 0.15),
-        (0.78, 0.66, 1.0),
-        (0.95, 0.28, 0.32),
-        (0.25, 0.55, 1.0),
+        (0.88, 0.22, 0.24),
+        (0.42, 0.68, 0.92),
+        (0.94, 0.42, 0.14),
+        (0.70, 0.58, 0.88),
+        (0.88, 0.22, 0.24),
+        (0.42, 0.68, 0.92),
     )
     specs = (
         (-x, half_h * 0.42, thick, length),
@@ -6424,7 +6424,7 @@ def render_pass29(arm, cam):
     tmp = "/tmp/pass29"
     os.makedirs(tmp, exist_ok=True)
     yaw = 24.0
-    seat = (0.95, 0.28, 0.32)
+    seat = (0.88, 0.22, 0.24)
     crown = (0.15, 0.82, 1.0)
 
     def shoot(name, cells, titles):
@@ -6534,7 +6534,7 @@ def render_pass29(arm, cam):
             pass30_shape(chest, left, Vector((0.0, 0.0, 1.0)), "chip", shirt, 0.34)
             pass30_shape(chest + Vector((0.0, 0.0, 0.42)), left, Vector((0.0, 0.0, 1.0)), "puff", shirt, 0.16)
         body_at(foot, seat)
-        body_at(other, (0.25, 0.55, 1.0))
+        body_at(other, (0.42, 0.68, 0.92))
         receiver = foot + Vector((0.0, 0.0, 1.7))
         tagger = other + Vector((0.0, 0.0, 1.7))
         origin, right, up, _hw, _hh = pass29_cam_axes(cam, 5.0)

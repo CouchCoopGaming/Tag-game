@@ -109,6 +109,7 @@
     <Compile Include="../../Assets/Scripts/FX/ComicAtlas.cs" />
     <Compile Include="../../Assets/Scripts/FX/ComicBurstAtlas.cs" />
     <Compile Include="../../Assets/Scripts/FX/VerbFxLook.cs" />
+    <Compile Include="../../Assets/Scripts/Art/BodyFoam.cs" />
     <Compile Include="../../Assets/Scripts/FX/VerbFxStills.cs" />
     <Compile Include="../../Assets/Scripts/FX/Pass5Look.cs" />
     <Compile Include="../../Assets/Scripts/FX/Pass5Stills.cs" />
