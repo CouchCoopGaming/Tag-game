@@ -6,7 +6,7 @@ Nothing in this note changes feel or gameplay. Leave these locks alone: coyote 0
 
 This pass did not edit scripts, so the proof lines are untouched. `HotPathAlloc` still formats `hot-path allocs before=101 after=` plus the live count. `ropeBody` does not appear anywhere in this branch.
 
-Pass 4 is the last section. It gives C2 a draw budget for the owner-pane streaks at a 640×360 pane, a timing for the contact ink card against the comic word, and three short dance outlines for the motion worker. Every claim there is marked verified (the page or the file was read) or second-hand. Pass 3, just before it, covers surface contact and the first emote silhouettes.
+Pass 5 is the last section. It is how a split-screen chase reads when two runners share a tight gap, and at most three visual fixes for C2. Emotes stay parked. Every claim in that section is marked source-read (the file was read this pass) or second-hand. Pass 4, just before it, is the streak budget, the ink-card timing, and the dance outlines.
 
 The stills in `Docs/FX/research-pass1/` are labeled composites, not Unity captures. Each one contains one 960×540 cell drawn at 1:1 pixels, which is one pane of a 1920×1080 couch split. The live chase camera was not measured, so the body in each cell is drawn at 108 px (one fifth of 540) on purpose. That height is a stand-in, not a captured scale.
 
@@ -581,4 +581,84 @@ Pass 3 already named the silhouettes that survive 108 px from the side and from 
 - Sakurai’s four frames were not re-read. The 60 Hz conversion stays an estimate from pass 1.
 - The dance times are estimates for the motion worker. No new dance page was opened.
 - The 72 px body in the 640×360 cells is one fifth of 360, the same ratio as the 108 px stand-in at 540. It is still a stand-in. The live chase scale was not measured.
+- Draw counts are estimated. No GPU profile.
+
+## Pass 5 — Two runners in a tight gap
+
+Visual only. Three fixes, and no more. C2 can ship them without a new verb and without retuning feel. Coyote, buffer, jump, terminal, walk, crouch, sprint, and root motion stay as in pass 1. `ChaseCam` fov pop, shake, and slow motion stay 0. The landing roll stays at 65% of terminal and 0.52 s. `DustLook.SurfaceCount` stays 6. The comic proof line stays `words=36`. No gameplay scripts in this note. Emotes stay parked. The pass-4 dances are not extended here.
+
+The stills are composites in `Docs/FX/research-pass5/`. Each cell is 640×360 at 1:1, one pane of a 1280×720 couch split. `CouchPlay.Pane` gives four players a quarter of the window. A 1920×1080 quarter is 960×540. The live window was not measured. Bodies in the cells are stand-ins. The live chase scale was not measured.
+
+### What the chase does in a gap
+
+**Source-read, this pass.**
+
+- `TpsMoveCamera.boomOffset` is `(0.4, 0.45, -5.2)`. `LocalPlayerSpawner` writes the same vector. The lens wants 5.2 m behind the pivot, 0.4 m to the side, 0.45 m up. `collisionRadius` is 0.28 m. `collisionMinDistance` is 0.55 m. A sphere cast along the boom shortens `dist` when it hits something that is not the owner. `ChaseCam.BoomDistance` returns the desired distance on the same frame when that distance is shorter. `Holds` checks `BoomDistance(5.2, 0.55, 0.016, false)` equals 0.55. Re-extension eases. `FovPop`, `Shake`, and `SlowMo` are 0.
+- The same camera still writes a move-state field of view, then adds up to `speedFovBoostMax` (3) and passes the result through `LookFeel.ScaleFov`. This pass did not read the sprint or slide FOV numbers on `MovementConfig`. Do not retune them for the alley. The fixes below do not touch the boom, the cast, or the field of view.
+- `MovementConfig.radius` is 0.38 m. `standingHeight` is 1.8 m. Two capsules side by side are 0.76 m of body before any air between them.
+- `MegaParkP1Layout` checks a cling face gap of 3.2 m, within 0.08 m. The fail text calls that gap a 3.20 m wall-jump. The faces are 0.40 m thick, on alternating centers at x 2.55 and x 6.15, each 6.40 m long. No file read this pass names a two-runner alley width. 3.2 m is the wall-jump, used here as the tight gap the chase can actually see. It is wider than two capsules. A 5.2 m boom is longer than that gap, so a wall that stands in the boom ray is inside the rest length and the lens shortens on that frame. A wall beside the runner clips the boom only when the cast hits it. This pass did not simulate the cast and did not capture a frame.
+- The owner is the near body, because the lens sits behind that pawn. The other runner, ahead in the same gap, is drawn behind the owner. A shortened boom makes the owner cover more of the 640×360 pane. That covering was not captured. The still draws the owner larger than the one-fifth stand-in so the covering is visible. That larger body is a diagram, not a measured pull-in.
+
+### Seat tint, when both bodies are in one pane
+
+**Source-read, this pass.**
+
+- Foam RGB in `DummyPrimitiveFactory`, read again this pass: red `(0.88, 0.22, 0.24)`, blue `(0.42, 0.68, 0.92)`, orange `(0.94, 0.42, 0.14)`, lavender `(0.70, 0.58, 0.88)`. Those are P1, P2, P3, and P4. `HierNames` order is Blue, Mint, Orange, Lavender, Tan, Red. That array order is not the seat order.
+- `VerbFxLook.PlayerColor` seat 0 is red `(0.95, 0.28, 0.32)`, seat 1 is blue `(0.25, 0.55, 1)`, seat 2 is `(1, 0.82, 0.15)`, seat 3 is `(0.25, 0.90, 0.45)`. Seats 2 and 3 are not orange and lavender. `Holds` does not check those three floats.
+- Four call sites store that function and draw with it: `FxKitSim.RefreshSeat` and `CacheSeat` (the immunity shell), `Pass5Host.Awake` (the handoff flash), `VerbOwnedFx` (the tag-back rings), `DashSilhouette`. The shell is a child of the body mesh. The lines are world space. A camera that can see the body draws them. They are not children of one pane, which is what keeps the pass-4 edge streaks from crossing the split.
+- `FxKitSim.TickImmunity` enables `FxRimShell` only while tag-back time remains. The color is `PlayerColor` for that seat. `FxKitRim` pushes the mesh out 0.012 m along the normal and fresnels it. One shared material, a property block per renderer. That shell is the immunity read. The proof line still says `rim=shell`.
+
+### Comic words, when two contacts are close
+
+**Source-read, this pass.**
+
+- `ComicBurst` has 8 slots. `Spawn` takes a free slot, or the oldest. It does not look at where the other slots are.
+- `Place` sets `_UpDist` and `_SideDist` to `BodyHeight * 1`, and `BodyHeight` is 1.8. Every word starts one body up and one body to the side.
+- In `ComicBillboard`, the side is the contact’s clip x. Clip x above 0 shifts the word toward negative x. Clip x at or below 0 shifts it toward positive x. The comment says the side with more empty pane gets the burst. Two contacts on opposite halves of the same pane both move toward the center. Two contacts on the same half both move toward the other half. The pane nudge then clamps the padded quad inside that camera. Nothing in the shader knows about the other word.
+- `MakeMat` sets `_ZTest` to 8. The comment says the words draw after the world so a rail cannot cut the burst. The shader also has `ZWrite Off`. Two words do not depth-test against the alley or against each other. **Second-hand:** Unity’s `CompareFunction.Always` is 8. This pass did not open the Unity manual.
+- `ComicWords.LifeSeconds` is 0.45. `Alpha` is 1 through 0.30 s, then linear to 0 at 0.45 s. `Scale` holds at 1 from 0.16 s to 0.30 s. Two contacts inside that window are both fully opaque. `WordCount` is 36. Do not add a 37th word.
+- The shader comment on `PANE_PEAK` says a half of 0.30 is 30% of the pane, and that the 1.15 overshoot is locked there. Clip y spans −1 to 1, so a half-extent of 0.30 is 15% of the pane height if the span is read strictly. This pass did not capture a frame. Do not treat 108 px (30% of 360) as a measured word.
+- The pass-4 card is one quad per pawn, 0.08 s, and it stacks with the land word and the wall word. It does not stop a second word.
+
+### 1. Covered-body stroke, this camera only
+
+**What to build.** When another runner’s screen rect overlaps the owner’s rect in this pane, draw a stroke around that other body, on this camera only. The stroke is the other seat’s foam. P1 red, P2 blue, P3 orange, P4 lavender. A dark outline sits on it, RGB `(0.08, 0.07, 0.06)`, the same outline as the pass-4 streaks. At 640×360 the stroke is 2 px. At 960×540 it is 3 px. Alpha 0.90, steady. No sine pulse. `VerbFxLook.Rim` stays the immunity pulse.
+
+The owner does not get this stroke in their own pane. Their body is the near shape. A pane that can see the other body clear of the owner draws no stroke. Three other pawns overlapping the owner are three strokes, one each. 0 particles. Not a filled shell.
+
+Leave `FxRimShell` on the tag-back timer. Do not enable it for the alley, and do not recolor it for this fix. If tag-back and the stroke are both up, the pulse stays the immunity shell and the 2 px stroke stays steady. They answer different questions.
+
+**Readability risk.** High if the stroke uses `PlayerColor` for P3 or P4: yellow or green on an orange or lavender body is the bleed this pass is trying to end. High if the stroke pulses, because that pulse is already the immunity read. Low if it is a steady foam edge and it turns off when the rects separate.
+
+### 2. World seat color is the foam
+
+**What to build.** The four call sites above should tint from the foam RGB, not from `PlayerColor` seats 2 and 3. World strokes that can sit on top of a second body get the same 1 px dark outline. That is the immunity shell’s color, the tag-back rings, the handoff flash, and the dash ghost. Do not recolor the mannequin. Do not read `AccessibilityPalette`. Leave the `PlayerColor` function body in place so a later proof that samples it does not move. Add the foam lookup beside it. Do not turn `GameSettings.SpeedLines` on. The pass-4 edge streaks already use foam and already live on one camera. They stay as specified.
+
+**Readability risk.** High if a yellow streak from seat 2 crosses an orange body while a green streak from seat 3 crosses lavender, in the same 640×360 pane. Low if each world stroke matches the foam under it and keeps the dark outline. P2 blue and P4 lavender still need that outline on the sky, as in pass 4.
+
+### 3. One comic burst when the rects overlap
+
+**What to build.** When a new word’s rect, after the existing side shift and the existing pane nudge, overlaps a live word in that camera, retire the older burst quad and keep the newer word. Do not spawn a second burst for that overlap. The letters of the newer word stay. If the rects do not overlap, both words stay. A land at one side of a wide pane and a wall word at the other can both read. In the tight gap they move toward the same center, so one remains.
+
+Do not change `WordCount`, `Scale`, `Alpha`, `WordScale`, `LifeSeconds`, `PopSeconds`, slot count, or the proof line. `_ZTest` stays 8 on the word that remains, so a rail still cannot cut it. The pass-4 card stays one per pawn and still stacks with the word that remains. A whiff still gets no card. A second contact on the same pawn still restarts that one card. It does not earn a second word on top of the first.
+
+**Readability risk.** High if THUD and SLAM both sit at full alpha for 0.30 s on the same pixels. The letters cross, and the 0.08 s card from pass 4 has nothing clean to sit behind. Low if the older burst is gone and one word occupies the center.
+
+### Stills
+
+| File | Cell |
+| --- | --- |
+| `Docs/FX/research-pass5/01-alley-occlusion.png` | 640×360. Owner in front, the other body covered. The right half adds the foam stroke. |
+| `Docs/FX/research-pass5/02-seat-tint-bleed.png` | 640×360. Yellow and green on the left, from `PlayerColor` seats 2 and 3. Foam plus the dark outline on the right. |
+| `Docs/FX/research-pass5/03-word-overlap.png` | 640×360. Two words on the same pixels, then the newer word alone. |
+
+### Pass 5 limits
+
+- No gameplay scripts were edited. Feel locks, `surfaces=6`, and the comic proof line are untouched.
+- No alley width is named in the files read this pass. 3.2 m is the cling wall-jump. The still is a diagram of two bodies in a gap, not a capture of MegaPark.
+- The boom snap, the 0.55 m floor, and the 5.2 m rest length are from `ChaseCam` and `TpsMoveCamera`. The frame that snap produces in the gap was not rendered.
+- The 2 px stroke, the 3 px stroke at 960×540, and the 0.90 alpha are build numbers. They are not a measured outline.
+- `CompareFunction.Always` as the meaning of `_ZTest` 8 is second-hand. The assignment of 8 is source-read.
+- The 30% pane sentence is the shader comment. The 15% reading is the NDC span. Neither was checked against a screenshot.
+- Pass-4 dance outlines stay as they were. This pass did not draw a new one.
 - Draw counts are estimated. No GPU profile.
