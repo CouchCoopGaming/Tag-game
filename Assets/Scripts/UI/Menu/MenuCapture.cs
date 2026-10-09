@@ -306,28 +306,35 @@ namespace Tag.Ui.Menu
         static GameObject _stage;
         static readonly System.Collections.Generic.List<GameObject> _paneCams = new System.Collections.Generic.List<GameObject>();
 
-        static readonly Vector3[] PaneEye =
-        {
-            new Vector3(83f, 3.2f, 45f), new Vector3(42f, 3.2f, 62f),
-            new Vector3(118f, 3.4f, 40f), new Vector3(62f, 3.2f, 78f)
-        };
-        static readonly Vector3[] PaneLook =
-        {
-            new Vector3(96f, 1.4f, 53f), new Vector3(34f, 1.2f, 47f),
-            new Vector3(140f, 2f, 49f), new Vector3(75f, 1.6f, 87f)
-        };
+        static Bounds _stageBounds;
+        static bool _stageOk;
 
         static void Stage(int humans)
         {
-            if (_stage == null && Object.FindAnyObjectByType<Tag.Level.MegaParkP1Bootstrap>() == null)
+            if (_stage == null && !_stageOk)
             {
-                _stage = new GameObject("MenuCaptureArena");
-                var boot = _stage.AddComponent<Tag.Level.MegaParkP1Bootstrap>();
-                try { boot.Build(); }
-                catch (System.Exception e) { Debug.LogWarning("[MenuCapture] arena build " + e.Message); }
+                var existing = Object.FindAnyObjectByType<Tag.Level.MegaParkP1Bootstrap>();
+                if (existing == null)
+                {
+                    // AddComponent runs Awake, which already builds the selected arena.
+                    // Calling Build() on top rebuilt Mega Park, its layout audit failed,
+                    // and ClearBuilt() deleted the whole arena: flat-colour panes.
+                    _stage = new GameObject("MenuCaptureArena");
+                    existing = _stage.AddComponent<Tag.Level.MegaParkP1Bootstrap>();
+                    if (!existing.Built && !Application.isPlaying)
+                    {
+                        try { existing.Build(); }
+                        catch (System.Exception ex) { Debug.LogWarning("[MenuCapture] arena build " + ex.Message); }
+                    }
+                }
+                _stageOk = ArenaBounds(existing.transform, out _stageBounds);
+                Debug.Log("[MenuCapture] HUD arena " + (_stageOk ? "built " + _stageBounds : "missing"));
             }
             ClearPaneCams();
             int panes = humans <= 1 ? 1 : humans == 2 ? 2 : 4;
+            Vector3 c = _stageOk ? _stageBounds.center : new Vector3(0f, 0f, 0f);
+            Vector3 e = _stageOk ? _stageBounds.extents : new Vector3(30f, 2f, 30f);
+            float ground = _stageOk ? _stageBounds.min.y : 0f;
             for (int i = 0; i < panes; i++)
             {
                 if (humans == 3 && i == 3) break;
@@ -335,15 +342,35 @@ namespace Tag.Ui.Menu
                 var cam = go.AddComponent<Camera>();
                 cam.fieldOfView = 62f;
                 cam.nearClipPlane = 0.1f;
-                cam.farClipPlane = 600f;
+                cam.farClipPlane = 800f;
                 cam.depth = -5 + i;
-                go.transform.position = PaneEye[i];
-                go.transform.LookAt(PaneLook[i]);
+                // Each seat stands inside a different quarter of the arena, at
+                // chase-camera height, looking across the middle.
+                float sx = (i % 2 == 0) ? -0.55f : 0.55f;
+                float sz = (i < 2) ? -0.55f : 0.55f;
+                Vector3 eye = new Vector3(c.x + e.x * sx, ground + 3.4f, c.z + e.z * sz);
+                Vector3 look = new Vector3(c.x - e.x * sx * 0.3f, ground + 1.4f, c.z - e.z * sz * 0.3f);
+                go.transform.position = eye;
+                go.transform.LookAt(look);
                 if (panes == 1) cam.rect = new Rect(0f, 0f, 1f, 1f);
                 else if (panes == 2) cam.rect = new Rect(i * 0.5f, 0f, 0.5f, 1f);
                 else cam.rect = new Rect((i % 2) * 0.5f, i < 2 ? 0.5f : 0f, 0.5f, 0.5f);
                 _paneCams.Add(go);
             }
+        }
+
+        static bool ArenaBounds(Transform root, out Bounds b)
+        {
+            b = default;
+            bool any = false;
+            foreach (Renderer r in root.GetComponentsInChildren<Renderer>(false))
+            {
+                if (r == null || !r.enabled) continue;
+                if (r.bounds.size.magnitude > 2000f) continue;
+                if (!any) { b = r.bounds; any = true; }
+                else b.Encapsulate(r.bounds);
+            }
+            return any;
         }
 
         static void ClearPaneCams()
@@ -357,6 +384,7 @@ namespace Tag.Ui.Menu
             ClearPaneCams();
             if (_stage != null) Kill(_stage);
             _stage = null;
+            _stageOk = false;
         }
 
         static void Finish()
