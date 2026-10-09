@@ -42,6 +42,8 @@ def _wanted(stem, only):
         return True
     if stem == "mannequin":
         return True
+    if only == "envelope":
+        return stem in ("sedan_compact", "hatch_compact", "crossover_compact")
     return only in stem or stem in only
 
 
@@ -328,19 +330,41 @@ def _lineup_side(found, names, path, wide=False, shade=False):
     _fit(path)
 
 
-def _sedan_set(found, name, folder):
-    out = os.path.join(STILL_ROOT, folder)
+def _quartet(found, name, out, length, height):
+    """Quarter, side, nose close-up, and a 1.8 m figure. 1280x720."""
     os.makedirs(out, exist_ok=True)
-    _shot(found[name], os.path.join(out, "hero.png"))
-    # Whole side, long lens, so the hood, pillar, roof arc, and deck read as a profile.
-    _close(
-        found[name], os.path.join(out, "side.png"),
-        (12.0, 0.90, 0.05), (0.0, 0.78, 0.0), 78.0,
+    nose = length * 0.5
+    _shot_az(found[name], os.path.join(out, "hero.png"), 42.0, elevation=11.0, fill=0.88, wide=True)
+    dist = max(12.0, length * 2.4)
+    _side_dims(
+        found[name], None, os.path.join(out, "side.png"),
+        (dist, height * 0.55, 0.0), (0.0, height * 0.45, 0.0), 70.0,
+        wide=True,
+    )
+    _side_dims(
+        found[name], None, os.path.join(out, "nose.png"),
+        (1.35, height * 0.48, nose + 1.55), (0.0, height * 0.42, nose - 0.45), 42.0,
+        wide=True,
     )
     _with_figure(
         found, name, os.path.join(out, "scale.png"),
-        (0.4, 0.0, 0.0), 18, (-1.7, 0.0, 1.55),
+        (0.0, 0.0, 0.0), 12, (1.55, 0.0, 0.35),
+        fill=0.86, wide=True,
     )
+    _squeeze(out)
+
+
+def _squeeze(out):
+    import subprocess
+    for stem in ("hero.png", "side.png", "nose.png", "scale.png"):
+        path = os.path.join(out, stem)
+        if not os.path.isfile(path) or os.path.getsize(path) <= LIMIT:
+            continue
+        subprocess.check_call([
+            "pngquant", "--quality=55-82", "--speed", "1", "--force",
+            "--ext", ".png", "--skip-if-larger", path,
+        ])
+        print("QUANT", os.path.getsize(path), path)
 
 
 def main():
@@ -396,15 +420,33 @@ def main():
                 wide=True, shade=True,
             )
         return
-    if only is None or "sedan_compact" in only or only == "compact":
-        print("SHOT", "sedan_compact")
-        _sedan_set(found, "Sedan_Compact", "sedan_compact")
-    if only is None or "crossover" in only:
-        print("SHOT", "crossover_compact")
-        _sedan_set(found, "Crossover_Compact", "crossover_compact")
-    if only is None or "hatch" in only:
-        print("SHOT", "hatch_compact")
-        _sedan_set(found, "Hatch_Compact", "hatch_compact")
+    if only == "envelope":
+        jobs = (
+            ("Sedan_Compact_25", "sedan_compact", 4.66, 1.42),
+            ("Hatch_Compact_25", "hatch_compact", 4.42, 1.42),
+            ("Crossover_Compact_25", "crossover_compact", 4.66, 1.68),
+        )
+        for name, folder, length, height in jobs:
+            print("SHOT", folder)
+            _quartet(found, name, os.path.join(STILL_ROOT, folder, "pass17"), length, height)
+        return
+    if only == "street":
+        import sk_car_hatch
+        import sk_car_pickup
+        import sk_car_sedan
+        found["Car_Sedan_25"] = sk_car_sedan.create
+        found["Car_Hatch_25"] = sk_car_hatch.create
+        found["Car_Pickup_25"] = sk_car_pickup.create
+        street = os.path.join(r._common.REPO, "Docs", "AssetStills", "street_kit")
+        jobs = (
+            ("Car_Sedan_25", "car_sedan", 4.835, 1.46),
+            ("Car_Hatch_25", "car_hatch", 4.035, 1.52),
+            ("Car_Pickup_25", "car_pickup", 5.105, 1.76),
+        )
+        for name, folder, length, height in jobs:
+            print("SHOT", folder)
+            _quartet(found, name, os.path.join(street, folder, "pass17"), length, height)
+        return
     if only is None or "bus" in only:
         # Door center from the same overhang used by the shell.
         door_z = 5.10
