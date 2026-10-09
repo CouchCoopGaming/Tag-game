@@ -18,13 +18,17 @@ Cut these under the prop ceiling, once for the whole hydrant family: `FireHydran
 
 Add the missing LOD2, with the missing still roles in that same pass: `GasCanopy`, `Dock_Straight`, `FishingBoat`, `Bench_WoodIron`, `BikeRack_Hoop3`, `Fountain_Walk`, `LightPost_Globe`, `Newsstand_Corner`.
 
-When that branch next takes roads, copy `Road_Junction` from #122 or #125. Do not draw a second junction. Do not author a third cabin. Copy these closed #122 meshes rather than authoring another: `Container_20` (and the blue and green enamels, same cage), `Gazebo`, `Rowboat`, `HarborShed`, and `CourtFence`. Their LOD0 is unchanged. `HarborShed` LOD2 is now 120 against LOD1 504. The WalkUp gap on #129 is still the worse one; copy the #122 mesh rather than authoring another.
+When that branch next takes roads, copy `Road_Junction` from #122 or #125. Do not draw a second junction. Do not author a third cabin. Copy these closed #122 meshes rather than authoring another: `Container_20` (and the blue and green enamels, same cage), `Gazebo`, `Rowboat`, `HarborShed`, and `CourtFence`. Gazebo, Rowboat, HarborShed, and CourtFence LOD0 are unchanged. `HarborShed` LOD2 is now 120 against LOD1 504. The WalkUp gap on #129 is still the worse one; copy the #122 mesh rather than authoring another.
 
 ## Buildings (#122)
 
 Pass 31 rendered a still quartet for every geometry-clean library mesh and added `Alley`, `Subway_Entrance`, `Overpass`, `Driveway`, `Restroom`, `Bleachers`, and `Ferry`. `Ranch_House` stays. Do not author a third cabin, and do not draw a second road junction.
 
-LOD2 is at most 0.6× LOD1. LOD0 and LOD1 of these nine are unchanged: `Alley` 260/132/48, `Subway_Entrance` 300/180/96, `Driveway` 72/48/24, `Bleachers` 300/216/108, `Restroom` 208/144/60, `Ferry` 340/180/72, `GasCanopy` 2272/1064/120, `Dock_Straight` 3720/672/336, `FishingBoat` 2932/1148/260. `Cabin` LOD2 is 792 against LOD1 1364. `HarborShed` LOD2 is 120 against LOD1 504. Houses, the ranch, and the three stores use a solid shell at LOD2. LOD0 and LOD1 of the closed container, gazebo, rowboat, HarborShed, and CourtFence are unchanged.
+LOD2 is at most 0.6× LOD1. LOD0 and LOD1 of these nine are unchanged: `Alley` 260/132/48, `Subway_Entrance` 300/180/96, `Driveway` 72/48/24, `Bleachers` 300/216/108, `Restroom` 208/144/60, `Ferry` 340/180/72, `GasCanopy` 2272/1064/120, `Dock_Straight` 3720/672/336, `FishingBoat` 2932/1148/260. `Cabin` LOD2 is 792 against LOD1 1364. `HarborShed` LOD2 is 120 against LOD1 504. Houses, the ranch, and the three stores use a solid shell at LOD2. LOD0 and LOD1 of the closed gazebo, rowboat, HarborShed, and CourtFence are unchanged. `Container_20` keeps 5778/1800/264; the shell now sits on y = 0.
+
+`Container_20` mesh min is y = 0 and the roof is y = 2.59. `Climb_Body` used to start at y = 0.22, so the shell floated above the pivot. The colored body and `Climb_Body` now start at y = 0. `Climb_Body` tops at y = 2.32. `Col_Roof` is unchanged, y = 2.48 to 2.54. The blue and green enamels and `Container_40` share that seat. Slack is 0. Triangle counts are unchanged.
+
+`Dock_Straight` pivot stays at the origin. The deck top is the catalog 0.62 m: plank mesh and `Col_Plank` both top out at y = 0.620 (they were 0.618 and 0.613). Piles are a water seat, below grade on purpose. The mesh ends at y = −1.220. The pile capsule, caps included, ends at y = −1.165. LOD2 stays 336 against LOD1 672. Slack is 0.
 
 `Brick_Door` and `Brick_Window` keep their pass 31 pictures. The quartet also lives in `Docs/AssetStills/pass32/brick_door/` and `pass32/brick_window/` so the names `door` and `window` stay in the folder and are not read as a close-up role. Do not rename those two meshes. `Container_20_Blue` and `Container_20_Green` match the red cage and pass as a material variant of `Container_20`.
 

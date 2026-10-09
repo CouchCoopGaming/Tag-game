@@ -377,7 +377,9 @@ def build_container(name, length, color, blurb):
     a.vault_note = "No rail. Roof is a landing at 2.59 m."
     for lod in (0, 1, 2):
         g = a.begin(lod)
-        g.box((0, HEIGHT * 0.5, 0), (WIDTH - 0.16, HEIGHT - 0.10, length - 0.12), color)
+        # Bottom sits on the pivot. The top stays 5 cm under the 2.59 m castings.
+        body_top = HEIGHT - 0.05
+        g.box((0, body_top * 0.5, 0), (WIDTH - 0.16, body_top, length - 0.12), color)
         _castings(g, length, lod)
         _rails(g, length)
         _doors(g, length, color, lod)
@@ -390,8 +392,11 @@ def build_container(name, length, color, blurb):
         if lod == 0:
             _logo(g, color)
         a.end()
-    # Inside the plate, clear of the corner-casting overlap.
-    a.box("Climb_Body", (0, 1.29, 0), (1.96, 2.14, length - 0.52))
+    # Inside the plate, clear of the corner castings, and on the pivot.
+    # A floor at 0.22 left the shell floating above park ground.
+    # The top stays under the side-sheet lip so the samples remain inside the shell.
+    climb_top = 2.32
+    a.box("Climb_Body", (0, climb_top * 0.5, 0), (1.96, climb_top, length - 0.52))
     # Inside the roof plate. The castings reach 2.59 m; this top is 2.54 m.
     a.box("Col_Roof", (0, 2.51, 0), (WIDTH - 0.40, 0.06, length - 0.50))
     return a
