@@ -6,7 +6,7 @@ Nothing in this note changes feel or gameplay. Leave these locks alone: coyote 0
 
 This pass did not edit scripts, so the proof lines are untouched. `HotPathAlloc` still formats `hot-path allocs before=101 after=` plus the live count. `ropeBody` does not appear anywhere in this branch.
 
-Pass 3 is the last section. It covers how a foot, a wall, and a landing read on the surfaces Tag already has, and which emote silhouettes survive a quarter pane. Every claim there is marked verified (the page or the file was read) or second-hand. Pass 2, just before it, covers who is It and the handoff.
+Pass 4 is the last section. It gives C2 a draw budget for the owner-pane streaks at a 640×360 pane, a timing for the contact ink card against the comic word, and three short dance outlines for the motion worker. Every claim there is marked verified (the page or the file was read) or second-hand. Pass 3, just before it, covers surface contact and the first emote silhouettes.
 
 The stills in `Docs/FX/research-pass1/` are labeled composites, not Unity captures. Each one contains one 960×540 cell drawn at 1:1 pixels, which is one pane of a 1920×1080 couch split. The live chase camera was not measured, so the body in each cell is drawn at 108 px (one fifth of 540) on purpose. That height is a stand-in, not a captured scale.
 
@@ -486,3 +486,97 @@ Hold the extreme for about 0.4 s, estimated, inside the first second. A glance a
 - No particle counts from Mirror’s Edge, Dying Light, Celeste, Titanfall, or Neon White. Those pages do not publish them.
 - The 108 px body is a drawn stand-in. The 0.4 s pose hold and the 2 px mark edge are estimates. The 0.83 s reading of Smash frame 50 assumes 60 fps, which the wiki page does not state.
 - Draw counts are estimated. No GPU profile. No live split-screen capture.
+
+## Pass 4 — Streak budget, ink-card timing, dance outlines
+
+Visual only. This fills in pass 1 items 1 and 3 so C2 can build them without picking the numbers, and it gives the motion-reference worker three short dances on top of the pass-3 silhouettes. Feel locks stay as in pass 1. `DustLook.SurfaceCount` stays 6. No gameplay scripts. No new settings row.
+
+The stills are composites in `Docs/FX/research-pass4/`. The streak cell and the ink-card cell are 640×360 at 1:1. That is one pane of a 1280×720 couch split. A 1920×1080 quarter is 960×540, which is 1.5 times the width and height. The live window was not measured. `CouchPlay` sets each camera from a normalized rect, so the pixel size follows the window. Build the streaks and the card in fractions of the pane. The pixel columns below are the check at 640×360. The dance cell uses the same 108 px body as pass 3.
+
+### 1. Owner-pane edge streaks, budget at 640×360
+
+Pass 1 asked for six to eight streaks in the outer 12%, seat tint, from sprint, about 0.12 s, one mesh on the owning camera. This is that item with the numbers fixed.
+
+**Verified, from this branch.**
+
+- `Pass5Look.SpeedLines` returns 0 below sprint (13.8). At sprint and full density it returns 4. It adds lines as speed rises and stops at 8. At `FxAmount.LowDensity` (0.5) it halves that count and will not go below 2.
+- Those lines are not these streaks. `FxKitSim` draws 14 air `LineRenderer`s, life 0.15 s, peak alpha 0.35, and only when `GameSettings.SpeedLines` is on. That bool defaults off. The comment says the default is so four panes stay readable. Reduced flashing also hides them.
+- `VerbFxLook.PlayerColor` is the tint the kit already stores (`FxKitSim`, `Pass5Host`). Seat 0 is `(0.95, 0.28, 0.32)`. Seat 1 is `(0.25, 0.55, 1)`. Seat 2 is `(1, 0.82, 0.15)`. Seat 3 is `(0.25, 0.90, 0.45)`.
+- `AccessibilityPalette.Player` is a different table, five palettes of four colors. Nothing under `Assets/Scripts/FX` reads it. Do not retint the streaks from that table in this build.
+
+**What to build.**
+
+| Rule | Value |
+| --- | --- |
+| Gate | Speed at or above 13.8. Below that, draw nothing. Do not call `SpeedLines` for the count, and do not turn `GameSettings.SpeedLines` on. |
+| Count | 6 at full effects. 3 when effects are low. 0 when effects are off or Reduced flashing is on. The count does not grow past 6 when the runner is faster than sprint. |
+| Life | 0.12 s, then gone. Shorter than the air-streak life of 0.15 s. They do not share that timer. |
+| Opacity | Peak 0.55, linear to 0 across the 0.12 s. Above the air streak’s 0.35 so a short life still reads. Below 1 so the HUD stays the brighter layer. |
+| Margin | Outer 12% of the pane. At 640×360 that is 77 px on the left and right and 43 px on the top and bottom. Nothing inside that frame. |
+| Size at 640×360 | Each streak is 48 px long (0.075 of the width) and 4 px thick (4/360 of the height), with a 1 px dark outline. The colored core is what is left inside the outline. |
+| If the pane is 960×540 | Keep the fractions. The check pixels become 72 px long, 6 px thick, and a 2 px outline. The 12% margin stays 12%. |
+| Outline | RGB `(0.08, 0.07, 0.06)`, alpha 0.90, on every seat. Seat 1 blue and seat 2 yellow sit on sky. The outline is why they survive. Seat 0 red does not get to skip it. |
+| Draw | 6 quads, one mesh, child of that seat’s camera. 1 draw. The other three cameras do not draw it. Four sprinters are 4 draws, one on each owner camera. 0 particles. Not 6 `LineRenderer`s. The kit already spends 14 of those on air streaks. |
+
+**Reference.** Same as pass 1. Spider-Man’s published camera notes are about field of view, which stays 0. Titanfall 2’s texture deck, verified in pass 1, refuses an extra full-screen pass. This mesh is the small version of that refusal. No new page was opened for the pixel table. The 48 px, the 4 px, the 0.55, and the 0.12 s are the build numbers for this pass. They are not a captured frame.
+
+**Readability risk.** High if the streaks are parented in the world: four panes would each draw every runner. High if the count follows `SpeedLines` and someone enables that toggle to “make the streaks appear.” High if seat 2 is a bare yellow stroke on the sky with no outline. Low if they stay in the 12% and the center of the pane stays empty.
+
+### 2. Contact ink card against the comic word
+
+**Verified, from this branch.**
+
+- `ComicWords.PopSeconds` is 0.05. `LifeSeconds` is 0.45. `Scale` starts at a quarter size, settles to 1 at 0.16 s, holds through 0.30 s, and is 0 at 0.45 s. `Alpha` is 1 through 0.30 s and reaches 0 at 0.45 s.
+- `WordScale` stays 0 until 0.05 s, then pops across 0.08 s and is back at 1 by 0.13 s. `Holds` checks that curve. `ComicBurst.LateUpdate` does not use it. The burst quad and the word quad both take `Scale`, and `WordPunch` returns 1. The live word is on screen from the first moment, on the same curve as the starburst.
+- The shader comment on `PANE_PEAK` says the 1.15 overshoot is locked at 30% of the pane. At a 360 px pane, 30% is 108 px. This pass did not capture a frame to check that comment against the image.
+- Hard-land words are `EvLand`: THUD, WHUMP, THUMP, BOOM, KRUNCH. `DummyLocomotor` raises that event only when `LandingRollPose.Triggered` is true, which is the existing roll threshold. A light plant stays quiet.
+- Wall-slam words are `EvWall`: KRAK, SLAM, SPLAT, THWACK. Whiff words are WHIFF, SWISH, WHOOSH, MISS.
+- `ComicWords.WordCount` is 36. The proof line wants `words=36`, `land=5`, `crash=4`.
+- `ComicWords.Visible` is false when the comic toggle is off, when Reduced flashing is on, or when effects are off. The toggle and the flash gate are different switches.
+
+**What to build.**
+
+The card is one quad at the contact. It does not add a 37th word. Life is 0.08 s. Implement seconds, not a frame count. At an assumed 60 Hz, 0.08 s is about 5 frames. Nothing in these files states the couch refresh rate, so a frame count would be a guess. Pass 1’s Sakurai note (four frames, and 0.067 s only if the rate is 60) was the beat. 0.08 s ends that beat before `Scale` settles at 0.16 s, so the word’s hold from 0.16 s to 0.30 s has no card under it.
+
+Opacity starts at 0.72 and fades in a straight line to 0 at 0.08 s, when the comic toggle is on. The word’s alpha is 1 for the whole overlap, so a fully black card would cover the letters. When the comic toggle is off, start at 0.88 instead. The card is then the contact read. Reduced flashing and effects off hide the card either way. The comic toggle does not.
+
+It stacks with the hard-land word and the wall-slam word. One card, plus the word those events already raise. It also stacks with a punch word and a tag word, which is the hit from pass 1. It does not play on a whiff, a launch, a zip, a grapple, a stagger, or the tag-transfer word. The transfer already has the 0.40 s swell.
+
+One live card per pawn. A second contact before 0.08 s restarts that card. It does not spawn a second quad. Two cards in a 640×360 pane is the flash.
+
+Size is 0.42 of the pane width by 0.28 of the pane height. At 640×360 that is 269×101 px. That is larger than the 72 px body this pane uses as a fifth of 360, and smaller than a full-pane flash. Draw it behind the existing burst. The word stays in front. The land ring and the land dust stay.
+
+**Reference.** Pass 1’s Sakurai column for the short contact beat. This pass did not re-open that page. The 0.08 s, the 0.72, and the 0.88 are build numbers chosen against the curves above.
+
+**Readability risk.** High if the card lasts into the 0.16 s hold: the letters then sit on a black panel for the whole read. High if a whiff gets one. High if land and wall each spawn a card and both stay. Low if the card is gone while the word is still at full size.
+
+### 3. Three short dances, for the motion worker
+
+Pass 3 already named the silhouettes that survive 108 px from the side and from behind: a V, one arm up, a wide star, a full-body spin. A shrug, a face, a hand sign, and a small prop do not. These three dances are built out of those outlines. They are not a fourth FX system, and they are not a movement lock. The capsule stays free. Root motion stays off. Each dance is under the 2–4 s celebration. The extreme is in the first half-second, the same idea as the 0.4 s hold in pass 3. The times below are estimates for the reference worker. No opened page lists them.
+
+**Wide V, 0.9 s.** From 0.00 to 0.40 s both arms are in a V and the feet are wider than the hips. Hold. From 0.40 to 0.70 s the arms drop to a low V and stay outside the torso. From 0.70 to 0.90 s the arms return to the high V. A clap in front of the chest is the fail: from behind the hands disappear into the shirt.
+
+**Star hop, 1.0 s.** From 0.00 to 0.45 s the body is a star. Arms and legs both leave the torso. Hold that. From 0.45 to 1.00 s the legs come together and the arms stay in a shallow V. The return must not be the run pose.
+
+**Spin stop, 1.2 s.** From 0.00 to 0.50 s the body turns once with the arms kept in the V. A turn with the arms down is a pole and does not read at 108 px. From 0.50 to 0.90 s the turn stops in the star. From 0.90 to 1.20 s it settles to the V.
+
+**Reference.** Verified in pass 3, not re-opened here: SmashWiki describes a taunt as a motion of the whole character, and The Verge describes Neon White’s victory as a full-body flip in front of the camera. Tag’s chase view does not get that camera. The outlines above are the part that still works from the side and from behind. Smash’s frame-50 interrupt stays gameplay. Do not copy it.
+
+### Stills
+
+| File | Cell |
+| --- | --- |
+| `Docs/FX/research-pass4/01-edge-budget.png` | 640×360. Six streaks inside the 12% frame. Four seat colors, each with the dark outline. |
+| `Docs/FX/research-pass4/02-ink-card-timing.png` | 640×360. The card is present at the start and gone by the word’s hold. Land and wall stack. A whiff does not. |
+| `Docs/FX/research-pass4/03-dance-outlines.png` | Wide V, star hop, and spin stop at 108 px. The clap is the one that fails. |
+
+### Pass 4 limits
+
+- No gameplay scripts were edited. `surfaces=6` and the comic proof line are untouched.
+- The streak pixels, the 0.12 s life, the 0.55 opacity, the card’s 0.08 s, and the 0.72 / 0.88 opacities are build numbers for C2. They are not measurements from a running split.
+- The 30% pane note is the shader comment. This pass did not capture the burst to confirm it.
+- `WordScale` is in `Holds` and is not what `ComicBurst` draws today. The card timing is set against `Scale` and `Alpha`.
+- Sakurai’s four frames were not re-read. The 60 Hz conversion stays an estimate from pass 1.
+- The dance times are estimates for the motion worker. No new dance page was opened.
+- The 72 px body in the 640×360 cells is one fifth of 360, the same ratio as the 108 px stand-in at 540. It is still a stand-in. The live chase scale was not measured.
+- Draw counts are estimated. No GPU profile.
