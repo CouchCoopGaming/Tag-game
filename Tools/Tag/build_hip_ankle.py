@@ -609,10 +609,28 @@ def measure(arm):
     return line_hip, line_ankle, line_knee, len(fails)
 
 
+def sync_eval_world():
+    """Write the evaluated bone-parent transform back before FBX export.
+
+    Mode switches leave matrix_world stale. The overlap test reads the
+    evaluated mesh, and the exported file would otherwise shift a piece.
+    Parent inverse, scale, and bone roll are left as they are.
+    """
+    bpy.context.view_layer.update()
+    deps = bpy.context.evaluated_depsgraph_get()
+    for obj in bpy.data.objects:
+        if obj.type != "MESH" or not obj.name.startswith("Mesh_"):
+            continue
+        ev = obj.evaluated_get(deps)
+        obj.matrix_world = ev.matrix_world.copy()
+    bpy.context.view_layer.update()
+
+
 def export_fbx(arm):
     loco.clear_pose(arm)
     loco.set_root(arm, 0.0, 0.0)
     bpy.context.view_layer.update()
+    sync_eval_world()
     os.makedirs(os.path.dirname(OUT_FBX), exist_ok=True)
     if os.path.abspath(OUT_FBX) == os.path.abspath(SRC):
         raise RuntimeError("refusing to overwrite the shipped mannequin")

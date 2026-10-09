@@ -1,0 +1,11 @@
+authoritative: enclosure. A vertex is inside the other piece only when a ray in each of six axis directions hits an odd number of faces.
+One ray across an open strip does not count. The normal test is not authoritative for cuff vertices on the bone axis or for open-edge backfaces.
+rigJoint uses the normal test at rest and must be 0. pose on the stills is that same normal test, live minus rest.
+Twist is clamped to the last angle at 60 degrees of flexion where enclosure is still 0.
+The left hip channel is a world-X mirror of the right. Each leg is the same shape in its own bone frame, because a world mirror fights the shared +X flex axis.
+ankle *_ray is the enclosure limit. The plain ankle number also requires the normal test to be clear.
+rigJoint=0
+twist-clamp L=10 R=10 at 60 flexion, degrees, ray-clear
+knee L=160 R=155
+ankle L={'dorsi': 15, 'dorsi_ray': 25, 'plantar': 45, 'plantar_ray': 45, 'inv': 15, 'inv_ray': 15, 'ev': 15, 'ev_ray': 15}
+ankle R={'dorsi': 15, 'dorsi_ray': 25, 'plantar': 45, 'plantar_ray': 45, 'inv': 15, 'inv_ray': 15, 'ev': 15, 'ev_ray': 15}

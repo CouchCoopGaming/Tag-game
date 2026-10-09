@@ -1,18 +1,20 @@
 # Player queue
 
-Models player sub-lead. Draft PR #128 only. The clearance rig stays unbound until Landon accepts the stills. Costumes helper is #131 (`cursor/tag-character-costumes`). Do not refit costumes until the hip flex range is clean.
+Models player sub-lead. Draft PR #128 only. The clearance rig stays unbound until Landon accepts the stills. Costumes helper is #131 (`cursor/tag-character-costumes`).
 
-Lead grade on `35085dbf`: `models-validate assets=7 pass=0 fail=7`. Proof `pose=152 rigJoint=0 worldMax=5.51cm selfMax=4.00cm hip=10 ankle=8 knee=3`. The candidate hip is clear at rest, fails from about 9° through 80°, and is clear again at 110° and 130°.
+Lead grade on `35085dbf`: `models-validate assets=7 pass=0 fail=7`. Proof `pose=152 rigJoint=0 worldMax=5.51cm selfMax=4.00cm hip=10 ankle=8 knee=3`.
 
-Hip work in `Tools/Tag/clear_hip_flex.py` is not on the candidate yet. In memory, rest stays `rigJoint=0`, the right leg is clear through 120° flexion, and the left leg fails only at 50° (0.78 cm) and 55° (0.87 cm). Twist of 25° still leaves the pelvis 2.05 cm inside the thigh. An FBX round trip reopens `Mesh_UpperLeg_R>Mesh_LowerLeg_R` at 2.54 cm, so the file is not exported over the clearance rig. The shipped mannequin is untouched. Nothing is bound into #118.
+Pass 7 is on `Dummy_Mannequin_Tan_Hier_Clearance.fbx`, measured after FBX reimport. `rigJoint=0`. Hip flexion is clear on both legs from 0° through 120°, extension 20°, and abduction 35°. The authoritative test is enclosure: a vertex is inside the other piece only when a ray in each of six axis directions hits an odd number of faces. One ray across an open strip does not count. The normal test is not authoritative for cuff vertices on the bone axis. `rigJoint` at rest still uses the normal test. Twist is clamped to ±10° at 60° of flexion (15° is not enclosed). Knee L clears 160°, knee R clears 155° and fails 160° by 0.91 cm. Ankle enclosure is dorsi 25°, plantar 45°, inv 15°, ev 15°. The normal test still reads the ankle at 20° dorsiflexion, so the combined dorsi number is 15°.
+
+#131 is unblocked for the flex range. The stills are not accepted yet, so do not bind this rig, and Bram stays a Reed tint until Landon says the stills are good. LOD and joint close-ups still wait on that.
 
 ## Order
 
-1. Hips on `Dummy_Mannequin_Tan_Hier_Clearance.fbx`. `pose` 0 through the flex range. No mid-flex window. Close the 50–55° left wedge and the ±25° twist, and keep that clear after export.
-2. Hip-sit on loaded plants, landings, and a crouch. Pelvis at least 8 cm behind the support foot on plants and landings, 12 cm in a crouch. Hip flexion at least 1.5× spine flexion. Support knee at least 25° (45° on landings and crouches) and over or ahead of the ankle. Pelvis drop at least 8 cm (20 cm on landings and crouches).
-3. Ankles (`ankle=8`), then the knee at 155° (0.97 cm over). Neck (2) in that same pose pass.
+1. Done on the reimported clearance file: hip flex enclosure is 0 through the range above. Stills are in `Docs/Models/RigStills/pass7/`. Not bound.
+2. Hip-sit on loaded plants, landings, and a crouch. Pelvis at least 8 cm behind the support foot on plants and landings, 12 cm in a crouch. Hip flexion at least 1.5× spine flexion. Support knee at least 25° (45° on landings and crouches) and over or ahead of the ankle. Pelvis drop at least 8 cm (20 cm on landings and crouches). The pass-7 stills are hand poses, not the locomotion clips.
+3. Ankle dorsiflexion still fails the normal test at 20° (3.15 cm, not enclosed). Right knee still overlaps at 160° (0.91 cm). Neck (2) in that same pose pass.
 4. One CC0-1.0 license row per Hier file, and the still quartet at 1280×720 or larger, each under 400 KB, in `Docs/LocoStills/passN/`: quarter, side, close-up, 1.8 m scale figure.
 
 ## Helper
 
-#131 refits the 12 costumes to this rig after the flex range is clean. LOD1/LOD2, joint close-up, scale still. Bram stays a Reed tint until then.
+#131 may refit the 12 costumes to this rig. The flex range is clean after export. LOD1/LOD2, joint close-up, and the scale still still wait on Landon's still review. Bram stays a Reed tint until then.

@@ -1,0 +1,16 @@
+before_crouch_side.png	before  crouch  rigJoint=0  pose=6	hip L22/R22  knee L110/R110  pelvisBack 12.6 cm
+before_crouch_threeq.png	before  crouch  rigJoint=0  pose=6	hip L22/R22  knee L110/R110  pelvisBack 12.6 cm
+before_plant_side.png	before  plant  rigJoint=0  pose=6	hip L-6/R36  knee L16/R58  pelvisBack 23.8 cm
+before_plant_threeq.png	before  plant  rigJoint=0  pose=6	hip L-6/R36  knee L16/R58  pelvisBack 23.8 cm
+before_step90_side.png	before  step90  rigJoint=0  pose=10	hip L90/R14  knee L96/R22  pelvisBack 13.4 cm
+before_step90_threeq.png	before  step90  rigJoint=0  pose=10	hip L90/R14  knee L96/R22  pelvisBack 13.4 cm
+before_landing_side.png	before  landing  rigJoint=0  pose=7	hip L34/R34  knee L82/R82  pelvisBack 21.8 cm
+before_landing_threeq.png	before  landing  rigJoint=0  pose=7	hip L34/R34  knee L82/R82  pelvisBack 21.8 cm
+after_crouch_side.png	after  crouch  rigJoint=0  pose=5	hip L22/R22  knee L110/R110  pelvisBack 12.6 cm
+after_crouch_threeq.png	after  crouch  rigJoint=0  pose=5	hip L22/R22  knee L110/R110  pelvisBack 12.6 cm
+after_plant_side.png	after  plant  rigJoint=0  pose=4	hip L-6/R36  knee L16/R58  pelvisBack 23.8 cm
+after_plant_threeq.png	after  plant  rigJoint=0  pose=4	hip L-6/R36  knee L16/R58  pelvisBack 23.8 cm
+after_step90_side.png	after  step90  rigJoint=0  pose=3	hip L90/R14  knee L96/R22  pelvisBack 13.2 cm
+after_step90_threeq.png	after  step90  rigJoint=0  pose=3	hip L90/R14  knee L96/R22  pelvisBack 13.2 cm
+after_landing_side.png	after  landing  rigJoint=0  pose=6	hip L34/R34  knee L82/R82  pelvisBack 21.8 cm
+after_landing_threeq.png	after  landing  rigJoint=0  pose=6	hip L34/R34  knee L82/R82  pelvisBack 21.8 cm
