@@ -379,7 +379,7 @@ def create():
     )
     a.climb_note = "Roof is the stand."
     a.vault_note = "Counter lip is 1.12 m."
-    for lod in (0, 1):
+    for lod in (0, 1, 2):
         g = a.begin(lod)
         _shell(g, lod)
         _roof(g)

@@ -30,17 +30,28 @@ def create():
     a.climb_note = "Round timber, about 33 cm at the ground. Not a cling wall."
     a.vault_note = "No rail. Conductors are visual only."
     a.loose_pivot = True
-    for lod in (0, 1):
+    guy_a = (POLES[0], 7.85, 0.08)
+    guy_b = (-5.48, 0.14, 0.84)
+    for lod in (0, 1, 2):
         g = a.begin(lod)
-        seg = lod_pick(lod, 12, 8)
-        steps = lod_pick(lod, 8, 4)
+        if lod >= 2:
+            for x in POLES:
+                g.cone((x, HEIGHT * 0.5, 0), R0, R1, HEIGHT, "Lib_Bark", 6)
+                g.box((x, ARM_Y, 0.06), (2.20, 0.09, 0.11), "Lib_Wood")
+            g.cylinder((POLES[1], 6.05, 0.50), 0.20, 0.68, "Lib_Steel", 6)
+            g.pipe(guy_a, guy_b, 0.008, "Lib_Steel", 4)
+            g.box((-5.55, 0.04, 0.85), (0.28, 0.08, 0.22), "Lib_SteelDark")
+            a.end()
+            continue
+        seg = lod_pick(lod, 8, 6)
+        steps = lod_pick(lod, 4, 3)
         bev = lod_pick(lod, 0.004, 0.0)
         for x in POLES:
             g.cone((x, HEIGHT * 0.5, 0), R0, R1, HEIGHT, "Lib_Bark", seg)
             g.box((x, ARM_Y, 0.06), (2.20, 0.09, 0.11), "Lib_Wood", uv_scale=1.2, bevel=bev, segs=1 if lod == 0 else 0)
             if lod == 0:
                 for y in (1.6, 4.4, 7.1):
-                    g.torus((x, y, 0), _radius_at(y) - 0.004, 0.011, "Lib_SteelDark", 14, 6)
+                    g.torus((x, y, 0), _radius_at(y) - 0.004, 0.011, "Lib_SteelDark", 8, 4)
                 g.pipe((x - 0.42, ARM_Y - 0.55, 0.0), (x - 0.10, ARM_Y - 0.05, 0.05), 0.016, "Lib_Steel", 6)
                 g.pipe((x + 0.42, ARM_Y - 0.55, 0.0), (x + 0.10, ARM_Y - 0.05, 0.05), 0.016, "Lib_Steel", 6)
                 # Ground wire on the street face.
@@ -74,9 +85,6 @@ def create():
             for ox, oz in ((-0.08, 0.50), (0.08, 0.50), (0.0, 0.64)):
                 g.cylinder((px + ox, 6.50, oz), 0.016, 0.07, "Lib_Brass", 6)
             g.torus((px, 6.10, 0.50), 0.20, 0.010, "Lib_Rust", 16, 5)
-        # Tensioned guy, essentially straight.
-        guy_a = (POLES[0], 7.85, 0.08)
-        guy_b = (-5.48, 0.14, 0.84)
         g.pipe(guy_a, guy_b, 0.008, "Lib_Steel", 6)
         g.box((-5.55, 0.04, 0.85), (0.28, 0.08, 0.22), "Lib_SteelDark", bevel=bev, segs=1 if lod == 0 else 0)
         g.cylinder((-5.55, 0.11, 0.85), 0.028, 0.08, "Lib_Steel", 8)

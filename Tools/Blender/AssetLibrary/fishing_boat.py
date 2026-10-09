@@ -159,7 +159,7 @@ def create():
     a.loose_pivot = True
     a.climb_note = "The hull is a solid prop. Not a cling wall."
     a.vault_note = "Gunwale is about 0.70 m. Under the vault band."
-    for lod in (0, 1):
+    for lod in (0, 1, 2):
         g = a.begin(lod)
         seg = lod_pick(lod, 8, 6)
         n = lod_pick(lod, 28, 16)

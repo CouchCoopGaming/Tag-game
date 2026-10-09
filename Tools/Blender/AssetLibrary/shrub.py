@@ -20,5 +20,6 @@ def create():
             voxel=0.08 if lod == 0 else 0.14,
         )
         a.end()
-    a.sphere("Col_Shrub", (0, 0.46, 0), 0.30)
+    # Main crown is a 0.42 m ball centered at 0.42 m, so it meets the ground.
+    a.sphere("Col_Shrub", (0, 0.30, 0), 0.28)
     return a

@@ -70,8 +70,23 @@ def create():
     a.box("Col_BenchN", (0, 0.45, 0.55), (1.46, 0.028, 0.18))
     a.box("Col_BenchS", (0, 0.45, -0.55), (1.46, 0.028, 0.18))
     for i, x in enumerate((-0.62, 0.62)):
-        a.box("Col_LegN_%d" % i, (x, 0.39, -0.255), (0.024, 0.04, 0.024))
-        a.box("Col_LegS_%d" % i, (x, 0.39, 0.255), (0.024, 0.04, 0.024))
+        a.box("Col_FootN_%d" % i, (x, 0.040, -0.46), (0.08, 0.030, 0.10))
+        a.box("Col_FootS_%d" % i, (x, 0.040, 0.46), (0.08, 0.030, 0.10))
+        # Meet end to end, 2 cm apart. A box that runs through the next one
+        # does not count as support for the gap check.
+        for j, (y0, y1) in enumerate((
+            (0.075, 0.200),
+            (0.220, 0.360),
+            (0.370, 0.500),
+            (0.520, 0.650),
+            (0.670, 0.730),
+        )):
+            y = (y0 + y1) * 0.5
+            t = (y - 0.04) / 0.70
+            zn = -0.46 + t * 0.41
+            h = y1 - y0
+            a.box("Col_LegN_%d_%d" % (i, j), (x, y, zn), (0.030, h, 0.030))
+            a.box("Col_LegS_%d_%d" % (i, j), (x, y, -zn), (0.030, h, 0.030))
         a.box("Col_BenchLegN_%d" % i, (x, 0.40, 0.48), (0.04, 0.04, 0.28))
         a.box("Col_BenchLegS_%d" % i, (x, 0.40, -0.48), (0.04, 0.04, 0.28))
     return a

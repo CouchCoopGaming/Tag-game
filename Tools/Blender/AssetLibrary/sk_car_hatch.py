@@ -4,7 +4,7 @@ import os
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from _common import Asset, register
+from _common import Asset
 import sk_car_body as body
 
 
@@ -62,7 +62,6 @@ def _wheel_cols(a):
             a.box("Col_Wheel_%d%d" % (i, j), (sign * x, SPEC["axle_y"], z), (0.016, r * 1.02, r * 1.02))
 
 
-@register
 def create():
     a = Asset(
         "Car_Hatch",

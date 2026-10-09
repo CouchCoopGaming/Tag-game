@@ -47,7 +47,7 @@ LODGroup:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 100000}
   serializedVersion: 2
-  m_LocalReferencePoint: {x: 0, y: 2.0025, z: 1.255}
+  m_LocalReferencePoint: {x: 0, y: 2.0025, z: 0.4165}
   m_Size: 4.005
   m_FadeMode: 0
   m_AnimateCrossFading: 0
@@ -75,7 +75,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Tag.Art.Library.LibraryPropMeta
   category: "Park"
-  summary: "Regulation rim at 3.05 m, 2.49 m in front of the pole. Backboard face is 0.29 m behind the rim. Place the pole 1.2 m behind the baseline: south z=-12.2 yaw 0, north z=12.2 yaw 180, so the rim sits on the restricted-area center (z=±9.71). 1.80 x 1.05 m backboard, net, pole pad, and base plate. Rim faces +Z."
+  summary: "Regulation rim at 3.05 m, 0.81 m in front of the pole. Backboard face is 0.375 m behind the rim. Place the pole so that face is 1.2 m inside the baseline: south z=-10.235 yaw 0, north z=10.235 yaw 180. The rim then sits on the painted basket (z=±9.425). 1.80 x 1.05 m backboard, net, pole pad, and base plate. Rim faces +Z."
   climbable: 0
   vaultable: 0
   vaultHeightMeters: 0
@@ -406,7 +406,7 @@ Transform:
   m_GameObject: {fileID: 300020}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 3.48, z: 2.17536}
+  m_LocalPosition: {x: 0, y: 3.48, z: 0.4175}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -459,7 +459,7 @@ Transform:
   m_GameObject: {fileID: 300030}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 3.35, z: 1.10693}
+  m_LocalPosition: {x: 0, y: 3.35, z: 0.228}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -484,5 +484,5 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.06, y: 0.06, z: 2.02586}
+  m_Size: {x: 0.06, y: 0.06, z: 0.268}
   m_Center: {x: 0, y: 0, z: 0}

@@ -53,7 +53,7 @@ def create():
     )
     a.climb_note = "Tube is too thin to cling."
     a.vault_note = "Crown is 0.86 m and round. Under the vault band."
-    for lod in (0, 1):
+    for lod in (0, 1, 2):
         g = a.begin(lod)
         for x in HOOPS:
             _hoop(g, x, lod)

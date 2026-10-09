@@ -172,6 +172,11 @@ PASSES = {
         ("bollard_removable", "Bollard_Removable", 180.0, (0.70, 0.0, 0.10), 15.0),
         ("wood_pole", "WoodPole_Single", 180.0, (1.15, 0.0, 0.45), 25.0),
     ),
+    24: (
+        ("barricade_type3", "Barricade_Type3", 180.0, (1.70, 0.0, 0.15), 15.0),
+        ("delineator", "Delineator_Post", 180.0, (0.70, 0.0, 0.10), 12.0),
+        ("rail_sidewalk", "Rail_Sidewalk", 180.0, (1.45, 0.0, 0.20), 18.0),
+    ),
 }
 
 # Pass 15 sits the prop on a sidewalk panel. Low camera, aim below center,
@@ -225,6 +230,12 @@ _FRAME23 = {
     "bollard_fixed": (0.72, 14.0, 208.0, 0.44, 0.50, 0.34, 3.20),
     "bollard_removable": (0.72, 14.0, 208.0, 0.44, 0.50, 0.34, 3.20),
     "wood_pole": (0.70, 7.0, 206.0, 0.48, 0.46, 0.34, 12.0),
+}
+
+_FRAME24 = {
+    "barricade_type3": (0.72, 14.0, 208.0, 0.46, 0.52, 0.38, 6.40),
+    "delineator": (0.70, 14.0, 208.0, 0.46, 0.42, 0.34, 3.20),
+    "rail_sidewalk": (0.70, 16.0, 210.0, 0.46, 0.50, 0.36, 5.20),
 }
 
 # Pass 11 frames the subject at about 70% and aims at the middle of the bounds.
@@ -296,6 +307,9 @@ def _load(names):
         "BikeRack_Hoop3": "sk_bike_wave",
         "BikeRack_Hoop1": "sk_bike_hoop1",
         "WoodPole_Single": "sk_wood_pole",
+        "Barricade_Type3": "sk_barricade_type3",
+        "Delineator_Post": "sk_delineator",
+        "Rail_Sidewalk": "sk_rail_sidewalk",
         "FireAlarm_Box": "sk_fire_alarm",
         "PayStation_Street": "sk_pay_station",
         "Newsstand_Corner": "sk_newsstand",
@@ -530,6 +544,8 @@ def main():
             tuned15 = _FRAME22[key]
         if PASS >= 23 and key in _FRAME23:
             tuned15 = _FRAME23[key]
+        if PASS >= 24 and key in _FRAME24:
+            tuned15 = _FRAME24[key]
         if tuned15:
             fill, elevation, azimuth, aim, scale_fill, scale_aim, slab = tuned15
         else:

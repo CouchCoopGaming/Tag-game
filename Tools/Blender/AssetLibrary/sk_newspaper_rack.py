@@ -104,8 +104,8 @@ def _dome(g, x, lod):
     radius = 0.18
     straight = 0.04
     y0 = 0.90
-    around = lod_pick(lod, 20, 10)
-    cap_n = lod_pick(lod, 8, 4)
+    around = lod_pick(lod, 10, 8)
+    cap_n = lod_pick(lod, 4, 3)
     stations = []
     for i in range(cap_n + 1):
         ang = (math.pi * 0.5) * (i / float(cap_n))
@@ -148,8 +148,8 @@ def _dome(g, x, lod):
 
 
 def _round_box(g, x, lod):
-    bev = lod_pick(lod, 0.003, 0.0)
-    bs = 1 if lod == 0 else 0
+    bev = 0.0
+    bs = 0
     _feet(g, x, lod)
     g.box((x, 0.52, ZC), (0.48, 0.76, 0.38), "Lib_PaintBlue", bevel=bev, segs=bs)
     _dome(g, x, lod)
@@ -161,8 +161,8 @@ def _round_box(g, x, lod):
 
 
 def _flat_box(g, x, lod):
-    bev = lod_pick(lod, 0.003, 0.0)
-    bs = 1 if lod == 0 else 0
+    bev = 0.0
+    bs = 0
     g.box((x, 0.016, ZC), (0.44, 0.032, 0.36), "Lib_SteelDark", bevel=bev, segs=bs)
     g.box((x, 0.062, ZC), (0.34, 0.072, 0.28), "Lib_Steel")
     g.box((x, 0.51, ZC), (0.50, 0.86, 0.40), "Lib_PaintRed", bevel=bev, segs=bs)
@@ -175,8 +175,8 @@ def _flat_box(g, x, lod):
 
 
 def _slant_box(g, x, lod):
-    bev = lod_pick(lod, 0.003, 0.0)
-    bs = 1 if lod == 0 else 0
+    bev = 0.0
+    bs = 0
     _feet(g, x, lod)
     g.box((x, 0.52, ZC), (0.48, 0.76, 0.38), "Lib_PaintGreen", bevel=bev, segs=bs)
     g.box((x, 0.90, ZC), (0.52, 0.14, 0.44), "Lib_PaintGreen", bevel=bev, segs=bs, euler=(12, 0, 0))
@@ -190,8 +190,8 @@ def _slant_box(g, x, lod):
 def _pole(g, lod):
     bev = lod_pick(lod, 0.002, 0.0)
     g.box((POLE_X, 0.014, ZC), (0.24, 0.028, 0.24), "Lib_SteelDark", bevel=bev, segs=1 if lod == 0 else 0)
-    g.cylinder((POLE_X, 0.76, ZC), 0.048, 1.48, "Lib_Steel", lod_pick(lod, 12, 8))
-    g.cylinder((POLE_X, 1.515, ZC), 0.052, 0.04, "Lib_SteelDark", lod_pick(lod, 12, 8))
+    g.cylinder((POLE_X, 0.76, ZC), 0.048, 1.48, "Lib_Steel", lod_pick(lod, 8, 6))
+    g.cylinder((POLE_X, 1.515, ZC), 0.052, 0.04, "Lib_SteelDark", lod_pick(lod, 8, 6))
     g.box((POLE_X + 0.07, 0.50, 0.06), (0.04, 0.07, 0.028), "Lib_SteelDark")
 
 
@@ -215,8 +215,15 @@ def create():
     )
     a.climb_note = "Not a cling surface."
     a.vault_note = "Too short to vault."
-    for lod in (0, 1):
+    for lod in (0, 1, 2):
         g = a.begin(lod)
+        if lod >= 2:
+            g.cylinder((POLE_X, 0.76, ZC), 0.048, 1.48, "Lib_Steel", 6)
+            g.box((AX, 0.52, ZC), (0.48, 0.90, 0.38), "Lib_PaintBlue")
+            g.box((BX, 0.55, ZC), (0.50, 0.96, 0.40), "Lib_PaintRed")
+            g.box((CX, 0.52, ZC), (0.48, 0.90, 0.38), "Lib_PaintGreen")
+            a.end()
+            continue
         _pole(g, lod)
         _round_box(g, AX, lod)
         _flat_box(g, BX, lod)

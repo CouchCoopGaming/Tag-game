@@ -48,6 +48,7 @@ def create():
         if lod == 0:
             g.cylinder((0, 0.575, 0.248), 0.008, 0.14, "Lib_Black", 8, axis="X")
         a.end()
-    a.capsule("Col_Body", (0, 0.42, 0), 0.10, 0.46, 1)
-    a.box("Col_Door", (0, 0.50, 0.242), (0.06, 0.08, 0.020))
+    # Base disk is y 0–0.08, radius 0.27. Liner is y 0.10–0.74, radius 0.162.
+    a.box("Col_Base", (0, 0.046, 0), (0.36, 0.066, 0.36))
+    a.box("Col_Body", (0, 0.400, 0), (0.18, 0.590, 0.18))
     return a

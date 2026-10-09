@@ -1,12 +1,10 @@
 """Street basketball hoop. Rim at 3.05 m, framed backboard, net, padded pole.
 
-The pole is the origin. On the 22 m court the slab ends at |z| = 11 and the
-painted basket is at |z| = 9.7125. A pole 1.2 m behind that end line (world
-|z| = 12.2) needs the rim 2.4875 m in front of the pole.
-
-FIBA puts the backboard face 1.20 m inside the end line and the rim 1.575 m
-inside it. This court's paint is scaled by 22/28, so that face-to-rim gap is
-0.295 m. A literal 1.20 m face on the unscaled court would pass through the rim.
+The pole is the origin and the rim faces +Z. The backboard face is 0.375 m
+behind the rim, the real FIBA gap (1.575 m minus 1.20 m). On the 22 m court
+the baseline is |z| = 11. Place the south pole at z = -10.235 (yaw 0) and the
+north pole at z = 10.235 (yaw 180): the face lands 1.20 m inside the baseline
+and the rim lands on the painted basket at |z| = 9.425.
 """
 
 import math
@@ -16,10 +14,9 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from _common import Asset, register, lod_pick
 
-# World |z| of the pole minus world |z| of the painted basket.
-RIM_Z = 12.2 - 9.7125
-FACE_GAP = (1.575 - 1.20) * (22.0 / 28.0)
-BOARD_Z = (RIM_Z - FACE_GAP) - 0.0175
+# Rim is 0.810 m in front of the pole. Board face is 0.375 m behind that rim.
+RIM_Z = 0.810
+BOARD_Z = 0.4175
 # Arm stops short of the pole (r = 0.055) and short of the board's back face.
 ARM_Z0 = 0.064
 ARM_Z1 = (BOARD_Z - 0.0175) - 0.008
@@ -57,9 +54,10 @@ def create():
     a = Asset(
         "Hoop",
         "Park",
-        "Regulation rim at 3.05 m, 2.49 m in front of the pole. Backboard face is 0.29 m behind the rim. "
-        "Place the pole 1.2 m behind the baseline: south z=-12.2 yaw 0, north z=12.2 yaw 180, so the rim "
-        "sits on the restricted-area center (z=±9.71). 1.80 x 1.05 m backboard, net, pole pad, and base plate. Rim faces +Z.",
+        "Regulation rim at 3.05 m, 0.81 m in front of the pole. Backboard face is 0.375 m behind the rim. "
+        "Place the pole so that face is 1.2 m inside the baseline: south z=-10.235 yaw 0, north z=10.235 "
+        "yaw 180. The rim then sits on the painted basket (z=±9.425). 1.80 x 1.05 m backboard, net, pole pad, "
+        "and base plate. Rim faces +Z.",
     )
     a.climb_note = "Pole is 12 cm under the pad. Not a cling wall."
     a.vault_note = "No rail. The rim is 3.05 m."
@@ -84,7 +82,7 @@ def create():
         g.box((0, 3.35, ARM_ZC), (0.08, 0.08, ARM_ZS), "Lib_SteelDark")
         # Diagonal stays clear of the pole and stops under the arm.
         if lod == 0:
-            g.pipe((0, 2.55, 0.10), (0, 3.24, ARM_ZC + 0.35), 0.028, "Lib_Steel", 6)
+            g.pipe((0, 2.55, 0.08), (0, 3.22, min(ARM_ZC + 0.10, BOARD_Z - 0.09)), 0.028, "Lib_Steel", 6)
         g.torus((0, 3.05, RIM_Z), 0.225, 0.028, "Lib_Orange", 20 if lod == 0 else 12, 6)
         if lod == 0:
             for i in range(4):

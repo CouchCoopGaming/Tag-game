@@ -170,7 +170,7 @@ def create():
     )
     a.climb_note = "The pedestal is about 11 cm across. Not a cling."
     a.vault_note = "Rim is 0.98 m and too small to stand on."
-    for lod in (0, 1):
+    for lod in (0, 1, 2):
         g = a.begin(lod)
         _body(g, lod)
         a.end()

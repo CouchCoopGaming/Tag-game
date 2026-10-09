@@ -19,9 +19,9 @@ STILL_DIR = os.path.join(r._common.REPO, "Docs", "AssetStills", "pass10")
 def _court(found):
     scene = p6._begin(wide=True)
     p6._spawn(found, "Court", (0, 0, 0), 0)
-    # Pole is 1.2 m behind the slab end (z = ±11). Rim then lands on z = ±9.7125.
-    p6._spawn(found, "Hoop", (0, 0, -12.2), 0)
-    p6._spawn(found, "Hoop", (0, 0, 12.2), 180)
+    # Backboard face is 1.20 m inside the baseline. Rim then lands on z = ±9.425.
+    p6._spawn(found, "Hoop", (0, 0, -10.235), 0)
+    p6._spawn(found, "Hoop", (0, 0, 10.235), 180)
     p6._ground((0.15, 0.16, 0.15))
     bg = scene.world.node_tree.nodes.get("Background")
     if bg:

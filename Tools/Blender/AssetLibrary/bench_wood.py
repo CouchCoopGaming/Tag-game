@@ -154,9 +154,16 @@ def create():
             g.box((0, y, -0.30), (length * 0.92, 0.050, 0.028), "Lib_Board")
         a.end()
     a.box("Col_Seat", (0, 0.455, -0.01), (1.70, 0.026, 0.40))
-    a.box("Col_Back", (0, 0.68, -0.30), (1.60, 0.22, 0.020))
+    # One box per back board. A single slab crosses the slots and leaves the mesh.
+    a.box("Col_Back0", (0, 0.560, -0.30), (1.50, 0.040, 0.016))
+    a.box("Col_Back1", (0, 0.680, -0.30), (1.50, 0.030, 0.016))
+    a.box("Col_Back2", (0, 0.800, -0.30), (1.50, 0.030, 0.016))
     for i, x in enumerate((-0.74, 0.74)):
-        a.box("Col_LegF_%d" % i, (x, 0.28, 0.24), (0.036, 0.28, 0.032))
-        a.box("Col_LegR_%d" % i, (x, 0.46, -0.28), (0.036, 0.56, 0.032))
-        a.box("Col_Arm_%d" % i, (x, 0.66, -0.02), (0.036, 0.028, 0.28))
+        # Stacked, not overlapped: the gap check only sees a collider that ends
+        # at or below the next bottom. Each step is 2 cm or less.
+        a.box("Col_LegF_%d" % i, (x, 0.320, 0.242), (0.028, 0.600, 0.020))
+        a.box("Col_PostR_%d" % i, (x, 0.275, -0.280), (0.028, 0.510, 0.020))
+        a.box("Col_PostR2_%d" % i, (x, 0.598, -0.280), (0.028, 0.104, 0.020))
+        a.box("Col_PostR3_%d" % i, (x, 0.720, -0.280), (0.028, 0.110, 0.020))
+        a.box("Col_Arm_%d" % i, (x, 0.662, -0.02), (0.028, 0.044, 0.20))
     return a
