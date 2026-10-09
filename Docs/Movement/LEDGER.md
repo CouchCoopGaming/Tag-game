@@ -16,6 +16,17 @@ The played vault is `MantlePose.Cleared`. `MantlePose.At` remains the printed pr
 
 Evasion `Sample.Drop` is applied on the hips bone. The visual root and the capsule are not moved. `EvasionMoves.Enabled` defaults to false. RT is not a live verb while the flag is off. LT stays the couch rope.
 
+## Effects, when #127 folds
+
+C2 is draft #127, `cursor/tag-fx-kit`, tip `fc9c8d82` when this note was written. It is not folded. When it joins `cursor/tag-movement`, the fold takes C2's sheets and C2's `ComicPng` loader. This branch's word sheet leaves. One loader, one word sheet, one burst sheet.
+
+- C2 `ComicAtlas.png` is the 36-word sheet, 3072×3072, six columns by six rows of 512. `ComicAtlas.Cells` is 36. The same pixels are under `Assets/StreamingAssets/FX`.
+- C2 `ComicBurstAtlas.png` is 2560×1024, five columns by two rows of 512, 10 cells. Art and StreamingAssets both carry it.
+- This branch's `Assets/Art/FX/ComicAtlas.png` and its StreamingAssets copy are the older 4096×1024 sheet, four cells of 1024. Both copies leave with the fold. `ComicAtlas` here is `Cells = 4`, `CellWidth = 1024`.
+- `ComicPng.cs` is the same blob on both tips today (`6e108f83`). The fold keeps C2's file.
+
+`ComicArt.Holds` and `CompileSmokeTest` on this branch still expect the 4096×1024 sheet. They follow C2's atlas when the sheets change.
+
 ## Locks
 
 `StrafeJumpSim --proofs` matches the 14 locked lines, including `ropeBody=0` and `hot-path allocs before=101 after=0`.
