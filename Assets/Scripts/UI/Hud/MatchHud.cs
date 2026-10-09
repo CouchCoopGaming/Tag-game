@@ -140,7 +140,7 @@ namespace Tag.Ui.Hud
             if (MenuHost.Legacy) return null;
             if (Instance != null) return Instance;
             var go = new GameObject("MatchHud");
-            DontDestroyOnLoad(go);
+            if (Application.isPlaying) DontDestroyOnLoad(go);
             return go.AddComponent<MatchHud>();
         }
 
@@ -174,7 +174,7 @@ namespace Tag.Ui.Hud
                 return;
             }
             Instance = this;
-            DontDestroyOnLoad(gameObject);
+            if (Application.isPlaying) DontDestroyOnLoad(gameObject);
             for (int i = 0; i < 4; i++) _wasIt[i] = -1;
             MatchHudView.Build(this);
             if (Root != null) Root.enabled = false;

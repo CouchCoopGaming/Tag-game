@@ -180,25 +180,9 @@ namespace Tag.Ui.Menu
 
         static Texture2D GrabFrame()
         {
-            Texture2D shot = ReflectGrab();
-            if (shot != null) return shot;
+            // ScreenCapture.CaptureScreenshotAsTexture renders nothing in
+            // batchmode, so always grab camera + canvases into a RenderTexture.
             return CanvasGrab();
-        }
-
-        static Texture2D ReflectGrab()
-        {
-            System.Type module = System.Type.GetType("UnityEngine.ScreenCapture, UnityEngine.ScreenCaptureModule");
-            if (module == null) return null;
-            MethodInfo method = module.GetMethod("CaptureScreenshotAsTexture", BindingFlags.Public | BindingFlags.Static, null, System.Type.EmptyTypes, null);
-            if (method == null) return null;
-            try
-            {
-                return method.Invoke(null, null) as Texture2D;
-            }
-            catch (System.Exception)
-            {
-                return null;
-            }
         }
 
         static Texture2D CanvasGrab()
@@ -226,7 +210,13 @@ namespace Tag.Ui.Menu
                 main.targetTexture = rt;
                 main.Render();
                 main.targetTexture = mainRt;
+                // Keep the scene pixels; the UI camera only draws canvases on top.
+                cam.clearFlags = CameraClearFlags.Depth;
             }
+            // Parked far from the world so a full mask only picks up the canvases
+            // (code-built UI children often sit on Default, not the UI layer).
+            camGo.transform.position = new Vector3(0f, -10000f, 0f);
+            cam.cullingMask = ~0;
             Canvas[] canvases = Object.FindObjectsByType<Canvas>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
             var modes = new RenderMode[canvases.Length];
             var oldCams = new Camera[canvases.Length];

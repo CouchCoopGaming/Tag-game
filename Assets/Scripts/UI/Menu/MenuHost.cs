@@ -218,7 +218,7 @@ namespace Tag.Ui.Menu
             if (Legacy) return null;
             if (Instance != null) return Instance;
             var go = new GameObject("MenuHost");
-            DontDestroyOnLoad(go);
+            if (Application.isPlaying) DontDestroyOnLoad(go);
             return go.AddComponent<MenuHost>();
         }
 
@@ -230,7 +230,7 @@ namespace Tag.Ui.Menu
                 return;
             }
             Instance = this;
-            DontDestroyOnLoad(gameObject);
+            if (Application.isPlaying) DontDestroyOnLoad(gameObject);
             MenuVideo.Load();
             BuildShell();
         }
