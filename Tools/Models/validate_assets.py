@@ -19,6 +19,7 @@ import argparse
 import copy
 import hashlib
 import json
+import math
 import os
 import re
 import struct
@@ -45,6 +46,10 @@ NOCLIP_CM = 0.5
 HIP_PLANT_M = 0.08
 HIP_CROUCH_M = 0.12
 HIP_FLEX_RATIO = 1.5
+# A dressed segment must keep this much of its rest surface under cloth.
+# The cloth band is 0.3–1.0 cm outside the hull. 1.5 cm is the search radius.
+CLOTH_COVER_MIN = 0.90
+CLOTH_COVER_M = 0.015
 
 # Class ceilings: LOD0, LOD1, LOD2. LOD2 is required above LOD2_AT tris,
 # and always for cars and buses.
@@ -673,11 +678,13 @@ def frame_facts(path):
 
 
 def frame_reasons(role, info):
-    """Hero, side, and scale must show the whole object. Scale needs the figure.
+    """Hero, side, scale, and any other submitted still must show the whole object.
 
-    Close-ups are not framed this way. `hero` is the quarter role.
+    Close-ups are not framed this way. `hero` is the quarter role. A still
+    with no role token is `frame`: same silhouette test, so a lone 1280×720
+    clip cannot skip it. Scale is the only role that also needs the figure.
     """
-    if role not in ("quarter", "side", "scale"):
+    if role == "close" or role not in ("quarter", "side", "scale", "frame"):
         return []
     path = info.get("full") or ""
     facts = frame_facts(path)
@@ -740,7 +747,8 @@ def snake_keys(name):
     return ["_".join(parts)]
 
 
-def role_of(stem):
+def named_role(stem):
+    """Role token written on the file, or None when the still names no role."""
     tokens = re.split(r"[_\-]+", stem.lower())
     joined = "".join(tokens)
     if any(tok in SCALE or tok.replace("-", "") in {"scale", "figure"} for tok in tokens):
@@ -753,7 +761,11 @@ def role_of(stem):
         return "quarter"
     if any(tok in QUARTER for tok in tokens):
         return "quarter"
-    return "quarter"
+    return None
+
+
+def role_of(stem):
+    return named_role(stem) or "quarter"
 
 
 # Folder names that are not part of the object. `street` in a filename is.
@@ -1120,10 +1132,70 @@ def check_materials(root, entry, tex_cache):
     return out
 
 
-def stills_check(index, keys, scope, extra_readability=False, category=None):
+def _key_sets(keys):
+    sets = []
+    for key in keys or []:
+        if isinstance(key, (list, tuple)):
+            parts = []
+            for item in key:
+                parts.extend(part for part in str(item).split("_") if part)
+            if parts:
+                sets.append(tuple(parts))
+        else:
+            parts = tuple(part for part in str(key).split("_") if part)
+            if parts:
+                sets.append(parts)
+    return sets
+
+
+def submitted_still_reasons(index, keys, scope, category, lane_keys, matched):
+    """Frame every still this asset or its lane submitted, not only the winning quartet.
+
+    A file with no role token still takes the silhouette test. Close-ups may crop.
+    A still that names a different asset in the same lane is that asset's frame.
+    A still that names nobody is a lane frame and counts here.
+    """
+    reasons = []
+    seen = set()
+    for info in (matched or {}).values():
+        full = info.get("full") if info else None
+        if full:
+            seen.add(full)
+    own = _key_sets(keys)
+    lane = _key_sets(lane_keys) if lane_keys is not None else None
+    for row in index.rows:
+        if not still_in_scope(row, scope, category):
+            continue
+        if row["path"] in seen:
+            continue
+        hits_own = any(key_hits(list(tokens), row["tokens"], category) for tokens in own)
+        if not hits_own:
+            if lane is None:
+                continue
+            if any(key_hits(list(tokens), row["tokens"], category) for tokens in lane):
+                continue
+        role = named_role(row["stem"]) or "frame"
+        if role == "close":
+            continue
+        _measure_still(row)
+        if not _still_ok(row):
+            continue
+        info = {
+            "path": row["rel"],
+            "full": row["path"],
+            "pixels": list(row["pixels"]) if row.get("pixels") else None,
+            "bytes": row.get("bytes"),
+        }
+        reasons.extend(frame_reasons(role, info))
+    return reasons
+
+
+def stills_check(index, keys, scope, extra_readability=False, category=None, lane_keys=None):
     """Per-asset quartet check. PassN, 1280x720 or larger, each file under 400 KB.
 
     Returns (reasons, stillsCheck). stillsCheck is the record a ledger row can quote.
+    `lane_keys` is every asset name in this still scope. When it is set, a still
+    that matches none of them is framed too.
     """
     reasons = []
     matched = index.match(keys, scope, category)
@@ -1145,6 +1217,7 @@ def stills_check(index, keys, scope, extra_readability=False, category=None):
             reasons.extend(role_reasons)
             info["ok"] = not role_reasons
         roles[role] = info
+    reasons.extend(submitted_still_reasons(index, keys, scope, category, lane_keys, roles))
     if extra_readability:
         found = False
         for row in index.rows:
@@ -2175,7 +2248,278 @@ def evaluate_hier(root, path, index, licensed, proof, hip_text):
     }
 
 
-def evaluate_costume(root, item, index, licensed, fit, fit_lods, fit_text, proof):
+def mesh_islands(faces):
+    """Connected triangle islands. Faces are tuples of vertex indices."""
+    parent = {}
+
+    def find(vert):
+        root = parent.setdefault(vert, vert)
+        while parent[root] != root:
+            parent[root] = parent[parent[root]]
+            root = parent[root]
+        return root
+
+    for face in faces:
+        if len(face) < 2:
+            continue
+        root = find(face[0])
+        for vert in face[1:]:
+            other = find(vert)
+            if other != root:
+                parent[other] = root
+    return len({find(vert) for face in faces for vert in face})
+
+
+def _tri_area(a, b, c):
+    ab = (b[0] - a[0], b[1] - a[1], b[2] - a[2])
+    ac = (c[0] - a[0], c[1] - a[1], c[2] - a[2])
+    cx = ab[1] * ac[2] - ab[2] * ac[1]
+    cy = ab[2] * ac[0] - ab[0] * ac[2]
+    cz = ab[0] * ac[1] - ab[1] * ac[0]
+    return 0.5 * math.sqrt(cx * cx + cy * cy + cz * cz)
+
+
+def surface_coverage(samples, cloth_points, limit):
+    """Share of rest-surface area whose centroid sits within `limit` of cloth.
+
+    `samples` is `(area, centroid)`. `cloth_points` are points on the cloth.
+    """
+    total = 0.0
+    covered = 0.0
+    if not samples:
+        return None
+    cell = limit / 3.0 if limit else 0.005
+    grid = defaultdict(list)
+    for point in cloth_points:
+        grid[(
+            int(math.floor(point[0] / cell)),
+            int(math.floor(point[1] / cell)),
+            int(math.floor(point[2] / cell)),
+        )].append(point)
+    if not grid:
+        return 0.0
+    limit_sq = limit * limit
+
+    def near(point):
+        base = (
+            int(math.floor(point[0] / cell)),
+            int(math.floor(point[1] / cell)),
+            int(math.floor(point[2] / cell)),
+        )
+        for dz in (-3, -2, -1, 0, 1, 2, 3):
+            for dy in (-3, -2, -1, 0, 1, 2, 3):
+                for dx in (-3, -2, -1, 0, 1, 2, 3):
+                    if dx * dx + dy * dy + dz * dz > 9:
+                        continue
+                    for cloth in grid.get((base[0] + dx, base[1] + dy, base[2] + dz), ()):
+                        gap = (
+                            point[0] - cloth[0],
+                            point[1] - cloth[1],
+                            point[2] - cloth[2],
+                        )
+                        if gap[0] * gap[0] + gap[1] * gap[1] + gap[2] * gap[2] <= limit_sq:
+                            return True
+        return False
+
+    for area, centroid in samples:
+        if area <= 0.0:
+            continue
+        total += area
+        if near(centroid):
+            covered += area
+    if total <= 0.0:
+        return None
+    return covered / total
+
+
+def _blend_mul(matrix, point):
+    x, y, z = point
+    return (
+        matrix[0] * x + matrix[4] * y + matrix[8] * z + matrix[12],
+        matrix[1] * x + matrix[5] * y + matrix[9] * z + matrix[13],
+        matrix[2] * x + matrix[6] * y + matrix[10] * z + matrix[14],
+    )
+
+
+_BLEND_CACHE = {}
+
+
+def blend_objects(path):
+    """World-space triangles and island counts from a Blender 4.00 lab file.
+
+    Returns `{object name: {"tris", "samples", "islands"}}`, or None when the
+    file is not that blend layout. Costume pieces and body segments share one
+    rest pose, so the object matrix is applied.
+    """
+    cached = _BLEND_CACHE.get(path)
+    if cached is not None or path in _BLEND_CACHE:
+        return cached
+    if not path or not os.path.isfile(path):
+        _BLEND_CACHE[path] = None
+        return None
+    with open(path, "rb") as handle:
+        data = handle.read()
+    if not data.startswith(b"BLENDER-v400"):
+        _BLEND_CACHE[path] = None
+        return None
+    blocks = []
+    offset = 12
+    while offset + 24 <= len(data):
+        code = data[offset:offset + 4]
+        length = struct.unpack_from("<i", data, offset + 4)[0]
+        old = struct.unpack_from("<Q", data, offset + 8)[0]
+        data_off = offset + 24
+        if code == b"ENDB" or length < 0 or data_off + length > len(data):
+            break
+        blocks.append((code, old, data_off, length))
+        offset = data_off + length
+    by_old = {old: (data_off, length) for code, old, data_off, length in blocks if old}
+
+    def mesh_local(mesh_off, length):
+        if length < 1704:
+            return None
+        totvert, _edges, totpoly, totloop = struct.unpack_from("<iiii", data, mesh_off + 224)
+        if totvert <= 0 or totloop <= 0 or totpoly <= 0:
+            return {"local_tris": [], "faces": []}
+        layers_ptr = struct.unpack_from("<Q", data, mesh_off + 248)[0]
+        totlayer = struct.unpack_from("<i", data, mesh_off + 248 + 220)[0]
+        if layers_ptr not in by_old or totlayer <= 0:
+            return None
+        layer_off, layer_len = by_old[layers_ptr]
+        points = None
+        for index in range(totlayer):
+            base = layer_off + index * 128
+            if base + 128 > layer_off + layer_len:
+                break
+            layer_name = data[base + 32:base + 100].split(b"\0", 1)[0].decode("latin1", "replace")
+            data_ptr = struct.unpack_from("<Q", data, base + 104)[0]
+            if layer_name == "position" and data_ptr in by_old:
+                raw_off = by_old[data_ptr][0]
+                raw = data[raw_off:raw_off + totvert * 12]
+                if len(raw) < totvert * 12:
+                    return None
+                coords = struct.unpack("<%df" % (totvert * 3), raw)
+                points = list(zip(coords[0::3], coords[1::3], coords[2::3]))
+        if not points:
+            return None
+        loop_ptr = struct.unpack_from("<Q", data, mesh_off + 992)[0]
+        loop_layers = struct.unpack_from("<i", data, mesh_off + 992 + 220)[0]
+        if loop_ptr not in by_old:
+            return None
+        loop_off, loop_len = by_old[loop_ptr]
+        corners = None
+        for index in range(loop_layers):
+            base = loop_off + index * 128
+            if base + 128 > loop_off + loop_len:
+                break
+            layer_name = data[base + 32:base + 100].split(b"\0", 1)[0].decode("latin1", "replace")
+            data_ptr = struct.unpack_from("<Q", data, base + 104)[0]
+            if layer_name == ".corner_vert" and data_ptr in by_old:
+                raw_off = by_old[data_ptr][0]
+                raw = data[raw_off:raw_off + totloop * 4]
+                if len(raw) < totloop * 4:
+                    return None
+                corners = struct.unpack("<%di" % totloop, raw)
+        poly_ptr = struct.unpack_from("<Q", data, mesh_off + 240)[0]
+        if corners is None or poly_ptr not in by_old:
+            return None
+        poly_off = by_old[poly_ptr][0]
+        poly_raw = data[poly_off:poly_off + (totpoly + 1) * 4]
+        if len(poly_raw) < (totpoly + 1) * 4:
+            return None
+        offsets = struct.unpack("<%di" % (totpoly + 1), poly_raw)
+        faces = []
+        tris = []
+        for index in range(totpoly):
+            face = corners[offsets[index]:offsets[index + 1]]
+            if len(face) < 3:
+                continue
+            faces.append(face)
+            for corner in range(1, len(face) - 1):
+                tri = (points[face[0]], points[face[corner]], points[face[corner + 1]])
+                tris.append(tri)
+        return {"local_tris": tris, "faces": faces}
+
+    meshes = {}
+    for code, old, data_off, length in blocks:
+        if code != b"ME\x00\x00":
+            continue
+        meshes[old] = mesh_local(data_off, length)
+
+    objects = {}
+    for code, _old, data_off, length in blocks:
+        if code != b"OB\x00\x00" or length < 796:
+            continue
+        name = data[data_off + 40:data_off + 106].split(b"\0", 1)[0].decode("latin1", "replace")
+        if len(name) < 3:
+            continue
+        name = name[2:]
+        data_ptr = struct.unpack_from("<Q", data, data_off + 376)[0]
+        matrix = struct.unpack_from("<16f", data, data_off + 732)
+        local = meshes.get(data_ptr)
+        if not local:
+            objects[name] = {"tris": [], "samples": [], "islands": 0}
+            continue
+        tris = []
+        samples = []
+        cloth_points = []
+        for a, b, c in local["local_tris"]:
+            wa, wb, wc = _blend_mul(matrix, a), _blend_mul(matrix, b), _blend_mul(matrix, c)
+            tris.append((wa, wb, wc))
+            area = _tri_area(wa, wb, wc)
+            centroid = ((wa[0] + wb[0] + wc[0]) / 3.0, (wa[1] + wb[1] + wc[1]) / 3.0, (wa[2] + wb[2] + wc[2]) / 3.0)
+            samples.append((area, centroid))
+            cloth_points.extend((wa, wb, wc, centroid))
+        objects[name] = {
+            "tris": tris,
+            "samples": samples,
+            "points": cloth_points,
+            "islands": mesh_islands(local["faces"]),
+        }
+    _BLEND_CACHE[path] = objects
+    return objects
+
+
+def cloth_reasons(root, pieces, hide):
+    """Fail a shell that no longer covers its segment, or a piece cut into islands.
+
+    Each loadout piece is one source mesh. More than one connected island means
+    the cut added shards (`cloth-shards`). Each dressed body segment must keep
+    at least 90% of its rest-pose area within the cloth band (`cloth-coverage`).
+    """
+    path = os.path.join(root, "Art", "CharacterLab", "CostumeLab.blend")
+    if not pieces or not os.path.isfile(path):
+        return []
+    lab = blend_objects(path)
+    if lab is None:
+        return ["cloth-coverage", "cloth-shards"]
+    reasons = []
+    for piece in pieces:
+        mesh = lab.get(piece)
+        if mesh and mesh["islands"] > 1:
+            reasons.append("cloth-shards")
+            break
+    dressed = list(hide or [])
+    if not dressed:
+        dressed = [name for name in lab if name.startswith("Mesh_")]
+    for segment in dressed:
+        body = lab.get(segment)
+        points = []
+        for piece in pieces:
+            mesh = lab.get(piece)
+            if mesh:
+                points.extend(mesh.get("points") or [])
+        if body is None or not body["samples"]:
+            reasons.append("cloth-coverage")
+            break
+        fraction = surface_coverage(body["samples"], points, CLOTH_COVER_M)
+        if fraction is None or fraction < CLOTH_COVER_MIN:
+            reasons.append("cloth-coverage")
+            break
+    return reasons
+
+
+def evaluate_costume(root, item, index, licensed, fit, fit_lods, fit_text, proof, lane_keys=None):
     name = item.get("id") or "?"
     reasons = []
     spdx = licensed.get(name) if isinstance(licensed, dict) else None
@@ -2241,10 +2585,11 @@ def evaluate_costume(root, item, index, licensed, fit, fit_lods, fit_text, proof
     else:
         reasons.append("rig-proof-missing")
     still_reasons, stills = stills_check(
-        index, snake_keys(name), "Docs/Characters", extra_readability=True,
+        index, snake_keys(name), "Docs/Characters", extra_readability=True, lane_keys=lane_keys,
     )
     reasons.extend(still_reasons)
     reasons.extend(shell_buried(stills))
+    reasons.extend(cloth_reasons(root, pieces, item.get("hide") or []))
     dedup = []
     for reason in reasons:
         if reason not in dedup:
@@ -2314,8 +2659,12 @@ def run(root, report_path=None):
     for path in hier_assets(root):
         rows.append(evaluate_hier(root, path, index, licensed, proof, hip_text))
     fit, fit_lods, fit_text = fit_table(root)
-    for item in costume_sets(root):
-        rows.append(evaluate_costume(root, item, index, licensed, fit, fit_lods, fit_text, proof))
+    costumes = costume_sets(root)
+    lane_keys = [snake_keys(item.get("id") or "") for item in costumes]
+    for item in costumes:
+        rows.append(evaluate_costume(
+            root, item, index, licensed, fit, fit_lods, fit_text, proof, lane_keys,
+        ))
     apply_identical_stills(rows, index, root)
     rows.sort(key=lambda row: (row["category"], row["name"]))
     passed = sum(1 for row in rows if row["ok"])
@@ -2533,6 +2882,23 @@ def self_test():
     assert frame_reasons("close", {"full": cropped}) == []
     assert frame_reasons("scale", {"full": scaled}) == []
     assert "stills-scale-figure" in frame_reasons("scale", {"full": good})
+    assert "stills-frame-edge" in frame_reasons("frame", {"full": cropped})
+    assert named_role("sprint") is None
+    assert named_role("hero") == "quarter"
+    assert mesh_islands([(0, 1, 2), (2, 1, 3)]) == 1
+    assert mesh_islands([(0, 1, 2), (3, 4, 5)]) == 2
+    full = surface_coverage(
+        [(1.0, (0.0, 0.0, 0.0)), (1.0, (0.01, 0.0, 0.0))],
+        [(0.0, 0.0, 0.005), (0.01, 0.0, 0.005)],
+        CLOTH_COVER_M,
+    )
+    shards = surface_coverage(
+        [(1.0, (0.0, 0.0, 0.0)), (1.0, (0.2, 0.0, 0.0))],
+        [(0.0, 0.0, 0.005)],
+        CLOTH_COVER_M,
+    )
+    assert full is not None and full >= CLOTH_COVER_MIN
+    assert shards is not None and shards < CLOTH_COVER_MIN
     print("self-test ok")
     return 0
 
