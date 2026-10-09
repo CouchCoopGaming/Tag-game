@@ -431,7 +431,7 @@ Load and join still use the bind-pose idle. The stand frame is wider than MenuAl
 
 The pass 52 stand opened the upper arms far enough to read as an A-pose. The hanging arm is back to about 12 degrees off the torso, which is the bind shoulder, with the forearm brought in so the elbow is soft. Load and join use that hang. Results keeps the celebrate V on first. Second pumps one fist. Third leans onto one leg. Fourth slumps, head down. Same Hier family, same camera, same 1.8 m square. The root is rotated for the lean and then planted. Soles print 0.005. There is no hop.
 
-`glyph-cover check=1 FAIL U+2713` and `screen-roots stacked=2 FAIL two roots` are spike lines, not product bugs. `FontCover.Holds` passes only when every live string is in both UI fonts (`clean=0`) and a planted U+2713 is missing (`dirty>0`), because neither font has a check mark. `ScreenDeck.Holds` passes only when `ShowOnly` leaves one root (`clean=1`) and the old `ShowStacked` open leaves two (`stacked=2`). The ui-flow line stays `glyphs=ok` and does not append `screen roots`. The sim still exits 1 on `no-clip rest overlaps`.
+Pass 53 treated a missing U+2713 and a stacked open as planted spikes. Pass 56 puts the check mark in both UI fonts and makes `ShowStacked` clear the previous root, so those lines are no longer failures. The ui-flow line stays `glyphs=ok` and does not append `screen roots`.
 
 `Docs/UiStills/pass53/` holds results and load before and after. Join uses the same seat atlas as load. Unity is not installed, so the stills are composites. Controls were not reshot. pose stays 0.
 
@@ -669,7 +669,7 @@ Proof, from `/workspace`, with `PATH=/tmp/dotnet` and `DOTNET_CLI_TELEMETRY_OPTO
 
 The success lines must stay byte-identical except ui fields a pass was told to add. Pass 32 left them as: `ui-flow screens=15 kb=15 pad=15 dead=0 focus=ok back=ok seats=4 drop=ok reclaim=ok min=ok keep=ok cues=9 text=ok hud=ok glyphs=ok feed=ok load=ok board=ok faces=ok rules=ok records=ok contrast=ok style=ok sheet=ok defaults-conflict=0` and `hot-path allocs before=101 after=0 flags=dropped`. `MenuTips.Holds` and `MenuSheet.Holds` read source from disk. Keep `PlantY = 0.005f`, `HoldRest()`, `IdlePose.At(0f, 0f)`, `ShowMenuPair`, `MenuSheet.JoinBanner(`, no `MenuBackdrop.Chase` inside `BuildMain`, no `CouchPlay.Humans > 0` inside `BuildJoin`, `At(0)` equal to `Space jumps.`, and the grapple line going through `ActionBinds.Show`. Do not edit `ActionBinds.Show` or `ControlGlyphs.GlyphOf`. Feel locks stay: coyote 0.10, jump buffer 0.16, cling grace 0.08, jumpSpeed 24.7, terminal fall 56.16. `SettingsFile.Version` stays 2. `TagBackImmunity.DefaultSeconds` is 1.0. Grapple is not a new `PlayAction`. `enableGrapple` stays false. `FireButton` stays RMB.
 
-Open flaws: Hier arms are still the bind A-pose, because no idle clip lowers them. A controls swap marks the other row with a cream stroke, and gold stays on the focused row. Pad grapple's stored token is `leftTrigger`. The controls row prints LT, and RT stays free. The couch rope is on every human seat. pngquant is what fits the stills under 400 KB, and it crushes figure colors. The Orange Hier file is still a different skinned mesh, so P3 is the shared rig with the body-orange tint. The seat band against red is under the 0.35 floor (`ui-seat off=0.34/0.29/0.26`). The shape fill stays the lighter orange, and `ui-fill` still clears. Title sky step 0.155 was accepted; do not re-blur it. Pause card was accepted. A cheer sample of the right hip in the right forearm panel is 0.08 cm, under the 0.5 cm line.
+Open flaws: Hier arms are still the bind A-pose, because no idle clip lowers them. A controls swap marks the other row with a cream stroke, and gold stays on the focused row. Pad grapple's stored token is `leftTrigger`. The controls row prints LT, and RT stays free. The couch rope is on every human seat. pngquant is what fits the stills under 400 KB, and it crushes figure colors. The Orange Hier file is still a different skinned mesh, so P3 is the shared rig with the body-orange tint. The seat colour stays `(0.94, 0.42, 0.14)`. A dark keyline rings the band, and the pair distance counts the seat mark, so the band clears 0.35. The shape fill stays the lighter orange, and `ui-fill` still clears. Title sky step 0.155 was accepted; do not re-blur it. Pause card was accepted. A cheer sample of the right hip in the right forearm panel is 0.08 cm, under the 0.5 cm line.
 
 Next, if the work continues: capture these screens in play mode once Unity is available, and replace the headless frames. If a real idle clip lowers the arms, sample that clip only, then run a 30 fps check that reports arm euler as rig joint and root translation as pose, with pose staying 0 and the soles at an absolute 0.5 cm, and do not lift the root to fake the plant.
 
@@ -690,6 +690,14 @@ P3's seat colour is `(0.94, 0.42, 0.14)`, the factory body orange, not the old s
 `ui-flow screens=15 kb=15 pad=15 dead=0 focus=ok back=ok seats=4 drop=ok reclaim=ok min=ok keep=ok cues=9 text=ok hud=ok glyphs=ok feed=ok load=ok board=ok faces=ok rules=ok records=ok contrast=ok style=ok sheet=ok defaults-conflict=0`.
 
 Unity is not installed on this machine, and a free editor needs an account this run does not have. The frames in `Docs/UiStills/pass55/` are headless. `55-load.png` is the menu plate with the Blender Hier figures and the `[LT]` tip. `55-it.png` and `55-wins.png` are drawings of the mesh marker and the wins column. They are not Unity captures. Space still jumps.
+
+## Pass 56
+
+U+2713 is in both UI fonts. Liberation is a reserved name, so the family inside `LiberationSans-Bold.ttf` is Menu Sans. The file name is unchanged, and the menu still loads that path. Bangers keeps its name. `glyph-cover check=0`. A missing check would print `FAIL U+2713`.
+
+`ShowStacked` used to leave the previous screen root up. It now clears first, the same as `ShowOnly`. MenuHost still calls `ShowOnly` and destroys the body children before the next screen. `screen-roots stacked=1`. Two live roots would print `FAIL two roots`.
+
+P3 stays `(0.94, 0.42, 0.14)`. The load frame, the pause stripe, and the results bar keep that fill and draw a dark keyline. Circle, triangle, square, and diamond already differ, so the band pair distance adds that shape step. Colour alone was `0.34/0.29/0.26`. With the mark it is `ui-cvd protan=0.43 red/orange deutan=0.39 red/orange tritan=0.37 red/orange floor=0.35`. `ui-seat off=0.43/0.39/0.37`. `ui-fill` is unchanged. pose stays 0. no-clip fails stays 0.
 
 ## Later passes
 

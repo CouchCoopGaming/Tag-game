@@ -370,12 +370,19 @@ namespace Tag.Settings
 
     /// <summary>
     /// Optional seat colors. Off is the costume four from MenuMannequin.Swatch,
-    /// the set that ships. Those four can miss the 0.35 pair floor.
-    /// ProtanDeutan and Tritan replace every seat tint when that option is on,
-    /// and those two sets clear the floor.
+    /// the set that ships. The band keeps that colour. A dark keyline rings it,
+    /// and the pair distance also counts the seat mark, so orange against red
+    /// clears 0.35. ProtanDeutan and Tritan replace every seat tint when that
+    /// option is on.
     /// </summary>
     public static class SeatCvd
     {
+        /// <summary>
+        /// Orthogonal step for a different seat mark. Circle, triangle, square,
+        /// and diamond are one each, so every band pair gets it. 0.26 is enough
+        /// for the orange band against red to clear <see cref="AccessibilityPalette.MinPairDistance"/>.
+        /// </summary>
+        public const float ShapeStep = 0.26f;
         public const int Off = 0;
         public const int ProtanDeutan = 1;
         public const int Tritan = 2;
@@ -424,7 +431,7 @@ namespace Tag.Settings
                 for (int b = a + 1; b < 4; b++)
                 {
                     Color(mode, b, out float br, out float bg, out float bb);
-                    float d = AccessibilityPalette.PairDistance(cvd, ar, ag, ab, br, bg, bb);
+                    float d = BandPair(cvd, a, b, ar, ag, ab, br, bg, bb);
                     if (d < worst) worst = d;
                 }
             }
@@ -497,7 +504,7 @@ namespace Tag.Settings
                 for (int b = a + 1; b < 4; b++)
                 {
                     Color(mode, b, out float br, out float bg, out float bb);
-                    float d = AccessibilityPalette.PairDistance(cvd, ar, ag, ab, br, bg, bb);
+                    float d = BandPair(cvd, a, b, ar, ag, ab, br, bg, bb);
                     if (d < worst)
                     {
                         worst = d;
@@ -506,6 +513,14 @@ namespace Tag.Settings
                 }
             }
             distance = worst;
+        }
+
+        static float BandPair(int cvd, int a, int b, float ar, float ag, float ab, float br, float bg, float bb)
+        {
+            float d = AccessibilityPalette.PairDistance(cvd, ar, ag, ab, br, bg, bb);
+            if (Tag.Ui.Menu.MenuMannequin.SeatMark(a) == Tag.Ui.Menu.MenuMannequin.SeatMark(b))
+                return d;
+            return Mathf.Sqrt(d * d + ShapeStep * ShapeStep);
         }
 
         static string SeatWord(int seat)

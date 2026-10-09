@@ -1,5 +1,7 @@
 Copyright 2010 The Bangers Project Authors (https://github.com/googlefonts/bangers)
 
+This copy adds U+2713 CHECK MARK. The family name stays Bangers.
+
 This Font Software is licensed under the SIL Open Font License, Version 1.1.
 This license is copied below, and is also available with a FAQ at:
 https://scripts.sil.org/OFL

@@ -8,8 +8,8 @@ using Tag.Settings;
 namespace Tag.Ui.Menu
 {
     /// <summary>
-    /// Every screen string has to be in a UI font. The check mark is not.
-    /// A spiked check character must fail this, and the live strings must pass.
+    /// Every screen string has to be in a UI font, including U+2713.
+    /// A missing check mark fails this. The live strings must pass too.
     /// </summary>
     public static class FontCover
     {
@@ -29,9 +29,9 @@ namespace Tag.Ui.Menu
             {
                 Console.WriteLine("glyph-cover clean=" + clean.ToString());
                 Console.WriteLine("glyph-cover check=" + dirty.ToString()
-                    + (dirty > 0 ? " FAIL U+2713" : " MISS"));
+                    + (dirty > 0 ? " FAIL U+2713" : ""));
             }
-            return clean == 0 && dirty > 0;
+            return clean == 0 && dirty == 0;
         }
 
         public static int Missing(List<string> strings, HashSet<int> body, HashSet<int> display)

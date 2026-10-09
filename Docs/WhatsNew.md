@@ -442,6 +442,8 @@ The fifty-fourth pass makes the menu compile on Unity 6000.3 and matches the sta
 
 The fifty-fifth pass stops counting parent-child cuffs as overlap. A joint that already overlaps at rest is a rig joint. The rail reports how far a foot sinks in, and a clear gap is zero. Least It gives the winner a round win, so a one-round match shows 1 instead of 0. The It hat, brim, tip, beacon, and halo are meshes. A pad loading tip prints [LT]. The orange seat is the body orange, (0.94, 0.42, 0.14), and the square fill stays lighter so the colour-blind fill floor still holds. Unity is not installed here, so the frames in `Docs/UiStills/pass55/` are headless, not play-mode captures. Space still jumps.
 
+The fifty-sixth pass puts a check mark in both menu fonts and keeps one screen root up. The orange seat stays (0.94, 0.42, 0.14). A dark keyline rings the band, and the seat shape counts in the pair distance, so orange against red clears 0.35. Space still jumps.
+
 ## Motion, ninth pass
 
 The wall jump, the rope, the zip, the launch pad, a landing, the dash flash, a hard turnaround, and a punch while you run all ease instead of snapping. Speeds, the jump, and the dash length are the same.

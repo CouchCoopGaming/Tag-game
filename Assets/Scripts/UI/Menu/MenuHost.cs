@@ -2815,6 +2815,7 @@ namespace Tag.Ui.Menu
                     Image band = frameRt.gameObject.AddComponent<Image>();
                     band.color = MenuTheme.Seat(i);
                     band.raycastTarget = false;
+                    MenuWidgets.BandKeyline(band);
                     const float edge = 0.012f;
                     var camRt = MenuWidgets.Box(frameRt, "LoadCam", new Vector2(edge, edge), new Vector2(1f - edge, 1f - edge), new Vector2(0.5f, 0.5f));
                     RawImage cam = camRt.gameObject.AddComponent<RawImage>();
@@ -2973,6 +2974,7 @@ namespace Tag.Ui.Menu
                 Image stripeImage = stripe.gameObject.AddComponent<Image>();
                 stripeImage.color = MenuTheme.Seat(card.Seat);
                 stripeImage.raycastTarget = false;
+                MenuWidgets.BandKeyline(stripeImage);
                 var markWell = MenuWidgets.Place(plate, "PauseWell", 14f, 14f, 32f, 32f);
                 Image markBack = markWell.gameObject.AddComponent<Image>();
                 markBack.color = new Color(0.02f, 0.02f, 0.04f, 1f);
@@ -3060,6 +3062,7 @@ namespace Tag.Ui.Menu
                 if (tile.Bar != null)
                 {
                     tile.Bar.color = tile.BarColor;
+                    MenuWidgets.BandKeyline(tile.Bar);
                     RectTransform barRt = tile.Bar.rectTransform;
                     barRt.anchoredPosition = new Vector2(0f, 0f);
                     barRt.sizeDelta = new Vector2(cardW, 10f);

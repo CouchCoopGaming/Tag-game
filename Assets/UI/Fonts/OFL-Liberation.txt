@@ -1,5 +1,8 @@
 Liberation Sans Bold
-Used for the couch menu display type.
+Used for the couch menu body type.
+This copy adds U+2713 CHECK MARK.
+Liberation is a Reserved Font Name, so the name inside the file is Menu Sans.
+The file name stays LiberationSans-Bold.ttf so the menu can still load it.
 License: SIL Open Font License 1.1
 Reserved Font Name: Liberation
 Source: fonts-liberation package, upstream https://github.com/liberationfonts

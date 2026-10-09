@@ -36,6 +36,15 @@ namespace Tag.Ui.Menu
             return image;
         }
 
+        /// <summary>Dark keyline on a seat band. The fill stays the seat colour.</summary>
+        public static void BandKeyline(Image band)
+        {
+            if (band == null) return;
+            Outline line = band.gameObject.AddComponent<Outline>();
+            line.effectColor = new Color(0.02f, 0.02f, 0.04f, 1f);
+            line.effectDistance = new Vector2(2f, -2f);
+        }
+
         public static Text Words(Transform parent, string text, int size, TextAnchor align, Color color, Vector2 anchorMin, Vector2 anchorMax)
         {
             var rt = Box(parent, "Text", anchorMin, anchorMax, new Vector2(0.5f, 0.5f));

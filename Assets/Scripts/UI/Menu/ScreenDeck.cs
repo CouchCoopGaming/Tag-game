@@ -5,7 +5,7 @@ namespace Tag.Ui.Menu
 {
     /// <summary>
     /// One screen root is visible. Opening the next screen hides the last.
-    /// ShowStacked is the old open, which left the previous screen's widgets up.
+    /// ShowStacked used to leave the previous screen up. It clears first now.
     /// </summary>
     public static class ScreenDeck
     {
@@ -26,10 +26,10 @@ namespace Tag.Ui.Menu
             Raise(screen);
         }
 
-        /// <summary>Old open. The new screen draws on top of the one already up.</summary>
+        /// <summary>Same as <see cref="ShowOnly"/>. The previous root does not stay up.</summary>
         public static void ShowStacked(int screen)
         {
-            Raise(screen);
+            ShowOnly(screen);
         }
 
         public static bool OneRoot()
@@ -83,7 +83,7 @@ namespace Tag.Ui.Menu
         {
             int clean = After(true, 6, 5);
             int stacked = After(false, 6, 5);
-            bool exclusive = OneRoot() == false && stacked > 1 && clean == 1;
+            bool exclusive = clean == 1 && stacked == 1;
             string path = Path.Combine(root ?? "", "Assets", "Scripts", "UI", "Menu", "MenuHost.cs");
             string source = File.Exists(path) ? File.ReadAllText(path) : "";
             bool host = HostExclusive(source);
@@ -92,7 +92,7 @@ namespace Tag.Ui.Menu
             {
                 Console.WriteLine("screen-roots clean=" + clean.ToString());
                 Console.WriteLine("screen-roots stacked=" + stacked.ToString()
-                    + (stacked > 1 ? " FAIL two roots" : " MISS"));
+                    + (stacked > 1 ? " FAIL two roots" : ""));
             }
             ShowOnly(5);
             return exclusive && host && !oldHost && OneRoot();
