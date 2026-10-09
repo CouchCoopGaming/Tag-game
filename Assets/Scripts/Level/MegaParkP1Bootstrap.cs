@@ -955,17 +955,20 @@ namespace Tag.Level
             Label(g, "SWING", 78f, 86f);
             Label(g, "FORTS", 140f, 48f);
             Label(g, "KICKBALL", 96f, 52f);
+            // Twin just past the east fence, turned to face down the court, so the
+            // eye-height court shot (looking east) reads it instead of edge-on.
+            Label(g, "KICKBALL", 97.6f, 53.2f, 90f, "Label_KICKBALL_Court");
             Label(g, "CRASH", 62f, 50f);
             Label(g, "BARS", 78f, 16f);
             Label(g, "HOPSCOTCH", 136f, 18f);
         }
 
-        void Label(Transform parent, string text, float x, float z)
+        void Label(Transform parent, string text, float x, float z, float yaw = 0f, string name = null)
         {
-            var go = new GameObject("Label_" + text);
+            var go = new GameObject(name ?? ("Label_" + text));
             go.transform.SetParent(parent, false);
             go.transform.localPosition = new Vector3(x, 4.5f, z);
-            go.transform.localRotation = Quaternion.identity;
+            go.transform.localRotation = Quaternion.Euler(0f, yaw, 0f);
             go.transform.localScale = Vector3.one;
             WorldSign.AddTwoSided(go.transform, text, 48, 0.45f, new Color(1f, 0.95f, 0.75f, 1f));
         }
@@ -1017,7 +1020,7 @@ namespace Tag.Level
                 if (sky.HasProperty("_GroundColor"))
                     sky.SetColor("_GroundColor", new Color(0.45f, 0.32f, 0.22f, 1f));
                 if (sky.HasProperty("_Exposure"))
-                    sky.SetFloat("_Exposure", 1.25f);
+                    sky.SetFloat("_Exposure", 1.4f);
                 if (sky.HasProperty("_AtmosphereThickness"))
                     sky.SetFloat("_AtmosphereThickness", 0.85f);
                 if (sky.HasProperty("_SunSize"))

@@ -62,7 +62,10 @@ public static class TagStationWorldCapture
                 Zone("z3-merry", "WorldZ3", new Vector3(34f, 0f, 47f), new Vector3(0f, 12f, -28f), audit),
                 Zone("z4-slide", "WorldZ4", new Vector3(39f, 3f, 85f), new Vector3(0f, 14f, -28f), audit),
                 Zone("z5-swing", "WorldZ5", new Vector3(79f, 2f, 88f), new Vector3(0f, 12f, -26f), audit),
-                Zone("z6-forts", "WorldZ6", new Vector3(138f, 2f, 50f), new Vector3(-26f, 20f, 0f), audit),
+                // The WorldZ6 group is the harbor-yard dressing on the west edge
+                // (x 119-128), so its bounds aimed past the forts. Frame the Army
+                // (143, 28) and Knight (143, 70) forts themselves, from the west.
+                Forts(audit),
                 Zone("z8-bowl", "WorldZ8", new Vector3(60f, 0f, 50f), new Vector3(0f, 16f, -28f), audit),
                 Zone("z9-bars", "WorldZ9", new Vector3(73f, 2f, 17.6f), new Vector3(0f, 14f, -26f), audit),
                 Zone("z10-hops", "WorldZ10", new Vector3(137f, 0f, 12f), new Vector3(0f, 12f, -24f), audit),
@@ -86,6 +89,14 @@ public static class TagStationWorldCapture
         catch (System.Exception e) { audit.AppendLine("EXCEPTION " + e); code = 1; }
         File.WriteAllText(Path.Combine(outDir, "capture-audit.txt"), audit.ToString());
         if (Application.isBatchMode) EditorApplication.Exit(code);
+    }
+
+    static Shot Forts(StringBuilder audit)
+    {
+        Vector3 look = new Vector3(142f, 2.5f, 49f);
+        Vector3 eye = new Vector3(112f, 19f, 49f);
+        audit.AppendLine("z6-forts target src=forts look=" + look);
+        return S("z6-forts", eye, look, 62f);
     }
 
     static Shot Zone(string name, string group, Vector3 fallback, Vector3 offset, StringBuilder audit)
