@@ -103,13 +103,17 @@ namespace Tag.Ui.Menu
         }
 
         /// <summary>
-        /// Second press inside the grapple window lets go. Pads have no glyph here.
+        /// Second press inside the grapple window lets go. The pad glyph is the
+        /// bound token, shown the same way as the keyboard key.
         /// </summary>
         static string LetGoLine(ActionBinds binds, bool pad)
         {
-            if (pad) return "Double-click to let go of the grapple.";
             if (binds == null) binds = ActionBinds.Defaults();
-            return "Double-click [" + ActionBinds.Show(binds.GrappleKey) + "] to let go of the grapple.";
+            string token = pad ? binds.GrapplePad : binds.GrappleKey;
+            if (string.IsNullOrEmpty(token))
+                token = pad ? ActionBinds.GrapplePadDefault : ActionBinds.GrappleKeyDefault;
+            string mark = pad ? ActionBinds.PadWord(token) : ActionBinds.Show(token);
+            return "Double-click [" + mark + "] to let go of the grapple.";
         }
 
         static string MoveWord(ActionBinds binds, bool pad)
@@ -167,9 +171,8 @@ namespace Tag.Ui.Menu
             if (Shown(2, 0).IndexOf("into a wall") < 0) return false;
             if (Shown(2, 0).IndexOf("[", System.StringComparison.Ordinal) >= 0) return false;
             string padLetGo = Shown(1, 6);
-            if (padLetGo.IndexOf("[", System.StringComparison.Ordinal) >= 0) return false;
+            if (padLetGo.IndexOf("[LT]", System.StringComparison.Ordinal) < 0) return false;
             if (padLetGo.IndexOf("leftTrigger", System.StringComparison.Ordinal) >= 0) return false;
-            if (padLetGo.IndexOf("LT", System.StringComparison.Ordinal) >= 0) return false;
             if (Shown(0, 7).IndexOf("[RMB]", System.StringComparison.Ordinal) < 0) return false;
             if (Shown(2, 0).IndexOf("Cling hold", System.StringComparison.Ordinal) >= 0) return false;
             if (Shown(3, 0).IndexOf("Cling hold", System.StringComparison.Ordinal) >= 0) return false;

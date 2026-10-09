@@ -114,14 +114,16 @@ namespace Tag.Modes
         public float LongestChase => _longestChase;
         /// <summary>Who held It for that chase, when the match recorded it.</summary>
         public string LongestChaseName => _longestName != null ? _longestName : "";
-        /// <summary>1-based round for the top counter. Hot Potato uses its fuse index.</summary>
+        /// <summary>1-based round for the top counter. Hot Potato and Least It use their own index.</summary>
         public int RoundShown
         {
             get
             {
                 HotPotatoMode hot = _mode as HotPotatoMode;
-                if (hot == null) return 1;
-                return hot.RoundIndex;
+                if (hot != null) return hot.RoundIndex;
+                LeastItMode least = _mode as LeastItMode;
+                if (least != null) return least.RoundIndex;
+                return 1;
             }
         }
         /// <summary>Round cap already stored on the mode tuning. Display only.</summary>
@@ -144,12 +146,14 @@ namespace Tag.Modes
             && Time.unscaledTime >= _resultsInputReadyAt;
         public string ResultMessage => _resultMessage;
 
-        /// <summary>Hot Potato round wins. Other modes return 0. Results screen only.</summary>
+        /// <summary>Round wins for Hot Potato and Least It. Other modes return 0. Results screen only.</summary>
         public int RoundWinsOf(string playerId)
         {
             HotPotatoMode hot = _mode as HotPotatoMode;
-            if (hot == null) return 0;
-            return hot.RoundWins(playerId);
+            if (hot != null) return hot.RoundWins(playerId);
+            LeastItMode least = _mode as LeastItMode;
+            if (least != null) return least.RoundWins(playerId);
+            return 0;
         }
 
         /// <summary>True when this mode's own winner list names the player.</summary>

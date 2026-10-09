@@ -9,8 +9,10 @@ namespace Tag.Ui.Menu
 {
     /// <summary>
     /// Menu poses at 30 fps. A rigid piece may sink 0.5 cm into a scene solid
-    /// or into another piece. Joined neighbours may overlap within 3 cm of
-    /// the joint. The rest-pose depth is not subtracted. Loading shows no runner.
+    /// or into another piece. A parent-child pair that already overlaps at
+    /// rest is rigJoint and does not count. Samples within 3 cm of that joint
+    /// stay exempt. The rail number is penetration, and a clear gap is 0.
+    /// Loading shows no runner.
     /// </summary>
     public static class MenuNoClip
     {
@@ -26,6 +28,9 @@ namespace Tag.Ui.Menu
         static int ForeignSamples;
         static bool RailKnown;
         static float RailClear;
+        static float RailGap;
+        static string RailNote;
+        static string PairBreak;
         static bool[] RestFail;
         static bool[] PoseNew;
         static int PairN;
@@ -55,6 +60,9 @@ namespace Tag.Ui.Menu
             RestOverlapOnly = false;
             RailKnown = false;
             RailClear = 0f;
+            RailGap = 0f;
+            RailNote = "";
+            PairBreak = "";
             RestFail = null;
             PoseNew = null;
             PairN = 0;
@@ -150,12 +158,19 @@ namespace Tag.Ui.Menu
                 line += " rail=" + Cm(RailClear);
             line += " rigJoint=" + RigJoint.ToString(CultureInfo.InvariantCulture)
                 + " pose=" + PosePairs.ToString(CultureInfo.InvariantCulture);
+            if (!string.IsNullOrEmpty(PairBreak))
+                line += "\n" + PairBreak.TrimEnd('\n');
+            if (RailKnown)
+                line += "\nno-clip rail penetration=" + Cm(RailClear)
+                    + " clearance=" + Cm(RailGap)
+                    + " " + (RailNote ?? "");
         }
 
         /// <summary>
-        /// Directed piece pairs that already fail at the rest pose. rigJoint is
-        /// that count. pose is a pair that fails on a live frame and did not
-        /// fail at rest. A different shell of the same piece is not a new pair.
+        /// Directed piece pairs that already fail at the rest pose. A
+        /// parent-child pair is rigJoint and does not count later. Anything
+        /// else that fails at rest still counts on a live frame. pose is a
+        /// pair that fails on a live frame and did not fail at rest.
         /// </summary>
         static void CaptureRest(Rig rig)
         {
@@ -169,16 +184,70 @@ namespace Tag.Ui.Menu
             PoseNote = "";
             var posed = new Posed(rig);
             posed.Place(new Pose(), 0f, 0f, 0f);
+            var sb = new System.Text.StringBuilder();
             for (int a = 0; a < PairN; a++)
             {
                 for (int b = 0; b < PairN; b++)
                 {
                     if (a == b) continue;
-                    if (!DirectedFails(posed, a, posed, b)) continue;
+                    string from;
+                    string into;
+                    float depth = PairDepth(posed, a, b, out from, out into);
+                    if (depth <= Limit) continue;
                     RestFail[a * PairN + b] = true;
-                    RigJoint++;
+                    bool joined = JoinedPieces(rig, a, b);
+                    if (joined) RigJoint++;
+                    sb.Append("no-clip pair ");
+                    sb.Append(rig.Piece[a].Name);
+                    sb.Append('/');
+                    sb.Append(from);
+                    sb.Append(" in ");
+                    sb.Append(rig.Piece[b].Name);
+                    sb.Append('/');
+                    sb.Append(into);
+                    sb.Append(' ');
+                    sb.Append(Cm(depth));
+                    sb.Append(joined ? " rigJoint" : " cross");
+                    sb.Append('\n');
                 }
             }
+            PairBreak = sb.ToString();
+        }
+
+        static bool JoinedPieces(Rig rig, int a, int b)
+        {
+            return rig.Join[a] == b || rig.Join[b] == a;
+        }
+
+        static float PairDepth(Posed src, int a, int b, out string from, out string into)
+        {
+            from = "";
+            into = "";
+            float deep = 0f;
+            Rig rig = src.Rig;
+            bool joined = JoinedPieces(rig, a, b);
+            float jx = 0f, jy = 0f, jz = 0f;
+            if (joined)
+            {
+                int child = rig.Join[a] == b ? a : b;
+                jx = src.Ox[child];
+                jy = src.Oy[child];
+                jz = src.Oz[child];
+            }
+            int samples = rig.Piece[a].Samples;
+            for (int i = 0; i < samples; i++)
+            {
+                if (src.Wx[a][i] < src.MinX[b] - 0.01f || src.Wx[a][i] > src.MaxX[b] + 0.01f) continue;
+                if (src.Wy[a][i] < src.MinY[b] - 0.01f || src.Wy[a][i] > src.MaxY[b] + 0.01f) continue;
+                if (src.Wz[a][i] < src.MinZ[b] - 0.01f || src.Wz[a][i] > src.MaxZ[b] + 0.01f) continue;
+                string shell;
+                float depth = InsidePiece(src, b, src.Wx[a][i], src.Wy[a][i], src.Wz[a][i], joined, jx, jy, jz, out shell);
+                if (depth <= deep) continue;
+                deep = depth;
+                from = SampleShell(src, a, i);
+                into = shell;
+            }
+            return deep;
         }
 
         static void NotePosePair(Posed src, int a, int b)
@@ -226,22 +295,24 @@ namespace Tag.Ui.Menu
         }
 
         /// <summary>
-        /// Title still on the south straight. The far-right runner stands by the
-        /// bar posts. Foot and shin must clear that rail by 2 cm. rail= is that
-        /// gap in centimetres.
+        /// Title still on the south straight. rail= is how far a foot or shin
+        /// sinks into a bar, post, or fence. A gap is 0. More than 0.5 cm fails.
         /// </summary>
         static void TitleRail(Rig rig, ref int fails, ref float worldMax, ref string worstWorld)
         {
             string note;
             float gap = TitleRailGap(rig, out note);
-            RailClear = gap;
+            RailGap = gap;
+            RailNote = note;
+            float pen = gap < 0f ? -gap : 0f;
+            RailClear = pen;
             RailKnown = true;
-            if (gap < 0f && -gap > worldMax)
+            if (pen > worldMax)
             {
-                worldMax = -gap;
+                worldMax = pen;
                 worstWorld = note;
             }
-            if (gap < 0.02f)
+            if (pen > Limit)
             {
                 fails++;
                 if (worstWorld.Length == 0) worstWorld = note;
@@ -903,6 +974,8 @@ namespace Tag.Ui.Menu
                 string shell;
                 float depth = InsidePiece(dst, b, sx[i], sy[i], sz[i], joined, jx, jy, jz, out shell);
                 if (depth <= 0f) continue;
+                if (sameBody && joined && RestFail != null && a < PairN && b < PairN && RestFail[a * PairN + b])
+                    continue;
                 if (sameBody)
                 {
                     if (depth > selfMax)

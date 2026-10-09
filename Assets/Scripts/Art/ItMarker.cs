@@ -9,6 +9,7 @@ namespace Tag.Art
 {
     /// <summary>
     /// Third-person It tell: bright hat + bobbing crown + pulsing floor halo.
+    /// The hat, brim, tip, beacon, halo, and name plate are meshes, not primitives.
     /// Hot Potato: pulse harder (scale/color/light) as TagModeController.Remaining runs low.
     /// Readable at mid-arena distance without purchased VFX.
     /// </summary>
@@ -79,7 +80,7 @@ namespace Tag.Art
             if (_plateBuilt || !_hasPlate) return;
             _plateBuilt = true;
             int kind = MenuMannequin.Shape(_shape);
-            GameObject go = kind == 1 ? TrianglePlate() : GameObject.CreatePrimitive(PlatePrim(kind));
+            GameObject go = PlateMesh(kind);
             go.name = "NameTag";
             go.transform.SetParent(transform, false);
             go.transform.localPosition = new Vector3(0f, 2.45f, 0f);
@@ -253,8 +254,7 @@ namespace Tag.Art
             if (_built) return;
             _built = true;
 
-            var hatGo = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-            hatGo.name = "ItHat";
+            var hatGo = MeshPart("ItHat", UnitCylinder());
             hatGo.transform.SetParent(transform, false);
             _hatBaseLocal = new Vector3(0f, hatHeight, 0f);
             hatGo.transform.localPosition = _hatBaseLocal;
@@ -264,8 +264,7 @@ namespace Tag.Art
             _hatRend = ApplyMat(hatGo, itHat, emissive: true, emissionMul: 2.6f);
             _hat = hatGo.transform;
 
-            var brim = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-            brim.name = "ItHatBrim";
+            var brim = MeshPart("ItHatBrim", UnitCylinder());
             brim.transform.SetParent(_hat, false);
             brim.transform.localPosition = new Vector3(0f, -0.65f, 0f);
             brim.transform.localScale = new Vector3(1.7f, 0.14f, 1.7f);
@@ -273,8 +272,7 @@ namespace Tag.Art
             _brimRend = ApplyMat(brim, itHat, emissive: true, emissionMul: 2.4f);
 
             // Crown tip for silhouette read
-            var tip = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-            tip.name = "ItHatTip";
+            var tip = MeshPart("ItHatTip", UnitSphere());
             tip.transform.SetParent(_hat, false);
             tip.transform.localPosition = new Vector3(0f, 0.85f, 0f);
             tip.transform.localScale = new Vector3(0.55f, 0.55f, 0.55f);
@@ -282,8 +280,7 @@ namespace Tag.Art
             _tipRend = ApplyMat(tip, new Color(1f, 0.85f, 0.15f, 1f), emissive: true, emissionMul: 3.2f);
 
             // Tall emissive spike so the It reads before the brim does.
-            var beacon = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-            beacon.name = "ItHatBeacon";
+            var beacon = MeshPart("ItHatBeacon", UnitCylinder());
             beacon.transform.SetParent(_hat, false);
             beacon.transform.localPosition = new Vector3(0f, 2.4f, 0f);
             beacon.transform.localScale = new Vector3(0.22f, 2.8f, 0.22f);
@@ -291,8 +288,7 @@ namespace Tag.Art
             _beaconRend = ApplyMat(beacon, new Color(1f, 0.45f, 0.05f, 1f), emissive: true, emissionMul: 3.4f);
             _beacon = beacon.transform;
 
-            var haloGo = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-            haloGo.name = "ItHalo";
+            var haloGo = MeshPart("ItHalo", UnitCylinder());
             haloGo.transform.SetParent(transform, false);
             haloGo.transform.localPosition = new Vector3(0f, 0.06f, 0f);
             _haloBaseScale = new Vector3(1.45f, 0.1f, 1.45f);
@@ -317,10 +313,140 @@ namespace Tag.Art
             _light.enabled = on;
         }
 
-        static PrimitiveType PlatePrim(int kind)
+        static GameObject PlateMesh(int kind)
         {
-            if (kind == 2 || kind == 3) return PrimitiveType.Cube;
-            return PrimitiveType.Sphere;
+            if (kind == 1) return TrianglePlate();
+            if (kind == 2 || kind == 3) return MeshPart("NameTag", UnitBox());
+            return MeshPart("NameTag", UnitSphere());
+        }
+
+        static GameObject MeshPart(string name, Mesh mesh)
+        {
+            var go = new GameObject(name);
+            var filter = go.AddComponent<MeshFilter>();
+            go.AddComponent<MeshRenderer>();
+            filter.sharedMesh = mesh;
+            return go;
+        }
+
+        static Mesh _cylinder;
+        static Mesh _sphere;
+        static Mesh _box;
+
+        /// <summary>Same bounds as a Unity cylinder: radius 0.5, height 2.</summary>
+        static Mesh UnitCylinder()
+        {
+            if (_cylinder != null) return _cylinder;
+            const int sides = 16;
+            var verts = new Vector3[sides * 2 + 2];
+            var tris = new int[sides * 12];
+            for (int i = 0; i < sides; i++)
+            {
+                float a = i * Mathf.PI * 2f / sides;
+                float x = Mathf.Cos(a) * 0.5f;
+                float z = Mathf.Sin(a) * 0.5f;
+                verts[i * 2] = new Vector3(x, -1f, z);
+                verts[i * 2 + 1] = new Vector3(x, 1f, z);
+            }
+            int bot = sides * 2;
+            int top = bot + 1;
+            verts[bot] = new Vector3(0f, -1f, 0f);
+            verts[top] = new Vector3(0f, 1f, 0f);
+            int t = 0;
+            for (int i = 0; i < sides; i++)
+            {
+                int n = (i + 1) % sides;
+                int b0 = i * 2;
+                int t0 = b0 + 1;
+                int b1 = n * 2;
+                int t1 = b1 + 1;
+                tris[t++] = b0; tris[t++] = t0; tris[t++] = b1;
+                tris[t++] = t0; tris[t++] = t1; tris[t++] = b1;
+                tris[t++] = bot; tris[t++] = b1; tris[t++] = b0;
+                tris[t++] = top; tris[t++] = t0; tris[t++] = t1;
+            }
+            _cylinder = new Mesh();
+            _cylinder.name = "ItCylinder";
+            _cylinder.vertices = verts;
+            _cylinder.triangles = tris;
+            _cylinder.RecalculateNormals();
+            return _cylinder;
+        }
+
+        /// <summary>Same bounds as a Unity sphere: radius 0.5.</summary>
+        static Mesh UnitSphere()
+        {
+            if (_sphere != null) return _sphere;
+            const int slices = 12;
+            const int stacks = 8;
+            int vertCount = (stacks + 1) * (slices + 1);
+            var verts = new Vector3[vertCount];
+            int v = 0;
+            for (int y = 0; y <= stacks; y++)
+            {
+                float vNorm = y / (float)stacks;
+                float phi = vNorm * Mathf.PI;
+                for (int x = 0; x <= slices; x++)
+                {
+                    float uNorm = x / (float)slices;
+                    float theta = uNorm * Mathf.PI * 2f;
+                    float sx = Mathf.Sin(phi) * Mathf.Cos(theta);
+                    float sy = Mathf.Cos(phi);
+                    float sz = Mathf.Sin(phi) * Mathf.Sin(theta);
+                    verts[v++] = new Vector3(sx, sy, sz) * 0.5f;
+                }
+            }
+            var tris = new int[stacks * slices * 6];
+            int ti = 0;
+            int stride = slices + 1;
+            for (int y = 0; y < stacks; y++)
+            {
+                for (int x = 0; x < slices; x++)
+                {
+                    int a = y * stride + x;
+                    int b = a + stride;
+                    tris[ti++] = a;
+                    tris[ti++] = b;
+                    tris[ti++] = a + 1;
+                    tris[ti++] = a + 1;
+                    tris[ti++] = b;
+                    tris[ti++] = b + 1;
+                }
+            }
+            _sphere = new Mesh();
+            _sphere.name = "ItSphere";
+            _sphere.vertices = verts;
+            _sphere.triangles = tris;
+            _sphere.RecalculateNormals();
+            return _sphere;
+        }
+
+        /// <summary>Same bounds as a Unity cube: 1 m on each side.</summary>
+        static Mesh UnitBox()
+        {
+            if (_box != null) return _box;
+            var verts = new[]
+            {
+                new Vector3(-0.5f, -0.5f, -0.5f), new Vector3(0.5f, -0.5f, -0.5f),
+                new Vector3(0.5f, 0.5f, -0.5f), new Vector3(-0.5f, 0.5f, -0.5f),
+                new Vector3(-0.5f, -0.5f, 0.5f), new Vector3(0.5f, -0.5f, 0.5f),
+                new Vector3(0.5f, 0.5f, 0.5f), new Vector3(-0.5f, 0.5f, 0.5f)
+            };
+            var tris = new[]
+            {
+                0, 2, 1, 0, 3, 2,
+                4, 5, 6, 4, 6, 7,
+                0, 1, 5, 0, 5, 4,
+                3, 6, 2, 3, 7, 6,
+                0, 7, 3, 0, 4, 7,
+                1, 2, 6, 1, 6, 5
+            };
+            _box = new Mesh();
+            _box.name = "ItBox";
+            _box.vertices = verts;
+            _box.triangles = tris;
+            _box.RecalculateNormals();
+            return _box;
         }
 
         static GameObject TrianglePlate()

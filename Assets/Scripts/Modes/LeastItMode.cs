@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Tag.Gameplay;
+using Tag.Settings;
 using UnityEngine;
 
 namespace Tag.Modes
@@ -11,6 +12,9 @@ namespace Tag.Modes
     public class LeastItMode : ITagMode
     {
         readonly LeastItTuning _tuning;
+        readonly Dictionary<string, int> _roundWins = new Dictionary<string, int>();
+        readonly List<string> _matchWinners = new List<string>();
+        int _roundIndex = 1;
         bool _ended;
         bool _awaitingTieBreak;
         float _tieBreakTimer;
@@ -31,6 +35,16 @@ namespace Tag.Modes
             _tieBreakTimer = 0f;
             _pendingWinner = null;
             _tieBreakEligible.Clear();
+            if (_roundWins.Count == 0)
+            {
+                _roundIndex = 1;
+                _matchWinners.Clear();
+                foreach (var p in ctx.Players)
+                {
+                    if (p == null || string.IsNullOrEmpty(p.PlayerId)) continue;
+                    _roundWins[p.PlayerId] = 0;
+                }
+            }
             ctx.RemainingTime = _tuning.roundDuration;
             foreach (var p in ctx.Players)
             {
@@ -39,6 +53,17 @@ namespace Tag.Modes
                 p.ResetScore();
                 p.SetIt(false);
             }
+        }
+
+        /// <summary>1-based round. Display only.</summary>
+        public int RoundIndex => _roundIndex < 1 ? 1 : _roundIndex;
+
+        /// <summary>Rounds this player has already won. A resolved round counts.</summary>
+        public int RoundWins(string playerId)
+        {
+            if (string.IsNullOrEmpty(playerId)) return 0;
+            int wins;
+            return _roundWins.TryGetValue(playerId, out wins) ? wins : 0;
         }
 
         public void Tick(TagModeContext ctx, float dt)
@@ -80,7 +105,7 @@ namespace Tag.Modes
             if (tied.Count <= 1 || _tuning.tieBreak != LeastItTieBreak.NextPunch)
             {
                 _pendingWinner = tied[0].PlayerId;
-                _ended = true;
+                FinishRound(ctx, tied[0].PlayerId);
                 return;
             }
 
@@ -149,12 +174,12 @@ namespace Tag.Modes
                     winners.Add(p.PlayerId);
                 else break;
             }
+            _awaitingTieBreak = false;
             if (winners.Count == 1)
                 _pendingWinner = winners[0];
             else
-                _pendingWinner = null; // shared win; GetWinnerIds returns all least-tied among eligible
-            _awaitingTieBreak = false;
-            _ended = true;
+                _pendingWinner = null;
+            FinishRound(ctx, winners);
             Debug.Log($"[LeastIt] NextPunch timeout — resolve by TimeAsIt among original tied ({winners.Count} winners)");
         }
 
@@ -183,16 +208,125 @@ namespace Tag.Modes
             {
                 _pendingWinner = from.PlayerId;
                 _awaitingTieBreak = false;
-                _ended = true;
+                FinishRound(ctx, from.PlayerId);
             }
         }
 
         public void OnPlayerEliminated(TagModeContext ctx, ItController player) { }
 
+        void FinishRound(TagModeContext ctx, string winnerId)
+        {
+            var ids = new List<string>();
+            if (!string.IsNullOrEmpty(winnerId)) ids.Add(winnerId);
+            FinishRound(ctx, ids);
+        }
+
+        /// <summary>
+        /// One resolved round. Each named winner gains a win. The match ends
+        /// at the win target or the round cap. Otherwise the clock starts over.
+        /// </summary>
+        void FinishRound(TagModeContext ctx, List<string> winnerIds)
+        {
+            if (winnerIds != null)
+            {
+                for (int i = 0; i < winnerIds.Count; i++)
+                {
+                    string id = winnerIds[i];
+                    if (string.IsNullOrEmpty(id)) continue;
+                    int have;
+                    _roundWins.TryGetValue(id, out have);
+                    _roundWins[id] = have + 1;
+                }
+            }
+            _matchWinners.Clear();
+            int need = WinsNeeded();
+            foreach (var kv in _roundWins)
+            {
+                if (kv.Value >= need) _matchWinners.Add(kv.Key);
+            }
+            int cap = RoundCap();
+            if (_matchWinners.Count == 0 && _roundIndex >= cap)
+            {
+                int best = 0;
+                foreach (var kv in _roundWins)
+                    if (kv.Value > best) best = kv.Value;
+                if (best > 0)
+                {
+                    foreach (var kv in _roundWins)
+                        if (kv.Value == best) _matchWinners.Add(kv.Key);
+                }
+            }
+            if (_matchWinners.Count > 0 || _roundIndex >= cap)
+            {
+                _ended = true;
+                _awaitingTieBreak = false;
+                if (ctx.CurrentIt != null) ctx.CurrentIt.SetIt(false);
+                ctx.CurrentIt = null;
+                return;
+            }
+            NextRound(ctx);
+        }
+
+        int RoundCap()
+        {
+            int n = _tuning != null ? _tuning.roundCount : 1;
+            if (n < 1) n = 1;
+            return n;
+        }
+
+        int WinsNeeded()
+        {
+            int cap = RoundCap();
+            int need = 1;
+            GameSettings menu = GameSettings.Current;
+            if (menu != null && menu.WinTarget >= 1)
+                need = menu.WinTarget;
+            if (need > cap) need = cap;
+            if (need < 1) need = 1;
+            return need;
+        }
+
+        void NextRound(TagModeContext ctx)
+        {
+            _ended = false;
+            _awaitingTieBreak = false;
+            _pendingWinner = null;
+            _tieBreakEligible.Clear();
+            _roundIndex++;
+            foreach (var p in ctx.Players)
+            {
+                if (p == null) continue;
+                p.ResetScore();
+                p.SetIt(false);
+            }
+            ctx.CurrentIt = null;
+            ctx.RemainingTime = _tuning.roundDuration;
+            PickNextIt(ctx);
+            float post = ctx.MatchTuning != null ? ctx.MatchTuning.postRoundSec : 4f;
+            if (ctx.EnterPostRound != null) ctx.EnterPostRound(post);
+        }
+
+        void PickNextIt(TagModeContext ctx)
+        {
+            var living = new List<ItController>();
+            foreach (var p in ctx.Players)
+            {
+                if (p != null && p.IsAlive) living.Add(p);
+            }
+            if (living.Count == 0) return;
+            ItController pick = living[Random.Range(0, living.Count)];
+            foreach (var p in ctx.Players)
+                if (p != null) p.SetIt(false);
+            pick.SetIt(true);
+            ctx.CurrentIt = pick;
+        }
+
         public bool ShouldEndRound(TagModeContext ctx) => _ended;
 
         public IReadOnlyList<string> GetWinnerIds(TagModeContext ctx)
         {
+            if (_ended)
+                return _matchWinners;
             if (!string.IsNullOrEmpty(_pendingWinner))
                 return new List<string> { _pendingWinner };
 
@@ -222,12 +356,12 @@ namespace Tag.Modes
             string it = ctx.CurrentIt != null ? ctx.CurrentIt.PlayerId : "-";
             string extra = _awaitingTieBreak ? " | TIEBREAK: next punch" : "";
             var sb = new System.Text.StringBuilder();
-            sb.Append($"TAG / Least It   {ctx.RemainingTime:0}s left   It: {it}{extra}\n");
-            sb.Append("Least time-as-It wins. Punch transfers It.\n");
+            sb.Append($"TAG / Least It   R{_roundIndex}/{RoundCap()}   {ctx.RemainingTime:0}s left   It: {it}{extra}\n");
+            sb.Append("Least time-as-It wins the round. Punch transfers It.\n");
             foreach (var p in ctx.Players)
             {
                 if (p == null) continue;
-                sb.Append($"{p.PlayerId}: {p.TimeAsIt:0.0}s as It{(p.IsIt ? "  << IT" : "")}\n");
+                sb.Append($"{p.PlayerId}: {p.TimeAsIt:0.0}s as It  wins {RoundWins(p.PlayerId)}{(p.IsIt ? "  << IT" : "")}\n");
             }
             return sb.ToString().TrimEnd();
         }

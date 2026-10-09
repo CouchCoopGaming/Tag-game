@@ -48,6 +48,18 @@ namespace Tag.Ui.Menu
             new SeatRow { Body = "Lavender", Mark = Diamond },
         };
 
+        /// <summary>
+        /// P3's own colour. The factory body orange, not the brighter tint that
+        /// used to stand in for every orange chip.
+        /// </summary>
+        public static readonly Color OrangeSeat = new Color(0.94f, 0.42f, 0.14f, 1f);
+
+        /// <summary>
+        /// Shape fill for the orange square. Lighter than <see cref="OrangeSeat"/>
+        /// so red and orange still clear 0.35. The seat band uses the body colour.
+        /// </summary>
+        public static readonly Color OrangeFill = new Color(1.00f, 0.62f, 0.18f, 1f);
+
         /// <summary>The light step. It lives on the band, not in the diamond.</summary>
         public static readonly Color LavenderBand = new Color(0.82f, 0.70f, 0.98f, 1f);
 
@@ -65,10 +77,15 @@ namespace Tag.Ui.Menu
             return Swatch(Seats[SeatIndex(seat)].Body);
         }
 
-        /// <summary>Shape fill. Lavender uses the base swatch. The light step is <see cref="SeatBand"/>.</summary>
+        /// <summary>
+        /// Shape fill. Lavender and orange keep a lighter step so the pairs
+        /// still clear 0.35. The orange seat colour itself is <see cref="Swatch"/>.
+        /// </summary>
         public static Color SeatFill(int seat)
         {
-            if (Seats[SeatIndex(seat)].Body == "Lavender") return LavenderFill;
+            string body = Seats[SeatIndex(seat)].Body;
+            if (body == "Lavender") return LavenderFill;
+            if (body == "Orange") return OrangeFill;
             return SeatColor(seat);
         }
 
@@ -103,7 +120,7 @@ namespace Tag.Ui.Menu
             {
                 case "Blue": return new Color(0.20f, 0.48f, 0.88f, 1f);
                 case "Mint": return new Color(0.42f, 0.82f, 0.70f, 1f);
-                case "Orange": return new Color(1.00f, 0.62f, 0.18f, 1f);
+                case "Orange": return OrangeSeat;
                 case "Lavender": return LavenderBand;
                 case "Red": return new Color(0.90f, 0.18f, 0.20f, 1f);
                 default: return new Color(0.90f, 0.76f, 0.52f, 1f);

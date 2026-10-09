@@ -9,7 +9,7 @@ namespace Tag.Ui.Menu
     /// <summary>
     /// Results order follows the mode that just ended.
     /// Hot Potato: round wins, first to 2.
-    /// Least It: least time as It, then the mode's tie winner.
+    /// Least It: round wins, then least time as It.
     /// Trail Tag: last standing.
     /// Free play: no winner. Plates list tags.
     /// </summary>
@@ -256,6 +256,11 @@ namespace Tag.Ui.Menu
             }
             if (id == TagModeId.FreePlay)
                 return a.Tags > b.Tags;
+            if (id == TagModeId.LeastIt)
+            {
+                if (a.Wins != b.Wins) return a.Wins > b.Wins;
+                return a.Time < b.Time;
+            }
             return a.Time < b.Time;
         }
     }

@@ -440,6 +440,8 @@ The fifty-third pass brings the hanging arms in to about 12 degrees off the tors
 
 The fifty-fourth pass makes the menu compile on Unity 6000.3 and matches the station's play-mode frames. RESULTS no longer covers the cards with the comic wipe, and the preview figures stay off the park camera. The main-menu Hier stands up instead of lying on the disc. On the results cards, second raises a fist, third stands upright with the weight on one leg, and fourth drops the head and rounds the shoulders. First still celebrates. A bind swap keeps gold on the focused row and marks the other row with a cream stroke. Capture the screens with Tag → Menu → Capture Screens. Space still jumps.
 
+The fifty-fifth pass stops counting parent-child cuffs as overlap. A joint that already overlaps at rest is a rig joint. The rail reports how far a foot sinks in, and a clear gap is zero. Least It gives the winner a round win, so a one-round match shows 1 instead of 0. The It hat, brim, tip, beacon, and halo are meshes. A pad loading tip prints [LT]. The orange seat is the body orange, (0.94, 0.42, 0.14), and the square fill stays lighter so the colour-blind fill floor still holds. Unity is not installed here, so the frames in `Docs/UiStills/pass55/` are headless, not play-mode captures. Space still jumps.
+
 ## Motion, ninth pass
 
 The wall jump, the rope, the zip, the launch pad, a landing, the dash flash, a hard turnaround, and a punch while you run all ease instead of snapping. Speeds, the jump, and the dash length are the same.

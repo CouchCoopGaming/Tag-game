@@ -19,8 +19,8 @@ OUT_DIR = os.environ.get("SEATLOAD_OUT", "/tmp/seatload")
 SEATS = (
     ("Red_", os.path.join(ART, "Dummy_Mannequin_Red_Hier_Hi.fbx"), (0.90, 0.18, 0.20), "circle"),
     ("Blue_", os.path.join(ART, "Dummy_Mannequin_Blue_Hier_Hi.fbx"), (0.20, 0.48, 0.88), "triangle"),
-    # The Orange Hier file is a different skinned mesh. Seat color is a tint on the shared rig.
-    ("Orange_", os.path.join(ART, "Dummy_Mannequin_Red_Hier_Hi.fbx"), (1.00, 0.62, 0.18), "square"),
+    # The Orange Hier file is a different skinned mesh. The seat tint is the body orange.
+    ("Orange_", os.path.join(ART, "Dummy_Mannequin_Red_Hier_Hi.fbx"), (0.94, 0.42, 0.14), "square"),
     ("Lavender_", os.path.join(ART, "Dummy_Mannequin_Lavender_Hier_Hi.fbx"), (0.80, 0.72, 0.92), "diamond"),
 )
 JOINT = (0.07, 0.07, 0.08)
