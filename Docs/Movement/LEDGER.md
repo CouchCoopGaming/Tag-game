@@ -45,13 +45,13 @@ Per clip, same sit, pose fails 0, world 0: wall run 9, climb top-out 11, vault 1
 
 ## Evasion
 
-Owner E. Flag off. Measured on `65aa8de0` and folded unchanged.
+Owner E. Flag off. The six clips were folded from `65aa8de0`. The dive stretch and the roll-up seat below are measured on the evasion sub-branch and are not folded yet.
 
-`hip-sit clips=6 loadedFrames=115 pelvisBackMin=8.99 cm hingeMin=1.50 kneeMin=50.0 pelvisDropMin=8.9 cm fails=2`
+`hip-sit clips=6 loadedFrames=115 pelvisBackMin=9.27 cm hingeMin=1.50 kneeMin=50.0 pelvisDropMin=8.9 cm fails=0`
 
-`no-clip clips=6 frames=115 worldMax=0.0 rigJoint=7.89 pose=1.4 fails=1`
+`no-clip clips=6 frames=115 worldMax=0.0 rigJoint=7.89 pose=1.74 fails=1`
 
-The two hip fails are the dive roll-up. The thigh enters the spine past about 48°, so the crouch cannot reach 12 cm behind the foot and 20 cm of drop together. The knee there is 68° and the shin points forward. Pose 1.4 cm is the spine into the spin pivot thigh. `jukeR` is 0.64 cm on that same pair. `jukeL` is clear. Those stay open.
+The roll-up at 0.867 s and 0.900 s sits 13.6 cm behind the support foot, knee 79°, sole 0.2 cm, and clears the 20 cm drop bar. The thigh is 55°. The spine is 1.74 cm inside both upper legs on those frames. That pair is rig-blocked. Spin stays 1.4 cm on the pivot thigh. `jukeR` stays 0.64 cm (0.55 cm at 0.333 s). `jukeL` is clear. Those poses were not retuned. `EvasionMoves.Enabled` stays false, and RT is sampled only while that flag is on.
 
 ## Clip list
 
@@ -96,7 +96,7 @@ Pose numbers are centimetres. A clip with every non-adjacent pair and the world 
 | spinL, spinR | E | open pose | pose 1.4 on the pivot thigh | plants sit. Pose stays open |
 | jukeL | E | pass | clear at the same thigh angle | plant sits |
 | jukeR | E | open pose | pose 0.64 spine into the outside thigh | plant sits |
-| dive | E | open hip | inside the 6-clip line | takeoff sits. Roll-up is the two hip fails |
+| dive | E | roll-up sits, pose open | pose 1.74 spine into both thighs on the roll-up | push-off sits. Roll-up back 13.6 knee 79 drop clears 20 |
 
 Across the 33 dumped locomotion and exit clips, the hip fails that remain are the played slide crouch (7), the played stagger land (8), exit-Roll (4), and exit-RollAbsorb (2). That is 21. The eight re-keyed exits contribute 0. This is not a global `fails=0`.
 
@@ -115,7 +115,7 @@ The Hier rig rebuild is not approved and is not bound.
 ## Helper queues
 
 - C1 `bc-621b414b` — vault, climb, mantle, and the exit catalog, on a sub-branch off `cursor/tag-movement`. The eight sits above are the current keys. Open pose on the played climb and the played wall run is still theirs to propose. Do not add a second clip for a move that already has one.
-- E `bc-ad550372` — evasion, plus landings and rolls, on a sub-branch off `cursor/tag-movement`. The six evasion clips are folded and stay flag-off. Next measurement is the dive roll-up, the spin and `jukeR` pose misses, and the roll and roll-absorb landings. Do not loosen `EvasionPose.Holds` to clear the dive. Do not retune `leadKnee` on the played slide.
+- E `bc-ad550372` — evasion, plus landings and rolls, on a sub-branch off `cursor/tag-movement`. The six evasion clips stay flag-off. The dive roll-up now clears 12 cm behind the foot. Spin 1.4 cm, `jukeR` 0.64 cm, and the roll-up spine-into-thigh 1.74 cm stay rig-blocked. Roll and roll-absorb landings are still open. Do not loosen `EvasionPose.Holds` to clear the dive. Do not retune `leadKnee` on the played slide.
 
 ## Seats
 
