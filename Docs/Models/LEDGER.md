@@ -12,7 +12,7 @@ Nothing is **accepted** in the tables. A pass requires `models-validate` with `f
 | Branch | PR | Tip | Summary |
 | --- | --- | --- | --- |
 | `cursor/tag-asset-library` | #122 | `0995834829f50969ac0e22ee7bf0b0907b715cf3` | `models-validate assets=132 pass=126 fail=6` / `models-split paperwork=5 geometry=1` |
-| `cursor/tag-asset-street-kit` | #125 | `3040d2e555a97402a6d9d09a624ea03d1f466093` | `models-validate assets=189 pass=18 fail=171` / `models-split paperwork=136 geometry=35` |
+| `cursor/tag-asset-street-kit` | #125 | `a5e0e40dc05486eb51b38992bed03ef06472c728` | `models-validate assets=189 pass=18 fail=171` / `models-split paperwork=136 geometry=35` |
 | `cursor/tag-street-objects` | #129 | `30af0ae6c20f0704e882f505d38909cc4650ccd8` | `models-validate assets=220 pass=43 fail=177` / `models-split paperwork=161 geometry=16` |
 | `cursor/tag-loco-smooth` | #128 | `08a4d6b019b44af1aca4c961230d5a584390d8a5` | `models-validate assets=7 pass=0 fail=7` / `models-split paperwork=5 geometry=2` |
 | `cursor/tag-character-costumes` | #131 | `331e8e0d0595a1814d798069b4f835eaaf11e076` | `models-validate assets=18 pass=0 fail=18` / `models-split paperwork=5 geometry=13` |
@@ -324,7 +324,7 @@ Fit file: `costume-fit sets=12 frames=4128 worldMax=0.38 fails=0`. That number i
 
 ## Restructure impact
 
-Running count: **7**. Each line is one redo or conflict for the restructure-impact report. Missed copies are not counted.
+Running count: **8**. Each line is one redo or conflict for the restructure-impact report. Missed copies are not counted.
 
 1. Court, twice. #129 `8effda99` and #125 `c84459a3` both restore #122's 22 m by 15 m court and the 0.375 m face-to-rim gap. `Court`, `CourtFence`, and `Hoop` sizes matched on all three tips at that grade. Same fix, two helpers.
 2. Walk-up, two meshes. #122 passes at 2736/2216/1004. #129's earlier mesh was 1832/1300/680. #125 still fails the old landing. Two buildings, one name. #129 `8f7686a5` later copied #122's cage (geometry hash matches). The event stays counted.
@@ -333,6 +333,7 @@ Running count: **7**. Each line is one redo or conflict for the restructure-impa
 5. #125 `bc02b9c4` deletes those three `*_25` blockouts after the rename. #125 and #129 now both omit them. The rejection was undone, then redone. Counted separately from 4.
 6. #129 `a92b5987` rebuilds `CourtFence` to 3664/2640/144. #122's fence already passes at 3680/2656/620. Second fence mesh. #129 `8f7686a5` then copied #122's fence, and the geometry hash matches. The rebuild stays counted.
 7. #129 `30af0ae6` reseals `Planter`, `Tree_Maple`, and `RooftopAC`. At `cf295d9b` those three geometry hashes matched #122. They do not match now. RooftopAC LOD2 went from 132 to 36. Brick_Door and Brick_Window were edited in the same commit and the cage hash did not change. Counted as one event.
+8. #125 `a5e0e40d` reshapes the midsize line that already passed at `3040d2e5`. All ten geometry hashes changed. The years still differ from each other. The six paints still match `Sedan_Mid_A_25`. Counted as one event.
 
 Not a redo: `Pickup_FullSize_25`. Logging the request as redo 7 was a chain-of-command error on the models-lead side. Ororo asked for that truck, and Landon wants an F-150-style full-size pickup in the vehicle set. `Car_Pickup_25` stays rejected. On #125 `2b8480a7` the FBX, the manifest row, and the pass 17 quartet are in the tree, and the asset passes: 5.105 × 1.999 × 1.761 m, slack 0.00 cm, LOD 11336/2728/1608.
 
@@ -340,5 +341,5 @@ Not counted: #122 `09958348` adds LOD2 back on Alley, Subway_Entrance, Driveway,
 
 ## Counts
 
-Lead status in the asset tables: accepted 0. Re-grade 9 Oct 2026: #122 pass=126/132 at `09958348`, #125 pass=18/189 at `3040d2e5`, #129 pass=43/220 at `30af0ae6`, #128 pass=0/7 at `08a4d6b0`, #131 pass=0/18 at `331e8e0d`. On #131 every costume fails `cloth=7.13cm` and `cloth-fails=4128`. Restructure-impact count: 7.
+Lead status in the asset tables: accepted 0. Re-grade 9 Oct 2026: #122 pass=126/132 at `09958348`, #125 pass=18/189 at `a5e0e40d`, #129 pass=43/220 at `30af0ae6`, #128 pass=0/7 at `08a4d6b0`, #131 pass=0/18 at `331e8e0d`. On #131 every costume fails `cloth=7.13cm` and `cloth-fails=4128`. Restructure-impact count: 8.
 

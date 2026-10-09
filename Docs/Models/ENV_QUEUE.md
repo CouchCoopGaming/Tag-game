@@ -7,16 +7,16 @@ A colour or paint sibling uses the base quartet when vertex positions, indices, 
 | Branch | Tip | Previous tightened run | This run |
 | --- | --- | --- | --- |
 | #122 | `09958348` | `pass=126/132` paper 5 / geom 1 at `7cee8bbf` | `models-validate assets=132 pass=126 fail=6` / `models-split paperwork=5 geometry=1` |
-| #125 | `3040d2e5` | `pass=14/189` paper 136 / geom 39 at `29caae02` | `models-validate assets=189 pass=18 fail=171` / `models-split paperwork=136 geometry=35` |
+| #125 | `a5e0e40d` | `pass=18/189` paper 136 / geom 35 at `3040d2e5` | `models-validate assets=189 pass=18 fail=171` / `models-split paperwork=136 geometry=35` |
 | #129 | `30af0ae6` | `pass=27/220` paper 176 / geom 17 at `cf295d9b` | `models-validate assets=220 pass=43 fail=177` / `models-split paperwork=161 geometry=16` |
 
-`Container_20_Blue` and `Container_20_Green` match `Container_20` and pass as `material-variant of Container_20` on #122 and #129. `FireHydrant_Red` does not match the base cage. On #125 the six `_25` paints each have a pass 18 quartet and pass on their own. Their cage still matches `Sedan_Mid_A_25`.
+`Container_20_Blue` and `Container_20_Green` match `Container_20` and pass as `material-variant of Container_20` on #122 and #129. `FireHydrant_Red` does not match the base cage. On #125 the six `_25` paints each have a pass 19 quartet and pass on their own. Their cage still matches `Sedan_Mid_A_25`. The four years do not match each other.
 
 ## Passes
 
 #122 (126): every library asset. The six fails are the player Hiers that ride on this branch. `Brick_Door` and `Brick_Window` bind `pass32/brick_door/` and `pass32/brick_window/`. Container enamels still print `material-variant of Container_20`.
 
-#125 (18): `Pickup_FullSize_25`, the three compacts, `Sedan_Mid_A_22` through `_25`, the six `_25` paints, and the four buses. `3040d2e5` cuts bus LOD2 to 900 and 1192.
+#125 (18): `Pickup_FullSize_25`, the three compacts, `Sedan_Mid_A_22` through `_25`, the six `_25` paints, and the four buses. `a5e0e40d` reshapes the midsize line and reshoots pass 19. The pass count did not change. Bus LOD2 stays 900 and 1192.
 
 #129 (43): the previous 27, plus Brick_Door, Brick_Wall, Brick_Window, RooftopAC, ParkLamp, PicnicTable, Planter, Shrub, Tree_Maple, Sidewalk, Bench_Wood, FireHydrant_Red, LightPost_Single, Scaffold_Bay, StreetRoad_TwoLane, and TrashCan_Lidded. `FireHydrant_Red` uses its own pass 32 quartet.
 
@@ -29,7 +29,7 @@ A colour or paint sibling uses the base quartet when vertex positions, indices, 
 ## Vehicles (#125)
 
 1. `Car_Sedan_25`, `Car_Hatch_25`, and `Car_Pickup_25` stay deleted. `Pickup_FullSize_25` passes: 5.105 × 1.999 × 1.761 m, slack 0.00 cm, LOD 11336/2728/1608, own pass 17 quartet. Leave it.
-2. Leave the midsize passes. LOD2 is 2020, 2100, 2020, and 2020 against LOD1 3736, 3880, 3756, and 3676. Each `_25` paint has its own pass 18 quartet.
+2. Leave this midsize body. Do not reshape it again. `a5e0e40d` replaced the passing cages. Size is 4.900 × 1.816 × 1.440 m. LOD is 4716/3588/1968, 4716/3636/2016, 4736/3608/1968, and 4608/3528/1968. The pass 19 side of `_25` is a three-box sedan. Each paint has its own quartet and the same cage as `_25`.
 3. Leave the three compact passes. LOD2 is 1966, 1912, and 1954.
 4. Leave the four bus passes. City40 LOD2 is 900 against 1504. City60 LOD2 is 1192 against 2060. Blue and red keep their own stills.
 5. Do not restore the court. Take #122's container, gazebo, rowboat, and walk-up when this branch next touches the shared library. #129 already did.
@@ -43,4 +43,4 @@ A colour or paint sibling uses the base quartet when vertex positions, indices, 
 4. `Park/Planter` now has its own pass 32 quartet. It is not `Planter_Street`.
 5. Do not re-import `Car_*`. Do not seal Planter, Tree_Maple, or RooftopAC a second time. #122 `7cee8bbf` cut LOD2 on the shared library. HarborShed and FishingBoat LOD0 hashes still match #122. GasCanopy and Tree_Pine are the same faces with a new index order. Take that LOD2. Do not rebuild the hero.
 
-Restructure-impact count is 7. `Pickup_FullSize_25` is not a redo. See `Docs/Models/LEDGER.md`.
+Restructure-impact count is 8. `Pickup_FullSize_25` is not a redo. See `Docs/Models/LEDGER.md`.
