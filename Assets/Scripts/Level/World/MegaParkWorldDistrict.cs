@@ -8,7 +8,10 @@ namespace Tag.Level
     /// east lawn of the cling lanes. Z3 dresses the merry lawns outside
     /// Crossing B. Z4 dresses the north lawn of the slide mountain. Z5 dresses
     /// the north lawn of the swing grove. Z6 dresses the twin forts with a
-    /// harbor yard, west of the empty spine. Placements
+    /// harbor yard, west of the empty spine. Z8 dresses the crash-bowl lips
+    /// with a playground and two wash houses. Z9 dresses the bar highway
+    /// with a curbside market. Z10 dresses the hopscotch with an alley and
+    /// a subway stair. Placements
     /// are real meters, yaw degrees, scale 1. The headless layout audit still
     /// counts the gray solids; play mode hides only the Z7 infield lumps.
     /// Feel locks are not stored here.
@@ -270,9 +273,71 @@ namespace Tag.Level
             new Place("Ft_Light", S + "LightPost_Double.prefab", 127f, 0f, 73f, 0f),
         };
 
+        /// <summary>
+        /// Z8 crash bowl. The open rect stays empty. These sit on the ground
+        /// lips, north and south of the sand, not in the bowl. The climb is a
+        /// wash-house wall onto the second wash roof. The rope runs from that
+        /// roof to the playground beam. Not the harbor yard and not the gazebo row.
+        /// </summary>
+        public static readonly Place[] Bowl =
+        {
+            // East face is the climb. The second wash roof is the landing.
+            new Place("Bd_WashA", P + "Restroom.prefab", 63.0f, 0f, 69.2f, 0f),
+            new Place("Bd_WashB", P + "Restroom.prefab", 70.5f, 0f, 69.2f, 0f),
+            new Place("Bd_Play", P + "Playground.prefab", 64.0f, 0f, 73.15f, 0f),
+            // Vault rail is 1.05 m above the ladder deck. South apron.
+            new Place("Bd_Escape", B + "FireEscape.prefab", 56.2f, 0f, 31.4f, 180f),
+            new Place("Bd_StandA", S + "Newsstand_Corner.prefab", 66.0f, 0f, 31.2f, 0f),
+            new Place("Bd_StandB", S + "Newsstand_Corner.prefab", 68.66f, 0f, 31.2f, 0f),
+            new Place("Bd_Mail", S + "Mailbox.prefab", 61.4f, 0f, 31.6f, 0f),
+            new Place("Bd_Bike", S + "BikeRack_Hoop3.prefab", 63.6f, 0f, 31.5f, 0f),
+            new Place("Bd_Sip", S + "Fountain_Walk.prefab", 52.2f, 0f, 31.2f, 0f),
+            new Place("Bd_Meter", S + "ParkingMeter_Single.prefab", 50.2f, 0f, 31.5f, 0f),
+        };
+
+        /// <summary>
+        /// Z9 bar highway. The crouch slot under the bars stays empty.
+        /// Newsstands sit in the north pockets between the posts. The dash
+        /// is the gap between the two west stands. The rope runs east along
+        /// the curb to a third stand. Not a lawn and not a harbor yard.
+        /// </summary>
+        public static readonly Place[] Bars =
+        {
+            new Place("Bar_StandA", S + "Newsstand_Corner.prefab", 39.4f, 0f, 17.55f, 0f),
+            new Place("Bar_StandB", S + "Newsstand_Corner.prefab", 42.06f, 0f, 17.55f, 0f),
+            new Place("Bar_StandC", S + "Newsstand_Corner.prefab", 54.4f, 0f, 17.55f, 0f),
+            new Place("Bar_Mail", S + "Mailbox.prefab", 48.5f, 0f, 17.7f, 0f),
+            new Place("Bar_Meter", S + "ParkingMeter_Single.prefab", 60.4f, 0f, 17.65f, 0f),
+            new Place("Bar_Bike", S + "BikeRack_Hoop3.prefab", 77.2f, 0f, 17.55f, 0f),
+            new Place("Bar_Sip", S + "Fountain_Walk.prefab", 83.2f, 0f, 17.7f, 0f),
+            new Place("Bar_Box", U + "ElectricalBox.prefab", 89.2f, 0f, 17.6f, 0f),
+            new Place("Bar_Post", S + "Delineator_Post.prefab", 95.2f, 0f, 17.65f, 0f),
+            new Place("Bar_MailB", S + "Mailbox.prefab", 107.4f, 0f, 17.7f, 0f),
+        };
+
+        /// <summary>
+        /// Z10 hopscotch. Hops stay uncovered. The alley back wall jumps west
+        /// onto the subway roof. The rope crosses over the hops. Barricades
+        /// on the south chalk are the dash. Not the wash pair and not the bar row.
+        /// </summary>
+        public static readonly Place[] Hops =
+        {
+            // Yaw 90 lays the long axis along X so the stair fits north of the hops.
+            new Place("Hp_Subway", B + "Subway_Entrance.prefab", 133.2f, 0f, 19.0f, 90f),
+            new Place("Hp_Alley", B + "Alley.prefab", 144.76f, 0f, 19.0f, 90f),
+            new Place("Hp_BarA", S + "Barricade_Type3.prefab", 136.0f, 0f, 11.0f, 0f),
+            new Place("Hp_BarB", S + "Barricade_Type3.prefab", 139.3f, 0f, 11.0f, 0f),
+            new Place("Hp_Mail", S + "Mailbox.prefab", 143.2f, 0f, 11.15f, 0f),
+            new Place("Hp_Bike", S + "BikeRack_Hoop3.prefab", 146.4f, 0f, 11.05f, 0f),
+            new Place("Hp_Sip", S + "Fountain_Walk.prefab", 132.2f, 0f, 11.2f, 0f),
+            new Place("Hp_Post", S + "Delineator_Post.prefab", 130.2f, 0f, 11.15f, 0f),
+        };
+
         public static Place[] AllPlaces()
         {
-            var all = new Place[Places.Length + SoftPlay.Length + Cling.Length + Merry.Length + Slide.Length + Swing.Length + Forts.Length];
+            var all = new Place[
+                Places.Length + SoftPlay.Length + Cling.Length + Merry.Length + Slide.Length
+                + Swing.Length + Forts.Length + Bowl.Length + Bars.Length + Hops.Length];
             int n = 0;
             for (int i = 0; i < Places.Length; i++)
                 all[n++] = Places[i];
@@ -288,6 +353,12 @@ namespace Tag.Level
                 all[n++] = Swing[i];
             for (int i = 0; i < Forts.Length; i++)
                 all[n++] = Forts[i];
+            for (int i = 0; i < Bowl.Length; i++)
+                all[n++] = Bowl[i];
+            for (int i = 0; i < Bars.Length; i++)
+                all[n++] = Bars[i];
+            for (int i = 0; i < Hops.Length; i++)
+                all[n++] = Hops[i];
             return all;
         }
 

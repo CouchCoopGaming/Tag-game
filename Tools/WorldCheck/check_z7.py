@@ -822,7 +822,7 @@ def player_path_gaps(src):
     if "WorldPropTable.Load" not in bootstrap:
         gaps.append("bootstrap does not load the Resources table")
     seen = set()
-    for array in ("Places", "SoftPlay", "Cling", "Merry", "Slide", "Swing", "Forts"):
+    for array in ("Places", "SoftPlay", "Cling", "Merry", "Slide", "Swing", "Forts", "Bowl", "Bars", "Hops"):
         for p in parse_places(src, array):
             if p["path"] in seen:
                 continue

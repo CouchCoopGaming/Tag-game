@@ -97,3 +97,29 @@ MonoBehaviour:
     Prefab: {fileID: 100000, guid: f974023b91269795bfc355b097864f0b, type: 3}
   - Path: Assets/Art/Props/Library/StreetFurniture/Prefabs/LightPost_Double.prefab
     Prefab: {fileID: 100000, guid: 5cf2c5e5717677a61ea9b9337ba8a572, type: 3}
+  - Path: Assets/Art/Props/Library/Park/Prefabs/Playground.prefab
+    Prefab: {fileID: 100000, guid: 0f7c42825df98697c5880152dfb24531, type: 3}
+  - Path: Assets/Art/Props/Library/Park/Prefabs/Restroom.prefab
+    Prefab: {fileID: 100000, guid: 3056d1a74307bce5ae9b505744f31007, type: 3}
+  - Path: Assets/Art/Props/Library/Buildings/Prefabs/FireEscape.prefab
+    Prefab: {fileID: 100000, guid: 5c6e842bb4d4af7a172ff307408b8c8d, type: 3}
+  - Path: Assets/Art/Props/Library/StreetFurniture/Prefabs/Newsstand_Corner.prefab
+    Prefab: {fileID: 100000, guid: 07dc41726ea2b82bf7983f6ac1915d3c, type: 3}
+  - Path: Assets/Art/Props/Library/StreetFurniture/Prefabs/Mailbox.prefab
+    Prefab: {fileID: 100000, guid: 41726c0e6c328adfa32a6e7bc45f2b00, type: 3}
+  - Path: Assets/Art/Props/Library/StreetFurniture/Prefabs/BikeRack_Hoop3.prefab
+    Prefab: {fileID: 100000, guid: 9ebde1651defe674db515136b496cbaf, type: 3}
+  - Path: Assets/Art/Props/Library/StreetFurniture/Prefabs/Fountain_Walk.prefab
+    Prefab: {fileID: 100000, guid: 4547df41bf14f4edfe877fe6468325f4, type: 3}
+  - Path: Assets/Art/Props/Library/StreetFurniture/Prefabs/ParkingMeter_Single.prefab
+    Prefab: {fileID: 100000, guid: 967dd1a79315b0ae658eee1fb82149e9, type: 3}
+  - Path: Assets/Art/Props/Library/Utility/Prefabs/ElectricalBox.prefab
+    Prefab: {fileID: 100000, guid: 5452eb3da27ae0fd902e2e3eacc9dff8, type: 3}
+  - Path: Assets/Art/Props/Library/StreetFurniture/Prefabs/Delineator_Post.prefab
+    Prefab: {fileID: 100000, guid: 24f14e5d37138dbaf68e1a422084543a, type: 3}
+  - Path: Assets/Art/Props/Library/Buildings/Prefabs/Subway_Entrance.prefab
+    Prefab: {fileID: 100000, guid: 3d98bf94ca1577cfe0a448491c05ff1e, type: 3}
+  - Path: Assets/Art/Props/Library/Buildings/Prefabs/Alley.prefab
+    Prefab: {fileID: 100000, guid: da10f155ad4609b8c1989fc0caacdc47, type: 3}
+  - Path: Assets/Art/Props/Library/StreetFurniture/Prefabs/Barricade_Type3.prefab
+    Prefab: {fileID: 100000, guid: 4d9bde8339b6934d6a623b63d791f9ad, type: 3}

@@ -1,6 +1,6 @@
 # World ledger
 
-Status of each map area after pass 7. Gray means the live solids are still the Mega Park cubes from `MegaParkP1Layout.BuildSolids`. Polished means library prefabs are placed on top. Z7 hides its infield lumps in play. Z1, Z2, Z3, Z4, Z5, and Z6 leave their gray toys in place. This head includes the `cursor/tag-street-objects` merge (`7dc3e222`), the street-kit merges (`bc02b9c4`, `3040d2e5`, then `0aa3061e`), and the asset-library merges (`723cc137`, then `a066d987`). GateLeaf, the fixed bench and trash colliders, and the StrafeJumpSim proof line stayed. `PoseKeyDump` stayed deleted. Street-kit `0aa3061e` seats compact wheels at y = 0.010 and the pickup bumper at z = 2.493. Library `a066d987` is merged: MARKET, DINER, and WASH are two outward sheets, `Container_20` `Climb_Body` starts at y = 0, and `Dock_Straight` planks top at y = 0.620. Piles still end at y = −1.165, which that branch calls a water seat.
+Status of each map area after pass 8. Gray means the live solids are still the Mega Park cubes from `MegaParkP1Layout.BuildSolids`. Polished means library prefabs are placed on top. Z7 hides its infield lumps in play. Z1 through Z6, Z8, Z9, and Z10 leave their gray toys in place. This head includes the `cursor/tag-street-objects` merge (`7dc3e222`), the street-kit merges (`bc02b9c4`, `3040d2e5`, then `0aa3061e`), and the asset-library merges (`723cc137`, then `a066d987`). GateLeaf, the fixed bench and trash colliders, and the StrafeJumpSim proof line stayed. `PoseKeyDump` stayed deleted. Street-kit `0aa3061e` seats compact wheels at y = 0.010 and the pickup bumper at z = 2.493. Library `a066d987` is merged: MARKET, DINER, and WASH are two outward sheets, `Container_20` `Climb_Body` starts at y = 0, and `Dock_Straight` planks top at y = 0.620. Piles still end at y = −1.165, which that branch calls a water seat.
 
 The headless audit still counts every solid. Hiding a lump in `MegaParkP1Bootstrap` does not change `BuildSolids`, so the Mega Park proof line stays the same.
 
@@ -17,9 +17,9 @@ Zone boxes are `MegaParkP1Layout.Pass6.ZoneBoxes`.
 | Z5 Swings | x[58, 100] z[78, 98] | Polished pass 6. Gray swing frames, vault line, rims, and the landmark stay. 13 props on the north lawn, static-batched. |
 | Z6 Twin forts | x[118, 158] z[10, 90] | Polished pass 7. Gray forts, yellow chutes, rims, and both landmarks stay. East spine x[130, 138] and gap z[46, 54] stay empty. 16 props, static-batched. |
 | Z7 Kickball | x[64, 114] z[28, 68] | Polished. Pass 5 replaces the east door wall with the closed cabin and parks `Pickup_FullSize_25`. 46 instances, 26 unique, static-batched. |
-| Z8 Crash bowl | x[46, 78] z[34, 66] | Gray. Open rect x[52, 72] z[40, 58] has no new props. |
-| Z9 Bars | x[38, 118] z[12, 20] | Gray. South spine. Bar under-clear 1.05 m stays empty. |
-| Z10 Hopscotch | x[118, 156] z[2, 22] | Gray. |
+| Z8 Crash bowl | x[46, 78] z[34, 66] | Polished pass 8. Open rect stays empty. Wash houses and a playground on the north lip, newsstands on the south apron. |
+| Z9 Bars | x[38, 118] z[12, 20] | Polished pass 8. Gray bars stay. Crouch slot under the steel stays empty. Newsstands in the north pockets. |
+| Z10 Hopscotch | x[118, 156] z[2, 22] | Polished pass 8. Gray hops stay. Alley and subway stair north of the hops, barricades on the south chalk. |
 | Perimeter loop | 472 m CCW | Untouched. Spawns stay on the 118 m arcs. |
 | Fence and collar | rim | Untouched. |
 
@@ -178,6 +178,8 @@ Still open. Relayed to the models lane. Not edited here:
 | `WalkUp` | Climb faces start at y = 0.40, 0.25 m above the stoop. The body is enclosed. Not edited here. |
 | `Cabin` | Placed. Door is closed. An internal gap of 0.20 m sits under a collider at y = 2.38. Not edited here. |
 | `Dock_Straight` piles | Placed in Z6. Deck top is now 0.620. Piles still run to y = −1.165. Library `a066d987` calls that a water seat on purpose. Not edited here. |
+| `FireEscape` | Placed in Z8. Lowest collider is y = 0.15, so the ladder foot sits 15 cm off the ground. Not edited here. |
+| `Subway_Entrance` steps | Placed in Z10, yaw 90. The stair boxes run down to y = −1.51. That is a below-grade stair. On park ground the steps clip the floor. Not edited here. |
 
 `Gangway` is dropped from Mega Park. The prefab field is `vaultHeightMeters: 0.88`, and the rail boxes top at y = 1.758 over a plate whose top is y = 0.892, so the rail is 0.87 m above the plate. The catalog band is 0.90–1.05 m. The plate itself starts at y = 0.728, which is a harbor ramp seat, not a park ground contact. Raising the rail would edit the harbor mesh. It stays in the harbor library and is not a Mega Park route.
 
@@ -243,6 +245,62 @@ Check line:
 
 Stills: `Docs/WorldStills/pass7/z6_*.png`. Collider rasters. Pass 1 through 6 images were left in place.
 
+## Z8 this pass
+
+Placements: `Bowl` in `Assets/Scripts/Level/World/MegaParkWorldDistrict.cs`. 10 instances, 8 unique prefabs. The open rect x[52, 72] z[40, 58] stays empty. Sand toys, the landmark mast, and the rim blocks stay. Nothing new sits in the bowl.
+
+Two `Restroom` wash houses on the north lip. The east wall of the west house is 2.34 m on a 3.24 m face. The jump lands on the east house roof. The deck gap is 2.62 m. `Playground` sits north of them. The rope from the east roof to the swing beam is 9.62 m. `FireEscape` on the south apron is the 1.05 m vault. Two newsstands there are the dash, gap 0.89 m.
+
+Check line:
+
+`world-check routes=5 reachable=5/5 floatingProps=0 missingColliders=0 scaleFails=0`
+
+| Route | Measured |
+|---|---|
+| WashClimb | East jump. Wall 2.34 m. Deck gap 2.62 m. +30° lands at (68.94, 67.86). +60° lands at (69.73, 67.78). |
+| BeamGrapple | 9.62 m from the east wash roof to the playground beam. |
+| EscapeVault | Fire-escape rail 1.05 m. West walk-up open. |
+| StandDash | Newsstand undersides 1.10 m. Gap 0.89 m. |
+| LipChase | 115.0 m around the lips. Worst clearance 0.90 m against `Rim_DropN`. |
+
+Stills: `Docs/WorldStills/pass8/z8_*.png`.
+
+## Z9 this pass
+
+Placements: `Bars`. 10 instances, 7 unique prefabs. Gray posts, bars, and vault lips stay. The crouch volume under the steel (y up to 1.05, z 15.4–16.6) stays empty. The arch at x = 66.8 stays clear.
+
+Check line:
+
+`world-check routes=5 reachable=5/5 floatingProps=0 missingColliders=0 scaleFails=0`
+
+| Route | Measured |
+|---|---|
+| BarCrouch | Bar underside 1.14 m. Slot empty. |
+| LipMantle | North vault lip 0.96 m. West approach open. |
+| CurbGrapple | 15.00 m from the west newsstand to the third stand. |
+| StandDash | Newsstand undersides 1.10 m. Gap 0.89 m. |
+| CurbChase | 153.1 m on the north curb. Worst clearance 0.94 m against `BarPost_N0`. |
+
+Stills: `Docs/WorldStills/pass8/z9_*.png`.
+
+## Z10 this pass
+
+Placements: `Hops`. 8 instances, 7 unique prefabs. Gray hops stay uncovered. `Subway_Entrance` and `Alley` sit north of the hops, yaw 90, so the long axis runs east. Barricades sit on the south chalk, clear of the z = 8 loop.
+
+Check line:
+
+`world-check routes=5 reachable=5/5 floatingProps=0 missingColliders=0 scaleFails=0`
+
+| Route | Measured |
+|---|---|
+| StairClimb | West jump off the alley back wall. Wall 3.28 m. Deck gap 5.00 m onto the subway roof. +30° lands at (135.45, 19.42). +60° lands at (135.41, 18.66). |
+| HopVault | `Hop_5` lip 0.94 m. South approach open. |
+| HopGrapple | 9.59 m from the south barricade over the hops to the alley header. |
+| ChalkDash | Barricade rail underside 1.33 m. Gap 0.90 m. |
+| HopChase | 60.0 m around the hops. Worst clearance 0.86 m against `Hp_Subway`. |
+
+Stills: `Docs/WorldStills/pass8/z10_*.png`.
+
 ## Next district
 
-Z1 through Z7 are dressed. Z8's open rect x[52, 72] z[40, 58] stays empty. The remaining gray toys are the Z9 bar highway and the Z10 hopscotch. Do not recolor the yellow chutes. Do not fill the bowl, the kickball sightline, Crossing B, the fort spine, or the fort gap. Keep the next set batched, and keep loading it from `WorldPropTable`.
+Z1 through Z10 are dressed. The open rect, the bar crouch slot, the hops, the fort spine, the fort gap, Crossing B, and the kickball sightline stay empty. Do not recolor the yellow chutes. Keep later sets batched, and keep loading them from `WorldPropTable`.
