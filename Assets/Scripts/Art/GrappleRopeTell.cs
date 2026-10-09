@@ -12,6 +12,8 @@ namespace Tag.Art
         // Hands on the long two-arm reach. Ahead of the capsule, below the head.
         public const float HandHeight = 1.28f;
         public const float HandForward = 0.62f;
+        /// <summary>Left of the facing. Negative is the grappling hand.</summary>
+        public const float HandSide = -0.34f;
 
         // The old line was 0.06 / 0.03 and disappeared at chase-cam distance.
         public const float RopeStartWidth = 0.16f;
@@ -32,7 +34,8 @@ namespace Tag.Art
                 flat = Vector3.forward;
             else
                 flat.Normalize();
-            return origin + Vector3.up * HandHeight + flat * HandForward;
+            Vector3 right = new Vector3(flat.z, 0f, -flat.x);
+            return origin + Vector3.up * HandHeight + flat * HandForward + right * HandSide;
         }
 
         /// <summary>Latched rope. End is the hit, not a point invented along the ray.</summary>

@@ -8,8 +8,9 @@ namespace Tag.Experimental
     /// <summary>
     /// EXPERIMENTAL — optional rope. Core tag loop works without this.
     /// The field starts off (enableGrapple=false). LocalPlayerSpawner turns it on
-    /// for the solo Player pawn only. Couch pawns and DummyRunner do not get one.
-    /// Button: RMB (Mouse1), the same hold as JetHeld. Jet stays off, so RMB does not jet.
+    /// for the solo Player pawn and for every human couch seat. DummyRunner does not
+    /// get one from this gate. Keyboard fire is RMB (Mouse1). A pad seat fires with
+    /// LT. Both are JetHeld. Jet stays off, so the button hooks and does not jet.
     /// The hook attaches to the nearest collider along the camera forward ray that is not
     /// this pawn. A miss attaches to nothing: there is no stand-in swing.
     /// PlayerMotor strips outward horizontal speed against that hit. This component does
@@ -22,6 +23,10 @@ namespace Tag.Experimental
     public class ExperimentalGrapple : MonoBehaviour
     {
         public const string FireButton = "RMB";
+        /// <summary>Second click inside this window releases. A lone click then pulls.</summary>
+        public const float ClickWindow = GrappleClick.Window;
+        /// <summary>Planar pull toward a static anchor. Not a zip and not a dash.</summary>
+        public const float PullSpeed = GrappleClick.Pull;
 
         [Header("EXPERIMENTAL — off by default")]
         public bool enableGrapple = false;
@@ -56,6 +61,11 @@ namespace Tag.Experimental
         Material _latchMat;
         static Mesh _latchSphere;
         bool _fireWas;
+        bool _pulling;
+        bool _pendingPull;
+        bool _anchorStatic;
+        float _clickTime = -1f;
+        float _pendingSince;
         bool _rayMiss;
         float _missAge = -1f;
         bool _missBuilt;
@@ -67,6 +77,9 @@ namespace Tag.Experimental
 
         /// <summary>True only while enableGrapple is on and a rope is attached. A miss leaves this false.</summary>
         public bool IsPulling => enableGrapple && _attached;
+
+        /// <summary>Confirmed single click on a static anchor. The motor writes this pull.</summary>
+        public bool Pulling => enableGrapple && _pulling && _anchorStatic && _attached;
 
         /// <summary>Fire is held and nothing is latched. The aim preview is up. Presentation only.</summary>
         public bool IsAiming => enableGrapple && _casting && !_attached;
@@ -117,18 +130,26 @@ namespace Tag.Experimental
 
             if (!ReadFire())
             {
-                Release();
                 _rayMiss = false;
+                ResolvePendingNow();
+                _casting = false;
                 GrappleMissTell.Note(ref _missAge, MissAvailable(), false, false, false);
                 return;
             }
 
-            if (!_attached)
+            if (fired && !_attached)
+            {
                 TryAttach();
-            else
-                _rayMiss = false;
+                _clickTime = Time.time;
+                _pendingPull = false;
+                _pulling = false;
+            }
+            else if (fired)
+                OnClick();
 
-            _casting = !_attached;
+            ResolvePendingNow();
+
+            _casting = !_attached && held;
             GrappleMissTell.Note(ref _missAge, MissAvailable(), fired, _rayMiss && !_attached, _attached);
         }
 
@@ -136,9 +157,52 @@ namespace Tag.Experimental
         {
             _attached = false;
             _casting = false;
+            _pulling = false;
+            _pendingPull = false;
+            _anchorStatic = false;
             _ropeLength = 0f;
             GrappleLatchTell.Clear(ref _latchAge);
             HideAll();
+        }
+
+        void OnClick()
+        {
+            GrappleClick click = ClickState();
+            bool drop = click.OnAttachedPress(Time.time, ClickWindow);
+            _rayMiss = false;
+            if (drop)
+            {
+                Release();
+                _clickTime = Time.time;
+                return;
+            }
+
+            _clickTime = click.ClickTime;
+            _pendingPull = click.Pending;
+            _pendingSince = click.PendingSince;
+            _pulling = click.Pulling;
+            _attached = click.Attached;
+            _anchorStatic = click.AnchorStatic;
+        }
+
+        GrappleClick ClickState()
+        {
+            GrappleClick click;
+            click.Attached = _attached;
+            click.Pulling = _pulling;
+            click.Pending = _pendingPull;
+            click.AnchorStatic = _anchorStatic;
+            click.ClickTime = _clickTime;
+            click.PendingSince = _pendingSince;
+            return click;
+        }
+
+        void ResolvePendingNow()
+        {
+            GrappleClick click = ClickState();
+            click.ResolvePending(Time.time, ClickWindow);
+            _pendingPull = click.Pending;
+            _pulling = click.Pulling;
         }
 
         public bool TryGetRope(out Vector3 anchor, out float length, out float slack)
@@ -243,6 +307,9 @@ namespace Tag.Experimental
 
             _rayMiss = best < 0;
             if (best < 0) return;
+            Collider latched = _hits[best].collider;
+            Rigidbody body = latched != null ? latched.attachedRigidbody : null;
+            _anchorStatic = latched != null && (latched.gameObject.isStatic || body == null || body.isKinematic);
             _anchor = _hits[best].point;
             _ropeLength = (_anchor - transform.position).magnitude;
             if (_ropeLength <= 0.05f) return;

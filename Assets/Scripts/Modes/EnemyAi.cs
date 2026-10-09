@@ -760,7 +760,7 @@ namespace Tag.Modes
             verb = isIt ? EnemyVerb.Close : EnemyVerb.Evade;
             hopCount = 0;
             if (hops != null && hops.Length > 0) hops[0].Mark = -1;
-            if (sprint < 1f) sprint = 12f;
+            if (sprint < 1f) sprint = 13.8f;
             MegaParkP1Layout.WarmParkRoutes();
             float d = ClampDifficulty(difficulty);
             memory.PlanTick++;

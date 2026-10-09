@@ -1,7 +1,9 @@
 using System;
 using System.Globalization;
+using System.IO;
 using System.Text;
 using Tag.Practice;
+using Tag.Profiles;
 
 namespace Tag.Settings
 {
@@ -16,9 +18,13 @@ namespace Tag.Settings
             var s = settings ?? GameSettings.Defaults();
             var b = binds ?? ActionBinds.Defaults();
             var text = new StringBuilder();
-            text.Append("v=1\n");
+            text.Append("v=2\n");
             Line(text, "mouse", s.MouseSensitivity);
             Line(text, "padLook", s.GamepadLook);
+            Line(text, "stickInner", s.StickInner);
+            Line(text, "stickOuter", s.StickOuter);
+            Line(text, "stickCurve", s.StickCurve);
+            Line(text, "lookAccel", s.LookAccel);
             Line(text, "invertY", s.InvertY ? 1f : 0f);
             Line(text, "fov", s.Fov);
             Line(text, "master", s.Master);
@@ -61,10 +67,55 @@ namespace Tag.Settings
             }
             PracticeBests.Write(text);
             PracticeGhost.Write(text);
+            LocalProfiles.Write(text);
             return text.ToString();
         }
 
-        public const int Version = 1;
+        public const int Version = 2;
+
+        /// <summary>
+        /// Write a temp file, read it back, then replace the destination.
+        /// A crash after the temp write leaves the previous file intact.
+        /// </summary>
+        public static bool CommitText(string path, string text)
+        {
+            if (string.IsNullOrEmpty(path)) return false;
+            string tmp = path + ".tmp";
+            string body = text ?? "";
+            try
+            {
+                File.WriteAllText(tmp, body);
+                string back = File.ReadAllText(tmp);
+                if (back != body)
+                {
+                    if (File.Exists(tmp)) File.Delete(tmp);
+                    return false;
+                }
+                if (File.Exists(path))
+                    File.Replace(tmp, path, null);
+                else
+                    File.Move(tmp, path);
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
+        /// <summary>The destination only. A half-written temp file is not the settings blob.</summary>
+        public static string ReadStable(string path)
+        {
+            if (string.IsNullOrEmpty(path) || !File.Exists(path)) return "";
+            try
+            {
+                return File.ReadAllText(path);
+            }
+            catch (Exception)
+            {
+                return "";
+            }
+        }
 
         public static void Read(string blob, GameSettings settings, ActionBinds binds)
         {
@@ -90,10 +141,12 @@ namespace Tag.Settings
             {
                 settings.ResetToDefaults();
                 binds.ResetToDefaults();
+                LocalProfiles.Clear();
                 return;
             }
             PracticeBests.Clear();
             PracticeGhost.ClearSaved();
+            LocalProfiles.BeginRead();
             for (int i = 0; i < lines.Length; i++)
             {
                 if (!Split(lines[i], out string key, out string value)) continue;
@@ -103,6 +156,7 @@ namespace Tag.Settings
             if (settings.Colorblind && blob.IndexOf("palette=", StringComparison.Ordinal) < 0)
                 settings.Palette[0] = AccessibilityPalette.Deuteranopia;
             settings.Clamp();
+            LocalProfiles.EndRead(version, settings, binds);
         }
 
         static bool Split(string raw, out string key, out string value)
@@ -122,6 +176,7 @@ namespace Tag.Settings
         static bool Known(string key)
         {
             if (key == "mouse" || key == "padLook" || key == "invertY" || key == "fov") return true;
+            if (key == "stickInner" || key == "stickOuter" || key == "stickCurve" || key == "lookAccel") return true;
             if (key == "master" || key == "sfx" || key == "ui" || key == "music" || key == "mute") return true;
             if (key == "hud" || key == "colorblind" || key == "minimap" || key == "accessSeat") return true;
             if (key == "arena" || key == "ai" || key == "diff" || key == "roundLen" || key == "rounds") return true;
@@ -136,6 +191,7 @@ namespace Tag.Settings
             if (SeatKey(key, "captions", out _)) return true;
             if (SeatKey(key, "rumble", out _)) return true;
             if (SeatKey(key, "flash", out _)) return true;
+            if (LocalProfiles.IsKey(key)) return true;
             return false;
         }
 
@@ -143,6 +199,10 @@ namespace Tag.Settings
         {
             if (key == "mouse") settings.MouseSensitivity = Num(value, settings.MouseSensitivity);
             else if (key == "padLook") settings.GamepadLook = Num(value, settings.GamepadLook);
+            else if (key == "stickInner") settings.StickInner = Num(value, settings.StickInner);
+            else if (key == "stickOuter") settings.StickOuter = Num(value, settings.StickOuter);
+            else if (key == "stickCurve") settings.StickCurve = Num(value, settings.StickCurve);
+            else if (key == "lookAccel") settings.LookAccel = Num(value, settings.LookAccel);
             else if (key == "invertY") settings.InvertY = Flag(value);
             else if (key == "fov") settings.Fov = Num(value, settings.Fov);
             else if (key == "master") settings.Master = Num(value, settings.Master);
@@ -175,6 +235,8 @@ namespace Tag.Settings
                 PracticeBests.SetSplits(key.Substring(3), value);
             else if (key.StartsWith("gh.", StringComparison.Ordinal))
                 PracticeGhost.Read(key.Substring(3), value);
+            else
+                LocalProfiles.ApplyKey(key, value);
         }
 
         static bool SeatKey(string key, string prefix, out int seat)
@@ -193,6 +255,8 @@ namespace Tag.Settings
             if (string.IsNullOrEmpty(value)) return;
             if (!Enum.TryParse(name, false, out PlayAction action)) return;
             if (action < 0 || action >= PlayAction.Count) return;
+            if (keyboard && action == PlayAction.Jump && !ActionBinds.KnownKeyboard(value))
+                value = "space";
             if (keyboard) binds.SetKeyboard(action, value);
             else binds.SetGamepad(action, value);
         }

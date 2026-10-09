@@ -41,7 +41,7 @@ namespace Tag.Level
         public const float BowlFloorY = -1f;
         public const float Collar = 3f;
         public const float LoopLengthM = 472f;
-        public const float SprintSpeed = 12f;
+        public const float SprintSpeed = 13.8f;
         public const float MantleMin = 0.45f;
         public const float MantleMax = 2.55f;
         public const float BarUnderClear = 1.05f;
@@ -55,9 +55,9 @@ namespace Tag.Level
         public const float MeshMatch = 0.05f;
         public const float GrappleRange = 28f;
 
-        /// <summary>Inner faces on x=0, x=160, z=0, z=100. Taller than a jump off a landmark.</summary>
+        /// <summary>Above every landmark. Not a collider. A hop over the rail is a legal exit.</summary>
         public const float FenceTop = 33f;
-        /// <summary>Visible rail height. The collider stays at <see cref="FenceTop"/>.</summary>
+        /// <summary>Visible rail and the solid that matches it. Hopping this is legal.</summary>
         public const float FenceRail = 2.75f;
         /// <summary>Shimmer distance for the invisible part of the fence collider.</summary>
         public const float FenceShimmer = 3f;
@@ -71,7 +71,7 @@ namespace Tag.Level
         /// <summary>Landmark crowns. Above the +5 decks so a zone reads from open ground.</summary>
         public const float LandmarkCrown = 16f;
         const float RiseGravity = 22f;
-        const float FallGravity = 1.5f;
+        const float FallGravity = 1.62f;
 
         // Equal arc on the 472 m loop (118 m). Corner waypoints stay put; these pads
         // are the starts. Every It sees runners at 118 / 118 / 236, so no corner is
@@ -391,10 +391,10 @@ namespace Tag.Level
 
             // Boundary only. Rubber, not blue. Not a cling wall. Tall enough that a
             // max-air jump off a landmark still meets the inner face.
-            Add(list, "Fence_S", "Fence", "fence", "rubber", 80f, FenceTop * 0.5f, -0.04f, 160.08f, FenceTop, 0.08f, 0f);
-            Add(list, "Fence_N", "Fence", "fence", "rubber", 80f, FenceTop * 0.5f, 100.04f, 160.08f, FenceTop, 0.08f, 0f);
-            Add(list, "Fence_W", "Fence", "fence", "rubber", -0.04f, FenceTop * 0.5f, 50f, 0.08f, FenceTop, 100f, 0f);
-            Add(list, "Fence_E", "Fence", "fence", "rubber", 160.04f, FenceTop * 0.5f, 50f, 0.08f, FenceTop, 100f, 0f);
+            Add(list, "Fence_S", "Fence", "fence", "rubber", 80f, FenceRail * 0.5f, -0.04f, 160.08f, FenceRail, 0.08f, 0f);
+            Add(list, "Fence_N", "Fence", "fence", "rubber", 80f, FenceRail * 0.5f, 100.04f, 160.08f, FenceRail, 0.08f, 0f);
+            Add(list, "Fence_W", "Fence", "fence", "rubber", -0.04f, FenceRail * 0.5f, 50f, 0.08f, FenceRail, 100f, 0f);
+            Add(list, "Fence_E", "Fence", "fence", "rubber", 160.04f, FenceRail * 0.5f, 50f, 0.08f, FenceRail, 100f, 0f);
 
             // Z1 Soft-Play. South fringe z=8 and the x=38 corner stay clear. Coral, not rim brown.
             Add(list, "SoftPlay_DeckLow", "Z1", "block", "soft", 14f, 1f, 26f, 10f, 2f, 8f, 0f);

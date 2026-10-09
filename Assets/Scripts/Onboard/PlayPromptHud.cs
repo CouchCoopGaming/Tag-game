@@ -51,7 +51,6 @@ namespace Tag.Onboard
             _motor = GetComponent<PlayerMotor>();
             _input = GetComponent<PlayerInputReader>();
             _punch = GetComponent<PunchHitbox>();
-            BootStyle();
         }
 
         void OnDestroy()
@@ -67,6 +66,10 @@ namespace Tag.Onboard
             _cam = Camera.main;
             if (_motor != null) _wallJumps = _motor.WallJumpCount;
             OnboardingStore.Load(OnboardingSession.Live);
+        }
+
+        void WarmStyle()
+        {
             BootStyle();
         }
 
@@ -93,7 +96,7 @@ namespace Tag.Onboard
             }
             if (_cam == null) _cam = Camera.main;
             if (DriveDevice < 0) WatchDevice();
-            if (Input.GetKeyDown(KeyCode.F12))
+            if (UnityEngine.Input.GetKeyDown(KeyCode.F12))
             {
                 Session().Skip();
                 OnboardingStore.Save(Session());
@@ -112,14 +115,14 @@ namespace Tag.Onboard
 
         static bool KeyActive()
         {
-            if (Input.GetMouseButton(0) || Input.GetMouseButton(1) || Input.GetMouseButton(2)) return true;
-            float mx = Input.GetAxisRaw("Mouse X");
-            float my = Input.GetAxisRaw("Mouse Y");
+            if (UnityEngine.Input.GetMouseButton(0) || UnityEngine.Input.GetMouseButton(1) || UnityEngine.Input.GetMouseButton(2)) return true;
+            float mx = UnityEngine.Input.GetAxisRaw("Mouse X");
+            float my = UnityEngine.Input.GetAxisRaw("Mouse Y");
             if (mx > 0.01f || mx < -0.01f || my > 0.01f || my < -0.01f) return true;
-            if (Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.D)) return true;
-            if (Input.GetKey(KeyCode.Space) || Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.LeftControl)) return true;
-            if (Input.GetKey(KeyCode.Q) || Input.GetKey(KeyCode.E) || Input.GetKey(KeyCode.F)) return true;
-            if (Input.GetKey(KeyCode.UpArrow) || Input.GetKey(KeyCode.DownArrow) || Input.GetKey(KeyCode.LeftArrow) || Input.GetKey(KeyCode.RightArrow)) return true;
+            if (UnityEngine.Input.GetKey(KeyCode.W) || UnityEngine.Input.GetKey(KeyCode.A) || UnityEngine.Input.GetKey(KeyCode.S) || UnityEngine.Input.GetKey(KeyCode.D)) return true;
+            if (UnityEngine.Input.GetKey(KeyCode.Space) || UnityEngine.Input.GetKey(KeyCode.LeftShift) || UnityEngine.Input.GetKey(KeyCode.LeftControl)) return true;
+            if (UnityEngine.Input.GetKey(KeyCode.Q) || UnityEngine.Input.GetKey(KeyCode.E) || UnityEngine.Input.GetKey(KeyCode.F)) return true;
+            if (UnityEngine.Input.GetKey(KeyCode.UpArrow) || UnityEngine.Input.GetKey(KeyCode.DownArrow) || UnityEngine.Input.GetKey(KeyCode.LeftArrow) || UnityEngine.Input.GetKey(KeyCode.RightArrow)) return true;
             return false;
         }
 
@@ -137,10 +140,10 @@ namespace Tag.Onboard
                 if (pad.dpad.up.isPressed || pad.dpad.down.isPressed || pad.dpad.left.isPressed || pad.dpad.right.isPressed) return true;
             }
 #endif
-            if (Input.GetKey(KeyCode.JoystickButton0) || Input.GetKey(KeyCode.JoystickButton1)) return true;
-            if (Input.GetKey(KeyCode.JoystickButton2) || Input.GetKey(KeyCode.JoystickButton3)) return true;
-            if (Input.GetKey(KeyCode.JoystickButton4) || Input.GetKey(KeyCode.JoystickButton5)) return true;
-            if (Input.GetKey(KeyCode.JoystickButton6) || Input.GetKey(KeyCode.JoystickButton7)) return true;
+            if (UnityEngine.Input.GetKey(KeyCode.JoystickButton0) || UnityEngine.Input.GetKey(KeyCode.JoystickButton1)) return true;
+            if (UnityEngine.Input.GetKey(KeyCode.JoystickButton2) || UnityEngine.Input.GetKey(KeyCode.JoystickButton3)) return true;
+            if (UnityEngine.Input.GetKey(KeyCode.JoystickButton4) || UnityEngine.Input.GetKey(KeyCode.JoystickButton5)) return true;
+            if (UnityEngine.Input.GetKey(KeyCode.JoystickButton6) || UnityEngine.Input.GetKey(KeyCode.JoystickButton7)) return true;
             return false;
         }
 
@@ -179,7 +182,7 @@ namespace Tag.Onboard
             Vector3 padPoint;
             _sample.NearPad = LaunchPad.PromptNear(pawn, ContextPrompts.PadRange, out padPoint);
 
-            Vector3 zipPoint;
+            Vector3 zipPoint = default;
             _sample.NearZip = !_motor.ZipRiding && ZipLine.PromptNear(pawn, ContextPrompts.ZipRange, out zipPoint);
 
             bool ride = _motor.ZipRiding;
@@ -245,7 +248,8 @@ namespace Tag.Onboard
 
         void OnGUI()
         {
-            if (_label == null || _motor == null) return;
+            WarmStyle();
+            if (_motor == null) return;
             if (Time.timeScale <= 0f) return;
             PromptText.Ensure();
             _label.fontSize = Screen.height >= 1000 ? 16 : 14;

@@ -9,6 +9,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Program.cs" />
+    <Compile Include="PoseKeyDump.cs" />
     <Compile Include="../../Assets/Scripts/Level/MegaParkP1Layout.cs" />
     <Compile Include="../../Assets/Scripts/Level/MegaParkP1Layout.Pass6.cs" />
     <Compile Include="../../Assets/Scripts/Level/MegaParkP1Layout.Pass7.cs" />
@@ -45,6 +46,7 @@
     <Compile Include="../../Assets/Scripts/Settings/Accessibility.cs" />
     <Compile Include="../../Assets/Scripts/Settings/ActionBinds.cs" />
     <Compile Include="../../Assets/Scripts/Settings/SettingsFile.cs" />
+    <Compile Include="../../Assets/Scripts/Settings/StickQuality.cs" />
     <Compile Include="../../Assets/Scripts/Settings/MenuGraph.cs" />
     <Compile Include="../../Assets/Scripts/Settings/MenuHoldGate.cs" />
     <Compile Include="../../Assets/Scripts/Settings/InputBufferAudit.cs" />
@@ -62,6 +64,20 @@
     <Compile Include="../../Assets/Scripts/Art/OpponentChaseTell.cs" />
     <Compile Include="../../Assets/Scripts/Art/VerbPoseClips.cs" />
     <Compile Include="../../Assets/Scripts/Art/GaitBlend.cs" />
+    <Compile Include="../../Assets/Scripts/Art/LocomotionPolish.cs" />
+    <Compile Include="../../Assets/Scripts/Art/FootSlide.cs" />
+    <Compile Include="../../Assets/Scripts/Art/ClimbContact.cs" />
+    <Compile Include="../../Assets/Scripts/Art/BodyLine.cs" />
+    <Compile Include="../../Assets/Scripts/Art/StillFont.cs" />
+    <Compile Include="../../Assets/Scripts/Art/LocoFeel.cs" />
+    <Compile Include="../../Assets/Scripts/Art/AirFeel.cs" />
+    <Compile Include="../../Assets/Scripts/Art/AirClear.cs" />
+    <Compile Include="../../Assets/Scripts/Art/HandoffFeel.cs" />
+    <Compile Include="../../Assets/Scripts/Art/Handoff2Feel.cs" />
+    <Compile Include="../../Assets/Scripts/Art/BodyLife.cs" />
+    <Compile Include="../../Assets/Scripts/Art/UpperBody.cs" />
+    <Compile Include="../../Assets/Scripts/Art/HangMotion.cs" />
+    <Compile Include="../../Assets/Scripts/Art/TransitionMatrix.cs" />
     <Compile Include="../../Assets/Scripts/Art/JumpPose.cs" />
     <Compile Include="../../Assets/Scripts/Art/AirStrafeLeanPose.cs" />
     <Compile Include="../../Assets/Scripts/Art/BunnyHopPose.cs" />
@@ -81,6 +97,7 @@
     <Compile Include="../../Assets/Scripts/Art/MechPoseProof.cs" />
     <Compile Include="../../Assets/Scripts/Art/CrouchPose.cs" />
     <Compile Include="../../Assets/Scripts/Art/MantlePose.cs" />
+    <Compile Include="../../Assets/Scripts/Art/SmoothMotion.cs" />
     <Compile Include="../../Assets/Scripts/Art/LungePose.cs" />
     <Compile Include="../../Assets/Scripts/Art/BecomeItPose.cs" />
     <Compile Include="../../Assets/Scripts/Art/PivotPose.cs" />
@@ -97,6 +114,8 @@
     <Compile Include="../../Assets/Scripts/Art/WallJumpPushTell.cs" />
     <Compile Include="../../Assets/Scripts/Art/TagLandTell.cs" />
     <Compile Include="../../Assets/Scripts/Local/SoloGrappleGate.cs" />
+    <Compile Include="../../Assets/Scripts/Local/CouchRope.cs" />
+    <Compile Include="../../Assets/Scripts/Experimental/GrappleClick.cs" />
     <Compile Include="../../Assets/Scripts/Tag/PunchTagTuning.cs" />
     <Compile Include="../../Assets/TagArenaMovement/Scripts/Core/MovementConfig.cs" />
     <Compile Include="../../Assets/TagArenaMovement/Scripts/Core/SameWallLimit.cs" />
@@ -110,6 +129,7 @@
     <Compile Include="../../Assets/Scripts/Core/HudDigits.cs" />
     <Compile Include="../../Assets/Scripts/Core/QaSweep.cs" />
     <Compile Include="../../Assets/Scripts/Core/QaSweep2.cs" />
+    <Compile Include="../../Assets/Scripts/Core/QaSweep3.cs" />
     <Compile Include="../../Assets/Scripts/Core/HotPathAlloc.cs" />
     <Compile Include="../../Assets/Scripts/Core/FrameMeter.cs" />
     <Compile Include="../../Assets/Scripts/Core/FrameBudget.cs" />
@@ -135,5 +155,6 @@
     <Compile Include="../../Assets/Scripts/Match/MatchBook.cs" />
     <Compile Include="../../Assets/Scripts/Match/MatchHighlight.cs" />
     <Compile Include="../../Assets/Scripts/Match/MatchStatsProof.cs" />
+    <Compile Include="../../Assets/Scripts/Profiles/LocalProfiles.cs" />
   </ItemGroup>
 </Project>

@@ -20,9 +20,9 @@ namespace TagArena.Movement
         public LayerMask wallMask = ~0;
 
         [Header("Ground speeds (m/s)")]
-        public float walkSpeed = 6.0f;
-        public float sprintSpeed = 12.0f;
-        public float crouchSpeed = 3.2f;
+        public float walkSpeed = 6.9f;
+        public float sprintSpeed = 13.8f;
+        public float crouchSpeed = 3.68f;
         public float groundAccel = 52f;
         public float groundDecel = 38f;
         public float slideEntrySpeed = 7.5f;
@@ -50,10 +50,10 @@ namespace TagArena.Movement
         public float jumpFatigueWindow = 0.75f;
         public float jumpFatigueFullAt = 0.15f;
         public float gravity = 22f;
-        public float fallGravityMult = 1.50f;
+        public float fallGravityMult = 1.62f;
         /// <summary>While airborne + crouch held, fall gravity is multiplied by this.</summary>
         public float airCrouchFallMult = 2.0f;
-        public float maxFallSpeed = 52f;
+        public float maxFallSpeed = 56.16f;
         public float landStunSpeed = 28f;
         public float landStunDuration = 0.20f;
 
@@ -64,7 +64,7 @@ namespace TagArena.Movement
         /// Wish speed is the ground gait. Only the component along the held keys is capped,
         /// so a turned strafe can exceed sprint. A straight wish does not pull a walk up to sprint.
         /// </summary>
-        public float airSpeedCap = 12.0f;
+        public float airSpeedCap = 13.8f;
         public float airStrafeBonus = 1.35f;
         public float tapStrafeImpulse = 9.5f;
         public float tapStrafeCooldown = 0.08f;

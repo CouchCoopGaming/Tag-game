@@ -113,7 +113,12 @@ namespace Tag.Art
             mesh.fontSize = 48;
         }
 
-        void Start()
+        void WarmStyle()
+        {
+            if (_itStyle == null) BootStyle();
+        }
+
+        void BootStyle()
         {
             _itStyle = new GUIStyle(GUI.skin.label)
             {
@@ -187,7 +192,9 @@ namespace Tag.Art
             int pal = 0;
             if (GameSettings.Current != null)
                 pal = GameSettings.Current.PaletteOf(_shape);
-            AccessibilityPalette.It(pal, out float ir, out float ig, out float ib);
+            int crown = Tag.Profiles.LocalProfiles.SeatColor(_shape);
+            if (crown < 0) crown = _shape;
+            AccessibilityPalette.ItAgainst(pal, crown, out float ir, out float ig, out float ib);
             Color itCol = new Color(ir, ig, ib, 1f);
             if (_light != null)
             {
@@ -331,6 +338,7 @@ namespace Tag.Art
 
         void OnGUI()
         {
+            WarmStyle();
             if (_it == null || !_it.IsIt || !_it.IsAlive) return;
             var modes = TagModeController.Instance;
             if (modes != null && modes.Phase != MatchPhase.Playing && modes.Phase != MatchPhase.PostRound)
@@ -366,9 +374,11 @@ namespace Tag.Art
             if (GameSettings.Current != null)
             {
                 pal = GameSettings.Current.PaletteOf(_shape);
-                hud = GameSettings.Current.HudScale;
+                hud = Tag.Profiles.LocalProfiles.TextScale(_shape);
             }
-            AccessibilityPalette.It(pal, out float ir, out float ig, out float ib);
+            int crown = Tag.Profiles.LocalProfiles.SeatColor(_shape);
+            if (crown < 0) crown = _shape;
+            AccessibilityPalette.ItAgainst(pal, crown, out float ir, out float ig, out float ib);
             GUI.color = new Color(ir, ig, ib, 1f);
             float inset = 5f;
             GUI.DrawTexture(new Rect(x + inset, y + inset, mark - inset * 2f, mark - inset * 2f), Texture2D.whiteTexture);
@@ -377,7 +387,15 @@ namespace Tag.Art
             _itStyle.fontSize = (int)((Screen.height >= 1000 ? 14 : 12) * hud);
             _itStyle.normal.textColor = new Color(0.08f, 0.08f, 0.1f, 1f);
             GUI.Label(new Rect(x, y, mark, mark * 0.46f), AccessibilityPalette.ItGlyph, _itStyle);
-            GUI.Label(new Rect(x, y + mark * 0.40f, mark, mark * 0.60f), "IT", _itStyle);
+            GUI.Label(new Rect(x, y + mark * 0.40f, mark, mark * 0.60f), Tag.Profiles.LocalProfiles.ItLabel(_shape), _itStyle);
+            int swatch = Tag.Profiles.LocalProfiles.SeatColor(_shape);
+            if (swatch < 0) swatch = _shape;
+            AccessibilityPalette.Player(pal, swatch, out float pr, out float pg, out float pb);
+            if (_plateName != null && _plateName.Length > 0)
+            {
+                _itStyle.normal.textColor = new Color(pr, pg, pb, 1f);
+                GUI.Label(new Rect(x - 20f, y + mark, mark + 40f, 16f), _plateName, _itStyle);
+            }
             if (off)
             {
                 float rawX = sp.x;
@@ -388,7 +406,7 @@ namespace Tag.Art
                 var pivot = new Vector2(x + mark * 0.5f, y + mark + 8f);
                 Matrix4x4 matrix = GUI.matrix;
                 GUIUtility.RotateAroundPivot(ang, pivot);
-                _itStyle.normal.textColor = Color.white;
+                _itStyle.normal.textColor = new Color(pr, pg, pb, 1f);
                 GUI.Label(new Rect(pivot.x - 12f, pivot.y - 10f, 24f, 20f), "▲", _itStyle);
                 GUI.matrix = matrix;
             }

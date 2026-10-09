@@ -156,7 +156,6 @@ namespace Tag.Modes
 
         void Start()
         {
-            BootHudStyles();
             if (autoFindPlayers) RefreshPlayers();
             EnsurePromptHud();
             if (FindFirstObjectByType<GameFlow>() == null)
@@ -193,6 +192,11 @@ namespace Tag.Modes
                     p.gameObject.AddComponent<PlayPromptHud>();
                 return;
             }
+        }
+
+        void WarmHudStyles()
+        {
+            if (_countStyle == null) BootHudStyles();
         }
 
         void BootHudStyles()
@@ -392,7 +396,11 @@ namespace Tag.Modes
             Debug.Log($"[TagMode] Countdown {_phaseTimer:0}s -> {selectedMode} ({_ctx.Players.Count}p)");
         }
 
-        public void Rematch() => StartRound(selectedMode);
+        public void Rematch()
+        {
+            FrontLive.BeginMatch();
+            StartRound(selectedMode);
+        }
 
         void BeginPlaying()
         {
@@ -461,7 +469,7 @@ namespace Tag.Modes
                 Vector3 pad = new Vector3(x, y, z);
                 var motor = p.GetComponent<PlayerMotor>();
                 if (motor != null)
-                    motor.Place(pad);
+                    motor.Place(pad, "spawn-safe");
                 else
                     p.transform.position = pad;
             }
@@ -801,7 +809,7 @@ namespace Tag.Modes
                 var motor = p.GetComponent<PlayerMotor>();
                 if (motor != null)
                 {
-                    motor.Place(pad);
+                    motor.Place(pad, "round-start");
                     continue;
                 }
                 var rb = p.GetComponent<Rigidbody>();
@@ -1322,6 +1330,7 @@ namespace Tag.Modes
 
         void OnGUI()
         {
+            WarmHudStyles();
             MinimapHud.Draw();
             if (_localPaused)
             {

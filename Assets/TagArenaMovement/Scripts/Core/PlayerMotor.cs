@@ -38,6 +38,9 @@ namespace TagArena.Movement
         public float SuperGlideT { get; private set; } = -1f;
         public Vector3 WallNormal => _probe.Wall.normal;
         public bool WallLeft => _probe.Wall.left;
+        /// <summary>Visual lip only. The mantle timer and the stand point write are unchanged.</summary>
+        public bool LedgeHit => _probe != null && _probe.Ledge.hit;
+        public Vector3 LedgeStand => _probe != null ? _probe.Ledge.standPoint : Vector3.zero;
         /// <summary>Seconds of cling-release grace still running. The pose reads this. The timer is not written here.</summary>
         public float ClingGraceRemaining => _clingGrace;
         /// <summary>True when a cling into the face just left is refused. The pose reads this.</summary>
@@ -83,7 +86,7 @@ namespace TagArena.Movement
             State == MoveState.Mantle && cfg != null
                 ? Mathf.Clamp01(_mantleT / Mathf.Max(0.01f, cfg.mantleDuration))
                 : 0f;
-        public float SprintSpeed => cfg != null ? cfg.sprintSpeed : 12f;
+        public float SprintSpeed => cfg != null ? cfg.sprintSpeed : 13.8f;
         /// <summary>Downward speed (m/s) latched on the most recent ground contact.</summary>
         public float LastLandImpactSpeed => _lastLandImpactSpeed;
 
@@ -115,6 +118,7 @@ namespace TagArena.Movement
         SameWallLimit.Face _attachedFace;
         bool _clingRefused;
         float _mantleT;
+        float _mantleEntryPlanar;
         Vector3 _mantleFrom;
         Vector3 _mantleTo;
         Vector3 _mantleFwd;
@@ -165,6 +169,8 @@ namespace TagArena.Movement
         public event System.Action OnWallBounced;
         public event System.Action OnSuperGlide;
         public event System.Action OnMantle;
+        /// <summary>Kill-box and practice restart. 0 hides the mesh. The pad position is already final.</summary>
+        public float VisualBlinkAge = 10f;
         public event System.Action OnTaggedSomeone;
         public event System.Action OnBecameIt;
 
@@ -298,6 +304,8 @@ namespace TagArena.Movement
 
             float dt = Time.deltaTime;
             if (dt <= 0f) return;
+            if (VisualBlinkAge < Tag.Art.RespawnBlink.Seconds)
+                VisualBlinkAge += dt;
             _grappleYieldDash = false;
             ResolveGrapple();
             TickTimers(dt);
@@ -363,7 +371,8 @@ namespace TagArena.Movement
 
             _clingRefused = EvaluateClingRefused(wish);
             v = ClampAndDrag(v, dt);
-            if (_speedBoostMul > 1.001f && _mode != Locomotion.LandStun && _mode != Locomotion.Slide)
+            if (_speedBoostMul > 1.001f && _mode != Locomotion.LandStun && _mode != Locomotion.Slide
+                && _mode != Locomotion.Vault)
             {
                 Vector3 hv = WishAccel.Horizontal(v) * _speedBoostMul;
                 v = WishAccel.SetHoriz(v, hv);
@@ -449,6 +458,13 @@ namespace TagArena.Movement
             if (grapple == null || !grapple.TryGetRope(out Vector3 anchor, out float length, out float slack))
                 return v;
             Vector3 hv = KinematicStep.GrappleHorizontal(WishAccel.Horizontal(v), transform.position, anchor, length, slack);
+            if (grapple.Pulling)
+            {
+                Vector3 to = anchor - transform.position;
+                to.y = 0f;
+                if (to.sqrMagnitude > 0.16f)
+                    hv = to.normalized * ExperimentalGrapple.PullSpeed;
+            }
             return WishAccel.SetHoriz(v, hv);
         }
 
@@ -1055,6 +1071,7 @@ namespace TagArena.Movement
         void BeginMantle()
         {
             _mantleT = 0f;
+            _mantleEntryPlanar = HorizSpeed;
             _mantleFrom = transform.position;
             // Nudge onto the deck along wall normal - 5cm clipped Mega_/rail colliders.
             Vector3 n = Vector3.ProjectOnPlane(_probe.Ledge.wallNormal, Vector3.up);
@@ -1081,7 +1098,11 @@ namespace TagArena.Movement
             float rise = Mathf.Max(0.15f, _mantleTo.y - _mantleFrom.y);
             Vector3 mid = _mantleFrom + Vector3.up * (rise * 0.55f);
             Vector3 pullTarget = mid + (_mantleTo - _mantleFrom) * 0.4f;
-            Vector3 settleTarget = _mantleTo + fwd * cfg.mantleForward;
+            // The arc ends on the stand point. The old settle overshot, then the
+            // last frame wrote 0.25 of that push and the mesh popped backward.
+            // Duration and the exit speed are unchanged.
+            Vector3 stand = _mantleTo + fwd * cfg.mantleForward * 0.25f;
+            Vector3 settleTarget = stand;
             Vector3 pos = u < 0.55f
                 ? Vector3.Lerp(_mantleFrom, pullTarget, s)
                 : Vector3.Lerp(pullTarget, settleTarget, (u - 0.55f) / 0.45f);
@@ -1105,8 +1126,10 @@ namespace TagArena.Movement
 
             if (u >= 1f)
             {
-                transform.position = _mantleTo + fwd * cfg.mantleForward * 0.25f;
-                v = fwd * Mathf.Max(cfg.walkSpeed, HorizSpeed * 0.4f);
+                transform.position = stand;
+                // Keep the speed you had when the vault started. The chase
+                // velocity along the way is the animation, not a launch.
+                v = fwd * Mathf.Max(cfg.walkSpeed, _mantleEntryPlanar);
                 SetState(MoveState.Idle);
             }
             return v;
@@ -1429,6 +1452,13 @@ namespace TagArena.Movement
             _jumpSlot = 0f;
             _wallJumpSlot = 0f;
             _clingGrace = 0f;
+            _stagger = default;
+            _wallRunT = 0f;
+            _slideT = 0f;
+            _climbT = 0f;
+            if (State == MoveState.WallRun || State == MoveState.WallClimb || State == MoveState.Slide
+                || State == MoveState.Mantle || _mode == Locomotion.AirDash)
+                SetState(MoveState.Idle);
         }
 
         /// <summary>Zip, pad arc, lunge, and air dash drop. Ground velocity is left for the caller.</summary>
@@ -1457,11 +1487,20 @@ namespace TagArena.Movement
         /// Snap the pawn. CharacterController ignores a transform write while it is enabled,
         /// so the capsule is toggled around the move. Velocity and both jump slots die.
         /// </summary>
-        public void Place(Vector3 worldPos)
+        public void Place(Vector3 worldPos) => Place(worldPos, "snap");
+
+        /// <summary>
+        /// Snap the pawn and say why. Kill-plane falls are the only surprise
+        /// return. Spawn, arena, and practice restarts are intentional.
+        /// </summary>
+        public void Place(Vector3 worldPos, string reason)
         {
             Halt();
+            if (reason == "kill-plane" || reason == "practice-restart")
+                VisualBlinkAge = 0f;
             if (_cc != null) _cc.enabled = false;
             transform.position = worldPos;
+            Debug.Log("snap " + (string.IsNullOrEmpty(reason) ? "snap" : reason) + " " + worldPos.ToString("F1"));
             if (_rb != null)
             {
                 ClearDynamicVelocity(_rb);

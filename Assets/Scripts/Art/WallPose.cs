@@ -151,12 +151,122 @@ namespace Tag.Art
         }
 
         /// <summary>
+        /// Hands up to the wall, chest not on it yet. The still plant is <see cref="Hold"/>.
+        /// Nothing here writes velocity or the root.
+        /// </summary>
+        public static Sample Entry()
+        {
+            return new Sample
+            {
+                ThighL = 28f,
+                ThighR = 22f,
+                KneeL = -40f,
+                KneeR = -34f,
+                ArmPitchL = -78f,
+                ArmPitchR = -70f,
+                ArmYawL = 22f,
+                ArmYawR = -18f,
+                ElbowL = -28f,
+                ElbowR = -24f,
+                Hip = 4f,
+                Spine = 6f,
+                Head = -10f,
+                LeanZ = 0f,
+                FootL = 8f,
+                FootR = 8f,
+            };
+        }
+
+        /// <summary>Both hands planted. A cling with almost no vertical speed. Not a reach and not a drag.</summary>
+        public static Sample Hold()
+        {
+            return new Sample
+            {
+                ThighL = 62f,
+                ThighR = 58f,
+                KneeL = -78f,
+                KneeR = -72f,
+                ArmPitchL = -96f,
+                ArmPitchR = -92f,
+                ArmYawL = 10f,
+                ArmYawR = -10f,
+                ElbowL = -36f,
+                ElbowR = -36f,
+                Hip = 10f,
+                Spine = 16f,
+                Head = -18f,
+                LeanZ = 0f,
+                FootL = 10f,
+                FootR = 10f,
+            };
+        }
+
+        /// <summary>1 at rest, 0 once the climb or the slip is clearly moving. Endpoints of the cycle stay put.</summary>
+        public static float HoldWeight(float verticalSpeed)
+        {
+            float a = verticalSpeed < 0f ? -verticalSpeed : verticalSpeed;
+            if (a >= 1.8f) return 0f;
+            if (a <= 0.2f) return 1f;
+            float u = (a - 0.2f) / 1.6f;
+            float s = u * u * (3f - 2f * u);
+            return 1f - s;
+        }
+
+        /// <summary>
+        /// Keeps ±1 so a full reach is still a full reach, and spends the middle of the
+        /// cycle on that plant instead of a halfway hand.
+        /// </summary>
+        public static float PlantShape(float phaseSin)
+        {
+            float s = phaseSin;
+            if (s > 1f) s = 1f;
+            if (s < -1f) s = -1f;
+            float a = s < 0f ? -s : s;
+            float u;
+            if (a <= 0.18f) u = 0f;
+            else if (a >= 0.62f) u = 1f;
+            else
+            {
+                float t = (a - 0.18f) / 0.44f;
+                u = t * t * (3f - 2f * t);
+            }
+            return s < 0f ? -u : u;
+        }
+
+        public static Sample Mix(Sample a, Sample b, float t)
+        {
+            if (t <= 0f) return a;
+            if (t >= 1f) return b;
+            return new Sample
+            {
+                ThighL = a.ThighL + (b.ThighL - a.ThighL) * t,
+                ThighR = a.ThighR + (b.ThighR - a.ThighR) * t,
+                KneeL = a.KneeL + (b.KneeL - a.KneeL) * t,
+                KneeR = a.KneeR + (b.KneeR - a.KneeR) * t,
+                ArmPitchL = a.ArmPitchL + (b.ArmPitchL - a.ArmPitchL) * t,
+                ArmPitchR = a.ArmPitchR + (b.ArmPitchR - a.ArmPitchR) * t,
+                ArmYawL = a.ArmYawL + (b.ArmYawL - a.ArmYawL) * t,
+                ArmYawR = a.ArmYawR + (b.ArmYawR - a.ArmYawR) * t,
+                ElbowL = a.ElbowL + (b.ElbowL - a.ElbowL) * t,
+                ElbowR = a.ElbowR + (b.ElbowR - a.ElbowR) * t,
+                Hip = a.Hip + (b.Hip - a.Hip) * t,
+                Spine = a.Spine + (b.Spine - a.Spine) * t,
+                Head = a.Head + (b.Head - a.Head) * t,
+                LeanZ = a.LeanZ + (b.LeanZ - a.LeanZ) * t,
+                FootL = a.FootL + (b.FootL - a.FootL) * t,
+                FootR = a.FootR + (b.FootR - a.FootR) * t,
+            };
+        }
+
+        /// <summary>
         /// Hand-over-hand. phaseSin +1 reaches with the left hand and drives the right knee.
+        /// The plant holds near each extreme. A near-zero vertical speed is the cling hold.
         /// Slip weight pulls both hands down into the drag.
         /// </summary>
         public static Sample Climb(float phaseSin, float verticalSpeed)
         {
-            float reachL = (phaseSin + 1f) * 0.5f;
+            float shaped = PlantShape(phaseSin);
+            float reachL = (shaped + 1f) * 0.5f;
             float reachR = 1f - reachL;
             float slip = SlipWeight(verticalSpeed);
             float pitchL = Mathf.Lerp(Mathf.Lerp(PullPitch, ClimbReachPitch, reachL), DragPitch + DragAlt * phaseSin, slip);
@@ -171,7 +281,7 @@ namespace Tag.Art
             float thighR = Mathf.Lerp(Mathf.Lerp(PlantThigh, DriveThigh, driveR), DragThigh - DragAlt * phaseSin, slip);
             float kneeL = Mathf.Lerp(Mathf.Lerp(PlantKnee, DriveKnee, driveL), DragKnee, slip);
             float kneeR = Mathf.Lerp(Mathf.Lerp(PlantKnee, DriveKnee, driveR), DragKnee, slip);
-            return new Sample
+            Sample moving = new Sample
             {
                 ThighL = thighL,
                 ThighR = thighR,
@@ -190,6 +300,9 @@ namespace Tag.Art
                 FootL = Mathf.Lerp(12f, 8f, slip),
                 FootR = Mathf.Lerp(12f, 8f, slip),
             };
+            float hold = HoldWeight(verticalSpeed);
+            if (hold <= 0.0001f) return moving;
+            return Mix(moving, Hold(), hold);
         }
 
         /// <summary>
@@ -210,8 +323,15 @@ namespace Tag.Art
             if (along > 1f) along = 1f;
             float outerPitch = Mathf.Lerp(OuterFwdPitch, OuterBackPitch, along);
             float outerElbow = Mathf.Lerp(OuterFwdElbow, OuterBackElbow, along);
-            float thighL = wallLeft ? legs.ThighL * 0.72f : legs.ThighL;
-            float thighR = wallLeft ? legs.ThighR : legs.ThighR * 0.72f;
+            // The inner swing stays tucked. The planted foot keeps the full step,
+            // plus a short toe-off, so a 9.5 wall run does not skate.
+            const float pi = 3.14159265f;
+            float cL = Mathf.Cos(phase);
+            float cR = Mathf.Cos(phase + pi);
+            float tuckL = wallLeft && cL > 0f ? 0.72f : 1f;
+            float tuckR = !wallLeft && cR > 0f ? 0.72f : 1f;
+            float thighL = legs.ThighL * tuckL - FootSlide.WallTrail(legs.ThighL * tuckL);
+            float thighR = legs.ThighR * tuckR - FootSlide.WallTrail(legs.ThighR * tuckR);
             float kneeL = legs.KneeL;
             float kneeR = legs.KneeR;
             float footL = wallLeft ? 6f : GaitBlend.SoleLevelDeg(thighL, kneeL);
@@ -552,6 +672,18 @@ namespace Tag.Art
             if (Mathf.Abs(runL.LeanZ - fall.LeanZ) < 14f) return false;
             if (RunTilt < 15f || RunTilt > 20f) return false;
             if (Mathf.Abs(RunCadenceFull - GaitBlend.CadenceAt(WallRunSpeedRef)) > 0.2f) return false;
+            if (Mathf.Abs(PlantShape(1f) - 1f) > 0.001f || Mathf.Abs(PlantShape(-1f) + 1f) > 0.001f) return false;
+            if (HoldWeight(ClimbSpeedRef) > 0.0001f || HoldWeight(-SlipSpeedRef) > 0.0001f) return false;
+            if (HoldWeight(0f) < 0.999f) return false;
+            Sample plant = Hold();
+            Sample still = Climb(0.2f, 0f);
+            if (Mathf.Abs(still.ArmPitchL - plant.ArmPitchL) > 0.05f) return false;
+            if (Mathf.Abs(still.ThighL - plant.ThighL) > 0.05f) return false;
+            Sample enter = Entry();
+            if (enter.ArmPitchL > -60f || enter.ArmPitchR > -60f) return false;
+            if (Mathf.Abs(enter.ArmPitchL - plant.ArmPitchL) < 8f) return false;
+            Sample slipped = Climb(-0.4f, -SlipSpeedRef);
+            if (Mathf.Abs(slipped.ArmPitchL - drag.ArmPitchL) < 1f && Mathf.Abs(slipped.ArmPitchR - drag.ArmPitchR) < 1f) return false;
             return true;
         }
 

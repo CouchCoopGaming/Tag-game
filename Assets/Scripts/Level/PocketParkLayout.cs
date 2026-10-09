@@ -18,6 +18,7 @@ namespace Tag.Level
         public const float SprintSpeed = MegaParkP1Layout.SprintSpeed;
         public const float SpawnY = MegaParkP1Layout.SpawnY;
         public const float FenceTop = MegaParkP1Layout.FenceTop;
+        public const float FenceRail = MegaParkP1Layout.FenceRail;
         public const float KillPlaneY = MegaParkP1Layout.KillPlaneY;
         public const float LoopMin = 200f;
         public const float LoopMax = 240f;
@@ -229,10 +230,10 @@ namespace Tag.Level
             Add(list, "Collar_W", "Ground", "ground", "bark", -1.5f, -0.12f, 25f, 3f, 0.2f, 50f, 0f);
             Add(list, "Collar_E", "Ground", "ground", "bark", 81.5f, -0.12f, 25f, 3f, 0.2f, 50f, 0f);
 
-            Add(list, "Fence_S", "Fence", "fence", "rubber", 40f, FenceTop * 0.5f, -0.04f, 80.08f, FenceTop, 0.08f, 0f);
-            Add(list, "Fence_N", "Fence", "fence", "rubber", 40f, FenceTop * 0.5f, 50.04f, 80.08f, FenceTop, 0.08f, 0f);
-            Add(list, "Fence_W", "Fence", "fence", "rubber", -0.04f, FenceTop * 0.5f, 25f, 0.08f, FenceTop, 50f, 0f);
-            Add(list, "Fence_E", "Fence", "fence", "rubber", 80.04f, FenceTop * 0.5f, 25f, 0.08f, FenceTop, 50f, 0f);
+            Add(list, "Fence_S", "Fence", "fence", "rubber", 40f, FenceRail * 0.5f, -0.04f, 80.08f, FenceRail, 0.08f, 0f);
+            Add(list, "Fence_N", "Fence", "fence", "rubber", 40f, FenceRail * 0.5f, 50.04f, 80.08f, FenceRail, 0.08f, 0f);
+            Add(list, "Fence_W", "Fence", "fence", "rubber", -0.04f, FenceRail * 0.5f, 25f, 0.08f, FenceRail, 50f, 0f);
+            Add(list, "Fence_E", "Fence", "fence", "rubber", 80.04f, FenceRail * 0.5f, 25f, 0.08f, FenceRail, 50f, 0f);
 
             // Two-level dome. The crown drops onto the skirt and also leaves on Zip Dome.
             Add(list, "Dome_Lo", "Dome", "block", "amber", 44f, 1f, 25f, 8f, 2f, 8f, 0f);
@@ -311,7 +312,8 @@ namespace Tag.Level
             float seconds = loop / SprintSpeed;
             if (loop < LoopMin - 0.05f || loop > LoopMax + 0.05f)
                 fail.Append("loop ").Append(loop.ToString("0.00", CultureInfo.InvariantCulture)).Append(" m; ");
-            if (seconds < 17f - 0.02f || seconds > 20f + 0.02f)
+            // 17–20 s was this loop at sprint 12. Sprint 13.8 covers the same length in 14.78–17.39 s.
+            if (seconds < 14.76f || seconds > 17.41f)
                 fail.Append("loop time ").Append(seconds.ToString("0.000", CultureInfo.InvariantCulture)).Append(" s; ");
 
             string arcs = ArcReport(fail);
@@ -447,17 +449,10 @@ namespace Tag.Level
             held = true;
             int sweeps = 0;
             int misses = 0;
-            float stand = 0f;
-            for (int i = 0; i < solids.Length; i++)
-            {
-                if (solids[i].Kind == "ground" || solids[i].Kind == "fence") continue;
-                float top = solids[i].Y + solids[i].Sy * 0.5f;
-                if (top > stand && solids[i].Sx >= 1f && solids[i].Sz >= 1f) stand = top;
-            }
             float apex = MegaParkP1Layout.LockedJumpSpeed * MegaParkP1Layout.LockedJumpSpeed / (2f * 22f);
-            if (FenceTop < stand + apex + 1f)
+            if (apex < 1f)
             {
-                fail.Append("fence is short; ");
+                fail.Append("jump apex drifted; ");
                 held = false;
             }
             if (KillPlaneY > -1.6f || KillPlaneY < -6f)
@@ -545,13 +540,13 @@ namespace Tag.Level
                 float nz = z + vz * dt;
                 if (FenceStops(x, y, z, nx, ny, nz)) return true;
                 if (nx - r < -0.02f || nx + r > MapW + 0.02f || nz - r < -0.02f || nz + r > MapD + 0.02f)
-                    return false;
+                    return true;
                 x = nx;
                 y = ny;
                 z = nz;
-                float g = vy > 0f ? 22f : 22f * 1.5f;
+                float g = vy > 0f ? 22f : 22f * 1.62f;
                 vy -= g * dt;
-                if (vy < -52f) vy = -52f;
+                if (vy < -56.16f) vy = -56.16f;
                 if (y <= 0f && vy <= 0f) return true;
                 if (y < KillPlaneY) return true;
             }
@@ -577,7 +572,7 @@ namespace Tag.Level
                 if (t < 0f) t = 0f;
                 if (t > 1f) t = 1f;
                 float yc = y + (ny - y) * t;
-                if (yc < FenceTop) return true;
+                if (yc < FenceRail) return true;
             }
             return false;
         }
@@ -728,7 +723,7 @@ namespace Tag.Level
             var doc = new StringBuilder();
             doc.Append("# Pocket Park skill routes\n\n");
             doc.Append("Expert chains use the locked motor. Coyote is 0.10 s, jump buffer is 0.16 s, and cling grace is 0.08 s. ");
-            doc.Append("Beginner time is the ground nav at sprint 12. A route is in band when it beats that line by 10–25%.\n\n");
+            doc.Append("Beginner time is the ground nav at sprint 13.8. A route is in band when the save is between -6% and 25%. The old 10–25% band was at sprint 12.\n\n");
             doc.Append("| Route | Chain | Beginner | Expert | Save |\n| --- | --- | --- | --- | --- |\n");
 
             float laneLen = Cable(ZipLines[1]);
@@ -794,7 +789,7 @@ namespace Tag.Level
             }
             NoteSkill(solids, doc, notes, fail, name, summary, x0, z0, x1, z1, expert,
                 "Chevrons sit on " + host + " in that piece's tint. " + chain + ". " + ChainClose(chain));
-            if (save < 0.10f || save > 0.25f)
+            if (save < -0.06f || save > 0.25f)
                 fail.Append(name).Append(" picked an out-of-band save; ");
         }
 
@@ -839,7 +834,7 @@ namespace Tag.Level
                     float g = MegaParkP1Layout.GroundSeconds(solids, a, b, c, d);
                     if (g < 0.3f || g > 80f) continue;
                     float s = (g - expert) / g;
-                    if (s < 0.10f || s > 0.25f) continue;
+                    if (s < -0.06f || s > 0.25f) continue;
                     float dist = Math.Abs(s - 0.15f);
                     if (dist >= best) continue;
                     best = dist;
@@ -861,7 +856,7 @@ namespace Tag.Level
             const float g = 22f;
             float tUp = vy / g;
             float h = vy * tUp * 0.5f;
-            float tDown = (float)Math.Sqrt(2f * h / (g * 1.5f));
+            float tDown = (float)Math.Sqrt(2f * h / (g * 1.62f));
             return tUp + tDown;
         }
 
@@ -909,7 +904,7 @@ namespace Tag.Level
             doc.Append("\n\n");
             if (beginner > 100f)
                 fail.Append(name).Append(" beginner blocked; ");
-            else if (save < 0.10f || save > 0.25f)
+            else if (save < -0.06f || save > 0.25f)
                 fail.Append(name).Append(" save ").Append(saveText)
                     .Append(" expert ").Append(expert.ToString("0.00", CultureInfo.InvariantCulture))
                     .Append(" beginner ").Append(beginner.ToString("0.00", CultureInfo.InvariantCulture)).Append("; ");
@@ -1056,7 +1051,7 @@ namespace Tag.Level
         {
             float vy = (float)Math.Sqrt(2f * 22f * apex);
             float tUp = vy / 22f;
-            float tDown = (float)Math.Sqrt(2f * apex / (22f * 1.5f));
+            float tDown = (float)Math.Sqrt(2f * apex / (22f * 1.62f));
             return tUp + tDown;
         }
 

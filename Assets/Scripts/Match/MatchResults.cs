@@ -27,9 +27,30 @@ namespace Tag.MatchStats
             int awards = MatchBook.AwardCount;
             for (int a = 0; a < awards; a++)
             {
-                GUI.Label(new Rect(x + 12f, ay, w - 24f, awardSize + 10f), MatchBook.AwardLine[a] ?? "", _style);
-                ay += awardSize + 8f;
+                int leader = 0;
+                int mask = MatchBook.AwardMask[a];
+                for (int bit = 0; bit < MatchBook.Cap; bit++)
+                {
+                    if ((mask & (1 << bit)) != 0)
+                    {
+                        leader = bit;
+                        break;
+                    }
+                }
+                int awardSwatch = Tag.Profiles.LocalProfiles.SeatColor(leader);
+                if (awardSwatch < 0) awardSwatch = leader & 3;
+                int awardPalette = 0;
+                if (GameSettings.Current != null)
+                    awardPalette = GameSettings.Current.PaletteOf(leader < AccessibilityPalette.Players ? leader : 0);
+                AccessibilityPalette.Player(awardPalette, awardSwatch, out float ar, out float ag, out float ab);
+                _style.normal.textColor = new Color(ar, ag, ab, 1f);
+                string awardText = MatchBook.AwardLine[a] ?? "";
+                int awardRows = MatchBook.AwardRows(awardText, w - 24f, awardSize);
+                float awardH = awardRows * (awardSize + 4f);
+                GUI.Label(new Rect(x + 12f, ay, w - 24f, awardH), awardText, _style);
+                ay += awardH + 8f;
             }
+            _style.normal.textColor = Color.white;
             int n = MatchBook.Count;
             int cols = n < 4 ? n : 4;
             if (cols < 1) cols = 1;
@@ -50,7 +71,9 @@ namespace Tag.MatchStats
                 int palette = 0;
                 if (GameSettings.Current != null)
                     palette = GameSettings.Current.PaletteOf(seat);
-                AccessibilityPalette.Player(palette, i & 3, out float r, out float g, out float b);
+                int swatch = Tag.Profiles.LocalProfiles.SeatColor(i);
+                if (swatch < 0) swatch = i & 3;
+                AccessibilityPalette.Player(palette, swatch, out float r, out float g, out float b);
                 _style.normal.textColor = new Color(r, g, b, 1f);
                 GUI.Box(new Rect(cx, cy, cw, ch), "");
                 GUI.Label(new Rect(cx + 8f, cy + 6f, cw - 16f, ch - 10f), MatchBook.Card[i] ?? "", _style);

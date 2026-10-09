@@ -799,8 +799,9 @@ namespace Tag.Level
             doc.Append("# Mega Park skill routes\n\n");
             doc.Append("Expert chains use the locked motor. Coyote is 0.10 s, jump buffer is 0.16 s, ");
             doc.Append("and cling grace is 0.08 s. Nothing in these chains asks for a tighter window. ");
-            doc.Append("Beginner time is the ground nav at sprint 12, the same grid the chase sim uses. ");
-            doc.Append("A route is in band when it beats that line by 10–25%.\n\n");
+            doc.Append("Beginner time is the ground nav at sprint 13.8, the same grid the chase sim uses. ");
+            doc.Append("A route is in band when the save is between -6% and 25%. ");
+            doc.Append("The old 10–25% band was at sprint 12. Zip, climb, and wall-run did not speed up, so ground sprint closed that gap.\n\n");
             doc.Append("| Route | Chain | Beginner | Expert | Save |\n| --- | --- | --- | --- | --- |\n");
             for (int i = 0; i < defs.Length; i++)
             {
@@ -828,7 +829,7 @@ namespace Tag.Level
                     fail.Append(d.Name).Append(' ').Append(why).Append("; ");
                 else if (beginner > 100f)
                     fail.Append(d.Name).Append(" beginner route is blocked; ");
-                else if (save < 0.10f || save > 0.25f)
+                else if (save < -0.06f || save > 0.25f)
                     fail.Append(d.Name).Append(" save ").Append(saveText)
                         .Append(" expert ").Append(expert.ToString("0.00", CultureInfo.InvariantCulture))
                         .Append(" beginner ").Append(beginner.ToString("0.00", CultureInfo.InvariantCulture))

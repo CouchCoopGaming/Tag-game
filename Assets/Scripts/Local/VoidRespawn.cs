@@ -66,7 +66,7 @@ namespace Tag.Local
             if (_motor != null)
             {
                 _motor.ClearStun();
-                _motor.Place(pad);
+                _motor.Place(pad, "kill-plane");
             }
             else
             {

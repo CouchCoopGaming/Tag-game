@@ -163,6 +163,37 @@ namespace Tag.Settings
             return Gamepad[(int)action] == Template().Gamepad[(int)action];
         }
 
+        public static bool KnownKeyboard(string token)
+        {
+            switch (token)
+            {
+                case "space":
+                case "leftShift":
+                case "rightShift":
+                case "leftCtrl":
+                case "leftAlt":
+                case "escape":
+                case "q":
+                case "e":
+                case "c":
+                case "v":
+                case "f":
+                case "m":
+                case "r":
+                case "p":
+                case "tab":
+                case "alpha1":
+                case "alpha2":
+                case "alpha3":
+                case "mouseLeft":
+                case "mouseRight":
+                case "mouseMiddle":
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
         public bool UsesLegacy(PlayAction action)
         {
             return KeyboardIsDefault(action) && GamepadIsDefault(action);

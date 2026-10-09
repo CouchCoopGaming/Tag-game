@@ -1,6 +1,7 @@
 using System;
 using System.Globalization;
 using System.IO;
+using Tag.Level;
 using UnityEngine;
 
 namespace Tag.Practice
@@ -108,6 +109,22 @@ namespace Tag.Practice
                 if (All[i] != null && All[i].Id == id) return All[i];
             }
             return null;
+        }
+
+        /// <summary>A saved ghost plays only on the arena that route was recorded in.</summary>
+        public static bool Playable(string id, string arena)
+        {
+            if (string.IsNullOrEmpty(id) || string.IsNullOrEmpty(arena)) return false;
+            if (!PracticeGhost.HasReplay(id)) return false;
+            PracticeRoute route = ById(id);
+            return route != null && route.Arena == arena;
+        }
+
+        /// <summary>Arena ids are Mega 0, Pocket 1, and Stack 2.</summary>
+        public static bool Playable(string id, int arena)
+        {
+            if (arena < ParkArena.Mega || arena > ParkArena.Stack) return false;
+            return Playable(id, ParkArena.NameOf(arena));
         }
 
         public static bool Hit(PracticeGate gate, float x, float y, float z)
@@ -245,6 +262,18 @@ namespace Tag.Practice
             if (float.TryParse(obj.Substring(s, e - s), NumberStyles.Float, CultureInfo.InvariantCulture, out float v))
                 return v;
             return 0f;
+        }
+    }
+
+    /// <summary>One checkpoint per sample. Overlapping volumes do not chain in the same tick.</summary>
+    public static class PracticeGates
+    {
+        public static int Step(PracticeGate[] gates, int next, float x, float y, float z, bool verbReady)
+        {
+            if (gates == null || !verbReady) return next;
+            if (next < 0 || next >= gates.Length) return next;
+            if (!PracticeCatalog.Hit(gates[next], x, y, z)) return next;
+            return next + 1;
         }
     }
 

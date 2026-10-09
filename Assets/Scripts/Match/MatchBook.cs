@@ -51,6 +51,7 @@ namespace Tag.MatchStats
         static readonly float[] Pz = new float[Cap];
         static readonly bool[] HasPos = new bool[Cap];
         static readonly float[] Scratch = new float[Cap];
+        static readonly int[] Who = new int[Cap];
         static readonly StringBuilder Sb = new StringBuilder(192);
 
         public static int It = -1;
@@ -84,6 +85,7 @@ namespace Tag.MatchStats
                 TagBacksBlocked[i] = 0;
                 Streak[i] = 0f;
                 HasPos[i] = false;
+                Who[i] = 0;
             }
             for (int i = 0; i < AwardLine.Length; i++)
             {
@@ -117,6 +119,97 @@ namespace Tag.MatchStats
         {
             if (n > Cap) n = Cap;
             if (n > Count) Count = n;
+        }
+
+        /// <summary>
+        /// The live roster. A seat that leaves drops its counters. A new body in
+        /// the same slot does not inherit the previous body's stats. The first
+        /// bind of an empty slot does not wipe a fresh book.
+        /// </summary>
+        public static void SyncRoster(int n, int[] ids)
+        {
+            if (n < 0) n = 0;
+            if (n > Cap) n = Cap;
+            for (int i = n; i < Cap; i++)
+            {
+                if (i < Count || Who[i] != 0)
+                {
+                    ZeroSlot(i);
+                    Who[i] = 0;
+                }
+            }
+            for (int i = 0; i < n; i++)
+            {
+                int id = ids != null && i < ids.Length ? ids[i] : 0;
+                if (Who[i] != 0 && id != 0 && id != Who[i])
+                    ZeroSlot(i);
+                if (id != 0)
+                    Who[i] = id;
+            }
+            Count = n;
+            Sealed = false;
+        }
+
+        /// <summary>Rematch drops the book and the highlight. The next round of the same match does not.</summary>
+        public static void BeginRematch()
+        {
+            ResetMatch();
+            MatchHighlight.Reset();
+        }
+
+        /// <summary>Wrapped award lines. Width is the label, font is the pixel size. No allocation.</summary>
+        public static int AwardRows(string text, float width, int font)
+        {
+            if (string.IsNullOrEmpty(text)) return 1;
+            if (font < 8) font = 8;
+            float charW = font * 0.52f;
+            if (charW < 1f) charW = 1f;
+            if (width < charW) width = charW;
+            int per = (int)(width / charW);
+            if (per < 1) per = 1;
+            int rows = 1;
+            int col = 0;
+            for (int i = 0; i < text.Length; i++)
+            {
+                if (text[i] == '\n')
+                {
+                    rows++;
+                    col = 0;
+                    continue;
+                }
+                col++;
+                if (col > per)
+                {
+                    rows++;
+                    col = 1;
+                }
+            }
+            return rows;
+        }
+
+        static void ZeroSlot(int i)
+        {
+            Name[i] = null;
+            Card[i] = null;
+            TagsMade[i] = 0;
+            TimesTagged[i] = 0;
+            TimeAsIt[i] = 0f;
+            LongestSurvival[i] = 0f;
+            Distance[i] = 0f;
+            TopSpeed[i] = 0f;
+            AirTime[i] = 0f;
+            WallRuns[i] = 0;
+            WallJumps[i] = 0;
+            Pads[i] = 0;
+            Zips[i] = 0;
+            AirDashes[i] = 0;
+            PunchesLanded[i] = 0;
+            PunchesWhiffed[i] = 0;
+            Staggers[i] = 0;
+            NearMisses[i] = 0;
+            TagBacksBlocked[i] = 0;
+            Streak[i] = 0f;
+            HasPos[i] = false;
         }
 
         public static void SetName(int i, string name)

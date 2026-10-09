@@ -12,6 +12,7 @@ namespace TagArena.Movement
     /// Keep raw + consumed flags separate so buffering (jump) is deterministic.
     /// When ExternalControl is true (AI), Read() leaves fields alone so DummyPatrol can drive them.
     /// </summary>
+    [DefaultExecutionOrder(-200)]
     public class PlayerInputReader : MonoBehaviour
     {
         public Vector2 Move;
@@ -67,17 +68,29 @@ namespace TagArena.Movement
         bool _clearSprintOnResume;
         bool _clearClingOnResume;
         bool _couchWasLive;
+        float _kbSpacePrev;
+        int _readSerial = -1;
 
         void Awake()
         {
             ControlBinds.Load();
             airDashKey = ControlBinds.AirDash;
             punchKey = ControlBinds.Punch;
+            SettingsRuntime.ArmInput();
+        }
+
+        void Update()
+        {
+            // Before PunchHitbox and the motor. The motor calls Read again; that call is a no-op.
+            Read();
         }
 
         public void Read()
         {
             if (ExternalControl) return;
+            int serial = Time.frameCount;
+            if (_readSerial == serial) return;
+            _readSerial = serial;
             if (DriveDevice >= 0)
             {
                 ReadDriven();
@@ -120,6 +133,7 @@ namespace TagArena.Movement
                 _prevCrouch = (Input.GetKey(crouchKey) || Input.GetKey(KeyCode.LeftControl)) ? 1f : 0f;
                 _prevJump = jumpPhys ? 1f : 0f;
                 _prevSpace = SpaceHeld() ? 1f : 0f;
+                _kbSpacePrev = _prevSpace;
                 _prevJet = (Input.GetKey(jetKey) || Input.GetMouseButton(1)) ? 1f : 0f;
                 _prevW = Input.GetKey(tapStrafePulseKey);
                 _prevMoveY = Input.GetAxisRaw("Vertical");
@@ -191,6 +205,7 @@ namespace TagArena.Movement
             PunchPressed = Input.GetKeyDown(punchKey) || Input.GetKeyDown(KeyCode.E);
             LookFromGamepad = StickLookActive();
             ApplyReboundOverrides();
+            OrKeyboardSpace();
             if (_swallowResumeJump)
             {
                 JumpPressed = false;
@@ -208,6 +223,8 @@ namespace TagArena.Movement
                 if (!clingPhys && Move.y > 0f) Move.y = 0f;
                 _clearClingOnResume = false;
             }
+
+            ShapeHumanMove();
 
             if (_lookPunchGateFrames > 0 || ResumeInputGate.Blocking)
             {
@@ -237,6 +254,7 @@ namespace TagArena.Movement
             _prevCrouch = (Input.GetKey(crouchKey) || Input.GetKey(KeyCode.LeftControl)) ? 1f : 0f;
             _prevJump = JumpHeldNow() ? 1f : 0f;
             _prevSpace = SpaceHeld() ? 1f : 0f;
+            _kbSpacePrev = _prevSpace;
             _prevJet = (Input.GetKey(jetKey) || Input.GetMouseButton(1)) ? 1f : 0f;
             _prevW = Input.GetKey(tapStrafePulseKey);
             _prevMoveY = Move.y;
@@ -340,6 +358,7 @@ namespace TagArena.Movement
                 PunchPressed = false;
                 TapForwardPulse = false;
                 _couchWasLive = false;
+                _kbSpacePrev = SpaceHeld() ? 1f : 0f;
                 return;
             }
 
@@ -361,16 +380,22 @@ namespace TagArena.Movement
             JumpPressed = jump && _prevJump <= 0f;
             _prevJump = jump ? 1f : 0f;
             _prevSpace = jump ? 1f : 0f;
+            OrKeyboardSpace();
 
             SprintHeld = BindSampler.HeldDevice(binds, PlayAction.Sprint, DriveDevice);
             AirDashPressed = BindSampler.PressedDevice(binds, PlayAction.AirDash, DriveDevice);
             PunchPressed = BindSampler.PressedDevice(binds, PlayAction.Punch, DriveDevice);
+            // Same rope verb. Keyboard seat is RMB. Pad seat is LT. Not a new action.
+            JetHeld = pad ? BindSampler.LeftTriggerHeld(DriveDevice) : BindSampler.MouseRightHeld();
+            JetPressed = JetHeld && _prevJet <= 0f;
+            _prevJet = JetHeld ? 1f : 0f;
             if (BindSampler.HeldDevice(binds, PlayAction.Cling, DriveDevice) && Move.y < 0.85f)
                 Move.y = 1f;
 
             bool forward = Move.y > 0.75f && _prevMoveY <= 0.45f;
             TapForwardPulse = forward;
             _prevMoveY = Move.y;
+            ShapeHumanMove();
 
             if (swallow)
             {
@@ -381,6 +406,26 @@ namespace TagArena.Movement
                 PunchPressed = false;
                 TapForwardPulse = false;
             }
+        }
+
+        /// <summary>
+        /// Keyboard player 1 always jumps on Space, even when Jump was rebound.
+        /// A pad seat never samples the keyboard. The edge is button-only.
+        /// </summary>
+        void OrKeyboardSpace()
+        {
+            if (DriveDevice > 0) return;
+            bool space = SpaceHeld();
+            bool edge = space && _kbSpacePrev <= 0f;
+            _kbSpacePrev = space ? 1f : 0f;
+            if (space) JumpHeld = true;
+            if (edge) JumpPressed = true;
+        }
+
+        void ShapeHumanMove()
+        {
+            if (ExternalControl) return;
+            Move = StickQuality.Shape(Move);
         }
 
         public void ConsumeJumpPress() => JumpPressed = false;

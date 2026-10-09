@@ -28,6 +28,8 @@ namespace Tag.Level
         Material _soft, _pad, _merry, _amber, _swing, _army, _knight, _kick, _hop, _cover, _plate;
         Material _fence, _rail, _horizon, _leaf, _wood, _lamp, _trash, _skyline;
         Material _zbrick, _zwine, _zindigo, _zolive, _zslate, _ztrim;
+        Material _abrick, _aclay, _aindigo, _aolive, _aslate;
+        Material _dbrick, _dclay, _dindigo, _dolive, _dslate;
         Material _spawnSw, _spawnSe, _spawnNw, _spawnNe, _spawnRunS, _spawnRunN;
 
         /// <summary>True after a build whose layout audit passed.</summary>
@@ -121,6 +123,8 @@ namespace Tag.Level
             EnsureRoot();
             Transform solids = BuildSolids();
             Transform ramps = BuildRamps();
+            NoteHiddenColliders(solids);
+            NoteHiddenColliders(ramps);
             Transform paint = BuildPaint();
             Transform spawns = BuildSpawns();
             BuildLoopMarkers();
@@ -215,6 +219,16 @@ namespace Tag.Level
             _zolive = Face("zolive");
             _zslate = Face("zslate");
             _ztrim = Face("ztrim");
+            _abrick = Face("abrick");
+            _aclay = Face("aclay");
+            _aindigo = Face("aindigo");
+            _aolive = Face("aolive");
+            _aslate = Face("aslate");
+            _dbrick = Face("dbrick");
+            _dclay = Face("dclay");
+            _dindigo = Face("dindigo");
+            _dolive = Face("dolive");
+            _dslate = Face("dslate");
             _spawnSw = Make(new Color(0x2E / 255f, 0xC4 / 255f, 0xB6 / 255f), "MEGA_SpawnSW", 0.2f, 0f, "panel");
             _spawnSe = Make(new Color(0xFF / 255f, 0x6B / 255f, 0x6B / 255f), "MEGA_SpawnSE", 0.2f, 0f, "panel");
             _spawnNw = Make(new Color(0x9B / 255f, 0x5D / 255f, 0xE5 / 255f), "MEGA_SpawnNW", 0.2f, 0f, "panel");
@@ -369,6 +383,16 @@ namespace Tag.Level
                 case "zolive": return _zolive;
                 case "zslate": return _zslate;
                 case "ztrim": return _ztrim;
+                case "abrick": return _abrick;
+                case "aclay": return _aclay;
+                case "aindigo": return _aindigo;
+                case "aolive": return _aolive;
+                case "aslate": return _aslate;
+                case "dbrick": return _dbrick;
+                case "dclay": return _dclay;
+                case "dindigo": return _dindigo;
+                case "dolive": return _dolive;
+                case "dslate": return _dslate;
                 default: return _mulch;
             }
         }
@@ -402,10 +426,10 @@ namespace Tag.Level
                 MeshRenderer r = go.GetComponent<MeshRenderer>();
                 if (s.Kind == "fence")
                 {
+                    // Visible rail collider. The cube is FenceRail tall and stays drawn.
                     if (r != null)
-                        r.enabled = false;
+                        r.sharedMaterial = _rail;
                     BuildRailFence(go.transform.parent, s);
-                    BuildFenceShimmer(go.transform.parent, s);
                 }
                 else if (r != null)
                     r.sharedMaterial = Pick(s.Mat);
@@ -482,13 +506,28 @@ namespace Tag.Level
             var drawn = new List<MegaParkP1Layout.RampDraw>();
             var merged = new List<MegaParkP1Layout.Ramp>();
             MegaParkP1Layout.PlanRampColliders(ramps, drawn, merged, out _);
+            if (merged.Count < 0)
+                return null;
             Transform g = Group("Ramps");
             var zones = new Dictionary<string, Transform>();
             for (int i = 0; i < drawn.Count; i++)
-                BuildRamp(Occlusion(g, zones, drawn[i].Ramp.Zone), drawn[i].Ramp, drawn[i].KeepCollider, true);
-            for (int i = 0; i < merged.Count; i++)
-                BuildRamp(Occlusion(g, zones, merged[i].Zone), merged[i], true, false);
+                BuildRamp(Occlusion(g, zones, drawn[i].Ramp.Zone), drawn[i].Ramp, true, true);
+            // The merge plan stays for the audit. Do not spawn a collider that has no renderer.
             return g;
+        }
+
+        static void NoteHiddenColliders(Transform root)
+        {
+            if (root == null) return;
+            Collider[] cols = root.GetComponentsInChildren<Collider>(true);
+            for (int i = 0; i < cols.Length; i++)
+            {
+                Collider col = cols[i];
+                if (col == null || !col.enabled || col.isTrigger) continue;
+                Renderer rend = col.GetComponent<Renderer>();
+                if (rend != null && rend.enabled) continue;
+                Debug.Log("hidden-collider " + col.name);
+            }
         }
 
         void BuildRamp(Transform parent, MegaParkP1Layout.Ramp r, bool keepCollider, bool visible)
@@ -833,7 +872,7 @@ namespace Tag.Level
             sun.transform.rotation = Quaternion.Euler(MegaParkP1Layout.SunPitch, MegaParkP1Layout.SunYaw, 0f);
             RenderSettings.sun = sun;
 
-            RenderSettings.ambientMode = AmbientMode.Trilight;
+            RenderSettings.ambientMode = UnityEngine.Rendering.AmbientMode.Trilight;
             RenderSettings.ambientSkyColor = new Color(MegaParkP1Layout.AmbSkyR, MegaParkP1Layout.AmbSkyG, MegaParkP1Layout.AmbSkyB, 1f);
             RenderSettings.ambientEquatorColor = new Color(MegaParkP1Layout.AmbEqR, MegaParkP1Layout.AmbEqG, MegaParkP1Layout.AmbEqB, 1f);
             RenderSettings.ambientGroundColor = new Color(MegaParkP1Layout.AmbGndR, MegaParkP1Layout.AmbGndG, MegaParkP1Layout.AmbGndB, 1f);
@@ -952,6 +991,8 @@ namespace Tag.Level
             EnsureRoot();
             Transform solids = BuildSolidList(PocketParkLayout.BuildSolids());
             Transform ramps = BuildRampList(PocketParkLayout.BuildRamps());
+            NoteHiddenColliders(solids);
+            NoteHiddenColliders(ramps);
             Transform paint = BuildPocketPaint();
             Transform spawns = BuildSpawnPads(PocketParkLayout.Spawns);
             BuildLoop(PocketParkLayout.LoopCcw);
@@ -1011,6 +1052,8 @@ namespace Tag.Level
             EnsureRoot();
             Transform solids = BuildSolidList(StackYardLayout.BuildSolids());
             Transform ramps = BuildRampList(StackYardLayout.BuildRamps());
+            NoteHiddenColliders(solids);
+            NoteHiddenColliders(ramps);
             Transform paint = BuildStackPaint();
             Transform spawns = BuildSpawnPads(StackYardLayout.Spawns);
             BuildLoop(StackYardLayout.LoopCcw);

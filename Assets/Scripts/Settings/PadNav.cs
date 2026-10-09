@@ -40,7 +40,7 @@ namespace Tag.Settings
             // current only sees whichever pad the runtime last touched, so P2–P4
             // Start never paused the table or opened that seat's settings.
             var pads = Gamepad.all;
-            if (pads != null)
+            if (pads.Count > 0)
             {
                 int n = pads.Count;
                 for (int i = 0; i < n; i++)
@@ -74,14 +74,14 @@ namespace Tag.Settings
                 }
             }
 #endif
-            if (Input.GetKeyDown(KeyCode.JoystickButton0)) Confirm = true;
-            if (Input.GetKeyDown(KeyCode.JoystickButton1)) Back = true;
-            if (Input.GetKeyDown(KeyCode.JoystickButton7))
+            if (UnityEngine.Input.GetKeyDown(KeyCode.JoystickButton0)) Confirm = true;
+            if (UnityEngine.Input.GetKeyDown(KeyCode.JoystickButton1)) Back = true;
+            if (UnityEngine.Input.GetKeyDown(KeyCode.JoystickButton7))
             {
                 Start = true;
                 if (StartDevice == 0) StartDevice = 1;
             }
-            if (Input.GetKeyDown(KeyCode.JoystickButton6)) Select = true;
+            if (UnityEngine.Input.GetKeyDown(KeyCode.JoystickButton6)) Select = true;
         }
     }
 }

@@ -6,8 +6,36 @@ using UnityEngine;
 
 static class Program
 {
-    static int Main()
+    static int Main(string[] args)
     {
+        if (args != null && args.Length > 0 && args[0] == "--pose-keys")
+        {
+            PoseKeyDump.Write(Console.Out);
+            return 0;
+        }
+        if (args != null && args.Length > 0 && args[0] == "--proofs")
+        {
+            Console.WriteLine(Tag.Art.AirFeel.ProofLine());
+            Console.WriteLine(Tag.Art.HandoffFeel.ProofLine());
+            Console.WriteLine(Tag.Art.Handoff2Feel.ProofLine());
+            Console.WriteLine(Tag.Art.BodyLine.ProofLine());
+            Console.WriteLine(Tag.Art.LocoFeel.ProofLine());
+            Console.WriteLine(Tag.Art.VerbPoseClips.SlideProofLine());
+            Console.WriteLine(Tag.Art.VerbPoseClips.PolishProofLine());
+            Console.WriteLine(Tag.Art.VerbPoseClips.PunchTagPolishProofLine());
+            Console.WriteLine(Tag.Art.LaunchPose.ProofLine());
+            Console.WriteLine(Tag.Art.WallPose.ProofLine());
+            Console.WriteLine(Tag.Art.ZipPose.ProofLine());
+            Console.WriteLine(Tag.Art.GrapplePose.ProofLine());
+            Console.WriteLine(Tag.Art.GrapplePose.PolishProofLine());
+            Console.WriteLine(CouchRope.ProofLine());
+            if (!Tag.Art.VerbPoseClips.PolishHolds()) Console.Error.WriteLine("slide pose polish is not held");
+            if (!Tag.Art.VerbPoseClips.PunchTagPolishHolds()) Console.Error.WriteLine("punch tag polish is not held");
+            if (!Tag.Art.Handoff2Feel.Holds()) Console.Error.WriteLine("handoff2 is not held");
+            if (!Tag.Art.LaunchPose.Holds()) Console.Error.WriteLine("launch pose is not held");
+            return 0;
+        }
+
         StrafeJumpReport report = StrafeJumpProof.Run60();
         Console.WriteLine(report.ToString());
         if (!report.Ok)
@@ -499,7 +527,10 @@ static class Program
         if (!Locked(cfg.coyoteTime, 0.10f) || !Locked(cfg.jumpBuffer, 0.16f) || !Locked(cfg.clingReleaseGrace, 0.08f)
             || !Locked(cfg.jumpSpeed, 24.7f) || cfg.slideBoost != 0f
             || !Locked(cfg.airDashDuration, 0.10f) || !Locked(cfg.airDashSpeed, 15f) || !Locked(cfg.airDashCooldown, 30f)
-            || !Locked(cfg.airCrouchFallMult, 2f) || !Locked(cfg.maxFallSpeed, 52f))
+            || !Locked(cfg.airCrouchFallMult, 2f) || !Locked(cfg.maxFallSpeed, 56.16f)
+            || !Locked(cfg.walkSpeed, 6.9f) || !Locked(cfg.sprintSpeed, 13.8f)
+            || !Locked(cfg.crouchSpeed, 3.68f) || !Locked(cfg.airSpeedCap, 13.8f)
+            || !Locked(cfg.fallGravityMult, 1.62f) || !Locked(cfg.gravity, 22f))
         {
             Console.Error.WriteLine("locked feel numbers drifted");
             return 1;
@@ -509,7 +540,9 @@ static class Program
                 "coyoteTime: 0.1", "jumpBuffer: 0.16", "clingReleaseGrace: 0.08",
                 "jumpSpeed: 24.7", "slideBoost: 0", "enableJet: 0",
                 "airDashDuration: 0.1", "airDashSpeed: 15", "airDashCooldown: 30",
-                "airCrouchFallMult: 2", "maxFallSpeed: 52")
+                "airCrouchFallMult: 2", "maxFallSpeed: 56.16",
+                "walkSpeed: 6.9", "sprintSpeed: 13.8", "crouchSpeed: 3.68",
+                "airSpeedCap: 13.8", "fallGravityMult: 1.62", "gravity: 22")
             || !AssetHas("Assets/ScriptableObjects/PunchTagTuning.asset", "reach: 1.55"))
         {
             Console.Error.WriteLine("locked asset numbers drifted");
@@ -608,6 +641,37 @@ static class Program
             return 1;
         }
 
+        Console.WriteLine(CouchRope.ProofLine());
+        if (!CouchRope.Holds())
+        {
+            Console.Error.WriteLine("couch grapple is not on every human seat");
+            return 1;
+        }
+        if (!AssetHas("Assets/Scripts/Local/LocalPlayerSpawner.cs",
+                "SoloGrappleGate.EnableFor",
+                "CouchRope.ForCouchHuman",
+                "enableGrapple = false")
+            || !AssetHas("Assets/Scripts/Experimental/ExperimentalGrapple.cs",
+                "FireButton = \"RMB\"",
+                "enableGrapple = false",
+                "GrappleClick.Window",
+                "GrappleClick.Pull",
+                "OnAttachedPress")
+            || !AssetHas("Assets/TagArenaMovement/Scripts/Input/PlayerInputReader.cs",
+                "BindSampler.LeftTriggerHeld",
+                "BindSampler.MouseRightHeld")
+            || !AssetHas("Assets/Scripts/Settings/BindSampler.cs",
+                "pad.leftTrigger.isPressed"))
+        {
+            Console.Error.WriteLine("couch grapple is not wired to RMB and LT");
+            return 1;
+        }
+        if (!File.Exists(Path.Combine(RepoRoot(), "Docs", "SmoothStills", "pass19", "couch-grapple.png")))
+        {
+            Console.Error.WriteLine("couch grapple still is missing");
+            return 1;
+        }
+
         Tag.Settings.AccessibilityReport access = Tag.Settings.AccessibilityProof.Run();
         Console.WriteLine(access.Line);
         if (!access.Ok)
@@ -648,6 +712,14 @@ static class Program
             return 1;
         }
 
+        Tag.Profiles.LocalProfiles.Report profiles = Tag.Profiles.LocalProfiles.Run();
+        Console.WriteLine(profiles.Line);
+        if (!profiles.Ok)
+        {
+            Console.Error.WriteLine(profiles.Failure);
+            return 1;
+        }
+
         Tag.Level.ZoneReadability.Report zones = Tag.Level.ZoneReadability.Run();
         Console.WriteLine(zones.Line);
         if (!zones.Ok)
@@ -656,11 +728,411 @@ static class Program
             return 1;
         }
 
-        Console.WriteLine("solo grapple on; opponent and couch off; jet off; clips and locks held");
+        Tag.Core.QaSweep3.Report sweep3 = Tag.Core.QaSweep3.Run();
+        Console.WriteLine(sweep3.Line);
+        if (!sweep3.Ok)
+        {
+            Console.Error.WriteLine(sweep3.Failure);
+            return 1;
+        }
+
+        Console.WriteLine(Tag.Art.SmoothMotion.ProofLine());
+        Console.WriteLine(Tag.Art.SmoothMotion.DetailLine());
+        Console.WriteLine(Tag.Art.SmoothMotion.ParkourLine());
+        Console.WriteLine(Tag.Art.SmoothMotion.ResponseLine());
+        Console.WriteLine(Tag.Art.LocomotionPolish.ProofLine());
+        Console.WriteLine(Tag.Art.LocomotionPolish.StepLine());
+        Console.WriteLine(Tag.Art.BodyLife.ProofLine());
+        Console.WriteLine(Tag.Art.TransitionMatrix.ProofLine());
+        Console.WriteLine(Tag.Art.TransitionMatrix.TopLine());
+        if (!Tag.Art.SmoothMotion.Holds())
+        {
+            Console.Error.WriteLine("smooth motion is not held");
+            return 1;
+        }
+        if (!Tag.Art.LocomotionPolish.Holds())
+        {
+            Console.Error.WriteLine("locomotion polish is not held");
+            return 1;
+        }
+        if (!Tag.Art.BodyLife.Holds())
+        {
+            Console.Error.WriteLine("body life is not held");
+            return 1;
+        }
+        if (!Tag.Art.TransitionMatrix.Holds())
+        {
+            Console.Error.WriteLine("transition matrix is not held");
+            return 1;
+        }
+        Console.WriteLine(Tag.Art.UpperBody.ProofLine());
+        Console.WriteLine(Tag.Art.HangMotion.ProofLine());
+        Console.WriteLine(Tag.Settings.ResponseLatency.ProofLine());
+        Console.WriteLine(Tag.Settings.StickQuality.ProofLine());
+        if (!Tag.Art.UpperBody.Holds())
+        {
+            Console.Error.WriteLine("upper body is not held");
+            return 1;
+        }
+        if (!Tag.Art.HangMotion.Holds())
+        {
+            Console.Error.WriteLine("hang motion is not held");
+            return 1;
+        }
+        if (!Tag.Settings.ResponseLatency.Holds())
+        {
+            Console.Error.WriteLine("response latency is not held");
+            return 1;
+        }
+        if (!Tag.Settings.StickQuality.Holds())
+        {
+            Console.Error.WriteLine("stick quality is not held");
+            return 1;
+        }
+        Console.WriteLine(Tag.Art.FootSlide.ProofLine());
+        Console.WriteLine(Tag.Art.RespawnBlink.ProofLine());
+        if (!Tag.Art.FootSlide.Holds())
+        {
+            Console.Error.WriteLine("foot slide is not held");
+            return 1;
+        }
+        if (!Tag.Art.RespawnBlink.Holds())
+        {
+            Console.Error.WriteLine("respawn blink is not held");
+            return 1;
+        }
+        Console.WriteLine(Tag.Art.ClimbContact.ProofLine());
+        if (!Tag.Art.ClimbContact.Holds())
+        {
+            Console.Error.WriteLine("climb contact is not held");
+            return 1;
+        }
+        Console.WriteLine(Tag.Art.BodyLine.ProofLine());
+        if (!Tag.Art.BodyLine.Holds())
+        {
+            Console.Error.WriteLine("body line is not held");
+            return 1;
+        }
+        Console.WriteLine(Tag.Art.LocoFeel.ProofLine());
+        if (!Tag.Art.LocoFeel.Holds())
+        {
+            Console.Error.WriteLine("loco feel is not held");
+            return 1;
+        }
+        Console.WriteLine(Tag.Art.AirFeel.ProofLine());
+        if (!Tag.Art.AirFeel.Holds())
+        {
+            Console.Error.WriteLine("air feel is not held");
+            return 1;
+        }
+        Console.WriteLine(Tag.Art.HandoffFeel.ProofLine());
+        if (!Tag.Art.HandoffFeel.Holds())
+        {
+            Console.Error.WriteLine("handoff is not held");
+            return 1;
+        }
+        Console.WriteLine(Tag.Art.Handoff2Feel.ProofLine());
+        if (!Tag.Art.Handoff2Feel.Holds())
+        {
+            Console.Error.WriteLine("handoff2 is not held");
+            return 1;
+        }
+        if (!AssetHas("Assets/Scripts/Art/DummyLocomotor.cs",
+                "SmoothMotion.Smooth",
+                "SmoothMotion.SecondsForSlew",
+                "SmoothMotion.CycleSlew",
+                "ClimbPresented",
+                "RepeatingPush",
+                "AbsorbPop",
+                "EaseFacing",
+                "LocomotionPolish.PlayCadence",
+                "LocomotionPolish.FacingStride",
+                "LocomotionPolish.NoteTurn",
+                "LocomotionPolish.AirPhase",
+                "LocomotionPolish.FootPitch",
+                "LocomotionPolish.HandPitch",
+                "LocomotionPolish.HeadYaw",
+                "TransitionMatrix.BoneSeconds",
+                "TransitionMatrix.RootSeconds",
+                "BodyLife.CrouchCadence",
+                "BodyLife.Scrabble",
+                "BodyLife.EntryPlant",
+                "BodyLife.ModeBlend",
+                "BodyLife.ArmPump",
+                "BodyLife.FlinchWeight",
+                "UpperBody.KeepLegs",
+                "UpperBody.AimTwist",
+                "HangMotion.LegTrail",
+                "HangMotion.SwayExtra",
+                "HangMotion.RopeSpine",
+                "HangMotion.Windmill"))
+        {
+            Console.Error.WriteLine("smooth motion is not on the locomotor");
+            return 1;
+        }
+        if (!AssetHas("Assets/TagArenaMovement/Scripts/Input/PlayerInputReader.cs",
+                "DefaultExecutionOrder(-200)",
+                "_readSerial == serial"))
+        {
+            Console.Error.WriteLine("input read is not same-frame");
+            return 1;
+        }
+        if (!AssetHas("Assets/TagArenaMovement/Scripts/Camera/TpsMoveCamera.cs",
+                "SmoothMotion.Smooth",
+                "SmoothMotion.YawSeconds",
+                "fovKick=0",
+                "Quaternion.Slerp"))
+        {
+            Console.Error.WriteLine("camera follow is not smoothed");
+            return 1;
+        }
+        if (!AssetHas("Assets/TagArenaMovement/Scripts/Camera/ChaseCam.cs",
+                "if (desired < current) return desired;",
+                "BoomRate = 6f"))
+        {
+            Console.Error.WriteLine("boom pull-in is not instant");
+            return 1;
+        }
+        if (!AssetHas("Assets/TagArenaMovement/Scripts/Camera/TpsMoveCamera.cs",
+                "DefaultExecutionOrder(-100)",
+                "void ApplyLook()"))
+        {
+            Console.Error.WriteLine("third-person look is not before the motor");
+            return 1;
+        }
+        if (!AssetHas("Assets/TagArenaMovement/Scripts/Camera/FpsMoveCamera.cs",
+                "DefaultExecutionOrder(-100)",
+                "void ApplyLook()"))
+        {
+            Console.Error.WriteLine("first-person look is not before the motor");
+            return 1;
+        }
+        if (LateHas("Assets/TagArenaMovement/Scripts/Camera/TpsMoveCamera.cs", "LookFeel.Deltas")
+            || LateHas("Assets/TagArenaMovement/Scripts/Camera/FpsMoveCamera.cs", "LookFeel.Deltas"))
+        {
+            Console.Error.WriteLine("look is still applied in LateUpdate");
+            return 1;
+        }
+        if (!AssetHas("Assets/TagArenaMovement/Scripts/Input/PlayerInputReader.cs",
+                "StickQuality.Shape"))
+        {
+            Console.Error.WriteLine("stick shape is not on the reader");
+            return 1;
+        }
+        if (!AssetHas("Assets/Scripts/Settings/LookFeel.cs", "lookX * Sens"))
+        {
+            Console.Error.WriteLine("mouse look is not a straight multiply");
+            return 1;
+        }
+        if (File.ReadAllText("Assets/Scripts/Settings/LookFeel.cs").IndexOf("SmoothDamp", StringComparison.Ordinal) >= 0)
+        {
+            Console.Error.WriteLine("look smoothing was added");
+            return 1;
+        }
+        if (!AssetHas("Assets/Scripts/Settings/SettingsRuntime.cs", "ProcessEventsInDynamicUpdate"))
+        {
+            Console.Error.WriteLine("input events are not on the dynamic update");
+            return 1;
+        }
+        if (!AssetHas("ProjectSettings/QualitySettings.asset", "vSyncCount: 1"))
+        {
+            Console.Error.WriteLine("vsync is not on");
+            return 1;
+        }
+        if (!AssetHas("ProjectSettings/TimeManager.asset", "Fixed Timestep: 0.02"))
+        {
+            Console.Error.WriteLine("fixed timestep moved");
+            return 1;
+        }
+        if (File.ReadAllText("ProjectSettings/InputManager.asset").IndexOf("dead: 0.19", StringComparison.Ordinal) >= 0)
+        {
+            Console.Error.WriteLine("joystick axial deadzone remains");
+            return 1;
+        }
+        if (!AssetHas("Assets/Scripts/Art/WallPose.cs",
+                "PlantShape",
+                "HoldWeight",
+                "Sample Entry",
+                "FootSlide.WallTrail"))
+        {
+            Console.Error.WriteLine("climb cycle is not on the wall pose");
+            return 1;
+        }
+        if (!AssetHas("Assets/TagArenaMovement/Scripts/Core/PlayerMotor.cs",
+                "VisualBlinkAge",
+                "RespawnBlink.Seconds",
+                "reason == \"kill-plane\"",
+                "reason == \"practice-restart\"",
+                "Vector3 settleTarget = stand"))
+        {
+            Console.Error.WriteLine("respawn blink or vault stand is not on the motor");
+            return 1;
+        }
+        if (!AssetHas("Assets/Scripts/Art/DummyLocomotor.cs",
+                "YawPivot",
+                "DummyVisual",
+                "Mathf.DeltaAngle",
+                "RespawnBlink.Hidden"))
+        {
+            Console.Error.WriteLine("visual yaw is not on the mannequin");
+            return 1;
+        }
+        if (!AssetHas("Assets/TagArenaMovement/Scripts/Camera/TpsMoveCamera.cs",
+                "RespawnBlink.Open"))
+        {
+            Console.Error.WriteLine("respawn blink is not on the camera");
+            return 1;
+        }
+        if (!AssetHas("Assets/Scripts/Art/DummyLocomotor.cs",
+                "ClimbContact.Drag",
+                "ClimbContact.Tilt",
+                "ClimbContact.Grab",
+                "ApplyChestGap",
+                "TryLip"))
+        {
+            Console.Error.WriteLine("parkour contact is not on the mannequin");
+            return 1;
+        }
+        if (!AssetHas("Assets/Scripts/Art/DummyLocomotor.cs",
+                "BodyLine.WallArc",
+                "BodyLine.LineFix",
+                "HangMotion.RopeSpine",
+                "Handoff2Feel.ZipGrab",
+                "Handoff2Feel.ZipDrop",
+                "Handoff2Feel.PadOpen",
+                "BodyLine.KeepStride",
+                "BodyLine.TellOpen",
+                "BodyLine.ReverseBlend",
+                "BodyLine.ReachLead"))
+        {
+            Console.Error.WriteLine("body line is not on the mannequin");
+            return 1;
+        }
+        if (!AssetHas("Assets/Scripts/Art/DummyLocomotor.cs",
+                "LocoFeel.ArmPitch",
+                "LocoFeel.Sole",
+                "LocoFeel.CruiseTarget",
+                "LocoFeel.StartChest",
+                "LocoFeel.StopOpen",
+                "LocoFeel.NoteWalkPivot",
+                "LocoFeel.IdleLook",
+                "LocoFeel.CrouchThigh",
+                "LocoFeel.SlideWeight",
+                "LocoFeel.HeadHold",
+                "AirFeel.PushOpen",
+                "AirFeel.CoyoteOpen",
+                "AirFeel.HopOpen",
+                "AirFeel.ScaleTuck",
+                "AirFeel.Brace",
+                "AirFeel.HopCycle",
+                "AirFeel.StrafeOpen",
+                "AirFeel.BalanceArms",
+                "AirFeel.HeadPitch",
+                "HandoffFeel.Release",
+                "HandoffFeel.RollWeight",
+                "HandoffFeel.Rolls",
+                "Handoff2Feel.ClimbOpen",
+                "Handoff2Feel.VaultShown",
+                "Handoff2Feel.VaultOutOpen",
+                "Handoff2Feel.LatchOpen",
+                "Handoff2Feel.ReleaseShown",
+                "Handoff2Feel.PadVyStep",
+                "Handoff2Feel.SlideOpen"))
+        {
+            Console.Error.WriteLine("loco feel is not on the mannequin");
+            return 1;
+        }
+        if (!AssetHas("Assets/TagArenaMovement/Scripts/Core/PlayerMotor.cs",
+                "LedgeStand"))
+        {
+            Console.Error.WriteLine("the lip point is not on the motor");
+            return 1;
+        }
+        if (!AssetHas("Assets/Scripts/Art/MotionGallery.cs",
+                "slip ? -1f"))
+        {
+            Console.Error.WriteLine("the gallery climb does not play the slip");
+            return 1;
+        }
+
+        string stillDir = Path.Combine(RepoRoot(), "Docs", "SmoothStills", "pass1");
+        Tag.Art.SmoothMotion.WriteStrip(Path.Combine(stillDir, "transitions.ppm"));
+        string still2 = Path.Combine(RepoRoot(), "Docs", "SmoothStills", "pass2");
+        Tag.Art.SmoothMotion.WriteParkourStills(Path.Combine(still2, "climb-wall-mantle.png"));
+        string still3 = Path.Combine(RepoRoot(), "Docs", "SmoothStills", "pass3");
+        Tag.Art.SmoothMotion.WriteLocomotionStills(Path.Combine(still3, "loco-air-ik.png"));
+        string still4 = Path.Combine(RepoRoot(), "Docs", "SmoothStills", "pass4");
+        Tag.Art.SmoothMotion.WritePass4Stills(Path.Combine(still4, "idle-wall-flinch.png"));
+        string still5 = Path.Combine(RepoRoot(), "Docs", "SmoothStills", "pass5");
+        Tag.Art.SmoothMotion.WritePass5Stills(Path.Combine(still5, "layer-hang.png"));
+        string still7 = Path.Combine(RepoRoot(), "Docs", "SmoothStills", "pass7");
+        Tag.Art.SmoothMotion.WritePass7Stills(Path.Combine(still7, "plant-blink-yaw.png"));
+        string still8 = Path.Combine(RepoRoot(), "Docs", "SmoothStills", "pass8");
+        Tag.Art.SmoothMotion.WritePass8Stills(Path.Combine(still8, "climb-contact.png"));
+        string still9 = Path.Combine(RepoRoot(), "Docs", "SmoothStills", "pass9");
+        Tag.Art.SmoothMotion.WritePass9Stills(Path.Combine(still9, "body-line.png"));
+        string still10 = Path.Combine(RepoRoot(), "Docs", "SmoothStills", "pass10");
+        Tag.Art.SmoothMotion.WritePass10Stills(Path.Combine(still10, "locomotion.png"));
+        string still11 = Path.Combine(RepoRoot(), "Docs", "SmoothStills", "pass11");
+        Tag.Art.SmoothMotion.WritePass11Stills(Path.Combine(still11, "air.png"));
+        string still12 = Path.Combine(RepoRoot(), "Docs", "SmoothStills", "pass12");
+        Tag.Art.SmoothMotion.WritePass12Stills(Path.Combine(still12, "handoff.png"));
+        string still13 = Path.Combine(RepoRoot(), "Docs", "SmoothStills", "pass13");
+        Tag.Art.SmoothMotion.WritePass13Stills(Path.Combine(still13, "handoff2.png"));
+        if (!File.Exists(Path.Combine(RepoRoot(), "Assets", "Scenes", "MotionGallery.unity")))
+        {
+            Console.Error.WriteLine("motion gallery scene is missing");
+            return 1;
+        }
+        if (!AssetHas("Assets/Editor/MotionGalleryMenu.cs", "Tag/Motion Gallery", "MotionGallery.unity"))
+        {
+            Console.Error.WriteLine("motion gallery menu is missing");
+            return 1;
+        }
+        if (!AssetHas("Assets/Scripts/Art/MotionGallery.cs",
+                "DefaultExecutionOrder(-300)",
+                "Time.timeScale"))
+        {
+            Console.Error.WriteLine("motion gallery driver is missing");
+            return 1;
+        }
+        string buildList = File.ReadAllText(Path.Combine(RepoRoot(), "ProjectSettings", "EditorBuildSettings.asset"));
+        int playAt = buildList.IndexOf("Assets/Scenes/Play.unity", StringComparison.Ordinal);
+        int galleryAt = buildList.IndexOf("Assets/Scenes/MotionGallery.unity", StringComparison.Ordinal);
+        if (playAt < 0 || galleryAt < 0 || galleryAt < playAt)
+        {
+            Console.Error.WriteLine("motion gallery is not after Play in the build list");
+            return 1;
+        }
+
+        Console.WriteLine("solo grapple on; couch rope on; opponent gate off; jet off; clips and locks held");
         return 0;
     }
 
+    static string RepoRoot()
+    {
+        string dir = Directory.GetCurrentDirectory();
+        for (int i = 0; i < 6; i++)
+        {
+            if (File.Exists(Path.Combine(dir, "Docs", "WhatsNew.md")))
+                return dir;
+            DirectoryInfo parent = Directory.GetParent(dir);
+            if (parent == null) break;
+            dir = parent.FullName;
+        }
+        return Directory.GetCurrentDirectory();
+    }
+
     static bool Locked(float value, float expect) => Math.Abs(value - expect) <= 0.001f;
+
+    static bool LateHas(string path, string needle)
+    {
+        if (!File.Exists(path)) return false;
+        string text = File.ReadAllText(path);
+        int late = text.IndexOf("void LateUpdate", StringComparison.Ordinal);
+        if (late < 0) return false;
+        return text.IndexOf(needle, late, StringComparison.Ordinal) >= 0;
+    }
 
     static bool AssetHas(string path, params string[] needles)
     {

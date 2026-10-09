@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using Microsoft.CodeAnalysis;
@@ -16,7 +17,7 @@ namespace Tag.Tools
     /// </summary>
     static class Program
     {
-        static readonly string[] Watch = { "CS0102", "CS0128", "CS0136", "CS0103", "CS0246" };
+        static readonly string[] Watch = { "CS0102", "CS0128", "CS0136", "CS0103", "CS0104", "CS0246" };
 
         static readonly string[] ExternalPrefixes =
         {
@@ -34,12 +35,13 @@ namespace Tag.Tools
             if (File.Exists(stub))
                 files.Add(stub);
 
+            var parse = new CSharpParseOptions(preprocessorSymbols: new[] { "ENABLE_INPUT_SYSTEM" });
             var trees = new List<SyntaxTree>();
             var parseErrors = new List<string>();
             foreach (string file in files)
             {
                 string text = File.ReadAllText(file);
-                SyntaxTree tree = CSharpSyntaxTree.ParseText(text, path: file);
+                SyntaxTree tree = CSharpSyntaxTree.ParseText(text, parse, path: file);
                 trees.Add(tree);
                 foreach (Diagnostic d in tree.GetDiagnostics())
                 {
@@ -52,11 +54,16 @@ namespace Tag.Tools
             foreach (string path in TrustedAssemblies())
                 refs.Add(MetadataReference.CreateFromFile(path));
 
+            // No implicit global usings. Real Unity/InputSystem assemblies are not on
+            // this machine (unity-refs=absent); the pattern scan below is the gate
+            // for the errors the stub compilation cannot see.
             CSharpCompilation compilation = CSharpCompilation.Create(
                 "TagScriptsCheck",
                 trees,
                 refs,
-                new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+                new CSharpCompilationOptions(
+                    OutputKind.DynamicallyLinkedLibrary,
+                    usings: ImmutableArray<string>.Empty));
 
             HashSet<string> ours = DeclaredTypeNames(trees);
             var hits = new List<string>();
@@ -76,16 +83,25 @@ namespace Tag.Tools
             foreach (string line in hits)
                 Console.WriteLine(line);
 
-            if (parseErrors.Count > 0 || hits.Count > 0)
+            bool compileOk = parseErrors.Count == 0 && hits.Count == 0;
+            bool smokeOk = SmokeFiles.Run(root, out string smokeLine, out string smokeReport);
+            Console.WriteLine(smokeLine);
+            if (!smokeOk)
+                Console.Error.WriteLine(smokeReport);
+            bool patternsOk = UnityCompilePatterns.Run(root, files, out string patternLine, out string patternReport);
+            Console.WriteLine(patternLine);
+            if (!patternsOk)
+                Console.Error.WriteLine(patternReport);
+            if (!compileOk || !smokeOk || !patternsOk)
                 return 1;
-            Console.WriteLine("script-compile-check ok CS0102 CS0128 CS0136 CS0103 CS0246-in-our-code");
+            Console.WriteLine("script-compile-check ok CS0102 CS0128 CS0136 CS0103 CS0104 CS0246-in-our-code");
             return 0;
         }
 
         static bool Want(Diagnostic d, HashSet<string> ours)
         {
             string id = d.Id;
-            if (id == "CS0102" || id == "CS0128" || id == "CS0136")
+            if (id == "CS0102" || id == "CS0128" || id == "CS0136" || id == "CS0104")
                 return true;
             if (id != "CS0103" && id != "CS0246")
                 return false;

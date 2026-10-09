@@ -28,7 +28,7 @@ namespace Tag.Settings
         {
 #if ENABLE_INPUT_SYSTEM
             var all = UnityEngine.InputSystem.Gamepad.all;
-            if (all == null) return;
+            if (all.Count == 0) return;
             int n = all.Count;
             for (int i = 0; i < PadRumble.Seats; i++)
             {

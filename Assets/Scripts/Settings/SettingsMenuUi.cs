@@ -68,31 +68,31 @@ namespace Tag.Settings
             }
 
             int rows = Rows();
-            if (Input.GetKeyDown(KeyCode.Escape) || PadNav.Back)
+            if (UnityEngine.Input.GetKeyDown(KeyCode.Escape) || PadNav.Back)
             {
                 Close();
                 TagSfx.UiBack();
                 return;
             }
-            if (Input.GetKeyDown(KeyCode.UpArrow) || PadNav.Up)
+            if (UnityEngine.Input.GetKeyDown(KeyCode.UpArrow) || PadNav.Up)
                 Nudge(-1, rows - 1);
-            if (Input.GetKeyDown(KeyCode.DownArrow) || PadNav.Down)
+            if (UnityEngine.Input.GetKeyDown(KeyCode.DownArrow) || PadNav.Down)
                 Nudge(1, rows - 1);
             if (Which == Panel.Arena)
             {
-                if (Input.GetKeyDown(KeyCode.Alpha1) || Pressed(PlayAction.Arena1))
+                if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha1) || Pressed(PlayAction.Arena1))
                 {
                     _focus = 0;
                     SettingsRuntime.SelectArena(0);
                     return;
                 }
-                if (Input.GetKeyDown(KeyCode.Alpha2) || Pressed(PlayAction.Arena2))
+                if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha2) || Pressed(PlayAction.Arena2))
                 {
                     _focus = 1;
                     SettingsRuntime.SelectArena(1);
                     return;
                 }
-                if (Input.GetKeyDown(KeyCode.Alpha3) || Pressed(PlayAction.Arena3))
+                if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha3) || Pressed(PlayAction.Arena3))
                 {
                     _focus = 2;
                     SettingsRuntime.SelectArena(2);
@@ -103,16 +103,16 @@ namespace Tag.Settings
             {
                 for (int i = 0; i < rows && i < 9; i++)
                 {
-                    if (Input.GetKeyDown((KeyCode)((int)KeyCode.Alpha1 + i)))
+                    if (UnityEngine.Input.GetKeyDown((KeyCode)((int)KeyCode.Alpha1 + i)))
                         SetFocus(i);
                 }
             }
-            if (Input.GetKeyDown(KeyCode.LeftArrow) || PadNav.Left)
+            if (UnityEngine.Input.GetKeyDown(KeyCode.LeftArrow) || PadNav.Left)
                 Step(-1);
-            if (Input.GetKeyDown(KeyCode.RightArrow) || PadNav.Right)
+            if (UnityEngine.Input.GetKeyDown(KeyCode.RightArrow) || PadNav.Right)
                 Step(1);
-            if (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter)
-                || Input.GetKeyDown(KeyCode.Space) || PadNav.Confirm)
+            if (UnityEngine.Input.GetKeyDown(KeyCode.Return) || UnityEngine.Input.GetKeyDown(KeyCode.KeypadEnter)
+                || UnityEngine.Input.GetKeyDown(KeyCode.Space) || PadNav.Confirm)
                 Activate();
         }
 
@@ -339,7 +339,7 @@ namespace Tag.Settings
 
         static void PollCapture()
         {
-            if (Input.GetKeyDown(KeyCode.Escape))
+            if (UnityEngine.Input.GetKeyDown(KeyCode.Escape))
             {
                 Capturing = false;
                 _captureAction = -1;
@@ -362,6 +362,7 @@ namespace Tag.Settings
                 return;
             }
             ActionBinds.Current = binds;
+            Tag.Profiles.LocalProfiles.StoreBinds(0, binds);
             SettingsRuntime.Save();
             Capturing = false;
             _captureAction = -1;
@@ -388,6 +389,7 @@ namespace Tag.Settings
                 return;
             }
             ActionBinds.Current = trial;
+            Tag.Profiles.LocalProfiles.StoreBinds(0, trial);
             _conflict = "";
             SettingsRuntime.Save();
         }
@@ -402,6 +404,7 @@ namespace Tag.Settings
                 return;
             }
             ActionBinds.Current = trial;
+            Tag.Profiles.LocalProfiles.StoreBinds(0, trial);
             _conflict = "";
             SettingsRuntime.Save();
         }

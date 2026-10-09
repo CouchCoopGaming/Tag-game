@@ -84,8 +84,8 @@ namespace Tag.Level
         // The pawn rig reads the legacy manager, so this poll is the one edge.
         static bool Pressed()
         {
-            if (Input.GetKeyDown(KeyCode.M)) return true;
-            if (Input.GetKeyDown(KeyCode.JoystickButton6)) return true;
+            if (UnityEngine.Input.GetKeyDown(KeyCode.M)) return true;
+            if (UnityEngine.Input.GetKeyDown(KeyCode.JoystickButton6)) return true;
             return false;
         }
 

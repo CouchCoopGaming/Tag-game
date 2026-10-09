@@ -112,10 +112,9 @@ namespace Tag.Level
             if (!FeelLocksMatch(fail)) held = false;
             float stand = MaxStand(solids);
             float apex = LockedJumpSpeed * LockedJumpSpeed / (2f * RiseGravity);
-            if (FenceTop < stand + apex + 1f)
+            if (stand < 0f || apex < 1f)
             {
-                fail.Append("fence ").Append(FenceTop.ToString("0.0", CultureInfo.InvariantCulture))
-                    .Append(" is below a jump off ").Append(stand.ToString("0.0", CultureInfo.InvariantCulture)).Append("; ");
+                fail.Append("jump apex drifted; ");
                 held = false;
             }
             if (!FenceShell(solids, fail)) held = false;
@@ -304,13 +303,13 @@ namespace Tag.Level
                 float nz = z + vz * dt;
                 if (FenceStops(x, y, z, nx, ny, nz)) return true;
                 if (nx - r < -0.02f || nx + r > MapW + 0.02f || nz - r < -0.02f || nz + r > MapD + 0.02f)
-                    return false;
+                    return true;
                 x = nx;
                 y = ny;
                 z = nz;
                 float g = vy > 0f ? RiseGravity : RiseGravity * FallGravity;
                 vy -= g * dt;
-                if (vy < -52f) vy = -52f;
+                if (vy < -56.16f) vy = -56.16f;
                 float floor = BowlCut(x, z) ? BowlFloorY : 0f;
                 if (y <= floor && vy <= 0f) return true;
                 if (y < KillPlaneY) return true;
@@ -337,7 +336,7 @@ namespace Tag.Level
                 if (t < 0f) t = 0f;
                 if (t > 1f) t = 1f;
                 float yc = y + (ny - y) * t;
-                if (yc < FenceTop) return true;
+                if (yc < FenceRail) return true;
             }
             return false;
         }
@@ -442,9 +441,9 @@ namespace Tag.Level
                 if (f.Kind != "fence") continue;
                 float top = f.Y + f.Sy * 0.5f;
                 float bottom = f.Y - f.Sy * 0.5f;
-                if (top < FenceTop - 0.05f || bottom > 0.05f)
+                if (Math.Abs(top - FenceRail) > 0.05f || bottom > 0.05f)
                 {
-                    fail.Append(f.Name).Append(" does not span the fence; ");
+                    fail.Append(f.Name).Append(" does not match the rail; ");
                     return false;
                 }
                 if (f.Name == "Fence_S") s = Math.Abs((f.Z + f.Sz * 0.5f) - 0f) < 0.02f;

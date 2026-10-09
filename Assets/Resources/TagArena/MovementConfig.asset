@@ -26,9 +26,9 @@ MonoBehaviour:
   wallMask:
     serializedVersion: 2
     m_Bits: 4294967295
-  walkSpeed: 6
-  sprintSpeed: 12
-  crouchSpeed: 3.2
+  walkSpeed: 6.9
+  sprintSpeed: 13.8
+  crouchSpeed: 3.68
   groundAccel: 52
   groundDecel: 38
   slideEntrySpeed: 7.5
@@ -47,13 +47,13 @@ MonoBehaviour:
   jumpFatigueWindow: 0.75
   jumpFatigueFullAt: 0.15
   gravity: 22
-  fallGravityMult: 1.5
+  fallGravityMult: 1.62
   airCrouchFallMult: 2
-  maxFallSpeed: 52
+  maxFallSpeed: 56.16
   landStunSpeed: 28
   landStunDuration: 0.2
   airAccel: 30
-  airSpeedCap: 12
+  airSpeedCap: 13.8
   airStrafeBonus: 1.35
   tapStrafeImpulse: 9.5
   tapStrafeCooldown: 0.08

@@ -17,6 +17,7 @@ namespace Tag.Practice
         static readonly float[] Times = new float[Slots];
         static readonly float[] Split = new float[Slots * Splits];
         static readonly int[] SplitCount = new int[Slots];
+        static readonly float[] ImportRow = new float[Splits];
 
         public static void Clear()
         {
@@ -25,6 +26,46 @@ namespace Tag.Practice
                 Ids[i] = null;
                 Times[i] = 0f;
                 SplitCount[i] = 0;
+            }
+        }
+
+        public static bool HasAny()
+        {
+            for (int i = 0; i < Slots; i++)
+            {
+                if (!string.IsNullOrEmpty(Ids[i]) && Times[i] > 0f) return true;
+            }
+            return false;
+        }
+
+        /// <summary>Copy the live board into caller buffers. The buffers are the caller's.</summary>
+        public static void Export(string[] ids, float[] times, int[] splitCount, float[] splits)
+        {
+            for (int s = 0; s < Slots; s++)
+            {
+                ids[s] = Ids[s];
+                times[s] = Times[s];
+                splitCount[s] = SplitCount[s];
+                int o = s * Splits;
+                for (int i = 0; i < Splits; i++)
+                    splits[o + i] = Split[o + i];
+            }
+        }
+
+        public static void Import(string[] ids, float[] times, int[] splitCount, float[] splits)
+        {
+            Clear();
+            if (ids == null || times == null) return;
+            for (int s = 0; s < Slots; s++)
+            {
+                if (string.IsNullOrEmpty(ids[s]) || times[s] <= 0f) continue;
+                int n = splitCount != null ? splitCount[s] : 0;
+                if (n < 0) n = 0;
+                if (n > Splits) n = Splits;
+                int o = s * Splits;
+                for (int i = 0; i < n; i++)
+                    ImportRow[i] = splits != null ? splits[o + i] : 0f;
+                Set(ids[s], times[s], ImportRow, n);
             }
         }
 
@@ -138,6 +179,20 @@ namespace Tag.Practice
                 if (free < 0 && string.IsNullOrEmpty(Ids[i])) free = i;
             }
             return claim ? free : -1;
+        }
+    }
+
+    /// <summary>
+    /// A personal best is a finished run. Pause, abort, and a slower time do not write it.
+    /// </summary>
+    public static class PracticeScore
+    {
+        public static bool Commit(bool finished, bool aborted, bool paused, float time, float pb)
+        {
+            if (!finished || aborted || paused) return false;
+            if (time <= 0f) return false;
+            if (pb > 0f && time >= pb) return false;
+            return true;
         }
     }
 }

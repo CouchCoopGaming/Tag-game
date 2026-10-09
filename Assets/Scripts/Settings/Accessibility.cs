@@ -113,6 +113,75 @@ namespace Tag.Settings
             b = ItB[i];
         }
 
+        /// <summary>Player swatch versus the It marker, under every CVD simulation.</summary>
+        public static bool ClearsIt(int palette, int slot)
+        {
+            Player(palette, slot, out float pr, out float pg, out float pb);
+            It(palette, out float ir, out float ig, out float ib);
+            return Apart(pr, pg, pb, ir, ig, ib);
+        }
+
+        static readonly string[] CrownAvoid =
+        {
+            "zbrick", "zwine", "zindigo", "zolive", "zslate",
+            "abrick", "aclay", "aindigo", "aolive", "aslate",
+        };
+
+        /// <summary>True when this color stays off the zone grounds and landmark accents.</summary>
+        public static bool ClearsSurfaces(float r, float g, float b)
+        {
+            for (int i = 0; i < CrownAvoid.Length; i++)
+            {
+                if (!MegaParkP1Layout.TryLook(CrownAvoid[i], out float mr, out float mg, out float mb, out _, out _))
+                    return false;
+                if (!Apart(r, g, b, mr, mg, mb)) return false;
+            }
+            return true;
+        }
+
+        /// <summary>
+        /// The It marker. When the seated swatch sits on the default It color,
+        /// a cyan fallback is used so the crown stays readable. The crown also
+        /// stays off the zone grounds and the landmark accent colors.
+        /// </summary>
+        public static void ItAgainst(int palette, int slot, out float r, out float g, out float b)
+        {
+            Player(palette, slot, out float pr, out float pg, out float pb);
+            It(palette, out float ir, out float ig, out float ib);
+            if (Apart(pr, pg, pb, ir, ig, ib) && ClearsSurfaces(ir, ig, ib))
+            {
+                r = ir;
+                g = ig;
+                b = ib;
+                return;
+            }
+            if (TryCrown(pr, pg, pb, 0f, 0.9f, 1f, out r, out g, out b)) return;
+            if (TryCrown(pr, pg, pb, 0.15f, 0.55f, 1f, out r, out g, out b)) return;
+            if (TryCrown(pr, pg, pb, 1f, 1f, 1f, out r, out g, out b)) return;
+            r = 0.15f;
+            g = 0.55f;
+            b = 1f;
+        }
+
+        static bool TryCrown(float pr, float pg, float pb, float cr, float cg, float cb, out float r, out float g, out float b)
+        {
+            r = cr;
+            g = cg;
+            b = cb;
+            return Apart(pr, pg, pb, cr, cg, cb) && ClearsSurfaces(cr, cg, cb);
+        }
+
+        static bool Apart(float ar, float ag, float ab, float br, float bg, float bb)
+        {
+            for (int cvd = 0; cvd < CvdCount; cvd++)
+            {
+                Simulate(cvd, ar, ag, ab, out float ar2, out float ag2, out float ab2);
+                Simulate(cvd, br, bg, bb, out float br2, out float bg2, out float bb2);
+                if (Distance(ar2, ag2, ab2, br2, bg2, bb2) < MinPairDistance) return false;
+            }
+            return true;
+        }
+
         public static void Glow(int palette, out float r, out float g, out float b)
         {
             int i = palette;

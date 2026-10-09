@@ -33,7 +33,11 @@ namespace Tag.Modes
             if (motor == null) motor = GetComponent<PlayerMotor>();
             if (motor != null) _self = motor.GetComponent<ItController>();
             if (_self == null) _self = GetComponent<ItController>();
-            BootStyles();
+        }
+
+        void WarmStyles()
+        {
+            if (_label == null) BootStyles();
         }
 
         void BootStyles()
@@ -50,7 +54,8 @@ namespace Tag.Modes
 
         void OnGUI()
         {
-            if (motor == null || _label == null) return;
+            if (motor == null) return;
+            WarmStyles();
             if (DriveDevice >= 0 && View != null)
             {
                 DrawCouch();
@@ -106,8 +111,8 @@ namespace Tag.Modes
             float gy = Screen.height - (area.y + area.height);
             float gw = area.width;
             float gh = area.height;
-            float hudScale = GameSettings.Current != null ? GameSettings.Current.HudScale : 1f;
             int seat = Seat < 0 ? 0 : Seat;
+            float hudScale = Tag.Profiles.LocalProfiles.TextScale(seat);
             int palette = PaletteFor(seat);
             _label.fontSize = (int)((gh >= 500f ? 16 : 13) * hudScale);
             _caption.fontSize = _label.fontSize;
@@ -124,7 +129,9 @@ namespace Tag.Modes
             float remain = modes != null ? modes.Remaining : 0f;
             GUI.Label(new Rect(tx, ty, tw, th), HudDigits.Tenth0(remain), _label);
 
-            AccessibilityPalette.Player(palette, seat, out float r, out float g, out float b);
+            int swatch = Tag.Profiles.LocalProfiles.SeatColor(seat);
+            if (swatch < 0) swatch = seat & 3;
+            AccessibilityPalette.Player(palette, swatch, out float r, out float g, out float b);
             _label.normal.textColor = new Color(r, g, b, 1f);
             GUI.Label(new Rect(nx, ny, 18f, nh), AccessibilityPalette.Glyph(seat), _label);
             string chip = CouchPlay.Name(seat);
@@ -140,13 +147,13 @@ namespace Tag.Modes
 
             if (self != null && self.IsIt)
             {
-                AccessibilityPalette.It(palette, out float ir, out float ig, out float ib);
+                AccessibilityPalette.ItAgainst(palette, swatch, out float ir, out float ig, out float ib);
                 GUI.color = new Color(ir, ig, ib, 1f);
                 GUI.DrawTexture(new Rect(ix, iy, iw, ih), Texture2D.whiteTexture);
                 GUI.color = Color.white;
                 _label.normal.textColor = new Color(0.08f, 0.08f, 0.1f, 1f);
                 GUI.Label(new Rect(ix, iy, iw, ih * 0.5f), AccessibilityPalette.ItGlyph, _label);
-                GUI.Label(new Rect(ix, iy + ih * 0.42f, iw, ih * 0.58f), "IT", _label);
+                GUI.Label(new Rect(ix, iy + ih * 0.42f, iw, ih * 0.58f), Tag.Profiles.LocalProfiles.ItLabel(seat), _label);
                 _label.normal.textColor = Color.white;
             }
 

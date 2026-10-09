@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using Tag.Practice;
+using Tag.Profiles;
 using Tag.Settings;
 
 namespace Tag.Level
@@ -72,19 +73,11 @@ namespace Tag.Level
             new Band { Name = "North Roof", X0 = 55f, X1 = 110f, Z0 = 32f, Z1 = 70f },
         };
 
-        static readonly string[] MegaFlags = { "Landmark_Z1_Flag", "Landmark_Z5_Flag", "Landmark_Z7_Flag", "Landmark_Z8_Flag", "Landmark_Z6_Army_Flag" };
-        static readonly string[] PocketFlags = { "Landmark_Yard_Flag", "Landmark_Dome_Flag", "Landmark_Lane_Flag" };
-        static readonly string[] StackFlags = { "Landmark_Yard_Flag", "Landmark_Lane_Flag", "Landmark_Mid_Flag", "Landmark_Roof_Flag" };
-        static readonly string[] CrownTags = { "Water", "Crane", "Clock", "Sign", "Chimney" };
-        // Caps sit on the 16 m mega flags. A jump off anything above ~18.1 m clears the 33 m fence.
-        // One axis stays under 1.1 so the cap is not a deck. Thickness stays off the 0.05–0.30 snag band.
-        static readonly float[] CrownSx = { 3.4f, 7.2f, 2.2f, 0.22f, 0.55f };
-        static readonly float[] CrownSy = { 2.0f, 0.36f, 2.0f, 2.0f, 2.0f };
-        static readonly float[] CrownSz = { 0.8f, 0.22f, 0.22f, 3.2f, 0.55f };
-
-        static readonly string[] MegaChips = BuildChips(MegaNames);
-        static readonly string[] PocketChips = BuildChips(PocketNames);
-        static readonly string[] StackChips = BuildChips(StackNames);
+        static readonly string[] MegaChips = new string[4 * 5];
+        static readonly string[] PocketChips = new string[4 * 4];
+        static readonly string[] StackChips = new string[4 * 4];
+        static readonly string[] SeatWord = { "P1", "P2", "P3", "P4" };
+        static int _chipGen = -1;
 
         static readonly string[] SkillNames =
         {
@@ -95,9 +88,9 @@ namespace Tag.Level
 
         static readonly float[] SkillBeginner =
         {
-            2.14f, 2.35f, 1.23f, 1.88f, 2.75f,
-            1.36f, 1.25f, 1.08f, 1.58f, 1.74f,
-            3.02f, 1.30f, 1.41f,
+            1.86f, 2.05f, 1.07f, 1.63f, 2.39f,
+            1.18f, 1.09f, 1.07f, 1.56f, 1.72f,
+            3.01f, 1.29f, 1.40f,
         };
 
         static readonly string[] PracticeIds =
@@ -109,7 +102,7 @@ namespace Tag.Level
 
         static readonly float[] PracticeBase =
         {
-            7.550f, 2.650f, 2.500f, 2.017f, 5.267f, 5.383f, 10.033f,
+            6.600f, 2.483f, 2.317f, 1.983f, 5.067f, 4.717f, 9.050f,
         };
 
         static readonly float[] HueLock = { 22f, 55f, 108f, 174f, 220f, 296f };
@@ -137,6 +130,7 @@ namespace Tag.Level
         {
             if (seat < 0) seat = 0;
             if (seat > 3) seat = 3;
+            EnsureChips();
             string[] names = Names(arena);
             string[] chips = Chips(arena);
             int zone = Index(arena, x, z);
@@ -205,40 +199,7 @@ namespace Tag.Level
 
         public static void AppendCrowns(List<MegaParkP1Layout.Solid> list, int arena)
         {
-            if (list == null) return;
-            string[] flags = arena == ParkArena.Pocket ? PocketFlags : arena == ParkArena.Stack ? StackFlags : MegaFlags;
-            for (int i = 0; i < flags.Length; i++)
-            {
-                int found = -1;
-                for (int s = 0; s < list.Count; s++)
-                {
-                    if (list[s].Name == flags[i])
-                    {
-                        found = s;
-                        break;
-                    }
-                }
-                if (found < 0) continue;
-                MegaParkP1Layout.Solid flag = list[found];
-                int shape = i;
-                if (shape >= CrownSx.Length) shape = CrownSx.Length - 1;
-                float top = flag.Y + flag.Sy * 0.5f;
-                float sy = CrownSy[shape];
-                list.Add(new MegaParkP1Layout.Solid
-                {
-                    Name = "Landmark_Crown_" + CrownTags[shape],
-                    Zone = flag.Zone,
-                    Kind = "landmark",
-                    Mat = flag.Mat,
-                    X = flag.X,
-                    Y = top + sy * 0.5f,
-                    Z = flag.Z,
-                    Sx = CrownSx[shape],
-                    Sy = sy,
-                    Sz = CrownSz[shape],
-                    SupportY = top,
-                });
-            }
+            // Zone landmarks are visual marks. A solid cap would be a floor or a route snag.
         }
 
         public static Mark[] Fill(int arena, MegaParkP1Layout.Solid[] solids)
@@ -268,11 +229,8 @@ namespace Tag.Level
             }
             Brim(list, mapW, mapD);
             Borders(list, arena);
-            if (arena == ParkArena.Pocket)
-            {
-                list.Add(new Mark { Name = "Landmark_Crown_East_Pole", Mat = "zolive", X = 75f, Y = 8f, Z = 25f, Sx = 0.42f, Sy = 16f, Sz = 0.42f });
-                list.Add(new Mark { Name = "Landmark_Crown_East", Mat = "zolive", X = 75f, Y = 17f, Z = 25f, Sx = 3.2f, Sy = 2f, Sz = 0.8f });
-            }
+            Decals(list, arena);
+            Towers(list, arena);
             Gates(list, arena);
             return list.ToArray();
         }
@@ -284,6 +242,7 @@ namespace Tag.Level
             bool savedChoice = ParkArena.HasExplicitChoice;
             int zones = ZoneCount;
             int landmarks = CountCrowns();
+            bool eye = EyeOk(report);
             bool cvd = CvdOk();
             bool contrast = ContrastOk();
             bool labels = LabelsOk(report);
@@ -292,10 +251,12 @@ namespace Tag.Level
             ParkArena.HasExplicitChoice = savedChoice;
             if (zones != 13) report.Fail("zone count");
             if (landmarks != 13) report.Fail("landmark count " + landmarks.ToString(CultureInfo.InvariantCulture));
+            if (!eye) report.Fail("a split view lost its landmarks");
             if (!cvd) report.Fail("zone colors collide under a cvd sim");
             if (!contrast) report.Fail("a zone color missed 3:1");
             report.Line = "zones arenas=3 zones=" + zones.ToString(CultureInfo.InvariantCulture)
                 + " landmarks=" + landmarks.ToString(CultureInfo.InvariantCulture)
+                + " eyeVisible=" + (eye ? "ok" : "bad")
                 + " cvd=" + (cvd ? "ok" : "bad")
                 + " contrast=" + (contrast ? "ok" : "bad")
                 + " routesDrift" + (drift ? "<=5%" : ">5%")
@@ -320,36 +281,213 @@ namespace Tag.Level
 
         static void Borders(List<Mark> list, int arena)
         {
-            const float y = 0.06f;
-            const float sy = 0.06f;
-            const float t = 0.28f;
+            const float y = 0.07f;
+            const float sy = 0.08f;
+            const float t = 0.42f;
             if (arena == ParkArena.Pocket)
             {
-                EdgeX(list, "Border_P0", 26f, 0f, 50f, y, sy, t);
-                EdgeX(list, "Border_P1", 52f, 0f, 50f, y, sy, t);
-                EdgeX(list, "Border_P2", 70f, 0f, 50f, y, sy, t);
+                EdgeX(list, "Border_P0", "abrick", 26f, 0f, 50f, y, sy, t);
+                EdgeX(list, "Border_P1", "aclay", 52f, 0f, 50f, y, sy, t);
+                EdgeX(list, "Border_P2", "aindigo", 70f, 0f, 50f, y, sy, t);
                 return;
             }
             if (arena == ParkArena.Stack)
             {
-                EdgeX(list, "Border_S0", 55f, 0f, 70f, y, sy, t);
-                EdgeZ(list, "Border_S1", 32f, 0f, 110f, y, sy, t);
+                EdgeX(list, "Border_S0", "abrick", 55f, 0f, 70f, y, sy, t);
+                EdgeZ(list, "Border_S1", "aolive", 32f, 0f, 110f, y, sy, t);
                 return;
             }
-            EdgeX(list, "Border_M0", 46f, 0f, 100f, y, sy, t);
-            EdgeX(list, "Border_M1", 120f, 0f, 100f, y, sy, t);
-            EdgeZ(list, "Border_M2", 36f, 46f, 120f, y, sy, t);
-            EdgeZ(list, "Border_M3", 64f, 46f, 120f, y, sy, t);
+            EdgeX(list, "Border_M0", "abrick", 46f, 0f, 100f, y, sy, t);
+            EdgeX(list, "Border_M1", "aslate", 120f, 0f, 100f, y, sy, t);
+            EdgeZ(list, "Border_M2", "aclay", 36f, 46f, 120f, y, sy, t);
+            EdgeZ(list, "Border_M3", "aolive", 64f, 46f, 120f, y, sy, t);
         }
 
-        static void EdgeX(List<Mark> list, string name, float x, float z0, float z1, float y, float sy, float t)
+        static void EdgeX(List<Mark> list, string name, string mat, float x, float z0, float z1, float y, float sy, float t)
         {
-            list.Add(new Mark { Name = name, Mat = "ztrim", X = x, Y = y, Z = (z0 + z1) * 0.5f, Sx = t, Sy = sy, Sz = z1 - z0 });
+            list.Add(new Mark { Name = name, Mat = mat, X = x, Y = y, Z = (z0 + z1) * 0.5f, Sx = t, Sy = sy, Sz = z1 - z0 });
         }
 
-        static void EdgeZ(List<Mark> list, string name, float z, float x0, float x1, float y, float sy, float t)
+        static void EdgeZ(List<Mark> list, string name, string mat, float z, float x0, float x1, float y, float sy, float t)
         {
-            list.Add(new Mark { Name = name, Mat = "ztrim", X = (x0 + x1) * 0.5f, Y = y, Z = z, Sx = x1 - x0, Sy = sy, Sz = t });
+            list.Add(new Mark { Name = name, Mat = mat, X = (x0 + x1) * 0.5f, Y = y, Z = z, Sx = x1 - x0, Sy = sy, Sz = t });
+        }
+
+        static void Decals(List<Mark> list, int arena)
+        {
+            if (arena == ParkArena.Pocket)
+            {
+                Patch(list, "Decal_P0", "dbrick", 10f, 18f, 7f, 1.1f);
+                Patch(list, "Decal_P0b", "dbrick", 16f, 36f, 1.1f, 6f);
+                Patch(list, "Decal_P1", "dclay", 36f, 14f, 8f, 1.1f);
+                Patch(list, "Decal_P1b", "dclay", 42f, 34f, 1.1f, 5f);
+                Patch(list, "Decal_P2", "dindigo", 58f, 20f, 6f, 1.1f);
+                Patch(list, "Decal_P3", "dolive", 75f, 34f, 4f, 1.1f);
+                return;
+            }
+            if (arena == ParkArena.Stack)
+            {
+                Patch(list, "Decal_S0", "dbrick", 18f, 12f, 8f, 1.2f);
+                Patch(list, "Decal_S0b", "dbrick", 36f, 22f, 1.2f, 6f);
+                Patch(list, "Decal_S1", "dclay", 74f, 12f, 10f, 1.2f);
+                Patch(list, "Decal_S2", "dindigo", 16f, 48f, 8f, 1.2f);
+                Patch(list, "Decal_S3", "dolive", 78f, 48f, 10f, 1.2f);
+                return;
+            }
+            Patch(list, "Decal_M0", "dbrick", 16f, 40f, 10f, 1.4f);
+            Patch(list, "Decal_M0b", "dbrick", 30f, 72f, 1.4f, 8f);
+            Patch(list, "Decal_M1", "dolive", 70f, 82f, 12f, 1.4f);
+            Patch(list, "Decal_M2", "dindigo", 84f, 48f, 1.4f, 10f);
+            Patch(list, "Decal_M2b", "dindigo", 100f, 52f, 8f, 1.4f);
+            Patch(list, "Decal_M3", "dclay", 78f, 16f, 12f, 1.4f);
+            Patch(list, "Decal_M4", "dslate", 140f, 40f, 10f, 1.4f);
+            Patch(list, "Decal_M4b", "dslate", 146f, 70f, 1.4f, 8f);
+        }
+
+        static void Patch(List<Mark> list, string name, string mat, float x, float z, float sx, float sz)
+        {
+            list.Add(new Mark { Name = name, Mat = mat, X = x, Y = 0.05f, Z = z, Sx = sx, Sy = 0.04f, Sz = sz });
+        }
+
+        static void Towers(List<Mark> list, int arena)
+        {
+            if (arena == ParkArena.Pocket)
+            {
+                Windmill(list, "Mill", "abrick", "zbrick", 14f, 28f, 16f);
+                Archway(list, "Arch", "aclay", "zwine", 38f, 22f, 14f);
+                Board(list, "Board", "aindigo", "zindigo", 60f, 36f, 15f);
+                Buoy(list, "Buoy", "aolive", "zolive", 75f, 18f, 18f);
+                return;
+            }
+            if (arena == ParkArena.Stack)
+            {
+                Chimney(list, "Chimney", "abrick", "zbrick", 22f, 16f, 20f);
+                Gantry(list, "Gantry", "aclay", "zwine", 82f, 16f, 16f);
+                Radio(list, "Mast", "aindigo", "zindigo", 20f, 50f, 22f);
+                Billboard(list, "Bill", "aolive", "zolive", 82f, 52f, 15f);
+                return;
+            }
+            Water(list, "Water", "abrick", "zbrick", 24f, 58f, 18f);
+            Crane(list, "Crane", "aolive", "zolive", 72f, 84f, 22f);
+            Clock(list, "Clock", "aindigo", "zindigo", 88f, 48f, 20f);
+            Sign(list, "Sign", "aclay", "zwine", 86f, 14f, 14f);
+            Light(list, "Light", "aslate", "zslate", 138f, 58f, 24f);
+        }
+
+        static void Box(List<Mark> list, string name, string mat, float x, float y, float z, float sx, float sy, float sz)
+        {
+            list.Add(new Mark { Name = name, Mat = mat, X = x, Y = y, Z = z, Sx = sx, Sy = sy, Sz = sz });
+        }
+
+        static void Crown(List<Mark> list, string tag, string mat, float x, float top, float z, float sx, float sy, float sz)
+        {
+            Box(list, "Landmark_Crown_" + tag, mat, x, top - sy * 0.5f, z, sx, sy, sz);
+        }
+
+        static void Water(List<Mark> list, string tag, string accent, string body, float x, float z, float top)
+        {
+            float leg = 11f;
+            Box(list, "Landmark_Body_" + tag + "A", body, x - 1.5f, leg * 0.5f, z - 1.5f, 0.5f, leg, 0.5f);
+            Box(list, "Landmark_Body_" + tag + "B", body, x + 1.5f, leg * 0.5f, z - 1.5f, 0.5f, leg, 0.5f);
+            Box(list, "Landmark_Body_" + tag + "C", body, x - 1.5f, leg * 0.5f, z + 1.5f, 0.5f, leg, 0.5f);
+            Box(list, "Landmark_Body_" + tag + "D", body, x + 1.5f, leg * 0.5f, z + 1.5f, 0.5f, leg, 0.5f);
+            Box(list, "Landmark_Body_" + tag + "T", body, x, 13.2f, z, 4.6f, 3.4f, 4.6f);
+            Crown(list, tag, accent, x, top, z, 3.4f, 1.6f, 3.4f);
+        }
+
+        static void Crane(List<Mark> list, string tag, string accent, string body, float x, float z, float top)
+        {
+            Box(list, "Landmark_Body_" + tag + "M", body, x, 9f, z, 1.15f, 18f, 1.15f);
+            Box(list, "Landmark_Body_" + tag + "J", body, x + 4.2f, 17.6f, z, 9.2f, 0.7f, 0.7f);
+            Box(list, "Landmark_Body_" + tag + "K", body, x - 2.2f, 17.2f, z, 2.4f, 1.1f, 1.1f);
+            Box(list, "Landmark_Body_" + tag + "C", body, x, 15.2f, z, 1.8f, 1.6f, 1.8f);
+            Crown(list, tag, accent, x, top, z, 2.2f, 2f, 2.2f);
+        }
+
+        static void Clock(List<Mark> list, string tag, string accent, string body, float x, float z, float top)
+        {
+            Box(list, "Landmark_Body_" + tag + "S", body, x, 8f, z, 2.6f, 16f, 2.6f);
+            Box(list, "Landmark_Body_" + tag + "F", "ztrim", x, 15.2f, z + 1.35f, 2.2f, 2.2f, 0.2f);
+            Crown(list, tag, accent, x, top, z, 3.4f, 2.2f, 3.4f);
+        }
+
+        static void Sign(List<Mark> list, string tag, string accent, string body, float x, float z, float top)
+        {
+            Box(list, "Landmark_Body_" + tag + "L", body, x - 3f, 6f, z, 0.55f, 12f, 0.55f);
+            Box(list, "Landmark_Body_" + tag + "R", body, x + 3f, 6f, z, 0.55f, 12f, 0.55f);
+            Box(list, "Landmark_Body_" + tag + "P", body, x, 9.4f, z, 6.6f, 4.4f, 0.45f);
+            Crown(list, tag, accent, x, top, z, 7.2f, 0.9f, 0.7f);
+        }
+
+        static void Light(List<Mark> list, string tag, string accent, string body, float x, float z, float top)
+        {
+            Box(list, "Landmark_Body_" + tag + "B", body, x, 4f, z, 2.4f, 8f, 2.4f);
+            Box(list, "Landmark_Body_" + tag + "M", body, x, 12f, z, 1.7f, 8f, 1.7f);
+            Box(list, "Landmark_Body_" + tag + "G", body, x, 16.6f, z, 3.4f, 0.7f, 3.4f);
+            Box(list, "Landmark_Body_" + tag + "L", "ztrim", x, 18.4f, z, 1.3f, 2.6f, 1.3f);
+            Crown(list, tag, accent, x, top, z, 2.4f, 1.8f, 2.4f);
+        }
+
+        static void Windmill(List<Mark> list, string tag, string accent, string body, float x, float z, float top)
+        {
+            Box(list, "Landmark_Body_" + tag + "P", body, x, 6.5f, z, 0.7f, 13f, 0.7f);
+            Box(list, "Landmark_Body_" + tag + "H", body, x, 13.2f, z, 1.6f, 1.6f, 1.6f);
+            Box(list, "Landmark_Body_" + tag + "A", body, x, 13.2f, z, 6.4f, 0.35f, 0.35f);
+            Box(list, "Landmark_Body_" + tag + "B", body, x, 13.2f, z, 0.35f, 6.4f, 0.35f);
+            Crown(list, tag, accent, x, top, z, 1.8f, 1.2f, 1.8f);
+        }
+
+        static void Archway(List<Mark> list, string tag, string accent, string body, float x, float z, float top)
+        {
+            Box(list, "Landmark_Body_" + tag + "L", body, x - 2.2f, 6f, z, 0.7f, 12f, 0.7f);
+            Box(list, "Landmark_Body_" + tag + "R", body, x + 2.2f, 6f, z, 0.7f, 12f, 0.7f);
+            Crown(list, tag, accent, x, top, z, 5.6f, 1.3f, 0.9f);
+        }
+
+        static void Board(List<Mark> list, string tag, string accent, string body, float x, float z, float top)
+        {
+            Box(list, "Landmark_Body_" + tag + "L", body, x - 2.4f, 6f, z, 0.45f, 12f, 0.45f);
+            Box(list, "Landmark_Body_" + tag + "R", body, x + 2.4f, 6f, z, 0.45f, 12f, 0.45f);
+            Box(list, "Landmark_Body_" + tag + "P", body, x, 10.2f, z, 5.6f, 3.6f, 0.4f);
+            Crown(list, tag, accent, x, top, z, 6f, 0.8f, 0.6f);
+        }
+
+        static void Buoy(List<Mark> list, string tag, string accent, string body, float x, float z, float top)
+        {
+            Box(list, "Landmark_Body_" + tag + "P", body, x, 7f, z, 1.3f, 14f, 1.3f);
+            Box(list, "Landmark_Body_" + tag + "R", body, x, 13.4f, z, 2.8f, 0.5f, 2.8f);
+            Crown(list, tag, accent, x, top, z, 2.2f, 2.2f, 2.2f);
+        }
+
+        static void Chimney(List<Mark> list, string tag, string accent, string body, float x, float z, float top)
+        {
+            Box(list, "Landmark_Body_" + tag + "A", body, x - 1.3f, 8f, z, 1.5f, 16f, 1.5f);
+            Box(list, "Landmark_Body_" + tag + "B", body, x + 1.3f, 6.5f, z, 1.3f, 13f, 1.3f);
+            Crown(list, tag, accent, x - 1.3f, top, z, 2f, 2f, 2f);
+        }
+
+        static void Gantry(List<Mark> list, string tag, string accent, string body, float x, float z, float top)
+        {
+            Box(list, "Landmark_Body_" + tag + "L", body, x - 4f, 6.5f, z, 0.6f, 13f, 0.6f);
+            Box(list, "Landmark_Body_" + tag + "R", body, x + 4f, 6.5f, z, 0.6f, 13f, 0.6f);
+            Box(list, "Landmark_Body_" + tag + "B", body, x, 13.2f, z, 9f, 0.7f, 0.7f);
+            Crown(list, tag, accent, x, top, z, 2.4f, 1.6f, 1.4f);
+        }
+
+        static void Radio(List<Mark> list, string tag, string accent, string body, float x, float z, float top)
+        {
+            Box(list, "Landmark_Body_" + tag + "P", body, x, 9f, z, 0.55f, 18f, 0.55f);
+            Box(list, "Landmark_Body_" + tag + "D", body, x + 1.6f, 14f, z, 2.6f, 0.35f, 2.6f);
+            Box(list, "Landmark_Body_" + tag + "A", body, x, 8f, z, 4f, 0.25f, 0.25f);
+            Crown(list, tag, accent, x, top, z, 1.4f, 2.2f, 1.4f);
+        }
+
+        static void Billboard(List<Mark> list, string tag, string accent, string body, float x, float z, float top)
+        {
+            Box(list, "Landmark_Body_" + tag + "L", body, x - 3.2f, 6f, z, 0.5f, 12f, 0.5f);
+            Box(list, "Landmark_Body_" + tag + "R", body, x + 3.2f, 6f, z, 0.5f, 12f, 0.5f);
+            Box(list, "Landmark_Body_" + tag + "P", body, x, 10f, z, 7.2f, 4f, 0.4f);
+            Crown(list, tag, accent, x, top, z, 7.6f, 0.8f, 0.7f);
         }
 
         static void Gates(List<Mark> list, int arena)
@@ -380,21 +518,109 @@ namespace Tag.Level
             int n = 0;
             for (int a = 0; a < 3; a++)
             {
-                MegaParkP1Layout.Solid[] solids = a == ParkArena.Pocket ? PocketParkLayout.BuildSolids()
-                    : a == ParkArena.Stack ? StackYardLayout.BuildSolids()
-                    : MegaParkP1Layout.BuildSolids();
-                for (int i = 0; i < solids.Length; i++)
-                {
-                    if (solids[i].Name != null && solids[i].Name.StartsWith("Landmark_Crown_", StringComparison.Ordinal))
-                        n++;
-                }
-                Mark[] marks = Fill(a, solids);
+                Mark[] marks = Fill(a, Solids(a));
                 for (int i = 0; i < marks.Length; i++)
                 {
-                    if (marks[i].Name == "Landmark_Crown_East") n++;
+                    if (marks[i].Name != null && marks[i].Name.StartsWith("Landmark_Crown_", StringComparison.Ordinal))
+                        n++;
                 }
             }
             return n;
+        }
+
+        static bool EyeOk(Report report)
+        {
+            Mark[] marks = Fill(ParkArena.Mega, Solids(ParkArena.Mega));
+            int crowns = 0;
+            for (int i = 0; i < marks.Length; i++)
+            {
+                if (marks[i].Name == null || !marks[i].Name.StartsWith("Landmark_Crown_", StringComparison.Ordinal))
+                    continue;
+                crowns++;
+                float top = marks[i].Y + marks[i].Sy * 0.5f;
+                if (top < 12f || top > 25f)
+                {
+                    report.Fail(marks[i].Name + " height");
+                    return false;
+                }
+            }
+            if (crowns < 2) return false;
+            float mapW = MegaParkP1Layout.MapW;
+            float mapD = MegaParkP1Layout.MapD;
+            const int vw = 628;
+            const int vh = 334;
+            for (int seat = 0; seat < 4; seat++)
+            {
+                ParkArena.HumanSeat(ParkArena.Mega, seat, out float ex, out _, out float ez, out _);
+                int seen = 0;
+                for (int i = 0; i < marks.Length; i++)
+                {
+                    Mark m = marks[i];
+                    if (m.Name == null || !m.Name.StartsWith("Landmark_Crown_", StringComparison.Ordinal))
+                        continue;
+                    if (Projects(m.X, m.Y, m.Z, ex, 1.65f, ez, mapW * 0.5f, 3.2f, mapD * 0.5f, 68f, vw, vh))
+                        seen++;
+                }
+                if (seen < 2)
+                {
+                    report.Fail("seat " + seat.ToString(CultureInfo.InvariantCulture) + " sees " + seen.ToString(CultureInfo.InvariantCulture));
+                    return false;
+                }
+            }
+            for (int a = 0; a < 3; a++)
+            {
+                Mark[] all = a == ParkArena.Mega ? marks : Fill(a, Solids(a));
+                for (int i = 0; i < all.Length; i++)
+                {
+                    if (all[i].Name == null || !all[i].Name.StartsWith("Landmark_Crown_", StringComparison.Ordinal))
+                        continue;
+                    float top = all[i].Y + all[i].Sy * 0.5f;
+                    if (top < 12f || top > 25f) return false;
+                }
+            }
+            return true;
+        }
+
+        static bool Projects(float x, float y, float z, float ex, float ey, float ez, float tx, float ty, float tz, float fov, int w, int h)
+        {
+            float fx = tx - ex;
+            float fy = ty - ey;
+            float fz = tz - ez;
+            float m = (float)Math.Sqrt(fx * fx + fy * fy + fz * fz);
+            if (m < 1e-4f) m = 1f;
+            fx /= m; fy /= m; fz /= m;
+            float ux0 = -fx * fy;
+            float uy0 = 1f - fy * fy;
+            float uz0 = -fz * fy;
+            float um = (float)Math.Sqrt(ux0 * ux0 + uy0 * uy0 + uz0 * uz0);
+            if (um < 1e-4f) um = 1f;
+            float ux = ux0 / um;
+            float uy = uy0 / um;
+            float uz = uz0 / um;
+            float rx = uy * fz - uz * fy;
+            float ry = uz * fx - ux * fz;
+            float rz = ux * fy - uy * fx;
+            float dx = x - ex;
+            float dy = y - ey;
+            float dz = z - ez;
+            float cx = dx * rx + dy * ry + dz * rz;
+            float cy = dx * ux + dy * uy + dz * uz;
+            float cz = dx * fx + dy * fy + dz * fz;
+            if (cz < 0.8f) return false;
+            float aspect = w / (float)h;
+            float tan = (float)Math.Tan(fov * 0.5f * Math.PI / 180.0);
+            float ndcX = (cx / cz) / tan / aspect;
+            float ndcY = (cy / cz) / tan;
+            float px = (ndcX * 0.5f + 0.5f) * (w - 1);
+            float py = (0.5f - ndcY * 0.5f) * (h - 1);
+            return px >= 8f && py >= 8f && px < w - 8f && py < h - 8f;
+        }
+
+        static MegaParkP1Layout.Solid[] Solids(int arena)
+        {
+            if (arena == ParkArena.Pocket) return PocketParkLayout.BuildSolids();
+            if (arena == ParkArena.Stack) return StackYardLayout.BuildSolids();
+            return MegaParkP1Layout.BuildSolids();
         }
 
         static bool CvdOk()
@@ -437,13 +663,16 @@ namespace Tag.Level
                         return false;
                     if (AccessibilityPalette.Contrast(r, g, b, tr, tg, tb) < 3f) return false;
                 }
-                for (int p = 0; p < AccessibilityPalette.Players; p++)
+                for (int pal = 0; pal < AccessibilityPalette.Count; pal++)
                 {
-                    AccessibilityPalette.Player(AccessibilityPalette.Default, p, out float pr, out float pg, out float pb);
-                    if (AccessibilityPalette.Contrast(r, g, b, pr, pg, pb) < 3f) return false;
+                    for (int p = 0; p < AccessibilityPalette.Players; p++)
+                    {
+                        AccessibilityPalette.Player(pal, p, out float pr, out float pg, out float pb);
+                        if (AccessibilityPalette.Contrast(r, g, b, pr, pg, pb) < 3f) return false;
+                    }
+                    AccessibilityPalette.It(pal, out float ir, out float ig, out float ib);
+                    if (AccessibilityPalette.Contrast(r, g, b, ir, ig, ib) < 3f) return false;
                 }
-                AccessibilityPalette.It(AccessibilityPalette.Default, out float ir, out float ig, out float ib);
-                if (AccessibilityPalette.Contrast(r, g, b, ir, ig, ib) < 3f) return false;
             }
             return true;
         }
@@ -468,6 +697,20 @@ namespace Tag.Level
             if (Chip(1, ParkArena.Mega, 20f, 50f) != "P2 · West Yard")
             {
                 report.Fail("west chip");
+                return false;
+            }
+            LocalProfiles.Clear();
+            int named = LocalProfiles.Create("Sam");
+            if (!LocalProfiles.TrySeat(1, named) || Chip(1, ParkArena.Mega, 20f, 50f) != "Sam · West Yard")
+            {
+                LocalProfiles.Clear();
+                report.Fail("named chip");
+                return false;
+            }
+            LocalProfiles.Clear();
+            if (Chip(1, ParkArena.Mega, 20f, 50f) != "P2 · West Yard")
+            {
+                report.Fail("chip reset");
                 return false;
             }
             if (NameAt(ParkArena.Mega, 80f, 80f) != "North Bowl"
@@ -640,16 +883,25 @@ namespace Tag.Level
             return MegaChips;
         }
 
-        static string[] BuildChips(string[] names)
+        static void EnsureChips()
         {
-            var all = new string[4 * names.Length];
+            int gen = LocalProfiles.LabelGen;
+            if (gen == _chipGen && MegaChips[0] != null) return;
+            _chipGen = gen;
+            FillChips(MegaChips, MegaNames);
+            FillChips(PocketChips, PocketNames);
+            FillChips(StackChips, StackNames);
+        }
+
+        static void FillChips(string[] all, string[] names)
+        {
             for (int s = 0; s < 4; s++)
             {
-                string seat = s == 0 ? "P1 · " : s == 1 ? "P2 · " : s == 2 ? "P3 · " : "P4 · ";
+                string who = LocalProfiles.SeatName(s);
+                if (string.IsNullOrEmpty(who)) who = SeatWord[s];
                 for (int z = 0; z < names.Length; z++)
-                    all[s * names.Length + z] = seat + names[z];
+                    all[s * names.Length + z] = who + " · " + names[z];
             }
-            return all;
         }
 
         static float HueGap(float r, float g, float b)

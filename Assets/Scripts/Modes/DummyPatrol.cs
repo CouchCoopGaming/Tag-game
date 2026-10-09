@@ -1222,7 +1222,7 @@ namespace Tag.Modes
                 Vector3 fleePoint = transform.position + away * 40f;
                 MovementConfig moveCfg = _selfMotor != null ? _selfMotor.cfg : null;
                 float grav = moveCfg != null ? moveCfg.gravity : 22f;
-                float fallG = moveCfg != null ? moveCfg.fallGravityMult : 1.5f;
+                float fallG = moveCfg != null ? moveCfg.fallGravityMult : 1.62f;
                 Vector3 padAim = Vector3.zero;
                 float padDist = 999f;
                 bool padHelps = false;
@@ -1562,8 +1562,8 @@ namespace Tag.Modes
                 else if (isIt && _target != null) tagBack = _target.TagBackRemaining;
                 _parkTimer = EnemyAi.PlanInterval(EnemyAi.ClampDifficulty(difficulty), isIt, dist, tagBack);
                 MovementConfig moveCfg = _selfMotor != null ? _selfMotor.cfg : null;
-                float sprint = moveCfg != null ? moveCfg.sprintSpeed : 12f;
-                float crouch = moveCfg != null ? moveCfg.crouchSpeed : 3.2f;
+                float sprint = moveCfg != null ? moveCfg.sprintSpeed : 13.8f;
+                float crouch = moveCfg != null ? moveCfg.crouchSpeed : 3.68f;
                 float wall = moveCfg != null ? moveCfg.wallRunSpeed : 9.5f;
                 Vector3 threat = isIt && _target != null ? _target.transform.position : perceived;
                 bool los = HasLineOfSight(threat);

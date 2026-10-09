@@ -1,20 +1,20 @@
 # Stack Yard skill routes
 
-Expert chains use the locked motor. Coyote is 0.10 s, jump buffer is 0.16 s, and cling grace is 0.08 s. Beginner time is the ground nav at sprint 12. A route is in band when it beats that line by 10–25%.
+Expert chains use the locked motor. Coyote is 0.10 s, jump buffer is 0.16 s, and cling grace is 0.08 s. Beginner time is the ground nav at sprint 13.8. A route is in band when the save is between -6% and 25%. The old 10–25% band was at sprint 12.
 
 | Route | Chain | Beginner | Expert | Save |
 | --- | --- | --- | --- | --- |
-| RoofZip | Ride Zip Cross from the west roof down across the yard. Walking the street is the long way. | 3.02 s | 2.53 s | 16.1% |
+| RoofZip | Ride Zip Cross from the west roof down across the yard. Walking the street is the long way. | 3.01 s | 2.53 s | 16.0% |
 
-Start (38.0, 42.0) end (68.0, 26.0). Chevrons sit on Crate_Roof. zip 35.44 m (Zip_Cross) 2.53 s. The zip rides at 14 m/s and regrabs on its locked 0.30 s cooldown. Coyote 0.10 s covers the hop.
+Start (38.0, 46.0) end (54.0, 12.0). Chevrons sit on Crate_Roof. zip 35.44 m (Zip_Cross) 2.53 s. The zip rides at 14 m/s and regrabs on its locked 0.30 s cooldown. Coyote 0.10 s covers the hop.
 
-| YardPad | The yard launch pad cuts the south street at pad speed. | 1.30 s | 1.10 s | 15.9% |
+| YardPad | The yard launch pad cuts the south street at pad speed. | 1.29 s | 1.08 s | 16.2% |
 
-Start (18.0, 18.0) end (33.3, 16.0). Chevrons sit on Cover_A. pad (Launch_Yard) 1.10 s. The pad uses its locked 0.30 s cooldown. Coyote 0.10 s covers the hop.
+Start (20.0, 18.0) end (37.1, 20.0). Chevrons sit on Cover_A. pad (Launch_Yard) 1.08 s. The pad uses its locked 0.30 s cooldown. Coyote 0.10 s covers the hop.
 
-| WestClimb | Climb the yard cling face, wall-run it, then wall-jump off toward the south street. | 1.41 s | 1.19 s | 16.2% |
+| WestClimb | Climb the yard cling face, wall-run it, then wall-jump off toward the south street. | 1.40 s | 1.18 s | 16.1% |
 
-Start (28.0, 16.0) end (16.0, 28.0). Chevrons sit on Cling_Yard. climb 2.40 m (Cling_Yard) 0.40 s → wall-run 2.60 m (Cling_Yard) 0.27 s → wall-jump (Cling_Yard) 0.51 s. Wall-run leaves on cling grace 0.08 s or jump buffer 0.16 s. Coyote 0.10 s covers the hop.
+Start (26.0, 18.0) end (16.0, 32.0). Chevrons sit on Cling_Yard. climb 2.40 m (Cling_Yard) 0.40 s → wall-run 2.60 m (Cling_Yard) 0.27 s → wall-jump (Cling_Yard) 0.50 s. Wall-run leaves on cling grace 0.08 s or jump buffer 0.16 s. Coyote 0.10 s covers the hop.
 
 
 ## Tiers
