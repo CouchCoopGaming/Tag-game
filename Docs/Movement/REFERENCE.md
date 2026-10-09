@@ -2,7 +2,7 @@
 
 This is the catalog of reference poses. It is not gameplay. Nothing here is root motion, and the raw video stays off the repo.
 
-Pull the MediaPipe curves from `Docs/Storror/out/json/<id>.json` (clips 01–20) and `Docs/Movement/pose/<id>.json` (clips 21–24 and the emotes). Stick strips are next to those JSON files. Hier keys for the tic-tac live in `Docs/HierStills/v080/pass5/keyed_clips.json`. Hier keys for the CC BY emotes live in `Docs/Movement/emotes/keyed_emotes.json`. The pass 16 video retargets live in `Docs/Movement/emotes/pass16/keyed_emotes.json` and stay reference-only. The shippable hand-keyed emotes live in `Docs/Movement/emotes/pass17/keyed_emotes.json`.
+Pull the MediaPipe curves from `Docs/Storror/out/json/<id>.json` (clips 01–20) and `Docs/Movement/pose/<id>.json` (clips 21–24 and the emotes). Stick strips are next to those JSON files. Hier keys for the tic-tac live in `Docs/HierStills/v080/pass5/keyed_clips.json`. Hier keys for the CC BY emotes live in `Docs/Movement/emotes/keyed_emotes.json`. The pass 16 video retargets live in `Docs/Movement/emotes/pass16/keyed_emotes.json` and stay reference-only. The four hand-keyed emotes live in `Docs/Movement/emotes/pass17/keyed_emotes.json` and are parked. Hip-rule measurements for the movement lead live in `Docs/Movement/hipref/`.
 
 Grades: **A** clean enough to retarget. **B** usable with the note. **C** timing only. **D** do not copy the pose.
 
@@ -10,7 +10,7 @@ Grades: **A** clean enough to retarget. **B** usable with the note. **C** timing
 
 Clips 01–20 are STORROR YouTube uploads. The YouTube standard license applies (all rights reserved). They are reference only. The raw files are not in the repo.
 
-The project ships CC0 or OFL only. A clip with no license, or a CC BY license, can guide a hand-keyed pose. It must not be retargeted into shipped animation. Every clip that came from video stays REFERENCE-ONLY, including the two CC0 Commons dances. The four pass 17 emotes are original poses, labeled SHIPPABLE (own work, CC0).
+The project ships CC0 or OFL only. A clip with no license, or a CC BY license, can guide a hand-keyed pose. It must not be retargeted into shipped animation. Every clip that came from video stays REFERENCE-ONLY, including the two CC0 Commons dances. The four pass 17 emotes are original poses, own work, CC0, and they are parked. Their keys are unchanged. Video reference in this catalog stays REFERENCE-ONLY.
 
 Clips 21–23 and clip 24 are one Internet Archive mirror of a Vimeo upload, [Sport-Freestyle-freerunning](https://vimeo.com/721018315) (`vimeo-721018315`). No Creative Commons license is stated on the Archive item or in the Vimeo oEmbed record. Treat them as all-rights-reserved. Each pose header says `REFERENCE-ONLY / DO-NOT-SHIP`. YouTube itself refused the download without cookies, which this pass does not use.
 
@@ -144,7 +144,9 @@ Pelvis drop is −0.3–13.3 cm. The sole stays at 0.8 cm. The 4.85 cm absolute 
 
 ## Pass 17 — hand-keyed emotes
 
-Video tracking left pose intersections in the hundreds, and the hips did not read as a celebration. These four clips are original poses on the Hier. The Commons dances were a reminder of how long a cheer or a step feels. No tracked pose was copied. The label is **SHIPPABLE (own work, CC0)**.
+Parked, 9 Oct 2026, Landon: emotes stay as they are until the game is mostly functional. No further emote pass. The V-cheer reads. The fist pump still reads as a sideways arm swing, and the shrug still reads as hands up. Those notes are recorded and not fixed.
+
+Video tracking left pose intersections in the hundreds, and the hips did not read as a celebration. These four clips are original poses on the Hier. The Commons dances were a reminder of how long a cheer or a step feels. No tracked pose was copied. The license label stays **SHIPPABLE (own work, CC0)**. The work status is parked.
 
 Each frame keeps an athletic sit: the pelvis is behind the feet, the hinge is at the hip, the knees are bent, and the shins point forward. Hips local Y is the pelvis drop. On the cheer it also lifts the hop. The armature stays at the origin.
 
@@ -194,3 +196,7 @@ These were checked and not used:
 - [19 grundtechniken roulade.png](https://commons.wikimedia.org/wiki/File:19_grundtechniken_roulade.png), Roger Widmer / ParkourONE, is a roll drawing under CC BY-SA 4.0. That is not a ship license.
 
 One public-domain roll animation did verify. [Dive Roll over Table](https://commons.wikimedia.org/wiki/File:Dive_Roll_over_Table.gif), Brianoob, own work, 27 October 2009, `{{PD-self}}`. The license line on the file page is: "I, the copyright holder of this work, release this work into the public domain. This applies worldwide. In some countries this may not be legally possible; if so: I grant anyone the right to use this work for any purpose, without any conditions, unless such conditions are required by law." It is a 128×96 GIF of a dive roll over a picnic table, also filed under hapkido. It is not a live landing from a drop, and it is not retargeted here. Use it for the roll shape only.
+
+## Hip-rule measurements
+
+Key frames for the roll landing, vaults, climb plants, the mantle, wall plants and kicks, and the slide are measured from these tracks in `Docs/Movement/HIPREF.md`. The curves are arrays in `Docs/Movement/hipref/measurements.json`. Side sticks, with no video frames, are `Docs/Movement/hipref/<clip>_side.png`. Every one of those tracks is REFERENCE-ONLY. The ledger on `cursor/tag-movement` was not edited.
