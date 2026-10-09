@@ -12,6 +12,7 @@ Nothing in this file is a git merge of a helper branch. Old PRs stay open.
 | C1, exits | `176983ee` | One exit beat per move. Recovery keys were then sat on this branch. The played vault was not replaced. |
 | E, evasion | `65aa8de0` | `stutter`, `spinL`, `spinR`, `jukeL`, `jukeR`, `dive`. Flag stays off. |
 | C1, climb top-out | `a08d687` | Draft #138. `exit-ClimbTopOut` plant. Folded with `git merge`. |
+| C1, climb and wall run | `ebb8741` | Draft #140. Played climb and wall run. Folded with `git merge` as `98cfb017`. |
 
 The played vault is `MantlePose.Cleared`. `MantlePose.At` remains the printed proof sample used by the handoff and the still writers. `VerbExitId.Vault` is the recovery after the cross, not a second copy of the vault. The path check looks for `MantlePose.Cleared` on the locomotor.
 
@@ -30,7 +31,7 @@ C2 is draft #127, `cursor/tag-fx-kit`, tip `fc9c8d82` when this note was written
 
 ## Locks
 
-`StrafeJumpSim --proofs` matches the 14 locked lines, including `ropeBody=0` and `hot-path allocs before=101 after=0`.
+`StrafeJumpSim --proofs` on this tip: 11 of the 14 lines match the locked file, including `couch-grapple` with `ropeBody=0`. Three lines moved because the folded wall re-key changes the printed tuck and the wall yaws. `handoff` wall is `65.0>8.8` (was `81.0>8.8`; the after number stays 8.8). `body-line` wall is `32.3>15.1` (was `35.6>16.6`). `wall pose` is `reachYaw=-28 pullYaw=-28 innerPitch=46 outerFwd=-48` and adds `thighYaw=36/24`. `driveThigh`, `plantThigh`, and `climbReach` stay. `air-feel` tuck stays `3.7>1.6`. Coyote, speeds, `rollAt=36.5`, and `rootMotion=0` stay. `--evasion` matches the two lines below. `VerbExitFit.Holds` is true: `exit-fit join=0.22 wallJump=-110 zip=-158 grapple=-158 lip=1>0 skate=12>0 reverse=1 rollOpen=58 step=48.1 budget=96`. `JumpPose.Holds`, `WallPose.Holds`, `WallJumpPose.Holds`, and `MechPoseProof.Holds` are true. The full sim was not re-run, so `hot-path allocs before=101 after=0` was not reprinted.
 
 ```
 evasion-moves stutter=0.35 spin=0.90 juke=1.40 dive=3.00 capOK=1 rootMotion=0 flagDefault=off
@@ -55,13 +56,15 @@ The deepest non-adjacent reading on those frames is 0.36 cm (`Spine|UpperLeg_R`)
 
 Per clip, that sit, pose fails 0, world 0: wall run 9, vault 10, mantle 9, slide 9, launch land 10, stagger 10, soft land 8.
 
+Those seven sits are hip 18° and spine 8°. The ratio is 2.25, so the old hinge bar passes. The new floors fail every frame. A landing or a crouch needs hip flexion of at least 35° and spine flexion of at least 15°. Wall run, vault, mantle, and slide are C1's. Launch land, stagger, and soft land are E's. The keys stay.
+
 `exit-ClimbTopOut` was remeasured after the #138 merge. The capsule is already standing when the exit starts, and both soles stay on the lid, so the frames are a plant. Plant bars are pelvisBack at least 8 cm, knee at least 25°, drop at least 8 cm. All 11 frames:
 
 `hip-sit clips=1 fails=0 pelvisBackMin=20.3 hingeMin=2.25 kneeMin=67.9 pelvisDropMin=17.8`
 
 `no-clip clips=1 frames=11 worldMax=0.0 pose=0 rigJoint=5.99 fails=0`
 
-The keyed knee euler is −70. The geometric support knee is 67.9°. The shin is 17.9 cm ahead of the ankle at the shallowest frame. The sole is 0.05 cm. Pose reading is 0.36 cm (`Spine|UpperLeg_R`), so the pass line is `pose=0`. C1 reported pelvis 13.3 cm back and knee 70°. This scanner reads pelvisBack 20.3 to 20.9 cm and geometric knee 67.9°. The drop matches at 17.8 cm. The plant passes, and it sits inside the +13 to +43 cm, 45–115° band.
+The keyed knee euler is −70. The geometric support knee is 67.9°. The shin is 17.9 cm ahead of the ankle at the shallowest frame. The sole is 0.05 cm. Pose reading is 0.36 cm (`Spine|UpperLeg_R`), so the pass line is `pose=0`. C1 reported pelvis 13.3 cm back and knee 70°. This scanner reads pelvisBack 20.3 to 20.9 cm and geometric knee 67.9°. The drop matches at 17.8 cm. Pelvis, knee, and drop still clear the older bars, and the sit is inside the +13 to +43 cm, 45–115° band. The new plant floor fails all 11 frames: hip flexion is 18°, under 25°. A plant has no spine floor. That fail is C1's. The keys were not moved on this branch.
 
 ## Evasion
 
@@ -81,59 +84,61 @@ Those two lines are E's facing-aware measure of the folded keys. The full scan b
 
 ## Full scan
 
-Stride 1 on this tip, every locomotion clip, every exit, and the six evasion clips. 39 clips, 769 frames. Evasion keys are the game Euler. `Sample.Drop` is the hips-bone drop, not the visual root. Thigh roll is the last two fields. `exit-ClimbTopOut` is scored as a plant.
+Stride 1 on this tip, every locomotion clip, every exit, and the six evasion clips. 39 clips, 769 frames. The played climb and wall run are the folded #140 keys. Evasion keys are the game Euler. `Sample.Drop` is the hips-bone drop, not the visual root. Thigh roll is the last two fields. `exit-ClimbTopOut` is scored as a plant. Plants need hip flexion of at least 25°. Landings and crouches need hip flexion of at least 35° and spine flexion of at least 15°. The ratio stays at least 1.5.
 
-`HIP clips 39 frames 769 loaded 159 hipFails 37 backMin -18.5 hingeMin 1.12 kneeMin 1.6 dropMin 0.0`
+`HIP clips 39 frames 769 loaded 159 hipFails 159 backMin -18.5 hingeMin 1.12 kneeMin 1.6 dropMin 0.0 hipFlexMin 0.0 spineFlexMin 0.0`
 
-`NOCLIP clips 39 frames 769 worldMax 1.08 pose 5.09 rigJoint 8.00 fails 102`
+`NOCLIP clips 39 frames 769 worldMax 1.08 pose 5.09 rigJoint 8.00 fails 74`
 
-Loaded frames are plants, landings, and crouches. Cruise and airborne frames are in the pose column and stay out of the hip fail count. A pose pass line is `pose=0` when every frame is at or under 0.5 cm. The number in parentheses is the deepest non-adjacent reading. `rigJoint` 8.00 cm is the hip cuff on the sprint spread and stays with the rig lane. This is not a global `fails=0`. The pass-21 14-clip line stays historical.
+Loaded frames are plants, landings, and crouches. Cruise and airborne frames are in the pose column and stay out of the hip fail count. Every loaded frame fails the new floors, so hip fails equal the loaded count. A pose pass line is `pose=0` when every frame is at or under 0.5 cm. The number in parentheses is the deepest non-adjacent reading. `rigJoint` 8.00 cm is the hip cuff on the sprint spread and stays with the rig lane. This is not a global `fails=0`. The pass-21 14-clip line stays historical.
 
-Hip fails are 37: slide 7, stagger 8, exit-Roll 4, exit-RollAbsorb 2, spinL 7, spinR 7, dive 2. The spin count faces world −Y. The body is turned, so the pelvis reads in front (back −18.5) while the knee is 52.9° and the drop is 10.4 cm. Dive's two fails are the roll-up drop, 14.1 cm against the 20 cm crouch bar. Pose on that clip is 0.43 cm.
+Pose fails dropped from 102 to 74 because the folded climb (12) and wall run (16) now sit under 0.5 cm. Climb is 0.42 cm. Wall is 0.43 cm, world 0.31 cm. `worldMax` 1.08 cm is still the stagger. Pose max 5.09 cm is still the punch.
+
+The shared recovery sit is hip 18° and spine 8°, ratio 2.25. That fails a plant on hip flexion and fails a landing or a crouch on both floors. Dive's roll-up is the half-squat the floor closes: hip 6° over spine 4°, ratio 1.5, drop still 14.1 cm. Exit-Roll's late contact is hip 6° and spine 2°. Slide stays knee 8° and shin −32.1 cm, and now also misses both floors. The spin count still faces world −Y. The body is turned, so the pelvis reads in front (back −18.5) while the knee is 52.9° and the drop is 10.4 cm. The new plant floor adds the frames whose hip is 14°.
 
 ## Clip table
 
 | Clip | Owner | Hip-sit fails | Pose |
 |---|---|---|---|
-| vault (played) | C1 | 0 (plant and land) | 0 (0.42) world 0 fails 0 |
-| climb | C1 | 0, cruise | 3.74 Spine\|UpperLeg_L world 0 fails 12 |
-| slide | A1 | 7 knee, shin | 0 (0.43) world 0 fails 0 |
-| wall | C1 | 0, cruise | 4.97 Chest\|UpperArm_R world 0 fails 16 |
+| vault (played) | C1 | 2 hipFlex, spineFlex. Plant hip 18°. Land hip 20° spine 8° | 0 (0.42) world 0 fails 0 |
+| climb | C1 | 0, cruise | 0 (0.42) world 0 fails 0 |
+| slide | A1 | 7 hipFlex, spineFlex, knee, shin | 0 (0.43) world 0 fails 0 |
+| wall | C1 | 0, cruise | 0 (0.43) world 0.31 fails 0 |
 | roll | E | 0, tuck is airborne | 0 (0.43) world 0 fails 0 |
 | pad | A1 | 0, cruise | 4.28 Spine\|UpperLeg_L world 0.05 fails 26 |
 | zip | A1 | 0, cruise | 0 (0.42) world 0 fails 0 |
 | grapple | A1 | 0, hang | 0 (0.22) world 0 fails 0 |
 | punch | A1 | 0, cruise | 5.09 Chest\|UpperArm_R world 0.40 fails 8 |
 | tag | A1 | 0, cruise | 0 (0.42) world 0 fails 0 |
-| stagger | E | 8 back, hinge, knee, kneeBehind, drop, sole, shin | 0.95 Chest\|UpperArm_R world 1.08 fails 5 |
+| stagger | E | 8 back, hinge, hipFlex, spineFlex, knee, kneeBehind, drop, sole, shin | 0.95 Chest\|UpperArm_R world 1.08 fails 5 |
 | idle | A1 | 0, cruise | 0 (0.09) world 0.44 fails 0 |
 | loco | A1 | 0, cruise | 0 (0.41) world 0 fails 0 |
 | sprint | A1 | 0, cruise | 0 (0.41) world 0 fails 0 |
-| exit-WallRun | C1 | 0 | 0 (0.36) fails 0 |
+| exit-WallRun | C1 | 9 hipFlex, spineFlex. Land hip 18° spine 8° | 0 (0.36) fails 0 |
 | exit-WallJump | C1 | 0, airborne | 0 (0.42) fails 0 |
-| exit-ClimbTopOut | C1 | 0 plant, back 20.3, knee 67.9, drop 17.8 | 0 (0.36) world 0 fails 0 |
+| exit-ClimbTopOut | C1 | 11 hipFlex. Plant hip 18° < 25°. Back 20.3, knee 67.9, drop 17.8 | 0 (0.36) world 0 fails 0 |
 | exit-ClingDrop | C1 | 0, airborne | 0 (0.36) world 0.31 fails 0 |
-| exit-Vault | C1 | 0, recovery | 0 (0.36) fails 0 |
-| exit-Mantle | C1 | 0 | 0 (0.36) fails 0 |
-| exit-Slide | C1 | 0 | 0 (0.36) fails 0 |
+| exit-Vault | C1 | 10 hipFlex, spineFlex. Land hip 18° spine 8° | 0 (0.36) fails 0 |
+| exit-Mantle | C1 | 9 hipFlex, spineFlex | 0 (0.36) fails 0 |
+| exit-Slide | C1 | 9 hipFlex, spineFlex. Crouch hip 18° spine 8° | 0 (0.36) fails 0 |
 | exit-AirDash | C1 | 0, airborne | 0 (0.36) fails 0 |
 | exit-Punch | C1 | 0, airborne | 0 (0.42) world 0.84 fails 3 |
 | exit-Lunge | C1 | 0, airborne | 0.74 world 0.65 fails 2 |
 | exit-ZipDrop | C1 | 0, airborne | 0 (0.41) fails 0 |
-| exit-LaunchLand | E | 0 | 0 (0.36) fails 0 |
+| exit-LaunchLand | E | 10 hipFlex, spineFlex. Land hip 18° spine 8° | 0 (0.36) fails 0 |
 | exit-GrappleArrive | C1 | 0, airborne | 0 (0.43) fails 0 |
 | exit-GrappleRelease | C1 | 0, airborne | 0 (0.23) fails 0 |
-| exit-Stagger | E | 0 | 0 (0.36) fails 0 |
+| exit-Stagger | E | 10 hipFlex, spineFlex | 0 (0.36) fails 0 |
 | exit-TagBackEnd | C1 | 0, airborne | 0 (0.11) world 0.86 fails 3 |
-| exit-SoftLand | E | 0 | 0 (0.36) fails 0 |
-| exit-Roll | E | 4 back, knee, drop | 0.94 Spine\|UpperLeg_L world 0.25 fails 3 |
-| exit-RollAbsorb | E | 2 back, knee, drop | 3.32 LowerArm_R\|UpperLeg_R world 0.23 fails 8 |
-| stutter | E | 0 plant, back 14.8, knee 52.9, drop 10.4 | 0 (0.42) world 0 fails 0 |
-| spinL | E | 7 back, shin, kneeBehind, world −Y | 1.40 Spine\|UpperLeg_R world 0 fails 4 |
-| spinR | E | 7 back, shin, kneeBehind, world −Y | 1.40 Spine\|UpperLeg_L world 0 fails 4 |
-| jukeL | E | 0 plant, back 11.9, knee 52.9, drop 8.9 | 0 (0.42) world 0 fails 0 |
-| jukeR | E | 0 plant, back 11.9, knee 52.9, drop 8.9 | 0.64 Spine\|UpperLeg_R world 0 fails 8 |
-| dive | E | 2 drop on the roll-up, 14.1 cm | 0 (0.43) world 0 fails 0 |
+| exit-SoftLand | E | 8 hipFlex, spineFlex. Land hip 18° spine 8° | 0 (0.36) fails 0 |
+| exit-Roll | E | 4 back, hipFlex, spineFlex, knee, drop. Late contact hip 6° spine 2° | 0.94 Spine\|UpperLeg_L world 0.25 fails 3 |
+| exit-RollAbsorb | E | 2 back, hipFlex, spineFlex, knee, drop. Contact hip 6° spine 2° | 3.32 LowerArm_R\|UpperLeg_R world 0.23 fails 8 |
+| stutter | E | 12 hipFlex. Plant hip 14° | 0 (0.42) world 0 fails 0 |
+| spinL | E | 11 hipFlex, back, shin, kneeBehind, world −Y | 1.40 Spine\|UpperLeg_R world 0 fails 4 |
+| spinR | E | 11 hipFlex, back, shin, kneeBehind, world −Y | 1.40 Spine\|UpperLeg_L world 0 fails 4 |
+| jukeL | E | 7 hipFlex. Plant hip 14° | 0 (0.42) world 0 fails 0 |
+| jukeR | E | 7 hipFlex. Plant hip 14° | 0.64 Spine\|UpperLeg_R world 0 fails 8 |
+| dive | E | 12 hipFlex, spineFlex, drop. Crouch hip 6° spine 4°, drop 14.1 cm | 0 (0.43) world 0 fails 0 |
 
 Slide crouch sample, t=0.10: back 39.1, hinge 1.57, knee 8.0, shin −32.1, drop 52.5, sole 0.00. Exit-Roll contact, t=0.433: back 4.2, knee 16.2, drop 0.0. Exit-RollAbsorb contact, t=0.30: back 2.0, knee 11.9, drop 0.0. Stagger land, t=0.00: back −1.0, knee 2.5, drop 0.0, knee behind the pelvis.
 
@@ -153,7 +158,7 @@ Roll, for E, on exit-Roll and exit-RollAbsorb. The played tuck is airborne and i
 
 `02` at 1.24 s is +68.2 cm with the shin at −42.2 cm. `02` at 1.44 s is −46.5 cm. `24_landing_roll` at 0.64 s is −9.0 cm with the knee at 152°, and that film is unlicensed. Those three stay out of the target.
 
-Vault, for C1. The played vault already passes its plant and its land. This row is the landing-absorb shape for that pass. `exit-Vault` is the sat recovery.
+Vault, for C1. The played vault clears pelvis, knee, and drop. The new floors fail the plant (hip 18°) and the land (hip 20°, spine 8°). This row is the landing-absorb shape. `exit-Vault` is the sat recovery, and it fails the same floors at hip 18° and spine 8°.
 
 | Moment | Pelvis behind | Support knee | Shin |
 |---|---|---|---|
@@ -161,7 +166,7 @@ Vault, for C1. The played vault already passes its plant and its land. This row 
 
 The run, the pre-vault, and the cross on `09` are under 8 cm or pelvis-in-front. `08_vault_block_close` and `22_pike_vault` keep the pelvis in front through the cross. `22` is unlicensed.
 
-Climb, for C1. The played climb is a cruise and was not in the #138 diff. The pose fail on that clip stays open. `exit-ClimbTopOut` is the plant measured above. The reference sits, if a wall plant is keyed on the played climb, are:
+Climb, for C1. The played climb is a cruise, so the hip floors do not score it. The #140 fold cleared the chest overlap. Pose is 0.42 cm. `exit-ClimbTopOut` is the plant measured above, and it fails the 25° hip floor. The reference sits, if a deeper wall plant is keyed, are:
 
 | Moment | Pelvis behind | Support knee | Shin |
 |---|---|---|---|
@@ -180,7 +185,7 @@ Mantle, for C1. `exit-Mantle` is the sat recovery. These moments are the climb o
 
 Both ledge moments sit in the pelvis and knee band with the shin trailing. The acceptance window still wants the shin forward, at or ahead of −0.5 cm. The stood-up frame is knee 20°, under the 25° plant bar. In-band shin-forward frames on the same track: 0.07 s at +24.8 cm, knee 51°, shin +6.3 cm; 4.00 s at +13.8 cm, knee 52°, shin +7.9 cm.
 
-Wall, for C1. The played wall run is a cruise, so the hip rule does not score it. C1 is already re-keying the 4.97 cm chest overlap. A plant, if one is keyed later, uses:
+Wall, for C1. The played wall run is a cruise, so the hip floors do not score it. The #140 fold cleared the 4.97 cm chest overlap. Pose is 0.43 cm and world is 0.31 cm. A plant, if one is keyed later, uses:
 
 | Moment | Pelvis behind | Support knee | Shin |
 |---|---|---|---|
@@ -205,10 +210,10 @@ Stagger is absent from that measurement. E keeps the eight-frame landing fail as
 
 ## Helper queues
 
-- C1, branch `cursor/tag-movement-exits` (#139). Exits, the played climb, and the played wall run. C1 is already re-keying the played climb at 3.74 cm and the wall run at 4.97 cm. Still open on the exits: exit-Punch world 0.84 cm, exit-Lunge pose 0.74 cm and world 0.65 cm, exit-TagBackEnd world 0.86 cm. `exit-ClimbTopOut` is folded from #138. The other sat recoveries stay on the 20 cm sit. The vault, climb, mantle, and wall rows above are the target shapes. The filmed files stay on S1's branch.
-- E, branch `cursor/tag-movement-evasion` (#137). Evasion and landings. E is on soft land, hard land, roll, spin, and jukeR. Soft land and the launch land already pass. The played roll tuck is airborne and passes. Still open: stagger 8 hip fails and pose 0.95 cm, exit-Roll 4 hip fails and pose 0.94 cm, exit-RollAbsorb 2 hip fails and pose 3.32 cm, spin pose 1.40 cm plus the world −Y sit, jukeR pose 0.64 cm, dive roll-up drop 14.1 cm. The dive seat on that branch (13.6 cm, knee 79°, pose 1.74 cm) is not folded here. `EvasionPose.Holds` stays as folded. `leadKnee` stays −10 on the played slide, which is A1's clip.
+- C1, branch `cursor/tag-movement-exits` (#139). Exits, the played climb, and the played wall run. The climb and wall-run re-key from #140 is folded. Pose on both is 0. New hip-floor fails, not re-keyed here: played vault, 2 frames (plant hip 18°, land hip 20° spine 8°); `exit-ClimbTopOut`, 11 plant frames at hip 18°; `exit-WallRun` 9, `exit-Vault` 10, `exit-Mantle` 9, and `exit-Slide` 9, each the shared sit at hip 18° and spine 8°. Still open on pose: exit-Punch world 0.84 cm, exit-Lunge pose 0.74 cm and world 0.65 cm, exit-TagBackEnd world 0.86 cm. The vault, climb, mantle, and wall rows above are the target shapes. The filmed files stay on S1's branch.
+- E, branch `cursor/tag-movement-evasion` (#137). Not folded. E is redoing the landings in pass 8. New hip-floor fails: `exit-SoftLand` 8, `exit-LaunchLand` 10, and `exit-Stagger` 10, each hip 18° and spine 8°. Stagger stays 8 hip fails and pose 0.95 cm. `exit-Roll` stays 4 and pose 0.94 cm; the late frame is hip 6° and spine 2°. `exit-RollAbsorb` stays 2 and pose 3.32 cm; contact is hip 6° and spine 2°. Stutter 12, spinL 11, spinR 11, jukeL 7, and jukeR 7 fail the plant hip floor at hip 14°. Dive fails 12: plants at hip 14°, and the roll-up crouch is hip 6° over spine 4° with the drop still at 14.1 cm. The played roll tuck is airborne and passes. The dive seat on that branch (13.6 cm, knee 79°, pose 1.74 cm) is not folded here. `EvasionPose.Holds` stays as folded. `leadKnee` stays −10 on the played slide, which is A1's clip.
 
-A1 keeps idle, loco, sprint, slide, punch, zip, pad, grapple, and tag. This pass cleared zip, idle, loco, and sprint. Slide stays an honest fail under `leadKnee=-10`. Punch stays: cock yaw, strike yaw, and spine yaw are printed. Pad stays: rise pitch and apex pitch are printed, and a thigh spread or an arm roll does not clear the tuck. Grapple and tag already pass.
+A1 keeps idle, loco, sprint, slide, punch, zip, pad, grapple, and tag. Zip, idle, loco, and sprint pass. Slide stays an honest fail under `leadKnee=-10`, and the new floors add hip flexion and spine flexion on those same 7 crouch frames. Punch stays: cock yaw, strike yaw, and spine yaw are printed. Pad stays: rise pitch and apex pitch are printed, and a thigh spread or an arm roll does not clear the tuck. Grapple and tag already pass.
 
 ## Reference, not owned
 
@@ -237,20 +242,21 @@ The four clips this pass moved, same camera, before and after. The after plate c
 - `Docs/Movement/stills/lead1/loco-before.png` and `loco-after.png`. Before, yaw 8 is 0.97 cm in the chest. After, yaw 0 and the thighs turn out 6°. Pose 0.41 cm.
 - `Docs/Movement/stills/lead1/sprint-before.png` and `sprint-after.png`. Same gait change. Pose 0.41 cm.
 
-Punch 5.09 cm, wall 4.97 cm, and pad 4.28 cm are deeper and do not have an after plate. Punch and the pad are locked to printed pitches and yaws. The wall run is C1's. The earlier measured plates stay: `zip-measured.png`, `punch-measured.png`, `wall-measured.png`, `pad-measured.png`.
+Punch 5.09 cm and pad 4.28 cm are deeper and do not have an after plate. Punch and the pad are locked to printed pitches and yaws. Climb and the wall run are cleared on the folded #140 keys. C1's side plates for that re-key are `Docs/Movement/exits/pass28/climb-before.png`, `climb-after.png`, `wall-push-before.png`, `wall-push-after.png`, `wall-run-before.png`, and `wall-run-after.png`. The earlier measured plates stay: `zip-measured.png`, `punch-measured.png`, `wall-measured.png`, `pad-measured.png`.
 
 Climb top-out, same camera, before the #138 keys and after: `Docs/Movement/stills/lead1/exit-ClimbTopOut-before.png` and `exit-ClimbTopOut-after.png`. That pair is a small plant change and does not show a ghost.
 
 ## Full sim
 
-`StrafeJumpSim` was run after the fold. It stops at the zone check with `a zone color missed 3:1`. That check compares zone swatches to every seat color and to cling, slide, plate, zip, and tag. The previous palette already misses 3:1 against those gameplay swatches, so this stop is not new. The run returns before the smooth-still writers. `Docs/SmoothStills/pass11/air.png` and `Docs/SmoothStills/pass12/handoff.png` were not rewritten. The evasion lines above were printed by `--evasion` on the same build.
+The full sim was not re-run on this tip. The earlier run stops at the zone check with `a zone color missed 3:1`. That check compares zone swatches to every seat color and to cling, slide, plate, zip, and tag. The previous palette already misses 3:1 against those gameplay swatches, so this stop is not new. The run returns before the smooth-still writers. `Docs/SmoothStills/pass11/air.png` and `Docs/SmoothStills/pass12/handoff.png` were not rewritten. `--proofs` and `--evasion` on this tip are the lines in Locks.
 
 ## Honest flaws
 
-- Played slide crouch measures knee 8.0° and shin −32.1 cm. The HIPREF entry is knee 77° and shin +12.5 cm. `leadKnee=-10` keeps the slide proof, so the keys stay and the target is recorded.
-- Played stagger landing measures back −1.0 cm, knee 2.5°, drop 0. HIPREF has no stagger row.
-- Exit-Roll and exit-RollAbsorb still fail the landing sit. E's target is the roll table above (+19.8 cm / 115°, +33.7 cm / 102°, +18.0 cm / 52°).
-- Pose still open on A1: punch 5.09 cm, pad 4.28 cm. The printed cock, strike, rise, and apex numbers stay. Wall 4.97 cm and climb 3.74 cm are C1's. Zip, idle, loco, and sprint now pass.
-- Dive on this branch still misses the 20 cm crouch drop (14.1 cm, two frames). Pose on that clip passes at 0.43 cm. The evasion branch seats the roll-up at 13.6 cm, knee 79°, with the spine 1.74 cm inside both thighs, and is not folded here. Spin pose is 1.40 cm. `jukeR` pose is 0.64 cm. Spin's hip fails are the world −Y facing while the body is turned.
+- Played slide crouch measures knee 8.0° and shin −32.1 cm, hip 22°, spine 14°. The HIPREF entry is knee 77° and shin +12.5 cm. `leadKnee=-10` keeps the slide proof, so the keys stay and the target is recorded. The new floors are on those same 7 frames. The clip stays A1's.
+- Played stagger landing measures back −1.0 cm, knee 2.5°, drop 0, hip 0°, spine 0°. HIPREF has no stagger row.
+- Exit-Roll and exit-RollAbsorb still fail the landing sit, and the late contact is the upright half-squat (hip 6°, spine 2°). E's target is the roll table above (+19.8 cm / 115°, +33.7 cm / 102°, +18.0 cm / 52°).
+- Pose still open on A1: punch 5.09 cm, pad 4.28 cm. The printed cock, strike, rise, and apex numbers stay. Climb and the wall run pass after the #140 fold. Zip, idle, loco, and sprint pass.
+- Dive on this branch fails the plant hip floor at 14° and the roll-up floors at hip 6° over spine 4°. The drop is still 14.1 cm on those two crouch frames. Pose on that clip passes at 0.43 cm. The evasion branch seats the roll-up at 13.6 cm, knee 79°, with the spine 1.74 cm inside both thighs, and is not folded here. E is redoing the landings in pass 8. Spin pose is 1.40 cm. `jukeR` pose is 0.64 cm. Spin's facing fails are the world −Y read while the body is turned, and the plant hip is 14°.
+- Soft land, launch land, and the stagger recovery no longer pass. Each is the shared sit at hip 18° and spine 8°. They are E's. The vault plant, the vault land, climb top-out, and the sat wall-run, vault, mantle, and slide recoveries fail the same floors and are C1's. None of those keys were moved on this branch.
 - Default red and orange are under 3:1 on wood. Shapes separate those seats. Palette 0 is the exemption.
 - Soles on the eight sits read 0.47 cm, inside the 0.5 cm window.
