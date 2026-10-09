@@ -1,0 +1,99 @@
+no-clip clips=77 frames=4557 worldMax=0.00 selfMax=4.00 rigJoint=2 pose=162
+absolute depth, no bind subtraction. rigJoint = directed pairs that fail at rest. pose = directed pairs that fail on a live frame and did not fail at rest.
+clip frames worldCm selfCm poseNew
+idle 48 0.00 4.00 15
+walk 18 0.00 4.00 18
+run 18 0.00 4.00 19
+sprint 18 0.00 4.00 20
+start 16 0.00 4.00 16
+stop 16 0.00 4.00 16
+skid 16 0.00 4.00 14
+turn 22 0.00 4.00 15
+lean 18 0.00 4.00 20
+crouch 12 0.00 4.00 16
+land 18 0.00 4.00 14
+blend 16 0.00 4.00 15
+exit-wall-run 3 0.00 4.00 15
+exit-wall-jump 3 0.00 4.00 26
+exit-climb-top 3 0.00 4.00 31
+exit-cling-drop 3 0.00 4.00 19
+exit-vault 3 0.00 4.00 12
+exit-mantle 3 0.00 3.99 25
+exit-slide-exit 3 0.00 4.00 14
+exit-air-dash 3 0.00 4.00 13
+exit-punch 3 0.00 4.00 11
+exit-lunge 3 0.00 4.00 13
+exit-zip-drop 3 0.00 4.00 26
+exit-launch-land 3 0.00 4.00 16
+exit-grapple-arrive 3 0.00 3.98 14
+exit-grapple-release 3 0.00 4.00 12
+exit-stagger 3 0.00 4.00 14
+exit-tag-back 3 0.00 4.00 11
+exit-soft-land 3 0.00 4.00 11
+exit-roll 7 0.00 4.00 33
+exit-roll-absorb 3 0.00 4.00 20
+menu-idle 1 0.00 3.90 4
+menu-ready 1 0.00 4.00 3
+menu-run 1 0.00 3.84 4
+menu-step 1 0.00 3.86 4
+menu-cheer 1 0.00 3.92 2
+menu-slump 1 0.00 3.90 3
+123-01_roll_grass 59 0.00 4.00 86
+123-02_drop_roll_gravel 69 0.00 4.00 76
+123-03_wall_drop_softland 51 0.00 4.00 39
+123-04_window_drop_softland 52 0.00 4.00 45
+123-05_window_jump_land_run 72 0.00 4.00 53
+123-06_run_walljump_climb_window 135 0.00 4.00 61
+123-07_wall_climb_traverse 180 0.00 4.00 49
+123-08_vault_block_close 63 0.00 4.00 49
+123-09_run_vault_park 135 0.00 4.00 44
+123-10_wallrun_slanted 127 0.00 4.00 34
+123-11_wallrun_slanted_34 164 0.00 4.00 36
+123-12_tictac_slanted_wall 169 0.00 4.00 71
+123-13_sprint_front 46 0.00 4.00 20
+123-14_rail_precisions 157 0.00 4.00 66
+123-15_cat_leap_wall 240 0.00 4.00 72
+123-16_sprint_dive_hole 108 0.00 4.00 89
+123-17_slide_slope_crouch 97 0.00 4.00 38
+123-18_vertical_wallrun_back 73 0.00 4.00 46
+123-19_vertical_wallrun_side 73 0.00 4.00 43
+123-20_wallpop_180 57 0.00 4.00 50
+124-01_roll_grass 59 0.00 4.00 86
+124-02_drop_roll_gravel 69 0.00 4.00 76
+124-03_wall_drop_softland 51 0.00 4.00 39
+124-04_window_drop_softland 52 0.00 4.00 45
+124-05_window_jump_land_run 72 0.00 4.00 53
+124-06_run_walljump_climb_window 135 0.00 4.00 61
+124-07_wall_climb_traverse 180 0.00 4.00 49
+124-08_vault_block_close 63 0.00 4.00 49
+124-09_run_vault_park 135 0.00 4.00 44
+124-10_wallrun_slanted 127 0.00 4.00 34
+124-11_wallrun_slanted_34 164 0.00 4.00 36
+124-12_tictac_slanted_wall 169 0.00 4.00 71
+124-13_sprint_front 46 0.00 4.00 20
+124-14_rail_precisions 157 0.00 4.00 66
+124-15_cat_leap_wall 240 0.00 4.00 72
+124-16_sprint_dive_hole 108 0.00 4.00 89
+124-17_slide_slope_crouch 97 0.00 4.00 38
+124-18_vertical_wallrun_back 73 0.00 4.00 46
+124-19_vertical_wallrun_side 73 0.00 4.00 43
+124-20_wallpop_180 57 0.00 4.00 50
+rest pairs
+Mesh_Spine>Mesh_UpperLeg_L 1.48
+Mesh_Spine>Mesh_UpperLeg_R 1.48
+shipped loco (Docs/LocoStills/pass4 sheets, current mannequin, not the candidate)
+no-clip clips=12 frames=236 worldMax=0.17 selfMax=4.00 fails=236
+bind-self=3.99 addedMax=3.86 fail=ground>0.5cm or pair depth>0.5cm, joined verts exempt within 3cm of the joint
+clip frames boneDeg bone slideCm driftCm worldCm selfCm fails
+idle 48 3.66 Foot_R 0.85 1.29 0.17 4.00 48
+walk 18 23.15 UpperArm_L 1.40 1.40 0.00 4.00 18
+run 18 23.22 LowerArm_L 0.00 0.00 0.00 4.00 18
+sprint 18 23.30 Hand_L 0.00 0.00 0.00 4.00 18
+start 16 18.52 Foot_R 1.28 1.33 0.00 4.00 16
+stop 16 15.86 Foot_L 0.70 1.10 0.00 4.00 16
+skid 16 15.41 Foot_R 0.79 0.79 0.00 4.00 16
+turn 22 19.00 Foot_R 1.58 1.58 0.00 4.00 22
+lean 18 23.52 UpperArm_R 0.00 0.00 0.00 4.00 18
+crouch 12 18.00 Foot_R 1.02 1.06 0.00 4.00 12
+land 18 16.12 Foot_L 0.45 0.37 0.00 4.00 18
+blend 16 14.59 Foot_L 0.00 0.00 0.00 4.00 16

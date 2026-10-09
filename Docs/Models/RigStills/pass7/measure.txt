@@ -1,0 +1,19 @@
+authoritative: enclosure. A vertex is inside the other piece only when a ray in each of six axis directions hits an odd number of faces.
+One ray across an open strip does not count. The normal test is not authoritative for cuff vertices on the bone axis or for open-edge backfaces.
+rigJoint uses the normal test at rest and must be 0. pose on the stills is that same normal test, live minus rest.
+Twist is clamped to the last angle at 60 degrees of flexion where enclosure is still 0.
+The left hip channel is a world-X mirror of the right. Each leg is the same shape in its own bone frame, because a world mirror fights the shared +X flex axis.
+ankle *_ray is the enclosure limit. The plain ankle number also requires the normal test to be clear.
+rigJoint=0
+twist-clamp L=10 R=10 at 60 flexion, degrees, ray-clear
+knee L=160 R=155
+ankle L={'dorsi': 15, 'dorsi_ray': 25, 'plantar': 45, 'plantar_ray': 45, 'inv': 15, 'inv_ray': 15, 'ev': 15, 'ev_ray': 15}
+ankle R={'dorsi': 15, 'dorsi_ray': 25, 'plantar': 45, 'plantar_ray': 45, 'inv': 15, 'inv_ray': 15, 'ev': 15, 'ev_ray': 15}
+
+fans: the 24 unsubdivided cuff edges (34 cm, hip ball to the knee end of the cone) are split. Thigh max edge is L=2.09 cm R=2.00 cm.
+bind: each Mesh_* is parented to its one bone. Vertex groups 0, modifiers 0. No vert is blended across the hip.
+A skin deformer was exported and reimported. It left Mesh_UpperLeg_L 3.97 cm inside Mesh_Hips at rest, so the bone parent is the bind that shipped.
+stretch at 110 hip / 70 knee, both legs, reimport: no triangle edge at least 1 mm long exceeds 1.2x its rest length (worst=1.0001, bad=0).
+degenerate edges under 0.01 mm with ratio above 1.2: 53, longest posed 0.0001 mm. Those are coincident verts, not stretched triangles.
+repair rigJoint=0 knee L=160 R=155 flex_fail=[]
+hinge still: support sole 0.2 cm, the raised leg is 110 hip / 70 knee, no mesh below the floor. Posed edges at least 1 mm: x1.000.

@@ -1,0 +1,11 @@
+hip-range current=0° candidate=8° knee current=0° candidate=153°
+
+Commanded flexion from the standing rest, worse leg. The hinge fails when side_depth of that joint pair passes 0.5 cm. Joined verts within 3 cm of the hinge do not count. Fewer than 4 hits do not count. Absolute depth, no bind subtraction.
+
+current hip: rest is already past the limit (Hips inside the thigh 3.99 cm, thigh inside the hips 1.33 cm) on both legs. It stays over through 130°.
+current knee: rest is already past the limit (thigh inside the shin 1.3 cm) on both legs. It stays over through 160°.
+
+candidate hip: clear at rest. Right leg fails at 9° (7° of bone flexion), left leg at 11° (9° of bone flexion). The reported 8° is the last clear command on the worse leg. The mid range stays over (about 9° through 80°). Both legs are clear again at 110° and at 130°.
+candidate knee: clear through 153° on both legs (bone flexion 151°). At 155° the shin enters the thigh by 0.97 cm.
+
+Side stills hip-hinge-current.png and hip-hinge-candidate.png are the same pose: hip flexion 110°, knee flexion 70°, spine at rest. On the candidate that pose keeps both hinges at 0 cm and puts the pelvis 81 cm behind the foot. On the current rig the same pose leaves the hip hinge at 3.94 cm.
