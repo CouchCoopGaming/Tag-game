@@ -15680,12 +15680,12 @@ namespace Tag.Art
             pose.ArmYawR = Mathf.Lerp(push.ArmYawR, -AirFeel.ApexYaw, arc);
             pose.ElbowL = Mathf.Lerp(push.ElbowL, AirFeel.ApexElbow, arc);
             pose.ElbowR = Mathf.Lerp(push.ElbowR, AirFeel.ApexElbow, arc);
-            _ulLT = _ulL0 * Quaternion.Euler(pose.ThighL, 0f, 0f);
-            _ulRT = _ulR0 * Quaternion.Euler(pose.ThighR, 0f, 0f);
+            _ulLT = _ulL0 * Quaternion.Euler(pose.ThighL, pose.ThighYawL, 0f);
+            _ulRT = _ulR0 * Quaternion.Euler(pose.ThighR, pose.ThighYawR, 0f);
             _llLT = _llL0 * Quaternion.Euler(pose.KneeL, 0f, 0f);
             _llRT = _llR0 * Quaternion.Euler(pose.KneeR, 0f, 0f);
-            _uaLT = _uaL0 * Quaternion.Euler(pose.ArmPitchL, pose.ArmYawL, armZ);
-            _uaRT = _uaR0 * Quaternion.Euler(pose.ArmPitchR, pose.ArmYawR, -armZ);
+            _uaLT = _uaL0 * Quaternion.Euler(pose.ArmPitchL, pose.ArmYawL, armZ + pose.ArmRollL);
+            _uaRT = _uaR0 * Quaternion.Euler(pose.ArmPitchR, pose.ArmYawR, -armZ + pose.ArmRollR);
             _laLT = _laL0 * Quaternion.Euler(pose.ElbowL, 0f, 0f);
             _laRT = _laR0 * Quaternion.Euler(pose.ElbowR, 0f, 0f);
             _spineT = _spine0 * Quaternion.Euler(pose.Spine, 0f, pose.LeanZ);
@@ -15898,8 +15898,8 @@ namespace Tag.Art
 
         void ApplyWallLegs(WallPose.Sample pose)
         {
-            _ulLT = _ulL0 * Quaternion.Euler(pose.ThighL, 0f, 0f);
-            _ulRT = _ulR0 * Quaternion.Euler(pose.ThighR, 0f, 0f);
+            _ulLT = _ulL0 * Quaternion.Euler(pose.ThighL, pose.ThighYawL, 0f);
+            _ulRT = _ulR0 * Quaternion.Euler(pose.ThighR, pose.ThighYawR, 0f);
             _llLT = _llL0 * Quaternion.Euler(pose.KneeL, 0f, 0f);
             _llRT = _llR0 * Quaternion.Euler(pose.KneeR, 0f, 0f);
             if (pose.FootL != 0f || pose.FootR != 0f)
@@ -17026,12 +17026,12 @@ namespace Tag.Art
             float roll = AirFeel.BraceArmRoll * brace;
             float yawL = Mathf.Lerp(pose.ArmYawL, 0f, brace);
             float yawR = Mathf.Lerp(pose.ArmYawR, 0f, brace);
-            _ulLT = _ulL0 * Quaternion.Euler(showThighL, -legOut, 0f);
-            _ulRT = _ulR0 * Quaternion.Euler(showThighR, legOut, 0f);
+            _ulLT = _ulL0 * Quaternion.Euler(showThighL, -legOut + pose.ThighYawL, 0f);
+            _ulRT = _ulR0 * Quaternion.Euler(showThighR, legOut + pose.ThighYawR, 0f);
             _llLT = _llL0 * Quaternion.Euler(pose.KneeL, 0f, 0f);
             _llRT = _llR0 * Quaternion.Euler(pose.KneeR, 0f, 0f);
-            _uaLT = _uaL0 * Quaternion.Euler(pose.ArmPitchL, yawL, armZ - roll);
-            _uaRT = _uaR0 * Quaternion.Euler(pose.ArmPitchR, -yawR, -armZ + roll);
+            _uaLT = _uaL0 * Quaternion.Euler(pose.ArmPitchL, yawL, armZ - roll + pose.ArmRollL);
+            _uaRT = _uaR0 * Quaternion.Euler(pose.ArmPitchR, -yawR, -armZ + roll + pose.ArmRollR);
             _laLT = _laL0 * Quaternion.Euler(pose.ElbowL, 0f, 0f);
             _laRT = _laR0 * Quaternion.Euler(pose.ElbowR, 0f, 0f);
             _spineT = _spine0 * Quaternion.Euler(pose.Spine, 0f, 0f);

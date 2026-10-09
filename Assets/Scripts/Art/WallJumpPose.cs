@@ -33,6 +33,14 @@ namespace Tag.Art
         public const float ReachPitch = 30f;
         public const float ReachYaw = 14f;
         public const float ReachElbow = -20f;
+        /// <summary>Plant leg out, drive leg further out. The drive knee clears the spine.</summary>
+        public const float PlantThighYaw = 28f;
+        public const float DriveThighYaw = 42f;
+        /// <summary>Arms drop to this reach on the way to the tuck. The pitches between
+        /// the shove and the tuck put the upper arm through the chest.</summary>
+        public const float SidePitch = -42f;
+        public const float SideYaw = 16f;
+        public const float SideElbow = -36f;
         /// <summary>Chest opens off the wall. Opposite the climb curl.</summary>
         public const float Spine = -22f;
         public const float Hip = -10f;
@@ -46,6 +54,8 @@ namespace Tag.Art
             public float ThighL, ThighR, KneeL, KneeR;
             public float ArmPitchL, ArmPitchR, ArmYawL, ArmYawR;
             public float ElbowL, ElbowR;
+            public float ArmRollL, ArmRollR;
+            public float ThighYawL, ThighYawR;
             public float Hip, Spine, Head, LeanZ;
         }
 
@@ -109,6 +119,8 @@ namespace Tag.Art
             float elbowL;
             float elbowR;
             float lean;
+            float thighYawL;
+            float thighYawR;
             if (plantLeft)
             {
                 pitchL = PushPitch;
@@ -118,6 +130,8 @@ namespace Tag.Art
                 elbowL = PushElbow;
                 elbowR = ReachElbow;
                 lean = -Lean;
+                thighYawL = -PlantThighYaw;
+                thighYawR = DriveThighYaw;
             }
             else
             {
@@ -128,6 +142,8 @@ namespace Tag.Art
                 elbowL = ReachElbow;
                 elbowR = PushElbow;
                 lean = Lean;
+                thighYawL = -DriveThighYaw;
+                thighYawR = PlantThighYaw;
             }
 
             return new Sample
@@ -142,6 +158,8 @@ namespace Tag.Art
                 ArmYawR = yawR,
                 ElbowL = elbowL,
                 ElbowR = elbowR,
+                ThighYawL = thighYawL,
+                ThighYawR = thighYawR,
                 Hip = Hip,
                 Spine = Spine,
                 Head = Head,
@@ -161,7 +179,40 @@ namespace Tag.Art
             JumpPose.Sample air = JumpPose.At(verticalSpeed + planarSpeed * 0f, JumpPose.TakeoffSeconds, !plantLeft);
             Sample jump = FromJump(air);
             if (jumpW >= 1f) return jump;
-            return Lerp(push, jump, jumpW);
+            Sample mid = Lerp(push, jump, jumpW);
+            if (jumpW < 0.34f)
+                CopyArms(ref mid, push);
+            else if (jumpW < 0.67f)
+                SideArms(ref mid);
+            else
+                CopyArms(ref mid, jump);
+            return mid;
+        }
+
+        /// <summary>Keep an arm pose. The leg lerp stays on the caller.</summary>
+        static void CopyArms(ref Sample dst, Sample src)
+        {
+            dst.ArmPitchL = src.ArmPitchL;
+            dst.ArmPitchR = src.ArmPitchR;
+            dst.ArmYawL = src.ArmYawL;
+            dst.ArmYawR = src.ArmYawR;
+            dst.ArmRollL = src.ArmRollL;
+            dst.ArmRollR = src.ArmRollR;
+            dst.ElbowL = src.ElbowL;
+            dst.ElbowR = src.ElbowR;
+        }
+
+        /// <summary>Both arms out and down, clear of the chest, on the way to the tuck.</summary>
+        static void SideArms(ref Sample dst)
+        {
+            dst.ArmPitchL = SidePitch;
+            dst.ArmPitchR = SidePitch;
+            dst.ArmYawL = -SideYaw;
+            dst.ArmYawR = SideYaw;
+            dst.ArmRollL = 0f;
+            dst.ArmRollR = 0f;
+            dst.ElbowL = SideElbow;
+            dst.ElbowR = SideElbow;
         }
 
         public static bool Holds()
@@ -289,6 +340,8 @@ namespace Tag.Art
                 + " pushYaw=" + PushYaw.ToString("0")
                 + " reachYaw=" + ReachYaw.ToString("0")
                 + " drive=" + DriveThigh.ToString("0") + "/" + DriveKnee.ToString("0")
+                + " thighYaw=" + PlantThighYaw.ToString("0") + "/" + DriveThighYaw.ToString("0")
+                + " sidePitch=" + SidePitch.ToString("0")
                 + " plant=" + PlantThigh.ToString("0") + "/" + PlantKnee.ToString("0")
                 + " spine=" + Spine.ToString("0")
                 + " hip=" + Hip.ToString("0")
@@ -328,6 +381,10 @@ namespace Tag.Art
                 ArmYawR = -jump.ArmYawR,
                 ElbowL = jump.ElbowL,
                 ElbowR = jump.ElbowR,
+                ArmRollL = jump.ArmRollL,
+                ArmRollR = jump.ArmRollR,
+                ThighYawL = jump.ThighYawL,
+                ThighYawR = jump.ThighYawR,
                 Hip = jump.Hip,
                 Spine = jump.Spine,
                 Head = WallPose.ReleaseHead,
@@ -349,6 +406,10 @@ namespace Tag.Art
                 ArmYawR = Mathf.Lerp(a.ArmYawR, b.ArmYawR, t),
                 ElbowL = Mathf.Lerp(a.ElbowL, b.ElbowL, t),
                 ElbowR = Mathf.Lerp(a.ElbowR, b.ElbowR, t),
+                ArmRollL = Mathf.Lerp(a.ArmRollL, b.ArmRollL, t),
+                ArmRollR = Mathf.Lerp(a.ArmRollR, b.ArmRollR, t),
+                ThighYawL = Mathf.Lerp(a.ThighYawL, b.ThighYawL, t),
+                ThighYawR = Mathf.Lerp(a.ThighYawR, b.ThighYawR, t),
                 Hip = Mathf.Lerp(a.Hip, b.Hip, t),
                 Spine = Mathf.Lerp(a.Spine, b.Spine, t),
                 Head = Mathf.Lerp(a.Head, b.Head, t),
