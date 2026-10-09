@@ -100,6 +100,15 @@ namespace Tag.Ui.Menu
             else PaintRest();
         }
 
+        /// <summary>
+        /// The other row in a bind swap. Gold stays on the focused row only.
+        /// </summary>
+        public void MarkPair(bool on)
+        {
+            if (_hot || Stroke == null) return;
+            Stroke.color = on ? MenuTheme.Cream : MenuTheme.Stroke;
+        }
+
         void PaintHot()
         {
             if (LockColors)

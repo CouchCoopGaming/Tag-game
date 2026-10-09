@@ -453,6 +453,8 @@ Second raises one fist. The elbow is about 95 degrees, the fist is above the sho
 
 `Docs/UiStills/pass54/` holds the results before and after. Those stills are composites of the sampled frames. They are not the proof. The proof is a play-mode capture from the station command above. Unity is not installed here, so this machine cannot show that frame. The local gate is `script-compile-check ok`. pose stays 0.
 
+A bind swap no longer paints both rows gold. The focused row keeps the gold stroke. The other row gets a cream stroke, and Swap or Cancel is the choice. Left on a rule still returns to the modes only when that rule's label does not change. A sweep of every rule value agreed the label with the stored value, so that return is the floor of the rule.
+
 ## Screens 2, pass 1
 
 Secondary screens pick up the park wash and a comic wipe under 0.4 s. Arena select is a three-card grid: Mega Park, Pocket Park, and Stack Yard, then Random and Back. Mode tiles are a 2 by 2. Right from the right-hand mode enters the rules. Left on a rule that cannot go lower returns to the modes. Up and down stay in a column. The rules list has a gold scrollbar.
@@ -667,13 +669,13 @@ Proof, from `/workspace`, with `PATH=/tmp/dotnet` and `DOTNET_CLI_TELEMETRY_OPTO
 
 The success lines must stay byte-identical except ui fields a pass was told to add. Pass 32 left them as: `ui-flow screens=15 kb=15 pad=15 dead=0 focus=ok back=ok seats=4 drop=ok reclaim=ok min=ok keep=ok cues=9 text=ok hud=ok glyphs=ok feed=ok load=ok board=ok faces=ok rules=ok records=ok contrast=ok style=ok sheet=ok defaults-conflict=0` and `hot-path allocs before=101 after=0 flags=dropped`. `MenuTips.Holds` and `MenuSheet.Holds` read source from disk. Keep `PlantY = 0.005f`, `HoldRest()`, `IdlePose.At(0f, 0f)`, `ShowMenuPair`, `MenuSheet.JoinBanner(`, no `MenuBackdrop.Chase` inside `BuildMain`, no `CouchPlay.Humans > 0` inside `BuildJoin`, `At(0)` equal to `Space jumps.`, and the grapple line going through `ActionBinds.Show`. Do not edit `ActionBinds.Show` or `ControlGlyphs.GlyphOf`. Feel locks stay: coyote 0.10, jump buffer 0.16, cling grace 0.08, jumpSpeed 24.7, terminal fall 56.16. `SettingsFile.Version` stays 2. `TagBackImmunity.DefaultSeconds` is 1.0. Grapple is not a new `PlayAction`. `enableGrapple` stays false. `FireButton` stays RMB.
 
-Open flaws: Hier arms are still the bind A-pose, because no idle clip lowers them. The world It marker is still a primitive. Least It wins stay 0. A controls swap can still mark two rows. Pad grapple's stored token is `leftTrigger`. The loading tip does not invent a glyph. The controls row prints LT, and RT stays free. The couch rope is on every human seat. pngquant is what fits the stills under 400 KB, and it crushes figure colors. The Orange Hier FBX is a different skinned mesh, so the orange seat is the shared rig tinted. Title sky step 0.155 was accepted; do not re-blur it. Pause card was accepted.
+Open flaws: Hier arms are still the bind A-pose, because no idle clip lowers them. The world It marker is still a primitive. Least It wins stay 0. A controls swap marks the other row with a cream stroke, and gold stays on the focused row. Pad grapple's stored token is `leftTrigger`. The loading tip does not invent a glyph. The controls row prints LT, and RT stays free. The couch rope is on every human seat. pngquant is what fits the stills under 400 KB, and it crushes figure colors. The Orange Hier FBX is a different skinned mesh, so the orange seat is the shared rig tinted. Title sky step 0.155 was accepted; do not re-blur it. Pause card was accepted.
 
 Next, if the work continues: capture these screens in play mode once Unity is available, and replace the composites. If a real idle clip lowers the arms, sample that clip only, then run a 30 fps check that reports arm euler as rig joint and root translation as pose, with pose staying 0 and the soles at an absolute 0.5 cm, and do not lift the root to fake the plant. The loading tip stays without a pad glyph. The controls row prints the stored LT.
 
 ## Later passes
 
-- Left from a rule row returns to the modes even when that rule can still decrease. Right from the right-hand mode, and Left at the end of a rule, already move between the columns.
+- Left on a rule returns to the modes only when the label does not change. That matches the stored value, so it is the floor of the rule. Right from the right-hand mode, and Left at that floor, already move between the columns.
 - Per-player look, only if the settings blob grows a seat field. Do not invent it in the menu.
 - Replace `Docs/UiStills/pass3/` with the captures from a real Unity play session.
 - Online, when it exists. The main menu uses that row for Records until then.

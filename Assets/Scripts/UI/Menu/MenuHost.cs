@@ -3346,8 +3346,8 @@ namespace Tag.Ui.Menu
             {
                 MenuTile a = TileAt(SwapIndex(action0, noteAt, true));
                 MenuTile b = TileAt(SwapIndex(action0, noteAt, false));
-                if (a != null) a.SetHot(true);
-                if (b != null) b.SetHot(true);
+                if (a != null) a.MarkPair(true);
+                if (b != null) b.MarkPair(true);
             }
         }
 
