@@ -83,7 +83,24 @@ namespace Tag.Tools
             foreach (string line in hits)
                 Console.WriteLine(line);
 
-            bool compileOk = parseErrors.Count == 0 && hits.Count == 0;
+            int binaryDepth = 0;
+            string binaryFile = "";
+            foreach (SyntaxTree tree in trees)
+            {
+                int depth = MaxBinaryChain(tree.GetRoot());
+                if (depth > binaryDepth)
+                {
+                    binaryDepth = depth;
+                    binaryFile = tree.FilePath ?? "";
+                }
+            }
+            if (binaryFile.StartsWith(root, StringComparison.Ordinal))
+                binaryFile = binaryFile.Substring(root.Length).TrimStart('/', '\\');
+            bool binaryOk = binaryDepth <= 512;
+            Console.WriteLine("binary-depth max=" + binaryDepth + " file=" + binaryFile
+                + (binaryOk ? "" : " OVER 512 (csc stack overflow)"));
+
+            bool compileOk = parseErrors.Count == 0 && hits.Count == 0 && binaryOk;
             bool smokeOk = SmokeFiles.Run(root, out string smokeLine, out string smokeReport);
             Console.WriteLine(smokeLine);
             if (!smokeOk)
@@ -184,6 +201,56 @@ namespace Tag.Tools
                     || name == "mscorlib.dll")
                     yield return path;
             }
+        }
+
+        /// <summary>
+        /// Nesting depth of one binary expression. A chain of string concatenations
+        /// or boolean operators is left-deep, and csc overflows (0xC00000FD) around a few thousand.
+        /// </summary>
+        static int MaxBinaryChain(SyntaxNode root)
+        {
+            int max = 0;
+            var pending = new Stack<SyntaxNode>();
+            pending.Push(root);
+            while (pending.Count > 0)
+            {
+                SyntaxNode node = pending.Pop();
+                if (node is BinaryExpressionSyntax)
+                {
+                    int depth = 1;
+                    var cur = (BinaryExpressionSyntax)node;
+                    while (true)
+                    {
+                        BinaryExpressionSyntax next = null;
+                        foreach (SyntaxNode child in cur.ChildNodes())
+                        {
+                            if (child is BinaryExpressionSyntax nested)
+                            {
+                                if (next == null)
+                                    next = nested;
+                                else
+                                    pending.Push(nested);
+                            }
+                            else
+                            {
+                                pending.Push(child);
+                            }
+                        }
+                        if (next == null)
+                            break;
+                        depth++;
+                        cur = next;
+                    }
+                    if (depth > max)
+                        max = depth;
+                }
+                else
+                {
+                    foreach (SyntaxNode child in node.ChildNodes())
+                        pending.Push(child);
+                }
+            }
+            return max;
         }
 
         static string Format(string root, Diagnostic d)

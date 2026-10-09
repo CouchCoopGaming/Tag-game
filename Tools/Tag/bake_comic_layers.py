@@ -191,6 +191,36 @@ def pack(cells, cols, rows):
     return sheet_im
 
 
+def b64_chunk_lines(b64):
+    """String array, not one + chain. A long concat overflows csc (0xC00000FD)."""
+    lines = [
+        "        static readonly string[] Chunks =",
+        "        {",
+    ]
+    for i in range(0, len(b64), 120):
+        lines.append('            "' + b64[i:i + 120] + '",')
+    lines += [
+        "        };",
+        "",
+        "        // One array, joined in a loop. A single + chain overflows csc (0xC00000FD).",
+        "        static string Data",
+        "        {",
+        "            get",
+        "            {",
+        "                if (_joined != null) return _joined;",
+        "                var sb = new System.Text.StringBuilder(Chunks.Length * 120);",
+        "                for (int i = 0; i < Chunks.Length; i++)",
+        "                    sb.Append(Chunks[i]);",
+        "                _joined = sb.ToString();",
+        "                return _joined;",
+        "            }",
+        "        }",
+        "",
+        "        static string _joined;",
+    ]
+    return lines
+
+
 def write_cs(path, class_name, summary, cells, cols, rows, png_bytes):
     b64 = base64.b64encode(png_bytes).decode("ascii")
     lines = [
@@ -226,11 +256,8 @@ def write_cs(path, class_name, summary, cells, cols, rows, png_bytes):
         "            return System.Convert.FromBase64String(Data);",
         "        }",
         "",
-        "        const string Data =",
     ]
-    for i in range(0, len(b64), 120):
-        lines.append('            "' + b64[i:i + 120] + '" +')
-    lines[-1] = lines[-1][:-2] + ";"
+    lines.extend(b64_chunk_lines(b64))
     lines += ["    }", "}", ""]
     with open(path, "w") as f:
         f.write("\n".join(lines))
