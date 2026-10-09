@@ -7,7 +7,7 @@ A colour or paint sibling uses the base quartet when vertex positions, indices, 
 | Branch | Tip | Previous tightened run | This run |
 | --- | --- | --- | --- |
 | #122 | `a066d987` | `pass=126/132` paper 5 / geom 1 at `a605f06f` | `models-validate assets=132 pass=126 fail=6` / `models-split paperwork=5 geometry=1` |
-| #125 | `1d5a38c8` | `pass=18/189` paper 136 / geom 35 at `0aa3061e` | `models-validate assets=189 pass=18 fail=171` / `models-split paperwork=164 geometry=7` |
+| #125 | `05b95e46` | `pass=18/189` paper 164 / geom 7 at `1d5a38c8` | `models-validate assets=189 pass=182 fail=7` / `models-split paperwork=0 geometry=7` |
 | #129 | `918ce6d2` | `pass=43/220` paper 161 / geom 16 at `30af0ae6` | `models-validate assets=220 pass=81 fail=139` / `models-split paperwork=137 geometry=2` |
 
 `Container_20_Blue` and `Container_20_Green` match `Container_20` and pass as `material-variant of Container_20` on #122 and #129. `FireHydrant_Red` does not match the base cage. On #125 the six `_25` paints each have a pass 19 quartet and pass on their own. Their cage still matches `Sedan_Mid_A_25`. The four years do not match each other.
@@ -16,7 +16,7 @@ A colour or paint sibling uses the base quartet when vertex positions, indices, 
 
 #122 (126): every library asset. The six fails are the player Hiers that ride on this branch. `Brick_Door` and `Brick_Window` bind `pass32/brick_door/` and `pass32/brick_window/`. Container enamels still print `material-variant of Container_20`.
 
-#125 (18): `Pickup_FullSize_25`, the three compacts, `Sedan_Mid_A_22` through `_25`, the six `_25` paints, and the four buses. `1d5a38c8` re-exports library LOD2 and does not change those 18. The pass count is the same. The split moved: paperwork 164, geometry 7. Bus LOD2 stays 900 and 1192.
+#125 (182): the previous 18, plus the library assets that cleared geometry. `05b95e46` adds CC0 rows and pass 20 quartets. No FBX changed. Pickup still binds pass 17, the midsize `_25` still binds pass 19, and `Bus_City40` still binds pass 1. The pass 20 rowboat hero is a rowboat. Seven fails remain, all geometry.
 
 #129 (81): the previous 43, plus the pass 33 quartets. New shells: Boathouse 264/120/72, Garage 500/196/108, House_Gable 2000/1724/760, House_Hip 2008/1732/728, Roof_Parapet 112/36/12, ShopFront 292/152/84, Store_Corner 4732/3388/1368, Store_Diner 2604/1932/660, Store_Laundromat 5228/3868/1560, Storefront_Glass 300/144/72, HarborCrane 472/208/124, Tree_Palm 120/60/36, Tree_Pine 2932/816/372, WaterTank 608/228/124. Also new: AC_Roof_Large, AC_Roof_Small, Awning_Door, Barrel_Traffic, Barricade_Type3, Barrier_Jersey, Barrier_Water, Bollard_Fixed, Bollard_Removable, Cabinet_Electrical, Court, Delineator_Post, Fence_Iron, Hoop, Kiosk_ATM, Kiosk_Charge, Rail_Sidewalk, Road_Crosswalk, Sidewalk_Gap, Sidewalk_Joint, Sign_Parking_2H, Sign_Speed_25, Sign_Stop, Sign_Street. The garage and house-gable quarters are those buildings.
 
@@ -35,7 +35,7 @@ A colour or paint sibling uses the base quartet when vertex positions, indices, 
 3. Leave the three compact passes. LOD2 is 1966, 1912, and 1954.
 4. Leave the four bus passes. City40 LOD2 is 900 against 1504. City60 LOD2 is 1192 against 2060. Blue and red keep their own stills.
 5. Do not restore the court. `1d5a38c8` re-exported library meshes instead of taking #122's files. Garage, Roof_Parapet, RooftopAC, ShopFront, Storefront_Glass, WaterTank, FishingBoat, HarborCrane, and Tree_Palm had matched #122's LOD0 hash. They do not now. Rowboat's LOD0 vertex count went from 4900 to 3608 and still does not match #122. Copy those heroes from #122. Do not re-export them again.
-6. Trains and trolleys are the remaining vehicle gap. The midsize shells now pass.
+6. The seven fails are `WalkUp` land-gap 54.0 cm, `Container_20` and both enamels and `Container_40` land-gap 23.0 cm, `Gazebo` land-gap 22.2 cm, and the tan Hier. Blue and green still print `material-variant of Container_20`. Fix the landing. Do not rebuild the cage. There is still no train or trolley in this set. The event 9 re-exports now script-pass on pass 20. #122's file is still the shared cage. Do not re-export those heroes again.
 
 ## Street props (#129)
 
