@@ -324,7 +324,7 @@ Fit file: `costume-fit sets=12 frames=4128 worldMax=0.38 fails=0`. That number i
 
 ## Restructure impact
 
-Running count: **6**. Each line is one redo or conflict for the restructure-impact report. Missed copies are not counted.
+Running count: **7**. Each line is one redo or conflict for the restructure-impact report. Missed copies are not counted.
 
 1. Court, twice. #129 `8effda99` and #125 `c84459a3` both restore #122's 22 m by 15 m court and the 0.375 m face-to-rim gap. `Court`, `CourtFence`, and `Hoop` sizes matched on all three tips at that grade. Same fix, two helpers.
 2. Walk-up, two meshes. #122 passes at 2736/2216/1004. #129's earlier mesh was 1832/1300/680. #125 still fails the old landing. Two buildings, one name. #129 `8f7686a5` later copied #122's cage (geometry hash matches). The event stays counted.
