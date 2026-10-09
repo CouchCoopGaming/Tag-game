@@ -2013,7 +2013,7 @@
       },
       {
         "lod": 2,
-        "tris": 108,
+        "tris": 72,
         "materials": [
           "Lib_WoodDark",
           "Lib_Wood",
@@ -4591,7 +4591,7 @@
       },
       {
         "lod": 2,
-        "tris": 136,
+        "tris": 124,
         "materials": [
           "Lib_Concrete",
           "Lib_SteelDark",
@@ -7625,7 +7625,7 @@
       },
       {
         "lod": 2,
-        "tris": 120,
+        "tris": 108,
         "materials": [
           "Lib_Siding",
           "Lib_PaintWhite",
@@ -9526,7 +9526,7 @@
       },
       {
         "lod": 2,
-        "tris": 1624,
+        "tris": 760,
         "materials": [
           "Lib_Siding",
           "Lib_PaintWhite",
@@ -10491,7 +10491,7 @@
       },
       {
         "lod": 2,
-        "tris": 1592,
+        "tris": 728,
         "materials": [
           "Lib_PaintCream",
           "Lib_PaintWhite",
@@ -16834,7 +16834,7 @@
       },
       {
         "lod": 2,
-        "tris": 36,
+        "tris": 12,
         "materials": [
           "Lib_Brick",
           "Lib_Concrete"
@@ -17407,7 +17407,7 @@
       },
       {
         "lod": 2,
-        "tris": 96,
+        "tris": 84,
         "materials": [
           "Lib_Brick",
           "Lib_Window",
@@ -18049,7 +18049,7 @@
       },
       {
         "lod": 2,
-        "tris": 2676,
+        "tris": 1368,
         "materials": [
           "Lib_Brick",
           "Lib_PaintCream",
@@ -20549,7 +20549,7 @@
       },
       {
         "lod": 2,
-        "tris": 1284,
+        "tris": 660,
         "materials": [
           "Lib_PaintCream",
           "Lib_PaintRed",
@@ -21851,7 +21851,7 @@
       },
       {
         "lod": 2,
-        "tris": 3060,
+        "tris": 1560,
         "materials": [
           "Lib_PaintWhite",
           "Lib_PaintTeal",
@@ -24945,7 +24945,7 @@
       },
       {
         "lod": 2,
-        "tris": 144,
+        "tris": 72,
         "materials": [
           "Lib_Brick",
           "Lib_Concrete",
@@ -25975,7 +25975,7 @@
       },
       {
         "lod": 2,
-        "tris": 48,
+        "tris": 36,
         "materials": [
           "Lib_Bark",
           "Lib_PalmDry",
@@ -26064,7 +26064,7 @@
       },
       {
         "lod": 2,
-        "tris": 528,
+        "tris": 372,
         "materials": [
           "Lib_Bark",
           "Lib_Needle",
@@ -26859,7 +26859,7 @@
       },
       {
         "lod": 2,
-        "tris": 180,
+        "tris": 124,
         "materials": [
           "Lib_SteelDark",
           "Lib_Steel"

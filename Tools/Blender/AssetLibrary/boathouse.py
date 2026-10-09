@@ -29,10 +29,11 @@ def create():
         # Side walls.
         g.box((-w * 0.5 + 0.08, 1.45, 0), (0.12, 2.55, d - 0.2), "Lib_Wood", bevel=bev, segs=1, uv_scale=1.0)
         g.box((w * 0.5 - 0.08, 1.45, 0), (0.12, 2.55, d - 0.2), "Lib_Wood", bevel=bev, segs=1, uv_scale=1.0)
-        # Front piers beside the slip, and a header.
-        g.box((-2.15, 1.35, d * 0.5 - 0.08), (1.9, 2.35, 0.12), "Lib_Wood", uv_scale=1.0)
-        g.box((2.15, 1.35, d * 0.5 - 0.08), (1.9, 2.35, 0.12), "Lib_Wood", uv_scale=1.0)
-        g.box((0, 2.55, d * 0.5 - 0.08), (w - 0.2, 0.30, 0.12), "Lib_WoodDark", uv_scale=1.0)
+        # Front piers beside the slip, and a header. LOD2 keeps the open slip as a gap.
+        if lod < 2:
+            g.box((-2.15, 1.35, d * 0.5 - 0.08), (1.9, 2.35, 0.12), "Lib_Wood", uv_scale=1.0)
+            g.box((2.15, 1.35, d * 0.5 - 0.08), (1.9, 2.35, 0.12), "Lib_Wood", uv_scale=1.0)
+            g.box((0, 2.55, d * 0.5 - 0.08), (w - 0.2, 0.30, 0.12), "Lib_WoodDark", uv_scale=1.0)
         if lod < 2:
             g.box((0, 1.15, d * 0.5 - 0.02), (2.2, 0.08, 0.06), "Lib_WoodDark")
         g.mesh(_prism(w + 0.5, -d * 0.5 - 0.15, 2.70, 0.0, 4.15, 0.08), _prism_faces(), "Lib_Roof", uv_scale=1.0)

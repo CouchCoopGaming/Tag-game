@@ -27,7 +27,8 @@ def create():
         g.box((0, 4.15, 0.58), (0.62, 0.55, 0.56), "Lib_CraneYellow", bevel=bev, segs=1)
         if lod == 0:
             g.box((0, 4.18, 0.875), (0.36, 0.22, 0.016), "Lib_ShopGlass")
-        g.box((0, 4.84, 0.0), (0.12, 0.14, 0.12), "Lib_Steel")
+        if lod < 2:
+            g.box((0, 4.84, 0.0), (0.12, 0.14, 0.12), "Lib_Steel")
         g.box((0, 4.94, 2.10), (0.14, 0.16, 3.70), "Lib_CraneYellow", bevel=bev, segs=1)
         g.box((0, 4.70, 2.15), (0.08, 0.08, 3.40), "Lib_Steel")
         if lod < 2:

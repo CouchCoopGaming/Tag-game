@@ -119,6 +119,17 @@ def _fit_holes(span, wall_h, kind):
 def _window(g, origin, axis, inward, hole, trim, lod):
     """Frame, recessed glass, mullions, and a backing. hole is (cx, cy, w, h)."""
     cx, cy, w, h = hole
+    if lod >= 2:
+        # Pane and sill only. Frames, mullions, and casing stay on LOD0 and LOD1.
+        if axis == "z":
+            z_glass = origin + inward * 0.08
+            g.box((cx, cy, z_glass), (w - 0.16, h - 0.16, 0.012), "Lib_Window")
+            g.box((cx, cy - h * 0.5 - 0.02, origin - inward * 0.18), (w + 0.06, 0.05, 0.08), "Lib_Concrete")
+            return (cx, cy, z_glass, w - 0.16, h - 0.16, "z")
+        x_glass = origin + inward * 0.08
+        g.box((x_glass, cy, cx), (0.012, h - 0.16, w - 0.16), "Lib_Window")
+        g.box((origin - inward * 0.18, cy - h * 0.5 - 0.02, cx), (0.08, 0.05, w + 0.06), "Lib_Concrete")
+        return (x_glass, cy, cx, w - 0.16, h - 0.16, "x")
     gap = 0.012
     fw, fh = w - gap * 2, h - gap * 2
     glass_w, glass_h = fw - 0.10, fh - 0.10
@@ -239,7 +250,8 @@ def _wall(g, cols, axis, origin, inward, span, y0, y1, holes, body, trim, lod, t
             info = _door(g, origin, axis, inward, (cx, cy, w, h), trim, lod)
         else:
             info = _window(g, origin, axis, inward, (cx, cy, w, h), trim, lod)
-        _place_backing(g, info, inward, lit)
+        if lod < 2:
+            _place_backing(g, info, inward, lit)
         if info[5] == "z":
             cols.append(("box", "Col_Glass", (info[0], info[1], info[2]), (info[3] * 0.85, info[4] * 0.85, 0.008)))
         else:
@@ -408,13 +420,14 @@ def _dress_storefront(g, cols, axis, origin, inward, span, profile, style, lod, 
         if a1 - a0 < 0.50:
             continue
         bay_w = (a1 - a0) - 0.08
-        for sy in (1.08, 1.58):
-            _c, _s = _box_ax(g, axis, (a0 + a1) * 0.5, sy, shelf_n, bay_w, 0.028, 0.22, "Lib_Wood")
-            along = bay_w - 0.06
-            if axis == "z":
-                _col_box(cols, "Col_Shelf", _c, (along, 0.016, 0.14))
-            else:
-                _col_box(cols, "Col_Shelf", _c, (0.14, 0.016, along))
+        if lod < 2:
+            for sy in (1.08, 1.58):
+                _c, _s = _box_ax(g, axis, (a0 + a1) * 0.5, sy, shelf_n, bay_w, 0.028, 0.22, "Lib_Wood")
+                along = bay_w - 0.06
+                if axis == "z":
+                    _col_box(cols, "Col_Shelf", _c, (along, 0.016, 0.14))
+                else:
+                    _col_box(cols, "Col_Shelf", _c, (0.14, 0.016, along))
         if lod == 0:
             goods_n = _street(origin, inward, -0.30)
             _box_ax(
@@ -422,7 +435,10 @@ def _dress_storefront(g, cols, axis, origin, inward, span, profile, style, lod, 
                 min(0.26, (a1 - a0) * 0.32), 0.16, 0.14, "Lib_Orange",
             )
     card_n = _street(origin, inward, -0.82)
-    _c, _s = _box_ax(g, axis, 0.0, 1.28, card_n, max(0.4, half * 1.55), 1.50, 0.02, "Lib_Interior")
+    if lod < 2:
+        _c, _s = _box_ax(g, axis, 0.0, 1.28, card_n, max(0.4, half * 1.55), 1.50, 0.02, "Lib_Interior")
+    else:
+        _c, _s = (0, 0, 0), (0, 0, 0)
     if axis == "z":
         _col_box(cols, "Col_Interior", _c, (max(0.3, half * 1.45), 1.40, 0.012))
     else:
@@ -513,6 +529,8 @@ def _awning_fabric(g, cols, axis, origin, inward, along0, along1, mat, lod):
         else:
             _col_box(cols, "Col_Awning", (normal, cy, (along0 + along1) * 0.5), (seg, thick * 0.40, span * 0.82))
     scallops = 8 if lod == 0 else 3
+    if lod >= 2:
+        scallops = 0
     for i in range(scallops):
         a0 = along0 + span * i / scallops
         a1 = along0 + span * (i + 1) / scallops
