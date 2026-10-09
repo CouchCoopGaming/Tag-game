@@ -79,7 +79,10 @@ def create():
     a.box("Col_Bed", (0, 0.55, -1.20), (1.20, 0.02, 1.60))
     a.box("Col_SideL", (-0.845, 0.98, -1.30), (0.02, 0.12, 1.70))
     a.box("Col_SideR", (0.845, 0.98, -1.30), (0.02, 0.12, 1.70))
-    a.box("Col_Tailgate", (0, 0.86, -2.568), (0.90, 0.26, 0.014))
+    # The panel runs down to the bed. The old box stopped at y=0.73, leaving
+    # 0.17 m of open air above the bed collider (top 0.56). Bottom is now 0.585,
+    # a 2.5 cm gap, inside the sheet.
+    a.box("Col_Tailgate", (0, 0.7875, -2.568), (0.90, 0.405, 0.014))
     _wheel_cols(a, (1.58,), "Fr")
     _wheel_cols(a, (-1.62,), "Rr")
     return a
