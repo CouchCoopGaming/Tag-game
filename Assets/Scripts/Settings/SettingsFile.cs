@@ -57,6 +57,9 @@ namespace Tag.Settings
             Line(text, "inkCard", s.InkCard ? 1f : 0f);
             Line(text, "itWedge", s.ItWedge ? 1f : 0f);
             Line(text, "crownPlate", s.CrownPlate ? 1f : 0f);
+            Line(text, "edgeStreaks", s.EdgeStreaks ? 1f : 0f);
+            Line(text, "contactMarks", s.ContactMarks ? 1f : 0f);
+            Line(text, "wallMarks", s.WallMarks ? 1f : 0f);
             Line(text, "effects", s.Effects);
             for (int i = 0; i < (int)PlayAction.Count; i++)
             {
@@ -238,6 +241,9 @@ namespace Tag.Settings
             else if (key == "inkCard") settings.InkCard = Flag(value);
             else if (key == "itWedge") settings.ItWedge = Flag(value);
             else if (key == "crownPlate") settings.CrownPlate = Flag(value);
+            else if (key == "edgeStreaks") settings.EdgeStreaks = Flag(value);
+            else if (key == "contactMarks") settings.ContactMarks = Flag(value);
+            else if (key == "wallMarks") settings.WallMarks = Flag(value);
             else if (key == "effects") settings.Effects = (int)Num(value, settings.Effects);
             else if (key.StartsWith("kb.", StringComparison.Ordinal))
                 Assign(binds, key.Substring(3), value, true);

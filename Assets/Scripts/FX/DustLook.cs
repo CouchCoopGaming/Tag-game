@@ -249,15 +249,18 @@ namespace Tag.FX
                 }
                 else if (surface == Surface.Brick)
                 {
-                    // Same body as concrete. The tint is the brick, not the grey dust.
+                    // Size, opacity, count, span, and lift match concrete. Life stays 0.50.
+                    // The tint is the brick, not the grey dust.
                     size0 = 0.05f; size1 = 0.20f; op0 = 0.28f; op1 = 0.82f; count0 = 2f; count1 = 9f;
                     life0 = 0.16f; life1 = 0.50f; span0 = 0.10f; span1 = 0.72f; lift1 = 0.16f;
                     puff.R = 0.62f; puff.G = 0.28f; puff.B = 0.16f;
                 }
                 else
                 {
+                    // Sprint life is 0.42 s, the same instant the ground mark ends.
+                    // Walk life, size, opacity, count, span, back, and lift are unchanged.
                     size0 = 0.05f; size1 = 0.20f; op0 = 0.28f; op1 = 0.82f; count0 = 2f; count1 = 9f;
-                    life0 = 0.16f; life1 = 0.50f; span0 = 0.10f; span1 = 0.72f; lift1 = 0.16f;
+                    life0 = 0.16f; life1 = 0.42f; span0 = 0.10f; span1 = 0.72f; lift1 = 0.16f;
                     puff.R = 0.78f; puff.G = 0.78f; puff.B = 0.76f;
                 }
                 size = size0 + (size1 - size0) * u;
@@ -305,6 +308,21 @@ namespace Tag.FX
             puff.Shape = Sprite(surface);
             puff.Stamp = surface == Surface.Grass ? 0 : 1;
             return puff;
+        }
+
+        /// <summary>
+        /// Brick contact marks. Four chips, inside the 3–5 scatter. Not a dust count.
+        /// Side and fore are metres on the contact. Mul scales each chip. Yaw is degrees.
+        /// </summary>
+        public const int BrickChips = 4;
+        public static readonly float[] BrickSide = { -0.11f, 0.09f, -0.02f, 0.13f };
+        public static readonly float[] BrickFore = { 0.04f, -0.07f, 0.11f, 0.02f };
+        public static readonly float[] BrickMul = { 0.78f, 0.62f, 0.92f, 0.70f };
+        public static readonly float[] BrickYaw = { 22f, -38f, 71f, -14f };
+
+        public static bool IsChip(float shape)
+        {
+            return shape > 2.5f && shape < 3.5f;
         }
 
         /// <summary>

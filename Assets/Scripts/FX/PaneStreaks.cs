@@ -5,7 +5,8 @@ namespace Tag.FX
     /// <summary>
     /// Seat-tinted streaks in the outer 12% of the owning camera.
     /// Full effects draws 6, low draws 3, off and reduced flashing draw 0.
-    /// One mesh per camera, life 0.12 s, peak alpha 0.55. Speed lines stay off.
+    /// GameSettings.EdgeStreaks defaults off. Speed lines stay off and do not set the count.
+    /// One mesh per camera, life 0.12 s, peak alpha 0.55.
     /// </summary>
     public sealed class PaneStreaks : MonoBehaviour
     {

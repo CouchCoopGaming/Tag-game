@@ -291,6 +291,9 @@ namespace Tag.FX
         Transform[] _scuffPuff;
         Renderer[] _scuffPuffRend;
         Material[] _scuffPuffMat;
+        Transform[] _scuffChip;
+        Renderer[] _scuffChipRend;
+        Material[] _scuffChipMat;
         float[] _scuffAge;
         float[] _scuffWidth;
         float[] _scuffHeight;
@@ -862,6 +865,24 @@ namespace Tag.FX
                     _scuffPuffRend[k].enabled = false;
                 }
             }
+            int extra = DustLook.BrickChips - 1;
+            _scuffChip = new Transform[ScuffSlots * extra];
+            _scuffChipRend = new Renderer[ScuffSlots * extra];
+            _scuffChipMat = new Material[ScuffSlots * extra];
+            for (int i = 0; i < ScuffSlots; i++)
+            {
+                for (int c = 0; c < extra; c++)
+                {
+                    int k = i * extra + c;
+                    _scuffChipMat[k] = new Material(bits);
+                    _scuffChipMat[k].SetFloat("_Shape", 3f);
+                    _scuffChipMat[k].SetFloat("_Billboard", 0f);
+                    _scuffChipMat[k].SetFloat("_Guard", 0f);
+                    _scuffChipMat[k].SetFloat("_Edge", -1f);
+                    _scuffChip[k] = Child(_scuffRoot[i], "Chip", quad, _scuffChipMat[k], out _scuffChipRend[k]);
+                    _scuffChipRend[k].enabled = false;
+                }
+            }
         }
 
         void BeginScuff(Vector3 origin, Vector3 normal, float speed, int surface, string material)
@@ -933,7 +954,9 @@ namespace Tag.FX
         void TickScuffs()
         {
             if (_scuffAge == null) return;
-            bool show = FxKitLook.Master(GameSettings.Current) && FxKitLook.Bursts(GameSettings.Current, FxKitOptions.Wall);
+            GameSettings settings = GameSettings.Current;
+            bool show = FxKitLook.Master(settings) && FxKitLook.Bursts(settings, FxKitOptions.Wall);
+            bool marks = settings != null && settings.WallMarks;
             float dt = Time.deltaTime;
             if (dt < 0f) dt = 0f;
             if (dt > 0.05f) dt = 0.05f;
@@ -958,13 +981,21 @@ namespace Tag.FX
                     if (fadeU > 1f) fadeU = 1f;
                     markA = 0.72f * (1f - fadeU);
                 }
-                _scuffMark[i].localPosition = Vector3.zero;
-                _scuffMark[i].localRotation = Quaternion.identity;
-                _scuffMark[i].localScale = new Vector3(_scuffWidth[i], _scuffHeight[i], 1f);
                 Color ink = _scuffInk[i];
                 ink.a = markA;
-                _scuffMarkMat[i].color = ink;
-                _scuffMarkRend[i].enabled = _scuffShape[i] >= 0f && markA > 0.03f;
+                bool brick = DustLook.IsChip(_scuffShape[i]);
+                bool stamp = marks && _scuffShape[i] >= 0f && markA > 0.03f;
+                if (stamp && brick)
+                    PlaceBrickChips(i, ink);
+                else
+                {
+                    HideBrickExtras(i);
+                    _scuffMark[i].localPosition = Vector3.zero;
+                    _scuffMark[i].localRotation = Quaternion.identity;
+                    _scuffMark[i].localScale = new Vector3(_scuffWidth[i], _scuffHeight[i], 1f);
+                    _scuffMarkMat[i].color = ink;
+                    _scuffMarkRend[i].enabled = stamp;
+                }
                 Vector3 n = _scuffNormal[i];
                 Vector3 along = _scuffAlong[i];
                 for (int p = 0; p < ScuffPuffs; p++)
@@ -1026,6 +1057,39 @@ namespace Tag.FX
         {
             _scuffAge[slot] = -1f;
             if (_scuffRoot[slot] != null) _scuffRoot[slot].gameObject.SetActive(false);
+        }
+
+        void PlaceBrickChips(int slot, Color ink)
+        {
+            const float w0 = 0.11f;
+            const float h0 = 0.08f;
+            float m0 = DustLook.BrickMul[0];
+            _scuffMark[slot].localPosition = new Vector3(DustLook.BrickSide[0], DustLook.BrickFore[0], 0.01f);
+            _scuffMark[slot].localRotation = Quaternion.Euler(0f, 0f, DustLook.BrickYaw[0]);
+            _scuffMark[slot].localScale = new Vector3(w0 * m0, h0 * m0, 1f);
+            _scuffMarkMat[slot].SetFloat("_Shape", 3f);
+            _scuffMarkMat[slot].color = ink;
+            _scuffMarkRend[slot].enabled = true;
+            int extra = DustLook.BrickChips - 1;
+            for (int c = 0; c < extra; c++)
+            {
+                int k = slot * extra + c;
+                int src = c + 1;
+                float m = DustLook.BrickMul[src];
+                _scuffChip[k].localPosition = new Vector3(DustLook.BrickSide[src], DustLook.BrickFore[src], 0.01f);
+                _scuffChip[k].localRotation = Quaternion.Euler(0f, 0f, DustLook.BrickYaw[src]);
+                _scuffChip[k].localScale = new Vector3(w0 * m, h0 * m, 1f);
+                _scuffChipMat[k].color = ink;
+                _scuffChipRend[k].enabled = true;
+            }
+        }
+
+        void HideBrickExtras(int slot)
+        {
+            if (_scuffChipRend == null) return;
+            int extra = DustLook.BrickChips - 1;
+            for (int c = 0; c < extra; c++)
+                _scuffChipRend[slot * extra + c].enabled = false;
         }
 
         static void ScuffTint(int surface, string material, out float r, out float g, out float b, out float dr, out float dg, out float db)

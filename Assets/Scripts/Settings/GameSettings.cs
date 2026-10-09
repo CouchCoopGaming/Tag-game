@@ -111,6 +111,22 @@ namespace Tag.Settings
         public bool ItWedge;
         /// <summary>Crown plate above the hat. Off until a seat turns it on. Not one of the 21 rows.</summary>
         public bool CrownPlate;
+        /// <summary>
+        /// Owner-pane margin streaks. Off until a seat turns them on.
+        /// When on, full effects draws 6, low draws 3, and off or reduced flashing draws 0.
+        /// Not one of the 21 rows, and not one of the seven FX-kit toggles. Speed lines stay off.
+        /// </summary>
+        public bool EdgeStreaks;
+        /// <summary>
+        /// Foot contact mark in the surface's shape. Off until a seat turns it on.
+        /// Not one of the 21 rows, and not one of the seven FX-kit toggles.
+        /// </summary>
+        public bool ContactMarks;
+        /// <summary>
+        /// Wall contact mark in the foot's shape. Off until a seat turns it on.
+        /// Not one of the 21 rows, and not one of the seven FX-kit toggles.
+        /// </summary>
+        public bool WallMarks;
         /// <summary>0 off, 1 low, 2 full. Visual density only.</summary>
         public int Effects = 2;
 
@@ -178,6 +194,9 @@ namespace Tag.Settings
             InkCard = other.InkCard;
             ItWedge = other.ItWedge;
             CrownPlate = other.CrownPlate;
+            EdgeStreaks = other.EdgeStreaks;
+            ContactMarks = other.ContactMarks;
+            WallMarks = other.WallMarks;
             Effects = other.Effects;
         }
 
@@ -397,6 +416,21 @@ namespace Tag.Settings
         public string CrownPlateLabel()
         {
             return CrownPlate ? "Crown plate: On" : "Crown plate: Off";
+        }
+
+        public string EdgeStreaksLabel()
+        {
+            return EdgeStreaks ? "Edge streaks: On" : "Edge streaks: Off";
+        }
+
+        public string ContactMarksLabel()
+        {
+            return ContactMarks ? "Contact marks: On" : "Contact marks: Off";
+        }
+
+        public string WallMarksLabel()
+        {
+            return WallMarks ? "Wall marks: On" : "Wall marks: Off";
         }
 
         public static string ArenaName(int arena)

@@ -19,7 +19,7 @@ namespace Tag.FX
     public sealed class FxBurstPool : MonoBehaviour
     {
         const int ShapeSlots = 16;
-        const int MarkSlots = 4;
+        const int MarkSlots = 8;
         const float MarkLife = 0.42f;
 
         ParticleSystem _ps;
@@ -35,6 +35,7 @@ namespace Tag.FX
         Renderer[] _markR;
         Material[] _markM;
         float[] _markAge;
+        int[] _markPick;
 
         public static FxBurstPool Ensure(Transform host)
         {
@@ -164,9 +165,9 @@ namespace Tag.FX
             if (!_ready || _ps == null) return;
             if (Calmed()) return;
             // The mark is the contact. A metal plant still emits nothing.
-            // DustLook.Life stays on the proof line. The drawn puff ends with the mark
-            // so a concrete sprint (0.50 s) cannot outlast the 0.42 s sheet.
-            // Brick still places one chip; the airborne count is unchanged.
+            // Concrete sprint life in DustLook is 0.42 s, the same instant the mark ends.
+            // A longer puff (dirt 0.58, brick 0.50) is still cut so it cannot outlast the mark.
+            // Brick places four chips. The airborne count stays on DustLook.
             if (kind == FxBurstKind.Run && puff.Stamp != 0)
             {
                 PlaceMark(worldPos, puff);
@@ -471,6 +472,7 @@ namespace Tag.FX
             _markR = new Renderer[MarkSlots];
             _markM = new Material[MarkSlots];
             _markAge = new float[MarkSlots];
+            _markPick = new int[DustLook.BrickChips];
             for (int i = 0; i < MarkSlots; i++)
             {
                 _markAge[i] = -1f;
@@ -563,41 +565,87 @@ namespace Tag.FX
 
         void PlaceMark(Vector3 worldPos, DustLook.Puff puff)
         {
-            if (_markT == null) return;
-            int slot = 0;
-            float oldest = -1f;
-            for (int i = 0; i < MarkSlots; i++)
-            {
-                if (_markAge[i] < 0f)
-                {
-                    slot = i;
-                    oldest = -1f;
-                    break;
-                }
-                if (_markAge[i] > oldest)
-                {
-                    oldest = _markAge[i];
-                    slot = i;
-                }
-            }
+            if (_markT == null || _markPick == null) return;
+            GameSettings settings = GameSettings.Current;
+            if (settings == null || !settings.ContactMarks) return;
             float shape = puff.Shape;
             if (shape < 0.5f) shape = 6f;
             if (shape > 6.5f && shape < 7.5f) shape = 6f;
+            bool brick = DustLook.IsChip(shape);
+            int want = brick ? DustLook.BrickChips : 1;
+            if (want > _markPick.Length) want = _markPick.Length;
+            int n = ClaimMarks(want);
             ScaleOf(shape, 0.22f, out float sx, out float sy);
             if (shape > 5.5f && shape < 6.5f)
             {
                 sx = 0.55f;
                 sy = 0.10f;
             }
-            _markAge[slot] = 0.0001f;
-            _markT[slot].position = worldPos + Vector3.up * 0.02f;
-            _markT[slot].rotation = Quaternion.Euler(90f, 0f, 0f);
-            _markT[slot].localScale = new Vector3(sx, sy, 1f);
-            _markM[slot].SetFloat("_Shape", shape);
-            _markM[slot].SetFloat("_Billboard", 0f);
-            float dark = shape > 2.5f && shape < 3.5f ? 1f : 0.72f;
-            _markM[slot].color = new Color(puff.R * dark, puff.G * dark, puff.B * dark, 0.9f);
-            _markR[slot].enabled = true;
+            Transform root = transform.parent;
+            Vector3 fwd = root != null ? root.forward : Vector3.forward;
+            fwd.y = 0f;
+            if (fwd.sqrMagnitude < 0.0001f) fwd = Vector3.forward;
+            else fwd.Normalize();
+            Vector3 side = Vector3.Cross(Vector3.up, fwd);
+            if (side.sqrMagnitude < 0.0001f) side = Vector3.right;
+            else side.Normalize();
+            float dark = brick ? 1f : 0.72f;
+            Color ink = new Color(puff.R * dark, puff.G * dark, puff.B * dark, 0.9f);
+            for (int c = 0; c < n; c++)
+            {
+                int slot = _markPick[c];
+                float mul = brick ? DustLook.BrickMul[c] : 1f;
+                float yaw = brick ? DustLook.BrickYaw[c] : 0f;
+                Vector3 pos = worldPos + Vector3.up * 0.02f;
+                if (brick)
+                    pos += side * DustLook.BrickSide[c] + fwd * DustLook.BrickFore[c];
+                _markAge[slot] = 0.0001f;
+                _markT[slot].position = pos;
+                _markT[slot].rotation = Quaternion.Euler(90f, yaw, 0f);
+                _markT[slot].localScale = new Vector3(sx * mul, sy * mul, 1f);
+                _markM[slot].SetFloat("_Shape", shape);
+                _markM[slot].SetFloat("_Billboard", 0f);
+                _markM[slot].color = ink;
+                _markR[slot].enabled = true;
+            }
+        }
+
+        int ClaimMarks(int want)
+        {
+            int found = 0;
+            for (int i = 0; i < MarkSlots && found < want; i++)
+            {
+                if (_markAge[i] < 0f)
+                    _markPick[found++] = i;
+            }
+            while (found < want)
+            {
+                int slot = 0;
+                float oldest = -2f;
+                bool any = false;
+                for (int i = 0; i < MarkSlots; i++)
+                {
+                    bool taken = false;
+                    for (int c = 0; c < found; c++)
+                    {
+                        if (_markPick[c] == i)
+                        {
+                            taken = true;
+                            break;
+                        }
+                    }
+                    if (taken) continue;
+                    if (!any || _markAge[i] > oldest)
+                    {
+                        oldest = _markAge[i];
+                        slot = i;
+                        any = true;
+                    }
+                }
+                if (!any) break;
+                _markPick[found++] = slot;
+            }
+            return found;
         }
 
         static void ScaleOf(float shape, float size, out float sx, out float sy)

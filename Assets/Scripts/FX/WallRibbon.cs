@@ -11,7 +11,12 @@ namespace Tag.FX
     {
         public const int Players = 4;
         public const int Segments = 12;
-        public const float Width = 0.20f;
+        /// <summary>
+        /// 0.20 m was 7.2 px on a full 640×360 pane. A four-way split of that
+        /// window is 320×180, so the same strip was about 3.6 px. 0.40 m puts
+        /// the cell back near 7.2 px. A full pane now reads about 14.4 px.
+        /// </summary>
+        public const float Width = 0.40f;
         public const float Life = 0.40f;
         public const float MinStep = 0.22f;
 
