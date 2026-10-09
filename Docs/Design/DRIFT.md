@@ -606,3 +606,13 @@ Ororo, these are the five to send.
 5. **A2 #128, should-fix.** Evidence: `Docs/Models/PLAYER_QUEUE.md` on `44fbff3f` says #131 can refit now. #131 `ad1582a8` stayed on the current rig. Correction: Leave the clearance candidate unbound until Landon accepts `Docs/Models/RigStills/pass7/`.
 
 Also for Ororo, not a lane undo: #126, the #122 play-tip merge, the #134 asset merges, and the #136 helper merges stay as they are. Do not unmerge. #120's climb plant is still "No Drop" on `176983ee`; the 17.8 cm drop is already measured on #136. Do not ask C1 to key it again.
+
+## 2026-10-09 — correction after pass 3
+
+Landon's calls, relayed by Ororo. Pass 3 item 1 is withdrawn. Do not send it.
+
+Movement. Oct 8, 6:01–6:03 PM CDT: the movement lanes are one lane. A1 leads on `cursor/tag-movement` (#136) and folds helper sub-branches in by git merge after review. #118 stays A1's PR. The old drafts stay open. A fold into #136 is not drift. #126 merged into the menu lane is still a separate break. Do not unmerge it.
+
+Hip floors. Oct 8, 5:58 PM CDT: hips visibly sit back on every loaded frame. Adopted and now in `DIRECTION.md`: a plant has hip flexion of at least 25°; a landing or a crouch has hip flexion of at least 35° and spine flexion of at least 15°. The 1.5 ratio stays. Knee 45° and a 20 cm landing drop are not the lock. The evasion hard landing at hip 6° over spine 4° fails the new floor.
+
+Next sample, around 11:30 PM CDT: re-sample every open lane against this direction, and check that each still shows the whole subject and a 1.8 m scale figure.

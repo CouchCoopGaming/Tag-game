@@ -36,10 +36,19 @@ The menu lane measured the seat hues under colour-blind simulation and they sit 
 
 **Recommendation.** The default, with the colour-blind setting off, is the four seat colors and the four shapes. Turning a colour-blind palette on replaces the paint for that seat and keeps the shape. Do not leave yellow, green, white, and cyan as what a new couch sees. Confirm or override this and the play tip and the menu will use one table.
 
-## 4. Tighter hip floors on the movement draft
+## Closed
 
-PR #136 (`cursor/tag-movement`, head `9c0d3e7a`) writes extra floors in `Docs/Movement/STANDARD.md`: hip flexion at least 25° on a plant, and on a landing or a crouch hip flexion at least 35°, spine flexion at least 15°, knee at least 45°, and a pelvis drop of at least 20 cm. The direction lock stays the smaller set: pelvis at least 8 cm behind the support foot (12 cm in a crouch), hip flexion at least 1.5 times spine flexion, support knee at least 25° with the shin forward, pelvis drop at least 8 cm on a plant.
+These are decided. Lanes follow them. They are not open questions.
 
-Their own scan then fails every loaded frame against the new floors (`HIP clips 39 frames 769 loaded 159 hipFails 159`). Feel numbers on that branch still match the lock (coyote 0.10, jump speed 24.7, terminal 56.16, root motion off).
+### Movement lane — Oct 8, 6:01–6:03 PM CDT
 
-**Recommendation.** Keep the direction bars. A clip that clears those bars is not a direction fail for missing 25°, 35°, 15°, or 20 cm. Do not adopt the tighter floors unless you say so.
+Landon chose to merge the movement lanes into one lane. A1 leads on the shared branch `cursor/tag-movement` (#136) and folds helper sub-branches in by git merge after review. #118 stays A1's PR. The old drafts stay open. A fold into #136 is not drift. Do not flag it, and do not unmerge it.
+
+### Hip floors — Oct 8, 5:58 PM CDT
+
+Landon asked that the hips visibly sit back on every loaded frame. A loaded frame is a plant, a landing, or a crouch. The evasion hard landing passed the hinge ratio at hip 6° over spine 4° and looked upright, so the absolute minimums under that rule are the standard:
+
+- A plant has hip flexion of at least 25°.
+- A landing or a crouch has hip flexion of at least 35° and spine flexion of at least 15°.
+
+The 1.5 ratio stays, and so do the pelvis distances (8 cm behind on a plant or landing, 12 cm in a crouch), the 25° support knee with the shin forward, and the 8 cm pelvis drop on a plant. Knee 45° and a 20 cm landing drop are not part of this decision.

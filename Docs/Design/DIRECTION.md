@@ -122,22 +122,22 @@ Props and vehicles are real meters next to that 1.8 m body. `Docs/AssetLibrary.m
 
 This is the order until Landon says otherwise.
 
-1. Keep one playable couch tip. PR #118 is that tip: three parks, the locked feel, the couch rope, the Hier body.
+1. Keep one playable couch tip. PR #118 stays A1's PR: three parks, the locked feel, the couch rope, the Hier body. Movement work is led on `cursor/tag-movement` (#136).
 2. Every new plant passes hip-sit and no-clip before it is treated as done. The clearance rig stays unbound until Landon says to bind it (`DECISIONS.md`).
 3. Every controls string matches the table above. LT is the pad rope. RT is free.
 4. Props and vehicles stay at player scale. Hoop geometry stays a real rim in front of a real backboard. No vehicle logos.
 5. Costumes stay a prep lab. They do not enter the player build, and they do not grow a second skeleton.
 6. World dressing is PR #134 (`cursor/tag-world-c420`, stacked on the props branch). It dresses Mega Park. It does not add a fourth park.
 
-Movement consolidation: A1 #118 is the only branch that consolidates. C1 #120 and E #130 stay helpers. Storror S1 #123 is reference only. S2 #124 stays idle. `cursor/tag-movement` (#136) is not a second play tip. Extra hip floors written on that branch are not this lock.
+Movement consolidation, Landon, Oct 8, 6:01–6:03 PM CDT: the movement lanes are one lane. A1 leads on `cursor/tag-movement` (#136) and folds a helper sub-branch in by git merge after review. #118 stays A1's PR. The old drafts stay open. C1 #120 and E #130 are those helpers. Storror S1 #123 is reference only. S2 #124 stays idle. A movement fold into #136 is not drift. #126 merged into the menu lane is a separate break and stays one.
 
 ## Department map
 
 | Department | Who | Branch / PR | Job |
 |---|---|---|---|
-| Movement lead A1 | Map lane | `cursor/tag-map-lane-pass19-8c95` #118 | The play tip. Feel stays locked. This branch consolidates. |
-| Movement helper C1 | Animation | `cursor/tag-anim-fx` #120 | Pose the verbs that already exist. Helper. Does not merge itself. |
-| Movement helper E | Evasion | `cursor/tag-evasion-moves` #130 | Stutter, spin, juke, dive. Flag stays off until Landon binds them. Helper. |
+| Movement lead A1 | Shared movement lane | `cursor/tag-movement` #136 | A1 leads here. Helper sub-branches fold in by git merge after review. PR #118 stays A1's. Old drafts stay open. |
+| Movement helper C1 | Animation | `cursor/tag-anim-fx` #120 | Pose the verbs that already exist. The old draft stays open. A reviewed sub-branch folds into #136. |
+| Movement helper E | Evasion | `cursor/tag-evasion-moves` #130 | Stutter, spin, juke, dive. Flag stays off until Landon binds them. The old draft stays open. A reviewed sub-branch folds into #136. |
 | Effects C2 | FX kit | `cursor/tag-fx-kit` #127 | Land, rope, immunity, stagger, launch, wall, tag flash. Visual only. |
 | Motion reference S1 | Storror reference | `cursor/tag-storror-mocap` #123 | Reference only. Not a motor, and not a ship clip. |
 | Motion reference S2 | Storror clips | `cursor/tag-storror-clips` #124 | Idle. Do not hand clips to A1. |
@@ -163,6 +163,17 @@ Every shipped clip is checked at 30 fps. The limit is 0.5 cm (`Tools/Tag/noclip_
 ### Hip-sit
 
 On a plant or a landing the pelvis is at least 8 cm behind the support foot. In a crouch it is at least 12 cm behind. The motion-reference report already uses those targets (`Docs/HierStills/v080/pass14/pose_error_pass14.txt` on #123: "Plants and landings want 8 cm. A crouch wants 12 cm."). Hip flexion is at least 1.5 times spine flexion. The support knee is bent at least 25°, shin forward. The pelvis drops at least 8 cm on a plant. If the leg cannot reach that sit, change the pose. Do not leave the pelvis in front of the foot, and do not drive the thigh through the spine to fake the distance.
+
+Landon, Oct 8, 5:58 PM CDT: the hips visibly sit back on every loaded frame. A loaded frame is a plant, a landing, or a crouch. The ratio alone is not enough. The evasion hard landing passed it at hip 6° over spine 4° and still read upright. Absolute floors, adopted:
+
+- A plant has hip flexion of at least 25°.
+- A landing or a crouch has hip flexion of at least 35° and spine flexion of at least 15°.
+
+Spine flexion is lumbar plus chest. The 1.5 ratio stays. Knee 45° and a 20 cm landing drop are not this lock.
+
+### Stills
+
+A still shows the whole subject in the frame, with a 1.8 m scale figure standing on the same ground. The subject is not cropped. The figure is the scale reference.
 
 ### Assets, words, marks
 
