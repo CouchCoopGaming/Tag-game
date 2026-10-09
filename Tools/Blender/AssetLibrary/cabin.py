@@ -108,6 +108,8 @@ def create():
     # Footing and shaft block a runner. They do not overlap each other or the roof boxes.
     a.box("Col_ChimneyFoot", (_CH_X, 0.14, _CH_Z), (0.76, 0.22, 0.66))
     a.box("Col_Chimney", (_CH_X, 2.16, _CH_Z), (0.50, 3.48, 0.42))
+    # Flue is the mesh top (y 4.15–4.23). The box stays inside that opening.
+    a.box("Col_Flue", (_CH_X, 4.190, _CH_Z), (0.14, 0.04, 0.12))
     return a
 
 

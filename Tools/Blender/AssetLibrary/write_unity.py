@@ -557,7 +557,7 @@ def collider_summary(cols):
 
 def write_doc(entries):
     lines = []
-    lines.append("# Asset library, pass 29")
+    lines.append("# Asset library, pass 30")
     lines.append("")
     lines.append("Procedural props for the couch tag arenas. Real meters, +Y up, pivot at the ground contact (or the module origin called out in the notes). Players are about 1.8 m. Vault rails in the park kit sit at 0.90–1.05 m. Every mesh is rebuilt from `Tools/Blender/AssetLibrary/<asset>.py`.")
     lines.append("")
@@ -568,7 +568,7 @@ def write_doc(entries):
     lines.append("```")
     lines.append("blender --background --python Tools/Blender/AssetLibrary/build_all.py")
     lines.append("python3 Tools/Blender/AssetLibrary/write_unity.py")
-    lines.append("blender --background --python Tools/Blender/AssetLibrary/render_pass29.py")
+    lines.append("blender --background --python Tools/Blender/AssetLibrary/render_pass30.py")
     lines.append("```")
     lines.append("")
     lines.append("Blender 4.2 LTS is enough. `write_unity.py` does not need Blender. The showcase scene is `Assets/Scenes/AssetShowcase.unity`. It is not in the build settings and it does not touch the three arenas. `Tag/Asset Showcase` rebuilds that scene from the prefabs.")

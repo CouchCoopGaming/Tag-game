@@ -1,4 +1,4 @@
-# Asset library, pass 29
+# Asset library, pass 30
 
 Procedural props for the couch tag arenas. Real meters, +Y up, pivot at the ground contact (or the module origin called out in the notes). Players are about 1.8 m. Vault rails in the park kit sit at 0.90–1.05 m. Every mesh is rebuilt from `Tools/Blender/AssetLibrary/<asset>.py`.
 
@@ -9,7 +9,7 @@ No third-party textures. Brick, concrete, wood, bark, asphalt, and the worn meta
 ```
 blender --background --python Tools/Blender/AssetLibrary/build_all.py
 python3 Tools/Blender/AssetLibrary/write_unity.py
-blender --background --python Tools/Blender/AssetLibrary/render_pass29.py
+blender --background --python Tools/Blender/AssetLibrary/render_pass30.py
 ```
 
 Blender 4.2 LTS is enough. `write_unity.py` does not need Blender. The showcase scene is `Assets/Scenes/AssetShowcase.unity`. It is not in the build settings and it does not touch the three arenas. `Tag/Asset Showcase` rebuilds that scene from the prefabs.
@@ -41,23 +41,23 @@ Blender 4.2 LTS is enough. `write_unity.py` does not need Blender. The showcase 
 | ChainGate | Buildings | 1.225 × 1.8 × 0.085 | 422 (422/252) | Col_Hinge, Col_LatchStile, Col_Top, Col_Fabric | Same wire slab as the fence panel, inset to the leaf. Top is 1.80 m. | shipped |
 | Cleat | Harbor | 0.27 × 0.113 × 0.09 | 284 (284/76) | Col_Base, Col_Horns, Col_Waist | Too small to cling. Not a rail. | shipped |
 | TrafficCone | Utility | 0.36 × 0.71 × 0.36 | 176 (176/96) | Col_Base, Col_Cone | Not a cling. Too light and short. Not a vault. | shipped |
-| Container_20 | Harbor | 2.452 × 2.59 × 6.13 | 5778 (5778/1800/264) | Climb_Body | climb Long sides are cling. Door bars are on +Z. Collider is inside the wall plate. No rail. Roof is a landing at 2.59 m. | shipped |
-| Container_40 | Harbor | 2.452 × 2.59 × 12.26 | 8466 (8466/3144/264) | Climb_Body | climb Long sides are cling. Door bars are on +Z. Collider is inside the wall plate. No rail. Roof is a landing at 2.59 m. | shipped |
+| Container_20 | Harbor | 2.452 × 2.59 × 6.13 | 5778 (5778/1800/264) | Climb_Body, Col_Roof | climb Long sides are cling. Door bars are on +Z. Collider is inside the wall plate. No rail. Roof is a landing at 2.59 m. | shipped |
+| Container_40 | Harbor | 2.452 × 2.59 × 12.26 | 8466 (8466/3144/264) | Climb_Body, Col_Roof | climb Long sides are cling. Door bars are on +Z. Collider is inside the wall plate. No rail. Roof is a landing at 2.59 m. | shipped |
 | Court | Park | 15 × 0.126 × 22 | 14 (14/14) | Col_Slab | Flat slab, 0.12 m thick. No rail. Place each Hoop so the backboard face is 1.2 m inside the baseline. | shipped |
-| CourtFence | Park | 15.98 × 3.095 × 22.99 | 3680 (3680/2656/2388) | Col_Post_SW, Col_Post_SE, Col_Post_NW, Col_Post_NE, Col_Fabric_S, Col_Fabric_N, Col_Fabric_W, Col_Fabric_E1, Col_Fabric_E2, Col_Gate | climb Posts, rails, and a wire-thick fabric slab. The diamonds are not a passage. The gate is closed. Sideline top is 1.80 m and the baselines are 3.05 m. Too high to vault from the court. | shipped |
+| CourtFence | Park | 15.98 × 3.095 × 22.99 | 3680 (3680/2656/620) | Col_Post_SW, Col_Post_SE, Col_Post_NW, Col_Post_NE, Col_Fabric_S, Col_Fabric_N, Col_Fabric_W, Col_Fabric_E1, Col_Fabric_E2, Col_Gate | climb Posts, rails, and a wire-thick fabric slab. The diamonds are not a passage. The gate is closed. Sideline top is 1.80 m and the baselines are 3.05 m. Too high to vault from the court. | shipped |
 | HarborCrane | Harbor | 1.6 × 5.176 × 5.14 | 472 (472/208/136) | Col_Base, Col_Plinth, Col_Mast, Col_Head, Col_Cab, Col_Saddle, Col_Jib, Col_Chord, Col_Counter, Col_Tail | The mast is a 0.28 m tube, not a cling wall. No rail. The jib is overhead. | shipped |
 | Crate | Harbor | 0.8 × 0.8 × 0.804 | 1360 (1360/252) | Col_Crate | A crate this size is a blocker, not a cling wall. Top is 0.80 m. Under vault height, and the lid is the whole top. | shipped |
 | Dock_Corner | Harbor | 3.991 × 0.618 × 3.966 | 1444 (1444/364) | Col_Pile x5, Col_PlankZ x14, Col_PlankX x14 | Walk the deck. The inner corner is open water, not a collider. Pivot is the center of the 4 m square, not the pile centroid. No rail. | shipped |
 | DockRamp | Harbor | 1.88 × 0.631 × 3.961 | 696 (696/160) | Col_Plank x14, Col_PileL, Col_PileR | Walk the planks. Not a cling wall. Pivot is the center of the ramp, not the pile centroid. The high end is 0.62 m. Under the vault band. | shipped |
-| Dock_Straight | Harbor | 2.84 × 2.228 × 5.95 | 3720 (3720/672) | Col_Pile x9, Col_Stringer x3, Col_Plank x24, Col_Cleat x4, Col_Bollard x2, Col_Ladder x2, Col_Grab x2 | Deck is a walk surface. Pilings are round, not cling panels. No rail on this module. Deck height is 0.62 m, under a vault. | shipped |
+| Dock_Straight | Harbor | 2.84 × 2.228 × 5.95 | 3720 (3720/672/672) | Col_Pile x9, Col_Stringer x3, Col_Plank x24, Col_Cleat x4, Col_Bollard x2, Col_Ladder x2, Col_Grab x2 | Deck is a walk surface. Pilings are round, not cling panels. No rail on this module. Deck height is 0.62 m, under a vault. | shipped |
 | Dumpster | Utility | 2.36 × 1.31 × 1.218 | 372 (372/60) | Col_Body, Col_LidL, Col_LidR | Side walls are short cling faces, 1.2 m. Lids are a landing. Lid top is 1.35 m. High for a ground vault; the side rail is not at 1.05. | shipped |
 | ElectricalBox | Utility | 1.15 × 1.145 × 0.6 | 124 (124/36) | Col_Pad, Col_Cab | Cabinet face is flat but only 1.15 m and 0.40 m deep. Not a cling wall. Too shallow to vault. | shipped |
 | FireEscape | Buildings | 1.3 × 4.1 × 0.865 | 824 (824/340/180) | Climb_Rail x2, Climb_Rung x10, Col_Deck, Vault_Rail, Col_Post x2 | climb vault 1.05 m Ladder rails and rungs are Climb_*. They run from 0.20 m to the deck. Vault_Rail is the platform handrail. Top of rail is 1.05 m above the deck (world y = 4.10). | shipped |
 | FireHydrant | StreetFurniture | 0.4 × 0.761 × 0.395 | 1104 (1104/356) | Col_Flange, Col_Barrel, Col_Nozzle_L, Col_Nozzle_R, Col_Nozzle_Pumper | Round barrel under 0.8 m. Not a cling wall. Too short and too narrow to vault. | shipped |
 | Fountain | Park | 0.56 × 1.07 × 0.56 | 404 (404/236) | Col_Pedestal, Col_Basin | Not a cling. Too narrow. | shipped |
 | Garage | Buildings | 4 × 3.666 × 9.185 | 500 (500/196/120) | Climb_Back, Climb_SideL, Climb_SideR, Col_Door x4, Col_Header, Col_Apron, Col_RoofS, Col_RoofN | climb Side walls are cling. The overhead door is closed. No rail. | shipped |
-| GasCanopy | Buildings | 10.01 × 3.81 × 12.228 | 2272 (2272/1064) | Col_Pad, Col_Post x4, Col_Roof, Col_Pump x2, Col_Bollard x4, Climb_ShopBack, Climb_ShopSideL, Climb_ShopSideR, Col_ShopFront, Col_Ice, Col_Price | climb Columns are 22 cm. The shop walls are cling. No rail. The roof is at 3.50 m. Shop wall top is 3.15 m. | shipped |
-| Gazebo | Park | 4.363 × 3.55 × 4.483 | 1216 (1216/872/404) | Col_Deck, Col_Post x6, Col_Roof x6, Vault_Rail x5, Col_Step x2 | vault 0.95 m Posts are 12 cm. Not a cling wall. The roof is a landing. Rail center is 0.95 m above the 0.32 m deck (y = 1.27). One side is the entry. | shipped |
+| GasCanopy | Buildings | 10.01 × 3.81 × 12.228 | 2272 (2272/1064/1064) | Col_Pad, Col_Post x4, Col_Roof, Col_Pump x2, Col_Bollard x4, Climb_ShopBack, Climb_ShopSideL, Climb_ShopSideR, Col_ShopFront, Col_Ice, Col_Price | climb Columns are 22 cm. The shop walls are cling. No rail. The roof is at 3.50 m. Shop wall top is 3.15 m. | shipped |
+| Gazebo | Park | 4.363 × 3.55 × 4.483 | 1216 (1216/872/404) | Col_Deck, Col_Post x6, Col_Roof x6, Col_Finial, Vault_Rail x5, Col_Step x2 | vault 0.95 m Posts are 12 cm. Not a cling wall. The roof is a landing. Rail center is 0.95 m above the 0.32 m deck (y = 1.27). One side is the entry. | shipped |
 | Gutter | Roads | 0.38 × 0.09 × 4 | 12 (12/12) | Col_Pan | A shallow pan. Not a cling face. Under 0.15 m. Not a vault. | shipped |
 | HarborRail | Harbor | 1.98 × 1.1 × 0.08 | 168 (168/116) | Col_PostL, Col_PostR, Vault_Rail, Col_Mid, Col_Kick | vault 1.05 m Posts are 5 cm. Not a cling wall. Vault_Rail is the top bar. Rail top is 1.05 m. | shipped |
 | HarborWater | Harbor | 16 × 0.02 × 12 | 12 (12/12) |  | Visual water. No collider, so it is not a floor and not a wall. No collider. | shipped |
@@ -118,14 +118,14 @@ Blender 4.2 LTS is enough. `write_unity.py` does not need Blender. The showcase 
 | Tree_Palm | Park | 3.1 × 4.345 × 3.1 | 120 (120/60/48) | Col_Trunk | Trunk is round. Not a flat cling wall. No rail. Fronds are visual; the trunk is the blocker. | shipped |
 | Tree_Pine | Park | 2.968 × 4.214 × 2.75 | 2932 (2932/816/528) | Col_Flare, Col_Trunk | Trunk is round. Not a flat cling wall. No rail. The crown is visual; the trunk is the blocker. | shipped |
 | UtilityPole | Utility | 1.8 × 8.6 × 6.2 | 384 (384/244) | Col_Pole, Col_Arm, Col_Anchor | Pole is a 28 cm timber at the base, tapering. Not a flat cling wall. No rail. Wires are visual only. | shipped |
-| WalkUp | Buildings | 8.64 × 9.77 × 7.82 | 2736 (2736/2216/1004) | Col_Body, Climb_Front, Climb_Back, Climb_SideL, Climb_SideR, Col_Stoop, Col_Canopy, Col_Roof, Col_CopeF, Col_CopeB, Col_CopeR, Col_CopeL, Col_CoronaF, Col_CoronaB, Col_CoronaR, ... | climb vault 1.02 m Brick walls are cling. Glass is solid. The escapes are the steel landings on +Z. Escape rail is 1.02 m above the lower landing (deck at 4.02 m, rail top at 5.04 m). | shipped |
+| WalkUp | Buildings | 8.64 × 9.77 × 7.82 | 2736 (2736/2216/1004) | Col_Body, Climb_Front, Climb_Back, Climb_SideL, Climb_SideR, Col_Stoop, Col_Canopy, Col_Roof, Col_AC, Col_CopeF, Col_CopeB, Col_CopeR, Col_CopeL, Col_CoronaF, Col_CoronaB, Col_C... | climb vault 1.02 m Brick walls are cling. Glass is solid. The escapes are the steel landings on +Z. Escape rail is 1.02 m above the lower landing (deck at 4.02 m, rail top at 5.04 m). | shipped |
 | WallAC | Utility | 0.7 × 0.48 × 0.616 | 204 (204/36) | Col_Sleeve, Col_Head | Not a cling. Too small to vault. | shipped |
 | WaterTank | Buildings | 1.75 × 4.16 × 1.56 | 608 (608/228/180) | Col_Leg x4, Col_Tank | Legs are 8 cm tubes, not a cling wall. The tank is round. No rail at vault height. | shipped |
 | WoodFence | Buildings | 2.427 × 1.922 × 0.104 | 360 (360/72) | Col_Post, Col_Picket x15, Col_Rail x3 | climb Each picket is solid. The gaps are about 8 mm and are not a passage. Top is 1.83 m. Too high to vault from the ground. | shipped |
-| FishingBoat | Harbor | 1.715 × 1.446 × 5.418 | 2932 (2932/1148) | Col_Bilge, Col_Bow, Col_Transom, Col_Cabin, Col_Motor | The hull is a solid prop. Not a cling wall. Gunwale is about 0.70 m. Under the vault band. | shipped |
-| HarborShed | Harbor | 3.96 × 3.118 × 3.324 | 3296 (3296/3084) | Col_Floor, Climb_Back, Climb_SideL, Climb_SideR, Climb_FrontL, Col_Door | climb The board walls are cling. The door is closed. No rail. Wall top is 2.35 m. | shipped |
+| FishingBoat | Harbor | 1.715 × 1.446 × 5.418 | 2932 (2932/1148/1148) | Col_Bilge, Col_Bow, Col_Transom, Col_Cabin, Col_Motor | The hull is a solid prop. Not a cling wall. Gunwale is about 0.70 m. Under the vault band. | shipped |
+| HarborShed | Harbor | 3.96 × 3.118 × 3.324 | 3296 (3296/504/324) | Col_Floor, Climb_Back, Climb_SideL, Climb_SideR, Climb_FrontL, Col_Door | climb The board walls are cling. The door is closed. No rail. Wall top is 2.35 m. | shipped |
 | Pond | Park | 10.537 × 0.86 × 7.7 | 748 (748/336) | Col_BankN, Col_BankS, Col_BankE, Col_BankW | The bank is a slope, not a cling wall. No rail. Water has no collider. | shipped |
-| Rowboat | Harbor | 2.74 × 0.699 × 2.87 | 4892 (4892/2820) | Col_Bilge, Col_ThwartF, Col_ThwartA, Col_Transom | Too small to cling. Gunwale is about 0.55 m. Not a vault. | shipped |
+| Rowboat | Harbor | 2.74 × 0.699 × 2.87 | 3836 (3836/1948/854) | Col_Bilge, Col_ThwartF, Col_ThwartA, Col_Transom | Too small to cling. Gunwale is about 0.55 m. Not a vault. | shipped |
 | Gangway | Harbor | 0.995 × 1.159 × 2.839 | 728 (728/404) | Col_Deck, Vault_Rail x2 | vault 0.88 m Walk the plate. Not a cling wall. Vault_Rail is the handrail, 0.88 m above the plate. | shipped |
 | FuelDock | Harbor | 0.52 × 1.3 × 0.604 | 444 (444/48) | Col_Cabinet, Col_Base | Cabinet. Not a cling wall. No rail. | shipped |
 | LifeRing | Harbor | 0.819 × 1.416 × 0.25 | 388 (388/164) | Col_Post, Col_Base | Post is 4 cm. Not a cling. No rail. | shipped |
@@ -134,9 +134,9 @@ Blender 4.2 LTS is enough. `write_unity.py` does not need Blender. The showcase 
 | HarborWarehouse | Harbor | 10.772 × 4.592 × 6.972 | 1120 (1120/456) | Col_Floor, Climb_Back, Climb_SideL, Climb_SideR, Climb_PierL, Climb_PierC, Climb_PierR, Col_DoorL, Col_DoorR | climb Brick walls are cling. The roll-up doors are closed. No rail. Wall top is 4.40 m. | shipped |
 | QuayDavit | Harbor | 0.72 × 2.323 × 1.962 | 280 (280/96) | Col_Base, Col_Post, Col_Head, Col_Jib | The post is a 0.14 m tube, not a cling wall. No rail. The jib is overhead. | shipped |
 | MooringLine | Harbor | 0.021 × 0.304 × 3.406 | 120 (120/64) |  | A rope. Not a surface. No rail. | shipped |
-| Container_20_Blue | Harbor | 2.452 × 2.59 × 6.13 | 5778 (5778/1800/264) | Climb_Body | climb Long sides are cling. Door bars are on +Z. Collider is inside the wall plate. No rail. Roof is a landing at 2.59 m. | shipped |
-| Container_20_Green | Harbor | 2.452 × 2.59 × 6.13 | 5778 (5778/1800/264) | Climb_Body | climb Long sides are cling. Door bars are on +Z. Collider is inside the wall plate. No rail. Roof is a landing at 2.59 m. | shipped |
-| Road_Junction | Roads | 22 × 0.27 × 22 | 2608 (2608/2608) | Col_Asphalt, Col_Arm_N, Col_Arm_S, Col_Arm_E, Col_Arm_W, Col_Fan x4, Col_Gutter x16, Col_Walk x20, Col_Ramp x8 | Flat asphalt and sidewalk. The curb face is 0.15 m above the road. Curb is 0.15 m. Not a vault. | shipped |
+| Container_20_Blue | Harbor | 2.452 × 2.59 × 6.13 | 5778 (5778/1800/264) | Climb_Body, Col_Roof | climb Long sides are cling. Door bars are on +Z. Collider is inside the wall plate. No rail. Roof is a landing at 2.59 m. | shipped |
+| Container_20_Green | Harbor | 2.452 × 2.59 × 6.13 | 5778 (5778/1800/264) | Climb_Body, Col_Roof | climb Long sides are cling. Door bars are on +Z. Collider is inside the wall plate. No rail. Roof is a landing at 2.59 m. | shipped |
+| Road_Junction | Roads | 22 × 0.27 × 22 | 2608 (2608/2608/1452) | Col_Asphalt, Col_Arm_N, Col_Arm_S, Col_Arm_E, Col_Arm_W, Col_Fan x4, Col_Gutter x16, Col_Walk x20, Col_Ramp x8 | Flat asphalt and sidewalk. The curb face is 0.15 m above the road. Curb is 0.15 m. Not a vault. | shipped |
 | Ranch_House | Buildings | 11.58 × 5.281 × 9.929 | 2604 (2604/2340/1688) | Vault_PorchRail x2, Climb_Front x13, Col_Glass x7, Col_Door, Climb_Back x7, Climb_Right x4, Climb_Left x7, Col_Porch, Col_PorchRoof, Col_Post x4, Col_RailTop x2, Col_RailBot x2,... | climb vault 0.95 m Siding walls are cling. Glass and the garage door are solid. The porch is open on +Z. Porch rail is 0.95 m above the porch deck (deck top 0.19 m, rail top 1.14 m). | shipped |
 | WoodFence_Gate | Buildings | 1.322 × 1.922 × 0.136 | 260 (260/108) | Col_Post x2, Col_Picket x7, Col_Rail x3, Col_Brace | climb The closed leaf is solid. The gaps are about 8 mm. Top is 1.83 m. Too high to vault from the ground. | shipped |
 | WoodFence_Corner | Buildings | 1.209 × 1.922 × 1.209 | 376 (376/120) | Col_Post, Col_Picket x14, Col_Rail x6 | climb Each picket is solid. The gaps are about 8 mm and are not a passage. Top is 1.83 m. Too high to vault from the ground. | shipped |

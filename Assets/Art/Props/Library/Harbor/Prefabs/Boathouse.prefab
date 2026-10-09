@@ -162,7 +162,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Tag.Art.Library.LibraryPropMeta
   category: "Harbor"
-  summary: "Wood boathouse 6.6 m wide, 8.4 m deep, eave 2.90 m, ridge about 4.25 m. The +Z gable is an open slip 3.20 m clear, wide enough for the 3 m dock. Side walks use the dock board: 20 cm planks, 5 cm gaps, top at 0.62 m. Piles match the dock pile. A steel lift beam, cables, and two bunks sit in the slip. Roof slopes are landings."
+  summary: "Wood boathouse 6.6 m wide, 8.4 m deep, eave 2.90 m, ridge about 4.25 m. The +Z gable is an open slip 3.20 m clear, wide enough for the 3 m dock. Side walks use the dock board: 20 cm planks, 5 cm gaps, top at 0.62 m. Piles match the dock pile. A steel lift beam, cables, and two bunks sit in the slip. Roof slopes are landings. The piles extend below the pivot."
   climbable: 1
   vaultable: 0
   vaultHeightMeters: 0

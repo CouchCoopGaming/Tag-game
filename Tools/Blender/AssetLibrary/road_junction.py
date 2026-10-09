@@ -53,14 +53,16 @@ def create():
     )
     a.climb_note = "Flat asphalt and sidewalk. The curb face is 0.15 m above the road."
     a.vault_note = "Curb is 0.15 m. Not a vault."
-    for lod in (0, 1):
+    for lod in (0, 1, 2):
         g = a.begin(lod)
         _asphalt(g)
         _gutter(g)
         _sidewalks(g, lod)
-        _markings(g)
+        if lod < 2:
+            _markings(g)
         a.end()
-        _weld_paint(a.lods[lod])
+        if lod < 2:
+            _weld_paint(a.lods[lod])
     _colliders(a)
     return a
 

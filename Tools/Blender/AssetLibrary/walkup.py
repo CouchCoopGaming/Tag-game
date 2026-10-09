@@ -304,6 +304,8 @@ def create():
     a.box("Col_Stoop", (0, 0.09, 3.62), (1.55, 0.12, 0.60))
     a.box("Col_Canopy", (0, 2.52, 3.66), (1.60, 0.05, 0.62))
     a.box("Col_Roof", (0, 9.22, -0.04), (7.50, 0.10, 5.70))
+    # The condenser is the mesh top. A box inside it closes the roof gap.
+    a.box("Col_AC", (1.2, 9.54, -0.6), (0.64, 0.36, 0.44))
     a.box("Col_CopeF", (0, 9.332, 3.14), (8.08, 0.036, 0.12))
     a.box("Col_CopeB", (0, 9.332, -3.14), (8.08, 0.036, 0.12))
     a.box("Col_CopeR", (3.94, 9.332, 0.0), (0.12, 0.036, 5.92))

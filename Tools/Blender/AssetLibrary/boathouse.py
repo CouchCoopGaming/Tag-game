@@ -254,7 +254,7 @@ def create():
         "The +Z gable is an open slip 3.20 m clear, wide enough for the 3 m dock. "
         "Side walks use the dock board: 20 cm planks, 5 cm gaps, top at 0.62 m. "
         "Piles match the dock pile. A steel lift beam, cables, and two bunks sit in the slip. "
-        "Roof slopes are landings.",
+        "Roof slopes are landings. The piles extend below the pivot.",
     )
     a.loose_pivot = True
     a.allow_below = True

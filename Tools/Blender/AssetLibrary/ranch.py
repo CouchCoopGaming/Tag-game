@@ -195,6 +195,9 @@ def _ridge_and_chimney(g, cols, lod):
         # 4 mm above the cap so the flue and the cap are separate shells.
         g.box((cx, 5.164, 0.0), (0.18, 0.20, 0.18), "Lib_Brick", uv_scale=1.2)
     cols.append(("box", "Col_Chimney", (cx, 4.36, 0.0), (0.30, 1.00, 0.30)))
+    if lod == 0:
+        # Inside the flue. The flue is the mesh top, so the roof gap closes.
+        cols.append(("box", "Col_Flue", (cx, 5.164, 0.0), (0.10, 0.12, 0.10)))
     # Flashing on each long slope, above the shingle shell and clear of the shaft.
     _flashing(g, cx, 1.0)
     _flashing(g, cx, -1.0)

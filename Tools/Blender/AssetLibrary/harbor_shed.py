@@ -330,7 +330,7 @@ def create():
     a.climbable = True
     a.climb_note = "The board walls are cling. The door is closed."
     a.vault_note = "No rail. Wall top is 2.35 m."
-    for lod in (0, 1):
+    for lod in (0, 1, 2):
         g = a.begin(lod)
         g.box((0, 0.04, 0), (W + 0.08, 0.08, D + 0.08), "Lib_Concrete", uv_scale=0.7)
         g.box((0, 1.22, -D * 0.5 + 0.04), (W - 0.16, 2.15, 0.06), "Lib_Board")
@@ -339,14 +339,16 @@ def create():
         g.box((-0.95, 1.22, D * 0.5 - 0.04), (1.15, 2.15, 0.06), "Lib_Board")
         g.box((1.15, 1.22, D * 0.5 - 0.04), (0.85, 2.15, 0.06), "Lib_Board")
         g.box((0.175, 2.165, D * 0.5 - 0.04), (1.06, 0.26, 0.06), "Lib_Board")
-        _siding(g)
-        _corners(g)
-        _door(g, lod)
-        _window_z(g, 1.18, 1.58, lod)
-        _window_x(g, 0.10, 1.55, lod)
+        if lod == 0:
+            _siding(g)
+            _corners(g)
+            _soffit_boards(g)
+        if lod < 2:
+            _door(g, lod)
+            _window_z(g, 1.18, 1.58, lod)
+            _window_x(g, 0.10, 1.55, lod)
         _plate(g)
         _gables(g)
-        _soffit_boards(g)
         _roof(g)
         a.end()
     a.box("Col_Floor", (0, 0.04, 0), (3.40, 0.04, 2.50))
