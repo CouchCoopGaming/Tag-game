@@ -28,6 +28,10 @@ Report one line:
 
 `kneeMin` and `pelvisDropMin` are the plant, landing, and crouch frames only.
 
+## Target shapes
+
+S1 measured roll, vault, climb, mantle, wall, and slide on `cursor/tag-storror-mocap` at `8fccec65178afb30c4f3bd0dccdc4aa8240d8301`. Typical loaded plants in that set sit with the pelvis +13 to +43 cm behind the support foot and the support knee at 45–115°, shin forward. The ledger lists the key moments used as targets. The filmed tracks stay on that branch. This branch cites the numbers only.
+
 ## No-clip
 
 Overlap at a joint that also overlaps at rest, the same parent and child, is `rigJoint`. The rig lane A2 (#128) owns it. Hip-into-thigh and shin-into-thigh stay `rigJoint` at any flexion. Do not stiffen a pose to hide that cuff.
