@@ -499,7 +499,7 @@ def _lamps(g, spec, lod):
         g.box((x, spec["lamp_y"], z_nose + 0.010), (0.22, 0.072, 0.014), "Lib_Headlamp", bevel=bev, segs=segs)
     g.box((0, spec["lamp_y"] - 0.02, z_nose - 0.004), (0.52, 0.09, 0.018), "Lib_Black")
     if lod == 0:
-        for i in range(4):
+        for i in range(int(spec.get("slats", 4))):
             g.box((0, spec["lamp_y"] - 0.048 + i * 0.022, z_nose + 0.008), (0.44, 0.008, 0.006), "Lib_SteelDark")
     if spec.get("bed_z0") is None:
         z_lens = spec["z0"] - 0.012
@@ -568,9 +568,10 @@ def _wheels(g, spec, lod, axles):
             g.cylinder((face, spec["axle_y"], z), r * 0.70, 0.012, "Lib_Steel", seg, axis="X")
             g.cylinder((face + sign * 0.010, spec["axle_y"], z), r * 0.22, 0.012, "Lib_SteelDark", max(8, seg // 2), axis="X")
             if lod == 0:
-                for k in range(5):
+                count = int(spec.get("spokes", 5))
+                for k in range(count):
                     # Unity +X rotation swings local +Y toward +Z, so the spoke's long axis is (cos, sin).
-                    theta = math.radians(k * 72.0 + 8.0)
+                    theta = math.radians(k * (360.0 / count) + 8.0)
                     g.box(
                         (
                             face,

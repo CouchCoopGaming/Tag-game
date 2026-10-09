@@ -106,8 +106,9 @@ def _wheel(g, x, z, spec, lod, detailed):
     face = x + sign * (spec["tire_w"] * 0.5 + 0.016)
     g.cylinder((face, y, z), r * 0.62, 0.012, "Lib_Steel", seg, axis="X")
     if lod == 0:
-        for k in range(5):
-            theta = math.radians(k * 72.0 + 10.0)
+        count = int(spec.get("spokes", 5))
+        for k in range(count):
+            theta = math.radians(k * (360.0 / count) + 10.0)
             g.box(
                 (face, y + math.cos(theta) * r * 0.36, z + math.sin(theta) * r * 0.36),
                 (0.008, r * 0.38, 0.016),
@@ -248,7 +249,13 @@ def _caps(g, asset, spec, lod, bev, segs):
     g.box((0.0, 2.10, zt + 0.019), (1.05, 0.48, 0.008), "Lib_TintGlass")
     if lod < 2:
         g.box((0.0, 2.10, zt + 0.046), (0.94, 0.38, 0.012), "Lib_Interior")
-    for i in range(4 if lod == 0 else (0 if lod >= 2 else 2)):
+    if lod >= 2:
+        louvers = 0
+    elif lod == 1:
+        louvers = 2
+    else:
+        louvers = int(spec.get("louvers", 4))
+    for i in range(louvers):
         g.box((0.0, 0.58 + i * 0.18, zt - 0.008), (1.10, 0.012, 0.008), "Lib_Black")
     _panel(g, (0.0, 0.38, -bumper_z), (half * 1.92, 0.16, 0.070), "Lib_Black", bev, segs)
     for sign in (-1.0, 1.0):
@@ -387,8 +394,12 @@ def make_city60(name, body, skirt):
     return spec
 
 
-def create_city60(name, body, skirt, blurb):
+def create_city60(name, body, skirt, blurb, spokes=None, louvers=None):
     spec = make_city60(name, body, skirt)
+    if spokes is not None:
+        spec["spokes"] = spokes
+    if louvers is not None:
+        spec["louvers"] = louvers
     asset = Asset(name, "Vehicles", blurb)
     asset.climbable = True
     asset.climb_note = "Roof, roof unit, and the turntable cover. Not a cling wall."
@@ -401,8 +412,12 @@ def create_city60(name, body, skirt, blurb):
     return asset
 
 
-def create_city40(name, body, skirt, blurb):
+def create_city40(name, body, skirt, blurb, spokes=None, louvers=None):
     spec = make_city40(name, body, skirt)
+    if spokes is not None:
+        spec["spokes"] = spokes
+    if louvers is not None:
+        spec["louvers"] = louvers
     asset = Asset(name, "Vehicles", blurb)
     asset.climbable = True
     asset.climb_note = "Roof and roof unit. Sheet metal, not a cling wall."
