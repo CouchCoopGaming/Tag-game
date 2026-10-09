@@ -1126,6 +1126,12 @@ def manifest_entry(asset, fbx_names):
         "warnings": asset.warnings,
         "fbxNames": fbx_names,
         "slackCm": getattr(asset, "collider_slack_cm", 0),
+        "license": {
+            "spdx": "CC0-1.0",
+            "source": "original",
+            "url": "",
+            "notes": "Procedural mesh built in this repo.",
+        },
     }
 
 

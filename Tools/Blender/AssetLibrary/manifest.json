@@ -52,7 +52,13 @@
       "LOD1"
     ],
     "slackCm": 0.0,
-    "fbx": "Assets/Art/Props/Library/Roads/Asphalt_Patch.fbx"
+    "fbx": "Assets/Art/Props/Library/Roads/Asphalt_Patch.fbx",
+    "license": {
+      "spdx": "CC0-1.0",
+      "source": "original",
+      "url": "",
+      "notes": "Procedural mesh built in this repo."
+    }
   },
   {
     "name": "Barrier",
@@ -165,7 +171,13 @@
       "LOD1"
     ],
     "slackCm": 0.47,
-    "fbx": "Assets/Art/Props/Library/Utility/Barrier.fbx"
+    "fbx": "Assets/Art/Props/Library/Utility/Barrier.fbx",
+    "license": {
+      "spdx": "CC0-1.0",
+      "source": "original",
+      "url": "",
+      "notes": "Procedural mesh built in this repo."
+    }
   },
   {
     "name": "Bench_Wood",
@@ -374,7 +386,13 @@
       "LOD1"
     ],
     "slackCm": 1.0,
-    "fbx": "Assets/Art/Props/Library/StreetFurniture/Bench_Wood.fbx"
+    "fbx": "Assets/Art/Props/Library/StreetFurniture/Bench_Wood.fbx",
+    "license": {
+      "spdx": "CC0-1.0",
+      "source": "original",
+      "url": "",
+      "notes": "Procedural mesh built in this repo."
+    }
   },
   {
     "name": "BikeRack",
@@ -539,7 +557,13 @@
       "LOD1"
     ],
     "slackCm": 1.2,
-    "fbx": "Assets/Art/Props/Library/StreetFurniture/BikeRack.fbx"
+    "fbx": "Assets/Art/Props/Library/StreetFurniture/BikeRack.fbx",
+    "license": {
+      "spdx": "CC0-1.0",
+      "source": "original",
+      "url": "",
+      "notes": "Procedural mesh built in this repo."
+    }
   },
   {
     "name": "Boat",
@@ -758,7 +782,13 @@
       "LOD1"
     ],
     "slackCm": 0.0,
-    "fbx": "Assets/Art/Props/Library/Harbor/Boat.fbx"
+    "fbx": "Assets/Art/Props/Library/Harbor/Boat.fbx",
+    "license": {
+      "spdx": "CC0-1.0",
+      "source": "original",
+      "url": "",
+      "notes": "Procedural mesh built in this repo."
+    }
   },
   {
     "name": "Cabin",
@@ -2088,7 +2118,13 @@
       "LOD2"
     ],
     "slackCm": 1.34,
-    "fbx": "Assets/Art/Props/Library/Buildings/Cabin.fbx"
+    "fbx": "Assets/Art/Props/Library/Buildings/Cabin.fbx",
+    "license": {
+      "spdx": "CC0-1.0",
+      "source": "original",
+      "url": "",
+      "notes": "Procedural mesh built in this repo."
+    }
   },
   {
     "name": "Boathouse",
@@ -3798,7 +3834,13 @@
       "LOD2"
     ],
     "slackCm": 0.0,
-    "fbx": "Assets/Art/Props/Library/Harbor/Boathouse.fbx"
+    "fbx": "Assets/Art/Props/Library/Harbor/Boathouse.fbx",
+    "license": {
+      "spdx": "CC0-1.0",
+      "source": "original",
+      "url": "",
+      "notes": "Procedural mesh built in this repo."
+    }
   },
   {
     "name": "Bollard",
@@ -3888,7 +3930,13 @@
       "LOD1"
     ],
     "slackCm": 0.19,
-    "fbx": "Assets/Art/Props/Library/StreetFurniture/Bollard.fbx"
+    "fbx": "Assets/Art/Props/Library/StreetFurniture/Bollard.fbx",
+    "license": {
+      "spdx": "CC0-1.0",
+      "source": "original",
+      "url": "",
+      "notes": "Procedural mesh built in this repo."
+    }
   },
   {
     "name": "Brick_Corner",
@@ -3994,7 +4042,13 @@
       "LOD2"
     ],
     "slackCm": 0.36,
-    "fbx": "Assets/Art/Props/Library/Buildings/Brick_Corner.fbx"
+    "fbx": "Assets/Art/Props/Library/Buildings/Brick_Corner.fbx",
+    "license": {
+      "spdx": "CC0-1.0",
+      "source": "original",
+      "url": "",
+      "notes": "Procedural mesh built in this repo."
+    }
   },
   {
     "name": "Brick_Door",
@@ -4222,7 +4276,13 @@
       "LOD2"
     ],
     "slackCm": 1.02,
-    "fbx": "Assets/Art/Props/Library/Buildings/Brick_Door.fbx"
+    "fbx": "Assets/Art/Props/Library/Buildings/Brick_Door.fbx",
+    "license": {
+      "spdx": "CC0-1.0",
+      "source": "original",
+      "url": "",
+      "notes": "Procedural mesh built in this repo."
+    }
   },
   {
     "name": "Brick_Parapet",
@@ -4328,7 +4388,13 @@
       "LOD2"
     ],
     "slackCm": 0.36,
-    "fbx": "Assets/Art/Props/Library/Buildings/Brick_Parapet.fbx"
+    "fbx": "Assets/Art/Props/Library/Buildings/Brick_Parapet.fbx",
+    "license": {
+      "spdx": "CC0-1.0",
+      "source": "original",
+      "url": "",
+      "notes": "Procedural mesh built in this repo."
+    }
   },
   {
     "name": "Brick_Wall",
@@ -4463,7 +4529,13 @@
       "LOD2"
     ],
     "slackCm": 0.47,
-    "fbx": "Assets/Art/Props/Library/Buildings/Brick_Wall.fbx"
+    "fbx": "Assets/Art/Props/Library/Buildings/Brick_Wall.fbx",
+    "license": {
+      "spdx": "CC0-1.0",
+      "source": "original",
+      "url": "",
+      "notes": "Procedural mesh built in this repo."
+    }
   },
   {
     "name": "Brick_Window",
@@ -4688,7 +4760,13 @@
       "LOD2"
     ],
     "slackCm": 0.8,
-    "fbx": "Assets/Art/Props/Library/Buildings/Brick_Window.fbx"
+    "fbx": "Assets/Art/Props/Library/Buildings/Brick_Window.fbx",
+    "license": {
+      "spdx": "CC0-1.0",
+      "source": "original",
+      "url": "",
+      "notes": "Procedural mesh built in this repo."
+    }
   },
   {
     "name": "Buoy",
@@ -4772,7 +4850,13 @@
       "LOD1"
     ],
     "slackCm": 0.0,
-    "fbx": "Assets/Art/Props/Library/Harbor/Buoy.fbx"
+    "fbx": "Assets/Art/Props/Library/Harbor/Buoy.fbx",
+    "license": {
+      "spdx": "CC0-1.0",
+      "source": "original",
+      "url": "",
+      "notes": "Procedural mesh built in this repo."
+    }
   },
   {
     "name": "BusShelter",
@@ -5024,7 +5108,13 @@
       "LOD1"
     ],
     "slackCm": 0.38,
-    "fbx": "Assets/Art/Props/Library/StreetFurniture/BusShelter.fbx"
+    "fbx": "Assets/Art/Props/Library/StreetFurniture/BusShelter.fbx",
+    "license": {
+      "spdx": "CC0-1.0",
+      "source": "original",
+      "url": "",
+      "notes": "Procedural mesh built in this repo."
+    }
   },
   {
     "name": "ChainFence",
@@ -5151,7 +5241,13 @@
       "LOD1"
     ],
     "slackCm": 0.8,
-    "fbx": "Assets/Art/Props/Library/Buildings/ChainFence.fbx"
+    "fbx": "Assets/Art/Props/Library/Buildings/ChainFence.fbx",
+    "license": {
+      "spdx": "CC0-1.0",
+      "source": "original",
+      "url": "",
+      "notes": "Procedural mesh built in this repo."
+    }
   },
   {
     "name": "ChainGate",
@@ -5266,7 +5362,13 @@
       "LOD1"
     ],
     "slackCm": 0.8,
-    "fbx": "Assets/Art/Props/Library/Buildings/ChainGate.fbx"
+    "fbx": "Assets/Art/Props/Library/Buildings/ChainGate.fbx",
+    "license": {
+      "spdx": "CC0-1.0",
+      "source": "original",
+      "url": "",
+      "notes": "Procedural mesh built in this repo."
+    }
   },
   {
     "name": "Cleat",
@@ -5380,7 +5482,13 @@
       "LOD1"
     ],
     "slackCm": 0.97,
-    "fbx": "Assets/Art/Props/Library/Harbor/Cleat.fbx"
+    "fbx": "Assets/Art/Props/Library/Harbor/Cleat.fbx",
+    "license": {
+      "spdx": "CC0-1.0",
+      "source": "original",
+      "url": "",
+      "notes": "Procedural mesh built in this repo."
+    }
   },
   {
     "name": "TrafficCone",
@@ -5470,7 +5578,13 @@
       "LOD1"
     ],
     "slackCm": 0.0,
-    "fbx": "Assets/Art/Props/Library/Utility/TrafficCone.fbx"
+    "fbx": "Assets/Art/Props/Library/Utility/TrafficCone.fbx",
+    "license": {
+      "spdx": "CC0-1.0",
+      "source": "original",
+      "url": "",
+      "notes": "Procedural mesh built in this repo."
+    }
   },
   {
     "name": "Container_20",
@@ -5563,7 +5677,13 @@
       "LOD2"
     ],
     "slackCm": 0.0,
-    "fbx": "Assets/Art/Props/Library/Harbor/Container_20.fbx"
+    "fbx": "Assets/Art/Props/Library/Harbor/Container_20.fbx",
+    "license": {
+      "spdx": "CC0-1.0",
+      "source": "original",
+      "url": "",
+      "notes": "Procedural mesh built in this repo."
+    }
   },
   {
     "name": "Container_40",
@@ -5655,7 +5775,13 @@
       "LOD2"
     ],
     "slackCm": 0.0,
-    "fbx": "Assets/Art/Props/Library/Harbor/Container_40.fbx"
+    "fbx": "Assets/Art/Props/Library/Harbor/Container_40.fbx",
+    "license": {
+      "spdx": "CC0-1.0",
+      "source": "original",
+      "url": "",
+      "notes": "Procedural mesh built in this repo."
+    }
   },
   {
     "name": "Court",
@@ -5731,7 +5857,13 @@
       "LOD1"
     ],
     "slackCm": 0.8,
-    "fbx": "Assets/Art/Props/Library/Park/Court.fbx"
+    "fbx": "Assets/Art/Props/Library/Park/Court.fbx",
+    "license": {
+      "spdx": "CC0-1.0",
+      "source": "original",
+      "url": "",
+      "notes": "Procedural mesh built in this repo."
+    }
   },
   {
     "name": "CourtFence",
@@ -5970,7 +6102,13 @@
       "LOD2"
     ],
     "slackCm": 1.3,
-    "fbx": "Assets/Art/Props/Library/Park/CourtFence.fbx"
+    "fbx": "Assets/Art/Props/Library/Park/CourtFence.fbx",
+    "license": {
+      "spdx": "CC0-1.0",
+      "source": "original",
+      "url": "",
+      "notes": "Procedural mesh built in this repo."
+    }
   },
   {
     "name": "HarborCrane",
@@ -6221,7 +6359,13 @@
       "LOD2"
     ],
     "slackCm": 0.0,
-    "fbx": "Assets/Art/Props/Library/Harbor/HarborCrane.fbx"
+    "fbx": "Assets/Art/Props/Library/Harbor/HarborCrane.fbx",
+    "license": {
+      "spdx": "CC0-1.0",
+      "source": "original",
+      "url": "",
+      "notes": "Procedural mesh built in this repo."
+    }
   },
   {
     "name": "Crate",
@@ -6299,7 +6443,13 @@
       "LOD1"
     ],
     "slackCm": 1.9,
-    "fbx": "Assets/Art/Props/Library/Harbor/Crate.fbx"
+    "fbx": "Assets/Art/Props/Library/Harbor/Crate.fbx",
+    "license": {
+      "spdx": "CC0-1.0",
+      "source": "original",
+      "url": "",
+      "notes": "Procedural mesh built in this repo."
+    }
   },
   {
     "name": "Dock_Corner",
@@ -6948,7 +7098,13 @@
       "LOD1"
     ],
     "slackCm": 0.81,
-    "fbx": "Assets/Art/Props/Library/Harbor/Dock_Corner.fbx"
+    "fbx": "Assets/Art/Props/Library/Harbor/Dock_Corner.fbx",
+    "license": {
+      "spdx": "CC0-1.0",
+      "source": "original",
+      "url": "",
+      "notes": "Procedural mesh built in this repo."
+    }
   },
   {
     "name": "DockRamp",
@@ -7295,7 +7451,13 @@
       "LOD1"
     ],
     "slackCm": 1.32,
-    "fbx": "Assets/Art/Props/Library/Harbor/DockRamp.fbx"
+    "fbx": "Assets/Art/Props/Library/Harbor/DockRamp.fbx",
+    "license": {
+      "spdx": "CC0-1.0",
+      "source": "original",
+      "url": "",
+      "notes": "Procedural mesh built in this repo."
+    }
   },
   {
     "name": "Dock_Straight",
@@ -8132,7 +8294,13 @@
       "LOD1"
     ],
     "slackCm": 0.0,
-    "fbx": "Assets/Art/Props/Library/Harbor/Dock_Straight.fbx"
+    "fbx": "Assets/Art/Props/Library/Harbor/Dock_Straight.fbx",
+    "license": {
+      "spdx": "CC0-1.0",
+      "source": "original",
+      "url": "",
+      "notes": "Procedural mesh built in this repo."
+    }
   },
   {
     "name": "Dumpster",
@@ -8249,7 +8417,13 @@
       "LOD1"
     ],
     "slackCm": 0.25,
-    "fbx": "Assets/Art/Props/Library/Utility/Dumpster.fbx"
+    "fbx": "Assets/Art/Props/Library/Utility/Dumpster.fbx",
+    "license": {
+      "spdx": "CC0-1.0",
+      "source": "original",
+      "url": "",
+      "notes": "Procedural mesh built in this repo."
+    }
   },
   {
     "name": "ElectricalBox",
@@ -8346,7 +8520,13 @@
       "LOD1"
     ],
     "slackCm": 0.06,
-    "fbx": "Assets/Art/Props/Library/Utility/ElectricalBox.fbx"
+    "fbx": "Assets/Art/Props/Library/Utility/ElectricalBox.fbx",
+    "license": {
+      "spdx": "CC0-1.0",
+      "source": "original",
+      "url": "",
+      "notes": "Procedural mesh built in this repo."
+    }
   },
   {
     "name": "FireEscape",
@@ -8613,7 +8793,13 @@
       "LOD2"
     ],
     "slackCm": 0.8,
-    "fbx": "Assets/Art/Props/Library/Buildings/FireEscape.fbx"
+    "fbx": "Assets/Art/Props/Library/Buildings/FireEscape.fbx",
+    "license": {
+      "spdx": "CC0-1.0",
+      "source": "original",
+      "url": "",
+      "notes": "Procedural mesh built in this repo."
+    }
   },
   {
     "name": "FireHydrant",
@@ -8741,7 +8927,13 @@
       "LOD1"
     ],
     "slackCm": 0.8,
-    "fbx": "Assets/Art/Props/Library/StreetFurniture/FireHydrant.fbx"
+    "fbx": "Assets/Art/Props/Library/StreetFurniture/FireHydrant.fbx",
+    "license": {
+      "spdx": "CC0-1.0",
+      "source": "original",
+      "url": "",
+      "notes": "Procedural mesh built in this repo."
+    }
   },
   {
     "name": "Fountain",
@@ -8831,7 +9023,13 @@
       "LOD1"
     ],
     "slackCm": 0.0,
-    "fbx": "Assets/Art/Props/Library/Park/Fountain.fbx"
+    "fbx": "Assets/Art/Props/Library/Park/Fountain.fbx",
+    "license": {
+      "spdx": "CC0-1.0",
+      "source": "original",
+      "url": "",
+      "notes": "Procedural mesh built in this repo."
+    }
   },
   {
     "name": "Garage",
@@ -9119,7 +9317,13 @@
       "LOD2"
     ],
     "slackCm": 0.19,
-    "fbx": "Assets/Art/Props/Library/Buildings/Garage.fbx"
+    "fbx": "Assets/Art/Props/Library/Buildings/Garage.fbx",
+    "license": {
+      "spdx": "CC0-1.0",
+      "source": "original",
+      "url": "",
+      "notes": "Procedural mesh built in this repo."
+    }
   },
   {
     "name": "GasCanopy",
@@ -9502,7 +9706,13 @@
       "LOD1"
     ],
     "slackCm": 1.06,
-    "fbx": "Assets/Art/Props/Library/Buildings/GasCanopy.fbx"
+    "fbx": "Assets/Art/Props/Library/Buildings/GasCanopy.fbx",
+    "license": {
+      "spdx": "CC0-1.0",
+      "source": "original",
+      "url": "",
+      "notes": "Procedural mesh built in this repo."
+    }
   },
   {
     "name": "Gazebo",
@@ -9911,7 +10121,13 @@
       "LOD2"
     ],
     "slackCm": 0.0,
-    "fbx": "Assets/Art/Props/Library/Park/Gazebo.fbx"
+    "fbx": "Assets/Art/Props/Library/Park/Gazebo.fbx",
+    "license": {
+      "spdx": "CC0-1.0",
+      "source": "original",
+      "url": "",
+      "notes": "Procedural mesh built in this repo."
+    }
   },
   {
     "name": "Gutter",
@@ -9985,7 +10201,13 @@
       "LOD1"
     ],
     "slackCm": 0.0,
-    "fbx": "Assets/Art/Props/Library/Roads/Gutter.fbx"
+    "fbx": "Assets/Art/Props/Library/Roads/Gutter.fbx",
+    "license": {
+      "spdx": "CC0-1.0",
+      "source": "original",
+      "url": "",
+      "notes": "Procedural mesh built in this repo."
+    }
   },
   {
     "name": "HarborRail",
@@ -10109,7 +10331,13 @@
       "LOD1"
     ],
     "slackCm": 0.8,
-    "fbx": "Assets/Art/Props/Library/Harbor/HarborRail.fbx"
+    "fbx": "Assets/Art/Props/Library/Harbor/HarborRail.fbx",
+    "license": {
+      "spdx": "CC0-1.0",
+      "source": "original",
+      "url": "",
+      "notes": "Procedural mesh built in this repo."
+    }
   },
   {
     "name": "HarborWater",
@@ -10163,7 +10391,13 @@
       "LOD1"
     ],
     "slackCm": 0.0,
-    "fbx": "Assets/Art/Props/Library/Harbor/HarborWater.fbx"
+    "fbx": "Assets/Art/Props/Library/Harbor/HarborWater.fbx",
+    "license": {
+      "spdx": "CC0-1.0",
+      "source": "original",
+      "url": "",
+      "notes": "Procedural mesh built in this repo."
+    }
   },
   {
     "name": "Hoop",
@@ -10299,7 +10533,13 @@
       "LOD1"
     ],
     "slackCm": 2.0,
-    "fbx": "Assets/Art/Props/Library/Park/Hoop.fbx"
+    "fbx": "Assets/Art/Props/Library/Park/Hoop.fbx",
+    "license": {
+      "spdx": "CC0-1.0",
+      "source": "original",
+      "url": "",
+      "notes": "Procedural mesh built in this repo."
+    }
   },
   {
     "name": "House",
@@ -10642,7 +10882,13 @@
       "LOD2"
     ],
     "slackCm": 0.8,
-    "fbx": "Assets/Art/Props/Library/Buildings/House.fbx"
+    "fbx": "Assets/Art/Props/Library/Buildings/House.fbx",
+    "license": {
+      "spdx": "CC0-1.0",
+      "source": "original",
+      "url": "",
+      "notes": "Procedural mesh built in this repo."
+    }
   },
   {
     "name": "House_Gable",
@@ -11601,7 +11847,13 @@
       "LOD2"
     ],
     "slackCm": 1.9,
-    "fbx": "Assets/Art/Props/Library/Buildings/House_Gable.fbx"
+    "fbx": "Assets/Art/Props/Library/Buildings/House_Gable.fbx",
+    "license": {
+      "spdx": "CC0-1.0",
+      "source": "original",
+      "url": "",
+      "notes": "Procedural mesh built in this repo."
+    }
   },
   {
     "name": "House_Hip",
@@ -12560,7 +12812,13 @@
       "LOD2"
     ],
     "slackCm": 1.9,
-    "fbx": "Assets/Art/Props/Library/Buildings/House_Hip.fbx"
+    "fbx": "Assets/Art/Props/Library/Buildings/House_Hip.fbx",
+    "license": {
+      "spdx": "CC0-1.0",
+      "source": "original",
+      "url": "",
+      "notes": "Procedural mesh built in this repo."
+    }
   },
   {
     "name": "LaneArrow",
@@ -12614,7 +12872,13 @@
       "LOD1"
     ],
     "slackCm": 0.0,
-    "fbx": "Assets/Art/Props/Library/Roads/LaneArrow.fbx"
+    "fbx": "Assets/Art/Props/Library/Roads/LaneArrow.fbx",
+    "license": {
+      "spdx": "CC0-1.0",
+      "source": "original",
+      "url": "",
+      "notes": "Procedural mesh built in this repo."
+    }
   },
   {
     "name": "LightPost_Single",
@@ -12743,7 +13007,13 @@
       "LOD1"
     ],
     "slackCm": 2.83,
-    "fbx": "Assets/Art/Props/Library/StreetFurniture/LightPost_Single.fbx"
+    "fbx": "Assets/Art/Props/Library/StreetFurniture/LightPost_Single.fbx",
+    "license": {
+      "spdx": "CC0-1.0",
+      "source": "original",
+      "url": "",
+      "notes": "Procedural mesh built in this repo."
+    }
   },
   {
     "name": "LightPost_Double",
@@ -12910,7 +13180,13 @@
       "LOD1"
     ],
     "slackCm": 2.83,
-    "fbx": "Assets/Art/Props/Library/StreetFurniture/LightPost_Double.fbx"
+    "fbx": "Assets/Art/Props/Library/StreetFurniture/LightPost_Double.fbx",
+    "license": {
+      "spdx": "CC0-1.0",
+      "source": "original",
+      "url": "",
+      "notes": "Procedural mesh built in this repo."
+    }
   },
   {
     "name": "Lighthouse",
@@ -13242,7 +13518,13 @@
       "LOD2"
     ],
     "slackCm": 2.89,
-    "fbx": "Assets/Art/Props/Library/Harbor/Lighthouse.fbx"
+    "fbx": "Assets/Art/Props/Library/Harbor/Lighthouse.fbx",
+    "license": {
+      "spdx": "CC0-1.0",
+      "source": "original",
+      "url": "",
+      "notes": "Procedural mesh built in this repo."
+    }
   },
   {
     "name": "Mailbox",
@@ -13349,7 +13631,13 @@
       "LOD1"
     ],
     "slackCm": 1.33,
-    "fbx": "Assets/Art/Props/Library/StreetFurniture/Mailbox.fbx"
+    "fbx": "Assets/Art/Props/Library/StreetFurniture/Mailbox.fbx",
+    "license": {
+      "spdx": "CC0-1.0",
+      "source": "original",
+      "url": "",
+      "notes": "Procedural mesh built in this repo."
+    }
   },
   {
     "name": "Manhole",
@@ -13427,7 +13715,13 @@
       "LOD1"
     ],
     "slackCm": 0.05,
-    "fbx": "Assets/Art/Props/Library/StreetFurniture/Manhole.fbx"
+    "fbx": "Assets/Art/Props/Library/StreetFurniture/Manhole.fbx",
+    "license": {
+      "spdx": "CC0-1.0",
+      "source": "original",
+      "url": "",
+      "notes": "Procedural mesh built in this repo."
+    }
   },
   {
     "name": "Mannequin",
@@ -13556,7 +13850,13 @@
       "LOD1"
     ],
     "slackCm": 0.8,
-    "fbx": "Assets/Art/Props/Library/Showcase/Mannequin.fbx"
+    "fbx": "Assets/Art/Props/Library/Showcase/Mannequin.fbx",
+    "license": {
+      "spdx": "CC0-1.0",
+      "source": "original",
+      "url": "",
+      "notes": "Procedural mesh built in this repo."
+    }
   },
   {
     "name": "Median_Planter",
@@ -13720,7 +14020,13 @@
       "LOD1"
     ],
     "slackCm": 2.8,
-    "fbx": "Assets/Art/Props/Library/Roads/Median_Planter.fbx"
+    "fbx": "Assets/Art/Props/Library/Roads/Median_Planter.fbx",
+    "license": {
+      "spdx": "CC0-1.0",
+      "source": "original",
+      "url": "",
+      "notes": "Procedural mesh built in this repo."
+    }
   },
   {
     "name": "Mooring",
@@ -14015,7 +14321,13 @@
       "LOD1"
     ],
     "slackCm": 1.25,
-    "fbx": "Assets/Art/Props/Library/Harbor/Mooring.fbx"
+    "fbx": "Assets/Art/Props/Library/Harbor/Mooring.fbx",
+    "license": {
+      "spdx": "CC0-1.0",
+      "source": "original",
+      "url": "",
+      "notes": "Procedural mesh built in this repo."
+    }
   },
   {
     "name": "NewspaperBox",
@@ -14115,7 +14427,13 @@
       "LOD1"
     ],
     "slackCm": 2.0,
-    "fbx": "Assets/Art/Props/Library/StreetFurniture/NewspaperBox.fbx"
+    "fbx": "Assets/Art/Props/Library/StreetFurniture/NewspaperBox.fbx",
+    "license": {
+      "spdx": "CC0-1.0",
+      "source": "original",
+      "url": "",
+      "notes": "Procedural mesh built in this repo."
+    }
   },
   {
     "name": "Pallet",
@@ -14248,7 +14566,13 @@
       "LOD1"
     ],
     "slackCm": 0.27,
-    "fbx": "Assets/Art/Props/Library/Utility/Pallet.fbx"
+    "fbx": "Assets/Art/Props/Library/Utility/Pallet.fbx",
+    "license": {
+      "spdx": "CC0-1.0",
+      "source": "original",
+      "url": "",
+      "notes": "Procedural mesh built in this repo."
+    }
   },
   {
     "name": "ParkLamp",
@@ -14378,7 +14702,13 @@
       "LOD1"
     ],
     "slackCm": 0.88,
-    "fbx": "Assets/Art/Props/Library/Park/ParkLamp.fbx"
+    "fbx": "Assets/Art/Props/Library/Park/ParkLamp.fbx",
+    "license": {
+      "spdx": "CC0-1.0",
+      "source": "original",
+      "url": "",
+      "notes": "Procedural mesh built in this repo."
+    }
   },
   {
     "name": "ParkSign",
@@ -14494,7 +14824,13 @@
       "LOD1"
     ],
     "slackCm": 1.03,
-    "fbx": "Assets/Art/Props/Library/Park/ParkSign.fbx"
+    "fbx": "Assets/Art/Props/Library/Park/ParkSign.fbx",
+    "license": {
+      "spdx": "CC0-1.0",
+      "source": "original",
+      "url": "",
+      "notes": "Procedural mesh built in this repo."
+    }
   },
   {
     "name": "ParkingMeter",
@@ -14587,7 +14923,13 @@
       "LOD1"
     ],
     "slackCm": 2.25,
-    "fbx": "Assets/Art/Props/Library/StreetFurniture/ParkingMeter.fbx"
+    "fbx": "Assets/Art/Props/Library/StreetFurniture/ParkingMeter.fbx",
+    "license": {
+      "spdx": "CC0-1.0",
+      "source": "original",
+      "url": "",
+      "notes": "Procedural mesh built in this repo."
+    }
   },
   {
     "name": "Pavilion",
@@ -14896,7 +15238,13 @@
       "LOD2"
     ],
     "slackCm": 0.45,
-    "fbx": "Assets/Art/Props/Library/Park/Pavilion.fbx"
+    "fbx": "Assets/Art/Props/Library/Park/Pavilion.fbx",
+    "license": {
+      "spdx": "CC0-1.0",
+      "source": "original",
+      "url": "",
+      "notes": "Procedural mesh built in this repo."
+    }
   },
   {
     "name": "PicketFence",
@@ -15257,7 +15605,13 @@
       "LOD1"
     ],
     "slackCm": 0.0,
-    "fbx": "Assets/Art/Props/Library/Buildings/PicketFence.fbx"
+    "fbx": "Assets/Art/Props/Library/Buildings/PicketFence.fbx",
+    "license": {
+      "spdx": "CC0-1.0",
+      "source": "original",
+      "url": "",
+      "notes": "Procedural mesh built in this repo."
+    }
   },
   {
     "name": "PicnicTable",
@@ -15524,7 +15878,13 @@
       "LOD1"
     ],
     "slackCm": 0.59,
-    "fbx": "Assets/Art/Props/Library/Park/PicnicTable.fbx"
+    "fbx": "Assets/Art/Props/Library/Park/PicnicTable.fbx",
+    "license": {
+      "spdx": "CC0-1.0",
+      "source": "original",
+      "url": "",
+      "notes": "Procedural mesh built in this repo."
+    }
   },
   {
     "name": "Piling",
@@ -15617,7 +15977,13 @@
       "LOD1"
     ],
     "slackCm": 1.38,
-    "fbx": "Assets/Art/Props/Library/Harbor/Piling.fbx"
+    "fbx": "Assets/Art/Props/Library/Harbor/Piling.fbx",
+    "license": {
+      "spdx": "CC0-1.0",
+      "source": "original",
+      "url": "",
+      "notes": "Procedural mesh built in this repo."
+    }
   },
   {
     "name": "Planter",
@@ -15782,7 +16148,13 @@
       "LOD1"
     ],
     "slackCm": 0.8,
-    "fbx": "Assets/Art/Props/Library/Park/Planter.fbx"
+    "fbx": "Assets/Art/Props/Library/Park/Planter.fbx",
+    "license": {
+      "spdx": "CC0-1.0",
+      "source": "original",
+      "url": "",
+      "notes": "Procedural mesh built in this repo."
+    }
   },
   {
     "name": "Playground",
@@ -16426,7 +16798,13 @@
       "LOD2"
     ],
     "slackCm": 0.94,
-    "fbx": "Assets/Art/Props/Library/Park/Playground.fbx"
+    "fbx": "Assets/Art/Props/Library/Park/Playground.fbx",
+    "license": {
+      "spdx": "CC0-1.0",
+      "source": "original",
+      "url": "",
+      "notes": "Procedural mesh built in this repo."
+    }
   },
   {
     "name": "PondEdge",
@@ -16524,7 +16902,13 @@
       "LOD1"
     ],
     "slackCm": 0.0,
-    "fbx": "Assets/Art/Props/Library/Park/PondEdge.fbx"
+    "fbx": "Assets/Art/Props/Library/Park/PondEdge.fbx",
+    "license": {
+      "spdx": "CC0-1.0",
+      "source": "original",
+      "url": "",
+      "notes": "Procedural mesh built in this repo."
+    }
   },
   {
     "name": "Quay_Edge",
@@ -16794,7 +17178,13 @@
       "LOD1"
     ],
     "slackCm": 1.14,
-    "fbx": "Assets/Art/Props/Library/Harbor/Quay_Edge.fbx"
+    "fbx": "Assets/Art/Props/Library/Harbor/Quay_Edge.fbx",
+    "license": {
+      "spdx": "CC0-1.0",
+      "source": "original",
+      "url": "",
+      "notes": "Procedural mesh built in this repo."
+    }
   },
   {
     "name": "RaisedCrosswalk",
@@ -16927,7 +17317,13 @@
       "LOD1"
     ],
     "slackCm": 0.8,
-    "fbx": "Assets/Art/Props/Library/Roads/RaisedCrosswalk.fbx"
+    "fbx": "Assets/Art/Props/Library/Roads/RaisedCrosswalk.fbx",
+    "license": {
+      "spdx": "CC0-1.0",
+      "source": "original",
+      "url": "",
+      "notes": "Procedural mesh built in this repo."
+    }
   },
   {
     "name": "RecyclingBin",
@@ -17026,7 +17422,13 @@
       "LOD1"
     ],
     "slackCm": 0.0,
-    "fbx": "Assets/Art/Props/Library/StreetFurniture/RecyclingBin.fbx"
+    "fbx": "Assets/Art/Props/Library/StreetFurniture/RecyclingBin.fbx",
+    "license": {
+      "spdx": "CC0-1.0",
+      "source": "original",
+      "url": "",
+      "notes": "Procedural mesh built in this repo."
+    }
   },
   {
     "name": "Road_Cross",
@@ -17102,7 +17504,13 @@
       "LOD1"
     ],
     "slackCm": 0.03,
-    "fbx": "Assets/Art/Props/Library/Roads/Road_Cross.fbx"
+    "fbx": "Assets/Art/Props/Library/Roads/Road_Cross.fbx",
+    "license": {
+      "spdx": "CC0-1.0",
+      "source": "original",
+      "url": "",
+      "notes": "Procedural mesh built in this repo."
+    }
   },
   {
     "name": "Road_Crosswalk",
@@ -17178,7 +17586,13 @@
       "LOD1"
     ],
     "slackCm": 0.8,
-    "fbx": "Assets/Art/Props/Library/Roads/Road_Crosswalk.fbx"
+    "fbx": "Assets/Art/Props/Library/Roads/Road_Crosswalk.fbx",
+    "license": {
+      "spdx": "CC0-1.0",
+      "source": "original",
+      "url": "",
+      "notes": "Procedural mesh built in this repo."
+    }
   },
   {
     "name": "Road_Curve",
@@ -17294,7 +17708,13 @@
       "LOD1"
     ],
     "slackCm": 0.52,
-    "fbx": "Assets/Art/Props/Library/Roads/Road_Curve.fbx"
+    "fbx": "Assets/Art/Props/Library/Roads/Road_Curve.fbx",
+    "license": {
+      "spdx": "CC0-1.0",
+      "source": "original",
+      "url": "",
+      "notes": "Procedural mesh built in this repo."
+    }
   },
   {
     "name": "Road_Straight",
@@ -17450,7 +17870,13 @@
       "LOD1"
     ],
     "slackCm": 0.0,
-    "fbx": "Assets/Art/Props/Library/Roads/Road_Straight.fbx"
+    "fbx": "Assets/Art/Props/Library/Roads/Road_Straight.fbx",
+    "license": {
+      "spdx": "CC0-1.0",
+      "source": "original",
+      "url": "",
+      "notes": "Procedural mesh built in this repo."
+    }
   },
   {
     "name": "Road_T",
@@ -17547,7 +17973,13 @@
       "LOD1"
     ],
     "slackCm": 0.52,
-    "fbx": "Assets/Art/Props/Library/Roads/Road_T.fbx"
+    "fbx": "Assets/Art/Props/Library/Roads/Road_T.fbx",
+    "license": {
+      "spdx": "CC0-1.0",
+      "source": "original",
+      "url": "",
+      "notes": "Procedural mesh built in this repo."
+    }
   },
   {
     "name": "Roof_Parapet",
@@ -17672,7 +18104,13 @@
       "LOD2"
     ],
     "slackCm": 2.2,
-    "fbx": "Assets/Art/Props/Library/Buildings/Roof_Parapet.fbx"
+    "fbx": "Assets/Art/Props/Library/Buildings/Roof_Parapet.fbx",
+    "license": {
+      "spdx": "CC0-1.0",
+      "source": "original",
+      "url": "",
+      "notes": "Procedural mesh built in this repo."
+    }
   },
   {
     "name": "RooftopAC",
@@ -17800,7 +18238,13 @@
       "LOD2"
     ],
     "slackCm": 2.8,
-    "fbx": "Assets/Art/Props/Library/Buildings/RooftopAC.fbx"
+    "fbx": "Assets/Art/Props/Library/Buildings/RooftopAC.fbx",
+    "license": {
+      "spdx": "CC0-1.0",
+      "source": "original",
+      "url": "",
+      "notes": "Procedural mesh built in this repo."
+    }
   },
   {
     "name": "RopeCoil",
@@ -17951,7 +18395,13 @@
       "LOD1"
     ],
     "slackCm": 1.24,
-    "fbx": "Assets/Art/Props/Library/Harbor/RopeCoil.fbx"
+    "fbx": "Assets/Art/Props/Library/Harbor/RopeCoil.fbx",
+    "license": {
+      "spdx": "CC0-1.0",
+      "source": "original",
+      "url": "",
+      "notes": "Procedural mesh built in this repo."
+    }
   },
   {
     "name": "Seesaw",
@@ -18088,7 +18538,13 @@
       "LOD1"
     ],
     "slackCm": 0.0,
-    "fbx": "Assets/Art/Props/Library/Park/Seesaw.fbx"
+    "fbx": "Assets/Art/Props/Library/Park/Seesaw.fbx",
+    "license": {
+      "spdx": "CC0-1.0",
+      "source": "original",
+      "url": "",
+      "notes": "Procedural mesh built in this repo."
+    }
   },
   {
     "name": "ShopFront",
@@ -18280,7 +18736,13 @@
       "LOD2"
     ],
     "slackCm": 1.5,
-    "fbx": "Assets/Art/Props/Library/Buildings/ShopFront.fbx"
+    "fbx": "Assets/Art/Props/Library/Buildings/ShopFront.fbx",
+    "license": {
+      "spdx": "CC0-1.0",
+      "source": "original",
+      "url": "",
+      "notes": "Procedural mesh built in this repo."
+    }
   },
   {
     "name": "Shrub",
@@ -18345,7 +18807,13 @@
       "LOD1"
     ],
     "slackCm": 0.0,
-    "fbx": "Assets/Art/Props/Library/Park/Shrub.fbx"
+    "fbx": "Assets/Art/Props/Library/Park/Shrub.fbx",
+    "license": {
+      "spdx": "CC0-1.0",
+      "source": "original",
+      "url": "",
+      "notes": "Procedural mesh built in this repo."
+    }
   },
   {
     "name": "Sidewalk",
@@ -18421,7 +18889,13 @@
       "LOD1"
     ],
     "slackCm": 0.14,
-    "fbx": "Assets/Art/Props/Library/Roads/Sidewalk.fbx"
+    "fbx": "Assets/Art/Props/Library/Roads/Sidewalk.fbx",
+    "license": {
+      "spdx": "CC0-1.0",
+      "source": "original",
+      "url": "",
+      "notes": "Procedural mesh built in this repo."
+    }
   },
   {
     "name": "Sign_Stop",
@@ -18511,7 +18985,13 @@
       "LOD1"
     ],
     "slackCm": 1.94,
-    "fbx": "Assets/Art/Props/Library/StreetFurniture/Sign_Stop.fbx"
+    "fbx": "Assets/Art/Props/Library/StreetFurniture/Sign_Stop.fbx",
+    "license": {
+      "spdx": "CC0-1.0",
+      "source": "original",
+      "url": "",
+      "notes": "Procedural mesh built in this repo."
+    }
   },
   {
     "name": "Sign_Street",
@@ -18602,7 +19082,13 @@
       "LOD1"
     ],
     "slackCm": 0.75,
-    "fbx": "Assets/Art/Props/Library/StreetFurniture/Sign_Street.fbx"
+    "fbx": "Assets/Art/Props/Library/StreetFurniture/Sign_Street.fbx",
+    "license": {
+      "spdx": "CC0-1.0",
+      "source": "original",
+      "url": "",
+      "notes": "Procedural mesh built in this repo."
+    }
   },
   {
     "name": "StopBar",
@@ -18656,7 +19142,13 @@
       "LOD1"
     ],
     "slackCm": 0.0,
-    "fbx": "Assets/Art/Props/Library/Roads/StopBar.fbx"
+    "fbx": "Assets/Art/Props/Library/Roads/StopBar.fbx",
+    "license": {
+      "spdx": "CC0-1.0",
+      "source": "original",
+      "url": "",
+      "notes": "Procedural mesh built in this repo."
+    }
   },
   {
     "name": "Store_Corner",
@@ -20924,7 +21416,13 @@
       "LOD2"
     ],
     "slackCm": 0.2,
-    "fbx": "Assets/Art/Props/Library/Buildings/Store_Corner.fbx"
+    "fbx": "Assets/Art/Props/Library/Buildings/Store_Corner.fbx",
+    "license": {
+      "spdx": "CC0-1.0",
+      "source": "original",
+      "url": "",
+      "notes": "Procedural mesh built in this repo."
+    }
   },
   {
     "name": "Store_Diner",
@@ -22125,7 +22623,13 @@
       "LOD2"
     ],
     "slackCm": 0.2,
-    "fbx": "Assets/Art/Props/Library/Buildings/Store_Diner.fbx"
+    "fbx": "Assets/Art/Props/Library/Buildings/Store_Diner.fbx",
+    "license": {
+      "spdx": "CC0-1.0",
+      "source": "original",
+      "url": "",
+      "notes": "Procedural mesh built in this repo."
+    }
   },
   {
     "name": "Store_Laundromat",
@@ -24045,7 +24549,13 @@
       "LOD2"
     ],
     "slackCm": 0.2,
-    "fbx": "Assets/Art/Props/Library/Buildings/Store_Laundromat.fbx"
+    "fbx": "Assets/Art/Props/Library/Buildings/Store_Laundromat.fbx",
+    "license": {
+      "spdx": "CC0-1.0",
+      "source": "original",
+      "url": "",
+      "notes": "Procedural mesh built in this repo."
+    }
   },
   {
     "name": "Storefront_Glass",
@@ -24241,7 +24751,13 @@
       "LOD2"
     ],
     "slackCm": 0.8,
-    "fbx": "Assets/Art/Props/Library/Buildings/Storefront_Glass.fbx"
+    "fbx": "Assets/Art/Props/Library/Buildings/Storefront_Glass.fbx",
+    "license": {
+      "spdx": "CC0-1.0",
+      "source": "original",
+      "url": "",
+      "notes": "Procedural mesh built in this repo."
+    }
   },
   {
     "name": "StormDrain",
@@ -24317,7 +24833,13 @@
       "LOD1"
     ],
     "slackCm": 0.08,
-    "fbx": "Assets/Art/Props/Library/StreetFurniture/StormDrain.fbx"
+    "fbx": "Assets/Art/Props/Library/StreetFurniture/StormDrain.fbx",
+    "license": {
+      "spdx": "CC0-1.0",
+      "source": "original",
+      "url": "",
+      "notes": "Procedural mesh built in this repo."
+    }
   },
   {
     "name": "TrafficLight",
@@ -24451,7 +24973,13 @@
       "LOD1"
     ],
     "slackCm": 0.43,
-    "fbx": "Assets/Art/Props/Library/StreetFurniture/TrafficLight.fbx"
+    "fbx": "Assets/Art/Props/Library/StreetFurniture/TrafficLight.fbx",
+    "license": {
+      "spdx": "CC0-1.0",
+      "source": "original",
+      "url": "",
+      "notes": "Procedural mesh built in this repo."
+    }
   },
   {
     "name": "TrashCan_Lidded",
@@ -24539,7 +25067,13 @@
       "LOD1"
     ],
     "slackCm": 0.17,
-    "fbx": "Assets/Art/Props/Library/StreetFurniture/TrashCan_Lidded.fbx"
+    "fbx": "Assets/Art/Props/Library/StreetFurniture/TrashCan_Lidded.fbx",
+    "license": {
+      "spdx": "CC0-1.0",
+      "source": "original",
+      "url": "",
+      "notes": "Procedural mesh built in this repo."
+    }
   },
   {
     "name": "TrashCan_Slat",
@@ -24629,7 +25163,13 @@
       "LOD1"
     ],
     "slackCm": 0.36,
-    "fbx": "Assets/Art/Props/Library/StreetFurniture/TrashCan_Slat.fbx"
+    "fbx": "Assets/Art/Props/Library/StreetFurniture/TrashCan_Slat.fbx",
+    "license": {
+      "spdx": "CC0-1.0",
+      "source": "original",
+      "url": "",
+      "notes": "Procedural mesh built in this repo."
+    }
   },
   {
     "name": "Tree",
@@ -24733,7 +25273,13 @@
       "LOD2"
     ],
     "slackCm": 1.5,
-    "fbx": "Assets/Art/Props/Library/Park/Tree.fbx"
+    "fbx": "Assets/Art/Props/Library/Park/Tree.fbx",
+    "license": {
+      "spdx": "CC0-1.0",
+      "source": "original",
+      "url": "",
+      "notes": "Procedural mesh built in this repo."
+    }
   },
   {
     "name": "Tree_Grate",
@@ -24919,7 +25465,13 @@
       "LOD2"
     ],
     "slackCm": 2.22,
-    "fbx": "Assets/Art/Props/Library/Park/Tree_Grate.fbx"
+    "fbx": "Assets/Art/Props/Library/Park/Tree_Grate.fbx",
+    "license": {
+      "spdx": "CC0-1.0",
+      "source": "original",
+      "url": "",
+      "notes": "Procedural mesh built in this repo."
+    }
   },
   {
     "name": "Tree_Maple",
@@ -25024,7 +25576,13 @@
       "LOD2"
     ],
     "slackCm": 2.23,
-    "fbx": "Assets/Art/Props/Library/Park/Tree_Maple.fbx"
+    "fbx": "Assets/Art/Props/Library/Park/Tree_Maple.fbx",
+    "license": {
+      "spdx": "CC0-1.0",
+      "source": "original",
+      "url": "",
+      "notes": "Procedural mesh built in this repo."
+    }
   },
   {
     "name": "Tree_Palm",
@@ -25107,7 +25665,13 @@
       "LOD2"
     ],
     "slackCm": 0.0,
-    "fbx": "Assets/Art/Props/Library/Park/Tree_Palm.fbx"
+    "fbx": "Assets/Art/Props/Library/Park/Tree_Palm.fbx",
+    "license": {
+      "spdx": "CC0-1.0",
+      "source": "original",
+      "url": "",
+      "notes": "Procedural mesh built in this repo."
+    }
   },
   {
     "name": "Tree_Pine",
@@ -25209,7 +25773,13 @@
       "LOD2"
     ],
     "slackCm": 2.27,
-    "fbx": "Assets/Art/Props/Library/Park/Tree_Pine.fbx"
+    "fbx": "Assets/Art/Props/Library/Park/Tree_Pine.fbx",
+    "license": {
+      "spdx": "CC0-1.0",
+      "source": "original",
+      "url": "",
+      "notes": "Procedural mesh built in this repo."
+    }
   },
   {
     "name": "UtilityPole",
@@ -25313,7 +25883,13 @@
       "LOD1"
     ],
     "slackCm": 0.57,
-    "fbx": "Assets/Art/Props/Library/Utility/UtilityPole.fbx"
+    "fbx": "Assets/Art/Props/Library/Utility/UtilityPole.fbx",
+    "license": {
+      "spdx": "CC0-1.0",
+      "source": "original",
+      "url": "",
+      "notes": "Procedural mesh built in this repo."
+    }
   },
   {
     "name": "WalkUp",
@@ -25762,7 +26338,13 @@
       "LOD2"
     ],
     "slackCm": 0.0,
-    "fbx": "Assets/Art/Props/Library/Buildings/WalkUp.fbx"
+    "fbx": "Assets/Art/Props/Library/Buildings/WalkUp.fbx",
+    "license": {
+      "spdx": "CC0-1.0",
+      "source": "original",
+      "url": "",
+      "notes": "Procedural mesh built in this repo."
+    }
   },
   {
     "name": "WallAC",
@@ -25860,7 +26442,13 @@
       "LOD1"
     ],
     "slackCm": 0.7,
-    "fbx": "Assets/Art/Props/Library/Utility/WallAC.fbx"
+    "fbx": "Assets/Art/Props/Library/Utility/WallAC.fbx",
+    "license": {
+      "spdx": "CC0-1.0",
+      "source": "original",
+      "url": "",
+      "notes": "Procedural mesh built in this repo."
+    }
   },
   {
     "name": "WaterTank",
@@ -25989,7 +26577,13 @@
       "LOD2"
     ],
     "slackCm": 1.7,
-    "fbx": "Assets/Art/Props/Library/Buildings/WaterTank.fbx"
+    "fbx": "Assets/Art/Props/Library/Buildings/WaterTank.fbx",
+    "license": {
+      "spdx": "CC0-1.0",
+      "source": "original",
+      "url": "",
+      "notes": "Procedural mesh built in this repo."
+    }
   },
   {
     "name": "WoodFence",
@@ -26409,7 +27003,13 @@
       "LOD1"
     ],
     "slackCm": 0.0,
-    "fbx": "Assets/Art/Props/Library/Buildings/WoodFence.fbx"
+    "fbx": "Assets/Art/Props/Library/Buildings/WoodFence.fbx",
+    "license": {
+      "spdx": "CC0-1.0",
+      "source": "original",
+      "url": "",
+      "notes": "Procedural mesh built in this repo."
+    }
   },
   {
     "name": "FishingBoat",
@@ -26570,7 +27170,13 @@
       "LOD1"
     ],
     "slackCm": 0.0,
-    "fbx": "Assets/Art/Props/Library/Harbor/FishingBoat.fbx"
+    "fbx": "Assets/Art/Props/Library/Harbor/FishingBoat.fbx",
+    "license": {
+      "spdx": "CC0-1.0",
+      "source": "original",
+      "url": "",
+      "notes": "Procedural mesh built in this repo."
+    }
   },
   {
     "name": "HarborShed",
@@ -26749,7 +27355,13 @@
       "LOD1"
     ],
     "slackCm": 2.7,
-    "fbx": "Assets/Art/Props/Library/Harbor/HarborShed.fbx"
+    "fbx": "Assets/Art/Props/Library/Harbor/HarborShed.fbx",
+    "license": {
+      "spdx": "CC0-1.0",
+      "source": "original",
+      "url": "",
+      "notes": "Procedural mesh built in this repo."
+    }
   },
   {
     "name": "Pond",
@@ -26888,7 +27500,13 @@
       "LOD1"
     ],
     "slackCm": 0.0,
-    "fbx": "Assets/Art/Props/Library/Park/Pond.fbx"
+    "fbx": "Assets/Art/Props/Library/Park/Pond.fbx",
+    "license": {
+      "spdx": "CC0-1.0",
+      "source": "original",
+      "url": "",
+      "notes": "Procedural mesh built in this repo."
+    }
   },
   {
     "name": "Rowboat",
@@ -27023,7 +27641,13 @@
       "LOD1"
     ],
     "slackCm": 2.49,
-    "fbx": "Assets/Art/Props/Library/Harbor/Rowboat.fbx"
+    "fbx": "Assets/Art/Props/Library/Harbor/Rowboat.fbx",
+    "license": {
+      "spdx": "CC0-1.0",
+      "source": "original",
+      "url": "",
+      "notes": "Procedural mesh built in this repo."
+    }
   },
   {
     "name": "Gangway",
@@ -27139,7 +27763,13 @@
       "LOD1"
     ],
     "slackCm": 0.0,
-    "fbx": "Assets/Art/Props/Library/Harbor/Gangway.fbx"
+    "fbx": "Assets/Art/Props/Library/Harbor/Gangway.fbx",
+    "license": {
+      "spdx": "CC0-1.0",
+      "source": "original",
+      "url": "",
+      "notes": "Procedural mesh built in this repo."
+    }
   },
   {
     "name": "FuelDock",
@@ -27239,7 +27869,13 @@
       "LOD1"
     ],
     "slackCm": 0.0,
-    "fbx": "Assets/Art/Props/Library/Harbor/FuelDock.fbx"
+    "fbx": "Assets/Art/Props/Library/Harbor/FuelDock.fbx",
+    "license": {
+      "spdx": "CC0-1.0",
+      "source": "original",
+      "url": "",
+      "notes": "Procedural mesh built in this repo."
+    }
   },
   {
     "name": "LifeRing",
@@ -27330,7 +27966,13 @@
       "LOD1"
     ],
     "slackCm": 0.0,
-    "fbx": "Assets/Art/Props/Library/Harbor/LifeRing.fbx"
+    "fbx": "Assets/Art/Props/Library/Harbor/LifeRing.fbx",
+    "license": {
+      "spdx": "CC0-1.0",
+      "source": "original",
+      "url": "",
+      "notes": "Procedural mesh built in this repo."
+    }
   },
   {
     "name": "FishCrate",
@@ -27425,7 +28067,13 @@
       "LOD1"
     ],
     "slackCm": 0.72,
-    "fbx": "Assets/Art/Props/Library/Harbor/FishCrate.fbx"
+    "fbx": "Assets/Art/Props/Library/Harbor/FishCrate.fbx",
+    "license": {
+      "spdx": "CC0-1.0",
+      "source": "original",
+      "url": "",
+      "notes": "Procedural mesh built in this repo."
+    }
   },
   {
     "name": "LobsterTrap",
@@ -27579,7 +28227,13 @@
       "LOD1"
     ],
     "slackCm": 0.0,
-    "fbx": "Assets/Art/Props/Library/Harbor/LobsterTrap.fbx"
+    "fbx": "Assets/Art/Props/Library/Harbor/LobsterTrap.fbx",
+    "license": {
+      "spdx": "CC0-1.0",
+      "source": "original",
+      "url": "",
+      "notes": "Procedural mesh built in this repo."
+    }
   },
   {
     "name": "HarborWarehouse",
@@ -27817,7 +28471,13 @@
       "LOD1"
     ],
     "slackCm": 0.0,
-    "fbx": "Assets/Art/Props/Library/Harbor/HarborWarehouse.fbx"
+    "fbx": "Assets/Art/Props/Library/Harbor/HarborWarehouse.fbx",
+    "license": {
+      "spdx": "CC0-1.0",
+      "source": "original",
+      "url": "",
+      "notes": "Procedural mesh built in this repo."
+    }
   },
   {
     "name": "QuayDavit",
@@ -27945,7 +28605,13 @@
       "LOD1"
     ],
     "slackCm": 0.0,
-    "fbx": "Assets/Art/Props/Library/Harbor/QuayDavit.fbx"
+    "fbx": "Assets/Art/Props/Library/Harbor/QuayDavit.fbx",
+    "license": {
+      "spdx": "CC0-1.0",
+      "source": "original",
+      "url": "",
+      "notes": "Procedural mesh built in this repo."
+    }
   },
   {
     "name": "MooringLine",
@@ -27999,7 +28665,13 @@
       "LOD1"
     ],
     "slackCm": 0.0,
-    "fbx": "Assets/Art/Props/Library/Harbor/MooringLine.fbx"
+    "fbx": "Assets/Art/Props/Library/Harbor/MooringLine.fbx",
+    "license": {
+      "spdx": "CC0-1.0",
+      "source": "original",
+      "url": "",
+      "notes": "Procedural mesh built in this repo."
+    }
   },
   {
     "name": "Container_20_Blue",
@@ -28091,7 +28763,13 @@
       "LOD2"
     ],
     "slackCm": 0.0,
-    "fbx": "Assets/Art/Props/Library/Harbor/Container_20_Blue.fbx"
+    "fbx": "Assets/Art/Props/Library/Harbor/Container_20_Blue.fbx",
+    "license": {
+      "spdx": "CC0-1.0",
+      "source": "original",
+      "url": "",
+      "notes": "Procedural mesh built in this repo."
+    }
   },
   {
     "name": "Container_20_Green",
@@ -28184,7 +28862,13 @@
       "LOD2"
     ],
     "slackCm": 0.0,
-    "fbx": "Assets/Art/Props/Library/Harbor/Container_20_Green.fbx"
+    "fbx": "Assets/Art/Props/Library/Harbor/Container_20_Green.fbx",
+    "license": {
+      "spdx": "CC0-1.0",
+      "source": "original",
+      "url": "",
+      "notes": "Procedural mesh built in this repo."
+    }
   },
   {
     "name": "Road_Junction",
@@ -29254,7 +29938,13 @@
       "LOD1"
     ],
     "slackCm": 0.0,
-    "fbx": "Assets/Art/Props/Library/Roads/Road_Junction.fbx"
+    "fbx": "Assets/Art/Props/Library/Roads/Road_Junction.fbx",
+    "license": {
+      "spdx": "CC0-1.0",
+      "source": "original",
+      "url": "",
+      "notes": "Procedural mesh built in this repo."
+    }
   },
   {
     "name": "Ranch_House",
@@ -31348,7 +32038,13 @@
       "LOD2"
     ],
     "slackCm": 0.41,
-    "fbx": "Assets/Art/Props/Library/Buildings/Ranch_House.fbx"
+    "fbx": "Assets/Art/Props/Library/Buildings/Ranch_House.fbx",
+    "license": {
+      "spdx": "CC0-1.0",
+      "source": "original",
+      "url": "",
+      "notes": "Procedural mesh built in this repo."
+    }
   },
   {
     "name": "WoodFence_Gate",
@@ -31655,7 +32351,13 @@
       "LOD1"
     ],
     "slackCm": 0.0,
-    "fbx": "Assets/Art/Props/Library/Buildings/WoodFence_Gate.fbx"
+    "fbx": "Assets/Art/Props/Library/Buildings/WoodFence_Gate.fbx",
+    "license": {
+      "spdx": "CC0-1.0",
+      "source": "original",
+      "url": "",
+      "notes": "Procedural mesh built in this repo."
+    }
   },
   {
     "name": "WoodFence_Corner",
@@ -32113,7 +32815,13 @@
       "LOD1"
     ],
     "slackCm": 0.0,
-    "fbx": "Assets/Art/Props/Library/Buildings/WoodFence_Corner.fbx"
+    "fbx": "Assets/Art/Props/Library/Buildings/WoodFence_Corner.fbx",
+    "license": {
+      "spdx": "CC0-1.0",
+      "source": "original",
+      "url": "",
+      "notes": "Procedural mesh built in this repo."
+    }
   },
   {
     "name": "WoodFence_End",
@@ -32305,6 +33013,12 @@
       "LOD1"
     ],
     "slackCm": 0.0,
-    "fbx": "Assets/Art/Props/Library/Buildings/WoodFence_End.fbx"
+    "fbx": "Assets/Art/Props/Library/Buildings/WoodFence_End.fbx",
+    "license": {
+      "spdx": "CC0-1.0",
+      "source": "original",
+      "url": "",
+      "notes": "Procedural mesh built in this repo."
+    }
   }
 ]
