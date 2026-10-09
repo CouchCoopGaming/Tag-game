@@ -49,7 +49,9 @@ namespace Tag.Art
         {
             public float ThighL, ThighR, KneeL, KneeR;
             public float ThighYawL, ThighYawR;
+            public float ThighRollL, ThighRollR;
             public float ArmPitchL, ArmPitchR, ArmYawL, ArmYawR;
+            public float ArmRollL, ArmRollR;
             public float ElbowL, ElbowR;
             public float Hip, Spine, Head;
             public float FootL, FootR;
@@ -59,7 +61,7 @@ namespace Tag.Art
         /// <summary>
         /// Hips-bone drop for the seated land. The squash bob still uses SoftDrop and HardDrop.
         /// </summary>
-        public const float BoneDrop = 0.206f;
+        public const float BoneDrop = 0.491f;
 
         /// <summary>Impact at or above land-stun speed. Matches the hard audio gate.</summary>
         public static bool IsHard(float impact)
@@ -74,30 +76,35 @@ namespace Tag.Art
         }
 
         /// <summary>
-        /// Seated land. Knee 79, pelvis 12 cm behind both feet, bone drop 20.6 cm.
-        /// Thigh yaw keeps the spine out of the thigh. HardThigh and HardKnee stay the brace constants.
+        /// Deep absorb. Hip 35 over a spine of 15, chest forward, arms out.
+        /// Thighs spread and roll so the spine stays out of the thigh. The hips bone is 49.1 cm down.
+        /// HardThigh and HardKnee stay the brace constants.
         /// </summary>
         static Sample Seated()
         {
             return new Sample
             {
-                ThighL = 55f,
-                ThighR = 55f,
-                KneeL = -79f,
-                KneeR = -79f,
-                ThighYawL = -20f,
-                ThighYawR = 20f,
-                ArmPitchL = 4f,
-                ArmPitchR = 2f,
-                ArmYawL = 0f,
-                ArmYawR = 0f,
-                ElbowL = -40f,
-                ElbowR = -36f,
-                Hip = 6f,
-                Spine = 4f,
-                Head = -8f,
-                FootL = 8f,
-                FootR = 8f,
+                ThighL = 116f,
+                ThighR = 116f,
+                KneeL = -96f,
+                KneeR = -96f,
+                ThighYawL = -56f,
+                ThighYawR = 56f,
+                ThighRollL = 20f,
+                ThighRollR = -20f,
+                ArmPitchL = 22f,
+                ArmPitchR = 20f,
+                ArmYawL = -46f,
+                ArmYawR = 46f,
+                ArmRollL = 6f,
+                ArmRollR = -6f,
+                ElbowL = -50f,
+                ElbowR = -46f,
+                Hip = 35f,
+                Spine = 15f,
+                Head = -20f,
+                FootL = 16f,
+                FootR = 16f,
                 Drop = BoneDrop,
             };
         }
@@ -114,8 +121,14 @@ namespace Tag.Art
             Sample s = Seated();
             if (!handLeft)
             {
-                s.ArmPitchL = 2f;
-                s.ArmPitchR = 4f;
+                s.ArmPitchL = 20f;
+                s.ArmPitchR = 22f;
+                s.ArmYawL = 46f;
+                s.ArmYawR = -46f;
+                s.ArmRollL = -6f;
+                s.ArmRollR = 6f;
+                s.ElbowL = -46f;
+                s.ElbowR = -50f;
             }
             return s;
         }
@@ -140,7 +153,7 @@ namespace Tag.Art
             if (soft.ThighL < 45f || soft.ThighR < 45f) return false;
             if (soft.ThighYawL > -15f || soft.ThighYawR < 15f) return false;
             if (soft.Drop < 0.20f) return false;
-            if (soft.Spine < 1f) return false;
+            if (soft.Hip < 35f || soft.Spine < 15f) return false;
             if (soft.Hip / soft.Spine < 1.5f) return false;
             if (soft.ArmPitchL > 24f || soft.ArmPitchR > 24f) return false;
 

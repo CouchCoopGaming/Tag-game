@@ -10382,8 +10382,8 @@ namespace Tag.Art
                 else if (_landPoseHard || _landPoseSoft)
                 {
                     LandPose.Sample land = _landPoseHard ? LandPose.Hard(sinC >= 0f) : LandPose.Soft();
-                    _ulLT = Quaternion.Slerp(_ulLT, _ulL0 * Quaternion.Euler(land.ThighL, land.ThighYawL, 0f), kL);
-                    _ulRT = Quaternion.Slerp(_ulRT, _ulR0 * Quaternion.Euler(land.ThighR, land.ThighYawR, 0f), kR);
+                    _ulLT = Quaternion.Slerp(_ulLT, _ulL0 * Quaternion.Euler(land.ThighL, land.ThighYawL, land.ThighRollL), kL);
+                    _ulRT = Quaternion.Slerp(_ulRT, _ulR0 * Quaternion.Euler(land.ThighR, land.ThighYawR, land.ThighRollR), kR);
                     _llLT = Quaternion.Slerp(_llLT, _llL0 * Quaternion.Euler(land.KneeL, 0f, 0f), kL);
                     _llRT = Quaternion.Slerp(_llRT, _llR0 * Quaternion.Euler(land.KneeR, 0f, 0f), kR);
                     _stanceSole = true;
@@ -10549,8 +10549,8 @@ namespace Tag.Art
                 else if (_landPoseHard || _landPoseSoft)
                 {
                     LandPose.Sample land = _landPoseHard ? LandPose.Hard(sinC >= 0f) : LandPose.Soft();
-                    _uaLT = Quaternion.Slerp(_uaLT, _uaL0 * Quaternion.Euler(land.ArmPitchL, land.ArmYawL, armZ), armK);
-                    _uaRT = Quaternion.Slerp(_uaRT, _uaR0 * Quaternion.Euler(land.ArmPitchR, land.ArmYawR, -armZ), armK);
+                    _uaLT = Quaternion.Slerp(_uaLT, _uaL0 * Quaternion.Euler(land.ArmPitchL, land.ArmYawL, armZ + land.ArmRollL), armK);
+                    _uaRT = Quaternion.Slerp(_uaRT, _uaR0 * Quaternion.Euler(land.ArmPitchR, land.ArmYawR, -armZ + land.ArmRollR), armK);
                     _laLT = Quaternion.Slerp(_laLT, _laL0 * Quaternion.Euler(land.ElbowL, 0f, 0f), armK);
                     _laRT = Quaternion.Slerp(_laRT, _laR0 * Quaternion.Euler(land.ElbowR, 0f, 0f), armK);
                     _hipsT = Quaternion.Slerp(_hipsT, _hips0 * Quaternion.Euler(land.Hip, 0f, 0f), hipK);
@@ -15538,8 +15538,9 @@ namespace Tag.Art
             float landBone = 0f;
             if (_landSquash > 0f && (_landPoseHard || _landPoseSoft || _landRoll))
                 landBone = LandPose.BoneDrop * _landSquash;
-            bool boneOn = mantle || landBone > 0.0001f;
-            float boneDrop = mantle ? vault.PelvisDrop : landBone;
+            float stagBone = _staggerAge >= 0f ? PunchStaggerPose.BoneDrop : 0f;
+            bool boneOn = mantle || landBone > 0.0001f || stagBone > 0.0001f;
+            float boneDrop = mantle ? vault.PelvisDrop : (stagBone > landBone ? stagBone : landBone);
             ApplyPelvisDrop(boneOn, boneDrop);
             ApplyVisualRoot(bob, WallJumpNudge());
             HoldHead(bob, grounded && !air && !sliding && !climb && !wallRun && !mantle);
@@ -16970,15 +16971,15 @@ namespace Tag.Art
             {
                 // The 65% roll plays the seated land. RollThigh stays the step constant.
                 LandPose.Sample sit = LandPose.Soft();
-                _ulLT = _ulL0 * Quaternion.Euler(sit.ThighL, sit.ThighYawL, 0f);
-                _ulRT = _ulR0 * Quaternion.Euler(sit.ThighR, sit.ThighYawR, 0f);
+                _ulLT = _ulL0 * Quaternion.Euler(sit.ThighL, sit.ThighYawL, sit.ThighRollL);
+                _ulRT = _ulR0 * Quaternion.Euler(sit.ThighR, sit.ThighYawR, sit.ThighRollR);
                 _llLT = _llL0 * Quaternion.Euler(sit.KneeL, 0f, 0f);
                 _llRT = _llR0 * Quaternion.Euler(sit.KneeR, 0f, 0f);
                 _hipsT = _hips0 * Quaternion.Euler(sit.Hip, 0f, 0f);
                 _spineT = _spine0 * Quaternion.Euler(sit.Spine, 0f, 0f);
                 _headT = _head0 * Quaternion.Euler(sit.Head, 0f, 0f);
-                _uaLT = _uaL0 * Quaternion.Euler(sit.ArmPitchL, sit.ArmYawL, armZ);
-                _uaRT = _uaR0 * Quaternion.Euler(sit.ArmPitchR, sit.ArmYawR, -armZ);
+                _uaLT = _uaL0 * Quaternion.Euler(sit.ArmPitchL, sit.ArmYawL, armZ + sit.ArmRollL);
+                _uaRT = _uaR0 * Quaternion.Euler(sit.ArmPitchR, sit.ArmYawR, -armZ + sit.ArmRollR);
                 _laLT = _laL0 * Quaternion.Euler(sit.ElbowL, 0f, 0f);
                 _laRT = _laR0 * Quaternion.Euler(sit.ElbowR, 0f, 0f);
                 if (_footL != null) _ftLT = _ftL0 * Quaternion.Euler(sit.FootL, 0f, 0f);
@@ -17958,7 +17959,7 @@ namespace Tag.Art
                 _recoilAge = -1f;
         }
 
-        /// <summary>Non-tag punch. The stumble eases on, holds, then eases back onto the gait.</summary>
+        /// <summary>Non-tag punch. The absorb holds for the quarter second, then the gait returns.</summary>
         public void PlayPunchStagger()
         {
             if (!PoseAllowed(DummyPosePaths.Stagger)) return;
@@ -17967,9 +17968,8 @@ namespace Tag.Art
         }
 
         /// <summary>
-        /// Chest over a buckled knee, arms wide. Weight is 0 at the hit and at the
-        /// end of the quarter second, so the gait underneath is the blend home.
-        /// No root motion.
+        /// Chest forward over the knees, arms out. The absorb is the whole quarter second,
+        /// so the loaded frames are the sit and not the gait underneath. No root motion.
         /// </summary>
         void ApplyPunchStagger(float dt)
         {
@@ -17981,11 +17981,16 @@ namespace Tag.Art
             }
 
             float weight = PunchStaggerPose.Weight(_staggerAge);
-            if (weight > 0.001f)
-                BlendStaggerSample(PunchStaggerPose.Stumble(), weight);
-            _staggerAge += dt;
-            if (_staggerAge >= PunchStaggerPose.Duration || (_staggerAge > PunchStaggerPose.RiseSeconds && weight <= 0.001f))
+            bool done = _staggerAge >= PunchStaggerPose.Duration
+                || (_staggerAge > PunchStaggerPose.RiseSeconds && weight <= 0.001f);
+            if (done)
+            {
                 _staggerAge = -1f;
+                return;
+            }
+
+            BlendStaggerSample(PunchStaggerPose.Stumble(), 1f);
+            _staggerAge += dt;
         }
 
         void BlendStaggerSample(PunchStaggerPose.Sample pose, float weight)
@@ -17998,8 +18003,8 @@ namespace Tag.Art
             Quaternion uaR = _uaR0 * Quaternion.Euler(pose.ArmPitchR, pose.ArmYawR, pose.ArmRollR);
             Quaternion laL = _laL0 * Quaternion.Euler(pose.ElbowL, 0f, 0f);
             Quaternion laR = _laR0 * Quaternion.Euler(pose.ElbowR, 0f, 0f);
-            Quaternion ulL = _ulL0 * Quaternion.Euler(pose.ThighL, 0f, 0f);
-            Quaternion ulR = _ulR0 * Quaternion.Euler(pose.ThighR, 0f, 0f);
+            Quaternion ulL = _ulL0 * Quaternion.Euler(pose.ThighL, pose.ThighYawL, pose.ThighRollL);
+            Quaternion ulR = _ulR0 * Quaternion.Euler(pose.ThighR, pose.ThighYawR, pose.ThighRollR);
             Quaternion llL = _llL0 * Quaternion.Euler(pose.KneeL, 0f, 0f);
             Quaternion llR = _llR0 * Quaternion.Euler(pose.KneeR, 0f, 0f);
             Quaternion spine = _spine0 * Quaternion.Euler(pose.Spine, pose.SpineYaw, 0f);
@@ -18016,6 +18021,8 @@ namespace Tag.Art
             _spineT = Quaternion.Slerp(_spineT, spine, weight);
             _hipsT = Quaternion.Slerp(_hipsT, hips, weight);
             _headT = Quaternion.Slerp(_headT, head, weight);
+            if (_footL != null) _ftLT = _ftL0 * Quaternion.Euler(pose.FootL, 0f, 0f);
+            if (_footR != null) _ftRT = _ftR0 * Quaternion.Euler(pose.FootR, 0f, 0f);
         }
 
         /// <summary>Tagged runner guard. The new It uses <see cref="PlayItClaim"/>.</summary>

@@ -67,12 +67,12 @@ Dive is a prototype behind the flag. It is the juke's flick rule on the forward 
 
 No-clip, every 30 fps frame of the six clips. A pair that shares a joint is `rigJoint`. `pose` is non-adjacent pairs plus the floor, and it is 0 when every one of those is at or under 0.5 cm:
 
-Pass 7 measures the six evasion clips together with the soft land, the hard land, the 65% roll, `exit-Roll`, and `exit-RollAbsorb`. `pose` is 0 when every non-adjacent pair and the floor are at or under 0.5 cm. Knee and hip joint overlap stays `rigJoint`.
+Pass 8 measures the six evasion clips together with the soft land, the hard land, the 65% roll, `stagger`, `exit-Roll`, and `exit-RollAbsorb`. Landings and the absorb use hip 35° over a spine of 15°. `pose` is 0 when every non-adjacent pair and the floor are at or under 0.5 cm. Knee and hip joint overlap stays `rigJoint`.
 
-`hip-sit clips=11 fails=0 pelvisBackMin=9.72 hingeMin=1.50 kneeMin=50.0 pelvisDropMin=8.4`
+`hip-sit clips=12 fails=0 pelvisBackMin=8.52 hingeMin=1.50 kneeMin=50.0 pelvisDropMin=8.4`
 
-`no-clip clips=11 frames=156 worldMax=0.0 pose=0.0 rigJoint=7.91 fails=0`
+`no-clip clips=12 frames=164 worldMax=0.0 pose=0.0 rigJoint=7.91 fails=0`
 
 The airborne dive stretch is not a plant. Loaded frames keep the sole within 0.5 cm. When both soles are within 4 cm, both are support.
 
-Pass 7 side stills of the three deepest misses (hard land, the 65% roll, exit roll absorb) are in `Docs/Movement/evasion/pass7/`. Same camera before and after. A vertical line runs through the support foot and a dot marks the pelvis. Pass 6 stills stay in `Docs/Movement/evasion-pass6/`. Pass 5 is still in `Docs/EvasionStills/pass5/`. Pass 4 is still in `Docs/EvasionStills/pass4/`. Pass 3 is still in `Docs/EvasionStills/pass3/`. Pass 2 is still in `Docs/EvasionStills/pass2/`. Pass 1 is still in `Docs/EvasionStills/pass1/`.
+Pass 8 side stills of the hard land, the roll absorb, and the stagger are in `Docs/Movement/evasion/pass8/`. Same camera before and after, whole figure. A vertical line runs through the support foot and a dot marks the pelvis. Pass 7 stills stay in `Docs/Movement/evasion/pass7/`. Pass 6 stills stay in `Docs/Movement/evasion-pass6/`. Pass 5 is still in `Docs/EvasionStills/pass5/`. Pass 4 is still in `Docs/EvasionStills/pass4/`. Pass 3 is still in `Docs/EvasionStills/pass3/`. Pass 2 is still in `Docs/EvasionStills/pass2/`. Pass 1 is still in `Docs/EvasionStills/pass1/`.

@@ -161,9 +161,9 @@ static class PoseKeyDump
             float t = i * Dt;
             if (t > dur) t = dur;
             Emit(w, c, "roll", t, s.ThighL, s.ThighR, s.KneeL, s.KneeR, s.ThighYawL, s.ThighYawR,
-                s.ArmPitchL, s.ArmPitchR, s.ArmYawL, s.ArmYawR, 0f, 0f,
+                s.ArmPitchL, s.ArmPitchR, s.ArmYawL, s.ArmYawR, s.ArmRollL, s.ArmRollR,
                 s.ElbowL, s.ElbowR, s.Hip, s.Spine, s.Head, 0f, 0f, 0f,
-                s.FootL, s.FootR, 0f, 0f, 0f, 0f, 0f, 0f, s.Drop);
+                s.FootL, s.FootR, 0f, 0f, 0f, 0f, s.ThighRollL, s.ThighRollR, s.Drop);
             if (t >= dur) break;
         }
     }
@@ -173,13 +173,13 @@ static class PoseKeyDump
         LandPose.Sample soft = LandPose.Soft();
         LandPose.Sample hard = LandPose.Hard(true);
         Emit(w, c, "land-soft", 0f, soft.ThighL, soft.ThighR, soft.KneeL, soft.KneeR, soft.ThighYawL, soft.ThighYawR,
-            soft.ArmPitchL, soft.ArmPitchR, soft.ArmYawL, soft.ArmYawR, 0f, 0f,
+            soft.ArmPitchL, soft.ArmPitchR, soft.ArmYawL, soft.ArmYawR, soft.ArmRollL, soft.ArmRollR,
             soft.ElbowL, soft.ElbowR, soft.Hip, soft.Spine, soft.Head, 0f, 0f, 0f,
-            soft.FootL, soft.FootR, 0f, 0f, 0f, 0f, 0f, 0f, soft.Drop);
+            soft.FootL, soft.FootR, 0f, 0f, 0f, 0f, soft.ThighRollL, soft.ThighRollR, soft.Drop);
         Emit(w, c, "land-hard", 0f, hard.ThighL, hard.ThighR, hard.KneeL, hard.KneeR, hard.ThighYawL, hard.ThighYawR,
-            hard.ArmPitchL, hard.ArmPitchR, hard.ArmYawL, hard.ArmYawR, 0f, 0f,
+            hard.ArmPitchL, hard.ArmPitchR, hard.ArmYawL, hard.ArmYawR, hard.ArmRollL, hard.ArmRollR,
             hard.ElbowL, hard.ElbowR, hard.Hip, hard.Spine, hard.Head, 0f, 0f, 0f,
-            hard.FootL, hard.FootR, 0f, 0f, 0f, 0f, 0f, 0f, hard.Drop);
+            hard.FootL, hard.FootR, 0f, 0f, 0f, 0f, hard.ThighRollL, hard.ThighRollR, hard.Drop);
     }
 
     static void Pad(TextWriter w, CultureInfo c)
@@ -370,14 +370,14 @@ static class PoseKeyDump
         {
             float t = i * Dt;
             if (t > PunchStaggerPose.Duration) t = PunchStaggerPose.Duration;
-            float weight = PunchStaggerPose.Weight(t);
             Emit(w, c, "stagger", t,
-                s.ThighL * weight, s.ThighR * weight, s.KneeL * weight, s.KneeR * weight, 0f, 0f,
-                s.ArmPitchL * weight, s.ArmPitchR * weight, s.ArmYawL * weight, s.ArmYawR * weight,
-                s.ArmRollL * weight, s.ArmRollR * weight,
-                s.ElbowL * weight, s.ElbowR * weight,
-                s.Hip * weight, s.Spine * weight, s.Head * weight, 0f,
-                s.HipYaw * weight, s.SpineYaw * weight, 0f, 0f, 0f);
+                s.ThighL, s.ThighR, s.KneeL, s.KneeR, s.ThighYawL, s.ThighYawR,
+                s.ArmPitchL, s.ArmPitchR, s.ArmYawL, s.ArmYawR,
+                s.ArmRollL, s.ArmRollR,
+                s.ElbowL, s.ElbowR,
+                s.Hip, s.Spine, s.Head, 0f,
+                s.HipYaw, s.SpineYaw, s.FootL, s.FootR, 0f, 0f, 0f, 0f,
+                s.ThighRollL, s.ThighRollR, s.Drop);
             if (t >= PunchStaggerPose.Duration) break;
         }
     }

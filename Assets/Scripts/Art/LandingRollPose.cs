@@ -137,6 +137,27 @@ namespace Tag.Art
                 0.68f, LegsOver(),
                 0.84f, Plant(),
                 1f, Rise());
+            // The plant rolls the thighs the other way from the invert.
+            // Open the yaw and the roll before the thigh folds, so the blend does not pass through the spine.
+            if (u > 0.68f && u < 0.84f)
+            {
+                float span = (u - 0.68f) / 0.16f;
+                float open = PoseHandoff.Ease(span * 3f);
+                VerbExitSample over = LegsOver();
+                VerbExitSample plant = Plant();
+                s.ThighYawL = Mathf.Lerp(over.ThighYawL, plant.ThighYawL, open);
+                s.ThighYawR = Mathf.Lerp(over.ThighYawR, plant.ThighYawR, open);
+                s.ThighRollL = Mathf.Lerp(over.ThighRollL, plant.ThighRollL, open);
+                s.ThighRollR = Mathf.Lerp(over.ThighRollR, plant.ThighRollR, open);
+                // The feet meet the floor with the sit, not halfway through the fold.
+                if (u < 0.82f)
+                    s.Drop = 0f;
+            }
+            if (u > 0.82f && u < 0.84f)
+            {
+                if (s.Hip < 35f) s.Hip = 35f;
+                if (s.Spine < 15f) s.Spine = 15f;
+            }
             s.RootSpin = SpinAt(u);
             s.RootPitch = 0f;
             if (shoulderLeft)
@@ -534,6 +555,12 @@ namespace Tag.Art
             s.ThighR = sit.ThighR;
             s.ThighYawL = sit.ThighYawL;
             s.ThighYawR = sit.ThighYawR;
+            s.ThighRollL = sit.ThighRollL;
+            s.ThighRollR = sit.ThighRollR;
+            s.ArmYawL = sit.ArmYawL;
+            s.ArmYawR = sit.ArmYawR;
+            s.ArmRollL = sit.ArmRollL;
+            s.ArmRollR = sit.ArmRollR;
             s.KneeL = sit.KneeL;
             s.KneeR = sit.KneeR;
             s.ArmPitchL = sit.ArmPitchL;
@@ -720,7 +747,7 @@ namespace Tag.Art
             if (tuck.Head > -20f || tuck.KneeL > -60f) return false;
             if (shoulder.SpineRoll < 18f || shoulder.RootSpin < 170f) return false;
             if (over.ThighL < 36f || over.ThighL > 60f || over.RootSpin < 220f) return false;
-            if (rise.RootSpin < 350f || rise.ThighL > 60f) return false;
+            if (rise.RootSpin < 350f || rise.ThighL > 120f) return false;
             VerbExitSample left = RollAt(0.52f, true);
             if (left.SpineRoll > -18f) return false;
             Figure contact = PoseFigure(shoulder, shoulder.RootSpin, false);
