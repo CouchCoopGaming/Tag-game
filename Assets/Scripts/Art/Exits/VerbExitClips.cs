@@ -239,10 +239,25 @@ namespace Tag.Art
             c.ArmRollR = 12f;
         }
 
-        /// <summary>Both feet on the lid. The hips sit. This is not a root offset.</summary>
+        /// <summary>Both feet on the lid. The hips bone is down and the shins point forward.</summary>
         static void ClimbTop(out VerbExitSample a, out VerbExitSample b, out VerbExitSample c)
         {
-            Spread(26f, 8f, 0f, -30f, 30f, -50f, -50f, out a, out b, out c);
+            // Thigh 64, knee 70, yaw 26. The knee sits ahead of the pelvis and
+            // ahead of the ankle. Drop is the hips bone, 17.8 cm, which puts
+            // the sole back on the lid. It is not a visual-root offset.
+            b = P(18f, 8f, 26f, 64f, 64f, -70f, -70f, -40f, -40f, -30f, 30f, -50f, -50f);
+            b.HipYaw = 8f;
+            b.ThighYawL = -26f;
+            b.ThighYawR = 26f;
+            b.Drop = 0.178f;
+            a = b;
+            a.Head = 18f;
+            a.ArmPitchL = -46f;
+            a.ArmPitchR = -46f;
+            c = b;
+            c.Head = 32f;
+            c.ArmPitchL = -32f;
+            c.ArmPitchR = -32f;
         }
 
         /// <summary>Hands open off the wall and the body drops into the fall.</summary>
