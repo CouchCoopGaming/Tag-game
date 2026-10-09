@@ -3013,6 +3013,7 @@ namespace Tag.Ui.Menu
             float rowX = (span - rowW) * 0.5f;
             if (rowX < 8f) rowX = 8f;
             // One Hier body, 1.8 m, on every card. Rank is the plinth under the feet.
+            // Rank 0 samples the celebrate frame. The other ranks sample the relaxed stand.
             const float hierMeters = 1.8f;
             const float pxPerMeter = 100f;
             float figSide = hierMeters * pxPerMeter;
@@ -3059,7 +3060,7 @@ namespace Tag.Ui.Menu
                 float figX = (cardW - figSide) * 0.5f;
                 float plinthW = figSide * 0.72f;
                 ResultPlinth(tile.transform, figX + (figSide - plinthW) * 0.5f, feet, plinthW, plinth, seatColor);
-                MenuWidgets.HierSeat(tile.transform, figX, figTop, figSide, seat);
+                MenuWidgets.HierRank(tile.transform, figX, figTop, figSide, seat, rank);
                 float textTop = floorY + 8f;
                 BandText(tile.Label, textTop, 36f);
                 float costumeY = h - 56f;

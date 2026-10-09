@@ -434,6 +434,8 @@ The thirty-second pass puts a Hier idle on every loading pane, in that seat's co
 
 The fifty-first pass keeps those four Hier idles and puts the same body on every results card at 1.8 m. Place is the plinth, not a taller body. Each badge carries the seat shape: red circle, blue triangle, orange square, lavender diamond. Grapple on a pad is LT. RT is free. Picture lists Speed lines, off until a seat turns them on. Space still jumps.
 
+The fifty-second pass puts a celebrate frame on the first-place card and a relaxed stand on the other three. The arms are no longer the bind hang. The body stays the same Hier at 1.8 m, and the feet stay on the plinth. Space still jumps.
+
 ## Motion, ninth pass
 
 The wall jump, the rope, the zip, the launch pad, a landing, the dash flash, a hard turnaround, and a punch while you run all ease instead of snapping. Speeds, the jump, and the dash length are the same.

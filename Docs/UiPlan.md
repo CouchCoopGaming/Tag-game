@@ -419,6 +419,14 @@ Picture has a Speed lines row. The label is Speed lines: Off until a seat turns 
 
 `Docs/UiStills/pass51/` holds results, controls, options, and load. Unity is not installed, so results, controls, and options are drawn to match the builders. Load is the pass 32 plate. pose stays 0. rigJoint stays 26.
 
+## Pass 52
+
+RESULTS cards no longer crop the idle atlas. First place samples a celebrate frame: both arms in a V, a lean back, elbows at rest. Second, third, and fourth sample a relaxed stand: chest open, upper arms off the bind hang, elbows soft. Both frames use the same Hier idle family, the same camera, and the same 1.8 m slot. The root is not hopped. After the lean, the sole is planted at 0.5 cm, the same plant as the idle atlas. Rank stays the plinth. The badges stay red circle, blue triangle, orange square, lavender diamond.
+
+Load and join still use the bind-pose idle. The stand frame is wider than MenuAlive.Ready's arm deltas, which are about 5 degrees and still read as the bind on a card. On this FBX the raise axis is local Y, so the celebrate sample is the V, not a raw Unity Euler pasted onto the imported rest. The off-screen podium still plays Cheer, Ready, and Shrug. Grapple stays LT. RT stays free. Speed lines stay off until a seat turns them on.
+
+`Docs/UiStills/pass52/` holds the results before and after. Unity is not installed, so the after still is a composite of the sampled frames on the results layout. pose stays 0.
+
 ## Screens 2, pass 1
 
 Secondary screens pick up the park wash and a comic wipe under 0.4 s. Arena select is a three-card grid: Mega Park, Pocket Park, and Stack Yard, then Random and Back. Mode tiles are a 2 by 2. Right from the right-hand mode enters the rules. Left on a rule that cannot go lower returns to the modes. Up and down stay in a column. The rules list has a gold scrollbar.

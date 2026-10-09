@@ -18,6 +18,7 @@ namespace Tag.Ui.Menu
         static Texture2D _chase;
         static Texture2D _idle;
         static Texture2D _load;
+        static Texture2D _result;
         static Texture2D _lockup;
         static Texture2D _ready;
         static bool _tried;
@@ -92,6 +93,19 @@ namespace Tag.Ui.Menu
             }
         }
 
+        /// <summary>
+        /// Results cards. Top row is the celebrate frame, bottom row is the relaxed stand.
+        /// Four seats, same camera as the idle atlas. Load and join stay on <see cref="SeatLoad"/>.
+        /// </summary>
+        public static Texture2D SeatResult
+        {
+            get
+            {
+                Load();
+                return _result;
+            }
+        }
+
         public static Texture2D Lockup
         {
             get
@@ -121,6 +135,7 @@ namespace Tag.Ui.Menu
             _chase = Resources.Load<Texture2D>("UI/Menu/Chase");
             _idle = Resources.Load<Texture2D>("UI/Menu/SeatIdle");
             _load = Resources.Load<Texture2D>("UI/Menu/SeatLoad");
+            _result = Resources.Load<Texture2D>("UI/Menu/SeatResult");
             _lockup = Resources.Load<Texture2D>("UI/Menu/TagLockup");
             _ready = Resources.Load<Texture2D>("UI/Menu/ReadyBurst");
         }

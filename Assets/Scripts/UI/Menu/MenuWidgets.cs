@@ -338,6 +338,26 @@ namespace Tag.Ui.Menu
             return true;
         }
 
+        /// <summary>
+        /// Results figure. Rank 0 uses the celebrate row. Every other rank uses the relaxed stand.
+        /// The cell is square and the same size for every seat, so the body stays one height.
+        /// Falls back to the idle atlas when the results art is missing.
+        /// </summary>
+        public static bool HierRank(Transform parent, float x, float y, float side, int seat, int rank)
+        {
+            Texture tex = MenuBackdrop.SeatResult;
+            if (parent == null || tex == null) return HierSeat(parent, x, y, side, seat);
+            if (seat < 0) seat = 0;
+            if (seat > 3) seat = 3;
+            float row = rank <= 0 ? 0.5f : 0f;
+            RectTransform rt = Place(parent, "HierRank", x, y, side, side);
+            RawImage raw = rt.gameObject.AddComponent<RawImage>();
+            raw.texture = tex;
+            raw.raycastTarget = false;
+            raw.uvRect = new Rect(seat * 0.25f, row, 0.25f, 0.5f);
+            return true;
+        }
+
         /// <summary>Empty drop-in seat. A faint body with a light outline, not a blank slab.</summary>
         public static void Ghost(Transform parent, float x, float y, float w, float h, Color seat)
         {
