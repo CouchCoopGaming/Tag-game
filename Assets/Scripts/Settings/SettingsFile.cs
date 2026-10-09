@@ -53,6 +53,7 @@ namespace Tag.Settings
             Line(text, "listen", s.Listener);
             Line(text, "comic", s.ComicWords ? 1f : 0f);
             Line(text, "speedLines", s.SpeedLines ? 1f : 0f);
+            Line(text, "wallRibbon", s.WallRibbon ? 1f : 0f);
             Line(text, "effects", s.Effects);
             for (int i = 0; i < (int)PlayAction.Count; i++)
             {
@@ -230,6 +231,7 @@ namespace Tag.Settings
             else if (key == "listen") settings.Listener = (int)Num(value, settings.Listener);
             else if (key == "comic") settings.ComicWords = Flag(value);
             else if (key == "speedLines") settings.SpeedLines = Flag(value);
+            else if (key == "wallRibbon") settings.WallRibbon = Flag(value);
             else if (key == "effects") settings.Effects = (int)Num(value, settings.Effects);
             else if (key.StartsWith("kb.", StringComparison.Ordinal))
                 Assign(binds, key.Substring(3), value, true);

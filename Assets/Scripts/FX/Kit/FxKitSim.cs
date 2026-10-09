@@ -189,6 +189,8 @@ namespace Tag.FX
             GameSettings settings = GameSettings.Current;
             if (!FxKitLook.Master(settings))
             {
+                WallRibbon.End(_seat);
+                WallRibbon.Tick(dt);
                 HideActive();
                 Remember();
                 return;
@@ -205,6 +207,7 @@ namespace Tag.FX
             TickWall(dt, settings, density);
             TickFlash(dt, settings);
             TickAir(dt, settings);
+            WallRibbon.Tick(dt);
             Remember();
         }
 
@@ -459,8 +462,10 @@ namespace Tag.FX
         {
             float surf = Loco != null ? Loco.SurfPhase : 0f;
             bool show = FxKitLook.Bursts(settings, FxKitOptions.Wall);
+            bool ribbon = show && settings != null && settings.WallRibbon;
             if (!Motor.IsWallRunning || !show)
             {
+                if (_onWall) WallRibbon.End(_seat);
                 _onWall = false;
                 _prevSurf = surf;
                 FadeScuffs(dt);
@@ -478,6 +483,11 @@ namespace Tag.FX
                 if (p0.sqrMagnitude < 0.0001f)
                     p0 = _root.position + Vector3.up * 0.9f + n0 * 0.35f;
                 ImpactFx.WallRunStart(p0, n0, Motor.HorizSpeed, _wallSurf, WallMaterialName());
+                if (ribbon)
+                {
+                    Vector3 ribbonN = n0.sqrMagnitude > 0.0001f ? n0.normalized : n0;
+                    WallRibbon.Begin(_seat, p0 + ribbonN * 0.04f, ribbonN, new Color(_cr, _cg, _cb, 1f));
+                }
                 return;
             }
             _wallSurf = DustContact.Read(Motor.WallCollider, ref _wallId, ref _wallSurf);
@@ -507,6 +517,19 @@ namespace Tag.FX
                 int bits = FxKitLook.Scaled(2, density);
                 SpawnFoot(bits, point, n, along);
             }
+            if (ribbon)
+            {
+                Vector3 n = Motor.WallNormal;
+                if (n.sqrMagnitude < 0.0001f) n = -_root.forward;
+                else n.Normalize();
+                Vector3 mark = Motor.WallPoint;
+                if (mark.sqrMagnitude < 0.0001f)
+                    mark = _root.position + Vector3.up * 0.9f + n * 0.35f;
+                mark += n * 0.04f;
+                WallRibbon.Extend(_seat, mark, n);
+            }
+            else
+                WallRibbon.End(_seat);
             FadeScuffs(dt);
             Integrate(_foot, dt, 3.5f, _root.position.y);
         }

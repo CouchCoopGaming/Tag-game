@@ -280,7 +280,15 @@ namespace Tag.FX
             SettingsFile.Read(lines, linesBack, ActionBinds.Defaults());
             if (!linesBack.SpeedLines) return false;
             if (linesBack.SpeedLinesLabel().IndexOf("Speed lines: On", System.StringComparison.Ordinal) < 0) return false;
-            if (linesBack.ComicWords) return false;
+            if (linesBack.WallRibbon) return false;
+            if (linesBack.WallRibbonLabel().IndexOf("Wall ribbon: Off", System.StringComparison.Ordinal) < 0) return false;
+            linesBack.WallRibbon = true;
+            string ribbon = SettingsFile.Write(linesBack, ActionBinds.Defaults());
+            GameSettings ribbonBack = GameSettings.Defaults();
+            SettingsFile.Read(ribbon, ribbonBack, ActionBinds.Defaults());
+            if (!ribbonBack.WallRibbon) return false;
+            if (ribbonBack.WallRibbonLabel().IndexOf("Wall ribbon: On", System.StringComparison.Ordinal) < 0) return false;
+            if (ribbonBack.ComicWords) return false;
             loaded.Nudge(GameSettings.RowComic, 1);
             if (!loaded.ComicWords) return false;
             loaded.Effects = 0;

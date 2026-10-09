@@ -100,6 +100,11 @@ namespace Tag.Settings
         /// Not one of the 21 rows. The Options screen lists <see cref="SpeedLinesLabel"/>.
         /// </summary>
         public bool SpeedLines;
+        /// <summary>
+        /// Seat-colored strip left on a wall run. Off until a seat turns it on.
+        /// Not one of the 21 rows, and not one of the seven FX-kit toggles.
+        /// </summary>
+        public bool WallRibbon;
         /// <summary>0 off, 1 low, 2 full. Visual density only.</summary>
         public int Effects = 2;
 
@@ -163,6 +168,7 @@ namespace Tag.Settings
             Listener = other.Listener;
             ComicWords = other.ComicWords;
             SpeedLines = other.SpeedLines;
+            WallRibbon = other.WallRibbon;
             Effects = other.Effects;
         }
 
@@ -361,6 +367,12 @@ namespace Tag.Settings
         public string SpeedLinesLabel()
         {
             return SpeedLines ? "Speed lines: On" : "Speed lines: Off";
+        }
+
+        /// <summary>Label for the Options row. Default is Off.</summary>
+        public string WallRibbonLabel()
+        {
+            return WallRibbon ? "Wall ribbon: On" : "Wall ribbon: Off";
         }
 
         public static string ArenaName(int arena)

@@ -6037,8 +6037,86 @@ def pass28_bottom(path):
     print("BOTTOM", os.path.basename(path), round(total / max(n, 1), 2))
 
 
+def pass28_card(verts, color):
+    """Unlit hard card. Alpha clip in game; the still is the clipped ink, not a glow."""
+    mesh = bpy.data.meshes.new(p11_name("Fx"))
+    mesh.from_pydata([tuple(v) for v in verts], [], [(0, 1, 2, 3)])
+    mesh.update()
+    obj = bpy.data.objects.new(p11_name("Fx"), mesh)
+    bpy.context.collection.objects.link(obj)
+    obj.visible_shadow = False
+    mat = bpy.data.materials.new(p11_name("Mat"))
+    mat.use_nodes = True
+    nt = mat.node_tree
+    nt.nodes.clear()
+    out = nt.nodes.new("ShaderNodeOutputMaterial")
+    emit = nt.nodes.new("ShaderNodeEmission")
+    emit.inputs["Color"].default_value = (color[0], color[1], color[2], 1.0)
+    emit.inputs["Strength"].default_value = 1.0
+    nt.links.new(emit.outputs["Emission"], out.inputs["Surface"])
+    obj.data.materials.append(mat)
+    return obj
+
+
+def pass28_strip(start, end, normal, cam):
+    """Seat ink with a dark edge. Total width 0.20 m. Core is 62% of that, about 0.12 m."""
+    nrm = Vector(normal)
+    if nrm.length < 0.001:
+        nrm = Vector((0.0, 1.0, 0.0))
+    nrm.normalize()
+    direction = Vector(end) - Vector(start)
+    if direction.length < 0.001:
+        direction = Vector((1.0, 0.0, 0.0))
+    direction.normalize()
+    up = nrm.cross(direction)
+    if up.length < 0.001:
+        up = Vector((0.0, 0.0, 1.0))
+    up.normalize()
+    width = 0.20
+    core = width * 0.62
+
+    def quad(half, lift):
+        a = Vector(start) + nrm * lift
+        b = Vector(end) + nrm * lift
+        return [
+            a + up * half,
+            a - up * half,
+            b - up * half,
+            b + up * half,
+        ]
+
+    pass28_card(quad(width * 0.5, 0.02), (0.08, 0.05, 0.04))
+    pass28_card(quad(core * 0.5, 0.04), (0.95, 0.28, 0.32))
+    span = pass27_span(
+        Vector(start) + up * (width * 0.5),
+        Vector(start) - up * (width * 0.5),
+        cam,
+    )
+    print("RIBBON", "width_m", width, "core_m", round(core, 3), "width_px", round(span, 1))
+    return span
+
+
+def pass28_delta(before_path, after_path):
+    from PIL import Image
+
+    before = Image.open(before_path).convert("RGB")
+    after = Image.open(after_path).convert("RGB")
+    w, h = before.size
+    bp = before.load()
+    ap = after.load()
+    n = 0
+    for y in range(h):
+        for x in range(w):
+            br, bg, bb = bp[x, y]
+            ar, ag, ab = ap[x, y]
+            if abs(ar - br) + abs(ag - bg) + abs(ab - bb) > 36:
+                n += 1
+    print("DELTA", os.path.basename(after_path), n)
+    return n
+
+
 def render_pass28(arm, cam):
-    """Quarter-pane chase stills for diagonal flares, the wall ring, and the land stroke."""
+    """Quarter-pane chase stills for flares, the wall ring, the land stroke, and the wall ribbon."""
     from PIL import Image
 
     scene = bpy.context.scene
@@ -6175,6 +6253,59 @@ def render_pass28(arm, cam):
         wall_cells, wall_titles,
         "Wall-run start   chase camera   quarter pane   0.21 m / 0.26 m pop",
         os.path.join(out_dir, "wall-compare.jpg"), 2,
+    )
+
+    # 4. Wall-run seat ribbon. The small start ring stays. After adds the clipped strip.
+    ribbon_cells = []
+    ribbon_titles = []
+    for label, strip in (("ribbon-before", False), ("ribbon-after", True)):
+        p11_clear("P11Fx")
+        p11_clear("P11Geo")
+        p11_ground("concrete", asphalt=True)
+        apply_pose(arm, pose_wall, 0.0, 0.0)
+        foot = p11_foot(arm)
+        p14_aim(cam, foot, 0.0)
+        bpy.context.view_layer.update()
+        fwd, _left = p11_heading(0.0)
+        normal = -fwd
+        center = foot + fwd * 0.55
+        center.z = 1.15
+        along = Vector((-normal.y, normal.x, 0.0))
+        if along.length < 0.001:
+            along = Vector((1.0, 0.0, 0.0))
+        along.normalize()
+        hit = center + along * 0.95
+        hit.z = 1.22
+        bpy.ops.mesh.primitive_cube_add(size=1.0, location=(center.x + fwd.x * 0.08, center.y + fwd.y * 0.08, 1.6))
+        wall = bpy.context.active_object
+        wall.name = p11_name("Geo")
+        wall.scale = (2.6, 0.12, 3.2)
+        wall.data.materials.append(make_mat(p11_name("Mat"), (0.55, 0.32, 0.22, 1.0), 0.9))
+        tail = hit - along * 1.50
+        tail.z = 1.18
+        head = hit - along * 0.08
+        head.z = 1.22
+        state = impact22_state("concrete", 8.0, age_u=0.04 / 0.25, radius_override=0.26, bits_override=0)
+        state["bits"] = 0
+        state["plumes"] = 0
+        state["ring_inner"] = 0.30
+        state["opacity"] = 0.96
+        state["dust"] = (0.96, 0.94, 0.90)
+        state["shown"] = 0.26
+        impact22_draw(tail, normal, state, cam.location)
+        if strip:
+            pass28_strip(tail, head, normal, cam)
+        else:
+            print("RIBBON", "before", "strip", 0)
+        shoot(label, ribbon_cells, ribbon_titles)
+    p14_grid(
+        ribbon_cells, ribbon_titles,
+        "Wall ribbon   chase camera   quarter pane   ring / ring plus strip",
+        os.path.join(out_dir, "ribbon-compare.jpg"), 2,
+    )
+    pass28_delta(
+        os.path.join(out_dir, "ribbon-before.jpg"),
+        os.path.join(out_dir, "ribbon-after.jpg"),
     )
 
     # 3. Hard-land ring. Same 0.80 m radius. The stroke is the difference.
