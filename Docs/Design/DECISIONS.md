@@ -44,13 +44,16 @@ These are decided. Lanes follow them. They are not open questions.
 
 Landon chose to merge the movement lanes into one lane. A1 leads on the shared branch `cursor/tag-movement` (#136) and folds helper sub-branches in by git merge after review. #118 stays A1's PR. The old drafts stay open. A fold into #136 is not drift. Do not flag it, and do not unmerge it.
 
-### Hip floors — Oct 8, 5:58 PM CDT
+### Hip floors — Oct 8, 5:58 PM CDT, updated before 11:30 PM CDT
 
-Landon asked that the hips visibly sit back on every loaded frame. A loaded frame is a plant, a landing, or a crouch. The evasion hard landing passed the hinge ratio at hip 6° over spine 4° and looked upright, so the absolute minimums under that rule are the standard:
+Landon asked that the hips visibly sit back on every loaded frame. Hip 6° over spine 4° passed the 1.5 ratio and looked upright, so that pair still fails. The 8 cm / 12 cm pelvis-behind rule and the 1.5 ratio stay. The support knee stays at least 25° with the shin forward, and a plant still drops the pelvis at least 8 cm.
 
-- A plant has hip flexion of at least 25°.
-- A landing or a crouch has hip flexion of at least 35° and spine flexion of at least 15°.
+The absolute floors are per move, from S1 `Docs/Movement/pose/HIP_TARGETS.md` on #123 (`e06351c0`). The earlier blanket (every plant 25°, every landing or crouch 35° and 15°) is withdrawn.
 
-The 1.5 ratio stays, and so do the pelvis distances (8 cm behind on a plant or landing, 12 cm in a crouch), the 25° support knee with the shin forward, and the 8 cm pelvis drop on a plant. Knee 45° and a 20 cm landing drop are not part of this decision.
+- A landing has hip flexion of at least 30° and spine flexion of at least 10°.
+- A run, sprint, or evasion plant has hip flexion of at least 25°.
+- A hand-supported move (vault, mantle, top-out) has hip flexion of at least 12°. Pelvis-behind is waived while the hands carry the load.
+- A roll follows the reference for that phase. A tucked phase does not take the crouch floors.
+- A slide crouch has hip flexion of at least 30°, spine flexion of at least 10°, and the pelvis at least 12 cm behind the support foot.
 
-Pass 4 measured the folded sits on #136 `9c0d3e7a`. The shared recovery is hip 18° and spine 8°. The climb plant is hip 18°. The dive roll-up is hip 6° over spine 4°. Those fail this decision. It is not a new question.
+Knee 45° and a 20 cm landing drop are not part of this decision. Pass 4's folded recovery (hip 18°, spine 8°) and the dive roll-up (hip 6°, spine 4°) still fail a landing. A hand-supported frame at hip 18° clears the 12° floor. It is not a new question.

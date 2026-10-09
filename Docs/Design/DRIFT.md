@@ -815,3 +815,54 @@ Ororo, these are the five to send.
 5. **A1 #118, should-fix.** Evidence: `Accessibility.cs` on `97f66cb8` still has `PlayerGlyph` `● ■ ▲ ◆` and palette 0 yellow, green, white, cyan. `Docs/Controls.md` still has no rope row. Correction: Default marks are P1 red circle, P2 blue triangle, P3 orange square, P4 lavender diamond. Add the rope row as RMB / LT, and say RT is free.
 
 Also still open, already sent: #128 leave the clearance rig unbound. #130 keep the evasion flag off until the roll-up clears the new floors. #124 stays idle.
+
+## 2026-10-09 — floors and compile, before the 11:30 PM CDT sample
+
+Pass 4 item 1 is withdrawn. Do not send it. The blanket (every plant 25°, every landing or crouch 35° and 15°) is not the lock. The per-move floors are in `DIRECTION.md` and `DECISIONS.md`. Pass 4 items 2 through 5 still stand.
+
+The numbers below are the pass 4 measurements, scored against the new floors. This is not a new scan. #136 has since moved from `9c0d3e7a` to `98047a4a` (the compile commit only). #137 is `9d5b937f`, #135 is `7810de46`, and #133 is `a9bb3ab5`. The hip rescore of those new tips waits for the 11:30 sample.
+
+- A landing recovery at hip 18° and spine 8° fails. A landing needs hip 30° and spine 10°.
+- The dive roll-up at hip 6° and spine 4° still fails.
+- A hand-supported plant at hip 18° clears the 12° floor. That covers the vault plant and the climb top-out plant. Pelvis-behind is waived only while the hands carry the load. Do not send "climb plant hip 18 is under 25°."
+- The vault landing at hip 20° and spine 8° fails the landing floors.
+- A slide at hip 18° and spine 8°, knee 8°, shin behind, fails the slide crouch (hip 30°, spine 10°, pelvis at least 12 cm behind, shin forward).
+- A mantle plant at hip 18° clears the hand-supported hip floor. The 1.5 ratio on 18° over 8° still holds.
+- Wall-run is not given its own absolute hip floor here. Do not apply the 25° run floor to it until the next sample.
+
+`Docs/Movement/pose/HIP_TARGETS.md` on #123 `e06351c0` still states the withdrawn blanket: a landing or a crouch needs hip 35° and spine 15°, and a plant needs hip 25°. The measurements in that file stay. The floor sentences do not. Soft-land chest-forward of 47.9° can hold hip 30° and spine 10° (sum 40°). It could not hold 35° and 15°.
+
+Correction for #123: replace those floor sentences with the per-move floors. Leave every clip reference-only. Do not import the filmed keys.
+
+### Compile check
+
+No open department lane has a Unity `6000.3.24f1` editor compile. The checker on each tip below, except #136, is the stub in `Tools/ScriptCompileCheck/Program.cs`: "Unity is not installed here," and a missing Unity API does not fail the run. It reads `Assets/Scripts` and the movement scripts. It skips `Assets/Editor` and `Assets/Tests`. A `script-compile-check ok` line from that stub is not a compile pass.
+
+| Lane | Tip | Gate |
+|---|---|---|
+| #136 movement | `98047a4a` | `csc` against the `6000.3.24f1` reference assemblies. Not the editor. |
+| #139 exits | `5db5ffcf` | Stub. |
+| #137 evasion helper | `9d5b937f` | Stub. |
+| #130 evasion | `8d96a3f2` | Stub. |
+| #127 effects | `ff0a1e63` | Stub. |
+| #123 motion reference | `e06351c0` | Stub. |
+| #124 motion clips | `80cd5f14` | Stub. |
+| #135 FX research | `7810de46` | Stub. |
+| #133 models | `a9bb3ab5` | Stub. |
+| #122 asset library | `4fd2472d` | Stub. |
+| #125 vehicles | `73fc3a78` | Stub. |
+| #129 props | `f0b41659` | Stub. |
+| #128 rig | `44fbff3f` | Stub. |
+| #131 costumes | `6dc8b9c4` | Stub. |
+| #121 UI | `a925cbbe` | Stub. |
+| #134 world | `cb320d4e` | Stub. |
+| #120 anim | `176983ee` | Stub. |
+| #118 play | `97f66cb8` | Stub. |
+
+Tonight the editor failed the three lanes that had passed the stub.
+
+- **Movement #136, should-fix.** `98047a4a` says Unity 6000.3 failed to compile the visual reads, then publishes `GaitCycle`, `SurfPhase`, and `HardTurnVis` on `DummyLocomotor`, `RopeDiameter` and `CordSag` on `GrappleRopeTell`, and writes the hook chip age as `_chipAge`. The new gate is still `csc`, not the editor.
+- **Effects #127, should-fix.** `Assets/Scripts/FX/Verb/VerbFxCards.cs` on `ff0a1e63` writes `_hookAge` at the hook-chip init. The field is `_chipAge`. The stub drops a missing name unless that name is a declared type, so the parse check passes.
+- **UI #121, should-fix.** `Docs/UiPlan.md` on `a925cbbe` records that Unity 6000.3 did not compile `0d3b9d74`. The live gate is still the stub, and `Docs/UiPlan.md` still says the local proof is `script-compile-check ok` because Unity is not installed on that machine.
+
+Correction: Open each of those three tips in the Unity `6000.3.24f1` editor and compile it. On effects, write `_chipAge` where the hook chips are cleared. A stub line, and the reference-assembly `csc` on #136, do not clear the lane. The same editor compile is the bar for every other lane before it is called compile-clean.

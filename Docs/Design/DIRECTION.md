@@ -162,18 +162,31 @@ Every shipped clip is checked at 30 fps. The limit is 0.5 cm (`Tools/Tag/noclip_
 
 ### Hip-sit
 
-On a plant or a landing the pelvis is at least 8 cm behind the support foot. In a crouch it is at least 12 cm behind. The motion-reference report already uses those targets (`Docs/HierStills/v080/pass14/pose_error_pass14.txt` on #123: "Plants and landings want 8 cm. A crouch wants 12 cm."). Hip flexion is at least 1.5 times spine flexion. The support knee is bent at least 25°, shin forward. The pelvis drops at least 8 cm on a plant. If the leg cannot reach that sit, change the pose. Do not leave the pelvis in front of the foot, and do not drive the thigh through the spine to fake the distance.
+The floors are per move. They come from S1's measured references, `Docs/Movement/pose/HIP_TARGETS.md` on #123 (`e06351c0`). Those clips stay reference-only. A played key uses the floors below. It does not retarget the film.
 
-Landon, Oct 8, 5:58 PM CDT: the hips visibly sit back on every loaded frame. A loaded frame is a plant, a landing, or a crouch. The ratio alone is not enough. The evasion hard landing passed it at hip 6° over spine 4° and still read upright. Absolute floors, adopted:
+Landon, Oct 8, 5:58 PM CDT: the hips visibly sit back on every loaded frame. The pelvis is at least 8 cm behind the support foot on a plant or a landing, and at least 12 cm behind in a crouch. Hip flexion is at least 1.5 times spine flexion. Spine flexion is lumbar plus chest. The support knee is bent at least 25°, shin forward. The pelvis drops at least 8 cm on a plant. Hip 6° over spine 4° still fails. The ratio can pass and the pose can still read upright.
 
-- A plant has hip flexion of at least 25°.
-- A landing or a crouch has hip flexion of at least 35° and spine flexion of at least 15°.
+Per move, relayed before the 11:30 PM CDT sample:
 
-Spine flexion is lumbar plus chest. The 1.5 ratio stays. Knee 45° and a 20 cm landing drop are not this lock.
+- A landing has hip flexion of at least 30° and spine flexion of at least 10°.
+- A run, sprint, or evasion plant has hip flexion of at least 25°.
+- A hand-supported move (vault, mantle, top-out) has hip flexion of at least 12°. Pelvis-behind is waived while the hands carry the load. When the hands let go, the landing floors apply.
+- A roll follows `HIP_TARGETS.md` for that phase. A tucked phase does not take the crouch floors.
+- A slide crouch has hip flexion of at least 30°, spine flexion of at least 10°, and the pelvis at least 12 cm behind the support foot.
+
+The blanket floors from earlier the same night (every plant 25°, every landing or crouch 35° and 15°) are not the lock. Knee 45° and a 20 cm landing drop are not the lock. If the leg cannot reach the sit, change the pose. Do not drive the thigh through the spine to fake the distance.
 
 ### Stills
 
 A still shows the whole subject in the frame, with a 1.8 m scale figure standing on the same ground. The subject is not cropped. The figure is the scale reference.
+
+### Compile
+
+A lane is not compile-clean until the Unity `6000.3.24f1` editor compiles it. A parse-only check, a `csc` stub, or a smoke test that never opens the editor does not count.
+
+Every open department lane was checked. The gate on each of them, except #136, is `Tools/ScriptCompileCheck/Program.cs` saying Unity is not installed and that a missing Unity API does not fail the run. That file compiles `Assets/Scripts` and the movement scripts only. It does not open the editor, and it does not compile `Assets/Editor` or `Assets/Tests`. #136 `98047a4a` replaced that stub with `csc` against the `6000.3.24f1` reference assemblies. That is still not the editor.
+
+Tonight the editor failed movement, effects, and UI after those checks had passed. Those three are not compile-clean until the editor compile passes. No other open lane has an editor compile either.
 
 ### Assets, words, marks
 
