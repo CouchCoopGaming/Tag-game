@@ -11,7 +11,7 @@ Nothing is **accepted** in the tables. A pass requires `models-validate` with `f
 
 | Branch | PR | Tip | Summary |
 | --- | --- | --- | --- |
-| `cursor/tag-asset-library` | #122 | `0995834829f50969ac0e22ee7bf0b0907b715cf3` | `models-validate assets=132 pass=126 fail=6` / `models-split paperwork=5 geometry=1` |
+| `cursor/tag-asset-library` | #122 | `a605f06f8aec963660d6416b73e2b7a5c8f18979` | `models-validate assets=132 pass=126 fail=6` / `models-split paperwork=5 geometry=1` |
 | `cursor/tag-asset-street-kit` | #125 | `1d5a38c8177632edfafedff9b73ef9b7d23e180b` | `models-validate assets=189 pass=18 fail=171` / `models-split paperwork=164 geometry=7` |
 | `cursor/tag-street-objects` | #129 | `918ce6d2a1be8dd8a273179c1f9d6442470d8b70` | `models-validate assets=220 pass=81 fail=139` / `models-split paperwork=137 geometry=2` |
 | `cursor/tag-loco-smooth` | #128 | `44fbff3f56b8d2831f6b77d5831378cf3a78b85a` | `models-validate assets=7 pass=0 fail=7` / `models-split paperwork=5 geometry=2` |
@@ -324,7 +324,7 @@ Fit file: `costume-fit sets=12 frames=4128 worldMax=0.38 fails=0`. That number i
 
 ## Restructure impact
 
-Running count: **9**. Each line is one redo or conflict for the restructure-impact report. Missed copies are not counted.
+Running count: **10**. Each line is one redo or conflict for the restructure-impact report. Missed copies are not counted.
 
 1. Court, twice. #129 `8effda99` and #125 `c84459a3` both restore #122's 22 m by 15 m court and the 0.375 m face-to-rim gap. `Court`, `CourtFence`, and `Hoop` sizes matched on all three tips at that grade. Same fix, two helpers.
 2. Walk-up, two meshes. #122 passes at 2736/2216/1004. #129's earlier mesh was 1832/1300/680. #125 still fails the old landing. Two buildings, one name. #129 `8f7686a5` later copied #122's cage (geometry hash matches). The event stays counted.
@@ -335,6 +335,7 @@ Running count: **9**. Each line is one redo or conflict for the restructure-impa
 7. #129 `30af0ae6` reseals `Planter`, `Tree_Maple`, and `RooftopAC`. At `cf295d9b` those three geometry hashes matched #122. They do not match now. RooftopAC LOD2 went from 132 to 36. Brick_Door and Brick_Window were edited in the same commit and the cage hash did not change. Counted as one event.
 8. #125 `a5e0e40d` reshapes the midsize line that already passed at `3040d2e5`. All ten geometry hashes changed. The years still differ from each other. The six paints still match `Sedan_Mid_A_25`. Counted as one event.
 9. #125 `1d5a38c8` re-exports library LOD meshes. Nine LOD0 hashes that matched #122 no longer match: Garage, Roof_Parapet, RooftopAC, ShopFront, Storefront_Glass, WaterTank, FishingBoat, HarborCrane, and Tree_Palm. Rowboat's LOD0 vertex count went from 4900 to 3608. The 18 vehicle passes were not in this commit. Counted as one event.
+10. #122 `a605f06f` rebuilds `Store_Corner`, `Store_Diner`, and `Store_Laundromat` after they passed. All three geometry hashes changed, and none match #129. The checker still binds the pass 31 quartets. Pass 33 adds sign front and back only. Counted as one event.
 
 Not a redo: `Pickup_FullSize_25`. Logging the request as redo 7 was a chain-of-command error on the models-lead side. Ororo asked for that truck, and Landon wants an F-150-style full-size pickup in the vehicle set. `Car_Pickup_25` stays rejected. On #125 `2b8480a7` the FBX, the manifest row, and the pass 17 quartet are in the tree, and the asset passes: 5.105 × 1.999 × 1.761 m, slack 0.00 cm, LOD 11336/2728/1608.
 
@@ -342,5 +343,5 @@ Not counted: #129 `918ce6d2` cuts LOD2 and adds pass 33 stills. Tree_Pine faces 
 
 ## Counts
 
-Lead status in the asset tables: accepted 0. Re-grade 9 Oct 2026: #122 pass=126/132 at `09958348`, #125 pass=18/189 at `1d5a38c8` (paperwork 164, geometry 7), #129 pass=81/220 at `918ce6d2`, #128 pass=0/7 at `44fbff3f`, #131 pass=0/18 at `ad1582a8`. The fit header is `worldMax=0.05 fails=0`. Ten loadouts fail `lod2-ratio`. Sprint, slide, and roll in the same file are over 0.5 cm, and the checker does not read those lines. Restructure-impact count: 9.
+Lead status in the asset tables: accepted 0. Re-grade 9 Oct 2026: #122 pass=126/132 at `a605f06f`, #125 pass=18/189 at `1d5a38c8` (paperwork 164, geometry 7), #129 pass=81/220 at `918ce6d2`, #128 pass=0/7 at `44fbff3f`, #131 pass=0/18 at `ad1582a8`. The fit header is `worldMax=0.05 fails=0`. Ten loadouts fail `lod2-ratio`. Sprint, slide, and roll in the same file are over 0.5 cm, and the checker does not read those lines. Restructure-impact count: 10.
 
