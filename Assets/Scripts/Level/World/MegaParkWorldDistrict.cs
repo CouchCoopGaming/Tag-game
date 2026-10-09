@@ -97,11 +97,13 @@ namespace Tag.Level
             new Place("Gazebo", P + "Gazebo.prefab", 77.53f, 0f, 35f, 180f),
             new Place("AC_Gazebo", B + "RooftopAC.prefab", 77.53f, 3.53f, 35f, 0f),
 
-            // #125 shells. Yaw 90 puts the nose toward +X. Pivot y sits on the road crown.
-            new Place("Car_Sedan", V + "Sedan_Compact_25.prefab", 84.6f, 0.12f, 35.55f, 90f),
-            new Place("Car_Hatch", V + "Hatch_Compact_25.prefab", 89.4f, 0.12f, 35.55f, 90f),
-            new Place("Car_Crossover", V + "Crossover_Compact_25.prefab", 94.4f, 0.12f, 35.55f, 90f),
-            new Place("Car_Pickup", V + "Pickup_FullSize_25.prefab", 99.8f, 0.12f, 35.55f, 90f),
+            // #125 shells. Yaw 90 puts the nose toward +X.
+            // Road slab top is y = 0.112. Compact wheels start at local y = 0.010,
+            // pickup wheels at local y = 0.012, so these pivots put every tire on the slab.
+            new Place("Car_Sedan", V + "Sedan_Compact_25.prefab", 84.6f, 0.102f, 35.55f, 90f),
+            new Place("Car_Hatch", V + "Hatch_Compact_25.prefab", 89.4f, 0.102f, 35.55f, 90f),
+            new Place("Car_Crossover", V + "Crossover_Compact_25.prefab", 94.4f, 0.102f, 35.55f, 90f),
+            new Place("Car_Pickup", V + "Pickup_FullSize_25.prefab", 99.8f, 0.100f, 35.55f, 90f),
 
             new Place("Light_W", S + "LightPost_Single.prefab", 81.0f, 0f, 29.0f, 0f),
             new Place("Light_E", S + "LightPost_Single.prefab", 110.2f, 0f, 30.4f, 180f),
