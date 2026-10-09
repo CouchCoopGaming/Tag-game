@@ -100,7 +100,7 @@ def _wheel(g, x, z, spec, lod, detailed):
     y = spec["axle_y"]
     seg = 16 if lod == 0 else (6 if lod >= 2 else 8)
     g.cylinder((x, y, z), r, spec["tire_w"], "Lib_Rubber", seg, axis="X")
-    if not detailed:
+    if not detailed or lod >= 2:
         return
     sign = 1.0 if x > 0 else -1.0
     face = x + sign * (spec["tire_w"] * 0.5 + 0.016)
@@ -136,9 +136,10 @@ def _side(g, asset, spec, sign, lod, bev, segs):
         sz = (thick, skirt_h, b - a)
         _panel(g, c, sz, spec["skirt"], bev, segs)
         _solid(asset, "Col_Skirt_%d_%d" % (0 if sign < 0 else 1, i), c, sz)
-    for a, b in arches:
-        # Inboard of the inner tire so the liner does not share volume with the rubber.
-        g.box((sign * 0.48, 1.02, (a + b) * 0.5), (0.04, 0.36, (b - a) * 0.80), "Lib_Black")
+    if lod < 2:
+        for a, b in arches:
+            # Inboard of the inner tire so the liner does not share volume with the rubber.
+            g.box((sign * 0.48, 1.02, (a + b) * 0.5), (0.04, 0.36, (b - a) * 0.80), "Lib_Black")
     for i, (a, b) in enumerate(_pieces(z0, z1, bellows)):
         c = (sign * (half + 0.008), 1.10, (a + b) * 0.5)
         g.box(c, (0.012, 0.036, b - a), "Lib_SteelDark")
@@ -178,7 +179,8 @@ def _side(g, asset, spec, sign, lod, bev, segs):
                 inset = 0.015 + 0.004
                 gx = skin - sign * inset
                 g.box((gx, win_y, gz), (0.008, win_h - 0.04, gw), "Lib_TintGlass")
-                g.box((gx - sign * 0.028, win_y, gz), (0.016, win_h - 0.06, gw - 0.02), "Lib_Interior")
+                if lod < 2:
+                    g.box((gx - sign * 0.028, win_y, gz), (0.016, win_h - 0.06, gw - 0.02), "Lib_Interior")
             z = pane_z1
     for i, (a, b) in enumerate(doors):
         leaf = (b - a - 0.004) * 0.5
@@ -189,8 +191,9 @@ def _side(g, asset, spec, sign, lod, bev, segs):
             _solid(asset, "Col_Door_%d_%d" % (i, j), lower, lsz)
             gx = sign * half - sign * 0.019
             g.box((gx, 1.80, cz), (0.008, 1.00, leaf - 0.02), "Lib_TintGlass")
-            g.box((gx - sign * 0.026, 1.80, cz), (0.012, 0.90, leaf - 0.04), "Lib_Interior")
-            g.box((sign * (half + 0.004), 1.15, cz), (0.008, 0.012, leaf * 0.55), "Lib_SteelDark")
+            if lod < 2:
+                g.box((gx - sign * 0.026, 1.80, cz), (0.012, 0.90, leaf - 0.04), "Lib_Interior")
+                g.box((sign * (half + 0.004), 1.15, cz), (0.008, 0.012, leaf * 0.55), "Lib_SteelDark")
     for i, (a, b) in enumerate(_pieces(z0, z1, bellows)):
         header = (x, 2.70, (a + b) * 0.5)
         hsz = (thick, 0.68, b - a)
@@ -219,7 +222,8 @@ def _caps(g, asset, spec, lod, bev, segs):
     g.box((0.0, 2.62, zf + 0.004), (1.46, 0.20, 0.008), "Lib_WindowLit")
     # Windshield recessed 1.5 cm behind the nose skin (skin outer z = zf).
     g.box((0.0, 1.72, zf - 0.019), (half * 1.30, 1.20, 0.008), "Lib_TintGlass")
-    g.box((0.0, 1.72, zf - 0.050), (half * 1.16, 1.08, 0.016), "Lib_Interior")
+    if lod < 2:
+        g.box((0.0, 1.72, zf - 0.050), (half * 1.16, 1.08, 0.016), "Lib_Interior")
     bumper_z = spec["length"] * 0.5 - 0.04
     _panel(g, (0.0, 0.40, bumper_z), (half * 1.92, 0.16, 0.070), "Lib_Black", bev, segs)
     for sign in (-1.0, 1.0):
@@ -228,7 +232,8 @@ def _caps(g, asset, spec, lod, bev, segs):
         # Body is 2.59 m. The full asset must stay inside 2.65 m, so the head
         # projects about 2.5 cm past the skin.
         g.box((sign * (half - 0.005), 2.00, zf - 0.20), (0.06, 0.22, 0.12), "Lib_Black")
-        g.box((sign * (half - 0.04), 2.00, zf - 0.16), (0.02, 0.04, 0.10), "Lib_SteelDark")
+        if lod < 2:
+            g.box((sign * (half - 0.04), 2.00, zf - 0.16), (0.02, 0.04, 0.10), "Lib_SteelDark")
     # Tail frame. The rear window and the engine door are openings, not a solid slab.
     tail_bits = (
         ("Col_TailL", (-half + 0.18, 1.60, zt + 0.025), (0.32, 2.40, 0.050), spec["body"]),
@@ -241,8 +246,9 @@ def _caps(g, asset, spec, lod, bev, segs):
         _panel(g, center, size, mat, bev, segs)
         _solid(asset, name, center, size)
     g.box((0.0, 2.10, zt + 0.019), (1.05, 0.48, 0.008), "Lib_TintGlass")
-    g.box((0.0, 2.10, zt + 0.046), (0.94, 0.38, 0.012), "Lib_Interior")
-    for i in range(4 if lod == 0 else 2):
+    if lod < 2:
+        g.box((0.0, 2.10, zt + 0.046), (0.94, 0.38, 0.012), "Lib_Interior")
+    for i in range(4 if lod == 0 else (0 if lod >= 2 else 2)):
         g.box((0.0, 0.58 + i * 0.18, zt - 0.008), (1.10, 0.012, 0.008), "Lib_Black")
     _panel(g, (0.0, 0.38, -bumper_z), (half * 1.92, 0.16, 0.070), "Lib_Black", bev, segs)
     for sign in (-1.0, 1.0):

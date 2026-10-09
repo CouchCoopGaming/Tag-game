@@ -27,6 +27,7 @@ MODULES = (
     "sedan_compact",
     "crossover_compact",
     "hatch_compact",
+    "pickup_fullsize",
     "bus_city40",
     "bus_city40_blue",
     "bus_city40_red",
@@ -45,6 +46,8 @@ def _wanted(stem, only):
     if only == "envelope":
         return stem in ("sedan_compact", "hatch_compact", "crossover_compact")
     if only == "years":
+        return stem == "sedan_mid_a"
+    if only == "paints":
         return stem == "sedan_mid_a"
     return only in stem or stem in only
 
@@ -380,6 +383,23 @@ def main():
     if "--shot" in sys.argv:
         shot = sys.argv[sys.argv.index("--shot") + 1]
     found = _load(only)
+    if only == "paints":
+        # Each enamel is its own mesh file, so the still folder carries the colour.
+        jobs = (
+            ("Sedan_Mid_A_25_White", "sedan_mid_a_25_white"),
+            ("Sedan_Mid_A_25_Black", "sedan_mid_a_25_black"),
+            ("Sedan_Mid_A_25_Grey", "sedan_mid_a_25_grey"),
+            ("Sedan_Mid_A_25_Silver", "sedan_mid_a_25_silver"),
+            ("Sedan_Mid_A_25_Navy", "sedan_mid_a_25_navy"),
+            ("Sedan_Mid_A_25_Ocean", "sedan_mid_a_25_ocean"),
+        )
+        for name, folder in jobs:
+            print("SHOT", folder)
+            _quartet(
+                found, name, os.path.join(STILL_ROOT, folder, "pass18"),
+                4.90, 1.44, shade=True,
+            )
+        return
     if only == "years":
         # 2022-2024 change the fascia and the wheel. 2025 paints are the same mesh.
         jobs = (

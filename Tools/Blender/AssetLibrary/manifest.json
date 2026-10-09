@@ -48336,7 +48336,7 @@
       },
       {
         "lod": 2,
-        "tris": 2400,
+        "tris": 1966,
         "materials": [
           "Lib_PaintRed",
           "Lib_TintGlass",
@@ -48574,7 +48574,7 @@
       },
       {
         "lod": 2,
-        "tris": 2344,
+        "tris": 1954,
         "materials": [
           "Lib_PaintCream",
           "Lib_TintGlass",
@@ -48820,20 +48820,18 @@
       },
       {
         "lod": 2,
-        "tris": 1280,
+        "tris": 900,
         "materials": [
           "Lib_SteelDark",
           "Lib_PaintCream",
           "Lib_SignalAmber",
           "Lib_Taillamp",
           "Lib_PaintBlue",
-          "Lib_Black",
           "Lib_TintGlass",
-          "Lib_Interior",
+          "Lib_Black",
           "Lib_WindowLit",
           "Lib_Headlamp",
-          "Lib_Rubber",
-          "Lib_Steel"
+          "Lib_Rubber"
         ],
         "mesh": "LOD2",
         "fileID": 736115405485880582
@@ -49868,20 +49866,18 @@
       },
       {
         "lod": 2,
-        "tris": 1280,
+        "tris": 900,
         "materials": [
           "Lib_SteelDark",
           "Lib_PaintBlue",
           "Lib_SignalAmber",
           "Lib_Taillamp",
           "Lib_PaintWhite",
-          "Lib_Black",
           "Lib_TintGlass",
-          "Lib_Interior",
+          "Lib_Black",
           "Lib_WindowLit",
           "Lib_Headlamp",
-          "Lib_Rubber",
-          "Lib_Steel"
+          "Lib_Rubber"
         ],
         "mesh": "LOD2",
         "fileID": 736115405485880582
@@ -50917,20 +50913,18 @@
       },
       {
         "lod": 2,
-        "tris": 1280,
+        "tris": 900,
         "materials": [
           "Lib_SteelDark",
           "Lib_PaintWhite",
           "Lib_SignalAmber",
           "Lib_Taillamp",
           "Lib_PaintRed",
-          "Lib_Black",
           "Lib_TintGlass",
-          "Lib_Interior",
+          "Lib_Black",
           "Lib_WindowLit",
           "Lib_Headlamp",
-          "Lib_Rubber",
-          "Lib_Steel"
+          "Lib_Rubber"
         ],
         "mesh": "LOD2",
         "fileID": 736115405485880582
@@ -51957,7 +51951,7 @@
       },
       {
         "lod": 2,
-        "tris": 2294,
+        "tris": 1912,
         "materials": [
           "Lib_PaintGreen",
           "Lib_TintGlass",
@@ -52203,20 +52197,18 @@
       },
       {
         "lod": 2,
-        "tris": 1708,
+        "tris": 1192,
         "materials": [
           "Lib_SteelDark",
           "Lib_PaintCream",
           "Lib_SignalAmber",
           "Lib_Taillamp",
           "Lib_PaintBlue",
-          "Lib_Black",
           "Lib_TintGlass",
-          "Lib_Interior",
+          "Lib_Black",
           "Lib_WindowLit",
           "Lib_Headlamp",
-          "Lib_Rubber",
-          "Lib_Steel"
+          "Lib_Rubber"
         ],
         "mesh": "LOD2",
         "fileID": 736115405485880582
@@ -53625,7 +53617,7 @@
       },
       {
         "lod": 2,
-        "tris": 2356,
+        "tris": 2020,
         "materials": [
           "Lib_PaintCrimson",
           "Lib_AutoGlass",
@@ -53885,7 +53877,7 @@
       },
       {
         "lod": 2,
-        "tris": 2436,
+        "tris": 2100,
         "materials": [
           "Lib_PaintCrimson",
           "Lib_AutoGlass",
@@ -54145,7 +54137,7 @@
       },
       {
         "lod": 2,
-        "tris": 2356,
+        "tris": 2020,
         "materials": [
           "Lib_PaintCrimson",
           "Lib_AutoGlass",
@@ -54405,7 +54397,7 @@
       },
       {
         "lod": 2,
-        "tris": 2356,
+        "tris": 2020,
         "materials": [
           "Lib_PaintCrimson",
           "Lib_AutoGlass",
@@ -54665,7 +54657,7 @@
       },
       {
         "lod": 2,
-        "tris": 2356,
+        "tris": 2020,
         "materials": [
           "Lib_PaintWhite",
           "Lib_AutoGlass",
@@ -54925,7 +54917,7 @@
       },
       {
         "lod": 2,
-        "tris": 2356,
+        "tris": 2020,
         "materials": [
           "Lib_PaintBlack",
           "Lib_AutoGlass",
@@ -55185,7 +55177,7 @@
       },
       {
         "lod": 2,
-        "tris": 2356,
+        "tris": 2020,
         "materials": [
           "Lib_PaintGrey",
           "Lib_AutoGlass",
@@ -55443,7 +55435,7 @@
       },
       {
         "lod": 2,
-        "tris": 2356,
+        "tris": 2020,
         "materials": [
           "Lib_PaintSilver",
           "Lib_AutoGlass",
@@ -55702,7 +55694,7 @@
       },
       {
         "lod": 2,
-        "tris": 2356,
+        "tris": 2020,
         "materials": [
           "Lib_PaintNavy",
           "Lib_AutoGlass",
@@ -55962,7 +55954,7 @@
       },
       {
         "lod": 2,
-        "tris": 2356,
+        "tris": 2020,
         "materials": [
           "Lib_PaintOcean",
           "Lib_AutoGlass",
@@ -59259,5 +59251,283 @@
       "url": "",
       "notes": "Procedural mesh built in this repo."
     }
+  },
+  {
+    "name": "Pickup_FullSize_25",
+    "category": "Vehicles",
+    "blurb": "2025 full-size pickup, about 5.06 m long. Cab roof 1.76 m, bed rails 1.12 m. Closed cab and wrapped fenders.",
+    "size": [
+      1.999,
+      1.761,
+      5.105
+    ],
+    "min": [
+      -0.999,
+      0.0,
+      -2.608
+    ],
+    "max": [
+      0.999,
+      1.761,
+      2.497
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 11336,
+        "materials": [
+          "Lib_PaintWhite",
+          "Lib_Interior",
+          "Lib_Black",
+          "Lib_SteelDark",
+          "Lib_TintGlass",
+          "Lib_Steel",
+          "Lib_Headlamp",
+          "Lib_Taillamp",
+          "Lib_Rubber"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 2728,
+        "materials": [
+          "Lib_PaintWhite",
+          "Lib_Interior",
+          "Lib_Black",
+          "Lib_SteelDark",
+          "Lib_TintGlass",
+          "Lib_Steel",
+          "Lib_Headlamp",
+          "Lib_Taillamp",
+          "Lib_Rubber"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      },
+      {
+        "lod": 2,
+        "tris": 1608,
+        "materials": [
+          "Lib_PaintWhite",
+          "Lib_Black",
+          "Lib_TintGlass",
+          "Lib_Steel",
+          "Lib_Headlamp",
+          "Lib_Taillamp",
+          "Lib_Rubber",
+          "Lib_SteelDark"
+        ],
+        "mesh": "LOD2",
+        "fileID": 736115405485880582
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_Cab",
+        "type": "box",
+        "center": [
+          0,
+          0.82,
+          0.78
+        ],
+        "size": [
+          0.9,
+          0.48,
+          1.0
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Roof",
+        "type": "box",
+        "center": [
+          0,
+          1.7,
+          0.4
+        ],
+        "size": [
+          0.36,
+          0.04,
+          0.32
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Bed",
+        "type": "box",
+        "center": [
+          0,
+          0.55,
+          -1.2
+        ],
+        "size": [
+          1.2,
+          0.02,
+          1.6
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_SideL",
+        "type": "box",
+        "center": [
+          -0.845,
+          0.98,
+          -1.3
+        ],
+        "size": [
+          0.02,
+          0.12,
+          1.7
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_SideR",
+        "type": "box",
+        "center": [
+          0.845,
+          0.98,
+          -1.3
+        ],
+        "size": [
+          0.02,
+          0.12,
+          1.7
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Tailgate",
+        "type": "box",
+        "center": [
+          0,
+          0.7875,
+          -2.568
+        ],
+        "size": [
+          0.9,
+          0.405,
+          0.014
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Fr_00",
+        "type": "box",
+        "center": [
+          -0.84,
+          0.03,
+          1.58
+        ],
+        "size": [
+          0.055,
+          0.036,
+          0.09
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Fr_01",
+        "type": "box",
+        "center": [
+          0.84,
+          0.03,
+          1.58
+        ],
+        "size": [
+          0.055,
+          0.036,
+          0.09
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Rr_00",
+        "type": "box",
+        "center": [
+          -0.84,
+          0.03,
+          -1.62
+        ],
+        "size": [
+          0.055,
+          0.036,
+          0.09
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Rr_01",
+        "type": "box",
+        "center": [
+          0.84,
+          0.03,
+          -1.62
+        ],
+        "size": [
+          0.055,
+          0.036,
+          0.09
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "climbable": false,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "Sheet metal. Not a cling wall.",
+    "vaultNote": "Bed sides are about 1.12 m. Not a vault rail.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1",
+      "LOD2"
+    ],
+    "slackCm": 0.0,
+    "fbx": "Assets/Art/Props/Library/Vehicles/Pickup_FullSize_25.fbx"
   }
 ]
