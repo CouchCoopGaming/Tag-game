@@ -26,7 +26,9 @@ namespace Tag.Art
             WallPose.Sample run = WallPose.Run(1f, true);
             if (run.LeanZ > -15f || run.LeanZ < -21f) return false;
             if (run.ArmYawL < 28f) return false;
-            if (run.ArmPitchL < -10f || run.ArmPitchL > 16f) return false;
+            // The inner hand sits up off the chest. A pitch in the old -10..16 band
+            // sinks the upper arm into the chest.
+            if (run.ArmPitchL < 40f) return false;
             WallPose.Sample runBack = WallPose.Run(-1f, true);
             if (run.ThighR <= run.ThighL) return false;
             if (runBack.ThighL <= runBack.ThighR) return false;
