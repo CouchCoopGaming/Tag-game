@@ -20,7 +20,7 @@ namespace Tag.Tools
 
         static readonly string[] Defines =
         {
-            "UNITY_EDITOR",
+            "UNITY_EDITOR", "UNITY_INCLUDE_TESTS",
             "ENABLE_INPUT_SYSTEM",
             "UNITY_6000_3",
             "UNITY_6000_3_OR_NEWER",
@@ -60,7 +60,7 @@ namespace Tag.Tools
             var smokeFiles = editorFiles.Where(IsSmokeCheck).ToList();
             editorFiles.RemoveAll(IsSmokeCheck);
 
-            string outDir = Path.Combine(Path.GetTempPath(), "tag-script-check");
+            string outDir = Path.Combine(Path.GetTempPath(), "tag-script-check-" + Environment.ProcessId);
             Directory.CreateDirectory(outDir);
 
             var errors = new List<string>();
@@ -68,7 +68,11 @@ namespace Tag.Tools
             string playerDll = Path.Combine(outDir, "Assembly-CSharp.dll");
             parsed += Compile("Assembly-CSharp", playerFiles, refs, playerDll, root, errors);
 
+            var nunit = MetadataReference.CreateFromFile(Environment.GetEnvironmentVariable("NUNIT_DLL") ?? "/tmp/nunit/lib/net45/nunit.framework.dll");
             var editorRefs = new List<MetadataReference>(refs);
+            editorRefs.Add(nunit);
+            var mscorlib = MetadataReference.CreateFromFile(Environment.GetEnvironmentVariable("MSCORLIB_DLL") ?? "/tmp/unity-6000/Editor/Data/NetStandard/compat/2.1.0/shims/netfx/mscorlib.dll");
+            editorRefs.Add(mscorlib);
             if (File.Exists(playerDll))
                 editorRefs.Add(MetadataReference.CreateFromFile(playerDll));
             string editorDll = Path.Combine(outDir, "Assembly-CSharp-Editor.dll");
@@ -79,6 +83,13 @@ namespace Tag.Tools
                 testRefs.Add(MetadataReference.CreateFromFile(editorDll));
             parsed += Compile("Tag.Editor.SmokeCheck", smokeFiles, testRefs, Path.Combine(outDir, "Tag.Editor.SmokeCheck.dll"), root, errors);
 
+            var testFiles = new List<string>();
+            AddCs(testFiles, Path.Combine(root, "Assets", "Tests"));
+            var plainRefs = new List<MetadataReference>(refs);
+            plainRefs.Add(nunit); plainRefs.Add(mscorlib);
+            if (testFiles.Count > 0)
+                parsed += Compile("Tag.Tests.EditMode", testFiles, plainRefs, Path.Combine(outDir, "Tag.Tests.EditMode.dll"), root, errors);
+            Console.WriteLine("tests-asm files=" + testFiles.Count);
             errors.Sort(StringComparer.Ordinal);
             Console.WriteLine("script-compile-check files=" + (playerFiles.Count + editorFiles.Count + smokeFiles.Count)
                 + " assemblies=3 parseErrors=0 cscErrors=" + errors.Count
@@ -130,7 +141,9 @@ namespace Tag.Tools
                     usings: ImmutableArray<string>.Empty,
                     allowUnsafe: false));
 
+            if (File.Exists(dll)) File.Delete(dll);
             var emit = compilation.Emit(dll);
+            if (!emit.Success && File.Exists(dll)) File.Delete(dll);
             foreach (Diagnostic d in emit.Diagnostics)
             {
                 if (d.Severity != DiagnosticSeverity.Error) continue;
