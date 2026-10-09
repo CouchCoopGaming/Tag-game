@@ -6,7 +6,7 @@ Nothing in this note changes feel or gameplay. Leave these locks alone: coyote 0
 
 This pass did not edit scripts, so the proof lines are untouched. `HotPathAlloc` still formats `hot-path allocs before=101 after=` plus the live count. `ropeBody` does not appear anywhere in this branch.
 
-Pass 5 is the last section. It is how a split-screen chase reads when two runners share a tight gap, and at most three visual fixes for C2. Emotes stay parked. Every claim in that section is marked source-read (the file was read this pass) or second-hand. Pass 4, just before it, is the streak budget, the ink-card timing, and the dance outlines.
+Pass 6 is the last section. It is how a four-seat chase reads when runners stack on a wall or a rail, and at most three visual fixes for C2. Emotes stay parked. Every claim in that section is marked source-read (the file was read this pass) or second-hand. Pass 5, just before it, is the tight-gap read: the covered-body stroke, the foam tint, and one comic word.
 
 The stills in `Docs/FX/research-pass1/` are labeled composites, not Unity captures. Each one contains one 960×540 cell drawn at 1:1 pixels, which is one pane of a 1920×1080 couch split. The live chase camera was not measured, so the body in each cell is drawn at 108 px (one fifth of 540) on purpose. That height is a stand-in, not a captured scale.
 
@@ -662,3 +662,83 @@ Do not change `WordCount`, `Scale`, `Alpha`, `WordScale`, `LifeSeconds`, `PopSec
 - The 30% pane sentence is the shader comment. The 15% reading is the NDC span. Neither was checked against a screenshot.
 - Pass-4 dance outlines stay as they were. This pass did not draw a new one.
 - Draw counts are estimated. No GPU profile.
+
+## Pass 6 — Stacked on a wall or a rail
+
+Visual only. Three fixes, and no more. No new verb. Feel locks stay as in pass 1. `ChaseCam` fov pop, shake, and slow motion stay 0. The landing roll stays at 65% of terminal (threshold 36.504 m/s) and 0.52 s. `DustLook.SurfaceCount` stays 6. The running-dust proof line stays, including `concreteLife` and `surfaces=6`. The comic proof line stays `words=36`. No gameplay scripts in this note. Emotes stay parked.
+
+The stills are composites in `Docs/FX/research-pass6/`. Each cell is 640×360 at 1:1, one pane of a 1280×720 couch split. Bodies are stand-ins. The live chase scale was not measured. No frame of two runners on a wall was captured.
+
+### 1. Wall-run and the tag flash, when two seats share the face
+
+**Source-read, this pass.**
+
+- `ImpactFx.WallRunStart` runs on the first wall-run frame in `FxKitSim.TickWall`. It calls `Scuff`, then a small ring. Below sprint slam (13.8 m/s) `SmallWall` sets the ring radius to `0.14 + u * 0.12`, and the comment says that stays under 0.26 m. The ring life is `LifeSeconds`, 0.25 s. Bits are 0. Plumes are 2 when slow.
+- The scuff mark is one quad per slot. `ScuffSlots` is 4, shared by every pawn. `BeginScuff` takes the first free slot. If none is free it writes slot 0. Mark alpha is 0.72 until 0.12 s, then it fades to 0 at `ScuffSeconds` (0.42 s). The puff quads hide after 0.24 s. Concrete, and anything that is not brick or wood, uses ink `(0.20, 0.20, 0.19)`. The kit’s own scuff lines are a separate brown, `(0.45, 0.38, 0.30)`, life `ScuffLife` 0.34 s, width starting at 0.018 m. They are not seat-tinted.
+- The pass-1 ribbon is still a spec. Nothing under `Assets/Scripts/FX` draws a seat strip along the wall. The ring, the scuff, and the brown line are what two wall-runners actually share. Same gray, same brown, four mark slots.
+- `TickFlash` arms when `It.TagsLanded` increases, and only if `FxKitLook.Bursts` allows `TagFlash`. The four bars are children of that pawn’s camera. `FlashSeconds` is 0.18. `FlashAlpha` peaks at 0.62. `Holds` requires `FlashAlpha(FlashSeconds * 0.18)` to be at least 0.5. The color is `_cr, _cg, _cb` from `PlayerColor`. Each side bar is `halfW * 0.16` thick, which is 0.08 of the pane width (51 px at 640). Each top and bottom bar is `halfH * 0.22` thick, which is 0.11 of the pane height (40 px at 360). Those pixel figures are the fractions times 640 and 360. They were not measured on a window.
+- The other three cameras do not draw those bars. Both cameras do draw both runners’ world scuffs, because the scuff root is not parented to a camera.
+- A name containing `rail` classifies as metal in `DustLook.Classify`. `Pass5Host` draws each pawn’s zip trail in `(0.82, 0.45, 1)` and the pad trail in `(0.45, 0.90, 1)`. `Pass5Look.TrailCount` is 12 at full density and half of that when low. Two riders on one zip get the same purple line. This pass did not read a rail width.
+
+**What to build.**
+
+The scuff mark stays the surface ink. The brown kit line stays brown. The small ring stays under 0.26 m below a sprint slam. Do not recolor them per seat. The seat read on a shared face is the pass-1 ribbon: one strip per pawn, about 0.12 m wide, alpha clip, foam color, dark outline `(0.08, 0.07, 0.06)`. Shift it along the wall’s up axis by `seat * 0.08` m. Four seats spread 0.24 m, which is under a capsule radius of 0.38 m. Two ribbons on one brick face no longer share pixels. One live ribbon per pawn. A new start restarts that pawn’s strip.
+
+The tag flash stays four bars on the tagger’s camera, 0.18 s, the existing `FlashAlpha` curve. Tint those bars with that seat’s foam, not `PlayerColor`. While that pawn’s flash age is live, that pawn’s ribbon multiplies its alpha by 0.45. The other ribbons on the wall stay at their own fade. After 0.18 s the ducked ribbon returns to the pass-1 fade. Do not lengthen `FlashSeconds`. Do not draw the bars on the other cameras.
+
+On a rail, leave the zip core purple and the pad core cyan, and leave `TrailCount` alone. Add a 1 px foam edge, with the same dark outline, on that pawn’s own trail. Two riders then separate without a second trail.
+
+**Readability risk.** High if both ribbons use the scuff gray: the wall becomes one smudge and the yellow `PlayerColor` frame is the only seat cue, on one camera, for 0.18 s. High if the flash recolors every ribbon on the face. Low if the frame is foam, it ducks only the tagger’s ribbon, and the other seat’s strip stays put.
+
+### 2. The covered-body stroke yields while the immunity shell is up
+
+**Source-read, this pass.** The stroke itself is the pass-5 spec. It is not in the scripts.
+
+- `FxKitSim.TickImmunity` enables `FxRimShell` only while tag-back time remains and `FxKitLook.Immunity` is true. Effects off hides it. Reduced flashing does not: `SteadyGlow` becomes true and `RimAlpha` drops the sine. `ImmunitySeconds` is 1.0 s. `Holds` checks that.
+- The shell color is `PlayerColor`, alpha `RimAlpha * 0.85`. With time remaining equal to the duration, the sine form is `0.70 + 0.30 * sin(time * 5.2)`, so the drawn alpha runs from 0.34 to 0.85. The steady form is `0.55 * 0.85`, which is 0.47. Those products are the source constants multiplied. No frame was captured.
+- `FxKitRim` pushes the mesh 0.012 m along the normal and keeps the fresnel, power 2.2, discarding alpha under 0.02. The bright pixels are the silhouette edge. The shell is a child of the body, so every camera that sees the body draws it.
+- The pass-5 stroke is a steady 2 px foam edge, alpha 0.90, dark outline, on this camera only, and only while the other body’s screen rect overlaps the owner. It is also the silhouette edge.
+
+**They fight when both are up.** The stroke is steadier and brighter than the shell’s peak (0.90 against 0.85), on the same edge. The shell’s sine then reads as flicker on a stroke that was supposed to stay still. On P3 and P4 the shell is still yellow or green until the pass-5 foam lookup lands, so the edge is two hues. This is a reading of the spec against the shell code. It is not a captured frame.
+
+**What to build.** While that body’s shell is enabled, this camera draws no covered-body stroke on it. The shell is the seat read for that second. The stroke returns on the frame the shell hides. Do not change `RimAlpha`, the 0.012 m push, `ImmunitySeconds`, or the proof token `rim=shell`. Do not pulse the stroke to follow the sine. Do not draw the stroke in the immune pawn’s own pane. Reduced flashing still leaves the shell up, steady, so the stroke still yields.
+
+**Readability risk.** High if both draw: the 0.90 stroke covers the pulse, and a yellow shell on lavender is a second seat. Low if the edge is only the shell for that 1.0 s, then only the stroke once tag-back has ended.
+
+### 3. A hard-land mark that leaves the concrete puff life alone
+
+**Source-read, this pass.**
+
+- Sprint concrete in `DustLook.At` uses life1 0.50 s, size 0.20, opacity 0.82, count 9, span 0.72. At sprint, `SpeedU` is 1, so `Life` is 0.50. `Holds` requires that life between 0.40 and 0.60 and the span within 0.02 of 0.72. The proof line prints `concreteLife=` from that puff.
+- `LandDust` overwrites life with `0.36 + t * 0.14`, count with `8 + (int)(t * 8)` capped at 16, span with `0.45 + t * 0.85`. `t` is impact divided by the roll threshold, capped at 1.35. At the threshold, t is 1 and life is 0.50. At the cap, life is 0.36 + 1.35 × 0.14 = 0.549. Those two results are the formula, not a captured puff.
+- `ImpactFx` concrete (the default arm) sets plumes through `PlumeCount`. `PlumeLife` is 0.50 s. The ring life is 0.25 s. The comment says the billow is gone by 0.50 s.
+- The kit motes use `LandLife` 0.42 s, or `RollLife`, which is `LandingRollPose.Seconds` (0.52 s). `DustCount` is 0 below `HardImpact` (12). A roll at the threshold asks for `DustRoll` (16). The ground disc in `TickLand` fades on that same life. It is not a mark that outlives the puff.
+- `FxKitLook.Holds` checks `LandLife`, `RollLife` via the roll dust count, and the concrete numbers live in `DustLook.Holds`. Changing either life to “make room” for a stain would move a proof line.
+
+**What to build.**
+
+One quad on the ground, per pawn. It does not add a particle, and it does not write `LandDust.Life`, the sprint concrete life, `PlumeLife`, `LandLife`, or `RollLife`. A light plant, impact under 12, draws nothing.
+
+From 0.00 s to 0.56 s the quad is present at opacity 0.22, under the puff. 0.56 s is a build number chosen so it is after 0.549, after 0.52, and after 0.50. The puff stays the bright read. From 0.56 s to 1.10 s the opacity is 0.55. At 1.10 s it is gone. A second hard land restarts the one quad.
+
+Color is a dark concrete stain, RGB `(0.45, 0.44, 0.42)`, not the puff’s `(0.78, 0.78, 0.76)` at opacity 0.82. Length 0.70 m along the horizontal velocity, width 0.12 m. `LandDust` span at the threshold is 1.30 m, so the stain sits inside the puff. A roll uses that length. A hard land that is not a roll uses 0.45 m. Grass still gets no stain, as in pass 3. The other surfaces keep the pass-3 mark shapes. This note only fixes the concrete timing against the lives above.
+
+**Readability risk.** High if the stain uses the puff’s gray at 0.82 while the puff is alive: the cloud gains a second core and the life numbers no longer match the picture. High if the stain’s timer is `RollLife` or `LandDust.Life`, because a later edit to the puff then moves the stain. Low if the stain stays dim until 0.56 s and the puff constants stay put.
+
+### Stills
+
+| File | Cell |
+| --- | --- |
+| `Docs/FX/research-pass6/01-wall-tag-layers.png` | 640×360. Shared gray scuff and a yellow frame, then foam ribbons offset on the wall with a foam frame. |
+| `Docs/FX/research-pass6/02-stroke-yields.png` | 640×360. Stroke and shell on one edge, then the shell alone. |
+| `Docs/FX/research-pass6/03-roll-mark.png` | 640×360. The puff owns the first half-second. The stain is the read after 0.56 s. |
+
+### Pass 6 limits
+
+- No gameplay scripts were edited. Feel locks, `surfaces=6`, `concreteLife`, and the comic proof line are untouched.
+- The ribbon, the foam flash tint, the 0.45 duck, the 0.08 m seat offset, the stroke yield, and the stain’s 0.22 / 0.55 / 0.56 s / 1.10 s are build numbers. They are not a captured stack.
+- The 51 px and 40 px flash bars are 0.08 and 0.11 of a 640×360 pane. The window was not measured.
+- Shell alpha 0.34 to 0.85 is `RimAlpha * 0.85` at a full timer. The sine was not sampled from a running pawn.
+- `LandDust` life 0.549 at the 1.35 cap is the formula. No puff was simulated.
+- No rail width was read. The zip and pad cores stay the colors in `Pass5Host`.
+- Pass-4 dances were not extended. Draw counts are estimated. No GPU profile.
