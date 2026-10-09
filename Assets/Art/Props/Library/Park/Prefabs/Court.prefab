@@ -72,12 +72,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Tag.Art.Library.LibraryPropMeta
   category: "Park"
-  summary: "Street full court, 22 m by 12 m. One decal carries the FIBA paint scaled to the slab: boundary, center line, center circle, and at each end a lane, free-throw circle, restricted arc, and a 3-point arc that meets the corner lines. Lines are 5 cm. No collider on the paint."
+  summary: "Street full court, 22 m by 15 m. One decal carries FIBA paint measured from the rims: a 4.90 m key, a free-throw circle solid toward center court and dashed inside the lane, a restricted arc, and a 6.75 m three-point arc on the rim. The surface is even acrylic with light wear in the keys and at center court. Lines are 5 cm. No collider on the paint."
   climbable: 0
   vaultable: 0
   vaultHeightMeters: 0
   climbNote: "Flat slab, 0.12 m thick."
-  vaultNote: "No rail. Place each Hoop pole 1.2 m behind the end line, rim toward center court."
+  vaultNote: "No rail. Place each Hoop so the backboard face is 1.2 m inside the baseline."
 --- !u!1 &200000
 GameObject:
   m_ObjectHideFlags: 0
@@ -311,5 +311,5 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 12, y: 0.12, z: 22}
+  m_Size: {x: 15, y: 0.12, z: 22}
   m_Center: {x: 0, y: 0, z: 0}

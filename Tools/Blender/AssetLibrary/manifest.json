@@ -3920,19 +3920,19 @@
   {
     "name": "Court",
     "category": "Park",
-    "blurb": "Street full court, 22 m by 12 m. One decal carries the FIBA paint scaled to the slab: boundary, center line, center circle, and at each end a lane, free-throw circle, restricted arc, and a 3-point arc that meets the corner lines. Lines are 5 cm. No collider on the paint.",
+    "blurb": "Street full court, 22 m by 15 m. One decal carries FIBA paint measured from the rims: a 4.90 m key, a free-throw circle solid toward center court and dashed inside the lane, a restricted arc, and a 6.75 m three-point arc on the rim. The surface is even acrylic with light wear in the keys and at center court. Lines are 5 cm. No collider on the paint.",
     "size": [
-      12.0,
+      15.0,
       0.126,
       22.0
     ],
     "min": [
-      -6.0,
+      -7.5,
       0.0,
       -11.0
     ],
     "max": [
-      6.0,
+      7.5,
       0.126,
       11.0
     ],
@@ -3968,7 +3968,7 @@
           0
         ],
         "size": [
-          12.0,
+          15.0,
           0.12,
           22.0
         ],
@@ -3983,7 +3983,7 @@
     "vaultable": false,
     "vaultHeight": 0.0,
     "climbNote": "Flat slab, 0.12 m thick.",
-    "vaultNote": "No rail. Place each Hoop pole 1.2 m behind the end line, rim toward center court.",
+    "vaultNote": "No rail. Place each Hoop so the backboard face is 1.2 m inside the baseline.",
     "warnings": [],
     "fbxNames": [
       "LODBoxS",
@@ -3996,26 +3996,26 @@
   {
     "name": "CourtFence",
     "category": "Park",
-    "blurb": "Perimeter for the 22 x 12 m court. Same pivot as Court. Baselines 3.05 m, sidelines 1.80 m, closed gate on +X.",
+    "blurb": "Perimeter for the 22 x 15 m court. Same pivot as Court. Posts 0.45 m outside the slab. Baselines 3.05 m, sidelines 1.80 m, closed gate on +X.",
     "size": [
-      12.98,
+      15.98,
       3.095,
       22.99
     ],
     "min": [
-      -6.49,
+      -7.99,
       0.0,
       -11.495
     ],
     "max": [
-      6.49,
+      7.99,
       3.095,
       11.495
     ],
     "lods": [
       {
         "lod": 0,
-        "tris": 3304,
+        "tris": 3680,
         "materials": [
           "Lib_SteelDark",
           "Lib_Steel",
@@ -4026,7 +4026,7 @@
       },
       {
         "lod": 1,
-        "tris": 2400,
+        "tris": 2656,
         "materials": [
           "Lib_SteelDark",
           "Lib_Steel",
@@ -4037,7 +4037,7 @@
       },
       {
         "lod": 2,
-        "tris": 2148,
+        "tris": 2388,
         "materials": [
           "Lib_SteelDark",
           "Lib_Steel",
@@ -4052,7 +4052,7 @@
         "name": "Col_Post_SW",
         "type": "capsule",
         "center": [
-          -6.45,
+          -7.95,
           1.52,
           -11.45
         ],
@@ -4064,7 +4064,7 @@
         "name": "Col_Post_SE",
         "type": "capsule",
         "center": [
-          6.45,
+          7.95,
           1.52,
           -11.45
         ],
@@ -4076,7 +4076,7 @@
         "name": "Col_Post_NW",
         "type": "capsule",
         "center": [
-          -6.45,
+          -7.95,
           1.52,
           11.45
         ],
@@ -4088,7 +4088,7 @@
         "name": "Col_Post_NE",
         "type": "capsule",
         "center": [
-          6.45,
+          7.95,
           1.52,
           11.45
         ],
@@ -4105,7 +4105,7 @@
           -11.45
         ],
         "size": [
-          12.9,
+          15.9,
           2.9,
           0.02
         ],
@@ -4125,7 +4125,7 @@
           11.45
         ],
         "size": [
-          12.9,
+          15.9,
           2.9,
           0.02
         ],
@@ -4140,7 +4140,7 @@
         "name": "Col_Fabric_W",
         "type": "box",
         "center": [
-          -6.45,
+          -7.95,
           0.9,
           0
         ],
@@ -4160,7 +4160,7 @@
         "name": "Col_Fabric_E1",
         "type": "box",
         "center": [
-          6.45,
+          7.95,
           0.9,
           -4.1
         ],
@@ -4180,7 +4180,7 @@
         "name": "Col_Fabric_E2",
         "type": "box",
         "center": [
-          6.45,
+          7.95,
           0.9,
           4.1
         ],
@@ -4200,7 +4200,7 @@
         "name": "Col_Gate",
         "type": "box",
         "center": [
-          6.45,
+          7.95,
           0.9,
           0
         ],
@@ -8499,11 +8499,11 @@
   {
     "name": "Hoop",
     "category": "Park",
-    "blurb": "Regulation rim at 3.05 m, 2.49 m in front of the pole. Backboard face is 0.29 m behind the rim. Place the pole 1.2 m behind the baseline: south z=-12.2 yaw 0, north z=12.2 yaw 180, so the rim sits on the restricted-area center (z=\u00b19.71). 1.80 x 1.05 m backboard, net, pole pad, and base plate. Rim faces +Z.",
+    "blurb": "Regulation rim at 3.05 m, 0.81 m in front of the pole. Backboard face is 0.375 m behind the rim. Place the pole so that face is 1.2 m inside the baseline: south z=-10.235 yaw 0, north z=10.235 yaw 180. The rim then sits on the painted basket (z=\u00b19.425). 1.80 x 1.05 m backboard, net, pole pad, and base plate. Rim faces +Z.",
     "size": [
       1.84,
       4.005,
-      2.97
+      1.293
     ],
     "min": [
       -0.92,
@@ -8513,7 +8513,7 @@
     "max": [
       0.92,
       4.005,
-      2.74
+      1.063
     ],
     "lods": [
       {
@@ -8585,7 +8585,7 @@
         "center": [
           0,
           3.48,
-          2.1753571428571417
+          0.4175
         ],
         "size": [
           1.72,
@@ -8604,12 +8604,12 @@
         "center": [
           0,
           3.35,
-          1.1069285714285708
+          0.22799999999999998
         ],
         "size": [
           0.06,
           0.06,
-          2.0258571428571415
+          0.26799999999999996
         ],
         "euler": [
           0,

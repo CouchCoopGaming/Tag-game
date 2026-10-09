@@ -1,7 +1,8 @@
-"""Court perimeter kit. Same pivot as Court: 12 m on X, 22 m on Z.
+"""Court perimeter kit. Same pivot as Court: 15 m on X, 22 m on Z.
 
-Baselines are 3.05 m (behind the hoops). Sidelines are 1.80 m. A closed gate
-sits on the +X sideline. Fabric is a diamond of flat wires, not a passage.
+Posts sit 0.45 m outside the slab. Baselines are 3.05 m tall and sidelines
+are 1.80 m. A closed gate sits on the +X sideline. Fabric is a diamond of
+flat wires, not a passage.
 """
 
 import math
@@ -11,8 +12,8 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from _common import Asset, register, lod_pick
 
-# Slab is x ±6, z ±11. Posts sit 0.45 m outside that edge.
-X = 6.45
+# Slab is x ±7.5, z ±11. Posts sit 0.45 m outside that edge.
+X = 7.95
 Z = 11.45
 
 
@@ -71,7 +72,7 @@ def create():
     a = Asset(
         "CourtFence",
         "Park",
-        "Perimeter for the 22 x 12 m court. Same pivot as Court. Baselines 3.05 m, sidelines 1.80 m, closed gate on +X.",
+        "Perimeter for the 22 x 15 m court. Same pivot as Court. Posts 0.45 m outside the slab. Baselines 3.05 m, sidelines 1.80 m, closed gate on +X.",
     )
     a.climbable = True
     a.climb_note = "Posts, rails, and a wire-thick fabric slab. The diamonds are not a passage. The gate is closed."
