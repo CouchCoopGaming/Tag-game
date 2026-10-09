@@ -1,15 +1,16 @@
 # C1 assignment
 
-Branch `cursor/tag-movement-exits`, cut from `cursor/tag-movement` at `1d54919b`. Draft only. The lead merges with `git merge` after a measured pass.
+Branch `cursor/tag-movement-exits`. Draft only. The lead merges with `git merge` after a measured pass.
 
 ## Clips
 
-Vault, climb, mantle, and every exit that is not a landing or a roll.
+Exits, the played climb, and the played wall run. C1 is already re-keying the played climb at 3.74 cm and the wall run at 4.97 cm. Landings and rolls stay with E.
 
 | Clip | Hip-sit fails | Pose |
 |---|---|---|
 | vault (played) | 0, plant and land | 0 (0.42) fails 0 |
 | climb | 0, cruise | 3.74 Spine\|UpperLeg_L fails 12 |
+| wall | 0, cruise | 4.97 Chest\|UpperArm_R fails 16 |
 | exit-WallRun | 0 | 0 (0.36) |
 | exit-WallJump | 0, airborne | 0 (0.42) |
 | exit-ClimbTopOut | 0 | 0 (0.36) |
@@ -25,9 +26,9 @@ Vault, climb, mantle, and every exit that is not a landing or a roll.
 | exit-GrappleRelease | 0, airborne | 0 (0.23) |
 | exit-TagBackEnd | 0, airborne | world 0.86 fails 3 |
 
-Open work is the played climb pose, exit-Punch, exit-Lunge, and exit-TagBackEnd. The played vault already passes: plant back 11.8 cm, knee 61.9°, drop 10 cm; land at t=0.4, back 10.2 cm, knee 79.9°, drop 20 cm. `exit-Vault` is the recovery. The played vault stays `MantlePose.Cleared`. The eight sat recoveries stay at pose 0.36 cm.
+Open work is the played climb at 3.74 cm, the wall run at 4.97 cm, exit-Punch, exit-Lunge, and exit-TagBackEnd. The played vault already passes. `exit-ClimbTopOut` is the folded plant. The other sat recoveries stay at pose 0.36 cm.
 
-Wall, slide, idle, loco, sprint, punch, zip, and pad stay on the lead branch. Landings and rolls stay on `cursor/tag-movement-evasion`.
+Slide, idle, loco, sprint, punch, zip, and pad stay on the lead branch. The lead cleared zip, idle, loco, and sprint. Landings and rolls stay on `cursor/tag-movement-evasion`.
 
 ## Target shapes
 
