@@ -484,15 +484,32 @@ def _dress_storefront(g, cols, axis, origin, inward, span, profile, style, lod):
     _col_box(cols, "Col_SignBack", _c, (back_w - 0.08, 0.82, 0.018) if axis == "z" else (0.018, 0.82, back_w - 0.08))
     _c, _s = _box_ax(g, axis, 0.0, 2.98, sign_n, sign_w, 0.74, 0.048, spec["sign_mat"])
     _col_box(cols, "Col_Sign", _c, (sign_w - 0.08, 0.64, 0.030) if axis == "z" else (0.030, 0.64, sign_w - 0.08))
-    if lod == 0 and profile.get("sign"):
-        yaw = 0.0 if axis == "z" else (90.0 if inward < 0.0 else -90.0)
-        text_n = _street(origin, inward, 0.255)
-        loc = (0.0, 2.98, text_n) if axis == "z" else (text_n, 2.98, 0.0)
-        g.text(profile["sign"], loc, 0.62, spec["text_mat"], extrude=0.006, yaw=yaw)
+    _sign_faces(g, profile, spec, axis, origin, inward)
     _awning_fabric(
         g, cols, axis, origin, inward, -half + 0.02, half - 0.02, profile["awning"], lod,
         scallops=profile.get("scallops", 8),
     )
+
+
+def _sign_faces(g, profile, spec, axis, origin, inward):
+    """Street sheet and alley sheet. Both are positive size and face outward.
+
+    The alley sheet is yawed 180 from the street sheet so the word reads
+    from inside the shop as well. Every LOD that dresses this face gets both.
+    """
+    if not profile.get("sign"):
+        return
+    yaw = 0.0 if axis == "z" else (90.0 if inward < 0.0 else -90.0)
+    front_n = _street(origin, inward, 0.255)
+    # Just inside the wall, so the second sheet faces the alley side of this face.
+    back_n = _street(origin, inward, -0.22)
+    if axis == "z":
+        front = (0.0, 2.98, front_n)
+        back = (0.0, 2.98, back_n)
+    else:
+        front = (front_n, 2.98, 0.0)
+        back = (back_n, 2.98, 0.0)
+    g.text_faces(profile["sign"], front, back, 0.62, spec["text_mat"], yaw)
 
 
 def _awning_fabric(g, cols, axis, origin, inward, along0, along1, mat, lod, clip_pos=False, clip_neg=False, scallops=8):
@@ -840,6 +857,14 @@ def build_store(profile):
                 g.box((side_x, wall_h * 0.5, 0), (thick, wall_h, span_z), profile["body"])
                 g.box((-side_x, wall_h * 0.5, 0), (thick, wall_h, span_z), profile["body"])
                 g.box((0, wall_h + 0.08, 0), (sx, 0.10, sz), "Lib_Concrete", uv_scale=0.6)
+                for axis, origin, inward, span, face in (
+                    ("z", front_z, -1.0, span_x, profile["front"]),
+                    ("x", side_x, -1.0, span_z, profile["right"]),
+                    ("x", -side_x, 1.0, span_z, profile["left"]),
+                ):
+                    style = _shop_style(face)
+                    if style:
+                        _sign_faces(g, profile, _SHOP[style], axis, origin, inward)
                 a.end()
                 continue
             cols = []

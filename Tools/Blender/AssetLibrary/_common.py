@@ -174,6 +174,28 @@ def blender_to_unity(x, y, z):
     return (x, z, -y)
 
 
+def _yaw_axis(yaw):
+    """Where a text sheet's +Z points after `Geo.text` yaws it. +Z is the face."""
+    a = math.radians(yaw)
+    return (math.sin(a), 0.0, math.cos(a))
+
+
+def _aim_code(yaw):
+    """1 +X, 2 -X, 5 +Z, 6 -Z. The sign fix reads this after normal recalc."""
+    x, _y, z = _yaw_axis(yaw)
+    if abs(x) >= abs(z):
+        return 1 if x > 0.0 else 2
+    return 5 if z > 0.0 else 6
+
+
+_AIM = {
+    1: (1.0, 0.0, 0.0),
+    2: (-1.0, 0.0, 0.0),
+    5: (0.0, 0.0, 1.0),
+    6: (0.0, 0.0, -1.0),
+}
+
+
 def _rotl64(x, r):
     x &= 0xFFFFFFFFFFFFFFFF
     return ((x << r) | (x >> (64 - r))) & 0xFFFFFFFFFFFFFFFF
@@ -663,6 +685,66 @@ class Geo:
         bmesh.ops.recalc_face_normals(out, faces=out.faces)
         self._ingest(out, mat, 1.0)
 
+    def text_faces(self, body, front, back, size, mat, yaw):
+        """Two outward sheets, both built at positive size.
+
+        `yaw` faces the street. The alley sheet is the same letters turned
+        180 degrees, so the word reads from that side too. Turning only the
+        normal would keep the street silhouette, which is mirrored from the
+        alley. The turn is a rotation. Size stays positive.
+        """
+        self._text_sheet(body, front, size, mat, yaw)
+        self._text_sheet(body, back, size, mat, yaw + 180.0)
+
+    def _text_sheet(self, body, location, size, mat, yaw):
+        """One open sheet at positive size. Only faces whose normal points along `yaw` are kept."""
+        curve = bpy.data.curves.new("LibText", "FONT")
+        curve.body = body
+        curve.align_x = "CENTER"
+        curve.align_y = "CENTER"
+        curve.size = size
+        curve.extrude = 0.001
+        curve.resolution_u = 2
+        obj = bpy.data.objects.new("LibText", curve)
+        bpy.context.scene.collection.objects.link(obj)
+        bpy.context.view_layer.objects.active = obj
+        obj.select_set(True)
+        bpy.ops.object.convert(target="MESH")
+        me = obj.data
+        me.calc_loop_triangles()
+        aim = _yaw_axis(yaw)
+        a = math.radians(yaw)
+        ca, sa = math.cos(a), math.sin(a)
+        bm = bmesh.new()
+        kept = 0
+        for tri in me.loop_triangles:
+            nx, ny, nz = tri.normal
+            nrx = nx * ca + nz * sa
+            nrz = -nx * sa + nz * ca
+            if nrx * aim[0] + nrz * aim[2] <= 0.5:
+                continue
+            verts = []
+            for i in tri.vertices:
+                x, y, z = me.vertices[i].co.x, me.vertices[i].co.y, me.vertices[i].co.z
+                xr = x * ca + z * sa
+                zr = -x * sa + z * ca
+                verts.append((xr + location[0], y + location[1], zr + location[2]))
+            bm.faces.new([bm.verts.new(unity_to_blender(*v)) for v in verts])
+            kept += 1
+        bpy.data.objects.remove(obj, do_unlink=True)
+        bpy.data.meshes.remove(me)
+        if kept == 0:
+            bm.free()
+            return
+        layer = self.bm.faces.layers.int.get("sign_aim")
+        if layer is None:
+            layer = self.bm.faces.layers.int.new("sign_aim")
+        code = _aim_code(yaw)
+        count = len(self.bm.faces)
+        self._ingest(bm, mat, 1.0)
+        for face in list(self.bm.faces)[count:]:
+            face[layer] = code
+
     def text(self, body, location, size, mat, extrude=0.008, yaw=0.0):
         """Centered text standing in the Unity XY plane, extruded toward +Z, then yawed."""
         curve = bpy.data.curves.new("LibText", "FONT")
@@ -740,6 +822,19 @@ class Geo:
     def prepare(self):
         bmesh.ops.remove_doubles(self.bm, verts=self.bm.verts, dist=0.0004)
         bmesh.ops.recalc_face_normals(self.bm, faces=self.bm.faces)
+        layer = self.bm.faces.layers.int.get("sign_aim")
+        if layer is not None:
+            backwards = []
+            for face in self.bm.faces:
+                code = face[layer]
+                if not code:
+                    continue
+                exp = _AIM[code]
+                normal = blender_to_unity(face.normal.x, face.normal.y, face.normal.z)
+                if normal[0] * exp[0] + normal[1] * exp[1] + normal[2] * exp[2] < 0.0:
+                    backwards.append(face)
+            if backwards:
+                bmesh.ops.reverse_faces(self.bm, faces=backwards)
         for e in self.bm.edges:
             if len(e.link_faces) == 2:
                 e.smooth = e.calc_face_angle(0.0) < math.radians(48)

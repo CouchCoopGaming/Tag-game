@@ -19176,7 +19176,7 @@
     "lods": [
       {
         "lod": 0,
-        "tris": 6336,
+        "tris": 6004,
         "materials": [
           "Lib_Brick",
           "Lib_Concrete",
@@ -19199,7 +19199,7 @@
       },
       {
         "lod": 1,
-        "tris": 4448,
+        "tris": 4732,
         "materials": [
           "Lib_Brick",
           "Lib_Concrete",
@@ -19220,10 +19220,11 @@
       },
       {
         "lod": 2,
-        "tris": 60,
+        "tris": 344,
         "materials": [
           "Lib_Brick",
-          "Lib_Concrete"
+          "Lib_Concrete",
+          "Lib_PaintCream"
         ],
         "mesh": "LOD2",
         "fileID": 736115405485880582
@@ -21409,7 +21410,7 @@
       "LOD1",
       "LOD2"
     ],
-    "slackCm": 0.2,
+    "slackCm": 0.91,
     "license": {
       "spdx": "CC0-1.0",
       "source": "original",
@@ -21440,7 +21441,7 @@
     "lods": [
       {
         "lod": 0,
-        "tris": 3644,
+        "tris": 3516,
         "materials": [
           "Lib_PaintCream",
           "Lib_Brick",
@@ -21462,7 +21463,7 @@
       },
       {
         "lod": 1,
-        "tris": 2668,
+        "tris": 2784,
         "materials": [
           "Lib_PaintCream",
           "Lib_Brick",
@@ -21482,10 +21483,11 @@
       },
       {
         "lod": 2,
-        "tris": 60,
+        "tris": 176,
         "materials": [
           "Lib_PaintCream",
-          "Lib_Concrete"
+          "Lib_Concrete",
+          "Lib_PaintRed"
         ],
         "mesh": "LOD2",
         "fileID": 736115405485880582
@@ -22607,7 +22609,7 @@
       "LOD1",
       "LOD2"
     ],
-    "slackCm": 0.2,
+    "slackCm": 2.4,
     "license": {
       "spdx": "CC0-1.0",
       "source": "original",
@@ -22638,7 +22640,7 @@
     "lods": [
       {
         "lod": 0,
-        "tris": 4856,
+        "tris": 4624,
         "materials": [
           "Lib_PaintWhite",
           "Lib_Concrete",
@@ -22659,7 +22661,7 @@
       },
       {
         "lod": 1,
-        "tris": 3840,
+        "tris": 4048,
         "materials": [
           "Lib_PaintWhite",
           "Lib_Concrete",
@@ -22679,7 +22681,7 @@
       },
       {
         "lod": 2,
-        "tris": 60,
+        "tris": 268,
         "materials": [
           "Lib_PaintWhite",
           "Lib_Concrete"
@@ -24526,7 +24528,7 @@
       "LOD1",
       "LOD2"
     ],
-    "slackCm": 0.2,
+    "slackCm": 2.4,
     "license": {
       "spdx": "CC0-1.0",
       "source": "original",

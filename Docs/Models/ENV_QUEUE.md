@@ -28,6 +28,8 @@ LOD2 is at most 0.6× LOD1. LOD0 and LOD1 of these nine are unchanged: `Alley` 2
 
 `Brick_Door` and `Brick_Window` keep their pass 31 pictures. The quartet also lives in `Docs/AssetStills/pass32/brick_door/` and `pass32/brick_window/` so the names `door` and `window` stay in the folder and are not read as a close-up role. Do not rename those two meshes. `Container_20_Blue` and `Container_20_Green` match the red cage and pass as a material variant of `Container_20`.
 
+MARKET, DINER, and WASH are mesh letters on the store LOD meshes, not `WorldSign` text. Each word is two outward sheets at positive scale on LOD0, LOD1, and LOD2. The street sheet faces the shop. The alley sheet is that same lettering turned 180 degrees, so it reads from inside the shop. It is not a negative scale and not a single sheet seen from the back. `Store_Corner` carries MARKET on +Z and +X, `Store_Diner` carries DINER on +Z, and `Store_Laundromat` carries WASH on +Z and -X. Tris are `Store_Corner` 6004/4732/344, `Store_Diner` 3516/2784/176, `Store_Laundromat` 4624/4048/268. Slack is 0.91 cm, 2.4 cm, and 2.4 cm. Street and alley stills are in `Docs/AssetStills/pass33/`. The `sign` token keeps them off the quartet.
+
 Lead validator at `5f5c4f4`. `1eec03a` was `models-validate assets=132 pass=97 fail=35` / `models-split paperwork=7 geometry=28`. After this cut:
 
 `models-validate assets=132 pass=126 fail=6`
