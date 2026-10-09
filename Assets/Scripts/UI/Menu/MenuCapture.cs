@@ -185,34 +185,45 @@ namespace Tag.Ui.Menu
             return CanvasGrab();
         }
 
+        // Fixed 16:9 grab. The batchmode screen is 640x480, which squeezed the
+        // canvas to about 1660 units wide and cut the join and character cards.
+        public const int GrabW = 1920;
+        public const int GrabH = 1080;
+
         static Texture2D CanvasGrab()
         {
-            int w = UnityEngine.Screen.width;
-            int h = UnityEngine.Screen.height;
-            if (w < 2 || h < 2) return null;
+            int w = GrabW;
+            int h = GrabH;
             var rt = new RenderTexture(w, h, 24, RenderTextureFormat.ARGB32);
             rt.Create();
+            RenderTexture prev = RenderTexture.active;
+            RenderTexture.active = rt;
+            GL.Clear(true, true, new Color(0.02f, 0.04f, 0.08f, 1f));
+            RenderTexture.active = prev;
+
+            // Every live world camera, by depth, each in its own viewport rect.
+            // Rendering Camera.main alone left split panes (and HUD 1) black.
+            Camera[] cams = Camera.allCameras;
+            System.Array.Sort(cams, (x, y) => x.depth.CompareTo(y.depth));
+            bool world = false;
+            for (int i = 0; i < cams.Length; i++)
+            {
+                Camera c = cams[i];
+                if (c == null || !c.isActiveAndEnabled || c.targetTexture != null) continue;
+                c.targetTexture = rt;
+                c.Render();
+                c.targetTexture = null;
+                world = true;
+            }
+
             var camGo = new GameObject("MenuGrabCam");
             var cam = camGo.AddComponent<Camera>();
             cam.enabled = false;
-            cam.clearFlags = CameraClearFlags.SolidColor;
-            cam.backgroundColor = new Color(0.02f, 0.04f, 0.08f, 1f);
-            cam.cullingMask = 0;
+            cam.clearFlags = world ? CameraClearFlags.Depth : CameraClearFlags.Nothing;
             cam.orthographic = true;
             cam.nearClipPlane = 0.01f;
             cam.farClipPlane = 10f;
             cam.targetTexture = rt;
-            Camera main = Camera.main;
-            RenderTexture mainRt = null;
-            if (main != null && main.isActiveAndEnabled && main.targetTexture == null)
-            {
-                mainRt = main.targetTexture;
-                main.targetTexture = rt;
-                main.Render();
-                main.targetTexture = mainRt;
-                // Keep the scene pixels; the UI camera only draws canvases on top.
-                cam.clearFlags = CameraClearFlags.Depth;
-            }
             // Parked far from the world so a full mask only picks up the canvases
             // (code-built UI children often sit on Default, not the UI layer).
             camGo.transform.position = new Vector3(0f, -10000f, 0f);
@@ -227,15 +238,15 @@ namespace Tag.Ui.Menu
                 modes[i] = canvas.renderMode;
                 oldCams[i] = canvas.worldCamera;
                 planes[i] = canvas.planeDistance;
-                if (!canvas.isActiveAndEnabled) continue;
+                if (!canvas.isActiveAndEnabled || !canvas.isRootCanvas) continue;
                 if (canvas.renderMode != RenderMode.ScreenSpaceOverlay && canvas.renderMode != RenderMode.ScreenSpaceCamera)
                     continue;
                 canvas.renderMode = RenderMode.ScreenSpaceCamera;
                 canvas.worldCamera = cam;
                 canvas.planeDistance = 1f;
             }
+            Refresh();
             cam.Render();
-            RenderTexture prev = RenderTexture.active;
             RenderTexture.active = rt;
             var tex = new Texture2D(w, h, TextureFormat.RGBA32, false);
             tex.ReadPixels(new Rect(0f, 0f, w, h), 0, 0);
@@ -248,11 +259,44 @@ namespace Tag.Ui.Menu
                 canvases[i].worldCamera = oldCams[i];
                 canvases[i].planeDistance = planes[i];
             }
+            Canvas.ForceUpdateCanvases();
             cam.targetTexture = null;
-            Object.Destroy(camGo);
+            Kill(camGo);
             rt.Release();
-            Object.Destroy(rt);
+            Kill(rt);
             return tex;
+        }
+
+        /// <summary>
+        /// Rebuild layout and text at the grab size before the one-off render.
+        /// Glyphs are requested first, then every Text is re-dirtied, so no label
+        /// draws with stale font-atlas UVs (blank rows, grey blocks).
+        /// </summary>
+        static void Refresh()
+        {
+            Canvas.ForceUpdateCanvases();
+            Text[] texts = Object.FindObjectsByType<Text>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+            for (int i = 0; i < texts.Length; i++)
+            {
+                Text t = texts[i];
+                if (t == null || t.font == null || string.IsNullOrEmpty(t.text)) continue;
+                int size = t.resizeTextForBestFit ? t.resizeTextMaxSize : t.fontSize;
+                t.font.RequestCharactersInTexture(t.text, size, t.fontStyle);
+                if (t.resizeTextForBestFit && t.resizeTextMinSize != size)
+                    t.font.RequestCharactersInTexture(t.text, t.resizeTextMinSize, t.fontStyle);
+            }
+            for (int i = 0; i < texts.Length; i++)
+            {
+                if (texts[i] != null) texts[i].SetAllDirty();
+            }
+            Canvas.ForceUpdateCanvases();
+        }
+
+        static void Kill(Object o)
+        {
+            if (o == null) return;
+            if (Application.isPlaying) Object.Destroy(o);
+            else Object.DestroyImmediate(o);
         }
 
         static void Finish()

@@ -21,7 +21,7 @@ namespace Tag.Ui.Menu
             {
                 Transform child = root.GetChild(i);
                 if (child != null && child.name == "ComicWipe")
-                    Object.Destroy(child.gameObject);
+                    { if (Application.isPlaying) Object.Destroy(child.gameObject); else Object.DestroyImmediate(child.gameObject); }
             }
         }
 

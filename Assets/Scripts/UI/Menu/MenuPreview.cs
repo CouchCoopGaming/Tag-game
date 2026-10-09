@@ -393,7 +393,7 @@ namespace Tag.Ui.Menu
                 step.transform.localPosition = new Vector3(xs[i], heights[i] * 0.5f, 0f);
                 step.transform.localScale = new Vector3(wide, heights[i], deep);
                 var col = step.GetComponent<Collider>();
-                if (col != null) Destroy(col);
+                if (col != null) { if (Application.isPlaying) Destroy(col); else DestroyImmediate(col); }
                 var rend = step.GetComponent<Renderer>();
                 if (rend != null) rend.sharedMaterial = DummyPrimitiveFactory.MakeMat(paints[i], 0.35f, 0.08f);
                 _step[i] = step.transform;
@@ -403,7 +403,7 @@ namespace Tag.Ui.Menu
                 trim.transform.localPosition = new Vector3(xs[i], heights[i] + 0.025f, 0f);
                 trim.transform.localScale = new Vector3(wide + 0.10f, 0.05f, deep + 0.08f);
                 var trimCol = trim.GetComponent<Collider>();
-                if (trimCol != null) Destroy(trimCol);
+                if (trimCol != null) { if (Application.isPlaying) Destroy(trimCol); else DestroyImmediate(trimCol); }
                 var trimRend = trim.GetComponent<Renderer>();
                 if (trimRend != null)
                     trimRend.sharedMaterial = DummyPrimitiveFactory.MakeMat(new Color(0.98f, 0.94f, 0.82f, 1f), 0.28f, 0.12f);
@@ -415,7 +415,7 @@ namespace Tag.Ui.Menu
                 face.transform.localPosition = new Vector3(xs[i], plateY, deep * 0.5f + 0.72f);
                 face.transform.localScale = new Vector3(wide * 0.46f, plateH, 0.05f);
                 var faceCol = face.GetComponent<Collider>();
-                if (faceCol != null) Destroy(faceCol);
+                if (faceCol != null) { if (Application.isPlaying) Destroy(faceCol); else DestroyImmediate(faceCol); }
                 var faceRend = face.GetComponent<Renderer>();
                 if (faceRend != null)
                     faceRend.sharedMaterial = DummyPrimitiveFactory.MakeMat(new Color(0.98f, 0.96f, 0.90f, 1f), 0.4f, 0.02f);
@@ -438,7 +438,7 @@ namespace Tag.Ui.Menu
                 shade.transform.localPosition = new Vector3(0f, 0.015f, 0f);
                 shade.transform.localScale = new Vector3(1.15f, 0.012f, 0.72f);
                 var shadeCol = shade.GetComponent<Collider>();
-                if (shadeCol != null) Destroy(shadeCol);
+                if (shadeCol != null) { if (Application.isPlaying) Destroy(shadeCol); else DestroyImmediate(shadeCol); }
                 var shadeRend = shade.GetComponent<Renderer>();
                 if (shadeRend != null)
                     shadeRend.sharedMaterial = DummyPrimitiveFactory.MakeMat(new Color(0.05f, 0.05f, 0.08f, 1f), 0.95f, 0f);
@@ -453,7 +453,7 @@ namespace Tag.Ui.Menu
                 float ang = i * 0.55f;
                 bit.transform.localPosition = new Vector3(Mathf.Sin(ang) * 1.6f, 2.4f + (i % 4) * 0.15f, 0.92f + Mathf.Cos(ang) * 0.18f);
                 var col = bit.GetComponent<Collider>();
-                if (col != null) Destroy(col);
+                if (col != null) { if (Application.isPlaying) Destroy(col); else DestroyImmediate(col); }
                 Color paint = i % 3 == 0 ? MenuTheme.Gold : (i % 3 == 1 ? MenuTheme.Seat(0) : MenuTheme.Seat(2));
                 var rend = bit.GetComponent<Renderer>();
                 if (rend != null) rend.sharedMaterial = DummyPrimitiveFactory.MakeMat(paint, 0.2f, 0f);
@@ -704,25 +704,25 @@ namespace Tag.Ui.Menu
             {
                 if (_rt[i] == null) continue;
                 _rt[i].Release();
-                Destroy(_rt[i]);
+                { if (Application.isPlaying) Destroy(_rt[i]); else DestroyImmediate(_rt[i]); }
                 _rt[i] = null;
             }
             if (_podiumRt != null)
             {
                 _podiumRt.Release();
-                Destroy(_podiumRt);
+                { if (Application.isPlaying) Destroy(_podiumRt); else DestroyImmediate(_podiumRt); }
                 _podiumRt = null;
             }
             if (_paradeRt != null)
             {
                 _paradeRt.Release();
-                Destroy(_paradeRt);
+                { if (Application.isPlaying) Destroy(_paradeRt); else DestroyImmediate(_paradeRt); }
                 _paradeRt = null;
             }
             if (_pairRt != null)
             {
                 _pairRt.Release();
-                Destroy(_pairRt);
+                { if (Application.isPlaying) Destroy(_pairRt); else DestroyImmediate(_pairRt); }
                 _pairRt = null;
             }
         }

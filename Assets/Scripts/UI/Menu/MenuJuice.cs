@@ -23,8 +23,15 @@ namespace Tag.Ui.Menu
             if (sw < 28f) sw = 28f;
             RectTransform rt = MenuWidgets.Place(root, "Sweep", -sw, h * 0.22f, sw, h * 0.5f);
             Image img = rt.gameObject.AddComponent<Image>();
-            img.color = new Color(1f, 0.96f, 0.75f, 0.22f);
+            // Soft-edged glint drawn under the label. A flat 22% cream box on
+            // top of the text read as a grey block over the focused label.
+            img.sprite = MenuArt.Soft;
+            img.type = Image.Type.Simple;
+            img.color = new Color(1f, 0.96f, 0.75f, 0.16f);
             img.raycastTarget = false;
+            Transform under = tile.Label != null ? tile.Label.transform : null;
+            if (under != null && under.parent == rt.parent)
+                rt.SetSiblingIndex(under.GetSiblingIndex());
             tile.Sweep = rt;
             tile.SweepSpan = w * 0.55f;
             rt.gameObject.SetActive(false);

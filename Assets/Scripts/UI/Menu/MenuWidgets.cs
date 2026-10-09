@@ -154,6 +154,16 @@ namespace Tag.Ui.Menu
             }
             Band(title, h, titleFromTop, titleH);
             Band(sub, h, detailFromTop, detailH);
+            // A fixed-size label in a band exactly its font size (40 in 40, 30 in 30)
+            // is shorter than the font's line height, and Truncate then drops the
+            // only line: blank option, audio, display and rules rows. Let the line
+            // overflow its band; the band still centres it.
+            // Best-fit labels have the same trap when the band is under the
+            // floor size's line height (80 px rules rows: 34 and 26 px bands).
+            // Pick the largest size that fits the band, never under the floor,
+            // and let it overflow instead of vanishing.
+            FixLine(title, titleH);
+            if (two) FixLine(sub, detailH);
             var tile = rt.gameObject.AddComponent<MenuTile>();
             tile.Plate = plate;
             tile.Stroke = stroke;
@@ -601,6 +611,25 @@ namespace Tag.Ui.Menu
             Vector2 min = rt.offsetMin;
             min.x = left;
             rt.offsetMin = min;
+        }
+
+        const float LineRatio = 1.16f;
+
+        static void FixLine(Text label, float band)
+        {
+            if (label == null) return;
+            if (label.resizeTextForBestFit)
+            {
+                int max = label.resizeTextMaxSize;
+                int min = label.resizeTextMinSize;
+                if (band >= max * LineRatio) return;
+                int size = Mathf.FloorToInt(band / LineRatio);
+                if (size > max) size = max;
+                if (size < min) size = min;
+                label.resizeTextForBestFit = false;
+                label.fontSize = size;
+            }
+            label.verticalOverflow = VerticalWrapMode.Overflow;
         }
 
         static void Band(Text label, float h, float fromTop, float band)

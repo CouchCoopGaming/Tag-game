@@ -123,7 +123,7 @@ namespace Tag.Audio
         {
             if (_voices != null) return;
             _root = new GameObject("AudioVoices");
-            Object.DontDestroyOnLoad(_root);
+            if (Application.isPlaying) Object.DontDestroyOnLoad(_root);
             _voices = new AudioSource[VoiceBudget.Cap];
             for (int i = 0; i < _voices.Length; i++)
             {

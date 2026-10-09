@@ -219,16 +219,30 @@ namespace Tag.Ui.Menu
             if (Instance != null) return Instance;
             var go = new GameObject("MenuHost");
             if (Application.isPlaying) DontDestroyOnLoad(go);
-            return go.AddComponent<MenuHost>();
+            var host = go.AddComponent<MenuHost>();
+            // Awake does not run for AddComponent outside play mode (EditMode
+            // tests, batch tools), so boot the shell by hand there.
+            if (!Application.isPlaying) host.Boot();
+            return host;
         }
+
+        bool _booted;
 
         void Awake()
         {
+            Boot();
+        }
+
+        void Boot()
+        {
+            if (_booted) return;
             if (Instance != null && Instance != this)
             {
-                Destroy(gameObject);
+                if (Application.isPlaying) Destroy(gameObject);
+                else DestroyImmediate(gameObject);
                 return;
             }
+            _booted = true;
             Instance = this;
             if (Application.isPlaying) DontDestroyOnLoad(gameObject);
             MenuVideo.Load();
@@ -1074,12 +1088,26 @@ namespace Tag.Ui.Menu
 
         void ApplyScale()
         {
+            FitAspect();
             float s = UiFit.Current();
             if (_scaler == null || s == _uiScale) return;
             _uiScale = s;
             UiFit.Ref(s, out float w, out float h);
             _scaler.referenceResolution = new Vector2(w, h);
             PlaceGlyphs();
+        }
+
+        /// <summary>
+        /// Narrower than 16:9 (4:3, 16:10, the 640x480 batch screen) the
+        /// half-and-half match shrank the canvas below the 1920-unit layout and
+        /// cut cards at the right edge. Match width there so the layout fits.
+        /// </summary>
+        void FitAspect()
+        {
+            if (_scaler == null) return;
+            float aspect = UnityEngine.Screen.width / (float)Mathf.Max(1, UnityEngine.Screen.height);
+            float want = aspect < (16f / 9f) - 0.01f ? 0f : 0.5f;
+            if (_scaler.matchWidthOrHeight != want) _scaler.matchWidthOrHeight = want;
         }
 
         void PaintFooter()

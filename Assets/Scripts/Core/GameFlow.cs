@@ -64,7 +64,7 @@ namespace Tag.Core
         {
             if (Instance != null && Instance != this) { Destroy(this); return; }
             Instance = this;
-            DontDestroyOnLoad(gameObject);
+            if (Application.isPlaying) DontDestroyOnLoad(gameObject);
             SceneManager.sceneLoaded += OnSceneLoaded;
             LocalPlayerRoster.Load();
             LookSensitivity.Load();

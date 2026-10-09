@@ -278,7 +278,7 @@ namespace Tag.Ui.Menu
         void SweepTick()
         {
             if (Sweep == null) return;
-            if (!_hot)
+            if (!_hot || MenuCapture.Running)
             {
                 HideSweep();
                 return;
