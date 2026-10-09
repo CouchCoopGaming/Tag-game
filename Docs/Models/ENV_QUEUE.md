@@ -6,7 +6,7 @@ A colour or paint sibling uses the base quartet when vertex positions, indices, 
 
 | Branch | Tip | Previous tightened run | This run |
 | --- | --- | --- | --- |
-| #122 | `1eec03a1` | `pass=12/125` paper 91 / geom 22 at `15c0a983` | `models-validate assets=132 pass=97 fail=35` / `models-split paperwork=7 geometry=28` |
+| #122 | `7cee8bbf` | `pass=97/132` paper 7 / geom 28 at `1eec03a1` | `models-validate assets=132 pass=126 fail=6` / `models-split paperwork=5 geometry=1` |
 | #125 | `3040d2e5` | `pass=14/189` paper 136 / geom 39 at `29caae02` | `models-validate assets=189 pass=18 fail=171` / `models-split paperwork=136 geometry=35` |
 | #129 | `30af0ae6` | `pass=27/220` paper 176 / geom 17 at `cf295d9b` | `models-validate assets=220 pass=43 fail=177` / `models-split paperwork=161 geometry=16` |
 
@@ -14,7 +14,7 @@ A colour or paint sibling uses the base quartet when vertex positions, indices, 
 
 ## Passes
 
-#122 (97). Kept from the last grade: WalkUp, WoodFence, WoodFence_Corner, WoodFence_End, WoodFence_Gate, Container_20, Container_20_Blue, Container_20_Green, Rowboat, CourtFence, Gazebo, Road_Junction. New on this tip: Overpass and the pass 31 quartets that already cleared geometry. Buildings: Brick_Corner, Brick_Parapet, ChainFence, ChainGate, FireEscape, House, PicketFence, Store_Diner. Harbor: Boat, Buoy, Cleat, Container_40, Crate, DockRamp, Dock_Corner, FishCrate, FuelDock, Gangway, HarborRail, HarborWarehouse, HarborWater, LifeRing, Lighthouse, LobsterTrap, Mooring, MooringLine, Piling, QuayDavit, Quay_Edge, RopeCoil. Park: Court, Fountain, Hoop, ParkLamp, ParkSign, Pavilion, PicnicTable, Planter, Playground, Pond, PondEdge, Seesaw, Shrub, Tree, Tree_Grate, Tree_Maple. Roads: Asphalt_Patch, Gutter, LaneArrow, Median_Planter, Overpass, RaisedCrosswalk, Road_Cross, Road_Crosswalk, Road_Curve, Road_Straight, Road_T, Sidewalk, StopBar. Showcase: Mannequin. Street: Bench_Wood, BikeRack, Bollard, BusShelter, FireHydrant, LightPost_Double, LightPost_Single, Mailbox, Manhole, NewspaperBox, ParkingMeter, RecyclingBin, Sign_Stop, Sign_Street, StormDrain, TrafficLight, TrashCan_Lidded, TrashCan_Slat. Utility: Barrier, Dumpster, ElectricalBox, Pallet, TrafficCone, UtilityPole, WallAC. Container enamels still print `material-variant of Container_20`.
+#122 (126): every library asset. The six fails are the player Hiers that ride on this branch. `Brick_Door` and `Brick_Window` bind `pass32/brick_door/` and `pass32/brick_window/`. Container enamels still print `material-variant of Container_20`.
 
 #125 (18): `Pickup_FullSize_25`, the three compacts, `Sedan_Mid_A_22` through `_25`, the six `_25` paints, and the four buses. `3040d2e5` cuts bus LOD2 to 900 and 1192.
 
@@ -22,11 +22,9 @@ A colour or paint sibling uses the base quartet when vertex positions, indices, 
 
 ## Buildings (#122)
 
-1. Leave the 97 passes. No existing library FBX changed. Pass 31 is what moved the count. Overpass is the one new mesh that passes, at 360/264/144. Spot-check: overpass, house, and alley quarters are the objects they name.
-2. Cut LOD2 on the six new pieces. Their pass 31 quartets already bind. They fail only `lod2-ratio`: Alley 260/132/108, Subway_Entrance 300/180/132, Driveway 72/48/48, Bleachers 300/216/168, Restroom 208/144/108, Ferry 340/180/120.
-3. The older LOD2 cuts are still open: GasCanopy, Dock_Straight, and FishingBoat are LOD2 equals LOD1. Cabin, Ranch_House, Boathouse, and HarborShed are over 0.6×. The same fail also covers Brick_Wall, Garage, House_Gable, House_Hip, Roof_Parapet, RooftopAC, ShopFront, Store_Corner, Store_Laundromat, Storefront_Glass, WaterTank, HarborCrane, Tree_Palm, and Tree_Pine.
-4. `Brick_Door` and `Brick_Window` have pass 31 files on disk. The checker treats `door` and `window` as close-up role words, so those stills do not bind. Do not reshoot them.
-5. No third cabin. No second road junction. No second walk-up.
+1. Leave the 126 passes. `7cee8bbf` cuts LOD2. Where LOD0 is at most 2000, LOD2 is gone (Alley 260/132, Driveway 72/48, RooftopAC 488/148). Where LOD2 is still required it is under 0.6×: Cabin 4972/1364/792, GasCanopy 2272/1064/120, Ranch_House 2604/2340/296, Dock_Straight 3720/672/336, FishingBoat 2932/1148/260, HarborShed 3296/504/120, Tree_Pine 2932/816/384.
+2. GasCanopy and Tree_Pine rewrote LOD0 index order. Vertex positions, UVs, and the face set are the same, including against #129. That is not a new cage.
+3. No third cabin. No second road junction. No second walk-up. The player Hiers on this branch are #128's work.
 
 ## Vehicles (#125)
 
@@ -43,6 +41,6 @@ A colour or paint sibling uses the base quartet when vertex positions, indices, 
 2. GasCanopy, Dock_Straight, and FishingBoat pass the 0.6× cut on this tip and are not #122's meshes. Leave them unless #122's cut lands here later.
 3. `FireHydrant_Red` passes on `pass32/firehydrant_red_*`. Its cage still does not match `FireHydrant`. Leave that quartet.
 4. `Park/Planter` now has its own pass 32 quartet. It is not `Planter_Street`.
-5. Do not re-import `Car_*`. Do not seal Planter, Tree_Maple, or RooftopAC a second time. This tip already changed those three cages away from #122.
+5. Do not re-import `Car_*`. Do not seal Planter, Tree_Maple, or RooftopAC a second time. #122 `7cee8bbf` cut LOD2 on the shared library. HarborShed and FishingBoat LOD0 hashes still match #122. GasCanopy and Tree_Pine are the same faces with a new index order. Take that LOD2. Do not rebuild the hero.
 
 Restructure-impact count is 7. `Pickup_FullSize_25` is not a redo. See `Docs/Models/LEDGER.md`.
