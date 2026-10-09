@@ -176,8 +176,8 @@ def _prefabs(entries):
     mat_guids = {name: write_unity.guid("mat", name) for name in palette}
     script_guid = write_unity.guid("script", "LibraryPropMeta")
     for entry in entries:
-        write_unity.write_fbx_meta(entry)
-        write_unity.write_prefab(entry, write_unity.guid("fbx", entry["category"], entry["name"]), mat_guids, script_guid)
+        fbx_guid = write_unity.write_fbx_meta(entry)
+        write_unity.write_prefab(entry, fbx_guid, mat_guids, script_guid)
 
 
 def main():

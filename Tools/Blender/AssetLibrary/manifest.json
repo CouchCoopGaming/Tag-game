@@ -908,7 +908,7 @@
   {
     "name": "Cabin",
     "category": "Buildings",
-    "blurb": "Log cabin 4.6 x 3.6 m, walls 2.15 m, ridge at 3.45 m, porch on +Z. Door is closed.",
+    "blurb": "Log cabin 4.6 x 3.6 m, walls 2.15 m, ridge at 3.45 m, porch on +Z. The door is a closed frame-and-panel in the log opening.",
     "size": [
       5.0,
       4.2,
@@ -927,11 +927,11 @@
     "lods": [
       {
         "lod": 0,
-        "tris": 2900,
+        "tris": 2948,
         "materials": [
           "Lib_WoodDark",
           "Lib_Wood",
-          "Lib_Window",
+          "Lib_ShopGlass",
           "Lib_Brass",
           "Lib_Brick",
           "Lib_Concrete",
@@ -942,11 +942,11 @@
       },
       {
         "lod": 1,
-        "tris": 876,
+        "tris": 924,
         "materials": [
           "Lib_WoodDark",
           "Lib_Wood",
-          "Lib_Window",
+          "Lib_ShopGlass",
           "Lib_Roof"
         ],
         "mesh": "LOD1",
@@ -954,7 +954,7 @@
       },
       {
         "lod": 2,
-        "tris": 324,
+        "tris": 372,
         "materials": [
           "Lib_WoodDark",
           "Lib_Wood",
@@ -1959,7 +1959,7 @@
       "LOD1",
       "LOD2"
     ],
-    "slackCm": 0.8,
+    "slackCm": 1.98,
     "fbx": "Assets/Art/Props/Library/Buildings/Cabin.fbx",
     "license": {
       "spdx": "CC0-1.0",
@@ -2774,11 +2774,11 @@
   {
     "name": "Brick_Wall",
     "category": "Buildings",
-    "blurb": "4.00 x 3.20 x 0.30 m brick bay. Exterior is +Z, with a closed door and a window. Butt the ends to Brick_Corner.",
+    "blurb": "4.00 x 3.20 x 0.30 m brick bay. Exterior is +Z. A door and a window sit in 10 cm brick reveals, with one stone lintel and a stone sill. Butt the ends to Brick_Corner.",
     "size": [
       4.1,
       3.2,
-      0.38
+      0.39
     ],
     "min": [
       -2.05,
@@ -2788,45 +2788,45 @@
     "max": [
       2.05,
       3.2,
-      0.19
+      0.2
     ],
     "lods": [
       {
         "lod": 0,
-        "tris": 576,
+        "tris": 684,
         "materials": [
           "Lib_Brick",
+          "Lib_Concrete",
+          "Lib_Wood",
           "Lib_WoodDark",
-          "Lib_PaintCream",
           "Lib_Brass",
-          "Lib_ShopGlass",
-          "Lib_Concrete"
+          "Lib_ShopGlass"
         ],
         "mesh": "LOD0",
         "fileID": -1633821710574564935
       },
       {
         "lod": 1,
-        "tris": 284,
+        "tris": 368,
         "materials": [
           "Lib_Brick",
+          "Lib_Concrete",
+          "Lib_Wood",
           "Lib_WoodDark",
-          "Lib_ShopGlass",
-          "Lib_PaintCream",
-          "Lib_Concrete"
+          "Lib_ShopGlass"
         ],
         "mesh": "LOD1",
         "fileID": -179393741545503174
       },
       {
         "lod": 2,
-        "tris": 156,
+        "tris": 240,
         "materials": [
           "Lib_Brick",
+          "Lib_Concrete",
+          "Lib_Wood",
           "Lib_WoodDark",
-          "Lib_ShopGlass",
-          "Lib_PaintCream",
-          "Lib_Concrete"
+          "Lib_ShopGlass"
         ],
         "mesh": "LOD2",
         "fileID": 736115405485880582
@@ -2894,7 +2894,7 @@
     "climbable": true,
     "vaultable": false,
     "vaultHeight": 0.0,
-    "climbNote": "Both broad faces are cling panels. Exterior is +Z. Collider is Climb_Wall.",
+    "climbNote": "Both broad faces are cling panels. Exterior is +Z. Climb_Wall is still the solid 0.30 m wall, so the 10 cm door recess does not change the cling surface.",
     "vaultNote": "No rail. The cornice is at 3.2 m.",
     "warnings": [],
     "fbxNames": [
@@ -47381,5 +47381,8432 @@
       "url": "",
       "notes": "Procedural mesh built in this repo."
     }
+  },
+  {
+    "name": "Road_Junction",
+    "category": "Roads",
+    "blurb": "10 x 10 m intersection. Inner asphalt is 6 x 6 m at 0.12 m, so Road_Straight butts each edge. Four concrete corner returns carry a 15 cm curb, and each arm has a zebra crosswalk.",
+    "size": [
+      9.98,
+      0.27,
+      9.98
+    ],
+    "min": [
+      -4.99,
+      0.0,
+      -4.99
+    ],
+    "max": [
+      4.99,
+      0.27,
+      4.99
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 396,
+        "materials": [
+          "Lib_Asphalt",
+          "Lib_Concrete",
+          "Lib_PaintWhite"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 396,
+        "materials": [
+          "Lib_Asphalt",
+          "Lib_Concrete",
+          "Lib_PaintWhite"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_Asphalt",
+        "type": "box",
+        "center": [
+          0,
+          0.06,
+          0
+        ],
+        "size": [
+          5.88,
+          0.12,
+          5.88
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Walk_0",
+        "type": "box",
+        "center": [
+          -3.99,
+          0.135,
+          -3.99
+        ],
+        "size": [
+          1.96,
+          0.25,
+          1.96
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Walk_1",
+        "type": "box",
+        "center": [
+          -3.99,
+          0.135,
+          3.99
+        ],
+        "size": [
+          1.96,
+          0.25,
+          1.96
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Walk_2",
+        "type": "box",
+        "center": [
+          3.99,
+          0.135,
+          -3.99
+        ],
+        "size": [
+          1.96,
+          0.25,
+          1.96
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Walk_3",
+        "type": "box",
+        "center": [
+          3.99,
+          0.135,
+          3.99
+        ],
+        "size": [
+          1.96,
+          0.25,
+          1.96
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "climbable": false,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "Flat asphalt and sidewalk. The curb face is 0.27 m from the pivot.",
+    "vaultNote": "Curb is 0.15 m above the road. Not a vault.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1"
+    ],
+    "slackCm": 0.0,
+    "fbx": "Assets/Art/Props/Library/Roads/Road_Junction.fbx"
+  },
+  {
+    "name": "BikeRack_Wave",
+    "category": "StreetFurniture",
+    "blurb": "Serpentine rack, 2.10 m long, 0.84 m to the top tube, 4.2 cm pipe.",
+    "size": [
+      1.88,
+      0.842,
+      0.6
+    ],
+    "min": [
+      -0.94,
+      -0.001,
+      -0.3
+    ],
+    "max": [
+      0.94,
+      0.841,
+      0.3
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 772,
+        "materials": [
+          "Lib_Steel",
+          "Lib_SteelDark"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 396,
+        "materials": [
+          "Lib_Steel",
+          "Lib_SteelDark"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_Up_0",
+        "type": "capsule",
+        "center": [
+          -0.9,
+          0.42,
+          -0.26
+        ],
+        "radius": 0.016,
+        "height": 0.76,
+        "direction": 1
+      },
+      {
+        "name": "Col_Down_0",
+        "type": "capsule",
+        "center": [
+          -0.9,
+          0.42,
+          0.26
+        ],
+        "radius": 0.016,
+        "height": 0.76,
+        "direction": 1
+      },
+      {
+        "name": "Col_Top_0",
+        "type": "capsule",
+        "center": [
+          -0.9,
+          0.82,
+          0.0
+        ],
+        "radius": 0.016,
+        "height": 0.48,
+        "direction": 2
+      },
+      {
+        "name": "Col_FootA_0",
+        "type": "box",
+        "center": [
+          -0.9,
+          0.012,
+          -0.26
+        ],
+        "size": [
+          0.06,
+          0.02,
+          0.06
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_FootB_0",
+        "type": "box",
+        "center": [
+          -0.9,
+          0.012,
+          0.26
+        ],
+        "size": [
+          0.06,
+          0.02,
+          0.06
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Up_1",
+        "type": "capsule",
+        "center": [
+          -0.3,
+          0.42,
+          0.26
+        ],
+        "radius": 0.016,
+        "height": 0.76,
+        "direction": 1
+      },
+      {
+        "name": "Col_Down_1",
+        "type": "capsule",
+        "center": [
+          -0.3,
+          0.42,
+          -0.26
+        ],
+        "radius": 0.016,
+        "height": 0.76,
+        "direction": 1
+      },
+      {
+        "name": "Col_Top_1",
+        "type": "capsule",
+        "center": [
+          -0.3,
+          0.82,
+          0.0
+        ],
+        "radius": 0.016,
+        "height": 0.48,
+        "direction": 2
+      },
+      {
+        "name": "Col_FootA_1",
+        "type": "box",
+        "center": [
+          -0.3,
+          0.012,
+          -0.26
+        ],
+        "size": [
+          0.06,
+          0.02,
+          0.06
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_FootB_1",
+        "type": "box",
+        "center": [
+          -0.3,
+          0.012,
+          0.26
+        ],
+        "size": [
+          0.06,
+          0.02,
+          0.06
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Up_2",
+        "type": "capsule",
+        "center": [
+          0.3,
+          0.42,
+          -0.26
+        ],
+        "radius": 0.016,
+        "height": 0.76,
+        "direction": 1
+      },
+      {
+        "name": "Col_Down_2",
+        "type": "capsule",
+        "center": [
+          0.3,
+          0.42,
+          0.26
+        ],
+        "radius": 0.016,
+        "height": 0.76,
+        "direction": 1
+      },
+      {
+        "name": "Col_Top_2",
+        "type": "capsule",
+        "center": [
+          0.3,
+          0.82,
+          0.0
+        ],
+        "radius": 0.016,
+        "height": 0.48,
+        "direction": 2
+      },
+      {
+        "name": "Col_FootA_2",
+        "type": "box",
+        "center": [
+          0.3,
+          0.012,
+          -0.26
+        ],
+        "size": [
+          0.06,
+          0.02,
+          0.06
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_FootB_2",
+        "type": "box",
+        "center": [
+          0.3,
+          0.012,
+          0.26
+        ],
+        "size": [
+          0.06,
+          0.02,
+          0.06
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Up_3",
+        "type": "capsule",
+        "center": [
+          0.9,
+          0.42,
+          0.26
+        ],
+        "radius": 0.016,
+        "height": 0.76,
+        "direction": 1
+      },
+      {
+        "name": "Col_Down_3",
+        "type": "capsule",
+        "center": [
+          0.9,
+          0.42,
+          -0.26
+        ],
+        "radius": 0.016,
+        "height": 0.76,
+        "direction": 1
+      },
+      {
+        "name": "Col_Top_3",
+        "type": "capsule",
+        "center": [
+          0.9,
+          0.82,
+          0.0
+        ],
+        "radius": 0.016,
+        "height": 0.48,
+        "direction": 2
+      },
+      {
+        "name": "Col_FootA_3",
+        "type": "box",
+        "center": [
+          0.9,
+          0.012,
+          -0.26
+        ],
+        "size": [
+          0.06,
+          0.02,
+          0.06
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_FootB_3",
+        "type": "box",
+        "center": [
+          0.9,
+          0.012,
+          0.26
+        ],
+        "size": [
+          0.06,
+          0.02,
+          0.06
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Run_0",
+        "type": "capsule",
+        "center": [
+          -0.6,
+          0.02,
+          0.26
+        ],
+        "radius": 0.016,
+        "height": 0.52,
+        "direction": 0
+      },
+      {
+        "name": "Col_Run_1",
+        "type": "capsule",
+        "center": [
+          0.0,
+          0.02,
+          -0.26
+        ],
+        "radius": 0.016,
+        "height": 0.52,
+        "direction": 0
+      },
+      {
+        "name": "Col_Run_2",
+        "type": "capsule",
+        "center": [
+          0.6,
+          0.02,
+          0.26
+        ],
+        "radius": 0.016,
+        "height": 0.52,
+        "direction": 0
+      }
+    ],
+    "climbable": false,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "Tube is too thin to cling.",
+    "vaultNote": "Top is 0.84 m and round. Under the vault band.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1"
+    ],
+    "slackCm": 0.81,
+    "fbx": "Assets/Art/Props/Library/StreetFurniture/BikeRack_Wave.fbx"
+  },
+  {
+    "name": "Sedan_Compact_25",
+    "category": "Vehicles",
+    "blurb": "2025 compact sedan. Body 4.66 m long and 1.74 m wide so the mirrors and tires stay inside 4.70 x 1.82 m. Roof 1.415 m. Flush glass, two doors a side.",
+    "size": [
+      1.808,
+      1.412,
+      4.66
+    ],
+    "min": [
+      -0.904,
+      0.0,
+      -2.33
+    ],
+    "max": [
+      0.904,
+      1.412,
+      2.33
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 11955,
+        "materials": [
+          "Lib_PaintRed",
+          "Lib_TintGlass",
+          "Lib_Black",
+          "Lib_SteelDark",
+          "Lib_Headlamp",
+          "Lib_Taillamp",
+          "Lib_Rubber",
+          "Lib_Steel"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 3417,
+        "materials": [
+          "Lib_PaintRed",
+          "Lib_TintGlass",
+          "Lib_Black",
+          "Lib_SteelDark",
+          "Lib_Headlamp",
+          "Lib_Taillamp",
+          "Lib_Rubber",
+          "Lib_Steel"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      },
+      {
+        "lod": 2,
+        "tris": 2400,
+        "materials": [
+          "Lib_PaintRed",
+          "Lib_TintGlass",
+          "Lib_Black",
+          "Lib_SteelDark",
+          "Lib_Headlamp",
+          "Lib_Taillamp",
+          "Lib_Rubber",
+          "Lib_Steel"
+        ],
+        "mesh": "LOD2",
+        "fileID": 736115405485880582
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_Wheel_00",
+        "type": "box",
+        "center": [
+          -0.78633,
+          0.32145,
+          -1.30728
+        ],
+        "size": [
+          0.016,
+          0.308592,
+          0.308592
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Wheel_01",
+        "type": "box",
+        "center": [
+          0.78633,
+          0.32145,
+          -1.30728
+        ],
+        "size": [
+          0.016,
+          0.308592,
+          0.308592
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Wheel_10",
+        "type": "box",
+        "center": [
+          -0.78633,
+          0.32145,
+          1.4283000000000001
+        ],
+        "size": [
+          0.016,
+          0.308592,
+          0.308592
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Wheel_11",
+        "type": "box",
+        "center": [
+          0.78633,
+          0.32145,
+          1.4283000000000001
+        ],
+        "size": [
+          0.016,
+          0.308592,
+          0.308592
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Cabin",
+        "type": "box",
+        "center": [
+          0.0,
+          0.55,
+          0.07051000000000007
+        ],
+        "size": [
+          1.0788,
+          0.46,
+          1.1489436
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Roof",
+        "type": "box",
+        "center": [
+          0.0,
+          1.3247799999999998,
+          -0.18910887657221698
+        ],
+        "size": [
+          0.6264,
+          0.036,
+          0.5638600000000001
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Hood",
+        "type": "box",
+        "center": [
+          0.0,
+          0.6456557,
+          1.6891500000000002
+        ],
+        "size": [
+          0.8004,
+          0.08,
+          0.358876
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Deck",
+        "type": "box",
+        "center": [
+          0.0,
+          0.56,
+          -1.7605207025745586
+        ],
+        "size": [
+          0.8351999999999999,
+          0.14,
+          0.41002509414631777
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "climbable": false,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "Sheet metal. Not a cling wall.",
+    "vaultNote": "Hood and roof are landings, not vault rails.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1",
+      "LOD2"
+    ],
+    "slackCm": 0.0,
+    "fbx": "Assets/Art/Props/Library/Vehicles/Sedan_Compact_25.fbx"
+  },
+  {
+    "name": "Crossover_Compact_25",
+    "category": "Vehicles",
+    "blurb": "2025 compact crossover. Body 4.66 m long and 1.80 m wide so the tires stay inside 4.70 x 1.90 m. Roof 1.681 m. High hatch, dark rocker cladding, flush glass.",
+    "size": [
+      1.891,
+      1.68,
+      4.66
+    ],
+    "min": [
+      -0.946,
+      0.0,
+      -2.33
+    ],
+    "max": [
+      0.946,
+      1.68,
+      2.33
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 11861,
+        "materials": [
+          "Lib_PaintCream",
+          "Lib_TintGlass",
+          "Lib_Black",
+          "Lib_SteelDark",
+          "Lib_Headlamp",
+          "Lib_Taillamp",
+          "Lib_Rubber",
+          "Lib_Steel"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 3325,
+        "materials": [
+          "Lib_PaintCream",
+          "Lib_TintGlass",
+          "Lib_Black",
+          "Lib_SteelDark",
+          "Lib_Headlamp",
+          "Lib_Taillamp",
+          "Lib_Rubber",
+          "Lib_Steel"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      },
+      {
+        "lod": 2,
+        "tris": 2344,
+        "materials": [
+          "Lib_PaintCream",
+          "Lib_TintGlass",
+          "Lib_Black",
+          "Lib_SteelDark",
+          "Lib_Headlamp",
+          "Lib_Taillamp",
+          "Lib_Rubber",
+          "Lib_Steel"
+        ],
+        "mesh": "LOD2",
+        "fileID": 736115405485880582
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_Wheel_00",
+        "type": "box",
+        "center": [
+          -0.8192799999999999,
+          0.36865,
+          -1.2590199999999998
+        ],
+        "size": [
+          0.016,
+          0.35390399999999994,
+          0.35390399999999994
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Wheel_01",
+        "type": "box",
+        "center": [
+          0.8192799999999999,
+          0.36865,
+          -1.2590199999999998
+        ],
+        "size": [
+          0.016,
+          0.35390399999999994,
+          0.35390399999999994
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Wheel_10",
+        "type": "box",
+        "center": [
+          -0.8192799999999999,
+          0.36865,
+          1.441
+        ],
+        "size": [
+          0.016,
+          0.35390399999999994,
+          0.35390399999999994
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Wheel_11",
+        "type": "box",
+        "center": [
+          0.8192799999999999,
+          0.36865,
+          1.441
+        ],
+        "size": [
+          0.016,
+          0.35390399999999994,
+          0.35390399999999994
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Cabin",
+        "type": "box",
+        "center": [
+          0.0,
+          0.55,
+          0.10099000000000014
+        ],
+        "size": [
+          1.116,
+          0.46,
+          1.1340084
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Roof",
+        "type": "box",
+        "center": [
+          0.0,
+          1.59148,
+          -0.8203259182123066
+        ],
+        "size": [
+          0.648,
+          0.036,
+          0.8201600000000001
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Hood",
+        "type": "box",
+        "center": [
+          0.0,
+          0.8696662,
+          1.5755000000000001
+        ],
+        "size": [
+          0.8280000000000001,
+          0.08,
+          0.42252
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Deck",
+        "type": "box",
+        "center": [
+          0.0,
+          0.56,
+          -2.038500284752122
+        ],
+        "size": [
+          0.864,
+          0.14,
+          0.2098797949784724
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "climbable": false,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "Sheet metal. Not a cling wall.",
+    "vaultNote": "Hood and roof are landings, not vault rails.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1",
+      "LOD2"
+    ],
+    "slackCm": 0.0,
+    "fbx": "Assets/Art/Props/Library/Vehicles/Crossover_Compact_25.fbx"
+  },
+  {
+    "name": "Bus_City40",
+    "category": "Vehicles",
+    "blurb": "Low-floor city bus, 12.50 m over bumpers, 2.59 m wide, roof unit 3.20 m. Cream body, blue skirt, curb-side doors.",
+    "size": [
+      2.641,
+      3.2,
+      12.503
+    ],
+    "min": [
+      -1.32,
+      0.0,
+      -6.251
+    ],
+    "max": [
+      1.32,
+      3.2,
+      6.251
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 3548,
+        "materials": [
+          "Lib_SteelDark",
+          "Lib_PaintCream",
+          "Lib_SignalAmber",
+          "Lib_Taillamp",
+          "Lib_PaintBlue",
+          "Lib_Black",
+          "Lib_TintGlass",
+          "Lib_Interior",
+          "Lib_WindowLit",
+          "Lib_Headlamp",
+          "Lib_Rubber",
+          "Lib_Steel"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 1504,
+        "materials": [
+          "Lib_SteelDark",
+          "Lib_PaintCream",
+          "Lib_SignalAmber",
+          "Lib_Taillamp",
+          "Lib_PaintBlue",
+          "Lib_Black",
+          "Lib_TintGlass",
+          "Lib_Interior",
+          "Lib_WindowLit",
+          "Lib_Headlamp",
+          "Lib_Rubber",
+          "Lib_Steel"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      },
+      {
+        "lod": 2,
+        "tris": 1280,
+        "materials": [
+          "Lib_SteelDark",
+          "Lib_PaintCream",
+          "Lib_SignalAmber",
+          "Lib_Taillamp",
+          "Lib_PaintBlue",
+          "Lib_Black",
+          "Lib_TintGlass",
+          "Lib_Interior",
+          "Lib_WindowLit",
+          "Lib_Headlamp",
+          "Lib_Rubber",
+          "Lib_Steel"
+        ],
+        "mesh": "LOD2",
+        "fileID": 736115405485880582
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_Floor_0",
+        "type": "box",
+        "center": [
+          0.0,
+          0.3156,
+          0.0
+        ],
+        "size": [
+          0.7,
+          0.028,
+          11.8028
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Roof_0",
+        "type": "box",
+        "center": [
+          0.0,
+          2.9953999999999996,
+          0.0
+        ],
+        "size": [
+          2.4147999999999996,
+          0.054,
+          11.9668
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_RoofUnit",
+        "type": "box",
+        "center": [
+          0.0,
+          3.1144,
+          -2.7876999999999987
+        ],
+        "size": [
+          1.514,
+          0.13600000000000015,
+          3.014
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Skirt_0_0",
+        "type": "box",
+        "center": [
+          -1.2704,
+          0.64,
+          -4.914174999999999
+        ],
+        "size": [
+          0.014000000000000005,
+          0.8039999999999999,
+          2.2184500000000007
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Skirt_0_1",
+        "type": "box",
+        "center": [
+          -1.2704,
+          0.64,
+          0.415925000000001
+        ],
+        "size": [
+          0.014000000000000005,
+          0.8039999999999999,
+          5.97275
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Skirt_0_2",
+        "type": "box",
+        "center": [
+          -1.2704,
+          0.64,
+          5.3301
+        ],
+        "size": [
+          0.014000000000000005,
+          0.8039999999999999,
+          1.3865999999999992
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Belt_0_0",
+        "type": "box",
+        "center": [
+          -1.2704,
+          1.16,
+          0.0
+        ],
+        "size": [
+          0.014000000000000005,
+          0.164,
+          12.0468
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Pillar_0_0",
+        "type": "box",
+        "center": [
+          -1.2704,
+          1.82,
+          -5.9364
+        ],
+        "size": [
+          0.014000000000000005,
+          0.964,
+          0.054
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Pillar_0_1",
+        "type": "box",
+        "center": [
+          -1.2704,
+          1.82,
+          -4.6564
+        ],
+        "size": [
+          0.014000000000000005,
+          0.964,
+          0.054
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Pillar_0_2",
+        "type": "box",
+        "center": [
+          -1.2704,
+          1.82,
+          -3.3763999999999994
+        ],
+        "size": [
+          0.014000000000000005,
+          0.964,
+          0.054
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Pillar_0_3",
+        "type": "box",
+        "center": [
+          -1.2704,
+          1.82,
+          -2.096399999999999
+        ],
+        "size": [
+          0.014000000000000005,
+          0.964,
+          0.054
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Pillar_0_4",
+        "type": "box",
+        "center": [
+          -1.2704,
+          1.82,
+          -0.816399999999999
+        ],
+        "size": [
+          0.014000000000000005,
+          0.964,
+          0.054
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Pillar_0_5",
+        "type": "box",
+        "center": [
+          -1.2704,
+          1.82,
+          0.46360000000000096
+        ],
+        "size": [
+          0.014000000000000005,
+          0.964,
+          0.054
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Pillar_0_6",
+        "type": "box",
+        "center": [
+          -1.2704,
+          1.82,
+          1.743600000000001
+        ],
+        "size": [
+          0.014000000000000005,
+          0.964,
+          0.054
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Pillar_0_7",
+        "type": "box",
+        "center": [
+          -1.2704,
+          1.82,
+          3.023600000000001
+        ],
+        "size": [
+          0.014000000000000005,
+          0.964,
+          0.054
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Pillar_0_8",
+        "type": "box",
+        "center": [
+          -1.2704,
+          1.82,
+          4.303600000000001
+        ],
+        "size": [
+          0.014000000000000005,
+          0.964,
+          0.054
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Header_0_0",
+        "type": "box",
+        "center": [
+          -1.2704,
+          2.7,
+          0.0
+        ],
+        "size": [
+          0.014000000000000005,
+          0.644,
+          12.0468
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Skirt_1_0",
+        "type": "box",
+        "center": [
+          1.2704,
+          0.64,
+          -4.914174999999999
+        ],
+        "size": [
+          0.014000000000000005,
+          0.8039999999999999,
+          2.2184500000000007
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Skirt_1_1",
+        "type": "box",
+        "center": [
+          1.2704,
+          0.64,
+          -1.0192249999999992
+        ],
+        "size": [
+          0.014000000000000005,
+          0.8039999999999999,
+          3.102449999999999
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Skirt_1_2",
+        "type": "box",
+        "center": [
+          1.2704,
+          0.64,
+          2.3916500000000003
+        ],
+        "size": [
+          0.014000000000000005,
+          0.8039999999999999,
+          2.0213000000000005
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Skirt_1_3",
+        "type": "box",
+        "center": [
+          1.2704,
+          0.64,
+          4.6588
+        ],
+        "size": [
+          0.014000000000000005,
+          0.8039999999999999,
+          0.044000000000000074
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Skirt_1_4",
+        "type": "box",
+        "center": [
+          1.2704,
+          0.64,
+          5.7766
+        ],
+        "size": [
+          0.014000000000000005,
+          0.8039999999999999,
+          0.49359999999999943
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Belt_1_0",
+        "type": "box",
+        "center": [
+          1.2704,
+          1.16,
+          0.0
+        ],
+        "size": [
+          0.014000000000000005,
+          0.164,
+          12.0468
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Pillar_1_0",
+        "type": "box",
+        "center": [
+          1.2704,
+          1.82,
+          -5.9364
+        ],
+        "size": [
+          0.014000000000000005,
+          0.964,
+          0.054
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Pillar_1_1",
+        "type": "box",
+        "center": [
+          1.2704,
+          1.82,
+          -4.6564
+        ],
+        "size": [
+          0.014000000000000005,
+          0.964,
+          0.054
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Pillar_1_2",
+        "type": "box",
+        "center": [
+          1.2704,
+          1.82,
+          -3.3763999999999994
+        ],
+        "size": [
+          0.014000000000000005,
+          0.964,
+          0.054
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Pillar_1_3",
+        "type": "box",
+        "center": [
+          1.2704,
+          1.82,
+          -2.096399999999999
+        ],
+        "size": [
+          0.014000000000000005,
+          0.964,
+          0.054
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Pillar_1_4",
+        "type": "box",
+        "center": [
+          1.2704,
+          1.82,
+          -0.816399999999999
+        ],
+        "size": [
+          0.014000000000000005,
+          0.964,
+          0.054
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Pillar_1_5",
+        "type": "box",
+        "center": [
+          1.2704,
+          1.82,
+          1.408
+        ],
+        "size": [
+          0.014000000000000005,
+          0.964,
+          0.054
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Pillar_1_6",
+        "type": "box",
+        "center": [
+          1.2704,
+          1.82,
+          2.6879999999999997
+        ],
+        "size": [
+          0.014000000000000005,
+          0.964,
+          0.054
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Door_0_0",
+        "type": "box",
+        "center": [
+          1.2704,
+          0.7,
+          4.901050000000001
+        ],
+        "size": [
+          0.014000000000000005,
+          0.604,
+          0.3664999999999999
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Door_0_1",
+        "type": "box",
+        "center": [
+          1.2704,
+          0.7,
+          5.30955
+        ],
+        "size": [
+          0.014000000000000005,
+          0.604,
+          0.3664999999999999
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Door_1_0",
+        "type": "box",
+        "center": [
+          1.2704,
+          0.7,
+          0.7522500000000001
+        ],
+        "size": [
+          0.014000000000000005,
+          0.604,
+          0.3665
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Door_1_1",
+        "type": "box",
+        "center": [
+          1.2704,
+          0.7,
+          1.16075
+        ],
+        "size": [
+          0.014000000000000005,
+          0.604,
+          0.3665
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Header_1_0",
+        "type": "box",
+        "center": [
+          1.2704,
+          2.7,
+          0.0
+        ],
+        "size": [
+          0.014000000000000005,
+          0.644,
+          12.0468
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_NoseSill",
+        "type": "box",
+        "center": [
+          0.0,
+          0.52,
+          6.096399999999999
+        ],
+        "size": [
+          1.5,
+          0.56,
+          0.014
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_NoseL",
+        "type": "box",
+        "center": [
+          -1.1354,
+          1.78,
+          6.096399999999999
+        ],
+        "size": [
+          0.24400000000000002,
+          1.464,
+          0.014000000000000005
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_NoseR",
+        "type": "box",
+        "center": [
+          1.1354,
+          1.78,
+          6.096399999999999
+        ],
+        "size": [
+          0.24400000000000002,
+          1.464,
+          0.014000000000000005
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Dest",
+        "type": "box",
+        "center": [
+          0.0,
+          2.62,
+          6.091399999999999
+        ],
+        "size": [
+          1.664,
+          0.30400000000000005,
+          0.024
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_TailL",
+        "type": "box",
+        "center": [
+          -1.1154,
+          1.6,
+          -6.096399999999999
+        ],
+        "size": [
+          0.28400000000000003,
+          2.364,
+          0.014000000000000005
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_TailR",
+        "type": "box",
+        "center": [
+          1.1154,
+          1.6,
+          -6.096399999999999
+        ],
+        "size": [
+          0.28400000000000003,
+          2.364,
+          0.014000000000000005
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_TailHead",
+        "type": "box",
+        "center": [
+          0.0,
+          2.62,
+          -6.096399999999999
+        ],
+        "size": [
+          1.564,
+          0.42400000000000004,
+          0.014000000000000005
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_TailSill",
+        "type": "box",
+        "center": [
+          0.0,
+          1.62,
+          -6.096399999999999
+        ],
+        "size": [
+          1.564,
+          0.124,
+          0.014000000000000005
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Engine",
+        "type": "box",
+        "center": [
+          0.0,
+          0.92,
+          -6.096399999999999
+        ],
+        "size": [
+          1.314,
+          1.014,
+          0.014000000000000005
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Wheel_0_0",
+        "type": "box",
+        "center": [
+          -1.0028999999999997,
+          0.49924999999999997,
+          -3.1876999999999986
+        ],
+        "size": [
+          0.016,
+          0.429355,
+          0.429355
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Wheel_0_1",
+        "type": "box",
+        "center": [
+          1.0028999999999997,
+          0.49924999999999997,
+          -3.1876999999999986
+        ],
+        "size": [
+          0.016,
+          0.429355,
+          0.429355
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Wheel_0_2",
+        "type": "box",
+        "center": [
+          -0.6578999999999997,
+          0.49924999999999997,
+          -3.1876999999999986
+        ],
+        "size": [
+          0.016,
+          0.429355,
+          0.429355
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Wheel_0_3",
+        "type": "box",
+        "center": [
+          0.6578999999999997,
+          0.49924999999999997,
+          -3.1876999999999986
+        ],
+        "size": [
+          0.016,
+          0.429355,
+          0.429355
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Wheel_1_0",
+        "type": "box",
+        "center": [
+          -1.0028999999999997,
+          0.49924999999999997,
+          4.019550000000001
+        ],
+        "size": [
+          0.016,
+          0.429355,
+          0.429355
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Wheel_1_1",
+        "type": "box",
+        "center": [
+          1.0028999999999997,
+          0.49924999999999997,
+          4.019550000000001
+        ],
+        "size": [
+          0.016,
+          0.429355,
+          0.429355
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "climbable": true,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "Roof and roof unit. Sheet metal, not a cling wall.",
+    "vaultNote": "The skirt is a step. The roof is the landing.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1",
+      "LOD2"
+    ],
+    "slackCm": 0.0,
+    "fbx": "Assets/Art/Props/Library/Vehicles/Bus_City40.fbx"
+  },
+  {
+    "name": "Bus_City40_Blue",
+    "category": "Vehicles",
+    "blurb": "Low-floor city bus, 12.50 m over bumpers, 2.59 m wide, roof unit 3.20 m. Blue body, white skirt, curb-side doors.",
+    "size": [
+      2.641,
+      3.2,
+      12.503
+    ],
+    "min": [
+      -1.32,
+      0.0,
+      -6.251
+    ],
+    "max": [
+      1.32,
+      3.2,
+      6.251
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 3548,
+        "materials": [
+          "Lib_SteelDark",
+          "Lib_PaintBlue",
+          "Lib_SignalAmber",
+          "Lib_Taillamp",
+          "Lib_PaintWhite",
+          "Lib_Black",
+          "Lib_TintGlass",
+          "Lib_Interior",
+          "Lib_WindowLit",
+          "Lib_Headlamp",
+          "Lib_Rubber",
+          "Lib_Steel"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 1504,
+        "materials": [
+          "Lib_SteelDark",
+          "Lib_PaintBlue",
+          "Lib_SignalAmber",
+          "Lib_Taillamp",
+          "Lib_PaintWhite",
+          "Lib_Black",
+          "Lib_TintGlass",
+          "Lib_Interior",
+          "Lib_WindowLit",
+          "Lib_Headlamp",
+          "Lib_Rubber",
+          "Lib_Steel"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      },
+      {
+        "lod": 2,
+        "tris": 1280,
+        "materials": [
+          "Lib_SteelDark",
+          "Lib_PaintBlue",
+          "Lib_SignalAmber",
+          "Lib_Taillamp",
+          "Lib_PaintWhite",
+          "Lib_Black",
+          "Lib_TintGlass",
+          "Lib_Interior",
+          "Lib_WindowLit",
+          "Lib_Headlamp",
+          "Lib_Rubber",
+          "Lib_Steel"
+        ],
+        "mesh": "LOD2",
+        "fileID": 736115405485880582
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_Floor_0",
+        "type": "box",
+        "center": [
+          0.0,
+          0.3156,
+          0.0
+        ],
+        "size": [
+          0.7,
+          0.028,
+          11.8028
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Roof_0",
+        "type": "box",
+        "center": [
+          0.0,
+          2.9953999999999996,
+          0.0
+        ],
+        "size": [
+          2.4147999999999996,
+          0.054,
+          11.9668
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_RoofUnit",
+        "type": "box",
+        "center": [
+          0.0,
+          3.1144,
+          -2.7876999999999987
+        ],
+        "size": [
+          1.514,
+          0.13600000000000015,
+          3.014
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Skirt_0_0",
+        "type": "box",
+        "center": [
+          -1.2704,
+          0.64,
+          -4.914174999999999
+        ],
+        "size": [
+          0.014000000000000005,
+          0.8039999999999999,
+          2.2184500000000007
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Skirt_0_1",
+        "type": "box",
+        "center": [
+          -1.2704,
+          0.64,
+          0.415925000000001
+        ],
+        "size": [
+          0.014000000000000005,
+          0.8039999999999999,
+          5.97275
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Skirt_0_2",
+        "type": "box",
+        "center": [
+          -1.2704,
+          0.64,
+          5.3301
+        ],
+        "size": [
+          0.014000000000000005,
+          0.8039999999999999,
+          1.3865999999999992
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Belt_0_0",
+        "type": "box",
+        "center": [
+          -1.2704,
+          1.16,
+          0.0
+        ],
+        "size": [
+          0.014000000000000005,
+          0.164,
+          12.0468
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Pillar_0_0",
+        "type": "box",
+        "center": [
+          -1.2704,
+          1.82,
+          -5.9364
+        ],
+        "size": [
+          0.014000000000000005,
+          0.964,
+          0.054
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Pillar_0_1",
+        "type": "box",
+        "center": [
+          -1.2704,
+          1.82,
+          -4.6564
+        ],
+        "size": [
+          0.014000000000000005,
+          0.964,
+          0.054
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Pillar_0_2",
+        "type": "box",
+        "center": [
+          -1.2704,
+          1.82,
+          -3.3763999999999994
+        ],
+        "size": [
+          0.014000000000000005,
+          0.964,
+          0.054
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Pillar_0_3",
+        "type": "box",
+        "center": [
+          -1.2704,
+          1.82,
+          -2.096399999999999
+        ],
+        "size": [
+          0.014000000000000005,
+          0.964,
+          0.054
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Pillar_0_4",
+        "type": "box",
+        "center": [
+          -1.2704,
+          1.82,
+          -0.816399999999999
+        ],
+        "size": [
+          0.014000000000000005,
+          0.964,
+          0.054
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Pillar_0_5",
+        "type": "box",
+        "center": [
+          -1.2704,
+          1.82,
+          0.46360000000000096
+        ],
+        "size": [
+          0.014000000000000005,
+          0.964,
+          0.054
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Pillar_0_6",
+        "type": "box",
+        "center": [
+          -1.2704,
+          1.82,
+          1.743600000000001
+        ],
+        "size": [
+          0.014000000000000005,
+          0.964,
+          0.054
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Pillar_0_7",
+        "type": "box",
+        "center": [
+          -1.2704,
+          1.82,
+          3.023600000000001
+        ],
+        "size": [
+          0.014000000000000005,
+          0.964,
+          0.054
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Pillar_0_8",
+        "type": "box",
+        "center": [
+          -1.2704,
+          1.82,
+          4.303600000000001
+        ],
+        "size": [
+          0.014000000000000005,
+          0.964,
+          0.054
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Header_0_0",
+        "type": "box",
+        "center": [
+          -1.2704,
+          2.7,
+          0.0
+        ],
+        "size": [
+          0.014000000000000005,
+          0.644,
+          12.0468
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Skirt_1_0",
+        "type": "box",
+        "center": [
+          1.2704,
+          0.64,
+          -4.914174999999999
+        ],
+        "size": [
+          0.014000000000000005,
+          0.8039999999999999,
+          2.2184500000000007
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Skirt_1_1",
+        "type": "box",
+        "center": [
+          1.2704,
+          0.64,
+          -1.0192249999999992
+        ],
+        "size": [
+          0.014000000000000005,
+          0.8039999999999999,
+          3.102449999999999
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Skirt_1_2",
+        "type": "box",
+        "center": [
+          1.2704,
+          0.64,
+          2.3916500000000003
+        ],
+        "size": [
+          0.014000000000000005,
+          0.8039999999999999,
+          2.0213000000000005
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Skirt_1_3",
+        "type": "box",
+        "center": [
+          1.2704,
+          0.64,
+          4.6588
+        ],
+        "size": [
+          0.014000000000000005,
+          0.8039999999999999,
+          0.044000000000000074
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Skirt_1_4",
+        "type": "box",
+        "center": [
+          1.2704,
+          0.64,
+          5.7766
+        ],
+        "size": [
+          0.014000000000000005,
+          0.8039999999999999,
+          0.49359999999999943
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Belt_1_0",
+        "type": "box",
+        "center": [
+          1.2704,
+          1.16,
+          0.0
+        ],
+        "size": [
+          0.014000000000000005,
+          0.164,
+          12.0468
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Pillar_1_0",
+        "type": "box",
+        "center": [
+          1.2704,
+          1.82,
+          -5.9364
+        ],
+        "size": [
+          0.014000000000000005,
+          0.964,
+          0.054
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Pillar_1_1",
+        "type": "box",
+        "center": [
+          1.2704,
+          1.82,
+          -4.6564
+        ],
+        "size": [
+          0.014000000000000005,
+          0.964,
+          0.054
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Pillar_1_2",
+        "type": "box",
+        "center": [
+          1.2704,
+          1.82,
+          -3.3763999999999994
+        ],
+        "size": [
+          0.014000000000000005,
+          0.964,
+          0.054
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Pillar_1_3",
+        "type": "box",
+        "center": [
+          1.2704,
+          1.82,
+          -2.096399999999999
+        ],
+        "size": [
+          0.014000000000000005,
+          0.964,
+          0.054
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Pillar_1_4",
+        "type": "box",
+        "center": [
+          1.2704,
+          1.82,
+          -0.816399999999999
+        ],
+        "size": [
+          0.014000000000000005,
+          0.964,
+          0.054
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Pillar_1_5",
+        "type": "box",
+        "center": [
+          1.2704,
+          1.82,
+          1.408
+        ],
+        "size": [
+          0.014000000000000005,
+          0.964,
+          0.054
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Pillar_1_6",
+        "type": "box",
+        "center": [
+          1.2704,
+          1.82,
+          2.6879999999999997
+        ],
+        "size": [
+          0.014000000000000005,
+          0.964,
+          0.054
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Door_0_0",
+        "type": "box",
+        "center": [
+          1.2704,
+          0.7,
+          4.901050000000001
+        ],
+        "size": [
+          0.014000000000000005,
+          0.604,
+          0.3664999999999999
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Door_0_1",
+        "type": "box",
+        "center": [
+          1.2704,
+          0.7,
+          5.30955
+        ],
+        "size": [
+          0.014000000000000005,
+          0.604,
+          0.3664999999999999
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Door_1_0",
+        "type": "box",
+        "center": [
+          1.2704,
+          0.7,
+          0.7522500000000001
+        ],
+        "size": [
+          0.014000000000000005,
+          0.604,
+          0.3665
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Door_1_1",
+        "type": "box",
+        "center": [
+          1.2704,
+          0.7,
+          1.16075
+        ],
+        "size": [
+          0.014000000000000005,
+          0.604,
+          0.3665
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Header_1_0",
+        "type": "box",
+        "center": [
+          1.2704,
+          2.7,
+          0.0
+        ],
+        "size": [
+          0.014000000000000005,
+          0.644,
+          12.0468
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_NoseSill",
+        "type": "box",
+        "center": [
+          0.0,
+          0.52,
+          6.096399999999999
+        ],
+        "size": [
+          1.5,
+          0.56,
+          0.014
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_NoseL",
+        "type": "box",
+        "center": [
+          -1.1354,
+          1.78,
+          6.096399999999999
+        ],
+        "size": [
+          0.24400000000000002,
+          1.464,
+          0.014000000000000005
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_NoseR",
+        "type": "box",
+        "center": [
+          1.1354,
+          1.78,
+          6.096399999999999
+        ],
+        "size": [
+          0.24400000000000002,
+          1.464,
+          0.014000000000000005
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Dest",
+        "type": "box",
+        "center": [
+          0.0,
+          2.62,
+          6.091399999999999
+        ],
+        "size": [
+          1.664,
+          0.30400000000000005,
+          0.024
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_TailL",
+        "type": "box",
+        "center": [
+          -1.1154,
+          1.6,
+          -6.096399999999999
+        ],
+        "size": [
+          0.28400000000000003,
+          2.364,
+          0.014000000000000005
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_TailR",
+        "type": "box",
+        "center": [
+          1.1154,
+          1.6,
+          -6.096399999999999
+        ],
+        "size": [
+          0.28400000000000003,
+          2.364,
+          0.014000000000000005
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_TailHead",
+        "type": "box",
+        "center": [
+          0.0,
+          2.62,
+          -6.096399999999999
+        ],
+        "size": [
+          1.564,
+          0.42400000000000004,
+          0.014000000000000005
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_TailSill",
+        "type": "box",
+        "center": [
+          0.0,
+          1.62,
+          -6.096399999999999
+        ],
+        "size": [
+          1.564,
+          0.124,
+          0.014000000000000005
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Engine",
+        "type": "box",
+        "center": [
+          0.0,
+          0.92,
+          -6.096399999999999
+        ],
+        "size": [
+          1.314,
+          1.014,
+          0.014000000000000005
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Wheel_0_0",
+        "type": "box",
+        "center": [
+          -1.0028999999999997,
+          0.49924999999999997,
+          -3.1876999999999986
+        ],
+        "size": [
+          0.016,
+          0.429355,
+          0.429355
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Wheel_0_1",
+        "type": "box",
+        "center": [
+          1.0028999999999997,
+          0.49924999999999997,
+          -3.1876999999999986
+        ],
+        "size": [
+          0.016,
+          0.429355,
+          0.429355
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Wheel_0_2",
+        "type": "box",
+        "center": [
+          -0.6578999999999997,
+          0.49924999999999997,
+          -3.1876999999999986
+        ],
+        "size": [
+          0.016,
+          0.429355,
+          0.429355
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Wheel_0_3",
+        "type": "box",
+        "center": [
+          0.6578999999999997,
+          0.49924999999999997,
+          -3.1876999999999986
+        ],
+        "size": [
+          0.016,
+          0.429355,
+          0.429355
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Wheel_1_0",
+        "type": "box",
+        "center": [
+          -1.0028999999999997,
+          0.49924999999999997,
+          4.019550000000001
+        ],
+        "size": [
+          0.016,
+          0.429355,
+          0.429355
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Wheel_1_1",
+        "type": "box",
+        "center": [
+          1.0028999999999997,
+          0.49924999999999997,
+          4.019550000000001
+        ],
+        "size": [
+          0.016,
+          0.429355,
+          0.429355
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "climbable": true,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "Roof and roof unit. Sheet metal, not a cling wall.",
+    "vaultNote": "The skirt is a step. The roof is the landing.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1",
+      "LOD2"
+    ],
+    "slackCm": 0.0,
+    "fbx": "Assets/Art/Props/Library/Vehicles/Bus_City40_Blue.fbx"
+  },
+  {
+    "name": "Bus_City40_Red",
+    "category": "Vehicles",
+    "blurb": "Low-floor city bus, 12.50 m over bumpers, 2.59 m wide, roof unit 3.20 m. White body, red skirt, curb-side doors.",
+    "size": [
+      2.641,
+      3.2,
+      12.503
+    ],
+    "min": [
+      -1.32,
+      0.0,
+      -6.251
+    ],
+    "max": [
+      1.32,
+      3.2,
+      6.251
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 3548,
+        "materials": [
+          "Lib_SteelDark",
+          "Lib_PaintWhite",
+          "Lib_SignalAmber",
+          "Lib_Taillamp",
+          "Lib_PaintRed",
+          "Lib_Black",
+          "Lib_TintGlass",
+          "Lib_Interior",
+          "Lib_WindowLit",
+          "Lib_Headlamp",
+          "Lib_Rubber",
+          "Lib_Steel",
+          "Lib_PaintBlue"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 1504,
+        "materials": [
+          "Lib_SteelDark",
+          "Lib_PaintWhite",
+          "Lib_SignalAmber",
+          "Lib_Taillamp",
+          "Lib_PaintRed",
+          "Lib_Black",
+          "Lib_TintGlass",
+          "Lib_Interior",
+          "Lib_WindowLit",
+          "Lib_Headlamp",
+          "Lib_Rubber",
+          "Lib_Steel"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      },
+      {
+        "lod": 2,
+        "tris": 1280,
+        "materials": [
+          "Lib_SteelDark",
+          "Lib_PaintWhite",
+          "Lib_SignalAmber",
+          "Lib_Taillamp",
+          "Lib_PaintRed",
+          "Lib_Black",
+          "Lib_TintGlass",
+          "Lib_Interior",
+          "Lib_WindowLit",
+          "Lib_Headlamp",
+          "Lib_Rubber",
+          "Lib_Steel"
+        ],
+        "mesh": "LOD2",
+        "fileID": 736115405485880582
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_Floor_0",
+        "type": "box",
+        "center": [
+          0.0,
+          0.3156,
+          0.0
+        ],
+        "size": [
+          0.7,
+          0.028,
+          11.8028
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Roof_0",
+        "type": "box",
+        "center": [
+          0.0,
+          2.9953999999999996,
+          0.0
+        ],
+        "size": [
+          2.4147999999999996,
+          0.054,
+          11.9668
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_RoofUnit",
+        "type": "box",
+        "center": [
+          0.0,
+          3.1144,
+          -2.7876999999999987
+        ],
+        "size": [
+          1.514,
+          0.13600000000000015,
+          3.014
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Skirt_0_0",
+        "type": "box",
+        "center": [
+          -1.2704,
+          0.64,
+          -4.914174999999999
+        ],
+        "size": [
+          0.014000000000000005,
+          0.8039999999999999,
+          2.2184500000000007
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Skirt_0_1",
+        "type": "box",
+        "center": [
+          -1.2704,
+          0.64,
+          0.415925000000001
+        ],
+        "size": [
+          0.014000000000000005,
+          0.8039999999999999,
+          5.97275
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Skirt_0_2",
+        "type": "box",
+        "center": [
+          -1.2704,
+          0.64,
+          5.3301
+        ],
+        "size": [
+          0.014000000000000005,
+          0.8039999999999999,
+          1.3865999999999992
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Belt_0_0",
+        "type": "box",
+        "center": [
+          -1.2704,
+          1.16,
+          0.0
+        ],
+        "size": [
+          0.014000000000000005,
+          0.164,
+          12.0468
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Pillar_0_0",
+        "type": "box",
+        "center": [
+          -1.2704,
+          1.82,
+          -5.9364
+        ],
+        "size": [
+          0.014000000000000005,
+          0.964,
+          0.054
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Pillar_0_1",
+        "type": "box",
+        "center": [
+          -1.2704,
+          1.82,
+          -4.6564
+        ],
+        "size": [
+          0.014000000000000005,
+          0.964,
+          0.054
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Pillar_0_2",
+        "type": "box",
+        "center": [
+          -1.2704,
+          1.82,
+          -3.3763999999999994
+        ],
+        "size": [
+          0.014000000000000005,
+          0.964,
+          0.054
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Pillar_0_3",
+        "type": "box",
+        "center": [
+          -1.2704,
+          1.82,
+          -2.096399999999999
+        ],
+        "size": [
+          0.014000000000000005,
+          0.964,
+          0.054
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Pillar_0_4",
+        "type": "box",
+        "center": [
+          -1.2704,
+          1.82,
+          -0.816399999999999
+        ],
+        "size": [
+          0.014000000000000005,
+          0.964,
+          0.054
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Pillar_0_5",
+        "type": "box",
+        "center": [
+          -1.2704,
+          1.82,
+          0.46360000000000096
+        ],
+        "size": [
+          0.014000000000000005,
+          0.964,
+          0.054
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Pillar_0_6",
+        "type": "box",
+        "center": [
+          -1.2704,
+          1.82,
+          1.743600000000001
+        ],
+        "size": [
+          0.014000000000000005,
+          0.964,
+          0.054
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Pillar_0_7",
+        "type": "box",
+        "center": [
+          -1.2704,
+          1.82,
+          3.023600000000001
+        ],
+        "size": [
+          0.014000000000000005,
+          0.964,
+          0.054
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Pillar_0_8",
+        "type": "box",
+        "center": [
+          -1.2704,
+          1.82,
+          4.303600000000001
+        ],
+        "size": [
+          0.014000000000000005,
+          0.964,
+          0.054
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Header_0_0",
+        "type": "box",
+        "center": [
+          -1.2704,
+          2.7,
+          0.0
+        ],
+        "size": [
+          0.014000000000000005,
+          0.644,
+          12.0468
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Skirt_1_0",
+        "type": "box",
+        "center": [
+          1.2704,
+          0.64,
+          -4.914174999999999
+        ],
+        "size": [
+          0.014000000000000005,
+          0.8039999999999999,
+          2.2184500000000007
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Skirt_1_1",
+        "type": "box",
+        "center": [
+          1.2704,
+          0.64,
+          -1.0192249999999992
+        ],
+        "size": [
+          0.014000000000000005,
+          0.8039999999999999,
+          3.102449999999999
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Skirt_1_2",
+        "type": "box",
+        "center": [
+          1.2704,
+          0.64,
+          2.3916500000000003
+        ],
+        "size": [
+          0.014000000000000005,
+          0.8039999999999999,
+          2.0213000000000005
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Skirt_1_3",
+        "type": "box",
+        "center": [
+          1.2704,
+          0.64,
+          4.6588
+        ],
+        "size": [
+          0.014000000000000005,
+          0.8039999999999999,
+          0.044000000000000074
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Skirt_1_4",
+        "type": "box",
+        "center": [
+          1.2704,
+          0.64,
+          5.7766
+        ],
+        "size": [
+          0.014000000000000005,
+          0.8039999999999999,
+          0.49359999999999943
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Belt_1_0",
+        "type": "box",
+        "center": [
+          1.2704,
+          1.16,
+          0.0
+        ],
+        "size": [
+          0.014000000000000005,
+          0.164,
+          12.0468
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Pillar_1_0",
+        "type": "box",
+        "center": [
+          1.2704,
+          1.82,
+          -5.9364
+        ],
+        "size": [
+          0.014000000000000005,
+          0.964,
+          0.054
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Pillar_1_1",
+        "type": "box",
+        "center": [
+          1.2704,
+          1.82,
+          -4.6564
+        ],
+        "size": [
+          0.014000000000000005,
+          0.964,
+          0.054
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Pillar_1_2",
+        "type": "box",
+        "center": [
+          1.2704,
+          1.82,
+          -3.3763999999999994
+        ],
+        "size": [
+          0.014000000000000005,
+          0.964,
+          0.054
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Pillar_1_3",
+        "type": "box",
+        "center": [
+          1.2704,
+          1.82,
+          -2.096399999999999
+        ],
+        "size": [
+          0.014000000000000005,
+          0.964,
+          0.054
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Pillar_1_4",
+        "type": "box",
+        "center": [
+          1.2704,
+          1.82,
+          -0.816399999999999
+        ],
+        "size": [
+          0.014000000000000005,
+          0.964,
+          0.054
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Pillar_1_5",
+        "type": "box",
+        "center": [
+          1.2704,
+          1.82,
+          1.408
+        ],
+        "size": [
+          0.014000000000000005,
+          0.964,
+          0.054
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Pillar_1_6",
+        "type": "box",
+        "center": [
+          1.2704,
+          1.82,
+          2.6879999999999997
+        ],
+        "size": [
+          0.014000000000000005,
+          0.964,
+          0.054
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Door_0_0",
+        "type": "box",
+        "center": [
+          1.2704,
+          0.7,
+          4.901050000000001
+        ],
+        "size": [
+          0.014000000000000005,
+          0.604,
+          0.3664999999999999
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Door_0_1",
+        "type": "box",
+        "center": [
+          1.2704,
+          0.7,
+          5.30955
+        ],
+        "size": [
+          0.014000000000000005,
+          0.604,
+          0.3664999999999999
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Door_1_0",
+        "type": "box",
+        "center": [
+          1.2704,
+          0.7,
+          0.7522500000000001
+        ],
+        "size": [
+          0.014000000000000005,
+          0.604,
+          0.3665
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Door_1_1",
+        "type": "box",
+        "center": [
+          1.2704,
+          0.7,
+          1.16075
+        ],
+        "size": [
+          0.014000000000000005,
+          0.604,
+          0.3665
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Header_1_0",
+        "type": "box",
+        "center": [
+          1.2704,
+          2.7,
+          0.0
+        ],
+        "size": [
+          0.014000000000000005,
+          0.644,
+          12.0468
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_NoseSill",
+        "type": "box",
+        "center": [
+          0.0,
+          0.52,
+          6.096399999999999
+        ],
+        "size": [
+          1.5,
+          0.56,
+          0.014
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_NoseL",
+        "type": "box",
+        "center": [
+          -1.1354,
+          1.78,
+          6.096399999999999
+        ],
+        "size": [
+          0.24400000000000002,
+          1.464,
+          0.014000000000000005
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_NoseR",
+        "type": "box",
+        "center": [
+          1.1354,
+          1.78,
+          6.096399999999999
+        ],
+        "size": [
+          0.24400000000000002,
+          1.464,
+          0.014000000000000005
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Dest",
+        "type": "box",
+        "center": [
+          0.0,
+          2.62,
+          6.091399999999999
+        ],
+        "size": [
+          1.664,
+          0.30400000000000005,
+          0.024
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_TailL",
+        "type": "box",
+        "center": [
+          -1.1154,
+          1.6,
+          -6.096399999999999
+        ],
+        "size": [
+          0.28400000000000003,
+          2.364,
+          0.014000000000000005
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_TailR",
+        "type": "box",
+        "center": [
+          1.1154,
+          1.6,
+          -6.096399999999999
+        ],
+        "size": [
+          0.28400000000000003,
+          2.364,
+          0.014000000000000005
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_TailHead",
+        "type": "box",
+        "center": [
+          0.0,
+          2.62,
+          -6.096399999999999
+        ],
+        "size": [
+          1.564,
+          0.42400000000000004,
+          0.014000000000000005
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_TailSill",
+        "type": "box",
+        "center": [
+          0.0,
+          1.62,
+          -6.096399999999999
+        ],
+        "size": [
+          1.564,
+          0.124,
+          0.014000000000000005
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Engine",
+        "type": "box",
+        "center": [
+          0.0,
+          0.92,
+          -6.096399999999999
+        ],
+        "size": [
+          1.314,
+          1.014,
+          0.014000000000000005
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Wheel_0_0",
+        "type": "box",
+        "center": [
+          -1.0028999999999997,
+          0.49924999999999997,
+          -3.1876999999999986
+        ],
+        "size": [
+          0.016,
+          0.429355,
+          0.429355
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Wheel_0_1",
+        "type": "box",
+        "center": [
+          1.0028999999999997,
+          0.49924999999999997,
+          -3.1876999999999986
+        ],
+        "size": [
+          0.016,
+          0.429355,
+          0.429355
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Wheel_0_2",
+        "type": "box",
+        "center": [
+          -0.6578999999999997,
+          0.49924999999999997,
+          -3.1876999999999986
+        ],
+        "size": [
+          0.016,
+          0.429355,
+          0.429355
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Wheel_0_3",
+        "type": "box",
+        "center": [
+          0.6578999999999997,
+          0.49924999999999997,
+          -3.1876999999999986
+        ],
+        "size": [
+          0.016,
+          0.429355,
+          0.429355
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Wheel_1_0",
+        "type": "box",
+        "center": [
+          -1.0028999999999997,
+          0.49924999999999997,
+          4.019550000000001
+        ],
+        "size": [
+          0.016,
+          0.429355,
+          0.429355
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Wheel_1_1",
+        "type": "box",
+        "center": [
+          1.0028999999999997,
+          0.49924999999999997,
+          4.019550000000001
+        ],
+        "size": [
+          0.016,
+          0.429355,
+          0.429355
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "climbable": true,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "Roof and roof unit. Sheet metal, not a cling wall.",
+    "vaultNote": "The skirt is a step. The roof is the landing.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1",
+      "LOD2"
+    ],
+    "slackCm": 0.0,
+    "fbx": "Assets/Art/Props/Library/Vehicles/Bus_City40_Red.fbx"
+  },
+  {
+    "name": "Hatch_Compact_25",
+    "category": "Vehicles",
+    "blurb": "2025 compact hatch. Body 4.42 m long and 1.76 m wide so the full shell stays inside 4.50 x 1.85 m. Roof 1.415 m. Fastback tail, flush glass.",
+    "size": [
+      1.818,
+      1.413,
+      4.42
+    ],
+    "min": [
+      -0.909,
+      0.0,
+      -2.21
+    ],
+    "max": [
+      0.909,
+      1.413,
+      2.21
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 11645,
+        "materials": [
+          "Lib_PaintGreen",
+          "Lib_TintGlass",
+          "Lib_Black",
+          "Lib_SteelDark",
+          "Lib_Headlamp",
+          "Lib_Taillamp",
+          "Lib_Rubber",
+          "Lib_Steel"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 3284,
+        "materials": [
+          "Lib_PaintGreen",
+          "Lib_TintGlass",
+          "Lib_Black",
+          "Lib_SteelDark",
+          "Lib_Headlamp",
+          "Lib_Taillamp",
+          "Lib_Rubber",
+          "Lib_Steel"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      },
+      {
+        "lod": 2,
+        "tris": 2294,
+        "materials": [
+          "Lib_PaintGreen",
+          "Lib_TintGlass",
+          "Lib_Black",
+          "Lib_SteelDark",
+          "Lib_Headlamp",
+          "Lib_Taillamp",
+          "Lib_Rubber",
+          "Lib_Steel"
+        ],
+        "mesh": "LOD2",
+        "fileID": 736115405485880582
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_Wheel_00",
+        "type": "box",
+        "center": [
+          -0.78245,
+          0.3226,
+          -1.42728
+        ],
+        "size": [
+          0.016,
+          0.30969599999999997,
+          0.30969599999999997
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Wheel_01",
+        "type": "box",
+        "center": [
+          0.78245,
+          0.3226,
+          -1.42728
+        ],
+        "size": [
+          0.016,
+          0.30969599999999997,
+          0.30969599999999997
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Wheel_10",
+        "type": "box",
+        "center": [
+          -0.78245,
+          0.3226,
+          1.3083
+        ],
+        "size": [
+          0.016,
+          0.30969599999999997,
+          0.30969599999999997
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Wheel_11",
+        "type": "box",
+        "center": [
+          0.78245,
+          0.3226,
+          1.3083
+        ],
+        "size": [
+          0.016,
+          0.30969599999999997,
+          0.30969599999999997
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Cabin",
+        "type": "box",
+        "center": [
+          0.0,
+          0.55,
+          -0.049490000000000034
+        ],
+        "size": [
+          1.0912,
+          0.46,
+          1.1489436
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Roof",
+        "type": "box",
+        "center": [
+          0.0,
+          1.3247799999999998,
+          -0.439508876572217
+        ],
+        "size": [
+          0.6335999999999999,
+          0.036,
+          0.7292999999999998
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Hood",
+        "type": "box",
+        "center": [
+          0.0,
+          0.6756557000000001,
+          1.57915
+        ],
+        "size": [
+          0.8096,
+          0.08,
+          0.353276
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Deck",
+        "type": "box",
+        "center": [
+          0.0,
+          0.56,
+          -1.7303306850709914
+        ],
+        "size": [
+          0.8448,
+          0.14,
+          0.3453619067488862
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "climbable": false,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "Sheet metal. Not a cling wall.",
+    "vaultNote": "Hood and roof are landings, not vault rails.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1",
+      "LOD2"
+    ],
+    "slackCm": 0.0,
+    "fbx": "Assets/Art/Props/Library/Vehicles/Hatch_Compact_25.fbx"
+  },
+  {
+    "name": "Bus_City60",
+    "category": "Vehicles",
+    "blurb": "Articulated low-floor city bus, 18.54 m over bumpers, 2.59 m wide, roof unit 3.20 m. Three axles, turntable cover, curb-side doors.",
+    "size": [
+      2.641,
+      3.2,
+      18.548
+    ],
+    "min": [
+      -1.32,
+      0.0,
+      -9.274
+    ],
+    "max": [
+      1.32,
+      3.2,
+      9.274
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 4932,
+        "materials": [
+          "Lib_SteelDark",
+          "Lib_PaintCream",
+          "Lib_SignalAmber",
+          "Lib_Taillamp",
+          "Lib_PaintBlue",
+          "Lib_Black",
+          "Lib_TintGlass",
+          "Lib_Interior",
+          "Lib_WindowLit",
+          "Lib_Headlamp",
+          "Lib_Rubber",
+          "Lib_Steel"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 2060,
+        "materials": [
+          "Lib_SteelDark",
+          "Lib_PaintCream",
+          "Lib_SignalAmber",
+          "Lib_Taillamp",
+          "Lib_PaintBlue",
+          "Lib_Black",
+          "Lib_TintGlass",
+          "Lib_Interior",
+          "Lib_WindowLit",
+          "Lib_Headlamp",
+          "Lib_Rubber",
+          "Lib_Steel"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      },
+      {
+        "lod": 2,
+        "tris": 1708,
+        "materials": [
+          "Lib_SteelDark",
+          "Lib_PaintCream",
+          "Lib_SignalAmber",
+          "Lib_Taillamp",
+          "Lib_PaintBlue",
+          "Lib_Black",
+          "Lib_TintGlass",
+          "Lib_Interior",
+          "Lib_WindowLit",
+          "Lib_Headlamp",
+          "Lib_Rubber",
+          "Lib_Steel"
+        ],
+        "mesh": "LOD2",
+        "fileID": 736115405485880582
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_Floor_0",
+        "type": "box",
+        "center": [
+          0.0,
+          0.3156,
+          -4.88385
+        ],
+        "size": [
+          0.7,
+          0.028,
+          8.080300000000001
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Floor_1",
+        "type": "box",
+        "center": [
+          0.0,
+          0.3156,
+          4.76015
+        ],
+        "size": [
+          0.7,
+          0.028,
+          8.3277
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Roof_0",
+        "type": "box",
+        "center": [
+          0.0,
+          2.9953999999999996,
+          -4.87385
+        ],
+        "size": [
+          2.4147999999999996,
+          0.054,
+          8.264300000000002
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Roof_1",
+        "type": "box",
+        "center": [
+          0.0,
+          2.9953999999999996,
+          4.7501500000000005
+        ],
+        "size": [
+          2.4147999999999996,
+          0.054,
+          8.511700000000001
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_RoofUnit",
+        "type": "box",
+        "center": [
+          0.0,
+          3.1144,
+          -5.816649999999999
+        ],
+        "size": [
+          1.514,
+          0.13600000000000015,
+          3.014
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Skirt_0_0",
+        "type": "box",
+        "center": [
+          -1.2704,
+          0.64,
+          -7.93995
+        ],
+        "size": [
+          0.014000000000000005,
+          0.8039999999999999,
+          2.212100000000001
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Skirt_0_1",
+        "type": "box",
+        "center": [
+          -1.2704,
+          0.64,
+          -3.17055
+        ],
+        "size": [
+          0.014000000000000005,
+          0.8039999999999999,
+          4.8577
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Skirt_0_2",
+        "type": "box",
+        "center": [
+          -1.2704,
+          0.64,
+          0.5513000000000001
+        ],
+        "size": [
+          0.014000000000000005,
+          0.8039999999999999,
+          0.11400000000000002
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Skirt_0_3",
+        "type": "box",
+        "center": [
+          -1.2704,
+          0.64,
+          4.13385
+        ],
+        "size": [
+          0.014000000000000005,
+          0.8039999999999999,
+          4.5821000000000005
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Skirt_0_4",
+        "type": "box",
+        "center": [
+          -1.2704,
+          0.64,
+          8.352699999999999
+        ],
+        "size": [
+          0.014000000000000005,
+          0.8039999999999999,
+          1.386600000000001
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Belt_0_0",
+        "type": "box",
+        "center": [
+          -1.2704,
+          1.16,
+          -4.89385
+        ],
+        "size": [
+          0.014000000000000005,
+          0.164,
+          8.304300000000001
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Belt_0_1",
+        "type": "box",
+        "center": [
+          -1.2704,
+          1.16,
+          4.77015
+        ],
+        "size": [
+          0.014000000000000005,
+          0.164,
+          8.5517
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Pillar_0_0",
+        "type": "box",
+        "center": [
+          -1.2704,
+          1.82,
+          -8.959
+        ],
+        "size": [
+          0.014000000000000005,
+          0.964,
+          0.054
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Pillar_0_1",
+        "type": "box",
+        "center": [
+          -1.2704,
+          1.82,
+          -7.678999999999999
+        ],
+        "size": [
+          0.014000000000000005,
+          0.964,
+          0.054
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Pillar_0_2",
+        "type": "box",
+        "center": [
+          -1.2704,
+          1.82,
+          -6.398999999999999
+        ],
+        "size": [
+          0.014000000000000005,
+          0.964,
+          0.054
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Pillar_0_3",
+        "type": "box",
+        "center": [
+          -1.2704,
+          1.82,
+          -5.118999999999999
+        ],
+        "size": [
+          0.014000000000000005,
+          0.964,
+          0.054
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Pillar_0_4",
+        "type": "box",
+        "center": [
+          -1.2704,
+          1.82,
+          -3.8389999999999986
+        ],
+        "size": [
+          0.014000000000000005,
+          0.964,
+          0.054
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Pillar_0_5",
+        "type": "box",
+        "center": [
+          -1.2704,
+          1.82,
+          -2.5589999999999984
+        ],
+        "size": [
+          0.014000000000000005,
+          0.964,
+          0.054
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Pillar_0_6",
+        "type": "box",
+        "center": [
+          -1.2704,
+          1.82,
+          0.5213000000000002
+        ],
+        "size": [
+          0.014000000000000005,
+          0.964,
+          0.054
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Pillar_0_7",
+        "type": "box",
+        "center": [
+          -1.2704,
+          1.82,
+          1.8013000000000001
+        ],
+        "size": [
+          0.014000000000000005,
+          0.964,
+          0.054
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Pillar_0_8",
+        "type": "box",
+        "center": [
+          -1.2704,
+          1.82,
+          3.0813
+        ],
+        "size": [
+          0.014000000000000005,
+          0.964,
+          0.054
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Pillar_0_9",
+        "type": "box",
+        "center": [
+          -1.2704,
+          1.82,
+          4.3613
+        ],
+        "size": [
+          0.014000000000000005,
+          0.964,
+          0.054
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Pillar_0_10",
+        "type": "box",
+        "center": [
+          -1.2704,
+          1.82,
+          5.6413
+        ],
+        "size": [
+          0.014000000000000005,
+          0.964,
+          0.054
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Pillar_0_11",
+        "type": "box",
+        "center": [
+          -1.2704,
+          1.82,
+          6.9213000000000005
+        ],
+        "size": [
+          0.014000000000000005,
+          0.964,
+          0.054
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Header_0_0",
+        "type": "box",
+        "center": [
+          -1.2704,
+          2.7,
+          -4.89385
+        ],
+        "size": [
+          0.014000000000000005,
+          0.644,
+          8.304300000000001
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Header_0_1",
+        "type": "box",
+        "center": [
+          -1.2704,
+          2.7,
+          4.77015
+        ],
+        "size": [
+          0.014000000000000005,
+          0.644,
+          8.5517
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Skirt_1_0",
+        "type": "box",
+        "center": [
+          1.2704,
+          0.64,
+          -7.93995
+        ],
+        "size": [
+          0.014000000000000005,
+          0.8039999999999999,
+          2.212100000000001
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Skirt_1_1",
+        "type": "box",
+        "center": [
+          1.2704,
+          0.64,
+          -4.8174
+        ],
+        "size": [
+          0.014000000000000005,
+          0.8039999999999999,
+          1.5639999999999996
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Skirt_1_2",
+        "type": "box",
+        "center": [
+          1.2704,
+          0.64,
+          -1.9640500000000003
+        ],
+        "size": [
+          0.014000000000000005,
+          0.8039999999999999,
+          2.4447000000000005
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Skirt_1_3",
+        "type": "box",
+        "center": [
+          1.2704,
+          0.64,
+          0.5513000000000001
+        ],
+        "size": [
+          0.014000000000000005,
+          0.8039999999999999,
+          0.11400000000000002
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Skirt_1_4",
+        "type": "box",
+        "center": [
+          1.2704,
+          0.64,
+          2.0248
+        ],
+        "size": [
+          0.014000000000000005,
+          0.8039999999999999,
+          0.36399999999999993
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Skirt_1_5",
+        "type": "box",
+        "center": [
+          1.2704,
+          0.64,
+          4.740349999999999
+        ],
+        "size": [
+          0.014000000000000005,
+          0.8039999999999999,
+          3.3691
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Skirt_1_6",
+        "type": "box",
+        "center": [
+          1.2704,
+          0.64,
+          7.681399999999999
+        ],
+        "size": [
+          0.014000000000000005,
+          0.8039999999999999,
+          0.044000000000000074
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Skirt_1_7",
+        "type": "box",
+        "center": [
+          1.2704,
+          0.64,
+          8.799199999999999
+        ],
+        "size": [
+          0.014000000000000005,
+          0.8039999999999999,
+          0.4936000000000003
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Belt_1_0",
+        "type": "box",
+        "center": [
+          1.2704,
+          1.16,
+          -4.89385
+        ],
+        "size": [
+          0.014000000000000005,
+          0.164,
+          8.304300000000001
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Belt_1_1",
+        "type": "box",
+        "center": [
+          1.2704,
+          1.16,
+          4.77015
+        ],
+        "size": [
+          0.014000000000000005,
+          0.164,
+          8.5517
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Pillar_1_0",
+        "type": "box",
+        "center": [
+          1.2704,
+          1.82,
+          -8.959
+        ],
+        "size": [
+          0.014000000000000005,
+          0.964,
+          0.054
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Pillar_1_1",
+        "type": "box",
+        "center": [
+          1.2704,
+          1.82,
+          -7.678999999999999
+        ],
+        "size": [
+          0.014000000000000005,
+          0.964,
+          0.054
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Pillar_1_2",
+        "type": "box",
+        "center": [
+          1.2704,
+          1.82,
+          -6.398999999999999
+        ],
+        "size": [
+          0.014000000000000005,
+          0.964,
+          0.054
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Pillar_1_3",
+        "type": "box",
+        "center": [
+          1.2704,
+          1.82,
+          -3.1594000000000007
+        ],
+        "size": [
+          0.014000000000000005,
+          0.964,
+          0.054
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Pillar_1_4",
+        "type": "box",
+        "center": [
+          1.2704,
+          1.82,
+          0.5213000000000002
+        ],
+        "size": [
+          0.014000000000000005,
+          0.964,
+          0.054
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Pillar_1_5",
+        "type": "box",
+        "center": [
+          1.2704,
+          1.82,
+          3.0827999999999998
+        ],
+        "size": [
+          0.014000000000000005,
+          0.964,
+          0.054
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Pillar_1_6",
+        "type": "box",
+        "center": [
+          1.2704,
+          1.82,
+          4.3628
+        ],
+        "size": [
+          0.014000000000000005,
+          0.964,
+          0.054
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Pillar_1_7",
+        "type": "box",
+        "center": [
+          1.2704,
+          1.82,
+          5.6428
+        ],
+        "size": [
+          0.014000000000000005,
+          0.964,
+          0.054
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Door_0_0",
+        "type": "box",
+        "center": [
+          1.2704,
+          0.7,
+          7.923649999999999
+        ],
+        "size": [
+          0.014000000000000005,
+          0.604,
+          0.3665000000000003
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Door_0_1",
+        "type": "box",
+        "center": [
+          1.2704,
+          0.7,
+          8.33215
+        ],
+        "size": [
+          0.014000000000000005,
+          0.604,
+          0.3665000000000003
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Door_1_0",
+        "type": "box",
+        "center": [
+          1.2704,
+          0.7,
+          2.42705
+        ],
+        "size": [
+          0.014000000000000005,
+          0.604,
+          0.3664999999999999
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Door_1_1",
+        "type": "box",
+        "center": [
+          1.2704,
+          0.7,
+          2.83555
+        ],
+        "size": [
+          0.014000000000000005,
+          0.604,
+          0.3664999999999999
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Door_2_0",
+        "type": "box",
+        "center": [
+          1.2704,
+          0.7,
+          -3.8151500000000005
+        ],
+        "size": [
+          0.014000000000000005,
+          0.604,
+          0.3664999999999999
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Door_2_1",
+        "type": "box",
+        "center": [
+          1.2704,
+          0.7,
+          -3.4066500000000004
+        ],
+        "size": [
+          0.014000000000000005,
+          0.604,
+          0.3664999999999999
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Header_1_0",
+        "type": "box",
+        "center": [
+          1.2704,
+          2.7,
+          -4.89385
+        ],
+        "size": [
+          0.014000000000000005,
+          0.644,
+          8.304300000000001
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Header_1_1",
+        "type": "box",
+        "center": [
+          1.2704,
+          2.7,
+          4.77015
+        ],
+        "size": [
+          0.014000000000000005,
+          0.644,
+          8.5517
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_NoseSill",
+        "type": "box",
+        "center": [
+          0.0,
+          0.52,
+          9.119
+        ],
+        "size": [
+          1.5,
+          0.56,
+          0.014
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_NoseL",
+        "type": "box",
+        "center": [
+          -1.1354,
+          1.78,
+          9.119
+        ],
+        "size": [
+          0.24400000000000002,
+          1.464,
+          0.014000000000000005
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_NoseR",
+        "type": "box",
+        "center": [
+          1.1354,
+          1.78,
+          9.119
+        ],
+        "size": [
+          0.24400000000000002,
+          1.464,
+          0.014000000000000005
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Dest",
+        "type": "box",
+        "center": [
+          0.0,
+          2.62,
+          9.114
+        ],
+        "size": [
+          1.664,
+          0.30400000000000005,
+          0.024
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_TailL",
+        "type": "box",
+        "center": [
+          -1.1154,
+          1.6,
+          -9.119
+        ],
+        "size": [
+          0.28400000000000003,
+          2.364,
+          0.014000000000000005
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_TailR",
+        "type": "box",
+        "center": [
+          1.1154,
+          1.6,
+          -9.119
+        ],
+        "size": [
+          0.28400000000000003,
+          2.364,
+          0.014000000000000005
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_TailHead",
+        "type": "box",
+        "center": [
+          0.0,
+          2.62,
+          -9.119
+        ],
+        "size": [
+          1.564,
+          0.42400000000000004,
+          0.014000000000000005
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_TailSill",
+        "type": "box",
+        "center": [
+          0.0,
+          1.62,
+          -9.119
+        ],
+        "size": [
+          1.564,
+          0.124,
+          0.014000000000000005
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Engine",
+        "type": "box",
+        "center": [
+          0.0,
+          0.92,
+          -9.119
+        ],
+        "size": [
+          1.314,
+          1.014,
+          0.014000000000000005
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Bellows",
+        "type": "box",
+        "center": [
+          0.0,
+          1.55,
+          -0.12369999999999987
+        ],
+        "size": [
+          2.0408,
+          1.5,
+          0.16
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Wheel_0_0",
+        "type": "box",
+        "center": [
+          -1.0028999999999997,
+          0.49924999999999997,
+          -6.21665
+        ],
+        "size": [
+          0.016,
+          0.429355,
+          0.429355
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Wheel_0_1",
+        "type": "box",
+        "center": [
+          1.0028999999999997,
+          0.49924999999999997,
+          -6.21665
+        ],
+        "size": [
+          0.016,
+          0.429355,
+          0.429355
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Wheel_0_2",
+        "type": "box",
+        "center": [
+          -0.6578999999999997,
+          0.49924999999999997,
+          -6.21665
+        ],
+        "size": [
+          0.016,
+          0.429355,
+          0.429355
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Wheel_0_3",
+        "type": "box",
+        "center": [
+          0.6578999999999997,
+          0.49924999999999997,
+          -6.21665
+        ],
+        "size": [
+          0.016,
+          0.429355,
+          0.429355
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Wheel_1_0",
+        "type": "box",
+        "center": [
+          -1.0028999999999997,
+          0.49924999999999997,
+          1.2255500000000001
+        ],
+        "size": [
+          0.016,
+          0.429355,
+          0.429355
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Wheel_1_1",
+        "type": "box",
+        "center": [
+          1.0028999999999997,
+          0.49924999999999997,
+          1.2255500000000001
+        ],
+        "size": [
+          0.016,
+          0.429355,
+          0.429355
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Wheel_2_0",
+        "type": "box",
+        "center": [
+          -1.0028999999999997,
+          0.49924999999999997,
+          7.0421499999999995
+        ],
+        "size": [
+          0.016,
+          0.429355,
+          0.429355
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Wheel_2_1",
+        "type": "box",
+        "center": [
+          1.0028999999999997,
+          0.49924999999999997,
+          7.0421499999999995
+        ],
+        "size": [
+          0.016,
+          0.429355,
+          0.429355
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "climbable": true,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "Roof, roof unit, and the turntable cover. Not a cling wall.",
+    "vaultNote": "The skirt is a step. The roof is the landing.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1",
+      "LOD2"
+    ],
+    "slackCm": 0.0,
+    "fbx": "Assets/Art/Props/Library/Vehicles/Bus_City60.fbx"
+  },
+  {
+    "name": "Sedan_Mid_A_22",
+    "category": "Vehicles",
+    "blurb": "Midsize sedan, 2022 fascia, 4.90 m long, shoulder 1.76 m, roof 1.44 m. Hard panel body, 18 inch alloys. Hood and roof are landings. Color crimson.",
+    "size": [
+      1.816,
+      1.44,
+      4.9
+    ],
+    "min": [
+      -0.908,
+      0.0,
+      -2.45
+    ],
+    "max": [
+      0.908,
+      1.44,
+      2.45
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 5016,
+        "materials": [
+          "Lib_PaintCrimson",
+          "Lib_AutoGlass",
+          "Lib_Black",
+          "Lib_SteelDark",
+          "Lib_Glass",
+          "Lib_Steel",
+          "Lib_BoxRed",
+          "Lib_Rubber",
+          "Lib_PaintSilver"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 3736,
+        "materials": [
+          "Lib_PaintCrimson",
+          "Lib_AutoGlass",
+          "Lib_Black",
+          "Lib_SteelDark",
+          "Lib_Glass",
+          "Lib_Steel",
+          "Lib_BoxRed",
+          "Lib_Rubber",
+          "Lib_PaintSilver"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      },
+      {
+        "lod": 2,
+        "tris": 2356,
+        "materials": [
+          "Lib_PaintCrimson",
+          "Lib_AutoGlass",
+          "Lib_Black",
+          "Lib_SteelDark",
+          "Lib_Glass",
+          "Lib_Steel",
+          "Lib_BoxRed",
+          "Lib_Rubber",
+          "Lib_PaintSilver"
+        ],
+        "mesh": "LOD2",
+        "fileID": 736115405485880582
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_Wheel_00",
+        "type": "box",
+        "center": [
+          -0.8,
+          0.022,
+          -1.3299999999999996
+        ],
+        "size": [
+          0.014,
+          0.01,
+          0.01
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Wheel_01",
+        "type": "box",
+        "center": [
+          0.8,
+          0.022,
+          -1.3299999999999996
+        ],
+        "size": [
+          0.014,
+          0.01,
+          0.01
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Wheel_10",
+        "type": "box",
+        "center": [
+          -0.8,
+          0.022,
+          1.4900000000000002
+        ],
+        "size": [
+          0.014,
+          0.01,
+          0.01
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Wheel_11",
+        "type": "box",
+        "center": [
+          0.8,
+          0.022,
+          1.4900000000000002
+        ],
+        "size": [
+          0.014,
+          0.01,
+          0.01
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Cabin",
+        "type": "box",
+        "center": [
+          0.0,
+          0.78,
+          -0.05
+        ],
+        "size": [
+          0.42,
+          0.32,
+          0.62
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Roof",
+        "type": "box",
+        "center": [
+          0.0,
+          1.26,
+          0.05
+        ],
+        "size": [
+          0.28,
+          0.32,
+          0.24
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Hood",
+        "type": "box",
+        "center": [
+          0.0,
+          0.84,
+          1.48
+        ],
+        "size": [
+          0.4,
+          0.12,
+          0.36
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Deck",
+        "type": "box",
+        "center": [
+          0.0,
+          0.98,
+          -1.55
+        ],
+        "size": [
+          0.36,
+          0.1,
+          0.28
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Nose",
+        "type": "box",
+        "center": [
+          0.0,
+          0.36,
+          1.55
+        ],
+        "size": [
+          0.22,
+          0.12,
+          0.36
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "climbable": true,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "Roof and hood are climbable sheet metal.",
+    "vaultNote": "Hood and roof are landings, not vault rails.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1",
+      "LOD2"
+    ],
+    "slackCm": 0.53,
+    "fbx": "Assets/Art/Props/Library/Vehicles/Sedan_Mid_A_22.fbx"
+  },
+  {
+    "name": "Sedan_Mid_A_23",
+    "category": "Vehicles",
+    "blurb": "Midsize sedan, 2023 fascia, 4.90 m long, shoulder 1.76 m, roof 1.44 m. Hard panel body, 18 inch alloys. Hood and roof are landings. Color crimson.",
+    "size": [
+      1.816,
+      1.44,
+      4.9
+    ],
+    "min": [
+      -0.908,
+      0.0,
+      -2.45
+    ],
+    "max": [
+      0.908,
+      1.44,
+      2.45
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 5176,
+        "materials": [
+          "Lib_PaintCrimson",
+          "Lib_AutoGlass",
+          "Lib_Black",
+          "Lib_SteelDark",
+          "Lib_Glass",
+          "Lib_Steel",
+          "Lib_BoxRed",
+          "Lib_Rubber",
+          "Lib_PaintSilver"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 3880,
+        "materials": [
+          "Lib_PaintCrimson",
+          "Lib_AutoGlass",
+          "Lib_Black",
+          "Lib_SteelDark",
+          "Lib_Glass",
+          "Lib_Steel",
+          "Lib_BoxRed",
+          "Lib_Rubber",
+          "Lib_PaintSilver"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      },
+      {
+        "lod": 2,
+        "tris": 2436,
+        "materials": [
+          "Lib_PaintCrimson",
+          "Lib_AutoGlass",
+          "Lib_Black",
+          "Lib_SteelDark",
+          "Lib_Glass",
+          "Lib_Steel",
+          "Lib_BoxRed",
+          "Lib_Rubber",
+          "Lib_PaintSilver"
+        ],
+        "mesh": "LOD2",
+        "fileID": 736115405485880582
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_Wheel_00",
+        "type": "box",
+        "center": [
+          -0.8,
+          0.022,
+          -1.3299999999999996
+        ],
+        "size": [
+          0.014,
+          0.01,
+          0.01
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Wheel_01",
+        "type": "box",
+        "center": [
+          0.8,
+          0.022,
+          -1.3299999999999996
+        ],
+        "size": [
+          0.014,
+          0.01,
+          0.01
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Wheel_10",
+        "type": "box",
+        "center": [
+          -0.8,
+          0.022,
+          1.4900000000000002
+        ],
+        "size": [
+          0.014,
+          0.01,
+          0.01
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Wheel_11",
+        "type": "box",
+        "center": [
+          0.8,
+          0.022,
+          1.4900000000000002
+        ],
+        "size": [
+          0.014,
+          0.01,
+          0.01
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Cabin",
+        "type": "box",
+        "center": [
+          0.0,
+          0.78,
+          -0.05
+        ],
+        "size": [
+          0.42,
+          0.32,
+          0.62
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Roof",
+        "type": "box",
+        "center": [
+          0.0,
+          1.26,
+          0.05
+        ],
+        "size": [
+          0.28,
+          0.32,
+          0.24
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Hood",
+        "type": "box",
+        "center": [
+          0.0,
+          0.84,
+          1.48
+        ],
+        "size": [
+          0.4,
+          0.12,
+          0.36
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Deck",
+        "type": "box",
+        "center": [
+          0.0,
+          0.98,
+          -1.55
+        ],
+        "size": [
+          0.36,
+          0.1,
+          0.28
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Nose",
+        "type": "box",
+        "center": [
+          0.0,
+          0.36,
+          1.55
+        ],
+        "size": [
+          0.22,
+          0.12,
+          0.36
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "climbable": true,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "Roof and hood are climbable sheet metal.",
+    "vaultNote": "Hood and roof are landings, not vault rails.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1",
+      "LOD2"
+    ],
+    "slackCm": 0.53,
+    "fbx": "Assets/Art/Props/Library/Vehicles/Sedan_Mid_A_23.fbx"
+  },
+  {
+    "name": "Sedan_Mid_A_24",
+    "category": "Vehicles",
+    "blurb": "Midsize sedan, 2024 fascia, 4.90 m long, shoulder 1.76 m, roof 1.44 m. Hard panel body, 18 inch alloys. Hood and roof are landings. Color crimson.",
+    "size": [
+      1.816,
+      1.44,
+      4.9
+    ],
+    "min": [
+      -0.908,
+      0.0,
+      -2.45
+    ],
+    "max": [
+      0.908,
+      1.44,
+      2.45
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 5036,
+        "materials": [
+          "Lib_PaintCrimson",
+          "Lib_AutoGlass",
+          "Lib_Black",
+          "Lib_SteelDark",
+          "Lib_Glass",
+          "Lib_Steel",
+          "Lib_BoxRed",
+          "Lib_Rubber",
+          "Lib_PaintSilver"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 3756,
+        "materials": [
+          "Lib_PaintCrimson",
+          "Lib_AutoGlass",
+          "Lib_Black",
+          "Lib_SteelDark",
+          "Lib_Glass",
+          "Lib_Steel",
+          "Lib_BoxRed",
+          "Lib_Rubber",
+          "Lib_PaintSilver"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      },
+      {
+        "lod": 2,
+        "tris": 2356,
+        "materials": [
+          "Lib_PaintCrimson",
+          "Lib_AutoGlass",
+          "Lib_Black",
+          "Lib_SteelDark",
+          "Lib_Glass",
+          "Lib_Steel",
+          "Lib_BoxRed",
+          "Lib_Rubber",
+          "Lib_PaintSilver"
+        ],
+        "mesh": "LOD2",
+        "fileID": 736115405485880582
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_Wheel_00",
+        "type": "box",
+        "center": [
+          -0.8,
+          0.022,
+          -1.3299999999999996
+        ],
+        "size": [
+          0.014,
+          0.01,
+          0.01
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Wheel_01",
+        "type": "box",
+        "center": [
+          0.8,
+          0.022,
+          -1.3299999999999996
+        ],
+        "size": [
+          0.014,
+          0.01,
+          0.01
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Wheel_10",
+        "type": "box",
+        "center": [
+          -0.8,
+          0.022,
+          1.4900000000000002
+        ],
+        "size": [
+          0.014,
+          0.01,
+          0.01
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Wheel_11",
+        "type": "box",
+        "center": [
+          0.8,
+          0.022,
+          1.4900000000000002
+        ],
+        "size": [
+          0.014,
+          0.01,
+          0.01
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Cabin",
+        "type": "box",
+        "center": [
+          0.0,
+          0.78,
+          -0.05
+        ],
+        "size": [
+          0.42,
+          0.32,
+          0.62
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Roof",
+        "type": "box",
+        "center": [
+          0.0,
+          1.26,
+          0.05
+        ],
+        "size": [
+          0.28,
+          0.32,
+          0.24
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Hood",
+        "type": "box",
+        "center": [
+          0.0,
+          0.84,
+          1.48
+        ],
+        "size": [
+          0.4,
+          0.12,
+          0.36
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Deck",
+        "type": "box",
+        "center": [
+          0.0,
+          0.98,
+          -1.55
+        ],
+        "size": [
+          0.36,
+          0.1,
+          0.28
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Nose",
+        "type": "box",
+        "center": [
+          0.0,
+          0.36,
+          1.55
+        ],
+        "size": [
+          0.22,
+          0.12,
+          0.36
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "climbable": true,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "Roof and hood are climbable sheet metal.",
+    "vaultNote": "Hood and roof are landings, not vault rails.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1",
+      "LOD2"
+    ],
+    "slackCm": 0.53,
+    "fbx": "Assets/Art/Props/Library/Vehicles/Sedan_Mid_A_24.fbx"
+  },
+  {
+    "name": "Sedan_Mid_A_25",
+    "category": "Vehicles",
+    "blurb": "Midsize sedan, 2025 fascia, 4.90 m long, shoulder 1.76 m, roof 1.44 m. Hard panel body, 18 inch alloys. Hood and roof are landings. Color crimson.",
+    "size": [
+      1.816,
+      1.44,
+      4.9
+    ],
+    "min": [
+      -0.908,
+      0.0,
+      -2.45
+    ],
+    "max": [
+      0.908,
+      1.44,
+      2.45
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 4908,
+        "materials": [
+          "Lib_PaintCrimson",
+          "Lib_AutoGlass",
+          "Lib_Black",
+          "Lib_SteelDark",
+          "Lib_Glass",
+          "Lib_Steel",
+          "Lib_BoxRed",
+          "Lib_Rubber",
+          "Lib_PaintSilver"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 3676,
+        "materials": [
+          "Lib_PaintCrimson",
+          "Lib_AutoGlass",
+          "Lib_Black",
+          "Lib_SteelDark",
+          "Lib_Glass",
+          "Lib_Steel",
+          "Lib_BoxRed",
+          "Lib_Rubber",
+          "Lib_PaintSilver"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      },
+      {
+        "lod": 2,
+        "tris": 2356,
+        "materials": [
+          "Lib_PaintCrimson",
+          "Lib_AutoGlass",
+          "Lib_Black",
+          "Lib_SteelDark",
+          "Lib_Glass",
+          "Lib_Steel",
+          "Lib_BoxRed",
+          "Lib_Rubber",
+          "Lib_PaintSilver"
+        ],
+        "mesh": "LOD2",
+        "fileID": 736115405485880582
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_Wheel_00",
+        "type": "box",
+        "center": [
+          -0.8,
+          0.022,
+          -1.3299999999999996
+        ],
+        "size": [
+          0.014,
+          0.01,
+          0.01
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Wheel_01",
+        "type": "box",
+        "center": [
+          0.8,
+          0.022,
+          -1.3299999999999996
+        ],
+        "size": [
+          0.014,
+          0.01,
+          0.01
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Wheel_10",
+        "type": "box",
+        "center": [
+          -0.8,
+          0.022,
+          1.4900000000000002
+        ],
+        "size": [
+          0.014,
+          0.01,
+          0.01
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Wheel_11",
+        "type": "box",
+        "center": [
+          0.8,
+          0.022,
+          1.4900000000000002
+        ],
+        "size": [
+          0.014,
+          0.01,
+          0.01
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Cabin",
+        "type": "box",
+        "center": [
+          0.0,
+          0.78,
+          -0.05
+        ],
+        "size": [
+          0.42,
+          0.32,
+          0.62
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Roof",
+        "type": "box",
+        "center": [
+          0.0,
+          1.26,
+          0.05
+        ],
+        "size": [
+          0.28,
+          0.32,
+          0.24
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Hood",
+        "type": "box",
+        "center": [
+          0.0,
+          0.84,
+          1.48
+        ],
+        "size": [
+          0.4,
+          0.12,
+          0.36
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Deck",
+        "type": "box",
+        "center": [
+          0.0,
+          0.98,
+          -1.55
+        ],
+        "size": [
+          0.36,
+          0.1,
+          0.28
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Nose",
+        "type": "box",
+        "center": [
+          0.0,
+          0.36,
+          1.55
+        ],
+        "size": [
+          0.22,
+          0.12,
+          0.36
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "climbable": true,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "Roof and hood are climbable sheet metal.",
+    "vaultNote": "Hood and roof are landings, not vault rails.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1",
+      "LOD2"
+    ],
+    "slackCm": 0.53,
+    "fbx": "Assets/Art/Props/Library/Vehicles/Sedan_Mid_A_25.fbx"
+  },
+  {
+    "name": "Sedan_Mid_A_25_White",
+    "category": "Vehicles",
+    "blurb": "Midsize sedan, 2025 fascia, 4.90 m long, shoulder 1.76 m, roof 1.44 m. Hard panel body, 18 inch alloys. Hood and roof are landings. Color white.",
+    "size": [
+      1.816,
+      1.44,
+      4.9
+    ],
+    "min": [
+      -0.908,
+      0.0,
+      -2.45
+    ],
+    "max": [
+      0.908,
+      1.44,
+      2.45
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 4908,
+        "materials": [
+          "Lib_PaintWhite",
+          "Lib_AutoGlass",
+          "Lib_Black",
+          "Lib_SteelDark",
+          "Lib_Glass",
+          "Lib_Steel",
+          "Lib_BoxRed",
+          "Lib_Rubber",
+          "Lib_PaintSilver"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 3676,
+        "materials": [
+          "Lib_PaintWhite",
+          "Lib_AutoGlass",
+          "Lib_Black",
+          "Lib_SteelDark",
+          "Lib_Glass",
+          "Lib_Steel",
+          "Lib_BoxRed",
+          "Lib_Rubber",
+          "Lib_PaintSilver"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      },
+      {
+        "lod": 2,
+        "tris": 2356,
+        "materials": [
+          "Lib_PaintWhite",
+          "Lib_AutoGlass",
+          "Lib_Black",
+          "Lib_SteelDark",
+          "Lib_Glass",
+          "Lib_Steel",
+          "Lib_BoxRed",
+          "Lib_Rubber",
+          "Lib_PaintSilver"
+        ],
+        "mesh": "LOD2",
+        "fileID": 736115405485880582
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_Wheel_00",
+        "type": "box",
+        "center": [
+          -0.8,
+          0.022,
+          -1.3299999999999996
+        ],
+        "size": [
+          0.014,
+          0.01,
+          0.01
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Wheel_01",
+        "type": "box",
+        "center": [
+          0.8,
+          0.022,
+          -1.3299999999999996
+        ],
+        "size": [
+          0.014,
+          0.01,
+          0.01
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Wheel_10",
+        "type": "box",
+        "center": [
+          -0.8,
+          0.022,
+          1.4900000000000002
+        ],
+        "size": [
+          0.014,
+          0.01,
+          0.01
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Wheel_11",
+        "type": "box",
+        "center": [
+          0.8,
+          0.022,
+          1.4900000000000002
+        ],
+        "size": [
+          0.014,
+          0.01,
+          0.01
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Cabin",
+        "type": "box",
+        "center": [
+          0.0,
+          0.78,
+          -0.05
+        ],
+        "size": [
+          0.42,
+          0.32,
+          0.62
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Roof",
+        "type": "box",
+        "center": [
+          0.0,
+          1.26,
+          0.05
+        ],
+        "size": [
+          0.28,
+          0.32,
+          0.24
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Hood",
+        "type": "box",
+        "center": [
+          0.0,
+          0.84,
+          1.48
+        ],
+        "size": [
+          0.4,
+          0.12,
+          0.36
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Deck",
+        "type": "box",
+        "center": [
+          0.0,
+          0.98,
+          -1.55
+        ],
+        "size": [
+          0.36,
+          0.1,
+          0.28
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Nose",
+        "type": "box",
+        "center": [
+          0.0,
+          0.36,
+          1.55
+        ],
+        "size": [
+          0.22,
+          0.12,
+          0.36
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "climbable": true,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "Roof and hood are climbable sheet metal.",
+    "vaultNote": "Hood and roof are landings, not vault rails.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1",
+      "LOD2"
+    ],
+    "slackCm": 0.53,
+    "fbx": "Assets/Art/Props/Library/Vehicles/Sedan_Mid_A_25_White.fbx"
+  },
+  {
+    "name": "Sedan_Mid_A_25_Black",
+    "category": "Vehicles",
+    "blurb": "Midsize sedan, 2025 fascia, 4.90 m long, shoulder 1.76 m, roof 1.44 m. Hard panel body, 18 inch alloys. Hood and roof are landings. Color black.",
+    "size": [
+      1.816,
+      1.44,
+      4.9
+    ],
+    "min": [
+      -0.908,
+      0.0,
+      -2.45
+    ],
+    "max": [
+      0.908,
+      1.44,
+      2.45
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 4908,
+        "materials": [
+          "Lib_PaintBlack",
+          "Lib_AutoGlass",
+          "Lib_Black",
+          "Lib_SteelDark",
+          "Lib_Glass",
+          "Lib_Steel",
+          "Lib_BoxRed",
+          "Lib_Rubber",
+          "Lib_PaintSilver"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 3676,
+        "materials": [
+          "Lib_PaintBlack",
+          "Lib_AutoGlass",
+          "Lib_Black",
+          "Lib_SteelDark",
+          "Lib_Glass",
+          "Lib_Steel",
+          "Lib_BoxRed",
+          "Lib_Rubber",
+          "Lib_PaintSilver"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      },
+      {
+        "lod": 2,
+        "tris": 2356,
+        "materials": [
+          "Lib_PaintBlack",
+          "Lib_AutoGlass",
+          "Lib_Black",
+          "Lib_SteelDark",
+          "Lib_Glass",
+          "Lib_Steel",
+          "Lib_BoxRed",
+          "Lib_Rubber",
+          "Lib_PaintSilver"
+        ],
+        "mesh": "LOD2",
+        "fileID": 736115405485880582
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_Wheel_00",
+        "type": "box",
+        "center": [
+          -0.8,
+          0.022,
+          -1.3299999999999996
+        ],
+        "size": [
+          0.014,
+          0.01,
+          0.01
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Wheel_01",
+        "type": "box",
+        "center": [
+          0.8,
+          0.022,
+          -1.3299999999999996
+        ],
+        "size": [
+          0.014,
+          0.01,
+          0.01
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Wheel_10",
+        "type": "box",
+        "center": [
+          -0.8,
+          0.022,
+          1.4900000000000002
+        ],
+        "size": [
+          0.014,
+          0.01,
+          0.01
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Wheel_11",
+        "type": "box",
+        "center": [
+          0.8,
+          0.022,
+          1.4900000000000002
+        ],
+        "size": [
+          0.014,
+          0.01,
+          0.01
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Cabin",
+        "type": "box",
+        "center": [
+          0.0,
+          0.78,
+          -0.05
+        ],
+        "size": [
+          0.42,
+          0.32,
+          0.62
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Roof",
+        "type": "box",
+        "center": [
+          0.0,
+          1.26,
+          0.05
+        ],
+        "size": [
+          0.28,
+          0.32,
+          0.24
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Hood",
+        "type": "box",
+        "center": [
+          0.0,
+          0.84,
+          1.48
+        ],
+        "size": [
+          0.4,
+          0.12,
+          0.36
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Deck",
+        "type": "box",
+        "center": [
+          0.0,
+          0.98,
+          -1.55
+        ],
+        "size": [
+          0.36,
+          0.1,
+          0.28
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Nose",
+        "type": "box",
+        "center": [
+          0.0,
+          0.36,
+          1.55
+        ],
+        "size": [
+          0.22,
+          0.12,
+          0.36
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "climbable": true,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "Roof and hood are climbable sheet metal.",
+    "vaultNote": "Hood and roof are landings, not vault rails.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1",
+      "LOD2"
+    ],
+    "slackCm": 0.53,
+    "fbx": "Assets/Art/Props/Library/Vehicles/Sedan_Mid_A_25_Black.fbx"
+  },
+  {
+    "name": "Sedan_Mid_A_25_Grey",
+    "category": "Vehicles",
+    "blurb": "Midsize sedan, 2025 fascia, 4.90 m long, shoulder 1.76 m, roof 1.44 m. Hard panel body, 18 inch alloys. Hood and roof are landings. Color grey.",
+    "size": [
+      1.816,
+      1.44,
+      4.9
+    ],
+    "min": [
+      -0.908,
+      0.0,
+      -2.45
+    ],
+    "max": [
+      0.908,
+      1.44,
+      2.45
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 4908,
+        "materials": [
+          "Lib_PaintGrey",
+          "Lib_AutoGlass",
+          "Lib_Black",
+          "Lib_SteelDark",
+          "Lib_Glass",
+          "Lib_Steel",
+          "Lib_BoxRed",
+          "Lib_Rubber",
+          "Lib_PaintSilver"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 3676,
+        "materials": [
+          "Lib_PaintGrey",
+          "Lib_AutoGlass",
+          "Lib_Black",
+          "Lib_SteelDark",
+          "Lib_Glass",
+          "Lib_Steel",
+          "Lib_BoxRed",
+          "Lib_Rubber",
+          "Lib_PaintSilver"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      },
+      {
+        "lod": 2,
+        "tris": 2356,
+        "materials": [
+          "Lib_PaintGrey",
+          "Lib_AutoGlass",
+          "Lib_Black",
+          "Lib_SteelDark",
+          "Lib_Glass",
+          "Lib_Steel",
+          "Lib_BoxRed",
+          "Lib_Rubber",
+          "Lib_PaintSilver"
+        ],
+        "mesh": "LOD2",
+        "fileID": 736115405485880582
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_Wheel_00",
+        "type": "box",
+        "center": [
+          -0.8,
+          0.022,
+          -1.3299999999999996
+        ],
+        "size": [
+          0.014,
+          0.01,
+          0.01
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Wheel_01",
+        "type": "box",
+        "center": [
+          0.8,
+          0.022,
+          -1.3299999999999996
+        ],
+        "size": [
+          0.014,
+          0.01,
+          0.01
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Wheel_10",
+        "type": "box",
+        "center": [
+          -0.8,
+          0.022,
+          1.4900000000000002
+        ],
+        "size": [
+          0.014,
+          0.01,
+          0.01
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Wheel_11",
+        "type": "box",
+        "center": [
+          0.8,
+          0.022,
+          1.4900000000000002
+        ],
+        "size": [
+          0.014,
+          0.01,
+          0.01
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Cabin",
+        "type": "box",
+        "center": [
+          0.0,
+          0.78,
+          -0.05
+        ],
+        "size": [
+          0.42,
+          0.32,
+          0.62
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Roof",
+        "type": "box",
+        "center": [
+          0.0,
+          1.26,
+          0.05
+        ],
+        "size": [
+          0.28,
+          0.32,
+          0.24
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Hood",
+        "type": "box",
+        "center": [
+          0.0,
+          0.84,
+          1.48
+        ],
+        "size": [
+          0.4,
+          0.12,
+          0.36
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Deck",
+        "type": "box",
+        "center": [
+          0.0,
+          0.98,
+          -1.55
+        ],
+        "size": [
+          0.36,
+          0.1,
+          0.28
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Nose",
+        "type": "box",
+        "center": [
+          0.0,
+          0.36,
+          1.55
+        ],
+        "size": [
+          0.22,
+          0.12,
+          0.36
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "climbable": true,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "Roof and hood are climbable sheet metal.",
+    "vaultNote": "Hood and roof are landings, not vault rails.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1",
+      "LOD2"
+    ],
+    "slackCm": 0.53,
+    "fbx": "Assets/Art/Props/Library/Vehicles/Sedan_Mid_A_25_Grey.fbx"
+  },
+  {
+    "name": "Sedan_Mid_A_25_Silver",
+    "category": "Vehicles",
+    "blurb": "Midsize sedan, 2025 fascia, 4.90 m long, shoulder 1.76 m, roof 1.44 m. Hard panel body, 18 inch alloys. Hood and roof are landings. Color silver.",
+    "size": [
+      1.816,
+      1.44,
+      4.9
+    ],
+    "min": [
+      -0.908,
+      0.0,
+      -2.45
+    ],
+    "max": [
+      0.908,
+      1.44,
+      2.45
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 4908,
+        "materials": [
+          "Lib_PaintSilver",
+          "Lib_AutoGlass",
+          "Lib_Black",
+          "Lib_SteelDark",
+          "Lib_Glass",
+          "Lib_Steel",
+          "Lib_BoxRed",
+          "Lib_Rubber"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 3676,
+        "materials": [
+          "Lib_PaintSilver",
+          "Lib_AutoGlass",
+          "Lib_Black",
+          "Lib_SteelDark",
+          "Lib_Glass",
+          "Lib_Steel",
+          "Lib_BoxRed",
+          "Lib_Rubber"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      },
+      {
+        "lod": 2,
+        "tris": 2356,
+        "materials": [
+          "Lib_PaintSilver",
+          "Lib_AutoGlass",
+          "Lib_Black",
+          "Lib_SteelDark",
+          "Lib_Glass",
+          "Lib_Steel",
+          "Lib_BoxRed",
+          "Lib_Rubber"
+        ],
+        "mesh": "LOD2",
+        "fileID": 736115405485880582
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_Wheel_00",
+        "type": "box",
+        "center": [
+          -0.8,
+          0.022,
+          -1.3299999999999996
+        ],
+        "size": [
+          0.014,
+          0.01,
+          0.01
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Wheel_01",
+        "type": "box",
+        "center": [
+          0.8,
+          0.022,
+          -1.3299999999999996
+        ],
+        "size": [
+          0.014,
+          0.01,
+          0.01
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Wheel_10",
+        "type": "box",
+        "center": [
+          -0.8,
+          0.022,
+          1.4900000000000002
+        ],
+        "size": [
+          0.014,
+          0.01,
+          0.01
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Wheel_11",
+        "type": "box",
+        "center": [
+          0.8,
+          0.022,
+          1.4900000000000002
+        ],
+        "size": [
+          0.014,
+          0.01,
+          0.01
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Cabin",
+        "type": "box",
+        "center": [
+          0.0,
+          0.78,
+          -0.05
+        ],
+        "size": [
+          0.42,
+          0.32,
+          0.62
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Roof",
+        "type": "box",
+        "center": [
+          0.0,
+          1.26,
+          0.05
+        ],
+        "size": [
+          0.28,
+          0.32,
+          0.24
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Hood",
+        "type": "box",
+        "center": [
+          0.0,
+          0.84,
+          1.48
+        ],
+        "size": [
+          0.4,
+          0.12,
+          0.36
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Deck",
+        "type": "box",
+        "center": [
+          0.0,
+          0.98,
+          -1.55
+        ],
+        "size": [
+          0.36,
+          0.1,
+          0.28
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Nose",
+        "type": "box",
+        "center": [
+          0.0,
+          0.36,
+          1.55
+        ],
+        "size": [
+          0.22,
+          0.12,
+          0.36
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "climbable": true,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "Roof and hood are climbable sheet metal.",
+    "vaultNote": "Hood and roof are landings, not vault rails.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1",
+      "LOD2"
+    ],
+    "slackCm": 0.53,
+    "fbx": "Assets/Art/Props/Library/Vehicles/Sedan_Mid_A_25_Silver.fbx"
+  },
+  {
+    "name": "Sedan_Mid_A_25_Navy",
+    "category": "Vehicles",
+    "blurb": "Midsize sedan, 2025 fascia, 4.90 m long, shoulder 1.76 m, roof 1.44 m. Hard panel body, 18 inch alloys. Hood and roof are landings. Color navy.",
+    "size": [
+      1.816,
+      1.44,
+      4.9
+    ],
+    "min": [
+      -0.908,
+      0.0,
+      -2.45
+    ],
+    "max": [
+      0.908,
+      1.44,
+      2.45
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 4908,
+        "materials": [
+          "Lib_PaintNavy",
+          "Lib_AutoGlass",
+          "Lib_Black",
+          "Lib_SteelDark",
+          "Lib_Glass",
+          "Lib_Steel",
+          "Lib_BoxRed",
+          "Lib_Rubber",
+          "Lib_PaintSilver"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 3676,
+        "materials": [
+          "Lib_PaintNavy",
+          "Lib_AutoGlass",
+          "Lib_Black",
+          "Lib_SteelDark",
+          "Lib_Glass",
+          "Lib_Steel",
+          "Lib_BoxRed",
+          "Lib_Rubber",
+          "Lib_PaintSilver"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      },
+      {
+        "lod": 2,
+        "tris": 2356,
+        "materials": [
+          "Lib_PaintNavy",
+          "Lib_AutoGlass",
+          "Lib_Black",
+          "Lib_SteelDark",
+          "Lib_Glass",
+          "Lib_Steel",
+          "Lib_BoxRed",
+          "Lib_Rubber",
+          "Lib_PaintSilver"
+        ],
+        "mesh": "LOD2",
+        "fileID": 736115405485880582
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_Wheel_00",
+        "type": "box",
+        "center": [
+          -0.8,
+          0.022,
+          -1.3299999999999996
+        ],
+        "size": [
+          0.014,
+          0.01,
+          0.01
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Wheel_01",
+        "type": "box",
+        "center": [
+          0.8,
+          0.022,
+          -1.3299999999999996
+        ],
+        "size": [
+          0.014,
+          0.01,
+          0.01
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Wheel_10",
+        "type": "box",
+        "center": [
+          -0.8,
+          0.022,
+          1.4900000000000002
+        ],
+        "size": [
+          0.014,
+          0.01,
+          0.01
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Wheel_11",
+        "type": "box",
+        "center": [
+          0.8,
+          0.022,
+          1.4900000000000002
+        ],
+        "size": [
+          0.014,
+          0.01,
+          0.01
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Cabin",
+        "type": "box",
+        "center": [
+          0.0,
+          0.78,
+          -0.05
+        ],
+        "size": [
+          0.42,
+          0.32,
+          0.62
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Roof",
+        "type": "box",
+        "center": [
+          0.0,
+          1.26,
+          0.05
+        ],
+        "size": [
+          0.28,
+          0.32,
+          0.24
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Hood",
+        "type": "box",
+        "center": [
+          0.0,
+          0.84,
+          1.48
+        ],
+        "size": [
+          0.4,
+          0.12,
+          0.36
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Deck",
+        "type": "box",
+        "center": [
+          0.0,
+          0.98,
+          -1.55
+        ],
+        "size": [
+          0.36,
+          0.1,
+          0.28
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Nose",
+        "type": "box",
+        "center": [
+          0.0,
+          0.36,
+          1.55
+        ],
+        "size": [
+          0.22,
+          0.12,
+          0.36
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "climbable": true,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "Roof and hood are climbable sheet metal.",
+    "vaultNote": "Hood and roof are landings, not vault rails.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1",
+      "LOD2"
+    ],
+    "slackCm": 0.53,
+    "fbx": "Assets/Art/Props/Library/Vehicles/Sedan_Mid_A_25_Navy.fbx"
+  },
+  {
+    "name": "Sedan_Mid_A_25_Ocean",
+    "category": "Vehicles",
+    "blurb": "Midsize sedan, 2025 fascia, 4.90 m long, shoulder 1.76 m, roof 1.44 m. Hard panel body, 18 inch alloys. Hood and roof are landings. Color ocean.",
+    "size": [
+      1.816,
+      1.44,
+      4.9
+    ],
+    "min": [
+      -0.908,
+      0.0,
+      -2.45
+    ],
+    "max": [
+      0.908,
+      1.44,
+      2.45
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 4908,
+        "materials": [
+          "Lib_PaintOcean",
+          "Lib_AutoGlass",
+          "Lib_Black",
+          "Lib_SteelDark",
+          "Lib_Glass",
+          "Lib_Steel",
+          "Lib_BoxRed",
+          "Lib_Rubber",
+          "Lib_PaintSilver"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 3676,
+        "materials": [
+          "Lib_PaintOcean",
+          "Lib_AutoGlass",
+          "Lib_Black",
+          "Lib_SteelDark",
+          "Lib_Glass",
+          "Lib_Steel",
+          "Lib_BoxRed",
+          "Lib_Rubber",
+          "Lib_PaintSilver"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      },
+      {
+        "lod": 2,
+        "tris": 2356,
+        "materials": [
+          "Lib_PaintOcean",
+          "Lib_AutoGlass",
+          "Lib_Black",
+          "Lib_SteelDark",
+          "Lib_Glass",
+          "Lib_Steel",
+          "Lib_BoxRed",
+          "Lib_Rubber",
+          "Lib_PaintSilver"
+        ],
+        "mesh": "LOD2",
+        "fileID": 736115405485880582
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_Wheel_00",
+        "type": "box",
+        "center": [
+          -0.8,
+          0.022,
+          -1.3299999999999996
+        ],
+        "size": [
+          0.014,
+          0.01,
+          0.01
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Wheel_01",
+        "type": "box",
+        "center": [
+          0.8,
+          0.022,
+          -1.3299999999999996
+        ],
+        "size": [
+          0.014,
+          0.01,
+          0.01
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Wheel_10",
+        "type": "box",
+        "center": [
+          -0.8,
+          0.022,
+          1.4900000000000002
+        ],
+        "size": [
+          0.014,
+          0.01,
+          0.01
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Wheel_11",
+        "type": "box",
+        "center": [
+          0.8,
+          0.022,
+          1.4900000000000002
+        ],
+        "size": [
+          0.014,
+          0.01,
+          0.01
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Cabin",
+        "type": "box",
+        "center": [
+          0.0,
+          0.78,
+          -0.05
+        ],
+        "size": [
+          0.42,
+          0.32,
+          0.62
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Roof",
+        "type": "box",
+        "center": [
+          0.0,
+          1.26,
+          0.05
+        ],
+        "size": [
+          0.28,
+          0.32,
+          0.24
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Hood",
+        "type": "box",
+        "center": [
+          0.0,
+          0.84,
+          1.48
+        ],
+        "size": [
+          0.4,
+          0.12,
+          0.36
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Deck",
+        "type": "box",
+        "center": [
+          0.0,
+          0.98,
+          -1.55
+        ],
+        "size": [
+          0.36,
+          0.1,
+          0.28
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Nose",
+        "type": "box",
+        "center": [
+          0.0,
+          0.36,
+          1.55
+        ],
+        "size": [
+          0.22,
+          0.12,
+          0.36
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "climbable": true,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "Roof and hood are climbable sheet metal.",
+    "vaultNote": "Hood and roof are landings, not vault rails.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1",
+      "LOD2"
+    ],
+    "slackCm": 0.53,
+    "fbx": "Assets/Art/Props/Library/Vehicles/Sedan_Mid_A_25_Ocean.fbx"
   }
 ]
