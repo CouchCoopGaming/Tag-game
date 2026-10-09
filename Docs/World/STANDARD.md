@@ -41,7 +41,7 @@ Reserved clears, still in force:
 | Bar under-clear | ≥ 1.05 m | `BarUnderClear` |
 | Fort corridor | ≥ 8 m | east spine and the army/knight gap |
 
-A closed cage is a dead end. `CourtFence` is a closed gate (`Docs/AssetLibrary.md`: "The gate is closed"). Do not place it. A gazebo, a scaffold, or a facade must leave a walk-around, a vault, or a jump back to the ground.
+A closed cage is a dead end. `CourtFence` ships with a closed gate (`Docs/AssetLibrary.md`: "The gate is closed"). Z7 places one copy and play disables `Col_Gate`, so the fabric gap is the entrance. The mesh leaf is still drawn. That draw is a models-lane bug. Do not edit the prefab. A gazebo, a scaffold, or a facade must leave a walk-around, a vault, or a jump back to the ground.
 
 ## Verb envelopes
 
@@ -81,16 +81,28 @@ The asset catalog's park vault band is 0.90–1.05 m (`Docs/AssetLibrary.md` lin
 
 `v = away * wallRunJumpOut + up * wallRunJumpUp + look * 3.5`
 
-with `wallRunJumpOut = 8` and `wallRunJumpUp = 6.2`. The `3.5` is the look term in `PlayerMotor.cs`, not a config field.
+with `wallRunJumpOut = 8` and `wallRunJumpUp = 6.2`. The `3.5` is the look term in `PlayerMotor.cs`, not a config field. `away` is the wall normal. `look` is the camera flattened onto the ground.
 
-Flat, same-height, look along the wall:
+Same-height air time, from rest in the vertical:
 
-- horizontal speed `sqrt(8² + 3.5²) = 8.732 m/s`
 - time up `6.2 / 22 = 0.282 s`, height `6.2² / (2 × 22) = 0.874 m`
 - time down `sqrt(2 × 0.874 / (22 × 1.62)) = 0.221 s`
-- range `8.732 × (0.282 + 0.221) = 4.394 m`
+- total `0.503 s`
 
-`Docs/MegaPark_SkillRoutes.md` uses 4.40 m for its wall-jump segments. A new gap has to land inside 4.39 m. A look that is not along the wall is shorter.
+The look angle is measured from the wall tangent. Positive turns off the wall, toward the landing. Perpendicular speed is `8 + 3.5 * sin(θ)`. Along-wall speed is `3.5 * cos(θ)`. The gap that matters is the perpendicular one. Same-height range is that perpendicular speed times `0.503 s`.
+
+| Look | Perpendicular range |
+|---|---|
+| 0° along the wall | 4.026 m |
+| 30° off the wall | 4.907 m |
+| 60° off the wall | 5.551 m |
+| 90° straight off the wall | 5.787 m |
+| −30° back into the wall | 3.145 m |
+| −60° back into the wall | 2.501 m |
+
+The old `4.394 m` figure is the diagonal path when the look runs along the wall: `sqrt(8² + 3.5²) × 0.503`. It is not the gap. A look off the wall makes the perpendicular range longer and the along-wall drift shorter. A look turned back into the wall is the short gap. `Docs/MegaPark_SkillRoutes.md` still quotes 4.40 m for its wall-jump segments.
+
+A dressed route has to land at 30° and at 60° off the wall. The check flies a 0.40 m radius, 1.8 m capsule on that impulse alone, and the touchdown has to sit on the floor with the capsule radius inside the deck. Air accel is not credited. A gazebo only counts if the arc clears the rails, posts, and roof. The entry side is the open one.
 
 ### Slide
 
@@ -145,7 +157,7 @@ Four pads on 118 m arcs of the 472 m loop (`MegaParkP1Layout` spawn comment):
 
 The hot-path line stays `hot-path allocs before=101 after=0 flags=dropped`. Do not edit the scan or the movement code to chase that line.
 
-Graybox static draws after batching are capped at `MegaParkP1Layout.Pass7.DrawCap = 120`. Pocket is 60, Stack is 70. That cap is the graybox audit. Library props placed by the district are marked static and are not passed through `StaticBatchingUtility.Combine`, so their LOD groups stay. Four cameras can each draw those unique meshes. The next district should not add another unbatched set on top of Z7.
+Graybox static draws after batching are capped at `MegaParkP1Layout.Pass7.DrawCap = 120`. Pocket is 60, Stack is 70. That cap is the graybox audit. Dressed props are marked static. `BatchDistrictMeshes` disables LOD1 and LOD2, disables the LODGroup, then calls `StaticBatchingUtility.Combine`. Z7, Z1, and Z2 all take that path. Four cameras still each submit the combined batch. LOD1 and LOD2 are not drawn on a dressed district.
 
 ## Scale versus the Hier player
 
@@ -165,7 +177,7 @@ Do not scale a prop to "fit" a gap. Move it, or pick a different module.
 
 Dressed districts load from `Resources/World/WorldPropTable` (`WorldPropTable.Load`). That ScriptableObject holds the prefab references, so a player build includes them. `MegaParkP1Bootstrap` does not call `UnityEditor.AssetDatabase`. A missing table or a missing entry is `Debug.LogError`, and the placed count is an error when it is short of the list. `Assets/Tests/EditMode/WorldPropTableTests` resolves every placement through `Resources.Load` and fails if any prefab is null.
 
-A dressed wall-jump stays at or under 4.0 m along the wall. The flat envelope is still 4.39 m. The Z7 chase keeps 0.80 m of clearance past the north hoop. The legal blocker clearance remains the 0.40 m radius plus 0.10 m.
+A dressed wall-jump has to stay reachable at 30° and at 60° off the wall, on the floor, with the 1.8 m capsule clear of the shell. The Z7 chase keeps 0.80 m of clearance past the north hoop. The legal blocker clearance remains the 0.40 m radius plus 0.10 m.
 
 ## What a route check must print
 

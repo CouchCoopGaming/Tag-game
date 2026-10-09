@@ -50,7 +50,11 @@ _hj = math.sqrt(WALL_JUMP_OUT * WALL_JUMP_OUT + WALL_JUMP_LOOK * WALL_JUMP_LOOK)
 _t_up = WALL_JUMP_UP / GRAVITY
 _h_up = WALL_JUMP_UP * WALL_JUMP_UP / (2.0 * GRAVITY)
 _t_dn = math.sqrt(2.0 * _h_up / (GRAVITY * FALL_MULT))
-WALL_JUMP_FLAT = _hj * (_t_up + _t_dn)  # ~4.39 m; skill routes use 4.40
+WALL_JUMP_FLAT = _hj * (_t_up + _t_dn)  # diagonal path, look along the wall. Not the gap.
+WALL_JUMP_TIME = _t_up + _t_dn
+# Off the wall: look angle from the tangent, toward the landing.
+# Into the wall is the negative angle. Routes must clear the positive pair.
+OFF_WALL_DEGREES = (30.0, 60.0)
 
 # Ground loop around the street and the court. South leg stays under the
 # planted median (z min 32.62). East leg stays west of the rail at x=114.
@@ -336,6 +340,110 @@ def loop_clear(box):
     return True
 
 
+def y_wall_jump(t, y0):
+    if t <= _t_up:
+        return y0 + WALL_JUMP_UP * t - 0.5 * GRAVITY * t * t
+    return y0 + _h_up - 0.5 * (GRAVITY * FALL_MULT) * (t - _t_up) * (t - _t_up)
+
+
+def t_descend_to(y0, y_land):
+    """First time feet fall back to y_land. None if the apex is short of it."""
+    if y_land > y0 + _h_up + 1e-6:
+        return None
+    if abs(y_land - y0) < 1e-6:
+        return WALL_JUMP_TIME
+    t = _t_up
+    while t < 3.0:
+        t += 0.002
+        if y_wall_jump(t, y0) <= y_land:
+            return t
+    return None
+
+
+def perp_range(deg_from_tangent):
+    """Same-height gap range. Positive degrees look off the wall, toward the landing."""
+    perp = WALL_JUMP_OUT + WALL_JUMP_LOOK * math.sin(math.radians(deg_from_tangent))
+    return max(0.0, perp) * WALL_JUMP_TIME
+
+
+def _circle_hits(x, z, radius, box):
+    cx = min(max(x, box[0]), box[3])
+    cz = min(max(z, box[2]), box[5])
+    return (x - cx) * (x - cx) + (z - cz) * (z - cz) < radius * radius
+
+
+def off_wall_lands(face_x, spans, deck, blockers, angles=OFF_WALL_DEGREES):
+    """Ballistic wall-jump, capsule 0.40 x 1.8, look off the wall.
+
+    face_x is the launch face. The jump goes toward +X. spans are (z0, z1)
+    pieces of that face. deck is the floor AABB. blockers are other AABBs.
+    A route is reachable at an angle when some legal launch on the face
+    touches the deck without meeting a blocker first.
+    """
+    details = []
+    all_ok = True
+    deck_top = deck[4]
+    for ang in angles:
+        rad = math.radians(ang)
+        perp = WALL_JUMP_OUT + WALL_JUMP_LOOK * math.sin(rad)
+        along = WALL_JUMP_LOOK * math.cos(rad)
+        found = None
+        # Feet at 0.05 m is the low airborne hop. A grounded y=0 is not a wall run.
+        y = 0.05
+        while y <= CLIMB_PRACTICAL + 1e-6 and found is None:
+            t_land = t_descend_to(y, deck_top)
+            if t_land is None or perp <= 0.05:
+                y += 0.05
+                continue
+            for sign in (1.0, -1.0):
+                if found is not None:
+                    break
+                for z0, z1 in spans:
+                    z_launch = z0
+                    while z_launch <= z1 + 1e-6:
+                        hit = False
+                        steps = max(8, int(t_land / 0.02))
+                        x = face_x + PAWN_R
+                        zz = z_launch
+                        feet = y
+                        for s in range(1, steps + 1):
+                            t = t_land * s / float(steps)
+                            x = face_x + PAWN_R + perp * t
+                            zz = z_launch + sign * along * t
+                            feet = y_wall_jump(t, y)
+                            top = feet + PLAYER_H
+                            if (
+                            s == steps
+                            and deck[0] + PAWN_R <= x <= deck[3] - PAWN_R
+                            and deck[2] + PAWN_R <= zz <= deck[5] - PAWN_R
+                        ):
+                                found = (y, sign, z_launch, x, zz)
+                                break
+                            for box in blockers:
+                                if feet >= box[4] - 0.02 or top <= box[1] + 0.02:
+                                    continue
+                                if _circle_hits(x, zz, PAWN_R, box):
+                                    hit = True
+                                    break
+                            if hit or found is not None:
+                                break
+                        if found is not None:
+                            break
+                        z_launch += 0.25
+                    if found is not None:
+                        break
+            y += 0.05
+        if found is None:
+            all_ok = False
+            details.append("%+.0f deg MISS (perp %.2f m)" % (ang, perp_range(ang)))
+        else:
+            details.append(
+                "%+.0f deg launch %.2f m land (%.2f, %.2f) perp %.2f m"
+                % (ang, found[0], found[3], found[4], perp_range(ang))
+            )
+    return all_ok, "; ".join(details)
+
+
 def court_entry(instances, by):
     """West chase through the opened gate to midcourt. Col_Gate is not a blocker."""
     if "CourtFence" not in by:
@@ -472,24 +580,36 @@ def main():
         wall_h = max(wa[4], wb[4]) - min(wa[1], wb[1])
         run_len = max(wa[5], wb[5]) - min(wa[2], wb[2])
         gap = gz[0] - wall_east
-        deck = 0.32
-        climb_to = deck
-        gazebo_vault = by["Gazebo"]["prefab"]["vault"]
+        deck_box = None
+        for box in by["Gazebo"]["boxes"]:
+            if box.get("name") == "Col_Deck":
+                deck_box = box["aabb"]
+        deck_gap = (deck_box[0] - wall_east) if deck_box else gap
+        blockers = []
+        for inst in instances:
+            if inst["place"]["name"] in ("Climb_A", "Climb_B"):
+                continue
+            for box in inst["boxes"]:
+                if inst["place"]["name"] == "Gazebo" and box.get("name") == "Col_Deck":
+                    continue
+                blockers.append(box["aabb"])
+        spans = [(wa[2], wa[5]), (wb[2], wb[5])]
+        arc_ok, arc_detail = (False, "no deck")
+        if deck_box is not None:
+            arc_ok, arc_detail = off_wall_lands(wall_east, spans, deck_box, blockers)
         ok = (
             by["Climb_A"]["prefab"]["climbable"]
-            and climb_to <= CLIMB_PRACTICAL
-            and climb_to <= CLIMB_CAP
-            and wall_h + 0.05 >= climb_to
-            and 2.0 <= run_len
+            and wall_h + 0.05 >= 0.32
             and 4.0 <= run_len
             and 4.0 <= WALL_RUN_DIST + 0.02
-            and 0.5 < gap <= 4.0
+            and deck_gap > 0.5
+            and arc_ok
         )
         add_route(
             "WestClimb",
             ok,
-            "climb %.2f m (wall %.2f m, cap %.2f, practical %.2f) wall-run 4.00 m on a %.2f m face (max %.2f) wall-jump gap %.2f m (flat %.2f)"
-            % (climb_to, wall_h, CLIMB_CAP, CLIMB_PRACTICAL, run_len, WALL_RUN_DIST, gap, WALL_JUMP_FLAT),
+            "wall %.2f m wall-run 4.00 m on a %.2f m face (max %.2f) outer gap %.2f m deck gap %.2f m; %s"
+            % (wall_h, run_len, WALL_RUN_DIST, gap, deck_gap, arc_detail),
         )
         # Grapple from the south lane up to the climb cornice.
         cornice = (wall_east, max(wa[4], wb[4]), (wa[2] + wb[5]) * 0.5)
@@ -609,7 +729,14 @@ def main():
     print(line)
     print("jump apex %.3f m  wall-jump flat %.3f m  wall-run %.2f m  air dash %.2f m  grapple %.1f m" % (
         JUMP_APEX, WALL_JUMP_FLAT, WALL_RUN_DIST, AIR_DASH, GRAPPLE_MAX))
+    boot = open(os.path.join(ROOT, "Assets/Scripts/Level/MegaParkP1Bootstrap.cs"), encoding="utf-8").read()
+    batch_ok = 'BuildDistrict("WorldZ7", MegaParkWorldDistrict.Places, table, true)' in boot
     print("instances %d unique %d" % (len(instances), len(cache)))
+    print("static-batch %s" % ("yes" if batch_ok else "NO"))
+    print(
+        "wall-jump perp 0 deg %.3f m  off-wall 30 deg %.3f m  60 deg %.3f m  into-wall -30 deg %.3f m  -60 deg %.3f m"
+        % (perp_range(0), perp_range(30), perp_range(60), perp_range(-30), perp_range(-60))
+    )
     if floating:
         print("floating: " + ", ".join(floating))
     if open_hits:
@@ -666,7 +793,8 @@ def main():
 
     if "--stills" in sys.argv:
         write_stills(instances)
-    return 0 if reachable == n and not floating and missing == 0 and scale_fails == 0 and not open_hits and not loop_hits and not path_miss else 1
+    clean = reachable == n and not floating and missing == 0 and scale_fails == 0 and not open_hits and not loop_hits and not path_miss and batch_ok
+    return 0 if clean else 1
 
 
 def player_path_gaps(src):
@@ -682,7 +810,7 @@ def player_path_gaps(src):
     if "WorldPropTable.Load" not in bootstrap:
         gaps.append("bootstrap does not load the Resources table")
     seen = set()
-    for array in ("Places", "SoftPlay"):
+    for array in ("Places", "SoftPlay", "Cling"):
         for p in parse_places(src, array):
             if p["path"] in seen:
                 continue
@@ -750,7 +878,7 @@ def color_for(name, path):
         return (0.62, 0.60, 0.56)
     if "Brick" in path or name.startswith("Facade") or name.startswith("Climb"):
         return (0.55, 0.28, 0.20)
-    if name.startswith("AC"):
+    if "AC" in name:
         return (0.72, 0.74, 0.76)
     if name.startswith("Car"):
         return (0.25, 0.38, 0.62) if "Sedan" in name else (0.30, 0.42, 0.28) if "Hatch" in name else (0.45, 0.32, 0.22)

@@ -3,11 +3,11 @@ using System;
 namespace Tag.Level
 {
     /// <summary>
-    /// Pass 1 dresses Z7, the kickball field. That is the ground the four
-    /// split cameras share across the open bowl. Placements are real meters,
-    /// yaw degrees, scale 1. The headless layout audit still counts the infield
-    /// lumps; play mode hides those meshes and colliders so the court is the floor.
-    /// Feel locks are not stored here.
+    /// Dressed Mega Park districts. Z7 is the kickball field the four split
+    /// cameras share. Z1 dresses around the soft-play decks. Z2 dresses the
+    /// east lawn of the cling lanes. Placements are real meters, yaw degrees,
+    /// scale 1. The headless layout audit still counts the gray solids; play
+    /// mode hides only the Z7 infield lumps. Feel locks are not stored here.
     /// </summary>
     public static class MegaParkWorldDistrict
     {
@@ -81,9 +81,9 @@ namespace Tag.Level
 
             new Place("Climb_A", B + "Brick_Wall.prefab", 71.75f, 0f, 33f, 90f),
             new Place("Climb_B", B + "Brick_Wall.prefab", 71.75f, 0f, 37f, 90f),
-            // Wall-jump gap is the gazebo's west face minus the climb face.
-            // 77.53 keeps that gap at 3.90 m, under the 4.0 m layout cap.
-            new Place("Gazebo", P + "Gazebo.prefab", 77.53f, 0f, 35f, 0f),
+            // Yaw 180 puts the open entry on the west, toward the climb.
+            // The west rail at yaw 0 sits in the 30° and 60° arcs.
+            new Place("Gazebo", P + "Gazebo.prefab", 77.53f, 0f, 35f, 180f),
             new Place("AC_Gazebo", B + "RooftopAC.prefab", 77.53f, 3.05f, 35f, 0f),
 
             new Place("Car_Sedan", S + "Car_Sedan.prefab", 86f, 0.12f, 35.55f, 90f),
@@ -131,13 +131,38 @@ namespace Tag.Level
             new Place("Sp_Picnic", P + "PicnicTable.prefab", 27.2f, 0f, 30.6f, 90f),
         };
 
+        /// <summary>
+        /// Z2 cling. The gray faces stay. These props sit on the east lawn,
+        /// off the x=8 loop and off the landmark at (15.2, 77.4). Play batches
+        /// the group. The gazebo entry faces the brick climb.
+        /// </summary>
+        public static readonly Place[] Cling =
+        {
+            new Place("Cl_ClimbA", B + "Brick_Wall.prefab", 9.14f, 0f, 50f, 90f),
+            new Place("Cl_ClimbB", B + "Brick_Wall.prefab", 9.14f, 0f, 54f, 90f),
+            new Place("Cl_Gazebo", P + "Gazebo.prefab", 14.62f, 0f, 52f, 180f),
+            new Place("Cl_AC", B + "RooftopAC.prefab", 14.62f, 3.05f, 52f, 0f),
+            new Place("Cl_ScaffoldA", S + "Scaffold_Bay.prefab", 12.80f, 0f, 42.8f, 0f),
+            new Place("Cl_ScaffoldB", S + "Scaffold_Bay.prefab", 15.55f, 0f, 42.8f, 0f),
+            new Place("Cl_Tree", P + "Tree_Maple.prefab", 12.8f, 0f, 63.5f, 0f),
+            new Place("Cl_Planter", P + "Planter.prefab", 15.4f, 0f, 64.2f, 0f),
+            new Place("Cl_Bench", S + "Bench_Wood.prefab", 11.2f, 0f, 60.8f, 0f),
+            new Place("Cl_Trash", S + "TrashCan_Lidded.prefab", 16.4f, 0f, 61.2f, 0f),
+            new Place("Cl_Shrub", P + "Shrub.prefab", 13.6f, 0f, 66.2f, 0f),
+            new Place("Cl_Picnic", P + "PicnicTable.prefab", 15.0f, 0f, 68.6f, 90f),
+            new Place("Cl_Light", S + "LightPost_Single.prefab", 17.0f, 0f, 66.4f, 180f),
+        };
+
         public static Place[] AllPlaces()
         {
-            var all = new Place[Places.Length + SoftPlay.Length];
+            var all = new Place[Places.Length + SoftPlay.Length + Cling.Length];
+            int n = 0;
             for (int i = 0; i < Places.Length; i++)
-                all[i] = Places[i];
+                all[n++] = Places[i];
             for (int i = 0; i < SoftPlay.Length; i++)
-                all[Places.Length + i] = SoftPlay[i];
+                all[n++] = SoftPlay[i];
+            for (int i = 0; i < Cling.Length; i++)
+                all[n++] = Cling[i];
             return all;
         }
 

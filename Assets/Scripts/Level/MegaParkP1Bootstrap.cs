@@ -464,8 +464,9 @@ namespace Tag.Level
                     + ". Player builds do not use the editor asset database.");
                 return;
             }
-            BuildDistrict("WorldZ7", MegaParkWorldDistrict.Places, table, false);
+            BuildDistrict("WorldZ7", MegaParkWorldDistrict.Places, table, true);
             BuildDistrict("WorldZ1", MegaParkWorldDistrict.SoftPlay, table, true);
+            BuildDistrict("WorldZ2", MegaParkWorldDistrict.Cling, table, true);
         }
 
         void BuildDistrict(string group, MegaParkWorldDistrict.Place[] places, WorldPropTable table, bool batch)
@@ -494,7 +495,10 @@ namespace Tag.Level
                 placed++;
             }
             if (batch && placed > 0)
+            {
                 BatchDistrictMeshes(g);
+                Debug.Log("[MegaPark] world " + group + " static-batched");
+            }
             if (placed != places.Length)
                 Debug.LogError("[MegaPark] world " + group + " placed " + placed.ToString() + "/" + places.Length.ToString());
             else
@@ -520,7 +524,7 @@ namespace Tag.Level
         }
 
         /// <summary>
-        /// Z1 is the small set. Drop the extra LOD renderers and static-batch what remains.
+        /// Dressed districts. Drop the extra LOD renderers and static-batch what remains.
         /// </summary>
         static void BatchDistrictMeshes(Transform root)
         {

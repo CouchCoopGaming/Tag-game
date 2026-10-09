@@ -1,6 +1,6 @@
 # World ledger
 
-Status of each map area after pass 1. Gray means the live solids are still the Mega Park cubes from `MegaParkP1Layout.BuildSolids`. Polished means library prefabs are placed on top and the stand-in lumps are hidden in play.
+Status of each map area after pass 3. Gray means the live solids are still the Mega Park cubes from `MegaParkP1Layout.BuildSolids`. Polished means library prefabs are placed on top. Z7 hides its infield lumps in play. Z1 and Z2 leave their gray toys in place.
 
 The headless audit still counts every solid. Hiding a lump in `MegaParkP1Bootstrap` does not change `BuildSolids`, so the Mega Park proof line stays the same.
 
@@ -10,13 +10,13 @@ Zone boxes are `MegaParkP1Layout.Pass6.ZoneBoxes`.
 
 | Area | Bounds | Status |
 |---|---|---|
-| Z1 Soft-play | x[2, 38] z[2, 36] | Polished this pass. Decks, tubes, cubes, step, and rim stay gray. 12 props, static-batched. |
-| Z2 Cling | x[2, 18] z[38, 78] | Gray. Blue cling arrives with a real wall, not a recolor. |
+| Z1 Soft-play | x[2, 38] z[2, 36] | Polished pass 2. Decks, tubes, cubes, step, and rim stay gray. 12 props, static-batched. Wall-jump rechecked pass 3. |
+| Z2 Cling | x[2, 18] z[38, 78] | Polished pass 3. Gray cling faces stay. 13 props on the east lawn, static-batched. |
 | Z3 Merry | x[22, 46] z[34, 60] | Gray. Crossing B lives here. Leave it open. |
 | Z4 Slide mountain | x[22, 56] z[72, 98] | Gray. Decks stay on the rim when they are built. |
 | Z5 Swings | x[58, 100] z[78, 98] | Gray. |
 | Z6 Twin forts | x[118, 158] z[10, 90] | Gray. East spine x[130, 138] and gap z[46, 54] stay empty. |
-| Z7 Kickball | x[64, 114] z[28, 68] | Polished pass 1. Pass 2 opened the court gate and widened the chase and wall-jump margins. |
+| Z7 Kickball | x[64, 114] z[28, 68] | Polished pass 1. Pass 2 opened the court gate. Pass 3 static-batches the 24 prefabs and turns the gazebo entry toward the climb. |
 | Z8 Crash bowl | x[46, 78] z[34, 66] | Gray. Open rect x[52, 72] z[40, 58] has no new props. |
 | Z9 Bars | x[38, 118] z[12, 20] | Gray. South spine. Bar under-clear 1.05 m stays empty. |
 | Z10 Hopscotch | x[118, 156] z[2, 22] | Gray. |
@@ -46,7 +46,7 @@ Placed at scale 1, 46 instances, 24 unique prefabs:
 - Seven `StreetRoad_TwoLane` tiles, yaw 90, along z = 34 from x = 84 to 108. Planted median at (106.2, 0, 35.55).
 - Five sidewalk bays at z = 29.6. Brick row on the south edge at z = 28.15: door, window, wall, window, door. `RooftopAC` on the wall top at y = 3.2.
 - Two `Brick_Wall` climb faces, yaw 90, at x = 71.75, z = 33 and 37. Union face is 8.00 m, height 3.20 m.
-- Gazebo at (77.53, 0, 35). AC on the roof at y = 3.05, the measured roof top.
+- Gazebo at (77.53, 0, 35), yaw 180, so the entry faces the climb. AC on the roof at y = 3.05, the measured roof top. Outer west face (the step) is x = 75.16. Deck west face stays x = 76.33.
 - Parked `Car_Sedan`, `Car_Hatch`, `Car_Pickup` on the north lane, yaw 90, pivot y = 0.12 (road crown is about 0.11).
 - Lights, hydrant, two benches, two trash cans, two scaffold bays, two maples, two planters, a picnic table, a park lamp, a shrub.
 
@@ -60,7 +60,7 @@ Envelopes the check used: jump apex 13.866 m, flat wall-jump 4.394 m, wall-run 5
 
 | Route | Kind | Measured |
 |---|---|---|
-| WestClimb | climb, wall-run, wall-jump | Climb to the gazebo deck at 0.32 m (wall 3.20 m, cap 3.40, practical 3.00). Wall-run 4.00 m on an 8.00 m face (max 5.89). Gap 3.90 m (layout cap 4.00, flat envelope 4.39). |
+| WestClimb | climb, wall-run, wall-jump | Wall 3.20 m. Wall-run 4.00 m on an 8.00 m face (max 5.89). Outer gap 3.22 m (was 3.90 m before the entry yaw). Deck gap 4.39 m. At 30° off the wall the capsule leaves with feet at 0.05 m and lands at (76.94, 34.93). At 60° it lands at (77.54, 34.83). Both sit inside the deck by the 0.40 m radius. |
 | WestGrapple | grapple | 12.21 m from the south lane to the climb cornice (range 1.5–28). |
 | GazeboVault | vault | Rail 0.95 m (mantle 0.45–2.55, vault band 0.90–1.05). East walk-around open. |
 | SlideDash | slide, air dash | Under-clear 1.68 m on both bays (crouch 1.05). Gap 0.92 m (dash 1.50). |
@@ -72,11 +72,12 @@ No placement hits the open rect. None sits on the 472 m loop.
 
 ### Honest gaps
 
-- WestClimb's 3.90 m gap is under the 4.00 m layout cap. A look that is not along the wall is still shorter than the 4.39 m flat envelope.
+- The arc that clears the gazebo eave starts with the feet at 0.05 m. A higher hop meets the roof. The check does not add air accel.
+- A look turned back into the wall is shorter: −30° reaches 3.145 m and −60° reaches 2.501 m. The deck gap is 4.39 m, so those looks miss. The pass 3 requirement is the off-wall pair, and that pair lands.
 - The north-hoop clearance is 0.90 m. The legal minimum remains 0.50 m (radius 0.40 + 0.10).
 - The planted median's collider tops at 0.66 m, over the 0.30 m step and under the 0.90 m vault band. It is a trip. The chase goes around it.
 - AC units overhang the brick thickness. The pivot sits on the wall or the roof, so the support test passes.
-- District props load from `Resources/World/WorldPropTable`. A missing table or a missing entry is `Debug.LogError`, and the count line is an error when placed is short of the list. Z7 props are static and are not combined. `DrawCap` 120 is the graybox batch only. Four cameras can each see Z7's 24 unique prefabs. Z1 is the batched set.
+- District props load from `Resources/World/WorldPropTable`. A missing table or a missing entry is `Debug.LogError`, and the count line is an error when placed is short of the list. Z7 is 46 instances and 24 unique prefabs. Play disables LOD1 and LOD2 on that group and calls `StaticBatchingUtility.Combine`, the same path as Z1. `DrawCap` 120 is the graybox batch only. Four cameras still submit the combined batch.
 - The fence mesh still draws a closed leaf. Only `Col_Gate` is turned off.
 - Stills in `Docs/WorldStills/pass1/` are collider rasterizations. Canopies, glass, and brick courses are not in the image. Unity and Blender are not in this environment.
 
@@ -92,13 +93,35 @@ Check line:
 
 | Route | Measured |
 |---|---|
-| WestClimb | Climb 2.00 m onto DeckLow (wall 3.20 m). Wall-run 4.00 m on a 4.00 m face. Wall-jump gap 3.66 m (cap 4.00). The step between the two walls is the ground exit. |
+| WestClimb | Climb onto DeckLow (wall 3.20 m, deck top 2.00 m). Wall-run 4.00 m on a 4.00 m face. Gap to the deck face 3.66 m, unchanged this pass. At 30° off the wall the capsule launches from 1.30 m and lands at x = 9.46, 0.46 m onto the deck. At 60° it launches from 1.20 m and lands at x = 9.58. Both clear the 0.40 m radius inset. The step between the two walls is the ground exit. |
 | WestGrapple | 23.26 m from the east lawn to the climb cornice. |
 | GazeboVault | Rail 0.95 m. East walk-around open. |
 | SlideDash | Under-clear 1.68 m. Air-dash gap 0.92 m. |
 | ChaseLoop | 72.4 m around the decks. Worst clearance 0.90 m against the shrub. |
 
-Stills: `Docs/WorldStills/pass2/`. Collider rasters, same as pass 1.
+Stills: `Docs/WorldStills/pass2/`. Collider rasters, same as pass 1. Pass 3 did not move these props. A look 30° or 60° back into the wall (ranges 3.145 m and 2.501 m) does not cross the 3.66 m gap.
+
+## Z2 this pass
+
+Placements: `Cling` in `Assets/Scripts/Level/MegaParkWorldDistrict.cs`. 13 instances, 11 unique prefabs. Z7 is 46 instances and 24 unique, so this set is smaller. Play static-batches the group the same way as Z7 and Z1.
+
+The eight gray cling walls stay on lanes x = 2.55 and x = 6.15. Nothing overlaps them, the landmark pole at (15.2, 77.4), the rims at x = 20, Crossing B, the bowl, the open rect, or the x = 8 loop. The brick climb is the east lawn, west face x = 8.95, which is 0.95 m off the loop.
+
+Check line:
+
+`world-check routes=5 reachable=5/5 floatingProps=0 missingColliders=0 scaleFails=0`
+
+| Route | Measured |
+|---|---|
+| EastClimb | Wall 3.20 m. Wall-run 4.00 m on an 8.00 m face. Deck gap 4.09 m. At 30° and 60° off the wall the capsule leaves with feet at 0.05 m and lands on the gazebo deck. The entry faces the climb (yaw 180). |
+| EastGrapple | 11.06 m from the north lawn to the climb cornice. |
+| GazeboVault | Rail 0.95 m. East walk-around open. |
+| SlideDash | Under-clear 1.68 m. Air-dash gap 0.92 m. |
+| ChaseLoop | 49.0 m around the east lawn. Worst clearance 1.00 m against `Rim_W1`. |
+
+The low launch is the one that clears the gazebo eave. A higher hop meets the roof, same limit as Z7. Into-wall looks at −30° and −60° miss the 4.09 m deck gap.
+
+Stills: `Docs/WorldStills/pass3/`. Collider rasters.
 
 ## Asset bugs for the models lane
 
@@ -121,4 +144,4 @@ Intentional openings the same scan prints, and that are not bugs: hoop rim above
 
 ## Next district
 
-Z2 cling, or the east forts (Z6) outside the east spine x[130, 138] and the fort gap z[46, 54]. Do not fill the bowl, the kickball sightline, or the soft-play decks. Keep the next set batched or smaller than Z7, and keep loading it from `WorldPropTable`.
+The next row is Z3 merry. Crossing B, x[22, 46] × z[44, 52], stays empty, so a Z3 dress has to live on the merry toys outside that band. Z4 slide is the following gray district if that band cannot hold five routes. Do not fill the bowl, the kickball sightline, the soft-play decks, or the cling lanes. Keep the next set batched, and keep loading it from `WorldPropTable`.
