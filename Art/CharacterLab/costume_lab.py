@@ -20,11 +20,12 @@ BLEND = os.path.join(OUT_DIR, "CostumeLab.blend")
 LOADOUTS = os.path.join(OUT_DIR, "loadouts.json")
 FIT_PATH = os.path.join(ROOT, "Docs", "Characters", "pass1", "fit.txt")
 
-# Cloth sits in this band off the skin. Penetration fails above 0.5 cm.
+# Cloth sits outside the rendered hull. Hoodies and jackets are the thick end of the band.
 BAND_MIN = 0.003
 BAND_MAX = 0.010
 CLOTH_OFFSET = 0.006
-SHOE_OFFSET = 0.0045
+HOODIE_OFFSET = 0.009
+SHOE_OFFSET = 0.008
 PEN_LIMIT = 0.005
 # Rounded hundredths of a centimetre. A printed 0.50 is the limit.
 PEN_CM = 0.50
@@ -47,8 +48,10 @@ PLAYER = {
     "Reed": (0.886, 0.235, 0.227),
     "Bram": (0.184, 0.435, 0.878),
     "Pip": (0.941, 0.478, 0.102),
-    "Sol": (0.478, 0.271, 0.769),
+    "Sol": (0.66, 0.50, 0.84),
 }
+TRIM = (0.10, 0.10, 0.12)
+SHOE_COLOR = (0.93, 0.93, 0.91)
 
 BODY_NAMES = (
     "Mesh_Head", "Mesh_Neck", "Mesh_Chest", "Mesh_Spine", "Mesh_Hips",
@@ -74,6 +77,7 @@ class Piece:
         self.loop = True
         self.boxes = []  # (center, ax, ay, az, hx, hy, hz) in armature space
         self.obj = None
+        self.offset = CLOTH_OFFSET
 
     def vert_count(self):
         n = 0
@@ -137,10 +141,11 @@ def make_material(name, color, player):
         bsdf.inputs["Base Color"].default_value = (color[0], color[1], color[2], 1.0)
         mat["player_color"] = 0
     noise = nt.nodes.new("ShaderNodeTexNoise")
-    noise.inputs["Scale"].default_value = 42.0
-    noise.inputs["Detail"].default_value = 2.0
+    noise.inputs["Scale"].default_value = 8.0
+    noise.inputs["Detail"].default_value = 0.0
     bump = nt.nodes.new("ShaderNodeBump")
-    bump.inputs["Strength"].default_value = 0.12
+    # Solid seat colours. A strong noise bump read as torn, mottled cloth.
+    bump.inputs["Strength"].default_value = 0.0
     nt.links.new(noise.outputs["Fac"], bump.inputs["Height"])
     nt.links.new(bump.outputs["Normal"], bsdf.inputs["Normal"])
     return mat
@@ -350,7 +355,11 @@ def visual_gap(info, point):
 
 
 def visual_penetration(body, point, ignore=None):
-    """How deep a point is inside any rendered body mesh, in metres."""
+    """How deep a point is inside any rendered body mesh, in metres.
+
+    Nearest-surface distance. A centroid ray reports the far cap of a long
+    limb and used to shove cloth that was already outside.
+    """
     worst = 0.0
     where = ""
     normal = Vector((0.0, 0.0, 1.0))
@@ -358,9 +367,9 @@ def visual_penetration(body, point, ignore=None):
         if name == ignore:
             continue
         local = info["inv"] @ point
-        if aabb_distance(info, local) > 0.025:
+        if aabb_distance(info, local) > 0.03:
             continue
-        hit = visual_gap(info, point)
+        hit = gap_to_one(info, point)
         if hit is None or hit[0] >= -1e-5:
             continue
         depth = -hit[0]
@@ -394,16 +403,64 @@ def loft_piece(piece, points, origin, axis, t0, t1, n_stations, n_sides, offset,
             if surface is None:
                 continue
             placed = surface + direction * offset
-            # Buried in a neighbour (hip/thigh overlap, joint covers). Keep the exposed shell.
-            depth, _where, _normal = visual_penetration(body, placed, ignore=piece.own)
-            if depth > 0.002:
-                continue
+            own_gap = gap_to_one(own, placed)
+            if own_gap is not None and own_gap[0] < offset - 1e-4:
+                placed = placed + own_gap[1] * (offset - own_gap[0])
             ring[s] = placed
             hits += 1
-        if hits >= max(4, n_sides // 5):
+        if hits >= 3:
+            _fill_ring(ring)
             chain.append(ring)
     if len(chain) >= 2:
+        _fill_stations(chain)
         piece.chains.append(chain)
+
+
+def _fill_ring(ring):
+    """A missed ray becomes a hole. Borrow the nearest sample on the ring."""
+    n = len(ring)
+    live = [i for i, p in enumerate(ring) if p is not None]
+    if len(live) < 3:
+        return
+    for i, p in enumerate(ring):
+        if p is not None:
+            continue
+        prev = max(live, key=lambda j: -min((i - j) % n, (j - i) % n))
+        # nearest by circular distance
+        best = live[0]
+        best_d = n
+        for j in live:
+            dist = min((i - j) % n, (j - i) % n)
+            if dist < best_d:
+                best_d = dist
+                best = j
+        ring[i] = ring[best].copy()
+
+
+def _fill_stations(chain):
+    for index, ring in enumerate(chain):
+        if any(p is not None for p in ring):
+            continue
+        donor = None
+        for step in range(1, len(chain)):
+            if index - step >= 0 and any(p is not None for p in chain[index - step]):
+                donor = chain[index - step]
+                break
+            if index + step < len(chain) and any(p is not None for p in chain[index + step]):
+                donor = chain[index + step]
+                break
+        if donor is None:
+            continue
+        chain[index] = [None if p is None else p.copy() for p in donor]
+
+
+def close_top(piece, point):
+    """Pull the last ring to one crown point so a hood is not an open tube."""
+    if not piece.chains or not piece.chains[0]:
+        return
+    chain = piece.chains[0]
+    n = len(chain[-1])
+    chain.append([point.copy() for _ in range(n)])
 
 
 def flex_clearance(d0, d1, flexion_deg, r0, r1):
@@ -559,36 +616,61 @@ def set_modifiers(pieces, enabled):
 
 
 def enforce_band(piece, body):
-    """Seat cloth 0.6 cm outside the rendered hull. Drop bins that stay inside a neighbour."""
+    """Seat cloth outside its plate, at least 3 mm and inside the 1 cm band."""
     own = body[piece.own]
     cut = 0
     moved = 0
+    target = max(BAND_MIN, getattr(piece, "offset", CLOTH_OFFSET))
+    hi = BAND_MAX - 0.0002
     for chain in piece.chains:
         for ring in chain:
             for s, p in enumerate(ring):
                 if p is None:
                     continue
-                own_hit = visual_gap(own, p)
+                own_hit = gap_to_one(own, p)
                 if own_hit is None:
                     ring[s] = None
                     cut += 1
                     continue
                 gap, normal = own_hit
-                if piece.kind == "cloth":
-                    placed = p + normal * (CLOTH_OFFSET - gap)
-                    check = visual_gap(own, placed)
-                    depth, _where, _normal = visual_penetration(body, placed, ignore=piece.own)
-                    own_ok = check is not None and BAND_MIN <= check[0] <= BAND_MAX
-                    if own_ok and depth < 0.001:
-                        if (placed - p).length > 1e-5:
-                            moved += 1
-                        ring[s] = placed
-                    else:
+                if piece.kind != "cloth":
+                    if gap < BAND_MIN:
+                        ring[s] = p + normal * (0.004 - gap)
+                        moved += 1
+                    continue
+                placed = p
+                if gap < target:
+                    placed = p + normal * (target - gap)
+                elif gap > hi:
+                    placed = p - normal * (gap - hi)
+                seated = placed
+                neighbour = gap_to_body(body, placed, ignore=piece.own, margin=0.04)
+                if neighbour is not None and neighbour[0] < 0.003:
+                    depth = 0.003 - neighbour[0]
+                    # A deep overlap is the mannequin's own plates crossing.
+                    # Launching the sample out of that punches a hole in the shell.
+                    if depth <= 0.015:
+                        placed = placed + neighbour[1] * depth
+                check = gap_to_one(own, placed)
+                # A neighbour shove that buries the sample back into its own plate
+                # is how the waist and the armpits turned into holes. Keep the seat.
+                if check is None or check[0] < target - 1e-4:
+                    placed = seated
+                    check = gap_to_one(own, placed)
+                if check is None or check[0] < BAND_MIN - 1e-4:
+                    ring[s] = None
+                    cut += 1
+                    continue
+                if check[0] > hi:
+                    placed = placed - check[1] * (check[0] - hi)
+                    check = gap_to_one(own, placed)
+                    if check is None or check[0] < BAND_MIN - 1e-4 or check[0] > BAND_MAX:
                         ring[s] = None
                         cut += 1
-                elif gap < 0.002:
-                    ring[s] = p + normal * (0.004 - gap)
+                        continue
+                if (placed - p).length > 1e-5:
                     moved += 1
+                ring[s] = placed
     return moved, cut
 
 
@@ -689,25 +771,45 @@ def catalog(arm, body):
         n_st, n_side = DENSITY[key]
         piece = Piece(name, bone, own, kind)
         piece.loop = True
+        piece.offset = offset
         pts = body[own]["world"]
         loft_piece(piece, pts, origin, axis, t0, t1, n_st, n_side, offset, body, mask)
         pieces.append(piece)
         return piece
 
-    # Torso. Stop the hem above the hip shell so the slide and the roll have a gap.
+    # Torso shells wrap the whole plate, flanks included, thicker than the sleeves.
     chest = body["Mesh_Chest"]["world"]
-    chest_piece = add_loft(
+    chest_z = [p.z for p in chest]
+    add_loft(
         "Lab_HoodieChest", "Chest", "Mesh_Chest", "cloth",
-        Vector((0.0, 0.0, 0.0)), z_axis, 1.175, 1.385, "chest", CLOTH_OFFSET,
+        Vector((0.0, 0.0, 0.0)), z_axis, min(chest_z) + 0.004, max(chest_z) - 0.004,
+        "chest", HOODIE_OFFSET,
     )
-    # Leave the flanks clear so a swinging arm does not collect the shell.
-    for chain in chest_piece.chains:
-        for ring in chain:
-            for index, vert in enumerate(ring):
-                if vert is not None and abs(vert.x) > 0.090:
-                    ring[index] = None
-    add_loft("Lab_HoodieSpine", "Spine", "Mesh_Spine", "cloth",
-             Vector((0.0, 0.0, 0.0)), z_axis, 1.078, 1.145, "spine", CLOTH_OFFSET)
+    # The spine plate is a short connector. A loft along Z lands in the chest
+    # and hip overlap and comes back under 3 mm, so the waist reads as a hole.
+    # A padded box stays outside that plate.
+    spine_pts = body["Mesh_Spine"]["world"]
+    spine = Piece("Lab_HoodieSpine", "Spine", "Mesh_Spine", "cloth")
+    spine.offset = HOODIE_OFFSET
+    sb0 = Vector((min(p.x for p in spine_pts), min(p.y for p in spine_pts), min(p.z for p in spine_pts)))
+    sb1 = Vector((max(p.x for p in spine_pts), max(p.y for p in spine_pts), max(p.z for p in spine_pts)))
+    spad = 0.008
+    add_box(
+        spine, (sb0 + sb1) * 0.5, x_axis, y_axis, z_axis,
+        (sb1.x - sb0.x) * 0.5 + spad,
+        (sb1.y - sb0.y) * 0.5 + spad,
+        (sb1.z - sb0.z) * 0.5 + spad,
+        4, 3,
+    )
+    spine.boxes.clear()
+    pieces.append(spine)
+    hip_pts = body["Mesh_Hips"]["world"]
+    hip_z = [p.z for p in hip_pts]
+    add_loft(
+        "Lab_HoodieHips", "Hips", "Mesh_Hips", "cloth",
+        Vector((0.0, 0.0, 0.0)), z_axis, min(hip_z) + 0.012, max(hip_z) - 0.002,
+        "spine", HOODIE_OFFSET,
+    )
 
     # Arms. Elbow flexion in these clips peaks near 50 degrees (the slide).
     # Shoulder covers stay bare: on this mannequin they sit inside the chest and the sleeve.
@@ -718,11 +820,28 @@ def catalog(arm, body):
         lpts = body["Mesh_LowerArm_" + side]["world"]
         us = project_span(upts, uo, ua)
         ls = project_span(lpts, lo, la)
-        # Joint is the lower-arm head, which is the upper-arm tail.
-        u_keep0 = us[0] + (us[1] - us[0]) * 0.12
-        u_keep1 = us[0] + (us[1] - us[0]) * 0.62
-        l_keep0 = ls[0] + (ls[1] - ls[0]) * 0.28
-        l_keep1 = ls[0] + (ls[1] - ls[0]) * 0.72
+        u_span = us[1] - us[0]
+        l_span = ls[1] - ls[0]
+        # Cover the shaft. A short gap at the elbow keeps the two tubes from sharing a volume.
+        u_keep0 = us[0] + u_span * 0.02
+        u_keep1 = us[0] + u_span * 0.96
+        l_keep0 = ls[0] + l_span * 0.04
+        l_keep1 = ls[0] + l_span * 0.78
+        spts = body["Mesh_Shoulder_" + side]["world"]
+        shoulder = Piece("Lab_SleeveSh" + side, "Shoulder_" + side, "Mesh_Shoulder_" + side, "cloth")
+        shoulder.offset = HOODIE_OFFSET
+        sh0 = Vector((min(p.x for p in spts), min(p.y for p in spts), min(p.z for p in spts)))
+        sh1 = Vector((max(p.x for p in spts), max(p.y for p in spts), max(p.z for p in spts)))
+        shpad = 0.007
+        add_box(
+            shoulder, (sh0 + sh1) * 0.5, x_axis, y_axis, z_axis,
+            (sh1.x - sh0.x) * 0.5 + shpad,
+            (sh1.y - sh0.y) * 0.5 + shpad,
+            (sh1.z - sh0.z) * 0.5 + shpad,
+            3, 3,
+        )
+        shoulder.boxes.clear()
+        pieces.append(shoulder)
         add_loft(
             "Lab_SleeveU" + side, "UpperArm_" + side, "Mesh_UpperArm_" + side, "cloth",
             uo, ua, u_keep0, u_keep1, "sleeve", CLOTH_OFFSET,
@@ -730,6 +849,11 @@ def catalog(arm, body):
         add_loft(
             "Lab_SleeveL" + side, "LowerArm_" + side, "Mesh_LowerArm_" + side, "cloth",
             lo, la, l_keep0, l_keep1, "sleeve", CLOTH_OFFSET,
+        )
+        # Dark wrist band. The name carries "sleeve" so the clothing check accepts it.
+        add_loft(
+            "Lab_SleeveCuff" + side, "LowerArm_" + side, "Mesh_LowerArm_" + side, "cloth",
+            lo, la, ls[0] + l_span * 0.80, ls[0] + l_span * 0.98, "sleeve", 0.009,
         )
 
     # Legs. The slide folds one knee to 150 degrees, so the tubes stop short of the joint.
@@ -740,29 +864,57 @@ def catalog(arm, body):
         lpts = body["Mesh_LowerLeg_" + side]["world"]
         us = project_span(upts, uo, ua)
         ls = project_span(lpts, lo, la)
-        # The pelvis shell reaches the swinging thigh. Keep the jogger on the distal band.
-        u_keep0 = us[0] + (us[1] - us[0]) * 0.42
-        u_keep1 = us[0] + (us[1] - us[0]) * 0.52
-        l_keep0 = ls[0] + (ls[1] - ls[0]) * 0.42
-        l_keep1 = ls[0] + (ls[1] - ls[0]) * 0.78
-        add_loft(
+        u_span = us[1] - us[0]
+        l_span = ls[1] - ls[0]
+        u_keep0 = us[0] + u_span * 0.02
+        # Stop before the knee cap. A station on the cap misses and opens a hole.
+        u_keep1 = us[0] + u_span * 0.97
+        l_keep0 = ls[0] + l_span * 0.03
+        l_keep1 = ls[0] + l_span * 0.96
+        jog = add_loft(
             "Lab_JogU" + side, "UpperLeg_" + side, "Mesh_UpperLeg_" + side, "cloth",
             uo, ua, u_keep0, u_keep1, "jog", CLOTH_OFFSET,
         )
+        # The knee cap faces along the bone, so the tube stops short of it.
+        # The cap is part of the same jog so the two shells are not a pair.
+        knee_pts = [p for p in upts if (p - uo).dot(ua) > us[1] - 0.012]
+        if len(knee_pts) >= 4:
+            knee = Piece("Lab_JogKnee" + side, "UpperLeg_" + side, "Mesh_UpperLeg_" + side, "cloth")
+            knee.offset = CLOTH_OFFSET
+            k0 = Vector((min(p.x for p in knee_pts), min(p.y for p in knee_pts), min(p.z for p in knee_pts)))
+            k1 = Vector((max(p.x for p in knee_pts), max(p.y for p in knee_pts), max(p.z for p in knee_pts)))
+            kpad = 0.004
+            add_box(
+                knee, (k0 + k1) * 0.5, x_axis, y_axis, z_axis,
+                (k1.x - k0.x) * 0.5 + kpad,
+                (k1.y - k0.y) * 0.5 + kpad,
+                (k1.z - k0.z) * 0.5 + kpad,
+                3, 3,
+            )
+            knee.boxes.clear()
+            jog.chains.extend(knee.chains)
         add_loft(
             "Lab_JogL" + side, "LowerLeg_" + side, "Mesh_LowerLeg_" + side, "cloth",
             lo, la, l_keep0, l_keep1, "jog", CLOTH_OFFSET,
         )
 
-        # Shoe along the foot's forward axis. The foot bone tail is an FBX-axis
-        # artifact, so the axis comes from the mesh, facing -Y.
+        # Closed shoe. A loft along the foot left an open, mottled blob.
         fpts = body["Mesh_Foot_" + side]["world"]
-        centroid = sum(fpts, Vector()) / len(fpts)
-        ft0, ft1 = project_span(fpts, centroid, -y_axis)
-        add_loft(
-            "Lab_Shoe" + side, "Foot_" + side, "Mesh_Foot_" + side, "cloth",
-            centroid, -y_axis, ft0 + 0.01, ft1 - 0.008, "shoe", SHOE_OFFSET,
+        shoe = Piece("Lab_Shoe" + side, "Foot_" + side, "Mesh_Foot_" + side, "cloth")
+        shoe.offset = SHOE_OFFSET
+        bmin = Vector((min(p.x for p in fpts), min(p.y for p in fpts), min(p.z for p in fpts)))
+        bmax = Vector((max(p.x for p in fpts), max(p.y for p in fpts), max(p.z for p in fpts)))
+        pad = 0.008
+        center = (bmin + bmax) * 0.5 + Vector((0.0, -0.006, 0.002))
+        add_box(
+            shoe, center, x_axis, y_axis, z_axis,
+            (bmax.x - bmin.x) * 0.5 + pad,
+            (bmax.y - bmin.y) * 0.5 + pad + 0.012,
+            (bmax.z - bmin.z) * 0.5 + pad,
+            5, 4,
         )
+        shoe.boxes.clear()
+        pieces.append(shoe)
 
     # Head wear. Face is -Y. A wide opening reads as a hood, a narrow one as a helmet.
     hpts = body["Mesh_Head"]["world"]
@@ -774,28 +926,31 @@ def catalog(arm, body):
         return mask
 
     hz0, hz1 = project_span(hpts, Vector((0.0, 0.0, 0.0)), z_axis)
-    add_loft(
+    hood = add_loft(
         "Lab_Hood", "Head", "Mesh_Head", "cloth",
-        Vector((0.0, 0.0, 0.0)), z_axis, hz0 + (hz1 - hz0) * 0.42, hz1 - 0.006,
-        "hood", 0.008, face_mask(0.20),
+        Vector((0.0, 0.0, 0.0)), z_axis, hz0 + (hz1 - hz0) * 0.08, hz1 + 0.006,
+        "hood", HOODIE_OFFSET, face_mask(0.22),
     )
-    add_loft(
+    close_top(hood, Vector((h_center.x, h_center.y, hz1 + HOODIE_OFFSET + 0.004)))
+    helmet = add_loft(
         "Lab_Helmet", "Head", "Mesh_Head", "cloth",
-        Vector((0.0, 0.0, 0.0)), z_axis, hz0 + (hz1 - hz0) * 0.38, hz1 - 0.004,
-        "helmet", 0.009, face_mask(0.55),
+        Vector((0.0, 0.0, 0.0)), z_axis, hz0 + (hz1 - hz0) * 0.10, hz1 + 0.004,
+        "helmet", HOODIE_OFFSET, face_mask(0.45),
     )
-    add_loft(
+    close_top(helmet, Vector((h_center.x, h_center.y, hz1 + HOODIE_OFFSET + 0.002)))
+    cap = add_loft(
         "Lab_Cap", "Head", "Mesh_Head", "cloth",
-        Vector((0.0, 0.0, 0.0)), z_axis, h_center.z + 0.01, hz1 - 0.004,
+        Vector((0.0, 0.0, 0.0)), z_axis, h_center.z + 0.01, hz1 - 0.002,
         "cap", 0.007, None,
     )
+    close_top(cap, Vector((h_center.x, h_center.y, hz1 + 0.008)))
 
     # Hood-down collar, on the neck, clear of the jaw and the hoodie hem.
     npts = body["Mesh_Neck"]["world"]
     n0, n1 = project_span(npts, Vector((0.0, 0.0, 0.0)), z_axis)
     add_loft(
         "Lab_Collar", "Neck", "Mesh_Neck", "cloth",
-        Vector((0.0, 0.0, 0.0)), z_axis, n0 + (n1 - n0) * 0.35, n0 + (n1 - n0) * 0.78,
+        Vector((0.0, 0.0, 0.0)), z_axis, n0 + (n1 - n0) * 0.04, n0 + (n1 - n0) * 0.96,
         "collar", 0.008, None,
     )
 
@@ -991,12 +1146,38 @@ def catalog(arm, body):
         pieces.append(cord)
 
     for piece in pieces:
-        # One extra ring between stations. Straight limbs stay on the shell; enforce seats the rest.
-        if piece.loop and piece.chains and not piece.boxes:
-            subdivide_length(piece)
+        # No length subdivision. Doubling every ring pushed a long outfit past 15000 triangles.
         moved, cut = enforce_band(piece, body)
         log("BUILT %s verts=%d moved=%d cut=%d" % (piece.name, piece.vert_count(), moved, cut))
+    trim_overlaps(arm, pieces, body)
     return pieces
+
+
+def trim_overlaps(arm, pieces, body):
+    """Move samples out of any body plate other than their own. Drop what will not seat."""
+    _ = arm
+    cut = 0
+    moved = 0
+    for piece in pieces:
+        own = body[piece.own]
+        for chain in piece.chains:
+            for ring in chain:
+                for si, rest in enumerate(ring):
+                    if rest is None:
+                        continue
+                    depth, _where, normal = visual_penetration(body, rest, ignore=piece.own)
+                    if depth <= 0.004:
+                        continue
+                    placed = rest + normal * (depth + 0.005)
+                    gap = gap_to_one(own, placed)
+                    if gap is not None and BAND_MIN - 1e-4 <= gap[0] <= BAND_MAX:
+                        ring[si] = placed
+                        moved += 1
+                    else:
+                        ring[si] = None
+                        cut += 1
+    log("TRIM moved=%d cut=%d" % (moved, cut))
+    return cut
 
 
 def subdivide_length(piece):
@@ -1035,15 +1216,34 @@ def id_for(who, index, label):
     return "_".join(parts)
 
 
+COVER_LONG = [
+    "Mesh_Chest", "Mesh_Spine", "Mesh_Hips",
+    "Mesh_Shoulder_L", "Mesh_Shoulder_R",
+    "Mesh_UpperArm_L", "Mesh_UpperArm_R", "Mesh_LowerArm_L", "Mesh_LowerArm_R",
+    "Mesh_UpperLeg_L", "Mesh_UpperLeg_R", "Mesh_LowerLeg_L", "Mesh_LowerLeg_R",
+    "Mesh_Foot_L", "Mesh_Foot_R",
+]
+COVER_CROP = [
+    "Mesh_Chest", "Mesh_Spine",
+    "Mesh_Shoulder_L", "Mesh_Shoulder_R",
+    "Mesh_UpperArm_L", "Mesh_UpperArm_R",
+    "Mesh_UpperLeg_L", "Mesh_UpperLeg_R",
+    "Mesh_Foot_L", "Mesh_Foot_R",
+]
+
+
 def loadout_map():
     long_core = [
-        "Lab_HoodieChest", "Lab_Seam", "Lab_Pocket",
+        "Lab_HoodieChest", "Lab_HoodieSpine", "Lab_HoodieHips", "Lab_Seam", "Lab_Pocket",
+        "Lab_SleeveShL", "Lab_SleeveShR",
         "Lab_SleeveUL", "Lab_SleeveUR", "Lab_SleeveLL", "Lab_SleeveLR",
+        "Lab_SleeveCuffL", "Lab_SleeveCuffR",
         "Lab_JogUL", "Lab_JogUR", "Lab_JogLL", "Lab_JogLR",
         "Lab_ShoeL", "Lab_ShoeR",
     ]
     crop_core = [
-        "Lab_HoodieChest", "Lab_Seam", "Lab_Pocket",
+        "Lab_HoodieChest", "Lab_HoodieSpine", "Lab_HoodieHips", "Lab_Seam", "Lab_Pocket",
+        "Lab_SleeveShL", "Lab_SleeveShR",
         "Lab_SleeveUL", "Lab_SleeveUR",
         "Lab_JogUL", "Lab_JogUR",
         "Lab_ShoeL", "Lab_ShoeR",
@@ -1064,6 +1264,12 @@ def loadout_map():
     ]
     sets = []
     for who, index, label, names in specs:
+        # Pip's crop is bare forearms and shins. The waist still wears the hip shell.
+        # Pip's crop is bare forearms and shins. The waist still wears the hip shell.
+        # The collar sits on the neck; the neck itself stays visible.
+        hide = list(COVER_CROP if who == "Pip" else COVER_LONG)
+        if who == "Pip":
+            hide.append("Mesh_Hips")
         sets.append({
             "id": id_for(who, index, label),
             "character": who,
@@ -1071,6 +1277,7 @@ def loadout_map():
             "label": label,
             "color": list(PLAYER[who]),
             "pieces": names,
+            "hide": hide,
         })
     return sets
 
@@ -1209,7 +1416,12 @@ def loft_depth(point, ring0, ring1):
     rad = ray_radius(samples, ang)
     if rad is None or dist >= rad:
         return 0.0
-    return rad - dist
+    depth = rad - dist
+    # A loft is a hollow shell. A sample in the middle of the tube is wearing
+    # the garment. Only the band next to the wall is a real crossing.
+    if depth > 0.012:
+        return 0.0
+    return depth
 
 
 def box_depth(point, box, matrix):
@@ -1565,7 +1777,7 @@ def cloth_band_stats(pieces, body):
             continue
         own = body[piece.own]
         for _c, _r, _s, vert in iter_verts(piece):
-            hit = visual_gap(own, vert)
+            hit = gap_to_one(own, vert)
             if hit is None:
                 continue
             mins.append(hit[0])
@@ -1587,7 +1799,7 @@ def accessory_span(pieces, body):
             continue
         own = body[piece.own]
         for _c, _r, _s, vert in iter_verts(piece):
-            hit = visual_gap(own, vert)
+            hit = gap_to_one(own, vert)
             if hit is not None and hit[0] > worst:
                 worst = hit[0]
                 name = piece.name
@@ -1599,19 +1811,40 @@ def save_blend():
     bpy.ops.wm.save_as_mainfile(filepath=BLEND)
 
 
+def log_body_height(arm, body):
+    """Sole-to-crown of the shipped meshes. The armature scale stays 1."""
+    zs = [p.z for info in body.values() for p in info["world"]]
+    head = body["Mesh_Head"]["world"]
+    foot = body["Mesh_Foot_L"]["world"]
+    sole = min(zs)
+    crown = max(zs)
+    log(
+        "HEIGHT armature-scale %.3f %.3f %.3f sole-z %.4f crown-z %.4f span-m %.4f head-z %.4f..%.4f foot-z %.4f..%.4f"
+        % (
+            arm.scale.x, arm.scale.y, arm.scale.z,
+            sole, crown, crown - sole,
+            min(p.z for p in head), max(p.z for p in head),
+            min(p.z for p in foot), max(p.z for p in foot),
+        )
+    )
+
+
 def build_all():
     arm = import_hier()
     tint_mannequin()
     body = capture_body()
+    log_body_height(arm, body)
     probe_body(body)
     pieces = catalog(arm, body)
     player = make_material("LabPlayer", PLAYER["Reed"], True)
-    jogger = make_material("LabJogger", (0.16, 0.16, 0.18), False)
-    shoe = make_material("LabShoe", (0.75, 0.73, 0.70), False)
+    jogger = make_material("LabJogger", (0.14, 0.14, 0.16), False)
+    shoe = make_material("LabShoe", SHOE_COLOR, False)
     pack = make_material("LabPack", (0.12, 0.12, 0.13), False)
+    trim = make_material("LabTrim", TRIM, False)
     jog_names = {"Lab_JogUL", "Lab_JogUR", "Lab_JogLL", "Lab_JogLR"}
     shoe_names = {"Lab_ShoeL", "Lab_ShoeR"}
     pack_names = {"Lab_Pack"}
+    trim_names = {"Lab_SleeveCuffL", "Lab_SleeveCuffR", "Lab_Collar"}
     counts = {}
     for piece in pieces:
         if piece.name in jog_names:
@@ -1620,6 +1853,8 @@ def build_all():
             mat = shoe
         elif piece.name in pack_names:
             mat = pack
+        elif piece.name in trim_names:
+            mat = trim
         else:
             mat = player
         tris = realize(piece, arm, mat)
@@ -1716,7 +1951,7 @@ def fit_main():
         )
         if stats["fails"] == 0:
             break
-        if iteration == 3:
+        if iteration == 3 or os.environ.get("COSTUME_NOPUSH") == "1":
             break
         # Rest matrices for the band check after a push.
         for bone in arm.pose.bones:

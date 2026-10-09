@@ -12,7 +12,7 @@ from mathutils import Vector
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import render_pass1 as rp
 
-RAW = "/tmp/charlab/pass3"
+RAW = os.environ.get("COSTUME_RAW", "/tmp/charlab/pass3")
 
 
 def log(msg):
@@ -141,7 +141,7 @@ def main():
     clones = []
     for spec in specs:
         show_arm, meshes = rp.clone_rig(spec["id"])
-        rp.apply_loadout(meshes, spec["pieces"])
+        rp.apply_loadout(meshes, spec["pieces"], spec.get("hide"))
         rp.paint(meshes, spec["color"], spec["id"])
         clones.append((spec, show_arm, meshes))
     rp.hide_source()
@@ -170,14 +170,22 @@ def main():
         obj.hide_set(True)
     rp.shot_lineup(
         cam, clones, z_lift, "three",
-        os.path.join(RAW, "lineup-three-quarter.png"), 1280, 720, 1.15,
+        os.path.join(RAW, "lineup-three-quarter.png"), 1280, 720, 1.75,
     )
     rp.shot_lineup(
         cam, clones, z_lift, "side",
-        os.path.join(RAW, "lineup-side.png"), 1280, 720, 1.15,
+        os.path.join(RAW, "lineup-side.png"), 1280, 720, 1.75,
     )
     shot_close(cam, clones, z_lift)
     shot_scale(cam, clones, z_lift, props)
+    # Same Reed loadout as the before still, three-quarter, alone.
+    reed = [entry for entry in clones if entry[0]["id"] == "Reed_1_Hood"]
+    rp.set_group(clones, False)
+    rp.set_group(reed, True)
+    rp.place(reed, "three", 1.75, z_lift)
+    mins, maxs = rp.world_bounds(rp.shown_meshes(reed))
+    rp.frame_ortho(cam, mins, maxs, 1280, 720, "three")
+    rp.render_still(cam, os.path.join(RAW, "after-reed.png"), 1280, 720)
     log("QUARTET raw ready")
 
 

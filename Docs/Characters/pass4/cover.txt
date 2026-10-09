@@ -1,0 +1,14 @@
+costume-cover sets=12 buriedPct=1.94
+pooledPct=1.43
+Reed_1_Hood buriedPct=1.33 cloth=72990 grey=986
+Reed_2_Cap buriedPct=1.37 cloth=70816 grey=986
+Reed_3_Helmet buriedPct=1.32 cloth=73461 grey=986
+Bram_1_Helmet buriedPct=1.32 cloth=73461 grey=986
+Bram_2_Cap buriedPct=1.37 cloth=70816 grey=986
+Bram_3_Hood buriedPct=1.33 cloth=72990 grey=986
+Pip_1_Cap buriedPct=1.80 cloth=54234 grey=995
+Pip_2_Hair buriedPct=1.94 cloth=50169 grey=995
+Pip_3_Helmet buriedPct=1.72 cloth=56879 grey=995
+Sol_1_Collar_Cap buriedPct=1.26 cloth=72228 grey=923
+Sol_2_Hood buriedPct=1.33 cloth=72990 grey=986
+Sol_3_Helmet_Pack buriedPct=1.31 cloth=74025 grey=986

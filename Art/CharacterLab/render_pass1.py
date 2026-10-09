@@ -50,6 +50,7 @@ def clone_rig(suffix):
         for mod in dup.modifiers:
             if mod.type == "ARMATURE":
                 mod.object = arm
+        dup["source"] = piece
         if piece.startswith("Lab_"):
             dup["piece"] = piece
         meshes.append(dup)
@@ -66,11 +67,16 @@ def hide_source():
             obj.hide_set(True)
 
 
-def apply_loadout(meshes, names):
+def apply_loadout(meshes, names, hide=None):
+    """Show this loadout's garments. Covered body plates stay off."""
     allowed = set(names)
+    hidden = set(hide or [])
     for obj in meshes:
+        source = obj.get("source")
         piece = obj.get("piece")
-        if piece is None:
+        if source in hidden:
+            show = False
+        elif piece is None:
             show = len(obj.data.vertices) > 0
         else:
             show = piece in allowed and len(obj.data.vertices) > 0
@@ -401,7 +407,7 @@ def main():
     clones = []
     for spec in specs:
         show_arm, meshes = clone_rig(spec["id"])
-        apply_loadout(meshes, spec["pieces"])
+        apply_loadout(meshes, spec["pieces"], spec.get("hide"))
         paint(meshes, spec["color"], spec["id"])
         clones.append((spec, show_arm, meshes))
     hide_source()
