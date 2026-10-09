@@ -45,6 +45,7 @@ namespace Tag.Level
         const string S = "Assets/Art/Props/Library/StreetFurniture/Prefabs/";
         const string R = "Assets/Art/Props/Library/Roads/Prefabs/";
         const string P = "Assets/Art/Props/Library/Park/Prefabs/";
+        const string V = "Assets/Art/Props/Library/Vehicles/Prefabs/";
 
         // Court pivot (88.6, 53.2). The merged slab collider measures about 15 x 22.
         // Street is the east-west two-lane at z=34, south of that slab.
@@ -73,8 +74,9 @@ namespace Tag.Level
             new Place("Walk_3", R + "Sidewalk.prefab", 96f, 0f, 29.6f, 90f),
             new Place("Walk_4", R + "Sidewalk.prefab", 100f, 0f, 29.6f, 90f),
 
-            new Place("Facade_Door", B + "Brick_Door.prefab", 84f, 0f, 28.15f, 0f),
-            new Place("Facade_Window", B + "Brick_Window.prefab", 88f, 0f, 28.15f, 0f),
+            // Closed walk-up from the asset-library merge. Replaces the west door bay and the window beside it.
+            // Front is +Z. Stoop ends at z = 28.55, just south of the sidewalk.
+            new Place("WalkUp", B + "WalkUp.prefab", 85.5f, 0f, 24.63f, 0f),
             new Place("Facade_Wall", B + "Brick_Wall.prefab", 92f, 0f, 28.15f, 0f),
             new Place("Facade_WindowB", B + "Brick_Window.prefab", 96f, 0f, 28.15f, 0f),
             new Place("Facade_DoorB", B + "Brick_Door.prefab", 100f, 0f, 28.15f, 0f),
@@ -85,12 +87,13 @@ namespace Tag.Level
             // Yaw 180 puts the open entry on the west, toward the climb.
             // The west rail at yaw 0 sits in the 30° and 60° arcs.
             new Place("Gazebo", P + "Gazebo.prefab", 77.53f, 0f, 35f, 180f),
-            new Place("AC_Gazebo", B + "RooftopAC.prefab", 77.53f, 3.05f, 35f, 0f),
+            new Place("AC_Gazebo", B + "RooftopAC.prefab", 77.53f, 3.53f, 35f, 0f),
 
-            // #129 removed the old car files. These are the fixed _25 meshes.
-            new Place("Car_Sedan", S + "Car_Sedan_25.prefab", 86f, 0.12f, 35.55f, 90f),
-            new Place("Car_Hatch", S + "Car_Hatch_25.prefab", 92f, 0.12f, 35.55f, 90f),
-            new Place("Car_Pickup", S + "Car_Pickup_25.prefab", 98f, 0.12f, 35.55f, 90f),
+            // #125 shells. Yaw 90 puts the nose toward +X. Pivot y sits on the road crown.
+            new Place("Car_Sedan", V + "Sedan_Compact_25.prefab", 84.6f, 0.12f, 35.55f, 90f),
+            new Place("Car_Hatch", V + "Hatch_Compact_25.prefab", 89.4f, 0.12f, 35.55f, 90f),
+            new Place("Car_Crossover", V + "Crossover_Compact_25.prefab", 94.4f, 0.12f, 35.55f, 90f),
+            new Place("Car_Pickup", V + "Car_Pickup_25.prefab", 99.8f, 0.12f, 35.55f, 90f),
 
             new Place("Light_W", S + "LightPost_Single.prefab", 81.0f, 0f, 29.0f, 0f),
             new Place("Light_E", S + "LightPost_Single.prefab", 110.2f, 0f, 30.4f, 180f),
@@ -143,7 +146,7 @@ namespace Tag.Level
             new Place("Cl_ClimbA", B + "Brick_Wall.prefab", 9.14f, 0f, 50f, 90f),
             new Place("Cl_ClimbB", B + "Brick_Wall.prefab", 9.14f, 0f, 54f, 90f),
             new Place("Cl_Gazebo", P + "Gazebo.prefab", 14.62f, 0f, 52f, 180f),
-            new Place("Cl_AC", B + "RooftopAC.prefab", 14.62f, 3.05f, 52f, 0f),
+            new Place("Cl_AC", B + "RooftopAC.prefab", 14.62f, 3.53f, 52f, 0f),
             new Place("Cl_ScaffoldA", S + "Scaffold_Bay.prefab", 12.80f, 0f, 42.8f, 0f),
             new Place("Cl_ScaffoldB", S + "Scaffold_Bay.prefab", 15.55f, 0f, 42.8f, 0f),
             new Place("Cl_Tree", P + "Tree_Maple.prefab", 12.8f, 0f, 63.5f, 0f),
@@ -167,7 +170,7 @@ namespace Tag.Level
             new Place("My_ClimbB", B + "Brick_Wall.prefab", 23.55f, 0f, 41.05f, 90f),
             // Yaw 180 puts the open entry on the west, toward the climb.
             new Place("My_Gazebo", P + "Gazebo.prefab", 29.03f, 0f, 39.05f, 180f),
-            new Place("My_AC", B + "RooftopAC.prefab", 29.03f, 3.05f, 39.05f, 0f),
+            new Place("My_AC", B + "RooftopAC.prefab", 29.03f, 3.53f, 39.05f, 0f),
             new Place("My_ScaffoldA", S + "Scaffold_Bay.prefab", 24.20f, 0f, 52.70f, 0f),
             new Place("My_ScaffoldB", S + "Scaffold_Bay.prefab", 26.95f, 0f, 52.70f, 0f),
             new Place("My_Bench", S + "Bench_Wood.prefab", 43.2f, 0f, 36.4f, 0f),

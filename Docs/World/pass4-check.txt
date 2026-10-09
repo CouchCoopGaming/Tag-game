@@ -1,0 +1,34 @@
+pass 4
+world-check routes=5 reachable=5/5 floatingProps=0 missingColliders=0 scaleFails=0
+jump apex 13.866 m  wall-jump flat 4.394 m  wall-run 5.89 m  air dash 1.50 m  grapple 28.0 m
+instances 46 unique 26
+static-batch yes
+gate-leaf hide yes
+wall-jump perp 0 deg 4.026 m  off-wall 30 deg 4.907 m  60 deg 5.551 m  into-wall -30 deg 3.145 m  -60 deg 2.501 m
+OK   WestClimb wall 3.19 m wall-run 4.00 m on a 8.00 m face (max 5.89) outer gap 3.23 m deck gap 4.40 m; +30 deg launch 0.05 m land (76.93, 34.93) perp 4.91 m; +60 deg launch 0.05 m land (77.53, 34.83) perp 5.55 m
+OK   WestGrapple rope 12.21 m from the south lane to the climb cornice (range 1.5–28.0)
+OK   GazeboVault rail 0.95 m above the deck (mantle 0.45–2.55, vault band 0.90–1.05) east walk-around open
+OK   SlideDash under-clear 1.68 / 1.68 m (crouch 1.05) air-dash gap 0.92 m (dash 1.50)
+OK   ChaseLoop length 132.5 m clearance 0.84 m at (80.7, 40.9) vs CourtFence samples 262 blocked 0; gate entry clearance 1.05 m vs Col_Fabric_E1
+--- bounds ---
+--- z1 ---
+world-check routes=5 reachable=5/5 floatingProps=0 missingColliders=0 scaleFails=0
+jump apex 13.866 m  wall-jump flat 4.394 m  wall-run 5.89 m  air dash 1.50 m  grapple 28.0 m
+wall-jump perp 0 deg 4.026 m  off-wall 30 deg 4.907 m  60 deg 5.551 m  into-wall -30 deg 3.145 m  -60 deg 2.501 m
+instances 12 unique 10 (Z7 instances 46)
+smaller-than-z7 yes batched-in-bootstrap yes
+OK   WestClimb climb 2.00 m onto DeckLow (wall 3.19 m) wall-run 4.00 m on a 4.00 m face gap 3.67 m decks locked yes; +30 deg launch 1.30 m land (9.45, 22.41) perp 4.91 m; +60 deg launch 1.20 m land (9.57, 22.61) perp 5.55 m
+--- z2 ---
+world-check routes=5 reachable=5/5 floatingProps=0 missingColliders=0 scaleFails=0
+jump apex 13.866 m  wall-jump flat 4.394 m  wall-run 5.89 m  air dash 1.50 m  grapple 28.0 m
+wall-jump perp 0 deg 4.026 m  off-wall 30 deg 4.907 m  60 deg 5.551 m  into-wall -30 deg 3.145 m  -60 deg 2.501 m
+instances 13 unique 11 (Z7 instances 46 unique 26)
+smaller-than-z7 yes static-batch yes
+OK   EastClimb wall 3.19 m wall-run 4.00 m on a 8.00 m face (max 5.89) deck gap 4.10 m cling locked yes; +30 deg launch 0.05 m land (14.32, 52.18) perp 4.91 m; +60 deg launch 0.05 m land (14.92, 51.83) perp 5.55 m
+--- z3 ---
+world-check routes=5 reachable=5/5 floatingProps=0 missingColliders=0 scaleFails=0
+jump apex 13.866 m  wall-jump flat 4.394 m  wall-run 5.89 m  air dash 1.50 m  grapple 28.0 m
+wall-jump perp 0 deg 4.026 m  off-wall 30 deg 4.907 m  60 deg 5.551 m  into-wall -30 deg 3.145 m  -60 deg 2.501 m
+instances 13 unique 11 (Z7 instances 46 unique 26)
+smaller-than-z7 yes static-batch yes crossing-empty yes
+OK   WestClimb wall 3.19 m wall-run 4.00 m on a 8.00 m face (max 5.89) deck gap 4.10 m gray locked yes; +30 deg launch 0.05 m land (28.73, 39.23) perp 4.91 m; +60 deg launch 0.05 m land (29.33, 38.88) perp 5.55 m

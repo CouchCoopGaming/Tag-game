@@ -956,14 +956,9 @@ namespace Tag.Level
             var go = new GameObject("Label_" + text);
             go.transform.SetParent(parent, false);
             go.transform.localPosition = new Vector3(x, 4.5f, z);
-            TextMesh tm = go.AddComponent<TextMesh>();
-            tm.text = text;
-            tm.anchor = TextAnchor.MiddleCenter;
-            tm.alignment = TextAlignment.Center;
-            tm.fontSize = 48;
-            tm.characterSize = 0.45f;
-            tm.color = new Color(1f, 0.95f, 0.75f, 1f);
-            tm.fontStyle = FontStyle.Bold;
+            go.transform.localRotation = Quaternion.identity;
+            go.transform.localScale = Vector3.one;
+            WorldSign.AddTwoSided(go.transform, text, 48, 0.45f, new Color(1f, 0.95f, 0.75f, 1f));
         }
 
         void ApplyLook()

@@ -55,6 +55,8 @@ Tools/ScriptCompileCheck/bin/
 Tools/UnityAssetAudit/bin/
 !Tools/AudioSynth/AudioSynth.csproj
 Tools/AudioSynth/bin/
+!Tools/WorldPropTableTestRun/WorldPropTableTestRun.csproj
+Tools/WorldPropTableTestRun/bin/
 .consulo/
 *.apk
 *.aab

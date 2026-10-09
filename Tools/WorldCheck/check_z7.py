@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Headless world check for the Z7 kickball district.
 
-Reads placements from Assets/Scripts/Level/MegaParkWorldDistrict.cs and collider
+Reads placements from Assets/Scripts/Level/World/MegaParkWorldDistrict.cs and collider
 boxes from the library prefabs. Prints the world-check line and writes stills.
 Does not retune feel numbers and does not run StrafeJumpSim.
 """
@@ -16,7 +16,7 @@ import zlib
 import numpy as np
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
-DISTRICT_CS = os.path.join(ROOT, "Assets/Scripts/Level/MegaParkWorldDistrict.cs")
+DISTRICT_CS = os.path.join(ROOT, "Assets/Scripts/Level/World/MegaParkWorldDistrict.cs")
 STILL_DIR = os.path.join(ROOT, "Docs/WorldStills/pass1")
 
 # Envelopes. Sources are quoted in Docs/World/STANDARD.md.
@@ -131,9 +131,10 @@ def parse_places(text, array_name="Places"):
         "S": "Assets/Art/Props/Library/StreetFurniture/Prefabs/",
         "R": "Assets/Art/Props/Library/Roads/Prefabs/",
         "P": "Assets/Art/Props/Library/Park/Prefabs/",
+        "V": "Assets/Art/Props/Library/Vehicles/Prefabs/",
     }
     pat2 = re.compile(
-        r'new Place\("([^"]+)",\s*([BSRP]) \+ "([^"]+)",\s*([-0-9.]+)f,\s*([-0-9.]+)f,\s*([-0-9.]+)f,\s*([-0-9.]+)f\)'
+        r'new Place\("([^"]+)",\s*([BSRPV]) \+ "([^"]+)",\s*([-0-9.]+)f,\s*([-0-9.]+)f,\s*([-0-9.]+)f,\s*([-0-9.]+)f\)'
     )
     places = []
     for m in pat2.finditer(body):

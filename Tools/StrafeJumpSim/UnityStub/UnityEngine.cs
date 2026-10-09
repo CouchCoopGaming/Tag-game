@@ -156,6 +156,18 @@ namespace UnityEngine
         public string name;
     }
 
+    // Unity 6 defines this next to the BCL enum. Unqualified CompressionLevel
+    // is CS0104 when a file also imports System.IO.Compression.
+    public enum CompressionLevel
+    {
+        None = 0,
+        Fastest = 1,
+        Fast = 2,
+        Normal = 3,
+        High = 4,
+        Maximum = 5,
+    }
+
     public class ScriptableObject : Object
     {
         public static T CreateInstance<T>() where T : ScriptableObject, new() => new T();

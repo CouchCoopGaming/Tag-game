@@ -546,7 +546,7 @@ namespace Tag.Tools
             }
             if (boot.IndexOf("s.Kind == \"fence\"", StringComparison.Ordinal) < 0
                 || boot.IndexOf("Visible rail collider", StringComparison.Ordinal) < 0
-                || boot.IndexOf("r.enabled = false", StringComparison.Ordinal) >= 0
+                || !FenceBranchStaysDrawn(boot)
                 || boot.IndexOf("MegaParkP1Layout.FenceRail", StringComparison.Ordinal) < 0
                 || boot.IndexOf("StripCollider(cube)", StringComparison.Ordinal) < 0
                 || mega.IndexOf("FenceRail, 0.08f", StringComparison.Ordinal) < 0)
@@ -556,6 +556,17 @@ namespace Tag.Tools
             }
             log.AppendLine("kill fence=2.75 rail=2.75 plane=-2.5 arenas=3");
             return true;
+        }
+
+        // The infield hide turns a renderer off. That must not be the fence branch.
+        static bool FenceBranchStaysDrawn(string boot)
+        {
+            int fence = boot.IndexOf("s.Kind == \"fence\"", StringComparison.Ordinal);
+            int hides = boot.IndexOf("Hides(s.Name)", StringComparison.Ordinal);
+            if (fence < 0 || hides < fence)
+                return false;
+            string branch = boot.Substring(fence, hides - fence);
+            return branch.IndexOf("enabled = false", StringComparison.Ordinal) < 0;
         }
 
         static string ReadLayout(string root, string file, StringBuilder log)

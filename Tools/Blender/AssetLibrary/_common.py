@@ -722,27 +722,41 @@ class Geo:
         obj.select_set(True)
         bpy.ops.object.convert(target="MESH")
         me = obj.data
+        # Unity is left-handed: increasing X reads mirrored from the +Z side.
+        # Negate X so the front reads left to right. A second copy, yawed 180
+        # at scale 1, reads from the other side. Baked FBX already in the
+        # library are not rebuilt by this change.
+        local = [(-v.co.x, v.co.y, v.co.z) for v in me.vertices]
+        polys = [tuple(poly.vertices) for poly in me.polygons]
+        bpy.data.objects.remove(obj, do_unlink=True)
+        bpy.data.meshes.remove(me)
+        self._place_text(local, polys, location, yaw, pitch, mat)
+        back = (
+            location[0] - 0.004 * math.sin(math.radians(yaw)),
+            location[1],
+            location[2] - 0.004 * math.cos(math.radians(yaw)),
+        )
+        self._place_text(local, polys, back, yaw + 180.0, pitch, mat)
+
+    def _place_text(self, local, polys, location, yaw, pitch, mat):
         a = math.radians(yaw)
         ca, sa = math.cos(a), math.sin(a)
         p = math.radians(pitch)
         cp, sp = math.cos(p), math.sin(p)
         bm = bmesh.new()
         vmap = []
-        for v in me.vertices:
-            x, y, z = v.co.x, v.co.y, v.co.z
+        for x, y, z in local:
             yp = y * cp - z * sp
             zp = y * sp + z * cp
             xr = x * ca + zp * sa
             zr = -x * sa + zp * ca
             u = (xr + location[0], yp + location[1], zr + location[2])
             vmap.append(bm.verts.new(unity_to_blender(*u)))
-        for poly in me.polygons:
+        for poly in polys:
             try:
-                bm.faces.new([vmap[i] for i in poly.vertices])
+                bm.faces.new([vmap[i] for i in poly])
             except ValueError:
                 continue
-        bpy.data.objects.remove(obj, do_unlink=True)
-        bpy.data.meshes.remove(me)
         bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
         self._ingest(bm, mat, 1.0)
 

@@ -11,7 +11,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b7e4c1a09d2f4e6a8c3b5d7e9f1a2b4c, type: 3}
   m_Name: WorldPropTable
-  m_EditorClassIdentifier: Assembly-CSharp::Tag.Level.WorldPropTable
+  m_EditorClassIdentifier: Tag.World::Tag.Level.WorldPropTable
   Entries:
   - Path: Assets/Art/Props/Library/Park/Prefabs/Court.prefab
     Prefab: {fileID: 100000, guid: a3db69cf3c01db1776c92a24a5a442bd, type: 3}
@@ -35,12 +35,16 @@ MonoBehaviour:
     Prefab: {fileID: 100000, guid: 141193babb6c2107a875d298f21caf8e, type: 3}
   - Path: Assets/Art/Props/Library/Park/Prefabs/Gazebo.prefab
     Prefab: {fileID: 100000, guid: 5036a890427512c437f4eb2620cf009f, type: 3}
-  - Path: Assets/Art/Props/Library/StreetFurniture/Prefabs/Car_Sedan_25.prefab
-    Prefab: {fileID: 100000, guid: a738af9bcb8d4d2f7b8f54461c0341a1, type: 3}
-  - Path: Assets/Art/Props/Library/StreetFurniture/Prefabs/Car_Hatch_25.prefab
-    Prefab: {fileID: 100000, guid: 7752622152d1023583c32e86051fdd2a, type: 3}
-  - Path: Assets/Art/Props/Library/StreetFurniture/Prefabs/Car_Pickup_25.prefab
-    Prefab: {fileID: 100000, guid: 27f24a28bdbaa5f7cdeec2369088e6da, type: 3}
+  - Path: Assets/Art/Props/Library/Buildings/Prefabs/WalkUp.prefab
+    Prefab: {fileID: 100000, guid: 71a943ae63818d0083887c9a6de77566, type: 3}
+  - Path: Assets/Art/Props/Library/Vehicles/Prefabs/Sedan_Compact_25.prefab
+    Prefab: {fileID: 100000, guid: 3ad36c2095d2720c2b9cf1858316157d, type: 3}
+  - Path: Assets/Art/Props/Library/Vehicles/Prefabs/Hatch_Compact_25.prefab
+    Prefab: {fileID: 100000, guid: faf40082cad6f697a36db0c6ace19161, type: 3}
+  - Path: Assets/Art/Props/Library/Vehicles/Prefabs/Crossover_Compact_25.prefab
+    Prefab: {fileID: 100000, guid: abeeafca8ac587d1fbf7b9f8f38fc8b0, type: 3}
+  - Path: Assets/Art/Props/Library/Vehicles/Prefabs/Car_Pickup_25.prefab
+    Prefab: {fileID: 100000, guid: 06d5d3ce5bf141e8bd35cdb4feb95ebb, type: 3}
   - Path: Assets/Art/Props/Library/StreetFurniture/Prefabs/LightPost_Single.prefab
     Prefab: {fileID: 100000, guid: ce261c1deaac98cabf84d7f171a4223c, type: 3}
   - Path: Assets/Art/Props/Library/StreetFurniture/Prefabs/FireHydrant.prefab

@@ -17,7 +17,7 @@ namespace Tag.Tools
     /// </summary>
     static class Program
     {
-        static readonly string[] Watch = { "CS0102", "CS0128", "CS0136", "CS0103", "CS0246" };
+        static readonly string[] Watch = { "CS0102", "CS0104", "CS0128", "CS0136", "CS0103", "CS0246" };
 
         static readonly string[] ExternalPrefixes =
         {
@@ -92,16 +92,50 @@ namespace Tag.Tools
             Console.WriteLine(patternLine);
             if (!patternsOk)
                 Console.Error.WriteLine(patternReport);
-            if (!compileOk || !smokeOk || !patternsOk)
+            bool asmdefOk = WorldAsmdefOk(root, out string asmdefLine);
+            Console.WriteLine(asmdefLine);
+            if (!compileOk || !smokeOk || !patternsOk || !asmdefOk)
                 return 1;
-            Console.WriteLine("script-compile-check ok CS0102 CS0128 CS0136 CS0103 CS0246-in-our-code");
+            Console.WriteLine("script-compile-check ok CS0102 CS0104 CS0128 CS0136 CS0103 CS0246-in-our-code");
             return 0;
+        }
+
+        static bool WorldAsmdefOk(string root, out string line)
+        {
+            string worldAsm = Path.Combine(root, "Assets", "Scripts", "Level", "World", "Tag.World.asmdef");
+            string testAsm = Path.Combine(root, "Assets", "Tests", "EditMode", "Tag.World.EditMode.asmdef");
+            string worldCs = Path.Combine(root, "Assets", "Scripts", "Level", "World", "WorldPropTable.cs");
+            string districtCs = Path.Combine(root, "Assets", "Scripts", "Level", "World", "MegaParkWorldDistrict.cs");
+            if (!File.Exists(worldAsm) || !File.Exists(testAsm) || !File.Exists(worldCs) || !File.Exists(districtCs))
+            {
+                line = "world-asmdef missing Tag.World or the world scripts";
+                return false;
+            }
+            string test = File.ReadAllText(testAsm);
+            if (test.IndexOf("Assembly-CSharp", StringComparison.Ordinal) >= 0)
+            {
+                line = "world-asmdef test still references Assembly-CSharp";
+                return false;
+            }
+            if (test.IndexOf("\"Tag.World\"", StringComparison.Ordinal) < 0)
+            {
+                line = "world-asmdef test does not reference Tag.World";
+                return false;
+            }
+            string world = File.ReadAllText(worldCs);
+            if (world.IndexOf("namespace Tag.Level", StringComparison.Ordinal) < 0)
+            {
+                line = "world-asmdef WorldPropTable is not in namespace Tag.Level";
+                return false;
+            }
+            line = "world-asmdef Tag.World referenced by Tag.World.EditMode";
+            return true;
         }
 
         static bool Want(Diagnostic d, HashSet<string> ours)
         {
             string id = d.Id;
-            if (id == "CS0102" || id == "CS0128" || id == "CS0136")
+            if (id == "CS0102" || id == "CS0104" || id == "CS0128" || id == "CS0136")
                 return true;
             if (id != "CS0103" && id != "CS0246")
                 return false;
