@@ -538,7 +538,7 @@ def main():
         boxes = []
         all_pts = []
         for b in prefab["boxes"]:
-            # Play turns Col_Gate off. The check uses the open gate.
+            # Play turns Col_Gate off and hides GateLeaf. The leaf is a mesh, not a blocker.
             if p["name"] == "CourtFence" and b.get("name") == "Col_Gate":
                 continue
             pts = world_points(prefab, b, p)
@@ -731,8 +731,13 @@ def main():
         JUMP_APEX, WALL_JUMP_FLAT, WALL_RUN_DIST, AIR_DASH, GRAPPLE_MAX))
     boot = open(os.path.join(ROOT, "Assets/Scripts/Level/MegaParkP1Bootstrap.cs"), encoding="utf-8").read()
     batch_ok = 'BuildDistrict("WorldZ7", MegaParkWorldDistrict.Places, table, true)' in boot
+    gate_hide = (
+        'name != "Col_Gate" && name != "GateLeaf"' in boot
+        and "CourtFence has no GateLeaf to hide" in boot
+    )
     print("instances %d unique %d" % (len(instances), len(cache)))
     print("static-batch %s" % ("yes" if batch_ok else "NO"))
+    print("gate-leaf hide %s" % ("yes" if gate_hide else "NO"))
     print(
         "wall-jump perp 0 deg %.3f m  off-wall 30 deg %.3f m  60 deg %.3f m  into-wall -30 deg %.3f m  -60 deg %.3f m"
         % (perp_range(0), perp_range(30), perp_range(60), perp_range(-30), perp_range(-60))
@@ -793,7 +798,7 @@ def main():
 
     if "--stills" in sys.argv:
         write_stills(instances)
-    clean = reachable == n and not floating and missing == 0 and scale_fails == 0 and not open_hits and not loop_hits and not path_miss and batch_ok
+    clean = reachable == n and not floating and missing == 0 and scale_fails == 0 and not open_hits and not loop_hits and not path_miss and batch_ok and gate_hide
     return 0 if clean else 1
 
 

@@ -42,7 +42,7 @@ Kept gray, because they are verb toys: `Rail_East` (0.90 m vault), the kick dugo
 Placed at scale 1, 46 instances, 24 unique prefabs:
 
 - Court at (88.6, 0, 53.2), 12 × 22 m. Hoops 1.2 m behind the end lines: south (88.6, 0, 41.0) yaw 0, north (88.6, 0, 65.4) yaw 180.
-- `CourtFence` on the same pivot, yaw 180, so the gate faces the west chase. Play disables `Col_Gate`. The fabric gap is the entrance (entry clearance 0.90 m). The mesh still draws the closed leaf; that draw is in the models prefab and was not edited.
+- `CourtFence` on the same pivot, yaw 180, so the gate faces the west chase. Play disables `Col_Gate` and hides `GateLeaf`. The fabric gap is the entrance (entry clearance 0.90 m). The leaf mesh is the street-props child on #129. This lane does not edit the prefab.
 - Seven `StreetRoad_TwoLane` tiles, yaw 90, along z = 34 from x = 84 to 108. Planted median at (106.2, 0, 35.55).
 - Five sidewalk bays at z = 29.6. Brick row on the south edge at z = 28.15: door, window, wall, window, door. `RooftopAC` on the wall top at y = 3.2.
 - Two `Brick_Wall` climb faces, yaw 90, at x = 71.75, z = 33 and 37. Union face is 8.00 m, height 3.20 m.
@@ -78,7 +78,7 @@ No placement hits the open rect. None sits on the 472 m loop.
 - The planted median's collider tops at 0.66 m, over the 0.30 m step and under the 0.90 m vault band. It is a trip. The chase goes around it.
 - AC units overhang the brick thickness. The pivot sits on the wall or the roof, so the support test passes.
 - District props load from `Resources/World/WorldPropTable`. A missing table or a missing entry is `Debug.LogError`, and the count line is an error when placed is short of the list. Z7 is 46 instances and 24 unique prefabs. Play disables LOD1 and LOD2 on that group and calls `StaticBatchingUtility.Combine`, the same path as Z1. `DrawCap` 120 is the graybox batch only. Four cameras still submit the combined batch.
-- The fence mesh still draws a closed leaf. Only `Col_Gate` is turned off.
+- Play hides `GateLeaf` in the same pass that turns `Col_Gate` off. A fence prefab without that child logs an error. The CourtFence bytes in this checkout are the older combined mesh; `GateLeaf` arrives with #129.
 - Stills in `Docs/WorldStills/pass1/` are collider rasterizations. Canopies, glass, and brick courses are not in the image. Unity and Blender are not in this environment.
 
 ## Z1 this pass
@@ -125,22 +125,32 @@ Stills: `Docs/WorldStills/pass3/`. Collider rasters.
 
 ## Asset bugs for the models lane
 
-The models lead (`cursor/tag-models-lead`) and the street props worker should take these. The world lane does not edit the prefabs. Pivots are seated, so `floatingProps` stays 0. The collider does not hug the mesh. Gaps are prefab-local, placement y removed, from `Tools/WorldCheck/check_z7.py`.
+The world lane does not edit prefabs. The list below was remeasured on the street lanes, not on this checkout. This head still has the older prefab bytes, so `Tools/WorldCheck/check_z7.py` will keep printing the old gaps until those prefabs merge.
+
+Closed on `cursor/tag-street-objects` (`7dc3e222`) and, for the cars, on #125 `cursor/tag-asset-street-kit` (`b332ca8f`):
+
+| Prefab | Was | Now |
+|---|---|---|
+| `Scaffold_Bay` | Posts from y = 0.20. Deck 0.18 m above the posts. | Posts from y = 0.015 to y = 1.655. Deck starts at y = 1.680 (gap 0.025 m). |
+| `TrashCan_Lidded` | Lowest y = 0.19. | Base at y = 0.013. |
+| `Bench_Wood` | Lowest y = 0.14. Gap 0.18 m under y = 0.65. | Legs at y = 0.020. No internal gap over 0.15 m. |
+| `PicnicTable` | Lowest y = 0.37. Gap 0.28 m under y = 0.74. | Feet at y = 0.025. |
+| `Shrub` | Sphere bottom y = 0.16. | Sphere bottom y = 0.020. |
+| `Car_Sedan_25`, `Car_Hatch_25`, `Car_Pickup_25` | Wheel boxes from y = 0.15–0.18. | Wheel contact boxes at y = 0.012. |
+
+`CourtFence` on #129 draws the gate as the child mesh `GateLeaf`. Play hides that mesh and turns `Col_Gate` off. That leaf is not an open models bug.
+
+Still open, same scan, not in the closed set:
 
 | Prefab | Exact gap |
 |---|---|
-| `Scaffold_Bay` | Lowest collider at y = 0.20 m (posts miss the pivot by 0.20 m). Deck collider starts at y = 1.68 m, 0.18 m above the post tops. |
-| `Car_Sedan` | Lowest collider at y = 0.15 m. Visual tire radius is 0.31 m and the axle is y = 0.31 (`Tools/Blender/AssetLibrary/sk_car_sedan.py`), so the tread meets the ground and the wheel box does not. A second gap of 0.80 m sits under the collider at y = 1.50. |
-| `Car_Hatch` | Lowest collider at y = 0.15 m. Same wheel-box gap. A gap of 0.72 m sits under the collider at y = 1.44. |
-| `Car_Pickup` | Lowest collider at y = 0.18 m. Same wheel-box gap. A gap of 0.17 m sits under the collider at y = 0.73. |
-| `TrashCan_Lidded` | Lowest collider at y = 0.19 m. |
-| `Bench_Wood` | Lowest collider at y = 0.14 m. A gap of 0.18 m sits under the collider at y = 0.65. |
-| `PicnicTable` | Lowest collider at y = 0.37 m. A gap of 0.28 m sits under the collider at y = 0.74. Catalog top is 0.76 m. |
-| `Shrub` | Sphere bottom at y = 0.16 m. |
+| `LightPost_Single` | 0.36 m under the pole collider at y = 0.60. The base reaches y = 0.08. |
+| `ParkLamp` | 0.24 m under the pole collider at y = 0.49. The base reaches y = 0.07. |
+| `Car_Pickup_25` | 0.17 m under the tailgate at y = 0.73, above the bed. The wheels themselves meet the ground. |
 
-Also filed, not in that list: `LightPost_Single` has a 0.36 m gap under a collider at y = 0.60 (the pole itself reaches the ground). `ParkLamp` has a 0.24 m gap under a collider at y = 0.49. `Gangway` is catalog `vault 0.88 m`, under the 0.90–1.05 band, and is not placed.
+`Gangway` is catalog `vault 0.88 m`, under the 0.90–1.05 band, and is not placed.
 
-Intentional openings the same scan prints, and that are not bugs: hoop rim above the pole (2.95 m under y = 2.99), brick window glass (0.75 m under y = 0.93), gazebo rail above the deck (0.97 m under y = 1.26).
+Intentional openings, not bugs: hoop rim above the pole (2.95 m under y = 2.99), brick window glass (0.75 m under y = 0.93), gazebo rail above the deck (0.97 m under y = 1.26). Sedan and hatch roofs still sit above the body (0.68 m under y = 1.38, 0.72 m under y = 1.44). That is the greenhouse, not the wheel bug.
 
 ## Next district
 

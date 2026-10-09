@@ -41,7 +41,7 @@ Reserved clears, still in force:
 | Bar under-clear | ≥ 1.05 m | `BarUnderClear` |
 | Fort corridor | ≥ 8 m | east spine and the army/knight gap |
 
-A closed cage is a dead end. `CourtFence` ships with a closed gate (`Docs/AssetLibrary.md`: "The gate is closed"). Z7 places one copy and play disables `Col_Gate`, so the fabric gap is the entrance. The mesh leaf is still drawn. That draw is a models-lane bug. Do not edit the prefab. A gazebo, a scaffold, or a facade must leave a walk-around, a vault, or a jump back to the ground.
+A closed cage is a dead end. `CourtFence` keeps its gate as the child mesh `GateLeaf` on +X, with `Col_Gate` for that leaf. Z7 places one copy. Play turns `Col_Gate` off and hides `GateLeaf`, so the fabric gap is the entrance. Do not edit the prefab. A gazebo, a scaffold, or a facade must leave a walk-around, a vault, or a jump back to the ground.
 
 ## Verb envelopes
 

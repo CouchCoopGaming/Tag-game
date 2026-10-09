@@ -52,7 +52,7 @@ namespace Tag.Level
         {
             new Place("Court", P + "Court.prefab", 88.6f, 0f, 53.2f, 0f),
             // Yaw 180 puts the +X gate on the west sideline, toward the chase.
-            // Play disables Col_Gate so that opening is a real entrance.
+            // Play disables Col_Gate and hides the GateLeaf mesh.
             new Place("CourtFence", P + "CourtFence.prefab", 88.6f, 0f, 53.2f, 180f),
             new Place("Hoop_S", P + "Hoop.prefab", 88.6f, 0f, 41.0f, 0f),
             new Place("Hoop_N", P + "Hoop.prefab", 88.6f, 0f, 65.4f, 180f),

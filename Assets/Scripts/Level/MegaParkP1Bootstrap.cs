@@ -506,21 +506,31 @@ namespace Tag.Level
         }
 
         /// <summary>
-        /// The shipped fence mesh draws a closed leaf. Collision for that leaf is
-        /// Col_Gate. Turning it off leaves the fabric gap, so the chase can enter.
+        /// The gate is the child mesh GateLeaf plus Col_Gate. Both go off so the
+        /// fabric gap is an open entrance. The prefab is not edited here.
         /// </summary>
         static void OpenCourtGate(GameObject root)
         {
+            bool gate = false;
+            bool leaf = false;
             Transform[] nodes = root.GetComponentsInChildren<Transform>(true);
             for (int i = 0; i < nodes.Length; i++)
             {
-                if (nodes[i].name != "Col_Gate")
+                string name = nodes[i].name;
+                if (name != "Col_Gate" && name != "GateLeaf")
                     continue;
                 nodes[i].gameObject.SetActive(false);
-                Debug.Log("[MegaPark] CourtFence gate open");
-                return;
+                if (name == "Col_Gate")
+                    gate = true;
+                else
+                    leaf = true;
             }
-            Debug.LogError("[MegaPark] CourtFence has no Col_Gate to open");
+            if (!gate)
+                Debug.LogError("[MegaPark] CourtFence has no Col_Gate to open");
+            if (!leaf)
+                Debug.LogError("[MegaPark] CourtFence has no GateLeaf to hide");
+            if (gate && leaf)
+                Debug.Log("[MegaPark] CourtFence gate open");
         }
 
         /// <summary>
