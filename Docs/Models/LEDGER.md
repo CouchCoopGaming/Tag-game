@@ -12,8 +12,8 @@ Nothing is **accepted** in the tables. A pass requires `models-validate` with `f
 | Branch | PR | Tip | Summary |
 | --- | --- | --- | --- |
 | `cursor/tag-asset-library` | #122 | `723cc13707d899005491e4816a314a7bd43687df` | `models-validate assets=125 pass=12 fail=113` / `models-split paperwork=91 geometry=22` |
-| `cursor/tag-asset-street-kit` | #125 | `9c61fe70a1ae94a3a5aa4832d656b5aa8d14caf9` | `models-validate assets=188 pass=0 fail=188` / `models-split paperwork=136 geometry=52` |
-| `cursor/tag-street-objects` | #129 | `8f7686a52822c94c495ddc1bf9e51e0473cebe3a` | `models-validate assets=220 pass=27 fail=193` / `models-split paperwork=176 geometry=17` |
+| `cursor/tag-asset-street-kit` | #125 | `2b8480a749df3b71d616689dc1b93e29e8395535` | `models-validate assets=189 pass=14 fail=175` / `models-split paperwork=136 geometry=39` |
+| `cursor/tag-street-objects` | #129 | `cf295d9b604e62c76d85ae41703d4395448a40b2` | `models-validate assets=220 pass=27 fail=193` / `models-split paperwork=176 geometry=17` |
 | `cursor/tag-loco-smooth` | #128 | `b804954f8e93db977c096d21ef93c8724f92978b` | `models-validate assets=7 pass=0 fail=7` / `models-split paperwork=5 geometry=2` |
 | `cursor/tag-character-costumes` | #131 | `e5b34c0e36343405f07f0d5acd098f28a6bd7797` | `models-validate assets=18 pass=0 fail=18` / `models-split paperwork=5 geometry=13` |
 
@@ -333,11 +333,11 @@ Running count: **6**. Each line is one redo or conflict for the restructure-impa
 5. #125 `bc02b9c4` deletes those three `*_25` blockouts after the rename. #125 and #129 now both omit them. The rejection was undone, then redone. Counted separately from 4.
 6. #129 `a92b5987` rebuilds `CourtFence` to 3664/2640/144. #122's fence already passes at 3680/2656/620. Second fence mesh. #129 `8f7686a5` then copied #122's fence, and the geometry hash matches. The rebuild stays counted.
 
-Not a redo: `Pickup_FullSize_25` on #125 `9c61fe70`. Logging it as redo 7 was a chain-of-command error on the models-lead side. Ororo asked for that truck, and Landon wants an F-150-style full-size pickup in the vehicle set. `Car_Pickup_25` stays rejected. The new pickup is a different asset. It is not graded yet: pass 17 stills are 1280×720 and under 400 KB, and the tree has no FBX and no manifest row.
+Not a redo: `Pickup_FullSize_25`. Logging the request as redo 7 was a chain-of-command error on the models-lead side. Ororo asked for that truck, and Landon wants an F-150-style full-size pickup in the vehicle set. `Car_Pickup_25` stays rejected. On #125 `2b8480a7` the FBX, the manifest row, and the pass 17 quartet are in the tree, and the asset passes: 5.105 × 1.999 × 1.761 m, slack 0.00 cm, LOD 11336/2728/1608.
 
 Not counted: #128 `b804954f` adds `build_hip_ankle.py` and `clear_hip_flex.py` only. The graded Hier geometry is unchanged, and the validator is still `pass=0/7`. #129 `8f7686a5` also copied Container_20 (and both enamels), Rowboat, HarborShed, Gazebo, and WoodFence_Corner from #122. Those hashes match, so they are copies, not another redo. GasCanopy, Dock_Straight, and FishingBoat on that tip were cut locally and do not match #122. #125 has not taken the #122 copies. #125 `d77f0728` only adds pass 16 stills for the 2022–2024 midsize sedans.
 
 ## Counts
 
-Lead status in the asset tables: accepted 0. Geometry-hash re-grade, 9 Oct 2026: #122 pass=12/125, #125 pass=0/188 at `9c61fe70`, #129 pass=27/220, #128 pass=0/7, #131 pass=0/18. Restructure-impact count: 6. `Pickup_FullSize_25` is not in that count.
+Lead status in the asset tables: accepted 0. Re-grade 9 Oct 2026: #122 pass=12/125, #125 pass=14/189 at `2b8480a7`, #129 pass=27/220 at `cf295d9b` (model count unchanged; the tip only qualifies `SmoothMotion.cs`), #128 pass=0/7, #131 pass=0/18. Restructure-impact count: 6. `Pickup_FullSize_25` is not in that count.
 
