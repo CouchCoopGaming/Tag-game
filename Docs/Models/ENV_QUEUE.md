@@ -43,4 +43,4 @@ A colour or paint sibling uses the base quartet when vertex positions, indices, 
 4. `Park/Planter` is not `Planter_Street`. It still needs its own quartet.
 5. Do not re-import `Car_*`.
 
-Restructure-impact count is 6. `Pickup_FullSize_25` is not a redo. #129 did not move past `8f7686a5`. See `Docs/Models/LEDGER.md`.
+Restructure-impact count is 6. `Pickup_FullSize_25` is not a redo. #129 `cf295d9b` did not change a mesh. See `Docs/Models/LEDGER.md`.
