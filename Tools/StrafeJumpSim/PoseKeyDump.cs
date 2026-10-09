@@ -85,7 +85,7 @@ static class PoseKeyDump
             if (t > dur) t = dur;
             float phase = Mathf.Sin(rate * t);
             WallPose.Sample s = WallPose.Climb(phase, WallPose.ClimbSpeedRef);
-            Emit(w, c, "climb", t, s.ThighL, s.ThighR, s.KneeL, s.KneeR, 0f, 0f,
+            Emit(w, c, "climb", t, s.ThighL, s.ThighR, s.KneeL, s.KneeR, s.ThighYawL, s.ThighYawR,
                 s.ArmPitchL, s.ArmPitchR, s.ArmYawL, s.ArmYawR, 0f, 0f,
                 s.ElbowL, s.ElbowR, s.Hip, s.Spine, s.Head, s.LeanZ, 0f, 0f, s.FootL, s.FootR, 0f);
             if (t >= dur) break;
@@ -134,15 +134,15 @@ static class PoseKeyDump
             if (t <= cycle)
             {
                 WallPose.Sample s = WallPose.RunCycle(rate * t, true);
-                Emit(w, c, "wall", t, s.ThighL, s.ThighR, s.KneeL, s.KneeR, 0f, 0f,
+                Emit(w, c, "wall", t, s.ThighL, s.ThighR, s.KneeL, s.KneeR, s.ThighYawL, s.ThighYawR,
                     s.ArmPitchL, s.ArmPitchR, s.ArmYawL, s.ArmYawR, 0f, 0f,
                     s.ElbowL, s.ElbowR, s.Hip, s.Spine, s.Head, s.LeanZ, 0f, 0f, s.FootL, s.FootR, 0f);
             }
             else
             {
                 WallJumpPose.Sample s = WallJumpPose.At(t - cycle, 8f, true, WallPose.WallRunSpeedRef);
-                Emit(w, c, "wall", t, s.ThighL, s.ThighR, s.KneeL, s.KneeR, 0f, 0f,
-                    s.ArmPitchL, s.ArmPitchR, s.ArmYawL, s.ArmYawR, 0f, 0f,
+                Emit(w, c, "wall", t, s.ThighL, s.ThighR, s.KneeL, s.KneeR, s.ThighYawL, s.ThighYawR,
+                    s.ArmPitchL, s.ArmPitchR, s.ArmYawL, s.ArmYawR, s.ArmRollL, s.ArmRollR,
                     s.ElbowL, s.ElbowR, s.Hip, s.Spine, s.Head, s.LeanZ, 0f, 0f, 0f, 0f, 0f);
             }
             if (t >= dur) break;

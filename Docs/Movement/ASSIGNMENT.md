@@ -4,20 +4,22 @@ Branch `cursor/tag-movement-exits`. Draft only. The lead merges with `git merge`
 
 ## Clips
 
-Exits, the played climb, and the played wall run. C1 is already re-keying the played climb at 3.74 cm and the wall run at 4.97 cm. Landings and rolls stay with E.
+Exits, the played climb, and the played wall run. The lead folded the climb and wall-run re-key from draft #140. Pose on both is 0. Landings and rolls stay with E. #137 is not folded. E is redoing the landings in pass 8.
+
+Plants need hip flexion of at least 25°. Landings and crouches need hip flexion of at least 35° and spine flexion of at least 15°. The ratio stays at least 1.5.
 
 | Clip | Hip-sit fails | Pose |
 |---|---|---|
-| vault (played) | 0, plant and land | 0 (0.42) fails 0 |
-| climb | 0, cruise | 3.74 Spine\|UpperLeg_L fails 12 |
-| wall | 0, cruise | 4.97 Chest\|UpperArm_R fails 16 |
-| exit-WallRun | 0 | 0 (0.36) |
+| vault (played) | 2 hipFlex, spineFlex. Plant hip 18°. Land hip 20° spine 8° | 0 (0.42) fails 0 |
+| climb | 0, cruise | 0 (0.42) fails 0 |
+| wall | 0, cruise | 0 (0.43) world 0.31 fails 0 |
+| exit-WallRun | 9 hipFlex, spineFlex. Land hip 18° spine 8° | 0 (0.36) |
 | exit-WallJump | 0, airborne | 0 (0.42) |
-| exit-ClimbTopOut | 0 | 0 (0.36) |
+| exit-ClimbTopOut | 11 hipFlex. Plant hip 18° < 25° | 0 (0.36) |
 | exit-ClingDrop | 0, airborne | 0 (0.36) world 0.31 |
-| exit-Vault | 0, recovery | 0 (0.36) |
-| exit-Mantle | 0 | 0 (0.36) |
-| exit-Slide | 0 | 0 (0.36) |
+| exit-Vault | 10 hipFlex, spineFlex. Land hip 18° spine 8° | 0 (0.36) |
+| exit-Mantle | 9 hipFlex, spineFlex | 0 (0.36) |
+| exit-Slide | 9 hipFlex, spineFlex. Crouch hip 18° spine 8° | 0 (0.36) |
 | exit-AirDash | 0, airborne | 0 (0.36) |
 | exit-Punch | 0, airborne | world 0.84 fails 3 |
 | exit-Lunge | 0, airborne | 0.74 world 0.65 fails 2 |
@@ -26,9 +28,9 @@ Exits, the played climb, and the played wall run. C1 is already re-keying the pl
 | exit-GrappleRelease | 0, airborne | 0 (0.23) |
 | exit-TagBackEnd | 0, airborne | world 0.86 fails 3 |
 
-Open work is the played climb at 3.74 cm, the wall run at 4.97 cm, exit-Punch, exit-Lunge, and exit-TagBackEnd. The played vault already passes. `exit-ClimbTopOut` is the folded plant. The other sat recoveries stay at pose 0.36 cm.
+Open work is the hip floors on the played vault, `exit-ClimbTopOut`, `exit-WallRun`, `exit-Vault`, `exit-Mantle`, and `exit-Slide`, plus exit-Punch, exit-Lunge, and exit-TagBackEnd. Climb and the wall run pass pose. The shared recovery sit is hip 18° and spine 8°. Do not reset the spine to rest to clear the floor.
 
-Slide, idle, loco, sprint, punch, zip, and pad stay on the lead branch. The lead cleared zip, idle, loco, and sprint. Landings and rolls stay on `cursor/tag-movement-evasion`.
+Slide, idle, loco, sprint, punch, zip, and pad stay on the lead branch. The lead cleared zip, idle, loco, and sprint. Slide stays an honest fail under `leadKnee=-10`. Landings and rolls stay on `cursor/tag-movement-evasion`.
 
 ## Target shapes
 

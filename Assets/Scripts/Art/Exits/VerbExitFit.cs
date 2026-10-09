@@ -297,7 +297,9 @@ namespace Tag.Art
             if (LipWeight(VerbExitId.ZipDrop, 0.1f) > 0.001f) return false;
 
             VerbExitSample roll0 = Frame(VerbExitId.Roll, 0f, 4f, 0f);
-            if (roll0.ArmYawL > -40f) return false;
+            // The roll joins from the locked fall. FallArmYaw is +58, so the
+            // open has to be at least 40. The flipped sign never passed.
+            if (roll0.ArmYawL < 40f) return false;
             if (roll0.RootSpin > 1f) return false;
             VerbExitSample rollMid = Frame(VerbExitId.Roll, 0.52f, 4f, 0f);
             if (rollMid.RootSpin < 170f) return false;
@@ -434,6 +436,8 @@ namespace Tag.Art
             o.HipRoll = s.LeanZ;
             o.FootL = s.FootL;
             o.FootR = s.FootR;
+            o.ThighYawL = s.ThighYawL;
+            o.ThighYawR = s.ThighYawR;
             return o;
         }
 
@@ -454,6 +458,10 @@ namespace Tag.Art
             o.Spine = s.Spine;
             o.Head = s.Head;
             o.HipRoll = s.LeanZ;
+            o.ArmRollL = s.ArmRollL;
+            o.ArmRollR = s.ArmRollR;
+            o.ThighYawL = s.ThighYawL;
+            o.ThighYawR = s.ThighYawR;
             return o;
         }
 

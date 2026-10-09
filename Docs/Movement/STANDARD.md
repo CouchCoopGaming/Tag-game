@@ -10,12 +10,13 @@ Pose keys are joint angles plus a hips-bone drop. The capsule and the root stay 
 
 ## Hip-sit
 
-On every loaded frame the movement starts at the hip. A loaded frame is a plant, a landing, or a crouch: the support sole is on the surface. Cruise and airborne frames are reported, and they are not in `kneeMin` or `pelvisDropMin`.
+On every loaded frame the movement starts at the hip. A loaded frame is a plant, a landing, or a crouch: the support sole is on the surface. Cruise and airborne frames are reported, and they are not in `kneeMin`, `pelvisDropMin`, `hipFlexMin`, or `spineFlexMin`.
 
 Measure at 30 fps, in centimetres and degrees:
 
 - `pelvisBack` is how far the pelvis sits behind the support foot along the facing direction. At least 8 cm on a plant and a landing. At least 12 cm in a crouch.
 - `hingeRatio` is hip flexion divided by lumbar plus chest flexion. At least 1.5. The torso pitches from the hip. The spine stays near neutral. Do not reset it to rest.
+- Hip flexion on a plant is at least 25°. On a landing or a crouch it is at least 35°, and spine flexion (lumbar plus chest, the same denominator as the ratio) is at least 15°. The ratio stays at least 1.5. A ratio of 1.5 with both angles small is an upright half-squat and it fails. Do not reset the spine to rest to clear the floor.
 - Support knee flexion is at least 25° on a plant and at least 45° on a landing or a crouch. The angle is the geometric bend between thigh and shin, not a straight leg leaned back.
 - The shin angles forward. The knee is over the ankle or ahead of it. A knee behind the pelvis is a lean, and it fails.
 - Pelvis drop versus standing height is at least 8 cm on a plant and at least 20 cm on a landing or a crouch. The drop is the hips bone.
@@ -24,9 +25,9 @@ The support foot is the lower sole, or both soles when they are within 4 cm of e
 
 Report one line:
 
-`hip-sit clips=N fails=0 pelvisBackMin=.. hingeMin=.. kneeMin=.. pelvisDropMin=..`
+`hip-sit clips=N fails=0 pelvisBackMin=.. hingeMin=.. kneeMin=.. pelvisDropMin=.. hipFlexMin=.. spineFlexMin=..`
 
-`kneeMin` and `pelvisDropMin` are the plant, landing, and crouch frames only.
+`kneeMin`, `pelvisDropMin`, `hipFlexMin`, and `spineFlexMin` are the plant, landing, and crouch frames only. Hip flexion is the absolute hip pitch. Spine flexion is lumbar plus chest.
 
 ## Target shapes
 
