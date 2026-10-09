@@ -178,17 +178,20 @@ def create():
     a.loose_pivot = True
     a.climb_note = "Too small to cling."
     a.vault_note = "Gunwale is about 0.55 m. Not a vault."
-    for lod in (0, 1):
+    for lod in (0, 1, 2):
         g = a.begin(lod)
-        seg = lod_pick(lod, 8, 6)
-        n = lod_pick(lod, 25, 17)
+        seg = lod_pick(lod, 8, 6, 5)
+        n = lod_pick(lod, 21, 12, 6)
         solid_hull(
             g, Z0, Z1, n, profile, _top, "Lib_Varnish",
             bow_extra=0.12, section_fn=section_smooth, bevel_stern=0.05,
         )
-        steps = lod_pick(lod, 18, 10)
-        _strakes(g, steps)
-        _gunwale(g, seg, steps)
+        steps = lod_pick(lod, 12, 6, 3)
+        if lod < 2:
+            _strakes(g, steps)
+            _gunwale(g, seg, steps)
+        else:
+            _gunwale(g, seg, 4)
         _thwarts(g)
         g.box((0, 0.192, 0.02), (0.36, 0.008, 0.70), "Lib_PaintCream")
         if lod == 0:
@@ -207,5 +210,5 @@ def create():
     a.box("Col_Bilge", (0, 0.10, 0.0), (0.14, 0.035, 0.50))
     a.box("Col_ThwartF", (0, 0.30, -0.505), (0.18, 0.012, 0.04))
     a.box("Col_ThwartA", (0, 0.30, 0.265), (0.18, 0.012, 0.04))
-    a.box("Col_Transom", (0, 0.14, 0.82), (0.12, 0.04, 0.18))
+    a.box("Col_Transom", (0, 0.13, 0.72), (0.08, 0.03, 0.10))
     return a

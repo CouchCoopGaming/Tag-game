@@ -43,8 +43,17 @@ PALETTE = {
     "Lib_AsphaltPatch": ((0.07, 0.07, 0.072), 0.0, 0.18),
     "Lib_Brick": ((0.64, 0.32, 0.24), 0.0, 0.28),
     "Lib_Mortar": ((0.72, 0.70, 0.66), 0.0, 0.20),
+    # Grey-tan chinking. Dark and matte so the groove does not catch the sky.
+    "Lib_Chink": ((0.26, 0.22, 0.17), 0.0, 0.08),
+    # Flat fallback under the growth-ring texture on a log end.
+    "Lib_LogEnd": ((0.55, 0.38, 0.22), 0.0, 0.22),
     "Lib_Wood": ((0.62, 0.42, 0.24), 0.0, 0.32),
     "Lib_WoodDark": ((0.36, 0.22, 0.13), 0.0, 0.28),
+    # Round piles. Vertical grain, a wet shaft, a green waterline, a grey top.
+    "Lib_Pile": ((0.42, 0.30, 0.16), 0.0, 0.30),
+    "Lib_PileWet": ((0.18, 0.12, 0.07), 0.0, 0.18),
+    "Lib_PileAlgae": ((0.26, 0.34, 0.16), 0.0, 0.42),
+    "Lib_PileTop": ((0.50, 0.48, 0.42), 0.0, 0.48),
     "Lib_Mulch": ((0.361, 0.227, 0.18), 0.0, 0.15),
     "Lib_Foliage": ((0.15, 0.32, 0.11), 0.0, 0.08),
     "Lib_FoliageDark": ((0.08, 0.20, 0.08), 0.0, 0.08),
@@ -70,6 +79,10 @@ PALETTE = {
     "Lib_Soil": ((0.28, 0.18, 0.10), 0.0, 0.12),
     "Lib_Siding": ((0.78, 0.80, 0.78), 0.0, 0.30),
     "Lib_Roof": ((0.28, 0.30, 0.32), 0.05, 0.25),
+    # Ranch and boathouse courses. Several short staggered rows per metre.
+    "Lib_RanchRoof": ((0.34, 0.26, 0.18), 0.04, 0.28),
+    # Truncated-dome panel. Yellow field, the domes are the normal.
+    "Lib_Warn": ((0.76, 0.52, 0.10), 0.0, 0.12),
     "Lib_Awning": ((0.55, 0.12, 0.16), 0.0, 0.28),
     "Lib_Court": ((0.16, 0.38, 0.62), 0.0, 0.30),
     "Lib_Lane": ((0.90, 0.82, 0.28), 0.0, 0.35),
@@ -110,6 +123,12 @@ PALETTE = {
     "Lib_CraneYellow": ((0.78, 0.62, 0.16), 0.15, 0.32),
     # Flat varnish. Not the baked wood tile, which reads blotchy on a curved hull.
     "Lib_Varnish": ((0.52, 0.34, 0.16), 0.0, 0.38),
+    # Per-log shift, about ±8% value, so a wall is not one flat tan.
+    "Lib_Log0": ((0.478, 0.313, 0.147), 0.0, 0.36),
+    "Lib_Log1": ((0.545, 0.328, 0.148), 0.0, 0.36),
+    "Lib_Log2": ((0.52, 0.34, 0.16), 0.0, 0.36),
+    "Lib_Log3": ((0.50, 0.362, 0.148), 0.0, 0.36),
+    "Lib_Log4": ((0.562, 0.367, 0.173), 0.0, 0.36),
     # Untextured board paint and container enamel. The baked tiles read as brick.
     "Lib_Board": ((0.63, 0.46, 0.29), 0.0, 0.32),
     "Lib_Batten": ((0.38, 0.24, 0.14), 0.0, 0.28),
@@ -137,18 +156,19 @@ EMISSIVE = {
 # Grayscale-or-color albedo multiplied is baked as full color. UV is meters.
 TEXTURED = (
     "Lib_Brick", "Lib_Asphalt", "Lib_Wood", "Lib_WoodDark", "Lib_Concrete",
-    "Lib_Siding", "Lib_Roof", "Lib_Soil", "Lib_Hydrant", "Lib_WoodWeather",
+    "Lib_Siding", "Lib_Roof", "Lib_RanchRoof", "Lib_Warn", "Lib_Soil", "Lib_Hydrant", "Lib_WoodWeather",
     "Lib_CourtDecal", "Lib_Bark", "Lib_MetalWorn", "Lib_ContainerRed", "Lib_ContainerBlue",
-    "Lib_CraneYellow", "Lib_ChainMesh",
+    "Lib_CraneYellow", "Lib_ChainMesh", "Lib_LogEnd", "Lib_Pile",
 )
 # Alpha-cutout albedo. The PNG alpha is the clip mask.
 CUTOUT = (
     "Lib_ChainMesh",
 )
 NORMALS = (
-    "Lib_Brick", "Lib_Water", "Lib_Concrete", "Lib_Wood", "Lib_WoodDark",
+    "Lib_Brick", "Lib_Roof", "Lib_Warn", "Lib_Water", "Lib_Concrete", "Lib_Wood", "Lib_WoodDark",
     "Lib_Asphalt", "Lib_Bark", "Lib_MetalWorn", "Lib_ContainerRed", "Lib_ContainerBlue",
-    "Lib_CraneYellow",
+    "Lib_CraneYellow", "Lib_LogEnd",
+    "Lib_Log0", "Lib_Log1", "Lib_Log2", "Lib_Log3", "Lib_Log4",
 )
 ROUGHNESS = (
     "Lib_Brick", "Lib_Hydrant", "Lib_WoodWeather", "Lib_Asphalt", "Lib_Wood",
@@ -334,6 +354,8 @@ class Geo:
         self.bm = bmesh.new()
         self.uv = self.bm.loops.layers.uv.new("UVMap")
         self.scale_layer = self.bm.faces.layers.float.new("uvscale")
+        # 0 keeps the usual triplanar axes. 1 lays long grain on world X, 2 on world Z.
+        self.grain_layer = self.bm.faces.layers.float.new("uvgrain")
         self.mats = []
 
     def slot(self, name):
@@ -343,7 +365,7 @@ class Geo:
             self.mats.append(name)
         return self.mats.index(name)
 
-    def _ingest(self, src, mat, uv_scale, face_mats=None):
+    def _ingest(self, src, mat, uv_scale, face_mats=None, grain=0.0):
         vmap = {}
         for v in src.verts:
             vmap[v] = self.bm.verts.new(v.co)
@@ -360,6 +382,7 @@ class Geo:
             nf.material_index = self.slot(name)
             nf.smooth = True
             nf[self.scale_layer] = uv_scale
+            nf[self.grain_layer] = grain
             if src_uv is not None:
                 for loop, src_loop in zip(nf.loops, f.loops):
                     loop[self.uv].uv = src_loop[src_uv].uv[:]
@@ -391,7 +414,7 @@ class Geo:
         bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
         return bm
 
-    def box(self, center, size, mat, bevel=0.0, segs=1, euler=(0, 0, 0), uv_scale=1.0):
+    def box(self, center, size, mat, bevel=0.0, segs=1, euler=(0, 0, 0), uv_scale=1.0, grain=0.0):
         sx, sy, sz = size
         if sx <= 0 or sy <= 0 or sz <= 0:
             return
@@ -421,9 +444,9 @@ class Geo:
         for idxs in faces_idx:
             bm.faces.new([verts[i] for i in idxs])
         self._finish_src(bm, bevel, segs)
-        self._ingest(bm, mat, uv_scale)
+        self._ingest(bm, mat, uv_scale, grain=grain)
 
-    def cylinder(self, center, radius, height, mat, segments=12, axis="Y", bevel=0.0, segs=1, uv_scale=1.0, cap_ends=True):
+    def cylinder(self, center, radius, height, mat, segments=12, axis="Y", bevel=0.0, segs=1, uv_scale=1.0, cap_ends=True, grain=0.0):
         if radius <= 0 or height <= 0:
             return
         bm = bmesh.new()
@@ -447,7 +470,114 @@ class Geo:
         # Unity X / Unity Z because of the axis map (see file header).
         bmesh.ops.translate(bm, verts=bm.verts, vec=Vector(unity_to_blender(*center)))
         self._finish_src(bm, bevel, segs)
-        self._ingest(bm, mat, uv_scale)
+        self._ingest(bm, mat, uv_scale, grain=grain)
+
+    def cylinder_bands(self, x, z, radius, bands, segments=8):
+        """One closed vertical pile. bands is (y0, y1, material) from bottom to top."""
+        if radius <= 0 or not bands:
+            return
+        seg = max(3, int(segments))
+        bm = bmesh.new()
+        uv = bm.loops.layers.uv.new("UVMap")
+        ys = [bands[0][0]]
+        for _y0, y1, _mat in bands:
+            ys.append(y1)
+        rings = []
+        for y in ys:
+            ring = []
+            for i in range(seg):
+                ang = 2.0 * math.pi * i / seg
+                ring.append(bm.verts.new(unity_to_blender(
+                    x + radius * math.cos(ang), y, z + radius * math.sin(ang)
+                )))
+            rings.append(ring)
+        span = max(1e-4, ys[-1] - ys[0])
+        mats = []
+
+        def side(i0, i1, y_a, y_b, mat):
+            for i in range(seg):
+                j = (i + 1) % seg
+                face = bm.faces.new((rings[i0][i], rings[i0][j], rings[i1][j], rings[i1][i]))
+                mats.append(mat)
+                u0, u1 = i / seg, (i + 1) / seg
+                v0 = (y_a - ys[0]) / span
+                v1 = (y_b - ys[0]) / span
+                coords = ((u0, v0), (u1, v0), (u1, v1), (u0, v1))
+                for loop, uv_xy in zip(face.loops, coords):
+                    loop[uv].uv = uv_xy
+
+        for b, (y0, y1, mat) in enumerate(bands):
+            side(b, b + 1, y0, y1, mat)
+        cap0 = bm.faces.new(list(reversed(rings[0])))
+        mats.append(bands[0][2])
+        for loop in cap0.loops:
+            loop[uv].uv = (0.5, 0.0)
+        cap1 = bm.faces.new(rings[-1])
+        mats.append(bands[-1][2])
+        for loop in cap1.loops:
+            loop[uv].uv = (0.5, 1.0)
+        bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+        self._ingest_multi(bm, mats)
+
+    def tube(self, points, radius, mat, segments=8):
+        """One closed round tube along Unity points. Joints share rings, so segments do not overlap."""
+        if radius <= 0 or len(points) < 2:
+            return
+        pts = [Vector(p) for p in points]
+        seg = max(3, int(segments))
+        bm = bmesh.new()
+        rings = []
+        for i, p in enumerate(pts):
+            if i == 0:
+                direction = pts[1] - pts[0]
+            elif i == len(pts) - 1:
+                direction = pts[-1] - pts[-2]
+            else:
+                direction = pts[i + 1] - pts[i - 1]
+            if direction.length < 1e-6:
+                continue
+            direction.normalize()
+            tmp = Vector((0.0, 0.0, 1.0)) if abs(direction.z) < 0.85 else Vector((1.0, 0.0, 0.0))
+            x_axis = direction.cross(tmp).normalized()
+            z_axis = x_axis.cross(direction).normalized()
+            ring = []
+            for s in range(seg):
+                ang = 2.0 * math.pi * s / seg
+                radial = x_axis * (math.cos(ang) * radius) + z_axis * (math.sin(ang) * radius)
+                q = p + radial
+                ring.append(bm.verts.new(unity_to_blender(q.x, q.y, q.z)))
+            rings.append(ring)
+        if len(rings) < 2:
+            bm.free()
+            return
+        for i in range(len(rings) - 1):
+            for s in range(seg):
+                n = (s + 1) % seg
+                bm.faces.new((rings[i][s], rings[i][n], rings[i + 1][n], rings[i + 1][s]))
+        bm.faces.new(list(reversed(rings[0])))
+        bm.faces.new(rings[-1])
+        self._finish_src(bm, 0, 0)
+        self._ingest(bm, mat, 1.0)
+
+    def _ingest_multi(self, src, mats):
+        vmap = {}
+        for v in src.verts:
+            vmap[v] = self.bm.verts.new(v.co)
+        self.bm.verts.index_update()
+        src_uv = src.loops.layers.uv.active if src.loops.layers.uv else None
+        for f, mat in zip(src.faces, mats):
+            try:
+                nf = self.bm.faces.new([vmap[v] for v in f.verts])
+            except ValueError:
+                continue
+            nf.material_index = self.slot(mat)
+            nf.smooth = True
+            nf[self.scale_layer] = -1.0
+            nf[self.grain_layer] = 0.0
+            if src_uv is not None:
+                for loop, src_loop in zip(nf.loops, f.loops):
+                    loop[self.uv].uv = src_loop[src_uv].uv[:]
+        src.free()
 
     def cone(self, center, radius1, radius2, height, mat, segments=12, axis="Y", uv_scale=1.0):
         bm = bmesh.new()
@@ -500,7 +630,7 @@ class Geo:
         bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
         self._ingest(bm, mat, uv_scale)
 
-    def pipe(self, a, b, radius, mat, segments=8, bevel=0.0, segs=0, uv_scale=1.0):
+    def pipe(self, a, b, radius, mat, segments=8, bevel=0.0, segs=0, uv_scale=1.0, grain=0.0):
         a = Vector(a)
         b = Vector(b)
         delta = b - a
@@ -531,7 +661,7 @@ class Geo:
         bm.faces.new(list(reversed(rings[0])))
         bm.faces.new(rings[1])
         self._finish_src(bm, bevel, segs)
-        self._ingest(bm, mat, uv_scale)
+        self._ingest(bm, mat, uv_scale, grain=grain)
 
     def blob(self, spheres, mat, voxel=0.12):
         """Union of (center, radius) spheres via a voxel remesh. One clean canopy."""
@@ -629,7 +759,7 @@ class Geo:
         bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
         self._ingest(bm, mat, -1.0)
 
-    def mesh(self, verts, faces, mat, uv_scale=1.0, bevel=0.0, segs=0, face_mats=None):
+    def mesh(self, verts, faces, mat, uv_scale=1.0, bevel=0.0, segs=0, face_mats=None, grain=0.0):
         """verts are Unity-space. faces are index tuples (quads preferred)."""
         bm = bmesh.new()
         bverts = [bm.verts.new(unity_to_blender(*v)) for v in verts]
@@ -639,7 +769,7 @@ class Geo:
             except ValueError:
                 continue
         self._finish_src(bm, bevel, segs)
-        self._ingest(bm, mat, uv_scale, face_mats)
+        self._ingest(bm, mat, uv_scale, face_mats, grain)
 
     def arc_pipe(self, center, radius, height0, height1, a0, a1, tube, mat, segments=8, steps=8):
         """Tube along a horizontal arc. Angles in degrees, 0 = +Z, 90 = +X."""
@@ -674,6 +804,7 @@ class Geo:
                 continue
             if not scale:
                 scale = 1.0
+            grain = f[self.grain_layer]
             n = f.normal
             nu = Vector(blender_to_unity(n.x, n.y, n.z))
             if nu.length:
@@ -682,11 +813,19 @@ class Geo:
                 c = loop.vert.co
                 u = blender_to_unity(c.x, c.y, c.z)
                 if abs(nu.y) >= abs(nu.x) and abs(nu.y) >= abs(nu.z):
-                    loop[self.uv].uv = (u[0] * scale, u[2] * scale)
+                    uu, vv = u[0], u[2]
                 elif abs(nu.x) >= abs(nu.z):
-                    loop[self.uv].uv = (u[2] * scale, u[1] * scale)
+                    uu, vv = u[2], u[1]
                 else:
-                    loop[self.uv].uv = (u[0] * scale, u[1] * scale)
+                    uu, vv = u[0], u[1]
+                # Bands vary along U, so long grain has to run along V.
+                if grain >= 1.5:
+                    if abs(nu.z) < 0.65 and abs(nu.y) < 0.65:
+                        uu, vv = vv, uu
+                elif grain >= 0.5:
+                    if abs(nu.x) < 0.65:
+                        uu, vv = vv, uu
+                loop[self.uv].uv = (uu * scale, vv * scale)
 
     def tri_count(self):
         n = 0
@@ -828,7 +967,8 @@ def _point_inside(bvh, blender_point):
     origin = Vector(blender_point)
     direction = Vector((1.0, 0.17, 0.09)).normalized()
     hits = 0
-    for _ in range(12):
+    # A ray through a brick pier can cross more than a dozen faces.
+    for _ in range(64):
         loc, _normal, _idx, _dist = bvh.ray_cast(origin, direction)
         if loc is None:
             break
@@ -1311,21 +1451,170 @@ def _siding_pixel(x, y, w, h):
     return (base * shadow, base * shadow, base * 0.98 * shadow)
 
 
-def _roof_pixel(x, y, w, h):
-    u = x / w
-    v = y / h
-    course = v * 5.0
-    ci = math.floor(course)
-    fy = course - ci
-    off = 0.5 if ci % 2 else 0.0
-    fx = ((u + off) * 6.0) % 1.0
-    edge = fy < 0.16 or fx < 0.04 or fx > 0.96
-    n = _value_noise(u * 8.0, v * 8.0, 14)
-    if edge:
-        vcol = 0.22 + n * 0.04
+def _shake_at(u, v):
+    """One exposed course fills the tile. Widths are 8–18 cm, not a brick bond.
+
+    v is 0 at the thick butt and 1 at the thin head. u is metres across the course.
+    """
+    u2 = u % 1.0
+    cursor = 0.0
+    i = 0
+    si = 0
+    fx = 0.5
+    width = 0.12
+    while cursor < u2 + 1e-6 and i < 16:
+        width = 0.08 + _hash01(i, 0, 11) * 0.10
+        if _hash01(i, 0, 12) > 0.72:
+            width = 0.06 + _hash01(i, 0, 13) * 0.04
+        nxt = cursor + width
+        if cursor <= u2 < nxt or nxt >= 1.0:
+            si = i
+            fx = (u2 - cursor) / max(width, 1e-4)
+            break
+        cursor = nxt
+        i += 1
+        si = i
+    # The butt edge wanders a couple of centimetres so it is not a sawn line.
+    wobble = (_hash01(si, 1, 9) - 0.5) * 0.05 + (_value_noise(u * 28.0, 0.2, 6) - 0.5) * 0.03
+    fy = v
+    return 0, fy, si, fx, wobble
+
+
+def _roof_height(x, y, w, h):
+    """Thick at the butt, feathered at the head, with a groove at each joint."""
+    _ci, fy, _si, fx, wobble = _shake_at(x / float(w), y / float(h))
+    side = min(fx, 1.0 - fx)
+    butt = 0.16 + wobble
+    if fy < butt or side < 0.04:
+        return 0.02
+    rise = min(fy - butt, side - 0.04, 0.25)
+    # Taper: the head is thinner than the middle of the shake.
+    taper = 1.0 - 0.35 * max(0.0, fy - 0.55)
+    return (0.25 + 0.75 * max(0.0, min(1.0, rise * 7.0))) * taper
+
+
+def _roof_normal_pixel(x, y, w, h):
+    hx = _roof_height(x + 1, y, w, h) - _roof_height(x - 1, y, w, h)
+    hy = _roof_height(x, y + 1, w, h) - _roof_height(x, y - 1, w, h)
+    nx, ny, nz = -hx * 2.4, -hy * 2.4, 1.0
+    length = math.sqrt(nx * nx + ny * ny + nz * nz) or 1.0
+    return (nx / length * 0.5 + 0.5, ny / length * 0.5 + 0.5, nz / length * 0.5 + 0.5)
+
+
+def _ranch_roof_pixel(x, y, w, h):
+    """Several short courses per metre, each shifted so the joints do not stack.
+
+    v is metres up the slope. One tile is one metre, so a course is about 12–17 cm,
+    not the single wide band of Lib_Roof.
+    """
+    u = x / float(w)
+    v = y / float(h)
+    exposures = (0.13, 0.16, 0.12, 0.15, 0.14, 0.17, 0.13)
+    fv = v % 1.0
+    acc = 0.0
+    ci = 0
+    fy = 0.0
+    for i, exp in enumerate(exposures):
+        if fv < acc + exp or i == len(exposures) - 1:
+            ci = i
+            fy = (fv - acc) / max(exp, 1e-4)
+            break
+        acc += exp
+    offset = _hash01(ci, 3, 21) * 0.55
+    _c, _f, si, fx, wobble = _shake_at((u + offset) % 1.0, fy)
+    n = _hash01(si + ci * 3, 2, 14)
+    weather = _hash01(ci, 5, 15)
+    grain = 0.78 + _value_noise(fx * 1.6 + si * 0.13, fy * 40.0, 18) * 0.22
+    tone = 0.92 + _hash01(ci, 6, 4) * 0.16
+    brown = (0.42 + n * 0.10, 0.25 + n * 0.05, 0.13 + n * 0.03)
+    grey = (0.48 + n * 0.08, 0.44 + n * 0.06, 0.38 + n * 0.04)
+    t = 0.18 + weather * 0.55
+    r = (brown[0] * (1.0 - t) + grey[0] * t) * grain * tone
+    g = (brown[1] * (1.0 - t) + grey[1] * t) * grain * tone
+    b = (brown[2] * (1.0 - t) + grey[2] * t) * grain * tone
+    butt = 0.14 + wobble * 0.25
+    if fy < butt * 0.45:
+        shade = 0.22
+    elif fy < butt:
+        shade = 0.46
     else:
-        vcol = 0.30 + n * 0.06
-    return (vcol, vcol * 1.01, vcol * 1.03)
+        shade = 1.0
+    if fx < 0.04 or fx > 0.96:
+        shade *= 0.42
+    return (r * shade, g * shade, b * shade)
+
+
+def _roof_pixel(x, y, w, h):
+    """One cedar course: long vertical grain, random narrow widths, a thick dark butt."""
+    u = x / float(w)
+    v = y / float(h)
+    _ci, fy, si, fx, wobble = _shake_at(u, v)
+    n = _hash01(si, 2, 14)
+    weather = _hash01(si, 2, 15)
+    # Grain runs up the shake. A little wander, no cross-grain brick joint.
+    grain = 0.78 + _value_noise(fx * 1.4 + si * 0.17, fy * 46.0, 18) * 0.28
+    streak = 0.92 + 0.08 * math.sin((fy * 70.0) + _hash01(si, 4, 2) * 6.0)
+    brown = (0.40 + n * 0.12, 0.24 + n * 0.05, 0.12 + n * 0.03)
+    grey = (0.50 + n * 0.08, 0.46 + n * 0.06, 0.40 + n * 0.04)
+    t = 0.22 + weather * 0.70
+    r = (brown[0] * (1.0 - t) + grey[0] * t) * grain * streak
+    g = (brown[1] * (1.0 - t) + grey[1] * t) * grain * streak
+    b = (brown[2] * (1.0 - t) + grey[2] * t) * grain * streak
+    butt = 0.15 + wobble
+    if fy < butt * 0.55:
+        shade = 0.18
+    elif fy < butt:
+        shade = 0.40
+    elif fy > 0.92:
+        shade = 0.82
+    else:
+        shade = 1.0
+    if fx < 0.045 or fx > 0.955:
+        shade *= 0.35
+    return (r * shade, g * shade, b * shade)
+
+
+def _pile_pixel(x, y, w, h):
+    """Vertical grain around a round pile. No hoop seams."""
+    u = x / float(w)
+    v = y / float(h)
+    stripe = 0.5 + 0.5 * math.sin(u * math.pi * 28.0 + _value_noise(u * 4.0, v * 0.6, 3) * 1.6)
+    fine = _value_noise(u * 18.0, v * 2.0, 8)
+    r = 0.34 + stripe * 0.14 + fine * 0.04
+    g = 0.22 + stripe * 0.08 + fine * 0.03
+    b = 0.11 + stripe * 0.04 + fine * 0.02
+    return (r, g, b)
+
+
+def _warn_height(x, y, w, h):
+    """Truncated domes on a 60 mm grid. One tile is one metre."""
+    u = (x / float(w)) % 1.0
+    v = (y / float(h)) % 1.0
+    pitch = 0.060
+    fx = (u % pitch) / pitch - 0.5
+    fy = (v % pitch) / pitch - 0.5
+    d = math.hypot(fx, fy)
+    if d > 0.30:
+        return 0.15
+    return 0.15 + 0.85 * (1.0 - d / 0.30)
+
+
+def _warn_normal_pixel(x, y, w, h):
+    hx = _warn_height(x + 1, y, w, h) - _warn_height(x - 1, y, w, h)
+    hy = _warn_height(x, y + 1, w, h) - _warn_height(x, y - 1, w, h)
+    nx, ny, nz = -hx * 1.6, -hy * 1.6, 1.0
+    length = math.sqrt(nx * nx + ny * ny + nz * nz) or 1.0
+    return (nx / length * 0.5 + 0.5, ny / length * 0.5 + 0.5, nz / length * 0.5 + 0.5)
+
+
+def _warn_pixel(x, y, w, h):
+    u = x / float(w)
+    v = y / float(h)
+    n = _value_noise(u * 8.0, v * 8.0, 27)
+    r = 0.72 + n * 0.06
+    g = 0.48 + n * 0.04
+    b = 0.08 + n * 0.02
+    return (r, g, b)
 
 
 def _soil_pixel(x, y, w, h):
@@ -1420,6 +1709,24 @@ def _water_normal_pixel(x, y, w, h):
     return (nx / length * 0.5 + 0.5, ny / length * 0.5 + 0.5, nz / length * 0.5 + 0.5)
 
 
+def _log_height(x, y, w, h):
+    """Subtle vertical checking. Cracks run with the grain, not across it."""
+    u = x / float(w)
+    v = y / float(h)
+    fx = (u * 11.0) % 1.0
+    crack = 0.22 if fx < 0.045 or fx > 0.955 else 0.0
+    fine = _value_noise(u * 5.0, v * 16.0, 31) * 0.08
+    return 0.55 + fine - crack
+
+
+def _log_normal_pixel(x, y, w, h):
+    hx = _log_height(x + 1, y, w, h) - _log_height(x - 1, y, w, h)
+    hy = _log_height(x, y + 1, w, h) - _log_height(x, y - 1, w, h)
+    nx, ny, nz = -hx * 0.9, -hy * 0.9, 1.0
+    length = math.sqrt(nx * nx + ny * ny + nz * nz) or 1.0
+    return (nx / length * 0.5 + 0.5, ny / length * 0.5 + 0.5, nz / length * 0.5 + 0.5)
+
+
 def generate_textures():
     from _court_decal import render as render_court
     from _bake_pbr import bake_all
@@ -1431,20 +1738,27 @@ def generate_textures():
     # small procedural tiles. Brick, concrete, wood, asphalt, bark, and the
     # worn metals are the node-baked sets from _bake_pbr.
     _save_image("Lib_Siding", w, h, _siding_pixel)
-    _save_image("Lib_Roof", w, h, _roof_pixel)
+    _save_image("Lib_Roof", 512, 512, _roof_pixel)
+    _save_image("Lib_Roof_N", 512, 256, _roof_normal_pixel)
+    _save_image("Lib_RanchRoof", 512, 512, _ranch_roof_pixel)
+    _save_image("Lib_Pile", w, h, _pile_pixel)
+    _save_image("Lib_Warn", w, h, _warn_pixel)
+    _save_image("Lib_Warn_N", w, h, _warn_normal_pixel)
     _save_image("Lib_Soil", w, h, _soil_pixel)
     _save_image("Lib_Hydrant", w, h, _hydrant_pixel)
     _save_image("Lib_Hydrant_R", w, h, _hydrant_rough_pixel)
     _save_image("Lib_WoodWeather", w, h, _wood_weather_pixel)
     _save_image("Lib_WoodWeather_R", w, h, lambda x, y, W, H: _generic_rough_pixel(x, y, W, H, 44, 0.78))
     _save_image("Lib_Water_N", w, h, _water_normal_pixel)
+    for i in range(5):
+        _save_image("Lib_Log%d_N" % i, w, h, _log_normal_pixel)
 
 
 def load_asset_modules():
     if ROOT not in sys.path:
         sys.path.insert(0, ROOT)
     skip = {
-        "_common", "build_all", "render_pass1", "render_pass2", "render_pass3", "render_pass4", "render_pass5", "render_pass6", "render_pass7", "render_pass8", "render_pass9", "render_pass10", "render_pass11", "render_pass12", "render_pass13", "render_pass14", "render_pass15", "render_pass16", "render_pass17", "render_pass18",
+        "_common", "build_all", "render_pass1", "render_pass2", "render_pass3", "render_pass4", "render_pass5", "render_pass6", "render_pass7", "render_pass8", "render_pass9", "render_pass10", "render_pass11", "render_pass12", "render_pass13", "render_pass14", "render_pass15", "render_pass16", "render_pass17", "render_pass18", "render_pass19", "render_pass20", "render_pass21", "render_pass22", "render_pass23", "render_pass24", "render_pass25", "render_pass26", "render_pass27", "render_pass28", "render_pass29", "render_pass30",
         "write_unity", "_kit",
     }
     names = []

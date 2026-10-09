@@ -385,6 +385,10 @@ namespace TagArena.Movement
             SprintHeld = BindSampler.HeldDevice(binds, PlayAction.Sprint, DriveDevice);
             AirDashPressed = BindSampler.PressedDevice(binds, PlayAction.AirDash, DriveDevice);
             PunchPressed = BindSampler.PressedDevice(binds, PlayAction.Punch, DriveDevice);
+            // Same rope verb. Keyboard seat is RMB. Pad seat is LT. Not a new action.
+            JetHeld = pad ? BindSampler.LeftTriggerHeld(DriveDevice) : BindSampler.MouseRightHeld();
+            JetPressed = JetHeld && _prevJet <= 0f;
+            _prevJet = JetHeld ? 1f : 0f;
             if (BindSampler.HeldDevice(binds, PlayAction.Cling, DriveDevice) && Move.y < 0.85f)
                 Move.y = 1f;
 

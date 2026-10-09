@@ -110,22 +110,42 @@ def _concrete_color(nt):
 
 
 def _wood_color(nt, dark):
-    coord = _mapping(nt, (1.0, 8.0, 1.0))
-    wave = nt.nodes.new("ShaderNodeTexWave")
-    wave.wave_type = "BANDS"
-    wave.inputs["Scale"].default_value = 3.0
-    wave.inputs["Distortion"].default_value = 2.5
-    wave.inputs["Detail"].default_value = 3.0
-    nt.links.new(coord, wave.inputs["Vector"])
-    n = _noise(nt, 9.0, 6.0, 0.55)
+    # One tile is one meter. Seams every 14 cm run along V; fine grain runs with them.
+    coord = _mapping(nt, (1.0, 1.0, 1.0))
+    seams = nt.nodes.new("ShaderNodeTexWave")
+    seams.wave_type = "BANDS"
+    seams.bands_direction = "X"
+    seams.inputs["Scale"].default_value = 7.0
+    seams.inputs["Distortion"].default_value = 0.04
+    seams.inputs["Detail"].default_value = 0.0
+    nt.links.new(coord, seams.inputs["Vector"])
+    grain = nt.nodes.new("ShaderNodeTexWave")
+    grain.wave_type = "BANDS"
+    grain.bands_direction = "Y"
+    grain.inputs["Scale"].default_value = 36.0
+    grain.inputs["Distortion"].default_value = 0.08
+    grain.inputs["Detail"].default_value = 1.0
+    nt.links.new(coord, grain.inputs["Vector"])
+    ramp = nt.nodes.new("ShaderNodeValToRGB")
+    ramp.color_ramp.interpolation = "CONSTANT"
+    stops = ramp.color_ramp.elements
+    stops[0].position = 0.0
+    stops[0].color = (0.0, 0.0, 0.0, 1.0)
+    stops[1].position = 0.045
+    stops[1].color = (1.0, 1.0, 1.0, 1.0)
+    nt.links.new(seams.outputs["Fac"], ramp.inputs["Fac"])
     if dark:
-        a, b = (0.28, 0.16, 0.08), (0.48, 0.30, 0.16)
+        a, b = (0.30, 0.18, 0.09), (0.40, 0.26, 0.13)
+        seam = (0.14, 0.08, 0.04)
     else:
-        a, b = (0.55, 0.36, 0.18), (0.78, 0.55, 0.30)
-    bands = _mix(nt, wave.outputs["Fac"], a, b)
-    color = _mix(nt, 0.22, bands, n.outputs["Color"], "MULTIPLY")
-    height = _mix(nt, 0.7, wave.outputs["Fac"], n.outputs["Fac"])
-    rough = _mix(nt, wave.outputs["Fac"], (0.62, 0.62, 0.62), (0.78, 0.78, 0.78))
+        a, b = (0.55, 0.38, 0.20), (0.70, 0.50, 0.28)
+        seam = (0.32, 0.20, 0.10)
+    grain_col = _mix(nt, grain.outputs["Fac"], a, b)
+    color = _mix(nt, ramp.outputs["Color"], seam, grain_col)
+    n = _noise(nt, 14.0, 3.0, 0.45)
+    color = _mix(nt, 0.10, color, n.outputs["Color"], "MULTIPLY")
+    height = _mix(nt, 0.82, grain.outputs["Fac"], ramp.outputs["Color"])
+    rough = _mix(nt, ramp.outputs["Color"], (0.55, 0.55, 0.55), (0.74, 0.74, 0.74))
     return color, height, rough
 
 

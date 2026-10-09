@@ -121,6 +121,8 @@ def create():
         a.capsule("Col_Post_%d" % i, (p[0], 1.39, p[2]), 0.045, 2.00, 1)
         center, size, euler = _slope_box(eaves[i], eaves[(i + 1) % 6], peak, 0.055)
         a.box("Col_Roof_%d" % i, center, size, euler=euler)
+    # Finial is the mesh top. The box stays inside the 12 cm post.
+    a.box("Col_Finial", (0.0, 3.50, 0.0), (0.08, 0.06, 0.08))
     for i in range(6):
         if i == OPEN_SIDE:
             continue

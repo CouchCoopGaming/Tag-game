@@ -21,7 +21,42 @@ namespace Tag.Art
         /// <summary>Left hand is the grappling hand. RMB still fires. The lead angles stay in the R sample fields.</summary>
         public const bool LeadRight = false;
 
-        /// <summary>Move the lead sample onto the left arm when the left hand fires.</summary>
+        /// <summary>
+        /// Extra outward yaw on both shoulders. The printed aim, latch, and pull
+        /// yaws stay the sample. The played hang replaces this with the raised arm.
+        /// </summary>
+        public const float ShoulderFlare = 24f;
+
+        /// <summary>Played rope hand, overhead. Printed pull pitch stays the sample.</summary>
+        public const float HangPitchL = -158f;
+        /// <summary>Played balance arm, out at shoulder height.</summary>
+        public const float HangPitchR = -48f;
+        /// <summary>Rope hand stays over the shoulder. The forearm clears the head.</summary>
+        public const float HangYaw = 18f;
+        /// <summary>Balance arm yaw, out to the free side.</summary>
+        public const float HangYawR = 90f;
+        /// <summary>Rope elbow, inside the 30–60 degree bend. Printed elbows stay the sample.</summary>
+        public const float HangElbowL = -48f;
+        /// <summary>Balance elbow, soft, hand clear of the hip.</summary>
+        public const float HangElbowR = -20f;
+        /// <summary>Rope arm roll so the bend brings the hand over the head.</summary>
+        public const float HangRollL = 22f;
+        /// <summary>Hip pitch. The torso hangs under the hand, a little back.</summary>
+        public const float HangHip = -12f;
+        /// <summary>Chest reaches up the rope.</summary>
+        public const float HangSpine = 10f;
+        /// <summary>Both thighs. The legs stay together.</summary>
+        public const float HangThigh = 6f;
+        /// <summary>Both knees, a little bent.</summary>
+        public const float HangKnee = -36f;
+        /// <summary>Face up the rope. Head/neck overlap is the rig joint.</summary>
+        public const float HangHead = -26f;
+        /// <summary>Small hip roll. The body stays in line under the rope.</summary>
+        public const float HangLean = -6f;
+        /// <summary>Left clavicle lift into the overhead grip.</summary>
+        public const float HangShoulder = 8f;
+
+        /// <summary>Move the lead sample onto the left arm, then park the hang clear of the body.</summary>
         public static Sample ForBody(Sample s)
         {
             if (LeadRight) return s;
@@ -34,6 +69,22 @@ namespace Tag.Art
             float elbow = s.ElbowL;
             s.ElbowL = s.ElbowR;
             s.ElbowR = elbow;
+            // The printed aim, latch, and pull numbers stay on the sample the proofs
+            // read. This is the hang the body plays: rope hand overhead, the other
+            // arm out, knees a little bent, face up the line.
+            s.ArmPitchL = HangPitchL;
+            s.ArmPitchR = HangPitchR;
+            s.ArmYawL = HangYaw;
+            s.ArmYawR = HangYawR;
+            s.ElbowL = HangElbowL;
+            s.ElbowR = HangElbowR;
+            s.Head = HangHead;
+            s.Hip = HangHip;
+            s.Spine = HangSpine;
+            s.ThighL = HangThigh;
+            s.ThighR = HangThigh;
+            s.KneeL = HangKnee;
+            s.KneeR = HangKnee;
             return s;
         }
 

@@ -22,17 +22,17 @@ HIER_FBX = os.path.join(
 
 # Both bench arms and the slat ends are in frame. Brick camera is the door/window view.
 _PROPS = (
-    ("bench", "Bench_Wood", 50.0, (2.85, 1.20, 2.15), (0.0, 0.50, 0.0), 32.0),
+    ("bench", "Bench_Wood", 18.0, (-1.2, 1.40, 2.50), (0.0, 0.52, 0.05), 32.0),
     ("brick", "Brick_Wall", 16.0, (2.6, 1.50, 3.7), (-0.25, 1.35, 0.05), 32.0),
-    ("trash", "TrashCan_Lidded", 50.0, (1.25, 0.68, 1.15), (0.0, 0.48, 0.08), 42.0),
+    ("trash", "TrashCan_Lidded", 50.0, (1.7, 0.70, 1.55), (0.0, 0.45, 0.05), 36.0),
     ("cabin", "Cabin", 32.0, (5.4, 1.9, 5.6), (0.0, 1.35, 0.6), 28.0),
 )
 
 
-def _prop(found, name, yaw, cam, aim, lens, path):
+def _prop(found, name, yaw, cam, aim, lens, path, ground=(0.34, 0.36, 0.32)):
     scene = p6._begin(wide=True)
     p6._place(found, [(name, (0.0, 0.0, 0.0), yaw, 1.0)])
-    p6._ground((0.34, 0.36, 0.32))
+    p6._ground(ground)
     p6._look(scene, cam, aim, lens=lens)
     r._render(scene, path)
 
@@ -71,11 +71,11 @@ def _place_hier(pos, yaw):
     return root
 
 
-def _runner(found, specs, hier_pos, hier_yaw, cam, aim, lens, path):
+def _runner(found, specs, hier_pos, hier_yaw, cam, aim, lens, path, ground=(0.34, 0.36, 0.32)):
     scene = p6._begin(wide=True)
     p6._place(found, specs)
     _place_hier(hier_pos, hier_yaw)
-    p6._ground((0.34, 0.36, 0.32))
+    p6._ground(ground)
     p6._look(scene, cam, aim, lens=lens)
     r._render(scene, path)
 
@@ -93,8 +93,8 @@ def _shots(found):
         "light_base",
         lambda: _runner(
             found, [("LightPost_Single", (0, 0, 0), 22.0, 1.0)],
-            (0.72, 0.0, 0.48), 150.0,
-            (1.7, 0.95, 1.55), (0.15, 0.7, 0.1), 36.0,
+            (-0.35, 0.0, 0.85), 40.0,
+            (3.0, 1.6, 2.6), (0.2, 0.85, 0.2), 26.0,
             os.path.join(STILL_DIR, "light_base.png"),
         ),
     ))
@@ -103,7 +103,7 @@ def _shots(found):
         lambda: _prop_many(
             found,
             [("Court", (0, 0, 0), 0.0, 1.0), ("Hoop", (0, 0, -12.2), 0.0, 1.0)],
-            (7.2, 3.6, -16.4), (0.2, 1.4, -8.5), 26.0,
+            (6.2, 2.6, -4.8), (0.0, 2.2, -9.4), 28.0,
             os.path.join(STILL_DIR, "basket.png"),
         ),
     ))
@@ -112,23 +112,24 @@ def _shots(found):
         lambda: _runner(
             found,
             [("Court", (0, 0, 0), 0.0, 1.0), ("Hoop", (0, 0, -12.2), 0.0, 1.0)],
-            (1.35, 0.0, -10.7), 210.0,
-            (3.6, 1.7, -8.6), (0.3, 1.6, -11.4), 30.0,
+            (1.15, 0.0, -7.2), 200.0,
+            (3.8, 1.65, -4.6), (0.3, 1.9, -9.2), 30.0,
             os.path.join(STILL_DIR, "basket_runner.png"),
         ),
     ))
     shots.append((
         "junction",
-        lambda: _prop(found, "Road_Junction", 28.0, (9.5, 6.5, 9.5), (0.0, 0.15, 0.0), 26.0,
-                      os.path.join(STILL_DIR, "junction.png")),
+        lambda: _prop(found, "Road_Junction", 28.0, (7.2, 2.8, 7.6), (0.0, 0.25, 0.0), 28.0,
+                      os.path.join(STILL_DIR, "junction.png"), ground=(0.16, 0.18, 0.14)),
     ))
     shots.append((
         "junction_runner",
         lambda: _runner(
             found, [("Road_Junction", (0, 0, 0), 0.0, 1.0)],
             (3.7, 0.27, 3.7), 230.0,
-            (6.4, 1.7, 6.2), (2.2, 0.8, 2.2), 32.0,
+            (6.2, 1.55, 5.8), (2.4, 0.7, 2.4), 32.0,
             os.path.join(STILL_DIR, "junction_runner.png"),
+            ground=(0.16, 0.18, 0.14),
         ),
     ))
     shots.append((

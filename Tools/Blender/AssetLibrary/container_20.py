@@ -392,4 +392,6 @@ def build_container(name, length, color, blurb):
         a.end()
     # Inside the plate, clear of the corner-casting overlap.
     a.box("Climb_Body", (0, 1.29, 0), (1.96, 2.14, length - 0.52))
+    # Inside the roof plate. The castings reach 2.59 m; this top is 2.54 m.
+    a.box("Col_Roof", (0, 2.51, 0), (WIDTH - 0.40, 0.06, length - 0.50))
     return a

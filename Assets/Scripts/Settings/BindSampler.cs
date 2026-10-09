@@ -399,6 +399,43 @@ namespace Tag.Settings
             return v;
         }
 
+        /// <summary>
+        /// Existing rope fire for a pad seat. Not a PlayAction. device is a couch
+        /// device id: 1–4 are pads. The keyboard seat does not read LT.
+        /// </summary>
+        public static bool LeftTriggerHeld(int device)
+        {
+            if (device <= 0) return false;
+#if ENABLE_INPUT_SYSTEM
+            return TriggerHeldAt(device - 1);
+#else
+            return false;
+#endif
+        }
+
+        /// <summary>Existing rope fire for the keyboard seat. RMB, the same button as solo.</summary>
+        public static bool MouseRightHeld()
+        {
+            if (UnityEngine.Input.GetMouseButton(1) || UnityEngine.Input.GetKey(KeyCode.Mouse1))
+                return true;
+#if ENABLE_INPUT_SYSTEM
+            var mouse = UnityEngine.InputSystem.Mouse.current;
+            if (mouse != null && mouse.rightButton.isPressed)
+                return true;
+#endif
+            return false;
+        }
+
+#if ENABLE_INPUT_SYSTEM
+        static bool TriggerHeldAt(int index)
+        {
+            Gamepad pad = PadAt(index);
+            if (pad == null)
+                return false;
+            return pad.leftTrigger.isPressed;
+        }
+#endif
+
         static bool PadHeldAt(int index, string token)
         {
 #if ENABLE_INPUT_SYSTEM

@@ -93,6 +93,28 @@ def shift(arm, delta):
     bpy.context.view_layer.update()
 
 
+_NOCLIP = None
+
+
+def _noclip():
+    global _NOCLIP
+    if _NOCLIP is None:
+        spec_n = importlib.util.spec_from_file_location(
+            "noclip_check", os.path.join(ROOT, "Tools", "Tag", "noclip_check.py")
+        )
+        _NOCLIP = importlib.util.module_from_spec(spec_n)
+        spec_n.loader.exec_module(_NOCLIP)
+    return _NOCLIP
+
+
+def separate_world(arm):
+    """Keep pieces out of each other and out of solids. Visual only."""
+    # The noclip runner settles once per frame. Doing it here as well doubles the scan.
+    if os.environ.get("NOCLIP_SETTLE") == "runner":
+        return
+    _noclip().settle_body(arm)
+
+
 def pose_roll_over(arm):
     # Visual only. HandoffFeel timers stay. Forward pitch past 90, onto one shoulder.
     # Arms stay near the land and the run so a 30 fps step stays inside 25 degrees.
@@ -105,22 +127,37 @@ def pose_roll_over(arm):
     p.set_euler(arm, "Chest", 8.0, 0.0, 18.0)
 
 
+def pose_climb_clear(arm):
+    # Hands together over the head, chest on the face, lead foot low on the face.
+    # The forearm cuff still crosses by about 6 cm. settle_body presses that
+    # shell onto the wall. The thigh stays behind the chest, so the root does
+    # not step back off the plant.
+    p.torso(arm, 16.0, 4.0, -75.0)
+    p.arm_pose(arm, "L", -160.0, -58.0, -20.0, 8.0, 0.0)
+    p.arm_pose(arm, "R", -160.0, -58.0, -20.0, 8.0, 0.0)
+    p.leg(arm, "L", 42.0, -35.0, 32.0)
+    p.set_euler(arm, "Foot_L", -24.0, 0.0, 0.0)
+    p.leg(arm, "R", 28.0, -36.0, 16.0)
+    p.set_euler(arm, "Foot_R", 4.0, 0.0, 0.0)
+
+
 def pose_climb_low(arm):
-    # First hand contact. Same family as the lip pose, hands not at the lip yet.
-    p.torso(arm, 14.0, 4.0, -6.0)
-    p.arm_pose(arm, "L", -112.0, 12.0, -48.0, -10.0)
-    p.arm_pose(arm, "R", -112.0, 12.0, -48.0, -10.0)
-    p.leg(arm, "L", 70.0, -88.0, 18.0)
+    # Same family as the lip, one step below it. The reach stays inside 25 degrees.
+    p.torso(arm, 12.0, 2.0, -42.0)
+    p.arm_pose(arm, "L", -128.0, -32.0, -20.0, 4.0, 0.0)
+    p.arm_pose(arm, "R", -128.0, -32.0, -20.0, 4.0, 0.0)
+    # Bent enough that the hips sit below the lip plant once the feet are on the ground.
+    p.leg(arm, "L", 64.0, -78.0, 18.0)
     p.set_euler(arm, "Foot_L", -12.0, 0.0, 0.0)
-    p.leg(arm, "R", 36.0, -48.0, 8.0)
-    p.set_euler(arm, "Foot_R", 6.0, 0.0, 0.0)
+    p.leg(arm, "R", 36.0, -48.0, 10.0)
+    p.set_euler(arm, "Foot_R", 4.0, 0.0, 0.0)
 
 
 def pose_stand(arm):
     p.leg(arm, "L", 6.0, -8.0)
     p.leg(arm, "R", 2.0, -6.0)
-    p.arm_pose(arm, "L", -22.0, 8.0, -16.0, 0.0)
-    p.arm_pose(arm, "R", -18.0, 8.0, -14.0, 0.0)
+    p.arm_pose(arm, "L", -22.0, -12.0, -16.0, 0.0)
+    p.arm_pose(arm, "R", -18.0, -12.0, -14.0, 0.0)
     p.torso(arm, 3.0, 4.0, -1.0)
 
 
@@ -310,12 +347,61 @@ def measure_clip(arm, kind, show, ctx):
     return worst
 
 
-def nudge_face(arm, ctx, mesh):
+def chest_gap(arm, ctx):
     forward = ctx["forward"]
-    plane = ctx["plane"]
+    front = max(p.mesh_world("Mesh_Chest"), key=lambda v: v.dot(forward))
+    return (front - ctx["plane"]).dot(forward)
+
+
+def place_gap(arm, ctx, gap):
+    forward = ctx["forward"]
+    shift(arm, forward * (gap - chest_gap(arm, ctx)))
+
+
+def _mesh_gap(arm, ctx, mesh):
+    forward = ctx["forward"]
     front = max(p.mesh_world(mesh), key=lambda v: v.dot(forward))
-    gap = (front - plane).dot(forward)
-    shift(arm, forward * (-gap))
+    return (front - ctx["plane"]).dot(forward)
+
+
+def hold_off_wall(arm, ctx, plant, include_hands=False):
+    """Plant frame sits on the face. Every other frame keeps contacts out of the 2 cm band.
+
+    Each contact is handled on its own. A hand already over the lip must not
+    hide a chest that is still on the face. Shell relief then presses the lip
+    cuff onto the wall without stepping the root.
+    """
+    forward = ctx["forward"]
+    if plant:
+        place_gap(arm, ctx, 0.0)
+        return
+    meshes = ["Mesh_Chest", "Mesh_Foot_L"]
+    if include_hands:
+        meshes.extend(("Mesh_Hand_L", "Mesh_Hand_R"))
+    wall = bpy.data.objects.get("PropWall")
+    module = _noclip()
+    for _ in range(8):
+        depth = 0.0
+        if wall is not None and module is not None:
+            depth = module._box_depth(wall, body_points())
+        if depth > 0.001:
+            shift(arm, -forward * (depth + 0.004))
+            continue
+        gaps = [_mesh_gap(arm, ctx, mesh) for mesh in meshes]
+        # Planted band is about -2 cm to +2 cm. -3.5 cm is outside it.
+        band = [gap for gap in gaps if -0.035 < gap <= 0.025]
+        if not band:
+            return
+        shift(arm, forward * (-0.035 - max(band)))
+
+
+def _clears_lip(arm, ctx):
+    """True once every vertex is above the wall, so the step onto the top is empty air."""
+    top = ctx["top"]
+    pts = body_points()
+    if not pts:
+        return False
+    return min(vert.z for vert in pts) >= top - 0.008
 
 
 def show_roll(arm, age, ctx):
@@ -347,34 +433,35 @@ def show_roll(arm, age, ctx):
         if sole < 0.04:
             arm.location.z += 0.04 - sole
             bpy.context.view_layer.update()
+    separate_world(arm)
 
 
 def show_climb(arm, age, ctx):
     approach = DUR["climb"] / 7.0
-    if age <= approach:
+    if age <= approach + 1e-4:
         w = age / approach if approach > 0 else 1.0
         pose = blend(ctx["low"], ctx["hero"], w)
         apply_key(arm, pose, ctx["yaw"], 0.0)
         target = ctx["pelvis0"] + (ctx["pelvis1"] - ctx["pelvis0"]) * w
         shift(arm, Vector((0.0, 0.0, target - pelvis_z(arm))))
-        nudge_face(arm, ctx, "Mesh_Chest")
-        if age < approach - (1.0 / 60.0):
-            # Off the face while the hands are still traveling. The lip frame plants.
-            shift(arm, ctx["forward"] * (-0.08))
+        # Only the lip sample sits on the face. The reach keeps the hands off it too.
+        hold_off_wall(arm, ctx, w >= 0.98, include_hands=True)
+        separate_world(arm)
         return
     mantle = DUR["climb"] - approach
     u = 0.0 if mantle <= 0 else (age - approach) / mantle
-    if u < 0.06:
-        apply_key(arm, ctx["hero"], ctx["yaw"], ctx["hero_lift"])
-        return
-    pose = blend(ctx["hero"], ctx["stand"], (u - 0.06) / 0.94)
+    pose = blend(ctx["hero"], ctx["stand"], u)
     apply_key(arm, pose, ctx["yaw"], 0.0)
     target = ctx["pelvis1"] + (ctx["pelvis_stand"] - ctx["pelvis1"]) * u
     shift(arm, Vector((0.0, 0.0, target - pelvis_z(arm))))
-    # Leave the face before the body rises, then step onto the top.
-    shift(arm, ctx["forward"] * (0.06 + ctx["stand_along"] * u))
-    if u > 0.92:
-        seat(arm, "Mesh_Foot_L", ctx["top"] + 0.012)
+    # Stay in front of the volume, then step on once the body is above the lip.
+    hold_off_wall(arm, ctx, False)
+    if _clears_lip(arm, ctx):
+        shift(arm, ctx["forward"] * (0.05 + ctx["stand_along"] * u))
+        if u > 0.92:
+            seat(arm, "Mesh_Foot_L", ctx["top"] + 0.012)
+        hold_off_wall(arm, ctx, False)
+    separate_world(arm)
 
 
 def show_vault(arm, age, ctx):
@@ -407,6 +494,7 @@ def show_vault(arm, age, ctx):
             shift(arm, Vector((0.0, 0.0, (ctx["top"] + 0.05) - hand_z)))
         if u > 0.94:
             seat(arm, "Mesh_Foot_L", 0.012)
+    separate_world(arm)
 
 
 def show_slide(arm, age, ctx):
@@ -436,6 +524,7 @@ def show_slide(arm, age, ctx):
         if sole < 0.05:
             arm.location.z += 0.05 - sole
             bpy.context.view_layer.update()
+    separate_world(arm)
 
 
 def show_wall(arm, age, ctx):
@@ -451,6 +540,7 @@ def show_wall(arm, age, ctx):
             x, y, z = base
             pose[name] = (x + 14.0 * swing, y, z)
         apply_key(arm, pose, ctx["yaw"], ctx["run_lift"])
+        separate_world(arm)
         return
     if age <= shove_end:
         w = p.raised((age - run_end) / 0.12)
@@ -461,6 +551,7 @@ def show_wall(arm, age, ctx):
                 continue
             pose[held] = ctx["run"][held]
         apply_key(arm, pose, ctx["yaw"], ctx["run_lift"])
+        separate_world(arm)
         return
     arc_age = age - shove_end
     w = p.wall_arc(arc_age)
@@ -479,6 +570,7 @@ def show_wall(arm, age, ctx):
     up = 0.06 + 0.72 * min(1.0, air_u)
     shift(arm, ctx["left"] * (-off))
     shift(arm, Vector((0.0, 0.0, up)))
+    separate_world(arm)
 
 
 SHOWS = {
@@ -591,7 +683,7 @@ def build_context(arm, kind, yaw):
         )
         return ctx
     if kind == "climb":
-        p.apply_pose(arm, p.pose_climb, 0.0, yaw)
+        p.apply_pose(arm, pose_climb_clear, 0.0, yaw)
         p.settle(arm, "climb")
         hero = p.capture_pose(arm)
         hero_lift = arm.location.z
@@ -608,8 +700,9 @@ def build_context(arm, kind, yaw):
         low, _z = p.grab(arm, pose_climb_low, yaw, "none", 0.0)
         ctx["low"] = low
         apply_key(arm, low, yaw, 0.0)
-        seat(arm, "Mesh_Foot_R", 0.012)
-        ctx["pelvis0"] = 0.70
+        foot_name = "Mesh_Foot_L" if lowest("Mesh_Foot_L") <= lowest("Mesh_Foot_R") else "Mesh_Foot_R"
+        seat(arm, foot_name, 0.012)
+        ctx["pelvis0"] = pelvis_z(arm)
         stand, _z = p.grab(arm, pose_stand, yaw, "none", 0.0)
         ctx["stand"] = stand
         apply_key(arm, stand, yaw, 0.0)
@@ -760,11 +853,19 @@ def main():
     scene, cam, shadow = p.scene_setup(arm)
     p.ensure_pose(arm)
     p.beauty_camera(cam)
-    climb_yaw, facing = p.choose_climb_yaw(arm, cam, scene)
-    print("CLIMB_YAW", round(climb_yaw, 1), "facing", round(facing, 2))
+    env_yaw = os.environ.get("PASS18_YAW", "")
+    if env_yaw:
+        climb_yaw = float(env_yaw)
+        print("CLIMB_YAW", round(climb_yaw, 1), "facing", "env")
+    else:
+        climb_yaw, facing = p.choose_climb_yaw(arm, cam, scene)
+        print("CLIMB_YAW", round(climb_yaw, 1), "facing", round(facing, 2))
     p.clear_props()
     p.ensure_pose(arm)
-    wall_yaw, _wf = p.choose_wall_yaw(arm, cam, scene)
+    if not ONLY or "wall" in ONLY:
+        wall_yaw, _wf = p.choose_wall_yaw(arm, cam, scene)
+    else:
+        wall_yaw = 140.0
     p.clear_props()
     yaws = {
         "vault": p.VAULT_YAW,
