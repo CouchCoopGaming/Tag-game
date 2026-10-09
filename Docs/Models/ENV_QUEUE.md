@@ -22,6 +22,29 @@ When that branch next takes roads, copy `Road_Junction` from #122 or #125. Do no
 
 ## Buildings (#122)
 
-Done on `abeaee4`: a CC0 row on every library asset, `Lib_Roof` squared to 512, the WalkUp, Cabin, Gazebo, container, and ranch landings closed, the rowboat under the harbor ceiling, and the missing LOD2s. `Ranch_House` stays. The lead validator on this tip is `models-validate assets=125 pass=24 fail=101`.
+Pass 31 rendered a still quartet for every geometry-clean library mesh and added `Alley`, `Subway_Entrance`, `Overpass`, `Driveway`, `Restroom`, `Bleachers`, and `Ferry`. `Ranch_House` stays. Do not author a third cabin, and do not draw a second road junction.
 
-Next, now that those counts moved: a city alley, a subway stair entrance, an overpass span, a driveway apron that meets the existing curb, a park restroom, bleachers, and a harbor ferry. Each one gets a still quartet in the same pass. Do not author a third cabin, and do not draw a second road junction.
+Lead validator at `1299187`, after this pass:
+
+`models-validate assets=132 pass=129 fail=3`
+
+`models-split paperwork=2 geometry=1`
+
+The geometry fail is the tan Hier, assigned below. The two paperwork fails are `Brick_Door` and `Brick_Window`. Their quartets are in `Docs/AssetStills/pass31/` at 1280×720, but the lead still matcher treats the tokens `door` and `window` as close-up role words and drops them, so the asset key cannot match. That needs a lead-side exception. Do not rename those two meshes.
+
+`Driveway` replaces two 4 m sidewalk tiles. Its −X face is the curb and butts the road edge the same way `Sidewalk` does. The wings keep the 2 m walk and the 0.27 m top. The apron cuts the curb and rises from the 0.12 m asphalt. `Ferry` is the passenger ferry (bow on −Z). It is not `Boat` and not `FishingBoat`.
+
+## Player rig (A2 #128)
+
+`Dummy_Mannequin_Tan_Hier_Hi` fails the player checks. Leave the fix to A2 #128. Do not patch the rig on this branch. On the lead validator at `1299187` the failing checks are:
+
+- `sample-rate`
+- `noclip-missing`
+- `joints-not-on-shipped-mesh`
+- `hip-sit`
+- `stills-quarter`
+- `stills-side`
+- `stills-close`
+- `stills-scale`
+
+The still quartet belongs with the rig stills under `Docs/LocoStills`, not the library pass. The five color Hier files are the same sculpture. A license table row clears them. The tan mesh still carries the checks above.

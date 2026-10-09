@@ -33257,5 +33257,1628 @@
       "url": "",
       "notes": "Procedural mesh built in this repo."
     }
+  },
+  {
+    "name": "Alley",
+    "category": "Buildings",
+    "blurb": "Narrow service alley, 2.4 m between the brick faces and about 7.7 m deep. The open end faces +Z. A back door sits in the far wall, with a downspout on the right face.",
+    "size": [
+      3.02,
+      3.436,
+      7.95
+    ],
+    "min": [
+      -1.51,
+      0.0,
+      -3.93
+    ],
+    "max": [
+      1.51,
+      3.436,
+      4.02
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 260,
+        "materials": [
+          "Lib_Brick",
+          "Lib_Concrete",
+          "Lib_Asphalt",
+          "Lib_WoodDark",
+          "Lib_Wood",
+          "Lib_Glass",
+          "Lib_SteelDark",
+          "Lib_Steel"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 132,
+        "materials": [
+          "Lib_Brick",
+          "Lib_Concrete",
+          "Lib_Asphalt",
+          "Lib_WoodDark"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      },
+      {
+        "lod": 2,
+        "tris": 108,
+        "materials": [
+          "Lib_Brick",
+          "Lib_Concrete",
+          "Lib_Asphalt"
+        ],
+        "mesh": "LOD2",
+        "fileID": 736115405485880582
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Climb_Left",
+        "type": "box",
+        "center": [
+          -1.35,
+          1.68,
+          0.15
+        ],
+        "size": [
+          0.22000000000000003,
+          3.28,
+          7.58
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Right",
+        "type": "box",
+        "center": [
+          1.35,
+          1.68,
+          0.15
+        ],
+        "size": [
+          0.22000000000000003,
+          3.28,
+          7.58
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_BackL",
+        "type": "box",
+        "center": [
+          -0.86,
+          1.68,
+          -3.78
+        ],
+        "size": [
+          0.56,
+          3.28,
+          0.2
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_BackR",
+        "type": "box",
+        "center": [
+          0.86,
+          1.68,
+          -3.78
+        ],
+        "size": [
+          0.56,
+          3.28,
+          0.2
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Header",
+        "type": "box",
+        "center": [
+          0.0,
+          2.74,
+          -3.78
+        ],
+        "size": [
+          0.88,
+          1.16,
+          0.2
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Door",
+        "type": "box",
+        "center": [
+          0.0,
+          1.02,
+          -3.6
+        ],
+        "size": [
+          0.76,
+          1.92,
+          0.03
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Floor",
+        "type": "box",
+        "center": [
+          0.0,
+          0.02,
+          0.24
+        ],
+        "size": [
+          2.08,
+          0.03,
+          6.8
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "climbable": true,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "Both side walls and the back piers are cling faces. The floor is the ground.",
+    "vaultNote": "No rail. The coping is at 3.4 m.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1",
+      "LOD2"
+    ],
+    "slackCm": 0.0,
+    "license": {
+      "spdx": "CC0-1.0",
+      "source": "original",
+      "url": "",
+      "notes": "Procedural mesh built in this repo."
+    },
+    "fbx": "Assets/Art/Props/Library/Buildings/Alley.fbx"
+  },
+  {
+    "name": "Subway_Entrance",
+    "category": "Buildings",
+    "blurb": "Street stair down to a platform run. Side walls are 1.08 m above the sidewalk and the stair run extends below the pivot. The street opening faces +Z. A canopy covers the head.",
+    "size": [
+      3.02,
+      4.02,
+      6.4
+    ],
+    "min": [
+      -1.51,
+      -1.55,
+      -3.2
+    ],
+    "max": [
+      1.51,
+      2.47,
+      3.2
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 300,
+        "materials": [
+          "Lib_Concrete",
+          "Lib_SteelDark",
+          "Lib_Steel",
+          "Lib_PaintYellow"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 180,
+        "materials": [
+          "Lib_Concrete",
+          "Lib_SteelDark",
+          "Lib_Steel"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      },
+      {
+        "lod": 2,
+        "tris": 132,
+        "materials": [
+          "Lib_Concrete",
+          "Lib_SteelDark",
+          "Lib_Steel"
+        ],
+        "mesh": "LOD2",
+        "fileID": 736115405485880582
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Climb_Left",
+        "type": "box",
+        "center": [
+          -1.42,
+          -0.235,
+          0.0
+        ],
+        "size": [
+          0.13999999999999999,
+          2.55,
+          6.300000000000001
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Right",
+        "type": "box",
+        "center": [
+          1.42,
+          -0.235,
+          0.0
+        ],
+        "size": [
+          0.13999999999999999,
+          2.55,
+          6.300000000000001
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Step_0",
+        "type": "box",
+        "center": [
+          0.0,
+          -0.12,
+          1.3400000000000003
+        ],
+        "size": [
+          2.3,
+          0.08,
+          0.22
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Step_1",
+        "type": "box",
+        "center": [
+          0.0,
+          -0.29000000000000004,
+          0.9800000000000003
+        ],
+        "size": [
+          2.3,
+          0.08,
+          0.22
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Step_2",
+        "type": "box",
+        "center": [
+          0.0,
+          -0.46,
+          0.6200000000000001
+        ],
+        "size": [
+          2.3,
+          0.08,
+          0.22
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Step_3",
+        "type": "box",
+        "center": [
+          0.0,
+          -0.63,
+          0.26
+        ],
+        "size": [
+          2.3,
+          0.08,
+          0.22
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Step_4",
+        "type": "box",
+        "center": [
+          0.0,
+          -0.8,
+          -0.09999999999999987
+        ],
+        "size": [
+          2.3,
+          0.08,
+          0.22
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Step_5",
+        "type": "box",
+        "center": [
+          0.0,
+          -0.9700000000000001,
+          -0.45999999999999974
+        ],
+        "size": [
+          2.3,
+          0.08,
+          0.22
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Step_6",
+        "type": "box",
+        "center": [
+          0.0,
+          -1.1400000000000001,
+          -0.8200000000000001
+        ],
+        "size": [
+          2.3,
+          0.08,
+          0.22
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Step_7",
+        "type": "box",
+        "center": [
+          0.0,
+          -1.3100000000000003,
+          -1.18
+        ],
+        "size": [
+          2.3,
+          0.08,
+          0.22
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Pad",
+        "type": "box",
+        "center": [
+          0.0,
+          0.04,
+          2.1999999999999997
+        ],
+        "size": [
+          2.4,
+          0.06,
+          1.05
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Roof",
+        "type": "box",
+        "center": [
+          0.0,
+          2.42,
+          2.0
+        ],
+        "size": [
+          2.7,
+          0.08,
+          1.35
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "climbable": true,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "The concrete side walls are the cling faces. The steps are the way down.",
+    "vaultNote": "The parapet is about 1.08 m above the sidewalk.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1",
+      "LOD2"
+    ],
+    "slackCm": 0.0,
+    "license": {
+      "spdx": "CC0-1.0",
+      "source": "original",
+      "url": "",
+      "notes": "Procedural mesh built in this repo."
+    },
+    "fbx": "Assets/Art/Props/Library/Buildings/Subway_Entrance.fbx"
+  },
+  {
+    "name": "Overpass",
+    "category": "Roads",
+    "blurb": "Single span, 14 m along Z and 6 m wide so it continues a Road_Straight. Asphalt deck top is 5.02 m. Two piers carry it. Clearance under the girders is about 4.2 m.",
+    "size": [
+      6.0,
+      6.06,
+      14.0
+    ],
+    "min": [
+      -3.0,
+      0.0,
+      -7.0
+    ],
+    "max": [
+      3.0,
+      6.06,
+      7.0
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 360,
+        "materials": [
+          "Lib_Concrete",
+          "Lib_Asphalt",
+          "Lib_Steel",
+          "Lib_SteelDark"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 264,
+        "materials": [
+          "Lib_Concrete",
+          "Lib_Asphalt",
+          "Lib_Steel",
+          "Lib_SteelDark"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      },
+      {
+        "lod": 2,
+        "tris": 144,
+        "materials": [
+          "Lib_Concrete",
+          "Lib_Asphalt",
+          "Lib_Steel",
+          "Lib_SteelDark"
+        ],
+        "mesh": "LOD2",
+        "fileID": 736115405485880582
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_Deck",
+        "type": "box",
+        "center": [
+          0.0,
+          4.77,
+          0.0
+        ],
+        "size": [
+          5.8,
+          0.3199999999999999,
+          13.8
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Wearing",
+        "type": "box",
+        "center": [
+          0.0,
+          4.985,
+          0.0
+        ],
+        "size": [
+          5.7,
+          0.04,
+          13.7
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Pier_0",
+        "type": "box",
+        "center": [
+          0.0,
+          2.2,
+          -3.4
+        ],
+        "size": [
+          0.56,
+          4.2,
+          0.7
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Pier_1",
+        "type": "box",
+        "center": [
+          0.0,
+          2.2,
+          3.4
+        ],
+        "size": [
+          0.56,
+          4.2,
+          0.7
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_RailL",
+        "type": "box",
+        "center": [
+          -2.82,
+          5.55,
+          0.0
+        ],
+        "size": [
+          0.08,
+          0.9,
+          13.6
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ],
+        "approx": true
+      },
+      {
+        "name": "Col_RailR",
+        "type": "box",
+        "center": [
+          2.82,
+          5.55,
+          0.0
+        ],
+        "size": [
+          0.08,
+          0.9,
+          13.6
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ],
+        "approx": true
+      }
+    ],
+    "climbable": false,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "The piers are the cling faces. The deck is the road.",
+    "vaultNote": "No rail at street level. The parapet is on the deck.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1",
+      "LOD2"
+    ],
+    "slackCm": 0.3,
+    "license": {
+      "spdx": "CC0-1.0",
+      "source": "original",
+      "url": "",
+      "notes": "Procedural mesh built in this repo."
+    },
+    "fbx": "Assets/Art/Props/Library/Roads/Overpass.fbx"
+  },
+  {
+    "name": "Driveway",
+    "category": "Roads",
+    "blurb": "Apron that replaces two 4 m sidewalk tiles. The -X face is the curb and butts the road edge the same way Sidewalk does. Wings keep the 2 m walk and the 0.27 m top. The curb is cut only in the apron, which rises from the 0.12 m asphalt to that walk. The pad stays at 0.27 m.",
+    "size": [
+      8.0,
+      0.278,
+      7.98
+    ],
+    "min": [
+      -4.0,
+      0.0,
+      -3.99
+    ],
+    "max": [
+      4.0,
+      0.278,
+      3.99
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 72,
+        "materials": [
+          "Lib_Concrete",
+          "Lib_Mortar"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 48,
+        "materials": [
+          "Lib_Concrete"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      },
+      {
+        "lod": 2,
+        "tris": 48,
+        "materials": [
+          "Lib_Concrete"
+        ],
+        "mesh": "LOD2",
+        "fileID": 736115405485880582
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_WingL",
+        "type": "box",
+        "center": [
+          -3.0,
+          0.12,
+          -3.01
+        ],
+        "size": [
+          1.84,
+          0.2,
+          1.8
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_WingR",
+        "type": "box",
+        "center": [
+          -3.0,
+          0.12,
+          3.01
+        ],
+        "size": [
+          1.84,
+          0.2,
+          1.8
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Pad",
+        "type": "box",
+        "center": [
+          1.0,
+          0.12,
+          0.0
+        ],
+        "size": [
+          5.7,
+          0.2,
+          3.7
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Apron_0",
+        "type": "box",
+        "center": [
+          -3.74,
+          0.04975,
+          0.0
+        ],
+        "size": [
+          0.34,
+          0.0995,
+          3.8
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Apron_1",
+        "type": "box",
+        "center": [
+          -3.2800000000000002,
+          0.067,
+          0.0
+        ],
+        "size": [
+          0.34,
+          0.134,
+          3.8
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Apron_2",
+        "type": "box",
+        "center": [
+          -2.8200000000000003,
+          0.08425,
+          0.0
+        ],
+        "size": [
+          0.34,
+          0.1685,
+          3.8
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Apron_3",
+        "type": "box",
+        "center": [
+          -2.3599999999999994,
+          0.10150000000000002,
+          0.0
+        ],
+        "size": [
+          0.34,
+          0.20300000000000004,
+          3.8
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "climbable": false,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "Flat concrete. The curb return on each wing is 0.15 m above the asphalt.",
+    "vaultNote": "Curb is 0.15 m above the road. Not a vault.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1",
+      "LOD2"
+    ],
+    "slackCm": 0.0,
+    "license": {
+      "spdx": "CC0-1.0",
+      "source": "original",
+      "url": "",
+      "notes": "Procedural mesh built in this repo."
+    },
+    "fbx": "Assets/Art/Props/Library/Roads/Driveway.fbx"
+  },
+  {
+    "name": "Restroom",
+    "category": "Park",
+    "blurb": "Park restroom, 5.2 m by 3.4 m, wall top 2.52 m, flat roof. Two doors face +Z. A short screen stands in front of the doors.",
+    "size": [
+      5.44,
+      2.99,
+      4.85
+    ],
+    "min": [
+      -2.72,
+      0.0,
+      -2.465
+    ],
+    "max": [
+      2.72,
+      2.99,
+      2.385
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 208,
+        "materials": [
+          "Lib_Concrete",
+          "Lib_SteelDark",
+          "Lib_PaintGreen",
+          "Lib_Steel"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 144,
+        "materials": [
+          "Lib_Concrete",
+          "Lib_PaintGreen"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      },
+      {
+        "lod": 2,
+        "tris": 108,
+        "materials": [
+          "Lib_Concrete"
+        ],
+        "mesh": "LOD2",
+        "fileID": 736115405485880582
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Climb_Left",
+        "type": "box",
+        "center": [
+          -2.5,
+          1.31,
+          -0.645
+        ],
+        "size": [
+          0.16,
+          2.34,
+          3.2399999999999998
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Right",
+        "type": "box",
+        "center": [
+          2.5,
+          1.31,
+          -0.645
+        ],
+        "size": [
+          0.16,
+          2.34,
+          3.2399999999999998
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Back",
+        "type": "box",
+        "center": [
+          0.0,
+          1.31,
+          -2.245
+        ],
+        "size": [
+          4.68,
+          2.34,
+          0.16
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Roof",
+        "type": "box",
+        "center": [
+          0.0,
+          2.586,
+          -0.645
+        ],
+        "size": [
+          4.6,
+          0.06,
+          2.8
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Slab",
+        "type": "box",
+        "center": [
+          0.0,
+          0.04,
+          -0.645
+        ],
+        "size": [
+          5.1000000000000005,
+          0.06,
+          3.3
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_DoorL",
+        "type": "box",
+        "center": [
+          -1.02,
+          1.02,
+          1.083
+        ],
+        "size": [
+          0.64,
+          1.8,
+          0.02
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_DoorR",
+        "type": "box",
+        "center": [
+          1.02,
+          1.02,
+          1.083
+        ],
+        "size": [
+          0.64,
+          1.8,
+          0.02
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "climbable": true,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "The long walls are cling faces. Doors face +Z.",
+    "vaultNote": "No rail. The roof edge is at about 2.7 m.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1",
+      "LOD2"
+    ],
+    "slackCm": 0.0,
+    "license": {
+      "spdx": "CC0-1.0",
+      "source": "original",
+      "url": "",
+      "notes": "Procedural mesh built in this repo."
+    },
+    "fbx": "Assets/Art/Props/Library/Park/Restroom.fbx"
+  },
+  {
+    "name": "Bleachers",
+    "category": "Park",
+    "blurb": "Four-row aluminum bleachers, 6 m long. Seat tops run from 0.48 m up to 1.56 m. A rail closes the back and the two ends.",
+    "size": [
+      6.15,
+      2.06,
+      3.28
+    ],
+    "min": [
+      -3.075,
+      0.02,
+      -2.08
+    ],
+    "max": [
+      3.075,
+      2.08,
+      1.2
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 300,
+        "materials": [
+          "Lib_Steel",
+          "Lib_SteelDark",
+          "Lib_Concrete"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 216,
+        "materials": [
+          "Lib_Steel",
+          "Lib_SteelDark",
+          "Lib_Concrete"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      },
+      {
+        "lod": 2,
+        "tris": 168,
+        "materials": [
+          "Lib_Steel",
+          "Lib_SteelDark",
+          "Lib_Concrete"
+        ],
+        "mesh": "LOD2",
+        "fileID": 736115405485880582
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_Seat_0",
+        "type": "box",
+        "center": [
+          0.0,
+          0.48,
+          0.35
+        ],
+        "size": [
+          5.1,
+          0.02,
+          0.18
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Foot_0",
+        "type": "box",
+        "center": [
+          0.0,
+          0.26,
+          0.75
+        ],
+        "size": [
+          5.1,
+          0.02,
+          0.26
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Seat_1",
+        "type": "box",
+        "center": [
+          0.0,
+          0.84,
+          -0.37
+        ],
+        "size": [
+          5.1,
+          0.02,
+          0.18
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Foot_1",
+        "type": "box",
+        "center": [
+          0.0,
+          0.62,
+          0.030000000000000027
+        ],
+        "size": [
+          5.1,
+          0.02,
+          0.26
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Seat_2",
+        "type": "box",
+        "center": [
+          0.0,
+          1.2,
+          -1.0899999999999999
+        ],
+        "size": [
+          5.1,
+          0.02,
+          0.18
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Foot_2",
+        "type": "box",
+        "center": [
+          0.0,
+          0.98,
+          -0.69
+        ],
+        "size": [
+          5.1,
+          0.02,
+          0.26
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Seat_3",
+        "type": "box",
+        "center": [
+          0.0,
+          1.56,
+          -1.81
+        ],
+        "size": [
+          5.1,
+          0.02,
+          0.18
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Foot_3",
+        "type": "box",
+        "center": [
+          0.0,
+          1.34,
+          -1.4100000000000001
+        ],
+        "size": [
+          5.1,
+          0.02,
+          0.26
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Rail",
+        "type": "box",
+        "center": [
+          0.0,
+          1.85,
+          -2.05
+        ],
+        "size": [
+          5.7,
+          0.7,
+          0.06
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ],
+        "approx": true
+      }
+    ],
+    "climbable": false,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "Seats and footboards are the surfaces. The frame is not a cling wall.",
+    "vaultNote": "The front footboard is under 0.40 m. Not a vault rail.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1",
+      "LOD2"
+    ],
+    "slackCm": 0.0,
+    "license": {
+      "spdx": "CC0-1.0",
+      "source": "original",
+      "url": "",
+      "notes": "Procedural mesh built in this repo."
+    },
+    "fbx": "Assets/Art/Props/Library/Park/Bleachers.fbx"
+  },
+  {
+    "name": "Ferry",
+    "category": "Harbor",
+    "blurb": "Passenger ferry, 12.4 m overall, beam 4.0 m. Bow is -Z. Open foredeck, wheelhouse aft. The hull extends below the pivot.",
+    "size": [
+      3.77,
+      3.96,
+      11.5
+    ],
+    "min": [
+      -1.885,
+      -0.71,
+      -5.75
+    ],
+    "max": [
+      1.885,
+      3.25,
+      5.75
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 340,
+        "materials": [
+          "Lib_PaintWhite",
+          "Lib_PaintRed",
+          "Lib_Rubber",
+          "Lib_Concrete",
+          "Lib_PaintBlue",
+          "Lib_Glass",
+          "Lib_SteelDark",
+          "Lib_Steel"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 180,
+        "materials": [
+          "Lib_PaintWhite",
+          "Lib_PaintRed",
+          "Lib_Rubber",
+          "Lib_Concrete",
+          "Lib_PaintBlue",
+          "Lib_Glass",
+          "Lib_Steel",
+          "Lib_SteelDark"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      },
+      {
+        "lod": 2,
+        "tris": 120,
+        "materials": [
+          "Lib_PaintWhite",
+          "Lib_PaintRed",
+          "Lib_Rubber",
+          "Lib_Concrete",
+          "Lib_PaintBlue"
+        ],
+        "mesh": "LOD2",
+        "fileID": 736115405485880582
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_Hull",
+        "type": "box",
+        "center": [
+          0.0,
+          -0.05,
+          0.8
+        ],
+        "size": [
+          3.2,
+          1.05,
+          9.4
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Bow",
+        "type": "box",
+        "center": [
+          0.0,
+          -0.02,
+          -4.6
+        ],
+        "size": [
+          1.5,
+          0.6,
+          0.7
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Deck",
+        "type": "box",
+        "center": [
+          0.0,
+          0.575,
+          0.65
+        ],
+        "size": [
+          3.3,
+          0.035,
+          9.8
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_CabinLow",
+        "type": "box",
+        "center": [
+          0.0,
+          1.15,
+          4.0
+        ],
+        "size": [
+          2.3,
+          0.78,
+          2.2
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_CabinHigh",
+        "type": "box",
+        "center": [
+          0.0,
+          2.15,
+          4.0
+        ],
+        "size": [
+          2.2,
+          0.86,
+          2.1
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Roof",
+        "type": "box",
+        "center": [
+          0.0,
+          2.78,
+          4.0
+        ],
+        "size": [
+          2.5,
+          0.08,
+          2.5
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_RailL",
+        "type": "box",
+        "center": [
+          -1.78,
+          1.15,
+          -0.8500000000000001
+        ],
+        "size": [
+          0.06,
+          0.7,
+          6.4
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ],
+        "approx": true
+      },
+      {
+        "name": "Col_RailR",
+        "type": "box",
+        "center": [
+          1.78,
+          1.15,
+          -0.8500000000000001
+        ],
+        "size": [
+          0.06,
+          0.7,
+          6.4
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ],
+        "approx": true
+      }
+    ],
+    "climbable": false,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "The hull side and the wheelhouse wall are cling faces. The foredeck is the standing surface.",
+    "vaultNote": "Rail is about 1.05 m above the deck.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1",
+      "LOD2"
+    ],
+    "slackCm": 0.0,
+    "license": {
+      "spdx": "CC0-1.0",
+      "source": "original",
+      "url": "",
+      "notes": "Procedural mesh built in this repo."
+    },
+    "fbx": "Assets/Art/Props/Library/Harbor/Ferry.fbx"
   }
 ]

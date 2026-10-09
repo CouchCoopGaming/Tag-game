@@ -1,4 +1,4 @@
-# Asset library, pass 30
+# Asset library, pass 31
 
 Procedural props for the couch tag arenas. Real meters, +Y up, pivot at the ground contact (or the module origin called out in the notes). Players are about 1.8 m. Vault rails in the park kit sit at 0.90–1.05 m. Every mesh is rebuilt from `Tools/Blender/AssetLibrary/<asset>.py`.
 
@@ -9,7 +9,7 @@ No third-party textures. Brick, concrete, wood, bark, asphalt, and the worn meta
 ```
 blender --background --python Tools/Blender/AssetLibrary/build_all.py
 python3 Tools/Blender/AssetLibrary/write_unity.py
-blender --background --python Tools/Blender/AssetLibrary/render_pass30.py
+blender --background --python Tools/Blender/AssetLibrary/render_pass31.py
 ```
 
 Blender 4.2 LTS is enough. `write_unity.py` does not need Blender. The showcase scene is `Assets/Scenes/AssetShowcase.unity`. It is not in the build settings and it does not touch the three arenas. `Tag/Asset Showcase` rebuilds that scene from the prefabs.
@@ -141,6 +141,13 @@ Blender 4.2 LTS is enough. `write_unity.py` does not need Blender. The showcase 
 | WoodFence_Gate | Buildings | 1.322 × 1.922 × 0.136 | 260 (260/108) | Col_Post x2, Col_Picket x7, Col_Rail x3, Col_Brace | climb The closed leaf is solid. The gaps are about 8 mm. Top is 1.83 m. Too high to vault from the ground. | shipped |
 | WoodFence_Corner | Buildings | 1.209 × 1.922 × 1.209 | 376 (376/120) | Col_Post, Col_Picket x14, Col_Rail x6 | climb Each picket is solid. The gaps are about 8 mm and are not a passage. Top is 1.83 m. Too high to vault from the ground. | shipped |
 | WoodFence_End | Buildings | 0.667 × 1.922 × 0.104 | 120 (120/72) | Col_Post, Col_Picket x3, Col_Rail x3 | climb Each picket is solid. The gaps are about 8 mm and are not a passage. Top is 1.83 m. Too high to vault from the ground. | shipped |
+| Alley | Buildings | 3.02 × 3.436 × 7.95 | 260 (260/132/108) | Climb_Left, Climb_Right, Climb_BackL, Climb_BackR, Col_Header, Col_Door, Col_Floor | climb Both side walls and the back piers are cling faces. The floor is the ground. No rail. The coping is at 3.4 m. | shipped |
+| Subway_Entrance | Buildings | 3.02 × 4.02 × 6.4 | 300 (300/180/132) | Climb_Left, Climb_Right, Col_Step x8, Col_Pad, Col_Roof | climb The concrete side walls are the cling faces. The steps are the way down. The parapet is about 1.08 m above the sidewalk. | shipped |
+| Overpass | Roads | 6 × 6.06 × 14 | 360 (360/264/144) | Col_Deck, Col_Wearing, Col_Pier x2, Col_RailL, Col_RailR | The piers are the cling faces. The deck is the road. No rail at street level. The parapet is on the deck. | shipped |
+| Driveway | Roads | 8 × 0.278 × 7.98 | 72 (72/48/48) | Col_WingL, Col_WingR, Col_Pad, Col_Apron x4 | Flat concrete. The curb return on each wing is 0.15 m above the asphalt. Curb is 0.15 m above the road. Not a vault. | shipped |
+| Restroom | Park | 5.44 × 2.99 × 4.85 | 208 (208/144/108) | Climb_Left, Climb_Right, Col_Back, Col_Roof, Col_Slab, Col_DoorL, Col_DoorR | climb The long walls are cling faces. Doors face +Z. No rail. The roof edge is at about 2.7 m. | shipped |
+| Bleachers | Park | 6.15 × 2.06 × 3.28 | 300 (300/216/168) | Col_Seat x4, Col_Foot x4, Col_Rail | Seats and footboards are the surfaces. The frame is not a cling wall. The front footboard is under 0.40 m. Not a vault rail. | shipped |
+| Ferry | Harbor | 3.77 × 3.96 × 11.5 | 340 (340/180/120) | Col_Hull, Col_Bow, Col_Deck, Col_CabinLow, Col_CabinHigh, Col_Roof, Col_RailL, Col_RailR | The hull side and the wheelhouse wall are cling faces. The foredeck is the standing surface. Rail is about 1.05 m above the deck. | shipped |
 
 ## Modules
 
