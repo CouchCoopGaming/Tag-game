@@ -1,10 +1,10 @@
 # E assignment
 
-Branch `cursor/tag-movement-evasion`, cut from `cursor/tag-movement` at `1d54919b`. Draft only. The lead merges with `git merge` after a measured pass. `EvasionMoves.Enabled` stays off. `EvasionPose.Holds` stays as folded.
+Branch `cursor/tag-movement-evasion`. Draft only. The lead merges with `git merge` after a measured pass. `EvasionMoves.Enabled` stays off. `EvasionPose.Holds` stays as folded.
 
 ## Clips
 
-Evasion, the played roll, the played stagger, and the landing and roll exits.
+Evasion and landings. E is on soft land, hard land, roll, spin, and jukeR. The lead scan below is the current read. The seated roll-up on this branch is not folded onto the lead.
 
 | Clip | Hip-sit fails | Pose |
 |---|---|---|
@@ -15,11 +15,12 @@ Evasion, the played roll, the played stagger, and the landing and roll exits.
 | exit-SoftLand | 0 | 0 (0.36) |
 | exit-Roll | 4 back, knee, drop | 0.94 Spine\|UpperLeg_L world 0.25 fails 3 |
 | exit-RollAbsorb | 2 back, knee, drop | 3.32 LowerArm_R\|UpperLeg_R world 0.23 fails 8 |
-| stutter | E's plant sits | inside the 6-clip line |
-| spinL, spinR | E's plant sits | pose 1.4 cm on the pivot thigh |
-| jukeL | E's plant sits | clear |
-| jukeR | E's plant sits | pose 0.64 cm, spine into the outside thigh |
-| dive | roll-up sits on this branch | pose 1.74 cm, spine into both thighs |
+| stutter | 0 plant, back 14.8, knee 52.9, drop 10.4 | 0 (0.42) |
+| spinL | 7 back, shin, kneeBehind along world −Y | 1.40 Spine\|UpperLeg_R |
+| spinR | 7 back, shin, kneeBehind along world −Y | 1.40 Spine\|UpperLeg_L |
+| jukeL | 0 plant, back 11.9, knee 52.9, drop 8.9 | 0 (0.42) |
+| jukeR | 0 plant, back 11.9, knee 52.9, drop 8.9 | 0.64 Spine\|UpperLeg_R |
+| dive | 2 drop, roll-up is 14.1 cm on the lead | 0 (0.43) on the lead; this branch seats it |
 
 This branch already seats the dive roll-up, measured at `1adc2020`:
 
@@ -27,7 +28,7 @@ This branch already seats the dive roll-up, measured at `1adc2020`:
 
 `no-clip clips=6 frames=115 worldMax=0.0 pose=1.74 rigJoint=7.89 fails=1`
 
-The roll-up at 0.867 s and 0.900 s sits 13.6 cm behind the support foot, knee 79°, sole 0.2 cm, and clears the 20 cm drop. The thigh is 55°. The spine is 1.74 cm inside both upper legs. That pair stays rig-blocked. Spin stays 1.4 cm. `jukeR` stays 0.64 cm. The lead scan's evasion rows are a column remap that does not match `EvasionPose.Apply` (zero loaded frames on stutter, spin, and juke, dive world 18.49 cm). Those rows do not replace this measurement.
+The roll-up at 0.867 s and 0.900 s sits 13.6 cm behind the support foot, knee 79°, sole 0.2 cm, and clears the 20 cm drop. The thigh is 55°. The spine is 1.74 cm inside both upper legs. That pair stays rig-blocked. Spin stays 1.4 cm. `jukeR` stays 0.64 cm. The table above is the lead's full scan of the folded keys. The seated roll-up stays on this branch until the lead merges it.
 
 Stagger contact at t=0.00: back −1.0 cm, knee 2.5°, drop 0, knee behind the pelvis. Exit-Roll contact at t=0.433: back 4.2 cm, knee 16.2°, drop 0. Exit-RollAbsorb contact at t=0.30: back 2.0 cm, knee 11.9°, drop 0.
 
