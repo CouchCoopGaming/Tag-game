@@ -221,14 +221,18 @@ namespace Tag.Art
             split = Smooth(split);
             bool left = side >= 0f;
             Sample sample = new Sample();
-            sample.Drop = -0.104f;
-            sample.Hip = 14f;
+            // Oct 9 plant floor: hip >= 25, pelvis >= 8 cm behind the support sole.
+            // Hip 26 swings the legs back with it, so both thighs carry +12 and turn
+            // out 20 to stay off the spine (< 0.5 cm). Drop re-seats the sole.
+            sample.Drop = -0.1235f;
+            sample.Hip = 26f;
             sample.Spine = 4f;
             sample.Head = Mathf.Lerp(-8f, -12f, burst);
-            // Thigh stays under 50°. Past that the upper leg passes through the spine.
+            sample.YawL = -20f;
+            sample.YawR = 20f;
             // The knee is bent and the shin points forward, so the pelvis sits behind the foot.
-            sample.ThighL = left ? 48f : Mathf.Lerp(48f, 12f, split);
-            sample.ThighR = left ? Mathf.Lerp(48f, 12f, split) : 48f;
+            sample.ThighL = left ? 60f : Mathf.Lerp(60f, 24f, split);
+            sample.ThighR = left ? Mathf.Lerp(60f, 24f, split) : 60f;
             sample.KneeL = left ? -55f : Mathf.Lerp(-55f, -80f, split);
             sample.KneeR = left ? Mathf.Lerp(-55f, -80f, split) : -55f;
             sample.FootL = left ? 12f : Mathf.Lerp(12f, 2f, split);
@@ -251,7 +255,9 @@ namespace Tag.Art
             s.HipYaw = yaw;
             s.HeadYaw = lead * sign;
             s.Head = -12f;
-            s.Hip = 14f;
+            // Oct 9 plant floor: hip >= 25. The pivot knee opens to -29 so the foot
+            // stays ahead of the pelvis, and the pivot thigh turns out 25 to clear the spine.
+            s.Hip = 26f;
             s.Spine = 4f;
             s.Lean = 0f;
             s.Drop = SpinDrop(local);
@@ -300,6 +306,7 @@ namespace Tag.Art
                 s.ElbowR = elbow;
                 s.ElbowYawR = -elbowYaw;
             }
+            if (sign < 0) s.YawR = 25f; else s.YawL = -25f;
             return s;
         }
 
@@ -381,14 +388,17 @@ namespace Tag.Art
         static Sample DiveReach()
         {
             // Takeoff. Hips sit back, knee bent, shin forward. Not a straight leg leaned back.
+            // Oct 9 plant floor: hip 26 (>= 25); thighs +12 and turned out 20 to clear the spine.
             Sample s = new Sample();
-            s.Drop = -0.093f;
-            s.Hip = 14f;
+            s.Drop = -0.1058f;
+            s.Hip = 26f;
             s.Spine = 4f;
             s.Head = -24f;
             s.Lean = 2f;
-            s.ThighL = 48f;
-            s.ThighR = 48f;
+            s.YawL = -20f;
+            s.YawR = 20f;
+            s.ThighL = 60f;
+            s.ThighR = 60f;
             s.KneeL = -50f;
             s.KneeR = -50f;
             s.FootL = 12f;
@@ -547,16 +557,20 @@ namespace Tag.Art
 
         static Sample DiveCrouch()
         {
+            // Roll-up sit, scored against the roll-exit reference (01_roll_grass 0.80 s:
+            // chest +19.9, pelvis +18 cm). Chest 14 + 6 = 20; thighs turned out 16 clear the spine.
             Sample s = new Sample();
-            s.Drop = -0.141f;
-            s.Hip = 6f;
-            s.Spine = 4f;
+            s.Drop = -0.1477f;
+            s.Hip = 14f;
+            s.Spine = 6f;
             s.Head = -8f;
             s.Lean = 2f;
-            s.ThighL = 46f;
-            s.ThighR = 46f;
-            s.KneeL = -68f;
-            s.KneeR = -68f;
+            s.YawL = -16f;
+            s.YawR = 16f;
+            s.ThighL = 56f;
+            s.ThighR = 56f;
+            s.KneeL = -62f;
+            s.KneeR = -62f;
             s.FootL = 14f;
             s.FootR = 12f;
             s.ArmL = 4f;
@@ -570,7 +584,7 @@ namespace Tag.Art
         {
             // Pivot knee. Bent, shin forward. A table seats the sole once the turn is measured.
             float[] at = { 0f, 0.350f };
-            float[] knee = { -55f, -55f };
+            float[] knee = { -29f, -29f };
             return Table(local, at, knee);
         }
 
@@ -578,7 +592,7 @@ namespace Tag.Art
         {
             // Pelvis height that seats the pivot sole. It is a bone drop, not a capsule offset.
             float[] at = { 0f, 0.350f };
-            float[] drop = { -0.104f, -0.104f };
+            float[] drop = { -0.0603f, -0.0603f };
             return Table(local, at, drop);
         }
 

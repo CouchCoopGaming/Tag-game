@@ -87,6 +87,9 @@ namespace Tag.Tools
             AddCs(testFiles, Path.Combine(root, "Assets", "Tests"));
             var plainRefs = new List<MetadataReference>(refs);
             plainRefs.Add(nunit); plainRefs.Add(mscorlib);
+            // Runtime asmdefs (e.g. Tag.World) are folded into the player compile here,
+            // so the test assembly references the player dll to see them.
+            if (File.Exists(playerDll)) plainRefs.Add(MetadataReference.CreateFromFile(playerDll));
             if (testFiles.Count > 0)
                 parsed += Compile("Tag.Tests.EditMode", testFiles, plainRefs, Path.Combine(outDir, "Tag.Tests.EditMode.dll"), root, errors);
             Console.WriteLine("tests-asm files=" + testFiles.Count);
