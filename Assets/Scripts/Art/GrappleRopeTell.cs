@@ -24,7 +24,25 @@ namespace Tag.Art
         public const float HookMarkerSize = 0.32f;
         public const float VerticalImpulse = 0f;
 
+        /// <summary>Latched cord thickness, 1.2 cm. The wide start and end widths stay for the old line.</summary>
+        public const float RopeDiameter = 0.012f;
+
         public static float HaloWidth => RopeStartWidth + HaloExtra;
+
+        /// <summary>
+        /// Vertical drop of the latched cord. Straight while slack is at most 0.08, then eases to 6 cm.
+        /// </summary>
+        public static float CordSag(float slack)
+        {
+            const float straight = 0.08f;
+            const float drop = 0.06f;
+            if (slack <= straight) return 0f;
+            float u = (slack - straight) / (1f - straight);
+            if (u < 0f) u = 0f;
+            if (u > 1f) u = 1f;
+            u = u * u * (3f - 2f * u);
+            return drop * u;
+        }
 
         public static Vector3 Hand(Vector3 origin, Vector3 forward)
         {
