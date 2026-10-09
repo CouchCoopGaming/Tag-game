@@ -4782,7 +4782,7 @@ def impact22_strength(speed):
     return k
 
 
-def impact22_state(surface, speed, age_u=0.56, legacy=False, radius=None, bits=None, chunky=False):
+def impact22_state(surface, speed, age_u=0.56, legacy=False, radius_override=None, bits_override=None, chunky=False):
     """Same curve as ImpactFx.Measure. age_u 0.56 is the peak-expansion frame.
 
     The ring is a donut: texture inner 0.78 over outer 0.96, so the hole is
@@ -4851,11 +4851,11 @@ def impact22_state(surface, speed, age_u=0.56, legacy=False, radius=None, bits=N
         "inner": 0.78 / 0.96,
         "chunky": chunky,
     }
-    if radius is not None:
-        state["radius"] = radius
-        state["shown"] = radius * grow
-    if bits is not None:
-        state["bits"] = bits
+    if radius_override is not None:
+        state["radius"] = radius_override
+        state["shown"] = radius_override * grow
+    if bits_override is not None:
+        state["bits"] = bits_override
     return state
 
 
@@ -4876,7 +4876,11 @@ def impact22_bit(i, state, salt):
     k = state["k"]
     spread = (0.8 + k * 2.2) * (0.4 + h)
     ang = (i + h * 0.35) / float(max(state["bits"], 1)) * math.tau
-    dist = (0.04 + h * 0.05) + spread * age
+    if chunky:
+        # Start outside the body. A full spread*age plants them in the torso.
+        dist = (0.62 + h * 0.22) + spread * age * 0.35
+    else:
+        dist = (0.04 + h * 0.05) + spread * age
     z = 0.04 + vy * age - 0.5 * 48.0 * age * age
     # Landed chips fade out. Nothing is left sitting in a pile.
     if z < 0.03:
@@ -5154,7 +5158,7 @@ def impact22_draw(origin, normal, state, cam_loc):
         chunky = bool(state.get("chunky")) and pace >= 0.75
         accent = (not chunky) and pace >= 0.85 and i < 4
         if chunky:
-            size = 0.28 + h2 * 0.14
+            size = 0.36 + h2 * 0.08
         elif accent:
             size = 0.10 + h2 * 0.02
         else:
@@ -5957,7 +5961,7 @@ def pass27_land(arm, cam, foot, yaw, age, radius, chunky, bits):
     k_bits = bits
     state = impact22_state(
         "concrete", 36.5, age_u=age / 0.25,
-        radius=radius, bits=k_bits, chunky=chunky,
+        radius_override=radius, bits_override=k_bits, chunky=chunky,
     )
     impact22_draw(Vector((foot.x, foot.y, 0.02)), (0.0, 0.0, 1.0), state, cam.location)
     print("RING", "r", round(state["radius"], 2), "shown", round(state["shown"], 2), "bits", state["bits"])
@@ -6016,7 +6020,7 @@ def render_pass27(arm, cam):
         shoot(label, line_cells, line_titles)
     p14_grid(line_cells, line_titles, "Forward dash   chase camera   quarter pane   before / after", os.path.join(out_dir, "lines-compare.jpg"), 2)
 
-    # 2. Brick tint versus concrete grey, on a brick-coloured ground.
+    # 2. Brick tint versus concrete grey. Neutral ground, puffs in front of the feet.
     brick_cells = []
     brick_titles = []
     for label, color in (
@@ -6024,20 +6028,24 @@ def render_pass27(arm, cam):
         ("brick-after", (0.62, 0.28, 0.16)),
     ):
         p11_clear("P11Fx")
-        p11_ground("dirt", asphalt=False)
-        # Paint the ground the brick hue so grey dust is the old mistake.
-        for obj in bpy.data.objects:
-            if obj.name.startswith("P11Geo") or "Ground" in obj.name:
-                if obj.data and obj.data.materials:
-                    obj.data.materials[0] = make_mat(p11_name("Mat"), (0.55, 0.28, 0.22, 1.0), 0.9)
+        p11_ground("concrete", asphalt=True)
         apply_pose(arm, pose_run, 0.4, yaw)
         foot = p11_foot(arm)
         p14_aim(cam, foot, yaw)
         bpy.context.view_layer.update()
-        for i in range(7):
+        to_cam = cam.location - foot
+        to_cam.z = 0.0
+        if to_cam.length < 0.001:
+            to_cam = Vector((0.0, -1.0, 0.0))
+        to_cam.normalize()
+        side = Vector((-to_cam.y, to_cam.x, 0.0))
+        for i in range(5):
             h = p11_rand(i, 3)
-            pos = Vector((foot.x, foot.y, 0.06)) + Vector(((h - 0.5) * 0.7, (p11_rand(i, 6) - 0.5) * 0.45, 0.05 + h * 0.35))
-            impact24_puff(pos, 0.28 + h * 0.12, color, 0.82, cam.location)
+            pos = Vector((foot.x, foot.y, 0.0))
+            pos += to_cam * (0.55 + h * 0.35)
+            pos += side * ((i - 2) * 0.28)
+            pos.z = 0.18 + h * 0.28
+            impact24_puff(pos, 0.48, color, 0.92, cam.location)
         shoot(label, brick_cells, brick_titles)
     p14_grid(brick_cells, brick_titles, "Brick dust   chase camera   quarter pane   concrete tint / brick tint", os.path.join(out_dir, "brick-compare.jpg"), 2)
 
@@ -6058,7 +6066,12 @@ def render_pass27(arm, cam):
             center = foot + fwd * 0.55
             center.z = 1.15
             along = Vector((-normal.y, normal.x, 0.0))
-            hit = center + along * 0.15
+            if along.length < 0.001:
+                along = Vector((1.0, 0.0, 0.0))
+            along.normalize()
+            # Beside the shoulder, on open wall. A contact on the chest is hidden by the torso.
+            hit = center + along * 0.95
+            hit.z = 1.25
             bpy.ops.mesh.primitive_cube_add(size=1.0, location=(center.x + fwd.x * 0.08, center.y + fwd.y * 0.08, 1.6))
             wall = bpy.context.active_object
             wall.name = p11_name("Geo")
@@ -6069,11 +6082,22 @@ def render_pass27(arm, cam):
                 slow = speed < 13.8
                 u = max(0.0, min(1.0, speed / 13.8))
                 radius = (0.14 + u * 0.12) if slow else 0.28
-                state = impact22_state("concrete", 13.8, age_u=0.10 / 0.25, radius=radius, bits=0)
-                state["plumes"] = 2 if slow else 3
-                state["opacity"] = (0.10 if slow else 0.16) * max(0.2, 1.0 - 0.55 * state["grow"])
+                puffs = 2 if slow else 3
+                puff_size = 0.32 if slow else 0.40
+                state = impact22_state("concrete", 13.8, age_u=0.10 / 0.25, radius_override=radius, bits_override=0)
+                state["bits"] = 0
+                state["plumes"] = 0
+                state["ring_inner"] = 0.42
+                state["opacity"] = 0.88 if slow else 0.94
+                state["dust"] = (0.16, 0.15, 0.14)
                 impact22_draw(hit, normal, state, cam.location)
-                print("WALLRUN", label_speed, "radius", round(radius, 2), "puffs", state["plumes"])
+                nrm = Vector(normal).normalized()
+                for i in range(puffs):
+                    h = p11_rand(i, 9)
+                    pos = Vector(hit) + nrm * (0.42 + h * 0.12) + along * ((i - 1) * 0.16)
+                    pos.z = hit.z + 0.10 + h * 0.18
+                    impact24_puff(pos, puff_size, (0.90, 0.88, 0.84), 0.78, cam.location)
+                print("WALLRUN", label_speed, "radius", round(radius, 2), "puffs", puffs, "puff", puff_size)
             name = "wallrun-%s-%s" % (label_speed, "after" if after else "before")
             shoot(name, wall_cells, wall_titles)
     p14_grid(

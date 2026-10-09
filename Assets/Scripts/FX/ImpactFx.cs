@@ -48,6 +48,10 @@ namespace Tag.FX
             public float HopLo;
             public float HopHi;
             public float Splinter;
+            /// <summary>1 draws the thick wall-run ring. Land stays on the thin band.</summary>
+            public int Wide;
+            /// <summary>Wall-run puff size in metres. 0 keeps the land plume.</summary>
+            public float Puff;
         }
 
         /// <summary>0 at a sprint slam, 1 at the hard-land speed.</summary>
@@ -186,7 +190,11 @@ namespace Tag.FX
 
         public static float PlumeAlpha(float age, bool hard)
         {
-            float body = hard ? 0.94f : 0.28f;
+            return PlumeAlpha(age, hard ? 0.94f : 0.28f);
+        }
+
+        public static float PlumeAlpha(float age, float body)
+        {
             if (age <= 0.04f) return body * (age / 0.04f);
             if (age >= PlumeLife) return 0f;
             if (age <= 0.16f) return body;
@@ -252,6 +260,8 @@ namespace Tag.FX
         Vector3[] _normal;
         Color[] _color;
         float[] _opacity;
+        int[] _wide;
+        float[] _puff;
         const int ScuffSlots = 4;
         const int ScuffPuffs = 6;
         const float ScuffSeconds = 0.42f;
@@ -271,6 +281,7 @@ namespace Tag.FX
         Color[] _scuffInk;
         Color[] _scuffDust;
         Texture2D _ringTex;
+        Texture2D _ringWide;
         Mesh _quad;
 
         public static void Land(Vector3 origin, float speed, int surface)
@@ -326,7 +337,11 @@ namespace Tag.FX
                 spec.Plumes = 3 + (int)(k * 2f);
                 if (spec.Plumes > 5) spec.Plumes = 5;
             }
-            spec.Opacity = slow ? 0.08f + u * 0.06f : 0.14f + k * 0.06f;
+            // The land ring thins as it grows. This one stays opaque so a
+            // sub-30 cm stroke still reads beside the body.
+            spec.Opacity = slow ? 0.88f : 0.94f;
+            spec.Wide = 1;
+            spec.Puff = slow ? 0.32f : 0.40f;
             spec.HopLo = 0.02f;
             spec.HopHi = slow ? 0.06f : 0.12f;
             spec.Chunk = 0.06f;
@@ -371,6 +386,7 @@ namespace Tag.FX
             _quad = QuadXZ();
             Mesh sprite = QuadXY();
             _ringTex = RingTex();
+            _ringWide = RingWideTex();
             Shader decal = Shader.Find("Tag/FxDecal");
             if (decal == null) decal = Shader.Find("Sprites/Default");
             Shader bits = Shader.Find("Tag/FxKitSprite");
@@ -392,6 +408,8 @@ namespace Tag.FX
             _normal = new Vector3[Slots];
             _color = new Color[Slots];
             _opacity = new float[Slots];
+            _wide = new int[Slots];
+            _puff = new float[Slots];
             for (int i = 0; i < Slots; i++)
             {
                 _age[i] = -1f;
@@ -451,8 +469,14 @@ namespace Tag.FX
                 _ring[i].localPosition = n * 0.03f;
                 _ring[i].localRotation = Quaternion.FromToRotation(Vector3.up, n);
                 _ring[i].localScale = new Vector3(diameter, 1f, diameter);
-                // The ring thins out as it expands, so the ground stays visible through it.
-                float thin = 1f - 0.55f * grow;
+                Texture tex = _wide[i] > 0 ? _ringWide : _ringTex;
+                if (_ringMat[i].mainTexture != tex)
+                {
+                    _ringMat[i].mainTexture = tex;
+                    if (_ringMat[i].HasProperty("_MainTex")) _ringMat[i].SetTexture("_MainTex", tex);
+                }
+                // The land ring thins out as it expands. The wall-run ring stays solid.
+                float thin = _wide[i] > 0 ? 1f : 1f - 0.55f * grow;
                 if (thin < 0.2f) thin = 0.2f;
                 Color ring = _color[i];
                 ring.a = _opacity[i] * fade * thin;
@@ -539,8 +563,13 @@ namespace Tag.FX
             _plumes[slot] = spec.Plumes;
             _kind[slot] = kind;
             _normal[slot] = normal;
-            // The ring is the dust colour. Chunks are a step darker so they read against it.
-            _color[slot] = new Color(spec.DustR, spec.DustG, spec.DustB, 1f);
+            _wide[slot] = spec.Wide;
+            _puff[slot] = spec.Puff;
+            // Land ring is the dust colour. The wall-run ring is a dark stroke.
+            if (spec.Wide > 0)
+                _color[slot] = new Color(spec.R * 0.35f, spec.G * 0.35f, spec.B * 0.35f, 1f);
+            else
+                _color[slot] = new Color(spec.DustR, spec.DustG, spec.DustB, 1f);
             _opacity[slot] = spec.Opacity;
             _root[slot].position = origin;
             _root[slot].rotation = Quaternion.identity;
@@ -551,7 +580,7 @@ namespace Tag.FX
             tangent.Normalize();
             Vector3 bitangent = Vector3.Cross(normal, tangent).normalized;
             int n = spec.Bits;
-            if (n < 1) n = 1;
+            if (n < 0) n = 0;
             for (int b = 0; b < PieceMax; b++)
             {
                 int k = slot * PieceMax + b;
@@ -587,10 +616,11 @@ namespace Tag.FX
                         start = 0.35f;
                     }
                     piece.Vel = vel;
-                    // Hard land: five chunks, 28–42 cm, dark against a pale one.
-                    // Sprint stays grit. The hop tops out under the 1 m plume.
+                    // Hard land: five chunks, 36–44 cm, dark against a pale one.
+                    // They start outside the body. Sprint stays grit.
+                    // The hop tops out under the 1 m plume.
                     if (chunky)
-                        piece.Size = 0.28f + h2 * 0.14f;
+                        piece.Size = 0.36f + h2 * 0.08f;
                     else
                     {
                         float span = h2 * h2;
@@ -638,7 +668,8 @@ namespace Tag.FX
                         piece.Aspect = 0.7f + h * 0.5f;
                     }
                     piece.On = 1;
-                    _bit[k].localPosition = normal * start + radial * (0.08f + h * 0.16f);
+                    float outR = chunky ? 0.62f + h * 0.22f : 0.08f + h * 0.16f;
+                    _bit[k].localPosition = normal * start + radial * outR;
                     _bitMat[k].SetFloat("_Shape", piece.Shape);
                 }
                 else if (b < n + spec.Plumes)
@@ -665,6 +696,11 @@ namespace Tag.FX
         {
             float h = Hash(100 + p + slot * 9);
             float h2 = Hash(130 + p);
+            if (_puff[slot] > 0.01f)
+            {
+                PlaceWallPuff(slot, p, k, age, h, h2);
+                return;
+            }
             float pace = StrengthFromRadius(_radius[slot]);
             bool hard = pace >= 0.75f;
             float peak = hard ? 0.56f + h2 * 0.08f : 0.08f + h2 * 0.06f;
@@ -694,6 +730,26 @@ namespace Tag.FX
             if (size > cap * 2f) size = cap * 2f;
             _bit[k].localScale = new Vector3(size * 1.15f, size, 1f);
             float a = PlumeAlpha(age, hard);
+            _bitMat[k].color = new Color(_piece[k].R, _piece[k].G, _piece[k].B, a);
+            _bitRend[k].enabled = a > 0.02f;
+        }
+
+        void PlaceWallPuff(int slot, int p, int k, float age, float h, float h2)
+        {
+            float size = _puff[slot];
+            Vector3 n = _normal[slot];
+            Vector3 tangent = Vector3.Cross(n, Vector3.up);
+            if (tangent.sqrMagnitude < 0.0001f) tangent = Vector3.Cross(n, Vector3.right);
+            tangent.Normalize();
+            Vector3 bitangent = Vector3.Cross(n, tangent).normalized;
+            float ang = h * 6.2831855f;
+            Vector3 radial = tangent * Mathf.Cos(ang) + bitangent * Mathf.Sin(ang);
+            // Off the wall and a little upward, so the puff clears the torso.
+            Vector3 pos = radial * (0.10f + h * 0.18f) + n * (0.42f + h2 * 0.12f);
+            pos.y += 0.10f + h * 0.20f;
+            _bit[k].localPosition = pos;
+            _bit[k].localScale = new Vector3(size * 1.15f, size, 1f);
+            float a = PlumeAlpha(age, 0.78f);
             _bitMat[k].color = new Color(_piece[k].R, _piece[k].G, _piece[k].B, a);
             _bitRend[k].enabled = a > 0.02f;
         }
@@ -980,6 +1036,44 @@ namespace Tag.FX
                     float rise = (r - RingInner) / 0.012f;
                     if (rise > 1f) rise = 1f;
                     float fall = (RingOuter - r) / 0.012f;
+                        if (fall > 1f) fall = 1f;
+                        a = rise < fall ? rise : fall;
+                    }
+                    pixels[y * n + x] = new Color(1f, 1f, 1f, a);
+                }
+            }
+            tex.SetPixels(pixels);
+            tex.Apply(false, true);
+            tex.wrapMode = TextureWrapMode.Clamp;
+            tex.filterMode = FilterMode.Bilinear;
+            return tex;
+        }
+
+        /// <summary>
+        /// Thicker band for the wall-run start. The land ring keeps RingTex.
+        /// Inner 0.42 on outer 0.96, so a 0.22 m ring has a stroke you can see.
+        /// </summary>
+        static Texture2D RingWideTex()
+        {
+            const int n = 128;
+            const float inner = 0.42f;
+            const float edge = 0.045f;
+            var tex = new Texture2D(n, n, TextureFormat.RGBA32, false);
+            var pixels = new Color[n * n];
+            float mid = (n - 1) * 0.5f;
+            for (int y = 0; y < n; y++)
+            {
+                for (int x = 0; x < n; x++)
+                {
+                    float dx = (x - mid) / mid;
+                    float dy = (y - mid) / mid;
+                    float r = Mathf.Sqrt(dx * dx + dy * dy);
+                    float a = 0f;
+                    if (r <= RingOuter && r >= inner)
+                    {
+                        float rise = (r - inner) / edge;
+                        if (rise > 1f) rise = 1f;
+                        float fall = (RingOuter - r) / edge;
                         if (fall > 1f) fall = 1f;
                         a = rise < fall ? rise : fall;
                     }
