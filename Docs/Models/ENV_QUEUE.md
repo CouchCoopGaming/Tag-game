@@ -6,7 +6,7 @@ A colour or paint sibling uses the base quartet when vertex positions, indices, 
 
 | Branch | Tip | Previous tightened run | This run |
 | --- | --- | --- | --- |
-| #122 | `15c0a983` | `pass=12/125` paper 91 / geom 22 at `723cc137` | `models-validate assets=125 pass=12 fail=113` / `models-split paperwork=91 geometry=22` |
+| #122 | `1eec03a1` | `pass=12/125` paper 91 / geom 22 at `15c0a983` | `models-validate assets=132 pass=97 fail=35` / `models-split paperwork=7 geometry=28` |
 | #125 | `3040d2e5` | `pass=14/189` paper 136 / geom 39 at `29caae02` | `models-validate assets=189 pass=18 fail=171` / `models-split paperwork=136 geometry=35` |
 | #129 | `30af0ae6` | `pass=27/220` paper 176 / geom 17 at `cf295d9b` | `models-validate assets=220 pass=43 fail=177` / `models-split paperwork=161 geometry=16` |
 
@@ -14,7 +14,7 @@ A colour or paint sibling uses the base quartet when vertex positions, indices, 
 
 ## Passes
 
-#122 (12): WalkUp, WoodFence, WoodFence_Corner, WoodFence_End, WoodFence_Gate, Container_20, Container_20_Blue, Container_20_Green, Rowboat, CourtFence, Gazebo, Road_Junction.
+#122 (97). Kept from the last grade: WalkUp, WoodFence, WoodFence_Corner, WoodFence_End, WoodFence_Gate, Container_20, Container_20_Blue, Container_20_Green, Rowboat, CourtFence, Gazebo, Road_Junction. New on this tip: Overpass and the pass 31 quartets that already cleared geometry. Buildings: Brick_Corner, Brick_Parapet, ChainFence, ChainGate, FireEscape, House, PicketFence, Store_Diner. Harbor: Boat, Buoy, Cleat, Container_40, Crate, DockRamp, Dock_Corner, FishCrate, FuelDock, Gangway, HarborRail, HarborWarehouse, HarborWater, LifeRing, Lighthouse, LobsterTrap, Mooring, MooringLine, Piling, QuayDavit, Quay_Edge, RopeCoil. Park: Court, Fountain, Hoop, ParkLamp, ParkSign, Pavilion, PicnicTable, Planter, Playground, Pond, PondEdge, Seesaw, Shrub, Tree, Tree_Grate, Tree_Maple. Roads: Asphalt_Patch, Gutter, LaneArrow, Median_Planter, Overpass, RaisedCrosswalk, Road_Cross, Road_Crosswalk, Road_Curve, Road_Straight, Road_T, Sidewalk, StopBar. Showcase: Mannequin. Street: Bench_Wood, BikeRack, Bollard, BusShelter, FireHydrant, LightPost_Double, LightPost_Single, Mailbox, Manhole, NewspaperBox, ParkingMeter, RecyclingBin, Sign_Stop, Sign_Street, StormDrain, TrafficLight, TrashCan_Lidded, TrashCan_Slat. Utility: Barrier, Dumpster, ElectricalBox, Pallet, TrafficCone, UtilityPole, WallAC. Container enamels still print `material-variant of Container_20`.
 
 #125 (18): `Pickup_FullSize_25`, the three compacts, `Sedan_Mid_A_22` through `_25`, the six `_25` paints, and the four buses. `3040d2e5` cuts bus LOD2 to 900 and 1192.
 
@@ -22,9 +22,11 @@ A colour or paint sibling uses the base quartet when vertex positions, indices, 
 
 ## Buildings (#122)
 
-1. Leave the 12 passes, including the two container enamels on the red quartet.
-2. Replace copied LOD2s. GasCanopy, Dock_Straight, and FishingBoat are LOD2 equals LOD1. Cabin, Ranch_House, Boathouse, and HarborShed are over 0.6× LOD1.
-3. New pieces, each with a quartet in the same pass: city alley, subway stair, overpass span, driveway apron, park restroom, bleachers, harbor ferry. No third cabin. No second road junction. No second walk-up.
+1. Leave the 97 passes. No existing library FBX changed. Pass 31 is what moved the count. Overpass is the one new mesh that passes, at 360/264/144. Spot-check: overpass, house, and alley quarters are the objects they name.
+2. Cut LOD2 on the six new pieces. Their pass 31 quartets already bind. They fail only `lod2-ratio`: Alley 260/132/108, Subway_Entrance 300/180/132, Driveway 72/48/48, Bleachers 300/216/168, Restroom 208/144/108, Ferry 340/180/120.
+3. The older LOD2 cuts are still open: GasCanopy, Dock_Straight, and FishingBoat are LOD2 equals LOD1. Cabin, Ranch_House, Boathouse, and HarborShed are over 0.6×. The same fail also covers Brick_Wall, Garage, House_Gable, House_Hip, Roof_Parapet, RooftopAC, ShopFront, Store_Corner, Store_Laundromat, Storefront_Glass, WaterTank, HarborCrane, Tree_Palm, and Tree_Pine.
+4. `Brick_Door` and `Brick_Window` have pass 31 files on disk. The checker treats `door` and `window` as close-up role words, so those stills do not bind. Do not reshoot them.
+5. No third cabin. No second road junction. No second walk-up.
 
 ## Vehicles (#125)
 

@@ -2,7 +2,7 @@
 
 Graded again 9 Oct 2026 from the five current tips, without modifying them. Status in the asset tables is still the lead's earlier call. The validator summary below is the tightened run: a sibling borrows stills only when vertex positions, indices, and UVs match on every LOD, `street` and `corner` are real tokens, and LOD2 is at most 0.6× LOD1. A paint that matches prints `material-variant of <base>`.
 
-Nothing is **accepted** in the tables. A pass requires `models-validate` with `fail=0` on that asset: license row, scale, colliders, LODs, still quartet, and, for the player, no-clip and hip-sit. The tightened checker does clear that bar for 10 assets on #122 and 11 on #129. Those rows below were written before this run. Use the summary, not those cells, for the current result.
+Nothing is **accepted** in the tables. A pass requires `models-validate` with `fail=0` on that asset: license row, scale, colliders, LODs, still quartet, and, for the player, no-clip and hip-sit. The summary table is the current result. The asset rows below were written before this run. Use the summary, not those cells.
 
 **needs fix** means the object is the right kind of thing and should be repaired on its lane.
 **rejected** means stop iterating on that mesh. Delete it or replace it. Do not spend another pass resampling it.
@@ -11,7 +11,7 @@ Nothing is **accepted** in the tables. A pass requires `models-validate` with `f
 
 | Branch | PR | Tip | Summary |
 | --- | --- | --- | --- |
-| `cursor/tag-asset-library` | #122 | `15c0a98345385b95da45b571702868a2725a0e0e` | `models-validate assets=125 pass=12 fail=113` / `models-split paperwork=91 geometry=22` |
+| `cursor/tag-asset-library` | #122 | `1eec03a14deecb23ae3a4ada67cc1df298df6468` | `models-validate assets=132 pass=97 fail=35` / `models-split paperwork=7 geometry=28` |
 | `cursor/tag-asset-street-kit` | #125 | `3040d2e555a97402a6d9d09a624ea03d1f466093` | `models-validate assets=189 pass=18 fail=171` / `models-split paperwork=136 geometry=35` |
 | `cursor/tag-street-objects` | #129 | `30af0ae6c20f0704e882f505d38909cc4650ccd8` | `models-validate assets=220 pass=43 fail=177` / `models-split paperwork=161 geometry=16` |
 | `cursor/tag-loco-smooth` | #128 | `08a4d6b019b44af1aca4c961230d5a584390d8a5` | `models-validate assets=7 pass=0 fail=7` / `models-split paperwork=5 geometry=2` |
@@ -336,9 +336,9 @@ Running count: **7**. Each line is one redo or conflict for the restructure-impa
 
 Not a redo: `Pickup_FullSize_25`. Logging the request as redo 7 was a chain-of-command error on the models-lead side. Ororo asked for that truck, and Landon wants an F-150-style full-size pickup in the vehicle set. `Car_Pickup_25` stays rejected. On #125 `2b8480a7` the FBX, the manifest row, and the pass 17 quartet are in the tree, and the asset passes: 5.105 × 1.999 × 1.761 m, slack 0.00 cm, LOD 11336/2728/1608.
 
-Not counted: #128 `08a4d6b0` rewrites the clearance FBX and adds `Docs/Models/RigStills/pass7/`. The shipped Hier files are unchanged, the checker still reads the old `Docs/LocoStills` proof (`pose=152`), and the validator is still `pass=0/7`. That is player-lane work on the candidate, not a redo. #129 `8f7686a5` also copied Container_20 (and both enamels), Rowboat, HarborShed, Gazebo, and WoodFence_Corner from #122. Those hashes match, so they are copies, not another redo. GasCanopy, Dock_Straight, and FishingBoat on that tip were cut locally and do not match #122. #125 has not taken the #122 copies. #125 `d77f0728` only adds pass 16 stills for the 2022–2024 midsize sedans.
+Not counted: #122 `1eec03a1` adds Alley, Subway_Entrance, Driveway, Overpass, Bleachers, Restroom, and Ferry, plus pass 31 stills. No existing library FBX changed, so this is not a redo. #128 `08a4d6b0` rewrites the clearance FBX and adds `Docs/Models/RigStills/pass7/`. The shipped Hier files are unchanged, the checker still reads the old `Docs/LocoStills` proof (`pose=152`), and the validator is still `pass=0/7`. That is player-lane work on the candidate, not a redo. #129 `8f7686a5` also copied Container_20 (and both enamels), Rowboat, HarborShed, Gazebo, and WoodFence_Corner from #122. Those hashes match, so they are copies, not another redo. GasCanopy, Dock_Straight, and FishingBoat on that tip were cut locally and do not match #122. #125 has not taken the #122 copies. #125 `d77f0728` only adds pass 16 stills for the 2022–2024 midsize sedans.
 
 ## Counts
 
-Lead status in the asset tables: accepted 0. Re-grade 9 Oct 2026: #122 pass=12/125 at `15c0a983`, #125 pass=18/189 at `3040d2e5`, #129 pass=43/220 at `30af0ae6`, #128 pass=0/7 at `08a4d6b0`, #131 pass=0/18 at `331e8e0d`. On #131 every costume fails `cloth=7.13cm` and `cloth-fails=4128`. Restructure-impact count: 7.
+Lead status in the asset tables: accepted 0. Re-grade 9 Oct 2026: #122 pass=97/132 at `1eec03a1`, #125 pass=18/189 at `3040d2e5`, #129 pass=43/220 at `30af0ae6`, #128 pass=0/7 at `08a4d6b0`, #131 pass=0/18 at `331e8e0d`. On #131 every costume fails `cloth=7.13cm` and `cloth-fails=4128`. Restructure-impact count: 7.
 
