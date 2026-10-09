@@ -44,6 +44,8 @@ def _wanted(stem, only):
         return True
     if only == "envelope":
         return stem in ("sedan_compact", "hatch_compact", "crossover_compact")
+    if only == "years":
+        return stem == "sedan_mid_a"
     return only in stem or stem in only
 
 
@@ -330,26 +332,29 @@ def _lineup_side(found, names, path, wide=False, shade=False):
     _fit(path)
 
 
-def _quartet(found, name, out, length, height):
+def _quartet(found, name, out, length, height, shade=False):
     """Quarter, side, nose close-up, and a 1.8 m figure. 1280x720."""
     os.makedirs(out, exist_ok=True)
     nose = length * 0.5
-    _shot_az(found[name], os.path.join(out, "hero.png"), 42.0, elevation=11.0, fill=0.88, wide=True)
+    _shot_az(
+        found[name], os.path.join(out, "hero.png"), 42.0,
+        elevation=11.0, fill=0.88, wide=True, shade=shade,
+    )
     dist = max(12.0, length * 2.4)
     _side_dims(
         found[name], None, os.path.join(out, "side.png"),
         (dist, height * 0.55, 0.0), (0.0, height * 0.45, 0.0), 70.0,
-        wide=True,
+        wide=True, shade=shade,
     )
     _side_dims(
         found[name], None, os.path.join(out, "nose.png"),
         (1.35, height * 0.48, nose + 1.55), (0.0, height * 0.42, nose - 0.45), 42.0,
-        wide=True,
+        wide=True, shade=shade,
     )
     _with_figure(
         found, name, os.path.join(out, "scale.png"),
         (0.0, 0.0, 0.0), 12, (1.55, 0.0, 0.35),
-        fill=0.86, wide=True,
+        fill=0.86, wide=True, shade=shade,
     )
     _squeeze(out)
 
@@ -375,6 +380,20 @@ def main():
     if "--shot" in sys.argv:
         shot = sys.argv[sys.argv.index("--shot") + 1]
     found = _load(only)
+    if only == "years":
+        # 2022-2024 change the fascia and the wheel. 2025 paints are the same mesh.
+        jobs = (
+            ("Sedan_Mid_A_22", "sedan_mid_a_22", 4.90, 1.44),
+            ("Sedan_Mid_A_23", "sedan_mid_a_23", 4.90, 1.44),
+            ("Sedan_Mid_A_24", "sedan_mid_a_24", 4.90, 1.44),
+        )
+        for name, folder, length, height in jobs:
+            print("SHOT", folder)
+            _quartet(
+                found, name, os.path.join(STILL_ROOT, folder, "pass16"),
+                length, height, shade=True,
+            )
+        return
     if only is not None and "sedan_mid_a" in only:
         print("SHOT", "sedan_mid_a", shot or "all")
         out = os.path.join(STILL_ROOT, "sedan_mid_a", "pass15")
@@ -429,23 +448,6 @@ def main():
         for name, folder, length, height in jobs:
             print("SHOT", folder)
             _quartet(found, name, os.path.join(STILL_ROOT, folder, "pass17"), length, height)
-        return
-    if only == "street":
-        import sk_car_hatch
-        import sk_car_pickup
-        import sk_car_sedan
-        found["Car_Sedan_25"] = sk_car_sedan.create
-        found["Car_Hatch_25"] = sk_car_hatch.create
-        found["Car_Pickup_25"] = sk_car_pickup.create
-        street = os.path.join(r._common.REPO, "Docs", "AssetStills", "street_kit")
-        jobs = (
-            ("Car_Sedan_25", "car_sedan", 4.835, 1.46),
-            ("Car_Hatch_25", "car_hatch", 4.035, 1.52),
-            ("Car_Pickup_25", "car_pickup", 5.105, 1.76),
-        )
-        for name, folder, length, height in jobs:
-            print("SHOT", folder)
-            _quartet(found, name, os.path.join(street, folder, "pass17"), length, height)
         return
     if only is None or "bus" in only:
         # Door center from the same overhang used by the shell.

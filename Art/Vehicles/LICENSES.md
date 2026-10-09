@@ -23,6 +23,3 @@ The midsize shell uses this metre table: length 4.90, shoulder width 1.76, heigh
 | `Bus_City40_Blue` | CC0-1.0 |
 | `Bus_City40_Red` | CC0-1.0 |
 | `Bus_City60` | CC0-1.0 |
-| `Car_Sedan_25` | CC0-1.0 |
-| `Car_Hatch_25` | CC0-1.0 |
-| `Car_Pickup_25` | CC0-1.0 |
