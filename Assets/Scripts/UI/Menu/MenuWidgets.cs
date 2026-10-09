@@ -178,15 +178,20 @@ namespace Tag.Ui.Menu
             if (iconY < UiFit.StripeClear()) iconY = UiFit.StripeClear();
             var well = Place(tile.transform, "IconWell", 14f, iconY, s, s);
             var wellImage = well.gameObject.AddComponent<Image>();
-            MenuArt.Plate(wellImage, new Color(tint.r, tint.g, tint.b, 0.9f), true);
+            MenuArt.Plate(wellImage, new Color(tint.r, tint.g, tint.b, 0.9f), false);
+            wellImage.type = Image.Type.Simple;
             wellImage.raycastTarget = false;
             var iconRt = Place(well, "Icon", 8f, 8f, s - 16f, s - 16f);
             var image = iconRt.gameObject.AddComponent<Image>();
             image.sprite = icon;
+            image.type = Image.Type.Simple;
             image.preserveAspect = true;
             image.raycastTarget = false;
-            Inset(tile.Label, s + 6f);
-            Inset(tile.Detail, s + 6f);
+            float left = 14f + s + 16f;
+            ClearLabel(tile.Label, left);
+            ClearLabel(tile.Detail, left);
+            if (tile.Label != null) tile.Label.transform.SetAsLastSibling();
+            if (tile.Detail != null) tile.Detail.transform.SetAsLastSibling();
         }
 
         public static void Portrait(MenuTile tile, Texture tex, Color tint)
@@ -278,14 +283,14 @@ namespace Tag.Ui.Menu
             }
             if (tile.Detail != null) tile.Detail.text = "";
             float bustH = h * 0.40f;
-            float bustY = 62f;
-            if (bustY + bustH > h - 148f) bustH = h - 148f - bustY;
+            float joinedY = 62f;
+            if (joinedY + bustH > h - 148f) bustH = h - 148f - joinedY;
             if (bustH < 96f) bustH = 96f;
             if (bustH > w * 0.78f) bustH = w * 0.78f;
-            if (!HierSeat(tile.transform, (w - bustH) * 0.5f, bustY, bustH, index))
-                Bust(tile.transform, (w - bustH * 0.72f) * 0.5f, bustY, bustH * 0.72f, bustH, seat);
+            if (!HierSeat(tile.transform, (w - bustH) * 0.5f, joinedY, bustH, index))
+                Bust(tile.transform, (w - bustH * 0.72f) * 0.5f, joinedY, bustH * 0.72f, bustH, seat);
             string name = string.IsNullOrEmpty(profile) ? "" : "<  " + profile + "  >";
-            var nameRt = Place(tile.transform, "ProfileName", 16f, bustY + bustH + 6f, w - 32f, 36f);
+            var nameRt = Place(tile.transform, "ProfileName", 16f, joinedY + bustH + 6f, w - 32f, 36f);
             Words(nameRt, name, 28, TextAnchor.MiddleCenter, MenuTheme.Cream, Vector2.zero, Vector2.one);
             float chipH = 40f;
             float chipY = h - chipH - 14f;
@@ -605,12 +610,12 @@ namespace Tag.Ui.Menu
             label.alignment = TextAnchor.MiddleLeft;
         }
 
-        static void Inset(Text label, float extra)
+        static void ClearLabel(Text label, float left)
         {
             if (label == null) return;
             RectTransform rt = label.rectTransform;
             Vector2 min = rt.offsetMin;
-            min.x += extra;
+            if (min.x < left) min.x = left;
             rt.offsetMin = min;
         }
     }

@@ -12,6 +12,7 @@ namespace Tag.Ui.Menu
     public sealed class MenuPreview : MonoBehaviour
     {
         const int Slots = 4;
+        const int PreviewLayer = 31;
 
         readonly Transform[] _anchor = new Transform[Slots];
         readonly Transform[] _figure = new Transform[Slots];
@@ -67,7 +68,48 @@ namespace Tag.Ui.Menu
             BuildPodium();
             BuildParade();
             BuildPair();
+            Seal();
             gameObject.SetActive(false);
+        }
+
+        /// <summary>
+        /// Preview meshes stay on layer 31. Every other camera loses that bit,
+        /// so the park camera cannot draw the podium or the menu pair.
+        /// </summary>
+        public void Seal()
+        {
+            ApplyLayer(gameObject, PreviewLayer);
+            int bit = 1 << PreviewLayer;
+            Camera[] cams = Object.FindObjectsByType<Camera>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+            for (int i = 0; i < cams.Length; i++)
+            {
+                Camera cam = cams[i];
+                if (cam == null) continue;
+                if (cam.transform.IsChildOf(transform))
+                    cam.cullingMask = bit;
+                else if ((cam.cullingMask & bit) != 0)
+                    cam.cullingMask &= ~bit;
+            }
+        }
+
+        static void ApplyLayer(GameObject go, int layer)
+        {
+            if (go == null) return;
+            if (go.layer != layer) go.layer = layer;
+            Transform t = go.transform;
+            for (int i = 0; i < t.childCount; i++)
+                ApplyLayer(t.GetChild(i).gameObject, layer);
+        }
+
+        void UseRoot(Transform keep, bool anchors)
+        {
+            if (_podiumRoot != null) _podiumRoot.gameObject.SetActive(_podiumRoot == keep);
+            if (_paradeRoot != null) _paradeRoot.gameObject.SetActive(_paradeRoot == keep);
+            if (_pairRoot != null) _pairRoot.gameObject.SetActive(_pairRoot == keep);
+            for (int i = 0; i < Slots; i++)
+            {
+                if (_anchor[i] != null) _anchor[i].gameObject.SetActive(anchors);
+            }
         }
 
         public RenderTexture Texture(int seat)
@@ -79,6 +121,7 @@ namespace Tag.Ui.Menu
         public void Show()
         {
             gameObject.SetActive(true);
+            UseRoot(null, true);
             for (int i = 0; i < Slots; i++)
             {
                 if (_cam[i] != null) _cam[i].enabled = true;
@@ -86,6 +129,7 @@ namespace Tag.Ui.Menu
             if (_podiumCam != null) _podiumCam.enabled = false;
             if (_paradeCam != null) _paradeCam.enabled = false;
             if (_pairCam != null) _pairCam.enabled = false;
+            Seal();
         }
 
         public void Hide()
@@ -104,6 +148,7 @@ namespace Tag.Ui.Menu
         {
             if (_paradeRoot == null) return;
             gameObject.SetActive(true);
+            UseRoot(_paradeRoot, false);
             for (int i = 0; i < Slots; i++)
             {
                 if (_cam[i] != null) _cam[i].enabled = false;
@@ -116,12 +161,14 @@ namespace Tag.Ui.Menu
                 view.texture = _paradeRt;
                 view.color = Color.white;
             }
+            Seal();
         }
 
         public void ShowMenuPair(RawImage view)
         {
             if (_pairRoot == null) BuildPair();
             gameObject.SetActive(true);
+            UseRoot(_pairRoot, false);
             for (int i = 0; i < Slots; i++)
             {
                 if (_cam[i] != null) _cam[i].enabled = false;
@@ -134,6 +181,7 @@ namespace Tag.Ui.Menu
                 view.texture = _pairRt;
                 view.color = Color.white;
             }
+            Seal();
         }
 
         public void Apply(int seat, int hier, int accent, int hat, RawImage view)
@@ -161,6 +209,7 @@ namespace Tag.Ui.Menu
                 if (_figure[seat] != null)
                     _figure[seat].localPosition = new Vector3(0f, 0.12f, 0f);
                 Aim(seat);
+                Seal();
             }
             EnsureDisc(seat);
             if (_figure[seat] != null)
@@ -186,11 +235,13 @@ namespace Tag.Ui.Menu
         {
             if (_podiumRoot == null) return;
             gameObject.SetActive(true);
+            bool draw = view != null && _podiumRt != null;
+            UseRoot(draw ? _podiumRoot : null, false);
             for (int i = 0; i < Slots; i++)
             {
                 if (_cam[i] != null) _cam[i].enabled = false;
             }
-            if (_podiumCam != null) _podiumCam.enabled = true;
+            if (_podiumCam != null) _podiumCam.enabled = draw;
             if (_paradeCam != null) _paradeCam.enabled = false;
             if (_pairCam != null) _pairCam.enabled = false;
             if (view != null)
@@ -246,6 +297,7 @@ namespace Tag.Ui.Menu
             {
                 if (_confetti[i] != null) _confetti[i].gameObject.SetActive(party);
             }
+            Seal();
         }
 
         void EnsureDisc(int seat)
@@ -412,7 +464,7 @@ namespace Tag.Ui.Menu
             camGo.transform.SetParent(transform, false);
             var cam = camGo.AddComponent<Camera>();
             cam.clearFlags = CameraClearFlags.SolidColor;
-            cam.backgroundColor = new Color(0f, 0f, 0f, 0f);
+            cam.backgroundColor = new Color(0.05f, 0.12f, 0.28f, 1f);
             cam.fieldOfView = 26f;
             cam.nearClipPlane = 0.05f;
             cam.farClipPlane = 40f;
@@ -473,7 +525,7 @@ namespace Tag.Ui.Menu
             camGo.transform.SetParent(transform, false);
             var cam = camGo.AddComponent<Camera>();
             cam.clearFlags = CameraClearFlags.SolidColor;
-            cam.backgroundColor = new Color(0f, 0f, 0f, 0f);
+            cam.backgroundColor = new Color(0.05f, 0.12f, 0.28f, 1f);
             cam.fieldOfView = 32f;
             cam.nearClipPlane = 0.05f;
             cam.farClipPlane = 40f;
@@ -535,7 +587,7 @@ namespace Tag.Ui.Menu
             camGo.transform.SetParent(transform, false);
             var cam = camGo.AddComponent<Camera>();
             cam.clearFlags = CameraClearFlags.SolidColor;
-            cam.backgroundColor = new Color(0f, 0f, 0f, 0f);
+            cam.backgroundColor = new Color(0.05f, 0.12f, 0.28f, 1f);
             cam.fieldOfView = 28f;
             cam.nearClipPlane = 0.05f;
             cam.farClipPlane = 40f;
@@ -547,6 +599,36 @@ namespace Tag.Ui.Menu
             cam.transform.position = _pairRoot.position + new Vector3(0f, 1.05f, 4.8f);
             cam.transform.LookAt(_pairRoot.position + new Vector3(0f, 0.9f, 0f));
             _pairCam = cam;
+            FramePair();
+        }
+
+        void FramePair()
+        {
+            if (_pairCam == null || _pairRoot == null) return;
+            Renderer[] rends = _pairRoot.GetComponentsInChildren<Renderer>(true);
+            bool any = false;
+            Bounds b = new Bounds(_pairRoot.position + new Vector3(0f, 0.9f, 0f), Vector3.one * 0.2f);
+            for (int i = 0; i < rends.Length; i++)
+            {
+                Renderer rend = rends[i];
+                if (rend == null) continue;
+                string n = rend.gameObject.name;
+                if (n == "Pedestal" || n == "Contact" || n == "ChestMark") continue;
+                if (!any)
+                {
+                    b = rend.bounds;
+                    any = true;
+                }
+                else
+                    b.Encapsulate(rend.bounds);
+            }
+            if (!any) return;
+            Vector3 focus = b.center;
+            float dist = b.size.y * 2.15f;
+            if (dist < 4.2f) dist = 4.2f;
+            if (dist > 8f) dist = 8f;
+            _pairCam.transform.position = new Vector3(_pairRoot.position.x, focus.y, _pairRoot.position.z + dist);
+            _pairCam.transform.LookAt(focus);
         }
 
         static float Sole(Transform body)

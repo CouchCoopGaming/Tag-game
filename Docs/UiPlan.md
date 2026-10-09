@@ -435,6 +435,22 @@ The pass 52 stand opened the upper arms far enough to read as an A-pose. The han
 
 `Docs/UiStills/pass53/` holds results and load before and after. Join uses the same seat atlas as load. Unity is not installed, so the stills are composites. Controls were not reshot. pose stays 0.
 
+## Pass 54
+
+Amaterasu's Unity 6000.3 did not compile `0d3b9d74`. `MenuArt` now imports `UnityEngine.UI`. The duplicate locals `bustY`, `y0`, `y1`, and `armed` are renamed. `CoverFlyover` reads `UnityEngine.Screen`, because `MenuHost.Screen` is the menu id. `MenuTheme.SeatBand` is the non-fill seat color. Screenshot capture goes through reflection, and if that module is off a camera grabs the overlay canvas.
+
+The station's play-mode frames are the proof from here. Composite stills are not. On the station:
+
+`Unity -batchmode -projectPath . -executeMethod Tag.Ui.Menu.MenuScreenCapture.Capture -screenshot Docs/UiStills/captures`
+
+Do not pass `-quit`. In the editor the same walk is Tag → Menu → Capture Screens. `Assets/Tests/EditMode` builds every `MenuScreenId` except Hidden. `Tools/ScriptCompileCheck` fails the push gate if `MenuArt` drops the UI using, `MenuHost` uses a bare `Screen.width`, or runtime scripts call `ScreenCapture` directly.
+
+RESULTS no longer plays the comic wipe. A leftover wipe is destroyed, and a wipe on any other screen sits behind the page and is a short stripe, not a 1400 px capsule. The chevron, ribbons, and orbs stay off on RESULTS, and the dim is 0.92 so the park does not show through the type. The 3D podium, parade, and menu pair live on layer 31. Every other camera drops that bit. RESULTS passes a null view, so the podium root stays inactive and its camera stays off. The cards are the screen.
+
+The Hier file is Z-up until it is stood up. `Spawn` no longer leaves that mesh on its back: it picks a rotation whose height is Y, yaws the chest toward +Z, and scales a wild import back into 1.15–2.7 m. `MenuCheer` and `MenuStride` keep that rotation and multiply the pose on top. The main-menu pair camera clears navy and frames the stood body, so the hero is not an empty black panel. The Play mark is a simple well, and the label starts to the right of it.
+
+Pose retune for second, third, and fourth is still the rest of this pass. First stays the celebrate. Load stays the hang. Unity is not installed here, so this machine cannot show the play-mode frame. The local gate is `script-compile-check ok`.
+
 ## Screens 2, pass 1
 
 Secondary screens pick up the park wash and a comic wipe under 0.4 s. Arena select is a three-card grid: Mega Park, Pocket Park, and Stack Yard, then Random and Back. Mode tiles are a 2 by 2. Right from the right-hand mode enters the rules. Left on a rule that cannot go lower returns to the modes. Up and down stay in a column. The rules list has a gold scrollbar.

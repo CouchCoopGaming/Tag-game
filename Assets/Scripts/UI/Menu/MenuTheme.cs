@@ -57,6 +57,12 @@ namespace Tag.Ui.Menu
             return SeatTint(seat, false);
         }
 
+        /// <summary>Non-fill seat band. Same color as <see cref="Seat"/>.</summary>
+        public static Color SeatBand(int seat)
+        {
+            return SeatTint(seat, false);
+        }
+
         /// <summary>Shape fill. Colour-blind mode still replaces it. Lavender's light step stays on <see cref="Seat"/>.</summary>
         public static Color SeatFill(int seat)
         {

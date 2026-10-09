@@ -14,12 +14,34 @@ namespace Tag.Ui.Menu
         RectTransform[] _bar;
         float _t;
 
+        public static void Clear(RectTransform root)
+        {
+            if (root == null) return;
+            for (int i = root.childCount - 1; i >= 0; i--)
+            {
+                Transform child = root.GetChild(i);
+                if (child != null && child.name == "ComicWipe")
+                    Object.Destroy(child.gameObject);
+            }
+        }
+
         public static void Play(RectTransform root)
         {
             if (root == null) return;
             if (MenuVideo.ReduceMotion || MenuCapture.Running) return;
+            Clear(root);
             var go = new GameObject("ComicWipe", typeof(RectTransform));
             go.transform.SetParent(root, false);
+            int body = 0;
+            for (int i = 0; i < root.childCount; i++)
+            {
+                if (root.GetChild(i).name == "Body")
+                {
+                    body = i;
+                    break;
+                }
+            }
+            go.transform.SetSiblingIndex(body);
             RectTransform rt = go.GetComponent<RectTransform>();
             rt.anchorMin = Vector2.zero;
             rt.anchorMax = Vector2.one;
@@ -40,9 +62,10 @@ namespace Tag.Ui.Menu
             };
             for (int i = 0; i < Bars; i++)
             {
-                RectTransform rt = MenuWidgets.Place(root, "WipeBar", -420f, 180f * i, 280f, 1400f);
+                RectTransform rt = MenuWidgets.Place(root, "WipeBar", -420f, 240f + 160f * i, 140f, 220f);
                 Image image = rt.gameObject.AddComponent<Image>();
-                MenuArt.Plate(image, new Color(ink[i].r, ink[i].g, ink[i].b, 0.92f), true);
+                MenuArt.Plate(image, new Color(ink[i].r, ink[i].g, ink[i].b, 0.92f), false);
+                image.type = Image.Type.Simple;
                 image.raycastTarget = false;
                 rt.localRotation = Quaternion.Euler(0f, 0f, -14f);
                 _bar[i] = rt;

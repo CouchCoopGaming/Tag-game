@@ -1,13 +1,20 @@
 using System.IO;
+using System.Reflection;
 using Tag.Couch;
 using Tag.Ui.Hud;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace Tag.Ui.Menu
 {
     /// <summary>
     /// Walks every front-end screen and writes a PNG. The editor menu and the
     /// batchmode entry point both call Request. Gameplay frames do not.
+    /// Composite stills are not proof. The station captures play mode with
+    /// Tag/Menu/Capture Screens, or:
+    /// Unity -batchmode -projectPath . -executeMethod Tag.Ui.Menu.MenuScreenCapture.Capture -screenshot Docs/UiStills/captures
+    /// Do not pass -quit. If the Screen Capture module is off, Save grabs the
+    /// overlay canvas through a camera instead.
     /// </summary>
     public static class MenuCapture
     {
@@ -155,7 +162,7 @@ namespace Tag.Ui.Menu
             string path = Path.Combine(Absolute(_folder), name + ".png");
             try
             {
-                Texture2D shot = ScreenCapture.CaptureScreenshotAsTexture();
+                Texture2D shot = GrabFrame();
                 if (shot == null)
                 {
                     Debug.LogWarning("[MenuCapture] No frame for " + path);
@@ -169,6 +176,93 @@ namespace Tag.Ui.Menu
             {
                 Debug.LogWarning("[MenuCapture] " + path + " " + e.Message);
             }
+        }
+
+        static Texture2D GrabFrame()
+        {
+            Texture2D shot = ReflectGrab();
+            if (shot != null) return shot;
+            return CanvasGrab();
+        }
+
+        static Texture2D ReflectGrab()
+        {
+            System.Type module = System.Type.GetType("UnityEngine.ScreenCapture, UnityEngine.ScreenCaptureModule");
+            if (module == null) return null;
+            MethodInfo method = module.GetMethod("CaptureScreenshotAsTexture", BindingFlags.Public | BindingFlags.Static, null, System.Type.EmptyTypes, null);
+            if (method == null) return null;
+            try
+            {
+                return method.Invoke(null, null) as Texture2D;
+            }
+            catch (System.Exception)
+            {
+                return null;
+            }
+        }
+
+        static Texture2D CanvasGrab()
+        {
+            int w = UnityEngine.Screen.width;
+            int h = UnityEngine.Screen.height;
+            if (w < 2 || h < 2) return null;
+            var rt = new RenderTexture(w, h, 24, RenderTextureFormat.ARGB32);
+            rt.Create();
+            var camGo = new GameObject("MenuGrabCam");
+            var cam = camGo.AddComponent<Camera>();
+            cam.enabled = false;
+            cam.clearFlags = CameraClearFlags.SolidColor;
+            cam.backgroundColor = new Color(0.02f, 0.04f, 0.08f, 1f);
+            cam.cullingMask = 0;
+            cam.orthographic = true;
+            cam.nearClipPlane = 0.01f;
+            cam.farClipPlane = 10f;
+            cam.targetTexture = rt;
+            Camera main = Camera.main;
+            RenderTexture mainRt = null;
+            if (main != null && main.isActiveAndEnabled && main.targetTexture == null)
+            {
+                mainRt = main.targetTexture;
+                main.targetTexture = rt;
+                main.Render();
+                main.targetTexture = mainRt;
+            }
+            Canvas[] canvases = Object.FindObjectsByType<Canvas>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+            var modes = new RenderMode[canvases.Length];
+            var oldCams = new Camera[canvases.Length];
+            var planes = new float[canvases.Length];
+            for (int i = 0; i < canvases.Length; i++)
+            {
+                Canvas canvas = canvases[i];
+                modes[i] = canvas.renderMode;
+                oldCams[i] = canvas.worldCamera;
+                planes[i] = canvas.planeDistance;
+                if (!canvas.isActiveAndEnabled) continue;
+                if (canvas.renderMode != RenderMode.ScreenSpaceOverlay && canvas.renderMode != RenderMode.ScreenSpaceCamera)
+                    continue;
+                canvas.renderMode = RenderMode.ScreenSpaceCamera;
+                canvas.worldCamera = cam;
+                canvas.planeDistance = 1f;
+            }
+            cam.Render();
+            RenderTexture prev = RenderTexture.active;
+            RenderTexture.active = rt;
+            var tex = new Texture2D(w, h, TextureFormat.RGBA32, false);
+            tex.ReadPixels(new Rect(0f, 0f, w, h), 0, 0);
+            tex.Apply();
+            RenderTexture.active = prev;
+            for (int i = 0; i < canvases.Length; i++)
+            {
+                if (canvases[i] == null) continue;
+                canvases[i].renderMode = modes[i];
+                canvases[i].worldCamera = oldCams[i];
+                canvases[i].planeDistance = planes[i];
+            }
+            cam.targetTexture = null;
+            Object.Destroy(camGo);
+            rt.Release();
+            Object.Destroy(rt);
+            return tex;
         }
 
         static void Finish()

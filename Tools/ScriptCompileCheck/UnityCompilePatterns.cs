@@ -41,6 +41,14 @@ namespace Tag.Tools
             @"Vector3\s+zipPoint\s*;",
             RegexOptions.Compiled);
 
+        static readonly Regex DirectCapture = new Regex(
+            @"(?<![\w.])ScreenCapture\.",
+            RegexOptions.Compiled);
+
+        static readonly Regex BareScreenSize = new Regex(
+            @"(?<![\w.])Screen\.(width|height)\b",
+            RegexOptions.Compiled);
+
         static readonly HashSet<string> Lifecycle = new HashSet<string>(StringComparer.Ordinal)
         {
             "Awake", "Start", "OnEnable", "OnDisable", "Update", "FixedUpdate", "LateUpdate", "OnDestroy"
@@ -55,6 +63,9 @@ namespace Tag.Tools
             int ambient = 0;
             int comparison = 0;
             int zip = 0;
+            int menuArt = 0;
+            int bareScreen = 0;
+            int screenCapture = 0;
 
             foreach (string file in files)
             {
@@ -109,6 +120,32 @@ namespace Tag.Tools
                         log.Add("zipPoint-unassigned " + rel + ":" + LineOf(text, m.Index));
                     }
                 }
+
+                if (rel.EndsWith("MenuArt.cs", StringComparison.Ordinal)
+                    && text.IndexOf("using UnityEngine.UI;", StringComparison.Ordinal) < 0)
+                {
+                    menuArt++;
+                    log.Add("menu-art-ui " + rel + " missing using UnityEngine.UI");
+                }
+
+                if (rel.EndsWith("MenuHost.cs", StringComparison.Ordinal))
+                {
+                    foreach (Match m in BareScreenSize.Matches(text))
+                    {
+                        bareScreen++;
+                        log.Add("bare-screen " + rel + ":" + LineOf(text, m.Index) + " " + m.Value);
+                    }
+                }
+
+                if (rel.IndexOf("Assets/Scripts/", StringComparison.Ordinal) >= 0
+                    || rel.IndexOf("Assets\\Scripts\\", StringComparison.Ordinal) >= 0)
+                {
+                    foreach (Match m in DirectCapture.Matches(text))
+                    {
+                        screenCapture++;
+                        log.Add("screen-capture " + rel + ":" + LineOf(text, m.Index) + " " + m.Value);
+                    }
+                }
             }
 
             int gui = GuiSkinOutsideOnGui(files, root, log);
@@ -119,6 +156,9 @@ namespace Tag.Tools
                 + " ambient=" + ambient
                 + " comparison=" + comparison
                 + " zipPoint=" + zip
+                + " menu-art-ui=" + menuArt
+                + " bare-screen=" + bareScreen
+                + " screen-capture=" + screenCapture
                 + " unity-refs=" + (unityRefs ? "present" : "absent");
             string guiLine = "qa-gui-skin outside-ongui=" + gui;
             var body = new System.Text.StringBuilder();
@@ -129,7 +169,8 @@ namespace Tag.Tools
             line = patterns + " | " + guiLine;
             report = body.ToString();
             return bareInput == 0 && gamepadNull == 0 && tagShadow == 0
-                && ambient == 0 && comparison == 0 && zip == 0 && gui == 0;
+                && ambient == 0 && comparison == 0 && zip == 0 && gui == 0
+                && menuArt == 0 && bareScreen == 0 && screenCapture == 0;
         }
 
         static int GamepadLocalNull(string text, string rel, List<string> log)

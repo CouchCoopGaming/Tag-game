@@ -18,12 +18,19 @@ namespace Tag.Ui.Menu
         bool _vault;
         float _phase;
         bool _still;
+        Quaternion _basis = Quaternion.identity;
+        bool _hasBasis;
 
         public void Begin(bool vault, float phase)
         {
             _vault = vault;
             _phase = phase;
             _still = MenuVideo.ReduceMotion;
+            if (!_hasBasis)
+            {
+                _basis = transform.localRotation;
+                _hasBasis = true;
+            }
             Cache();
             Apply(0f);
         }
@@ -45,7 +52,7 @@ namespace Tag.Ui.Menu
 
         void Pose(MenuAlive.Angles a)
         {
-            transform.localRotation = Quaternion.Euler(a.RootPitch, a.RootYaw, a.RootRoll);
+            transform.localRotation = _basis * Quaternion.Euler(a.RootPitch, a.RootYaw, a.RootRoll);
             Set(_hips, _hips0, a.Hip, a.HipYaw, a.HipRoll);
             Set(_spine, _spine0, a.Spine, a.SpineYaw, a.SpineRoll);
             Set(_head, _head0, a.Head, a.HeadYaw, 0f);

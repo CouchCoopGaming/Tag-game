@@ -240,8 +240,19 @@ namespace Tag.Ui.Menu
             if (Instance == this) Instance = null;
         }
 
+        void KeepOverlay()
+        {
+            if (_canvas == null) return;
+            if (_canvas.renderMode != RenderMode.ScreenSpaceOverlay)
+                _canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+            if (_canvas.transform.localScale != Vector3.one)
+                _canvas.transform.localScale = Vector3.one;
+        }
+
         void Update()
         {
+            KeepOverlay();
+            if (_preview != null) _preview.Seal();
             ApplyScale();
             EatPause = false;
             if (MenuCapture.Drive(this)) return;
@@ -368,20 +379,21 @@ namespace Tag.Ui.Menu
             bool photo = title || id == MenuScreenId.Main;
             bool loading = id == MenuScreenId.Loading;
             bool plate = photo || id == MenuScreenId.Pause;
+            bool quiet = plate || loading || id == MenuScreenId.Results;
             if (_vignette != null) _vignette.SetActive(false);
             if (_pattern != null)
             {
                 Color wash = _pattern.color;
-                wash.a = plate || loading ? 0f : 0.22f;
+                wash.a = quiet ? 0f : 0.22f;
                 _pattern.color = wash;
             }
             for (int i = 0; i < _ribbons.Length; i++)
             {
-                if (_ribbons[i] != null) _ribbons[i].gameObject.SetActive(!plate && !loading);
+                if (_ribbons[i] != null) _ribbons[i].gameObject.SetActive(!quiet);
             }
             for (int i = 0; i < _orbs.Length; i++)
             {
-                if (_orbs[i] != null) _orbs[i].gameObject.SetActive(!plate && !loading);
+                if (_orbs[i] != null) _orbs[i].gameObject.SetActive(!quiet);
             }
             if (id == MenuScreenId.Cast)
             {
@@ -403,7 +415,9 @@ namespace Tag.Ui.Menu
             if (id != MenuScreenId.Hidden)
                 MenuAudio.EnsureBed();
             WashSecondary(id);
-            if (MenuSheet.Wipes((int)id) && _canvas != null)
+            if (_canvas != null)
+                MenuWipe.Clear(_canvas.transform as RectTransform);
+            if (MenuSheet.Wipes((int)id) && id != MenuScreenId.Results && _canvas != null)
                 MenuWipe.Play(_canvas.transform as RectTransform);
         }
 
@@ -2192,7 +2206,7 @@ namespace Tag.Ui.Menu
             var heroRt = MenuWidgets.Place(_body, "Hero", 8f, heroY, logoW - 28f, heroH);
             var hero = heroRt.gameObject.AddComponent<RawImage>();
             hero.raycastTarget = false;
-            hero.color = new Color(1f, 1f, 1f, 0f);
+            hero.color = new Color(0.05f, 0.10f, 0.22f, 1f);
             _hero = hero;
             float tipY = heroY + heroH + 6f;
             if (tipY + tipH > bodyH) tipY = bodyH - tipH;
@@ -2735,7 +2749,7 @@ namespace Tag.Ui.Menu
                 return;
             }
             float tex = tw / th;
-            float view = Screen.width / (float)Mathf.Max(1, Screen.height);
+            float view = UnityEngine.Screen.width / (float)Mathf.Max(1, UnityEngine.Screen.height);
             if (view < 0.2f) view = 16f / 9f;
             if (view > tex)
             {
@@ -2827,12 +2841,12 @@ namespace Tag.Ui.Menu
                         }
                         if (fh > 0.60f) fh = 0.60f;
                         float x1 = 0.97f;
-                        float y0 = 0.34f;
+                        float figY0 = 0.34f;
                         float x0 = x1 - fw;
                         if (x0 < 0.50f) x0 = 0.50f;
-                        float y1 = y0 + fh;
-                        if (y1 > 0.96f) y1 = 0.96f;
-                        var runRt = MenuWidgets.Box(camRt, "LoadChase", new Vector2(x0, y0), new Vector2(x1, y1), new Vector2(0.5f, 0.5f));
+                        float figY1 = figY0 + fh;
+                        if (figY1 > 0.96f) figY1 = 0.96f;
+                        var runRt = MenuWidgets.Box(camRt, "LoadChase", new Vector2(x0, figY0), new Vector2(x1, figY1), new Vector2(0.5f, 0.5f));
                         RawImage run = runRt.gameObject.AddComponent<RawImage>();
                         run.texture = runners;
                         run.color = Color.white;
@@ -2977,7 +2991,7 @@ namespace Tag.Ui.Menu
             _count = 4;
             _cols = 4;
             _focus = 0;
-            if (_dim != null) _dim.color = new Color(0.02f, 0.04f, 0.10f, 0.28f);
+            if (_dim != null) _dim.color = new Color(0.02f, 0.04f, 0.10f, 0.92f);
             ShowFlyover(ParkArena.Mega, 1f);
             TagModeController mode = TagModeController.Instance;
             TagModeId modeId = mode != null ? mode.SelectedMode : MenuSession.Mode;
@@ -4124,10 +4138,10 @@ namespace Tag.Ui.Menu
             }
             else if (_screen == MenuScreenId.Controls)
             {
-                bool armed = _resetArmed;
+                bool resetHot = _resetArmed;
                 _resetArmed = false;
                 int span = ControlWindow();
-                if (armed || _focus < _window || _focus >= _window + span || previous == _count - 1 || _focus == _count - 1)
+                if (resetHot || _focus < _window || _focus >= _window + span || previous == _count - 1 || _focus == _count - 1)
                     PaintControls();
                 else
                     RefreshFocus();

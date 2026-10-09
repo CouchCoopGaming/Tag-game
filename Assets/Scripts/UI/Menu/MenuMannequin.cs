@@ -35,6 +35,7 @@ namespace Tag.Ui.Menu
                 inst = DummyPrimitiveFactory.Build(parent, false, body, accent);
             if (hat)
                 AddHat(inst.transform);
+            StandUp(inst);
             MenuIdle idle = inst.GetComponent<MenuIdle>();
             if (idle == null) idle = inst.AddComponent<MenuIdle>();
             idle.Capture(inst.name.StartsWith("DummyVisual"));
@@ -55,6 +56,110 @@ namespace Tag.Ui.Menu
 #else
             return null;
 #endif
+        }
+
+        /// <summary>
+        /// The Hier file is Z-up until the importer converts it. Identity rotation
+        /// lays that mesh on its back. Stand it on Y, face +Z, and scale a wild
+        /// import back to about 1.8 m. A primitive that is already upright is left alone.
+        /// </summary>
+        static void StandUp(GameObject inst)
+        {
+            if (inst == null) return;
+            Bounds start = BoundsOf(inst);
+            bool upright = start.size.y >= start.size.x && start.size.y >= start.size.z && start.size.y > 0.4f;
+            if (!upright)
+            {
+                Quaternion[] tries =
+                {
+                    Quaternion.Euler(-90f, 0f, 0f),
+                    Quaternion.Euler(90f, 0f, 0f),
+                    Quaternion.Euler(-90f, 180f, 0f),
+                    Quaternion.Euler(90f, 180f, 0f),
+                    Quaternion.Euler(0f, 0f, -90f),
+                    Quaternion.Euler(0f, 0f, 90f),
+                    Quaternion.Euler(0f, 180f, -90f),
+                    Quaternion.Euler(0f, 180f, 90f)
+                };
+                Quaternion best = Quaternion.identity;
+                float bestScore = float.MinValue;
+                for (int i = 0; i < tries.Length; i++)
+                {
+                    inst.transform.localRotation = tries[i];
+                    float score = StandScore(inst);
+                    if (score > bestScore)
+                    {
+                        bestScore = score;
+                        best = tries[i];
+                    }
+                }
+                inst.transform.localRotation = best;
+            }
+            FaceForward(inst);
+            FitHeight(inst);
+        }
+
+        static float StandScore(GameObject inst)
+        {
+            Bounds b = BoundsOf(inst);
+            float tall = b.size.y;
+            float wide = Mathf.Max(b.size.x, b.size.z);
+            float score = tall - wide;
+            float rootY = inst.transform.position.y;
+            if (b.max.y < rootY + tall * 0.55f) score -= 10f;
+            if (b.min.y < rootY - 0.2f) score -= 4f;
+            return score;
+        }
+
+        static void FaceForward(GameObject inst)
+        {
+            Transform chest = FindChild(inst.transform, "Panel_Chest", "ChestPlate", "Spine", "Head");
+            if (chest == null) return;
+            if (chest.position.z + 0.02f >= inst.transform.position.z) return;
+            inst.transform.localRotation = Quaternion.Euler(0f, 180f, 0f) * inst.transform.localRotation;
+        }
+
+        static void FitHeight(GameObject inst)
+        {
+            Bounds b = BoundsOf(inst);
+            float h = b.size.y;
+            if (h < 0.05f) return;
+            if (h >= 1.15f && h <= 2.7f) return;
+            inst.transform.localScale *= 1.8f / h;
+        }
+
+        static Bounds BoundsOf(GameObject inst)
+        {
+            Renderer[] rends = inst.GetComponentsInChildren<Renderer>(true);
+            Bounds b = new Bounds(inst.transform.position, Vector3.zero);
+            bool any = false;
+            for (int i = 0; i < rends.Length; i++)
+            {
+                Renderer rend = rends[i];
+                if (rend == null) continue;
+                if (!any)
+                {
+                    b = rend.bounds;
+                    any = true;
+                }
+                else
+                    b.Encapsulate(rend.bounds);
+            }
+            return b;
+        }
+
+        static Transform FindChild(Transform root, params string[] names)
+        {
+            if (root == null) return null;
+            Transform[] all = root.GetComponentsInChildren<Transform>(true);
+            for (int n = 0; n < names.Length; n++)
+            {
+                for (int i = 0; i < all.Length; i++)
+                {
+                    if (all[i].name == names[n]) return all[i];
+                }
+            }
+            return null;
         }
 
         static void StripPhysics(GameObject inst)
