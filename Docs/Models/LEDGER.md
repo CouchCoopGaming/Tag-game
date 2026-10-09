@@ -15,7 +15,7 @@ Nothing is **accepted** in the tables. A pass requires `models-validate` with `f
 | `cursor/tag-asset-street-kit` | #125 | `1d5a38c8177632edfafedff9b73ef9b7d23e180b` | `models-validate assets=189 pass=18 fail=171` / `models-split paperwork=164 geometry=7` |
 | `cursor/tag-street-objects` | #129 | `918ce6d2a1be8dd8a273179c1f9d6442470d8b70` | `models-validate assets=220 pass=81 fail=139` / `models-split paperwork=137 geometry=2` |
 | `cursor/tag-loco-smooth` | #128 | `44fbff3f56b8d2831f6b77d5831378cf3a78b85a` | `models-validate assets=7 pass=0 fail=7` / `models-split paperwork=5 geometry=2` |
-| `cursor/tag-character-costumes` | #131 | `331e8e0d0595a1814d798069b4f835eaaf11e076` | `models-validate assets=18 pass=0 fail=18` / `models-split paperwork=5 geometry=13` |
+| `cursor/tag-character-costumes` | #131 | `ad1582a8e877d00356ff212ad13a78adc5d284ca` | `models-validate assets=18 pass=0 fail=18` / `models-split paperwork=5 geometry=13` |
 
 Paperwork is license and stills only. Geometry is everything else, including `lod2-ratio` and a shell buried in the body. An asset that fails both is counted under geometry. The asset-table validator cells further down are the earlier grade. This table is the tightened run.
 
@@ -342,5 +342,5 @@ Not counted: #129 `918ce6d2` cuts LOD2 and adds pass 33 stills. Tree_Pine faces 
 
 ## Counts
 
-Lead status in the asset tables: accepted 0. Re-grade 9 Oct 2026: #122 pass=126/132 at `09958348`, #125 pass=18/189 at `1d5a38c8` (paperwork 164, geometry 7), #129 pass=81/220 at `918ce6d2`, #128 pass=0/7 at `44fbff3f`, #131 pass=0/18 at `331e8e0d`. On #131 every costume fails `cloth=7.13cm` and `cloth-fails=4128`. Restructure-impact count: 9.
+Lead status in the asset tables: accepted 0. Re-grade 9 Oct 2026: #122 pass=126/132 at `09958348`, #125 pass=18/189 at `1d5a38c8` (paperwork 164, geometry 7), #129 pass=81/220 at `918ce6d2`, #128 pass=0/7 at `44fbff3f`, #131 pass=0/18 at `ad1582a8`. The fit header is `worldMax=0.05 fails=0`. Ten loadouts fail `lod2-ratio`. Sprint, slide, and roll in the same file are over 0.5 cm, and the checker does not read those lines. Restructure-impact count: 9.
 
