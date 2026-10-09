@@ -308,27 +308,25 @@ StrafeJumpSim exits 0. Gameplay lines match pass 23, including `exit-fit` `grapp
 
 Slide was accepted and was not re-keyed. The grapple pull stays locked. The smooth-motion lane was not merged. This is the last pass on this branch.
 
-The climb top-out is no longer a frog crouch. The capsule is already standing for the whole exit, so the pelvis is not dropped and then lifted. `TickClimb` sets standing height 1.80 m. `TickMantle` never changes height. When the mantle finishes, the motor writes the stand point and goes to Idle, and the exit starts on that frame (`VerbExitClock` 0.32 s). The stand point is the ledge hit plus 0.06 m (0.03 m on `standPoint`, another 0.03 m on `mantleTo`) and 0.24 m further onto the deck (`mantleForward` 0.95 times 0.25). Capsule bottom is that stand point on every exit frame. Capsule center is bottom + 0.90 m. Standing pelvis (`PoseHipY`) is bottom + 1.05 m. There is no crouched frame in this window. The mesh pelvis stays at the bind height, 89.7 to 89.9 cm above the bind sole. No `Drop`.
+The climb top-out is a plant on the lid for the whole exit (`VerbExitClock` 0.32 s). The capsule stays standing: `TickClimb` sets standing height 1.80 m, and `TickMantle` never changes height. The stand point is still the ledge hit plus 0.06 m and 0.24 m onto the deck. The hips bone drops inside that capsule. This is not a visual-root offset, and the mesh pelvis is not left at bind height.
 
-Climb, pose against that capsule. Support is the foot on the sole, or both when they are within 4 cm:
+Both feet are the support. Thigh 64°, knee 70°, thigh yaw ±26°. `Drop` is 0.178 m on the hips bone. Measured on the hier mannequin, every frame of the exit:
 
-- t=0.000 plant, pelvis 9.2 cm behind the plant foot, hinge 4.0 (hip 16 / spine 4), lead sole 27.7 cm up, plant sole 2.2 cm above the bind sole
-- t=0.033 plant, back 9.4, hinge 3.97, lead 25.5 cm up
-- t=0.067 plant, back 10.0, hinge 3.89, lead 20.1 cm up
-- t=0.100 plant, back 10.9, hinge 3.77, lead 13.2 cm up
-- t=0.133 plant, back 10.6, hinge 3.62, both feet low (3.7 and 6.7 cm)
-- t=0.167 plant, back 9.0, hinge 3.44, both soles within 4.2 cm of the bind sole
-- t=0.200 to t=0.320 is the stride, not a plant. pelvisBack goes 2.9, -2.5, -6.9, -9.4, -9.9 as one foot reaches behind. Hinge stays 2.5 to 3.1
+- pelvis 13.3 cm behind the support foot
+- hinge 2.25 (hip 18 / spine 8). The chest bone stays at rest
+- support knee 70°, in front of the pelvis by 32.8 cm and in front of the ankle by 19.1 cm, so the shin points forward
+- pelvis drop 17.8 cm under the standing hips bone
+- both soles 0.05 cm above the lid
 
-The chest opens from the hip. Spine stays near 4°. The chest bone is at rest, so hinge is hip flexion over spine flexion. The low hand at the start is 23 cm in front of the hips and 42 cm to the side, still about 70 cm above the sole. It is not on a foot-level lip. Pointing that hand at the sole also swings it out past 55 cm. The lead knee comes down onto the lid instead. The support knee stays a few centimeters behind the pelvis while the toes are ahead of it, so the shin angles forward. Putting the knee over the toes at this pelvis height lifts the sole (a thigh of -30° with a knee of -22° put the knee 13 cm forward and the sole 9 cm off the lid). That sit would need the pelvis lower than the standing capsule. It was not faked with a drop.
+Pose overlap on that plant is 0.36 cm, under the 0.5 cm line. World contact is 0. The parent-child cuff stays rigJoint.
 
 Vault keeps the trail thigh at 54°. The trail knee stays bent until that thigh is already in front, so the foot does not land behind the pelvis. Plant frames sit 13.2 to 25.2 cm back. The arm pitches go to -78 / -42 and finish at -64 / -22. The widest hand is 42 cm, under 55 cm. Pose 0.35 cm, world 0.
 
 Mantle drops the wide plant and the 3 cm visual drop. Both feet stay on the lid for all 10 frames (0.28 s). Pelvis sits 9.9 to 13.2 cm behind them. Hinge 3.0 to 3.5. The lid is the sole, not the hand box, so the hips are about 87 cm above the deck rather than 10 cm above a box around the hands. Pose 0.18 cm, world 0. Same capsule numbers as the climb: bottom at the stand point, height 1.80 m, standing pelvis at bottom + 1.05 m.
 
-`hip-sit clips=3 loadedFrames=31 pelvisBackMin=9.0 cm hingeMin=2.50 fails=0`
+`hip-sit clips=1 fails=0 pelvisBackMin=13.3 hingeMin=2.25 kneeMin=70 pelvisDropMin=17.8`
 
-The minimum is the plant and landing frames. The climb stride is the cruise reported above and is not in that minimum. The other 37 clips were not touched and were not scored.
+That line is the climb plant only. Both feet stay down for all 11 frames, so there is no cruise in this exit. The previous combined line for the old climb, vault, and mantle keys was `hip-sit clips=3 loadedFrames=31 pelvisBackMin=9.0 cm hingeMin=2.50 fails=0`. Vault and mantle stay with the movement lead.
 
 Full set, same convention:
 
