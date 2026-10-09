@@ -1,6 +1,6 @@
 # World ledger
 
-Status of each map area after pass 8. Gray means the live solids are still the Mega Park cubes from `MegaParkP1Layout.BuildSolids`. Polished means library prefabs are placed on top. Z7 hides its infield lumps in play. Z1 through Z6, Z8, Z9, and Z10 leave their gray toys in place. This head includes the `cursor/tag-street-objects` merge (`7dc3e222`), the street-kit merges (`bc02b9c4`, `3040d2e5`, then `0aa3061e`), and the asset-library merges (`723cc137`, then `a066d987`). GateLeaf, the fixed bench and trash colliders, and the StrafeJumpSim proof line stayed. `PoseKeyDump` stayed deleted. Street-kit `0aa3061e` seats compact wheels at y = 0.010 and the pickup bumper at z = 2.493. Library `a066d987` is merged: MARKET, DINER, and WASH are two outward sheets, `Container_20` `Climb_Body` starts at y = 0, and `Dock_Straight` planks top at y = 0.620. Piles still end at y = −1.165, which that branch calls a water seat.
+Status of each map area after pass 9. Dressing is still the pass 8 set. Pass 9 notches the Z9 curb chase around the Z7 walk-up and adds framed stills in `Docs/WorldStills/pass9/`. Gray means the live solids are still the Mega Park cubes from `MegaParkP1Layout.BuildSolids`. Polished means library prefabs are placed on top. Z7 hides its infield lumps in play. Z1 through Z6, Z8, Z9, and Z10 leave their gray toys in place. This head includes the `cursor/tag-street-objects` merge (`7dc3e222`), the street-kit merges (`bc02b9c4`, `3040d2e5`, then `0aa3061e`), and the asset-library merges (`723cc137`, then `a066d987`). GateLeaf, the fixed bench and trash colliders, and the StrafeJumpSim proof line stayed. `PoseKeyDump` stayed deleted. Street-kit `0aa3061e` seats compact wheels at y = 0.010 and the pickup bumper at z = 2.493. Library `a066d987` is merged: MARKET, DINER, and WASH are two outward sheets, `Container_20` `Climb_Body` starts at y = 0, and `Dock_Straight` planks top at y = 0.620. Piles still end at y = −1.165, which that branch calls a water seat.
 
 The headless audit still counts every solid. Hiding a lump in `MegaParkP1Bootstrap` does not change `BuildSolids`, so the Mega Park proof line stays the same.
 
@@ -279,7 +279,7 @@ Check line:
 | LipMantle | North vault lip 0.96 m. West approach open. |
 | CurbGrapple | 15.00 m from the west newsstand to the third stand. |
 | StandDash | Newsstand undersides 1.10 m. Gap 0.89 m. |
-| CurbChase | 153.1 m on the north curb. Worst clearance 0.94 m against `BarPost_N0`. |
+| CurbChase | 155.0 m on the north curb. The return notches around the Z7 walk-up, whose south face is z = 21.17. Worst clearance 0.94 m against `BarPost_N0`. |
 
 Stills: `Docs/WorldStills/pass8/z9_*.png`.
 

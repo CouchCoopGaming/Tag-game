@@ -11,7 +11,19 @@ import sys
 
 import check_z7 as z
 
-CHASE = [(38.4, 20.35), (114.0, 20.35), (114.0, 21.3), (38.4, 21.3)]
+# North return stays off the Z7 walk-up (x 81.23–89.77, south face z 21.17).
+# The x=80 bar post and that wall leave no 0.80 m slot, so the line dips
+# to the south curb through the pinch and rises again east of the cabin gap.
+CHASE = [
+    (38.4, 20.35),
+    (114.0, 20.35),
+    (114.0, 21.30),
+    (90.85, 21.30),
+    (90.85, 20.35),
+    (79.05, 20.35),
+    (79.05, 21.30),
+    (38.4, 21.30),
+]
 CHASE_CLEAR = 0.80
 STILL_DIR = os.path.join(z.ROOT, "Docs/WorldStills/pass8")
 LANDMARK = (66.8, 16.0)
