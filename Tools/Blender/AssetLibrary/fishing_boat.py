@@ -161,6 +161,13 @@ def create():
     a.vault_note = "Gunwale is about 0.70 m. Under the vault band."
     for lod in (0, 1, 2):
         g = a.begin(lod)
+        if lod >= 2:
+            # Hull, wheelhouse, and motor as three masses. Rails and the planked deck stay on LOD1.
+            g.box((0, 0.32, 0.05), (1.40, 0.50, 4.50), "Lib_PaintWhite")
+            g.box((0, 1.05, -0.50), (0.90, 0.62, 1.05), "Lib_PaintWhite")
+            g.box((0, 0.58, 2.15), (0.26, 0.46, 0.36), "Lib_SteelDark")
+            a.end()
+            continue
         seg = lod_pick(lod, 8, 6)
         n = lod_pick(lod, 28, 16)
         solid_hull(g, Z0, Z1, n, profile, _top, "Lib_PaintWhite", bow_extra=0.18, section_fn=section_skiff)

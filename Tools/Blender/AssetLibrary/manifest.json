@@ -4037,6 +4037,25 @@
           0,
           0
         ]
+      },
+      {
+        "name": "Col_Roof",
+        "type": "box",
+        "center": [
+          0,
+          2.51,
+          0
+        ],
+        "size": [
+          2.04,
+          0.06,
+          5.56
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
       }
     ],
     "climbable": true,
@@ -4052,13 +4071,13 @@
       "LOD2"
     ],
     "slackCm": 0.0,
-    "fbx": "Assets/Art/Props/Library/Harbor/Container_20.fbx",
     "license": {
       "spdx": "CC0-1.0",
       "source": "original",
       "url": "",
       "notes": "Procedural mesh built in this repo."
-    }
+    },
+    "fbx": "Assets/Art/Props/Library/Harbor/Container_20.fbx"
   },
   {
     "name": "Container_40",
@@ -4135,6 +4154,25 @@
           0,
           0
         ]
+      },
+      {
+        "name": "Col_Roof",
+        "type": "box",
+        "center": [
+          0,
+          2.51,
+          0
+        ],
+        "size": [
+          2.04,
+          0.06,
+          11.69
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
       }
     ],
     "climbable": true,
@@ -4150,13 +4188,13 @@
       "LOD2"
     ],
     "slackCm": 0.0,
-    "fbx": "Assets/Art/Props/Library/Harbor/Container_40.fbx",
     "license": {
       "spdx": "CC0-1.0",
       "source": "original",
       "url": "",
       "notes": "Procedural mesh built in this repo."
-    }
+    },
+    "fbx": "Assets/Art/Props/Library/Harbor/Container_40.fbx"
   },
   {
     "name": "Court",
@@ -4243,7 +4281,7 @@
   {
     "name": "CourtFence",
     "category": "Park",
-    "blurb": "Perimeter for the 22 x 15 m court. Same pivot as Court. Posts 0.45 m outside the slab. Baselines 3.05 m, sidelines 1.80 m. The closed gate leaf is the child mesh GateLeaf on +X. Hide GateLeaf to open the entrance. Col_Gate is that leaf.",
+    "blurb": "Perimeter for the 22 x 15 m court. Same pivot as Court. Posts 0.45 m outside the slab. Baselines 3.05 m, sidelines 1.80 m, closed gate on +X.",
     "size": [
       15.98,
       3.095,
@@ -4262,7 +4300,7 @@
     "lods": [
       {
         "lod": 0,
-        "tris": 3664,
+        "tris": 3680,
         "materials": [
           "Lib_SteelDark",
           "Lib_Steel",
@@ -4273,7 +4311,7 @@
       },
       {
         "lod": 1,
-        "tris": 2640,
+        "tris": 2656,
         "materials": [
           "Lib_SteelDark",
           "Lib_Steel",
@@ -4284,10 +4322,11 @@
       },
       {
         "lod": 2,
-        "tris": 144,
+        "tris": 620,
         "materials": [
           "Lib_SteelDark",
-          "Lib_Steel"
+          "Lib_Steel",
+          "Lib_Chain"
         ],
         "mesh": "LOD2",
         "fileID": 736115405485880582
@@ -4466,7 +4505,7 @@
     "climbable": true,
     "vaultable": false,
     "vaultHeight": 0.0,
-    "climbNote": "Posts, rails, and a wire-thick fabric slab. The diamonds are not a passage. The closed leaf is the child mesh GateLeaf.",
+    "climbNote": "Posts, rails, and a wire-thick fabric slab. The diamonds are not a passage. The gate is closed.",
     "vaultNote": "Sideline top is 1.80 m and the baselines are 3.05 m. Too high to vault from the court.",
     "warnings": [],
     "fbxNames": [
@@ -4474,17 +4513,6 @@
       "LOD0",
       "LOD1",
       "LOD2"
-    ],
-    "extras": [
-      {
-        "mesh": "GateLeaf",
-        "tris": 16,
-        "materials": [
-          "Lib_SteelDark",
-          "Lib_Chain"
-        ],
-        "fileID": 5932213591190598829
-      }
     ],
     "slackCm": 1.3,
     "license": {
@@ -5891,10 +5919,9 @@
       },
       {
         "lod": 2,
-        "tris": 416,
+        "tris": 116,
         "materials": [
           "Lib_WoodDark",
-          "Lib_Wood",
           "Lib_WoodWeather"
         ],
         "mesh": "LOD2",
@@ -6761,6 +6788,7 @@
       "LOD1",
       "LOD2"
     ],
+    "extras": [],
     "slackCm": 2.21,
     "license": {
       "spdx": "CC0-1.0",
@@ -7880,19 +7908,13 @@
       },
       {
         "lod": 2,
-        "tris": 1064,
+        "tris": 120,
         "materials": [
           "Lib_Asphalt",
           "Lib_PaintWhite",
-          "Lib_PaintRed",
           "Lib_Steel",
-          "Lib_Black",
-          "Lib_PaintYellow",
-          "Lib_Concrete",
           "Lib_Siding",
-          "Lib_Roof",
-          "Lib_WoodDark",
-          "Lib_ShopGlass"
+          "Lib_Roof"
         ],
         "mesh": "LOD2",
         "fileID": 736115405485880582
@@ -8219,6 +8241,7 @@
       "LOD1",
       "LOD2"
     ],
+    "extras": [],
     "slackCm": 1.06,
     "license": {
       "spdx": "CC0-1.0",
@@ -8489,6 +8512,25 @@
         ]
       },
       {
+        "name": "Col_Finial",
+        "type": "box",
+        "center": [
+          0.0,
+          3.5,
+          0.0
+        ],
+        "size": [
+          0.08,
+          0.06,
+          0.08
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
         "name": "Vault_Rail_0",
         "type": "box",
         "center": [
@@ -8635,13 +8677,13 @@
       "LOD2"
     ],
     "slackCm": 0.0,
-    "fbx": "Assets/Art/Props/Library/Park/Gazebo.fbx",
     "license": {
       "spdx": "CC0-1.0",
       "source": "original",
       "url": "",
       "notes": "Procedural mesh built in this repo."
-    }
+    },
+    "fbx": "Assets/Art/Props/Library/Park/Gazebo.fbx"
   },
   {
     "name": "Gutter",
@@ -26176,31 +26218,31 @@
   {
     "name": "WalkUp",
     "category": "Buildings",
-    "blurb": "Brick walk-up, 8.0 x 6.4 m, three stories, parapet at 9.5 m. Brick is 13 courses per metre. Windows are recessed 13 cm with sills and lintels. Stoop and canopy on +Z. Fire-escape landings at 3.95 m and 6.85 m, brackets back to the wall, rail 1.05 m above each deck.",
+    "blurb": "Brick walk-up, 8.0 x 6.4 m, three stories, parapet at 9.5 m. Brick is 13 courses per metre. Windows are recessed 13 cm with brick returns, a stone sill, and a lintel. A thin concrete coping sits on the brick parapet, and a corona projects under it. Stoop and canopy on +Z. One fire-escape landing per upper floor, each spanning two windows, at 4.02 m and 6.92 m. A stair with a stringer on both sides runs along the wall between them, and a drop ladder hangs from the lower landing. Rails are 1.02 m above each deck, on the street edge. Brackets bolt into the brick under each landing.",
     "size": [
-      8.46,
-      10.08,
-      7.77
+      8.64,
+      9.77,
+      7.82
     ],
     "min": [
-      -4.23,
+      -4.32,
       0.0,
-      -3.45
+      -3.5
     ],
     "max": [
-      4.23,
-      10.08,
+      4.32,
+      9.77,
       4.32
     ],
     "lods": [
       {
         "lod": 0,
-        "tris": 1832,
+        "tris": 2736,
         "materials": [
           "Lib_Brick",
           "Lib_ShopGlass",
-          "Lib_PaintCream",
           "Lib_Concrete",
+          "Lib_PaintCream",
           "Lib_WoodDark",
           "Lib_SteelDark",
           "Lib_Steel"
@@ -26210,30 +26252,30 @@
       },
       {
         "lod": 1,
-        "tris": 1300,
+        "tris": 2216,
         "materials": [
           "Lib_Brick",
           "Lib_ShopGlass",
-          "Lib_PaintCream",
           "Lib_Concrete",
           "Lib_WoodDark",
-          "Lib_Steel",
-          "Lib_SteelDark"
+          "Lib_PaintCream",
+          "Lib_SteelDark",
+          "Lib_Steel"
         ],
         "mesh": "LOD1",
         "fileID": -179393741545503174
       },
       {
         "lod": 2,
-        "tris": 680,
+        "tris": 1004,
         "materials": [
           "Lib_Brick",
           "Lib_ShopGlass",
-          "Lib_PaintCream",
           "Lib_Concrete",
           "Lib_WoodDark",
-          "Lib_Steel",
-          "Lib_SteelDark"
+          "Lib_PaintCream",
+          "Lib_SteelDark",
+          "Lib_Steel"
         ],
         "mesh": "LOD2",
         "fileID": 736115405485880582
@@ -26374,17 +26416,17 @@
         ]
       },
       {
-        "name": "Col_Cornice",
+        "name": "Col_Roof",
         "type": "box",
         "center": [
           0,
-          9.48,
-          -0.06
+          9.22,
+          -0.04
         ],
         "size": [
-          8.1,
-          0.12,
-          6.4
+          7.5,
+          0.1,
+          5.7
         ],
         "euler": [
           0,
@@ -26393,17 +26435,169 @@
         ]
       },
       {
-        "name": "Col_Bulkhead",
+        "name": "Col_AC",
         "type": "box",
         "center": [
           1.2,
-          9.93,
+          9.54,
           -0.6
         ],
         "size": [
-          0.48,
-          0.16,
-          0.32
+          0.64,
+          0.36,
+          0.44
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_CopeF",
+        "type": "box",
+        "center": [
+          0,
+          9.332,
+          3.14
+        ],
+        "size": [
+          8.08,
+          0.036,
+          0.12
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_CopeB",
+        "type": "box",
+        "center": [
+          0,
+          9.332,
+          -3.14
+        ],
+        "size": [
+          8.08,
+          0.036,
+          0.12
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_CopeR",
+        "type": "box",
+        "center": [
+          3.94,
+          9.332,
+          0.0
+        ],
+        "size": [
+          0.12,
+          0.036,
+          5.92
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_CopeL",
+        "type": "box",
+        "center": [
+          -3.94,
+          9.332,
+          0.0
+        ],
+        "size": [
+          0.12,
+          0.036,
+          5.92
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_CoronaF",
+        "type": "box",
+        "center": [
+          0,
+          9.28,
+          3.39
+        ],
+        "size": [
+          7.7,
+          0.08,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_CoronaB",
+        "type": "box",
+        "center": [
+          0,
+          9.28,
+          -3.39
+        ],
+        "size": [
+          7.7,
+          0.08,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_CoronaR",
+        "type": "box",
+        "center": [
+          4.21,
+          9.28,
+          0.0
+        ],
+        "size": [
+          0.12,
+          0.08,
+          6.1
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_CoronaL",
+        "type": "box",
+        "center": [
+          -4.21,
+          9.28,
+          0.0
+        ],
+        "size": [
+          0.12,
+          0.08,
+          6.1
         ],
         "euler": [
           0,
@@ -26415,14 +26609,14 @@
         "name": "Col_Deck_0",
         "type": "box",
         "center": [
-          -2.35,
-          3.9,
-          3.7
+          -2.53,
+          3.9999999999999996,
+          3.82
         ],
         "size": [
-          1.05,
-          0.02,
-          0.08
+          2.64,
+          0.022,
+          0.6999999999999998
         ],
         "euler": [
           0,
@@ -26434,26 +26628,26 @@
         "name": "Vault_Rail_0",
         "type": "capsule",
         "center": [
-          -2.35,
-          4.97,
-          4.06
+          -2.53,
+          5.02,
+          4.175
         ],
-        "radius": 0.012,
-        "height": 0.95,
+        "radius": 0.008,
+        "height": 2.3800000000000003,
         "direction": 0
       },
       {
         "name": "Col_Deck_1",
         "type": "box",
         "center": [
-          -2.35,
-          6.8,
-          3.7
+          2.53,
+          6.9,
+          3.82
         ],
         "size": [
-          1.05,
-          0.02,
-          0.08
+          2.64,
+          0.022,
+          0.6999999999999998
         ],
         "euler": [
           0,
@@ -26465,39 +26659,20 @@
         "name": "Vault_Rail_1",
         "type": "capsule",
         "center": [
-          -2.35,
-          7.87,
-          4.06
+          2.53,
+          7.92,
+          4.175
         ],
-        "radius": 0.012,
-        "height": 0.95,
+        "radius": 0.008,
+        "height": 2.3800000000000003,
         "direction": 0
-      },
-      {
-        "name": "Col_Pier",
-        "type": "box",
-        "center": [
-          -2.35,
-          0.14,
-          4.16
-        ],
-        "size": [
-          0.38,
-          0.2,
-          0.14
-        ],
-        "euler": [
-          0,
-          0,
-          0
-        ]
       }
     ],
     "climbable": true,
     "vaultable": true,
-    "vaultHeight": 1.05,
+    "vaultHeight": 1.02,
     "climbNote": "Brick walls are cling. Glass is solid. The escapes are the steel landings on +Z.",
-    "vaultNote": "Escape rail is 1.05 m above the lower landing (deck at 3.95 m, rail top at 5.00 m).",
+    "vaultNote": "Escape rail is 1.02 m above the lower landing (deck at 4.02 m, rail top at 5.04 m).",
     "warnings": [],
     "fbxNames": [
       "LODBoxS",
@@ -26925,13 +27100,10 @@
       },
       {
         "lod": 2,
-        "tris": 1148,
+        "tris": 36,
         "materials": [
           "Lib_PaintWhite",
-          "Lib_SteelDark",
-          "Lib_ShopGlass",
-          "Lib_Steel",
-          "Lib_PaintRed"
+          "Lib_SteelDark"
         ],
         "mesh": "LOD2",
         "fileID": 736115405485880582
@@ -27046,6 +27218,7 @@
       "LOD1",
       "LOD2"
     ],
+    "extras": [],
     "slackCm": 0.0,
     "license": {
       "spdx": "CC0-1.0",
@@ -27092,16 +27265,29 @@
       },
       {
         "lod": 1,
-        "tris": 3084,
+        "tris": 504,
         "materials": [
           "Lib_Concrete",
           "Lib_Board",
-          "Lib_Batten",
           "Lib_Varnish",
+          "Lib_Batten",
           "Lib_Roof"
         ],
         "mesh": "LOD1",
         "fileID": -179393741545503174
+      },
+      {
+        "lod": 2,
+        "tris": 324,
+        "materials": [
+          "Lib_Concrete",
+          "Lib_Board",
+          "Lib_Varnish",
+          "Lib_Batten",
+          "Lib_Roof"
+        ],
+        "mesh": "LOD2",
+        "fileID": 736115405485880582
       }
     ],
     "colliders": [
@@ -27229,16 +27415,17 @@
     "fbxNames": [
       "LODBoxS",
       "LOD0",
-      "LOD1"
+      "LOD1",
+      "LOD2"
     ],
     "slackCm": 2.7,
-    "fbx": "Assets/Art/Props/Library/Harbor/HarborShed.fbx",
     "license": {
       "spdx": "CC0-1.0",
       "source": "original",
       "url": "",
       "notes": "Procedural mesh built in this repo."
-    }
+    },
+    "fbx": "Assets/Art/Props/Library/Harbor/HarborShed.fbx"
   },
   {
     "name": "Pond",
@@ -27407,7 +27594,7 @@
     "lods": [
       {
         "lod": 0,
-        "tris": 4892,
+        "tris": 3836,
         "materials": [
           "Lib_Varnish",
           "Lib_PaintCream",
@@ -27419,13 +27606,23 @@
       },
       {
         "lod": 1,
-        "tris": 2820,
+        "tris": 1948,
         "materials": [
           "Lib_Varnish",
           "Lib_PaintCream"
         ],
         "mesh": "LOD1",
         "fileID": -179393741545503174
+      },
+      {
+        "lod": 2,
+        "tris": 854,
+        "materials": [
+          "Lib_Varnish",
+          "Lib_PaintCream"
+        ],
+        "mesh": "LOD2",
+        "fileID": 736115405485880582
       }
     ],
     "colliders": [
@@ -27491,13 +27688,13 @@
         "type": "box",
         "center": [
           0,
-          0.14,
-          0.82
+          0.13,
+          0.72
         ],
         "size": [
-          0.12,
-          0.04,
-          0.18
+          0.08,
+          0.03,
+          0.1
         ],
         "euler": [
           0,
@@ -27515,16 +27712,17 @@
     "fbxNames": [
       "LODBoxS",
       "LOD0",
-      "LOD1"
+      "LOD1",
+      "LOD2"
     ],
-    "slackCm": 2.49,
-    "fbx": "Assets/Art/Props/Library/Harbor/Rowboat.fbx",
+    "slackCm": 1.05,
     "license": {
       "spdx": "CC0-1.0",
       "source": "original",
       "url": "",
       "notes": "Procedural mesh built in this repo."
-    }
+    },
+    "fbx": "Assets/Art/Props/Library/Harbor/Rowboat.fbx"
   },
   {
     "name": "Gangway",
@@ -28625,6 +28823,25 @@
           0,
           0
         ]
+      },
+      {
+        "name": "Col_Roof",
+        "type": "box",
+        "center": [
+          0,
+          2.51,
+          0
+        ],
+        "size": [
+          2.04,
+          0.06,
+          5.56
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
       }
     ],
     "climbable": true,
@@ -28640,13 +28857,13 @@
       "LOD2"
     ],
     "slackCm": 0.0,
-    "fbx": "Assets/Art/Props/Library/Harbor/Container_20_Blue.fbx",
     "license": {
       "spdx": "CC0-1.0",
       "source": "original",
       "url": "",
       "notes": "Procedural mesh built in this repo."
-    }
+    },
+    "fbx": "Assets/Art/Props/Library/Harbor/Container_20_Blue.fbx"
   },
   {
     "name": "Container_20_Green",
@@ -28724,6 +28941,25 @@
           0,
           0
         ]
+      },
+      {
+        "name": "Col_Roof",
+        "type": "box",
+        "center": [
+          0,
+          2.51,
+          0
+        ],
+        "size": [
+          2.04,
+          0.06,
+          5.56
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
       }
     ],
     "climbable": true,
@@ -28739,13 +28975,13 @@
       "LOD2"
     ],
     "slackCm": 0.0,
-    "fbx": "Assets/Art/Props/Library/Harbor/Container_20_Green.fbx",
     "license": {
       "spdx": "CC0-1.0",
       "source": "original",
       "url": "",
       "notes": "Procedural mesh built in this repo."
-    }
+    },
+    "fbx": "Assets/Art/Props/Library/Harbor/Container_20_Green.fbx"
   },
   {
     "name": "LightPost_Globe",
@@ -29942,7 +30178,7 @@
       },
       {
         "lod": 2,
-        "tris": 368,
+        "tris": 192,
         "materials": [
           "Lib_Black",
           "Lib_Wood"
@@ -32623,7 +32859,7 @@
       },
       {
         "lod": 2,
-        "tris": 876,
+        "tris": 384,
         "materials": [
           "Lib_Steel",
           "Lib_SteelDark"
@@ -33858,6 +34094,7 @@
       "LOD1",
       "LOD2"
     ],
+    "extras": [],
     "slackCm": 0.0,
     "license": {
       "spdx": "CC0-1.0",
@@ -44655,11 +44892,10 @@
       },
       {
         "lod": 2,
-        "tris": 196,
+        "tris": 72,
         "materials": [
           "Lib_Wood",
-          "Lib_Black",
-          "Lib_SteelDark"
+          "Lib_Black"
         ],
         "mesh": "LOD2",
         "fileID": 736115405485880582
@@ -44717,6 +44953,7 @@
       "LOD1",
       "LOD2"
     ],
+    "extras": [],
     "slackCm": 0.32,
     "license": {
       "spdx": "CC0-1.0",
@@ -45161,20 +45398,10 @@
       },
       {
         "lod": 2,
-        "tris": 780,
+        "tris": 36,
         "materials": [
           "Lib_PaintGreen",
-          "Lib_Interior",
-          "Lib_BoxGreen",
-          "Lib_Steel",
-          "Lib_WoodDark",
-          "Lib_Wood",
-          "Lib_PaintCream",
-          "Lib_WindowLit",
-          "Lib_SteelDark",
-          "Lib_BoxBlue",
-          "Lib_PaintWhite",
-          "Lib_Concrete"
+          "Lib_Steel"
         ],
         "mesh": "LOD2",
         "fileID": 736115405485880582
@@ -45384,6 +45611,7 @@
       "LOD1",
       "LOD2"
     ],
+    "extras": [],
     "slackCm": 0.0,
     "license": {
       "spdx": "CC0-1.0",
@@ -45437,11 +45665,10 @@
       },
       {
         "lod": 2,
-        "tris": 976,
+        "tris": 396,
         "materials": [
           "Lib_SteelDark",
-          "Lib_PaintGreen",
-          "Lib_Steel"
+          "Lib_PaintGreen"
         ],
         "mesh": "LOD2",
         "fileID": 736115405485880582
@@ -45644,6 +45871,7 @@
       "LOD1",
       "LOD2"
     ],
+    "extras": [],
     "slackCm": 0.0,
     "license": {
       "spdx": "CC0-1.0",
@@ -47395,6 +47623,470 @@
     ],
     "slackCm": 0.0,
     "fbx": "Assets/Art/Props/Library/StreetFurniture/Rail_Sidewalk.fbx",
+    "license": {
+      "spdx": "CC0-1.0",
+      "source": "original",
+      "url": "",
+      "notes": "Procedural mesh built in this repo."
+    }
+  },
+  {
+    "name": "WoodFence_Corner",
+    "category": "Buildings",
+    "blurb": "Privacy corner. One post, a 1.22 m run on +X and a 1.22 m run on +Z. Rails sit on the inside of the turn.",
+    "size": [
+      1.209,
+      1.922,
+      1.209
+    ],
+    "min": [
+      -0.053,
+      0.0,
+      -0.053
+    ],
+    "max": [
+      1.156,
+      1.922,
+      1.156
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 376,
+        "materials": [
+          "Lib_WoodDark",
+          "Lib_SteelDark",
+          "Lib_Wood"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 120,
+        "materials": [
+          "Lib_WoodDark",
+          "Lib_SteelDark",
+          "Lib_Wood"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_Post",
+        "type": "box",
+        "center": [
+          0.0,
+          0.95,
+          0.0
+        ],
+        "size": [
+          0.066,
+          1.8199999999999998,
+          0.066
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Picket",
+        "type": "box",
+        "center": [
+          0.15714285714285714,
+          0.86,
+          0.0
+        ],
+        "size": [
+          0.10028571428571427,
+          1.46,
+          0.008
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Picket_2",
+        "type": "box",
+        "center": [
+          0.31142857142857144,
+          0.86,
+          0.0
+        ],
+        "size": [
+          0.10028571428571427,
+          1.46,
+          0.008
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Picket_3",
+        "type": "box",
+        "center": [
+          0.4657142857142857,
+          0.86,
+          0.0
+        ],
+        "size": [
+          0.10028571428571427,
+          1.46,
+          0.008
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Picket_4",
+        "type": "box",
+        "center": [
+          0.6199999999999999,
+          0.86,
+          0.0
+        ],
+        "size": [
+          0.10028571428571427,
+          1.46,
+          0.008
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Picket_5",
+        "type": "box",
+        "center": [
+          0.7742857142857142,
+          0.86,
+          0.0
+        ],
+        "size": [
+          0.10028571428571427,
+          1.46,
+          0.008
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Picket_6",
+        "type": "box",
+        "center": [
+          0.9285714285714285,
+          0.86,
+          0.0
+        ],
+        "size": [
+          0.10028571428571427,
+          1.46,
+          0.008
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Picket_7",
+        "type": "box",
+        "center": [
+          1.082857142857143,
+          0.86,
+          0.0
+        ],
+        "size": [
+          0.10028571428571427,
+          1.46,
+          0.008
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Picket_8",
+        "type": "box",
+        "center": [
+          0.0,
+          0.86,
+          0.15714285714285714
+        ],
+        "size": [
+          0.008,
+          1.46,
+          0.10028571428571427
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Picket_9",
+        "type": "box",
+        "center": [
+          0.0,
+          0.86,
+          0.31142857142857144
+        ],
+        "size": [
+          0.008,
+          1.46,
+          0.10028571428571427
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Picket_10",
+        "type": "box",
+        "center": [
+          0.0,
+          0.86,
+          0.4657142857142857
+        ],
+        "size": [
+          0.008,
+          1.46,
+          0.10028571428571427
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Picket_11",
+        "type": "box",
+        "center": [
+          0.0,
+          0.86,
+          0.6199999999999999
+        ],
+        "size": [
+          0.008,
+          1.46,
+          0.10028571428571427
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Picket_12",
+        "type": "box",
+        "center": [
+          0.0,
+          0.86,
+          0.7742857142857142
+        ],
+        "size": [
+          0.008,
+          1.46,
+          0.10028571428571427
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Picket_13",
+        "type": "box",
+        "center": [
+          0.0,
+          0.86,
+          0.9285714285714285
+        ],
+        "size": [
+          0.008,
+          1.46,
+          0.10028571428571427
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Picket_14",
+        "type": "box",
+        "center": [
+          0.0,
+          0.86,
+          1.082857142857143
+        ],
+        "size": [
+          0.008,
+          1.46,
+          0.10028571428571427
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Rail",
+        "type": "box",
+        "center": [
+          0.5944999999999999,
+          0.4,
+          -0.034
+        ],
+        "size": [
+          1.051,
+          0.061,
+          0.02
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Rail_2",
+        "type": "box",
+        "center": [
+          0.5944999999999999,
+          0.95,
+          -0.034
+        ],
+        "size": [
+          1.051,
+          0.061,
+          0.02
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Rail_3",
+        "type": "box",
+        "center": [
+          0.5944999999999999,
+          1.5,
+          -0.034
+        ],
+        "size": [
+          1.051,
+          0.061,
+          0.02
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Rail_4",
+        "type": "box",
+        "center": [
+          -0.034,
+          0.4,
+          0.5944999999999999
+        ],
+        "size": [
+          0.02,
+          0.061,
+          1.051
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Rail_5",
+        "type": "box",
+        "center": [
+          -0.034,
+          0.95,
+          0.5944999999999999
+        ],
+        "size": [
+          0.02,
+          0.061,
+          1.051
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Rail_6",
+        "type": "box",
+        "center": [
+          -0.034,
+          1.5,
+          0.5944999999999999
+        ],
+        "size": [
+          0.02,
+          0.061,
+          1.051
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "climbable": true,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "Each picket is solid. The gaps are about 8 mm and are not a passage.",
+    "vaultNote": "Top is 1.83 m. Too high to vault from the ground.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1"
+    ],
+    "slackCm": 0.0,
+    "fbx": "Assets/Art/Props/Library/Buildings/WoodFence_Corner.fbx",
     "license": {
       "spdx": "CC0-1.0",
       "source": "original",

@@ -381,6 +381,13 @@ def create():
     a.vault_note = "Counter lip is 1.12 m."
     for lod in (0, 1, 2):
         g = a.begin(lod)
+        if lod >= 2:
+            # Booth, roof, and counter. Goods, wires, and the shutter stay on LOD1.
+            g.box((0, 1.05, 0), (W, 2.00, D), "Lib_PaintGreen")
+            g.box((0, 2.20, 0.05), (W + 0.16, 0.08, D + 0.20), "Lib_PaintGreen")
+            g.box((0, 1.10, 0.72), (1.20, 0.04, 0.28), "Lib_Steel")
+            a.end()
+            continue
         _shell(g, lod)
         _roof(g)
         _shutter(g, lod)

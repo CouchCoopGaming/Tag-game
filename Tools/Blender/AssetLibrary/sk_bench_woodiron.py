@@ -20,6 +20,22 @@ def create():
     xs = (-0.78, 0.0, 0.78)
     for lod in (0, 1, 2):
         g = a.begin(lod)
+        if lod >= 2:
+            # End frames, two seat boards, two back boards. No center leg and no arm bows.
+            iron = "Lib_Black"
+            for x in (-0.78, 0.78):
+                for z, h in ((-0.20, 0.42), (0.18, 0.42)):
+                    g.box((x, h * 0.5, z), (0.055, h, 0.045), iron)
+                    g.box((x, 0.015, z), (0.12, 0.03, 0.11), iron)
+                g.box((x, 0.62, -0.30), (0.05, 0.40, 0.04), iron)
+            g.box((0, 0.42, -0.20), (1.70, 0.035, 0.04), iron)
+            g.box((0, 0.42, 0.18), (1.70, 0.035, 0.04), iron)
+            for z in (-0.10, 0.16):
+                g.box((0, 0.452, z), (1.78, 0.028, 0.055), "Lib_Wood", uv_scale=1.2)
+            for y in (0.58, 0.82):
+                g.box((0, y, -0.32), (1.78, 0.04, 0.022), "Lib_Wood", uv_scale=1.2)
+            a.end()
+            continue
         bev = lod_pick(lod, 0.004, 0.0)
         bs = lod_pick(lod, 2, 1)
         iron = "Lib_Black"

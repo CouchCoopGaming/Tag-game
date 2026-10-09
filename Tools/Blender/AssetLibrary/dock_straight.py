@@ -23,6 +23,15 @@ def create():
     piles = ((-1.15, -2.40), (1.15, -2.40), (-1.15, 2.40), (1.15, 2.40))
     for lod in (0, 1, 2):
         g = a.begin(lod)
+        if lod >= 2:
+            # Four piles, two stringers, and one deck. The plank run is LOD0 and LOD1.
+            for x, z in piles:
+                g.cylinder((x, 0.28, z), 0.11, 0.56, "Lib_WoodDark", 6)
+            for x in (-0.95, 0.95):
+                g.box((x, 0.42, 0), (0.10, 0.16, 5.70), "Lib_WoodDark")
+            g.box((0, 0.602, 0), (WIDTH - 0.08, 0.04, LENGTH - 0.12), "Lib_WoodWeather", uv_scale=1.2)
+            a.end()
+            continue
         bev = 0.003 if lod == 0 else 0
         seg = lod_pick(lod, 10, 6)
         for x, z in piles:

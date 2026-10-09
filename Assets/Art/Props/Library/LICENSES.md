@@ -224,3 +224,4 @@ SPDX: CC0-1.0. Source: original.
 | `Dummy_Mannequin_Orange_Hier_Hi` | CC0-1.0 | original |
 | `Dummy_Mannequin_Red_Hier_Hi` | CC0-1.0 | original |
 | `Dummy_Mannequin_Tan_Hier_Hi` | CC0-1.0 | original |
+| `WoodFence_Corner` | CC0-1.0 | original |
