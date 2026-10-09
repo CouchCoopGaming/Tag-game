@@ -449,22 +449,36 @@ namespace Tag.Level
         }
 
         /// <summary>
-        /// Z7 street and court. Editor play loads the library prefabs. A player
-        /// build without those references leaves the hidden lumps off and logs
-        /// the miss; it does not invent a second gray box.
+        /// Dressed districts. Prefabs come from <see cref="WorldPropTable"/> in
+        /// Resources, which a player build includes. A miss is an error. Nothing
+        /// is spawned from the editor asset database, and a miss does not invent
+        /// a gray cube.
         /// </summary>
         void BuildWorldDistrict()
         {
-            Transform g = Group("WorldZ7");
-            MegaParkWorldDistrict.Place[] places = MegaParkWorldDistrict.Places;
+            WorldPropTable table = WorldPropTable.Load();
+            if (table == null)
+            {
+                Debug.LogError("[MegaPark] world prop table missing at Resources/"
+                    + WorldPropTable.ResourcePath
+                    + ". Player builds do not use the editor asset database.");
+                return;
+            }
+            BuildDistrict("WorldZ7", MegaParkWorldDistrict.Places, table, false);
+            BuildDistrict("WorldZ1", MegaParkWorldDistrict.SoftPlay, table, true);
+        }
+
+        void BuildDistrict(string group, MegaParkWorldDistrict.Place[] places, WorldPropTable table, bool batch)
+        {
+            Transform g = Group(group);
             int placed = 0;
             for (int i = 0; i < places.Length; i++)
             {
                 MegaParkWorldDistrict.Place p = places[i];
-                GameObject prefab = LoadLibraryPrefab(p.Prefab);
+                GameObject prefab = table.Find(p.Prefab);
                 if (prefab == null)
                 {
-                    Debug.LogError("[MegaPark] world prefab missing " + p.Prefab);
+                    Debug.LogError("[MegaPark] world prefab missing " + p.Name + " " + p.Prefab);
                     continue;
                 }
                 GameObject go = Instantiate(prefab, g);
@@ -472,25 +486,62 @@ namespace Tag.Level
                 go.transform.localPosition = new Vector3(p.X, p.Y, p.Z);
                 go.transform.localRotation = Quaternion.Euler(0f, p.Yaw, 0f);
                 go.transform.localScale = Vector3.one;
+                if (p.Name == "CourtFence")
+                    OpenCourtGate(go);
                 Transform[] nodes = go.GetComponentsInChildren<Transform>(true);
                 for (int n = 0; n < nodes.Length; n++)
                     nodes[n].gameObject.isStatic = true;
                 placed++;
             }
-            Debug.Log("[MegaPark] world Z7 placed " + placed.ToString() + "/" + places.Length.ToString());
+            if (batch && placed > 0)
+                BatchDistrictMeshes(g);
+            if (placed != places.Length)
+                Debug.LogError("[MegaPark] world " + group + " placed " + placed.ToString() + "/" + places.Length.ToString());
+            else
+                Debug.Log("[MegaPark] world " + group + " placed " + placed.ToString() + "/" + places.Length.ToString());
         }
 
-        static GameObject LoadLibraryPrefab(string assetPath)
+        /// <summary>
+        /// The shipped fence mesh draws a closed leaf. Collision for that leaf is
+        /// Col_Gate. Turning it off leaves the fabric gap, so the chase can enter.
+        /// </summary>
+        static void OpenCourtGate(GameObject root)
         {
-            System.Type db = System.Type.GetType("UnityEditor.AssetDatabase, UnityEditor");
-            if (db == null)
-                return null;
-            System.Reflection.MethodInfo mi = db.GetMethod(
-                "LoadAssetAtPath",
-                new System.Type[] { typeof(string), typeof(System.Type) });
-            if (mi == null)
-                return null;
-            return mi.Invoke(null, new object[] { assetPath, typeof(GameObject) }) as GameObject;
+            Transform[] nodes = root.GetComponentsInChildren<Transform>(true);
+            for (int i = 0; i < nodes.Length; i++)
+            {
+                if (nodes[i].name != "Col_Gate")
+                    continue;
+                nodes[i].gameObject.SetActive(false);
+                Debug.Log("[MegaPark] CourtFence gate open");
+                return;
+            }
+            Debug.LogError("[MegaPark] CourtFence has no Col_Gate to open");
+        }
+
+        /// <summary>
+        /// Z1 is the small set. Drop the extra LOD renderers and static-batch what remains.
+        /// </summary>
+        static void BatchDistrictMeshes(Transform root)
+        {
+            LODGroup[] groups = root.GetComponentsInChildren<LODGroup>(true);
+            for (int i = 0; i < groups.Length; i++)
+            {
+                LOD[] lods = groups[i].GetLODs();
+                for (int l = 1; l < lods.Length; l++)
+                {
+                    Renderer[] renderers = lods[l].renderers;
+                    if (renderers == null)
+                        continue;
+                    for (int r = 0; r < renderers.Length; r++)
+                    {
+                        if (renderers[r] != null)
+                            renderers[r].enabled = false;
+                    }
+                }
+                groups[i].enabled = false;
+            }
+            StaticBatchingUtility.Combine(root.gameObject);
         }
 
         void BuildRailFence(Transform parent, MegaParkP1Layout.Solid s)

@@ -51,6 +51,9 @@ namespace Tag.Level
         public static readonly Place[] Places =
         {
             new Place("Court", P + "Court.prefab", 88.6f, 0f, 53.2f, 0f),
+            // Yaw 180 puts the +X gate on the west sideline, toward the chase.
+            // Play disables Col_Gate so that opening is a real entrance.
+            new Place("CourtFence", P + "CourtFence.prefab", 88.6f, 0f, 53.2f, 180f),
             new Place("Hoop_S", P + "Hoop.prefab", 88.6f, 0f, 41.0f, 0f),
             new Place("Hoop_N", P + "Hoop.prefab", 88.6f, 0f, 65.4f, 180f),
 
@@ -78,8 +81,10 @@ namespace Tag.Level
 
             new Place("Climb_A", B + "Brick_Wall.prefab", 71.75f, 0f, 33f, 90f),
             new Place("Climb_B", B + "Brick_Wall.prefab", 71.75f, 0f, 37f, 90f),
-            new Place("Gazebo", P + "Gazebo.prefab", 77.78f, 0f, 35f, 0f),
-            new Place("AC_Gazebo", B + "RooftopAC.prefab", 77.78f, 3.05f, 35f, 0f),
+            // Wall-jump gap is the gazebo's west face minus the climb face.
+            // 77.53 keeps that gap at 3.90 m, under the 4.0 m layout cap.
+            new Place("Gazebo", P + "Gazebo.prefab", 77.53f, 0f, 35f, 0f),
+            new Place("AC_Gazebo", B + "RooftopAC.prefab", 77.53f, 3.05f, 35f, 0f),
 
             new Place("Car_Sedan", S + "Car_Sedan.prefab", 86f, 0.12f, 35.55f, 90f),
             new Place("Car_Hatch", S + "Car_Hatch.prefab", 92f, 0.12f, 35.55f, 90f),
@@ -97,13 +102,44 @@ namespace Tag.Level
             new Place("Scaffold_B", S + "Scaffold_Bay.prefab", 102.95f, 0f, 39.6f, 0f),
 
             new Place("Tree_W", P + "Tree_Maple.prefab", 76.2f, 0f, 30.2f, 0f),
-            new Place("Tree_N", P + "Tree_Maple.prefab", 85.2f, 0f, 67.6f, 15f),
+            new Place("Tree_N", P + "Tree_Maple.prefab", 85.2f, 0f, 67.9f, 15f),
             new Place("Planter_W", P + "Planter.prefab", 74.4f, 0f, 31.4f, 0f),
-            new Place("Planter_N", P + "Planter.prefab", 91.2f, 0f, 67.55f, 0f),
-            new Place("Picnic", P + "PicnicTable.prefab", 88.0f, 0f, 67.7f, 90f),
-            new Place("ParkLamp", P + "ParkLamp.prefab", 93.4f, 0f, 67.55f, 0f),
+            new Place("Planter_N", P + "Planter.prefab", 91.2f, 0f, 67.85f, 0f),
+            new Place("Picnic", P + "PicnicTable.prefab", 88.0f, 0f, 68.25f, 90f),
+            new Place("ParkLamp", P + "ParkLamp.prefab", 93.4f, 0f, 67.7f, 0f),
             new Place("Shrub", P + "Shrub.prefab", 79.6f, 0f, 31.8f, 0f),
         };
+
+        /// <summary>
+        /// Z1 soft-play. Decks, tubes, cubes, the west step, and the rim stay
+        /// gray. These props sit around them. Smaller than Z7, and play batches
+        /// the group. The landmark pole at (20, 10) and the z=8 loop stay clear.
+        /// </summary>
+        public static readonly Place[] SoftPlay =
+        {
+            new Place("Sp_ClimbA", B + "Brick_Wall.prefab", 5.15f, 0f, 23f, 90f),
+            new Place("Sp_ClimbB", B + "Brick_Wall.prefab", 5.15f, 0f, 29f, 90f),
+            new Place("Sp_Gazebo", P + "Gazebo.prefab", 32.0f, 0f, 15.6f, 0f),
+            new Place("Sp_ScaffoldA", S + "Scaffold_Bay.prefab", 30.4f, 0f, 23.5f, 0f),
+            new Place("Sp_ScaffoldB", S + "Scaffold_Bay.prefab", 33.15f, 0f, 23.5f, 0f),
+            new Place("Sp_Tree", P + "Tree_Maple.prefab", 26.2f, 0f, 14.2f, 0f),
+            new Place("Sp_Planter", P + "Planter.prefab", 28.6f, 0f, 14.0f, 0f),
+            new Place("Sp_Bench", S + "Bench_Wood.prefab", 24.4f, 0f, 14.6f, 0f),
+            new Place("Sp_Trash", S + "TrashCan_Lidded.prefab", 35.0f, 0f, 19.2f, 0f),
+            new Place("Sp_Light", S + "LightPost_Single.prefab", 33.6f, 0f, 20.6f, 180f),
+            new Place("Sp_Shrub", P + "Shrub.prefab", 23.4f, 0f, 16.2f, 0f),
+            new Place("Sp_Picnic", P + "PicnicTable.prefab", 27.2f, 0f, 30.6f, 90f),
+        };
+
+        public static Place[] AllPlaces()
+        {
+            var all = new Place[Places.Length + SoftPlay.Length];
+            for (int i = 0; i < Places.Length; i++)
+                all[i] = Places[i];
+            for (int i = 0; i < SoftPlay.Length; i++)
+                all[Places.Length + i] = SoftPlay[i];
+            return all;
+        }
 
         public static bool Hides(string solidName)
         {

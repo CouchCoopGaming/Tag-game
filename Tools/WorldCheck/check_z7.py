@@ -56,7 +56,10 @@ WALL_JUMP_FLAT = _hj * (_t_up + _t_dn)  # ~4.39 m; skill routes use 4.40
 # planted median (z min 32.62). East leg stays west of the rail at x=114.
 # North leg clears the north hoop (z max 65.60) and the park row (z min ~66.85).
 # West leg stays east of the gazebo (x max 80.15).
-CHASE = [(82.5, 31.55), (111.0, 31.55), (111.0, 66.20), (81.5, 66.20), (81.5, 31.55)]
+# North leg is 0.90 m past the north hoop (z max 65.60). West leg stays
+# 0.95 m off the fence's west face after the gate is yawed onto that side.
+CHASE = [(82.5, 31.55), (111.0, 31.55), (111.0, 66.50), (81.2, 66.50), (81.2, 31.55)]
+CHASE_CLEAR = 0.80
 
 # Graybox that the before still draws. Centers and full sizes from MegaParkP1Layout.
 GRAY = [
@@ -106,22 +109,30 @@ def add(a, b):
     return (a[0] + b[0], a[1] + b[1], a[2] + b[2])
 
 
-def parse_places(text):
-    pat = re.compile(
-        r'new Place\("([^"]+)",\s*\w+ \+ "([^"]+)",\s*([-0-9.]+)f,\s*([-0-9.]+)f,\s*([-0-9.]+)f,\s*([-0-9.]+)f\)'
+def array_body(text, array_name):
+    m = re.search(
+        r"public static readonly Place\[\] " + array_name + r" =\s*\{(.*?)\n        \};",
+        text,
+        re.S,
     )
+    if not m:
+        raise SystemExit("placement array %s missing" % array_name)
+    return m.group(1)
+
+
+def parse_places(text, array_name="Places"):
+    body = array_body(text, array_name) if array_name else text
     prefix = {
         "B": "Assets/Art/Props/Library/Buildings/Prefabs/",
         "S": "Assets/Art/Props/Library/StreetFurniture/Prefabs/",
         "R": "Assets/Art/Props/Library/Roads/Prefabs/",
         "P": "Assets/Art/Props/Library/Park/Prefabs/",
     }
-    # The source uses const prefixes. Re-parse with the const letter.
     pat2 = re.compile(
         r'new Place\("([^"]+)",\s*([BSRP]) \+ "([^"]+)",\s*([-0-9.]+)f,\s*([-0-9.]+)f,\s*([-0-9.]+)f,\s*([-0-9.]+)f\)'
     )
     places = []
-    for m in pat2.finditer(text):
+    for m in pat2.finditer(body):
         places.append({
             "name": m.group(1),
             "path": prefix[m.group(2)] + m.group(3),
@@ -167,8 +178,10 @@ def parse_prefab(path):
             go_to_xform[go] = fid
         elif cid == 65:
             if not re.search(r"m_Enabled:\s*0", body):
+                go = _file(body, "m_GameObject")
                 boxes.append({
-                    "go": _file(body, "m_GameObject"),
+                    "go": go,
+                    "name": names.get(go, ""),
                     "size": _vec(body, "m_Size"),
                     "center": _vec(body, "m_Center"),
                 })
@@ -323,6 +336,47 @@ def loop_clear(box):
     return True
 
 
+def court_entry(instances, by):
+    """West chase through the opened gate to midcourt. Col_Gate is not a blocker."""
+    if "CourtFence" not in by:
+        return False, "gate missing"
+    fence = by["CourtFence"]
+    leaf = [b.get("name") for b in fence["prefab"]["boxes"]]
+    if "Col_Gate" not in leaf:
+        return False, "Col_Gate missing from prefab"
+    blockers = []
+    for box in fence["boxes"]:
+        blockers.append((box.get("name") or "fence", box["aabb"]))
+    for inst in instances:
+        if inst["place"]["name"] == "CourtFence":
+            continue
+        if is_floor(inst["place"]["name"], inst["aabb"]):
+            continue
+        if inst["aabb"][4] - inst["aabb"][1] < STEP and inst["aabb"][4] < 0.45:
+            continue
+        blockers.append((inst["place"]["name"], inst["aabb"]))
+    for name, x, y, z, sx, sy, sz in GRAY:
+        if name in HIDDEN:
+            continue
+        box = (x - sx * 0.5, y - sy * 0.5, z - sz * 0.5, x + sx * 0.5, y + sy * 0.5, z + sz * 0.5)
+        if box[4] - box[1] < STEP and box[4] < 0.45:
+            continue
+        blockers.append(("gray:" + name, box))
+    worst = 99.0
+    worst_name = ""
+    for i in range(25):
+        t = i / 24.0
+        x = 81.2 + (88.6 - 81.2) * t
+        z = 53.2
+        for bname, box in blockers:
+            d = dist_point_aabb(x, z, box)
+            if d < worst:
+                worst = d
+                worst_name = bname
+    ok = worst >= PAWN_R
+    return ok, "gate entry clearance %.2f m vs %s" % (worst, worst_name)
+
+
 def chase_samples():
     pts = []
     n = len(CHASE)
@@ -346,7 +400,7 @@ def is_floor(name, box):
 def main():
     os.chdir(ROOT)
     src = open(DISTRICT_CS, encoding="utf-8").read()
-    places = parse_places(src)
+    places = parse_places(src, "Places")
     if len(places) < 8:
         raise SystemExit("placements did not parse (%d)" % len(places))
 
@@ -376,8 +430,11 @@ def main():
         boxes = []
         all_pts = []
         for b in prefab["boxes"]:
+            # Play turns Col_Gate off. The check uses the open gate.
+            if p["name"] == "CourtFence" and b.get("name") == "Col_Gate":
+                continue
             pts = world_points(prefab, b, p)
-            boxes.append({"pts": pts, "aabb": aabb(pts), "go": b["go"]})
+            boxes.append({"pts": pts, "aabb": aabb(pts), "go": b["go"], "name": b.get("name", "")})
             all_pts.extend(pts)
         inst = {
             "place": p,
@@ -426,7 +483,7 @@ def main():
             and 2.0 <= run_len
             and 4.0 <= run_len
             and 4.0 <= WALL_RUN_DIST + 0.02
-            and 0.5 < gap <= WALL_JUMP_FLAT + 0.02
+            and 0.5 < gap <= 4.0
         )
         add_route(
             "WestClimb",
@@ -534,12 +591,14 @@ def main():
         ax, az = CHASE[i]
         bx, bz = CHASE[(i + 1) % len(CHASE)]
         length += math.hypot(bx - ax, bz - az)
-    chase_ok = blocked == 0 and length > 40.0 and worst >= PAWN_R + 0.1
+    chase_ok = blocked == 0 and length > 40.0 and worst >= CHASE_CLEAR
+    gate_ok, gate_detail = court_entry(instances, by)
+    chase_ok = chase_ok and gate_ok
     add_route(
         "ChaseLoop",
         chase_ok,
-        "length %.1f m clearance %.2f m at (%.1f, %.1f) vs %s samples %d blocked %d"
-        % (length, worst, worst_at[0], worst_at[1], worst_at[2], len(samples), blocked),
+        "length %.1f m clearance %.2f m at (%.1f, %.1f) vs %s samples %d blocked %d; %s"
+        % (length, worst, worst_at[0], worst_at[1], worst_at[2], len(samples), blocked, gate_detail),
     )
 
     reachable = sum(1 for _, ok, _ in routes if ok)
@@ -599,9 +658,43 @@ def main():
         if notes:
             print("  %s: %s" % (os.path.basename(key), "; ".join(notes)))
 
+    path_miss = player_path_gaps(src)
+    if path_miss:
+        print("player-path FAIL " + "; ".join(path_miss))
+    else:
+        print("player-path missing=0")
+
     if "--stills" in sys.argv:
         write_stills(instances)
-    return 0 if reachable == n and not floating and missing == 0 and scale_fails == 0 and not open_hits and not loop_hits else 1
+    return 0 if reachable == n and not floating and missing == 0 and scale_fails == 0 and not open_hits and not loop_hits and not path_miss else 1
+
+
+def player_path_gaps(src):
+    """The Resources table must name every placement. This is not the EditMode test."""
+    asset_path = os.path.join(ROOT, "Assets/Resources/World/WorldPropTable.asset")
+    if not os.path.isfile(asset_path):
+        return ["Resources/World/WorldPropTable.asset missing"]
+    asset = open(asset_path, encoding="utf-8").read()
+    bootstrap = open(os.path.join(ROOT, "Assets/Scripts/Level/MegaParkP1Bootstrap.cs"), encoding="utf-8").read()
+    gaps = []
+    if "UnityEditor.AssetDatabase" in bootstrap:
+        gaps.append("bootstrap still references the editor asset database")
+    if "WorldPropTable.Load" not in bootstrap:
+        gaps.append("bootstrap does not load the Resources table")
+    seen = set()
+    for array in ("Places", "SoftPlay"):
+        for p in parse_places(src, array):
+            if p["path"] in seen:
+                continue
+            seen.add(p["path"])
+            if ("Path: " + p["path"]) not in asset:
+                gaps.append("table missing " + p["path"])
+                continue
+            meta = open(os.path.join(ROOT, p["path"] + ".meta"), encoding="utf-8").read()
+            guid = re.search(r"guid:\s*([0-9a-f]+)", meta).group(1)
+            if guid not in asset:
+                gaps.append("table guid missing " + p["path"])
+    return gaps
 
 
 # --- stills -----------------------------------------------------------------
@@ -661,7 +754,7 @@ def color_for(name, path):
         return (0.72, 0.74, 0.76)
     if name.startswith("Car"):
         return (0.25, 0.38, 0.62) if "Sedan" in name else (0.30, 0.42, 0.28) if "Hatch" in name else (0.45, 0.32, 0.22)
-    if "Gazebo" in name:
+    if "Gazebo" in name or "Gazebo" in path:
         return (0.55, 0.62, 0.55)
     if "Tree" in name or "Shrub" in name or "Planter" in name:
         return (0.22, 0.48, 0.24)
@@ -673,7 +766,7 @@ def color_for(name, path):
         return (0.70, 0.18, 0.16)
     if "Trash" in name:
         return (0.20, 0.32, 0.24)
-    if "Scaffold" in name:
+    if "Scaffold" in name or "Scaffold" in path:
         return (0.62, 0.50, 0.28)
     if "Median" in name:
         return (0.35, 0.48, 0.30)

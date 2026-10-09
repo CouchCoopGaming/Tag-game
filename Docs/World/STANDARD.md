@@ -163,6 +163,10 @@ Use the catalog sizes as the scale check:
 
 Do not scale a prop to "fit" a gap. Move it, or pick a different module.
 
+Dressed districts load from `Resources/World/WorldPropTable` (`WorldPropTable.Load`). That ScriptableObject holds the prefab references, so a player build includes them. `MegaParkP1Bootstrap` does not call `UnityEditor.AssetDatabase`. A missing table or a missing entry is `Debug.LogError`, and the placed count is an error when it is short of the list. `Assets/Tests/EditMode/WorldPropTableTests` resolves every placement through `Resources.Load` and fails if any prefab is null.
+
+A dressed wall-jump stays at or under 4.0 m along the wall. The flat envelope is still 4.39 m. The Z7 chase keeps 0.80 m of clearance past the north hoop. The legal blocker clearance remains the 0.40 m radius plus 0.10 m.
+
 ## What a route check must print
 
 `Tools/WorldCheck/check_z7.py` reads placements and prefab colliders (box, capsule, sphere) and prints one line:
