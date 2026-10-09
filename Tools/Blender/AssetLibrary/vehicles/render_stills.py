@@ -45,9 +45,7 @@ def _wanted(stem, only):
         return True
     if only == "envelope":
         return stem in ("sedan_compact", "hatch_compact", "crossover_compact")
-    if only == "years":
-        return stem == "sedan_mid_a"
-    if only == "paints":
+    if only in ("years", "paints", "judge", "quartets"):
         return stem == "sedan_mid_a"
     return only in stem or stem in only
 
@@ -383,7 +381,29 @@ def main():
     if "--shot" in sys.argv:
         shot = sys.argv[sys.argv.index("--shot") + 1]
     found = _load(only)
-    if only == "paints":
+    if only == "judge":
+        # One year, off the repo, so the roofline can be checked before the quartets.
+        out = "/tmp/sedan_judge"
+        os.makedirs(out, exist_ok=True)
+        _quartet(found, "Sedan_Mid_A_22", out, 4.90, 1.44, shade=True)
+        return
+    if only in ("years", "quartets"):
+        # Four model years. 2025 paints are the same shell with a different enamel.
+        jobs = (
+            ("Sedan_Mid_A_22", "sedan_mid_a_22", 4.90, 1.44),
+            ("Sedan_Mid_A_23", "sedan_mid_a_23", 4.90, 1.44),
+            ("Sedan_Mid_A_24", "sedan_mid_a_24", 4.90, 1.44),
+            ("Sedan_Mid_A_25", "sedan_mid_a_25", 4.90, 1.44),
+        )
+        for name, folder, length, height in jobs:
+            print("SHOT", folder)
+            _quartet(
+                found, name, os.path.join(STILL_ROOT, folder, "pass19"),
+                length, height, shade=True,
+            )
+        if only == "years":
+            return
+    if only in ("paints", "quartets"):
         # Each enamel is its own mesh file, so the still folder carries the colour.
         jobs = (
             ("Sedan_Mid_A_25_White", "sedan_mid_a_25_white"),
@@ -396,22 +416,8 @@ def main():
         for name, folder in jobs:
             print("SHOT", folder)
             _quartet(
-                found, name, os.path.join(STILL_ROOT, folder, "pass18"),
+                found, name, os.path.join(STILL_ROOT, folder, "pass19"),
                 4.90, 1.44, shade=True,
-            )
-        return
-    if only == "years":
-        # 2022-2024 change the fascia and the wheel. 2025 paints are the same mesh.
-        jobs = (
-            ("Sedan_Mid_A_22", "sedan_mid_a_22", 4.90, 1.44),
-            ("Sedan_Mid_A_23", "sedan_mid_a_23", 4.90, 1.44),
-            ("Sedan_Mid_A_24", "sedan_mid_a_24", 4.90, 1.44),
-        )
-        for name, folder, length, height in jobs:
-            print("SHOT", folder)
-            _quartet(
-                found, name, os.path.join(STILL_ROOT, folder, "pass16"),
-                length, height, shade=True,
             )
         return
     if only is not None and "sedan_mid_a" in only:
