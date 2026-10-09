@@ -72,10 +72,10 @@ def create():
     a = Asset(
         "CourtFence",
         "Park",
-        "Perimeter for the 22 x 15 m court. Same pivot as Court. Posts 0.45 m outside the slab. Baselines 3.05 m, sidelines 1.80 m, closed gate on +X.",
+        "Perimeter for the 22 x 15 m court. Same pivot as Court. Posts 0.45 m outside the slab. Baselines 3.05 m, sidelines 1.80 m. The closed gate leaf is the child mesh GateLeaf on +X. Hide GateLeaf to open the entrance. Col_Gate is that leaf.",
     )
     a.climbable = True
-    a.climb_note = "Posts, rails, and a wire-thick fabric slab. The diamonds are not a passage. The gate is closed."
+    a.climb_note = "Posts, rails, and a wire-thick fabric slab. The diamonds are not a passage. The closed leaf is the child mesh GateLeaf."
     a.vault_note = "Sideline top is 1.80 m and the baselines are 3.05 m. Too high to vault from the court."
     runs = [
         ("X", (-X, -Z), X * 2, 3.05, (0, 0, -1), None),
@@ -98,11 +98,12 @@ def create():
             g.pipe(_point(axis, origin, 0.08, 0.08), _point(axis, origin, length - 0.08, 0.08), 0.014, "Lib_SteelDark", seg)
             if step and not (gap and lod == 2):
                 _fabric(g, axis, origin, length, height, step, normal, gap if lod < 2 else None)
-        if lod < 2:
-            g.box((X, 0.90, 0), (0.04, 1.70, 1.45), "Lib_SteelDark")
-            if step:
-                _fabric(g, "Z", (X, -0.7), 1.4, 1.70, step, (1, 0, 0), None)
         a.end()
+    # The closed leaf is its own child so play can hide it while Col_Gate is off.
+    leaf = a.begin_extra("GateLeaf")
+    leaf.box((X, 0.90, 0), (0.04, 1.70, 1.45), "Lib_SteelDark")
+    _fabric(leaf, "Z", (X, -0.7), 1.4, 1.70, 0.72, (1, 0, 0), None)
+    a.end_extra()
     a.capsule("Col_Post_SW", (-X, 1.52, -Z), 0.035, 3.05, 1)
     a.capsule("Col_Post_SE", (X, 1.52, -Z), 0.035, 3.05, 1)
     a.capsule("Col_Post_NW", (-X, 1.52, Z), 0.035, 3.05, 1)

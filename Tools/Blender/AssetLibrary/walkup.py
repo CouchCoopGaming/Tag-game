@@ -145,7 +145,8 @@ def create():
         if lod < 2:
             _escape(g, lod, 6.85)
         if lod == 0:
-            g.box((1.2, BODY_H + 0.55, -0.6), (0.80, 0.46, 0.60), "Lib_Steel")
+            # Above the parapet slab (top 9.76) so the two shells do not overlap.
+            g.box((1.2, 9.93, -0.6), (0.72, 0.30, 0.52), "Lib_Steel")
         a.end()
     a.box("Col_Body", (0, 4.55, -0.08), (7.70, 8.80, 5.90))
     a.box("Climb_Front", (0, 4.4, 2.96), (7.2, 8.0, 0.08))
@@ -155,6 +156,8 @@ def create():
     a.box("Col_Stoop", (0, 0.09, 3.62), (1.55, 0.12, 0.60))
     a.box("Col_Canopy", (0, 2.52, 3.66), (1.60, 0.05, 0.62))
     a.box("Col_Cornice", (0, 9.48, -0.06), (8.10, 0.12, 6.40))
+    # Roof bulkhead. Mesh crown is 10.08 m. This box stays 7 cm under that crown.
+    a.box("Col_Bulkhead", (1.2, 9.93, -0.6), (0.48, 0.16, 0.32))
     a.box("Col_Deck_0", (X_ESC, 3.90, 3.70), (1.05, 0.02, 0.08))
     a.capsule("Vault_Rail_0", (X_ESC, 4.97, 4.06), 0.012, 0.95, 0)
     a.box("Col_Deck_1", (X_ESC, 6.80, 3.70), (1.05, 0.02, 0.08))

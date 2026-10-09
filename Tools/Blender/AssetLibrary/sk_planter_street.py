@@ -21,7 +21,7 @@ def _canopy(g, origin, scale, lod):
         ((ox - 0.06 * scale, oy + 0.11 * scale, oz - 0.03 * scale), 0.095 * scale),
         ((ox + 0.01 * scale, oy + 0.20 * scale, oz - 0.01 * scale), 0.085 * scale),
     )
-    g.blob(spheres, "Lib_Foliage", voxel=0.030 if lod == 0 else 0.055)
+    g.blob(spheres, "Lib_Foliage", voxel=0.055 if lod == 0 else 0.09)
     if lod == 0:
         for k in range(5):
             ang = k * 1.2 + 0.4
@@ -75,8 +75,8 @@ def create():
             if lod == 1 and i % 2:
                 continue
             mat = "Lib_WoodWeather" if i in (1, 3) else "Lib_Wood"
-            g.box((x, 0.25, -0.232), (0.24, 0.32, 0.018), mat, uv_scale=1.5, bevel=bev, segs=1)
-            g.box((x, 0.25, 0.232), (0.24, 0.32, 0.018), mat, uv_scale=1.5, bevel=bev, segs=1)
+            g.box((x, 0.25, -0.232), (0.24, 0.32, 0.018), mat, uv_scale=1.5, bevel=0.0, segs=0)
+            g.box((x, 0.25, 0.232), (0.24, 0.32, 0.018), mat, uv_scale=1.5, bevel=0.0, segs=0)
         g.box((0, 0.14, 0), (1.58, 0.10, 0.30), "Lib_Soil", uv_scale=1.3)
         g.box((0, 0.22, 0), (1.10, 0.06, 0.18), "Lib_Mulch", uv_scale=1.4)
         if lod == 0:

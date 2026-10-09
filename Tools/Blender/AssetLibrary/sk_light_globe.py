@@ -35,8 +35,15 @@ def create():
     )
     a.climb_note = "Round pole, about 11 cm at the urn. Not a cling wall."
     a.vault_note = "No rail. The cage is overhead."
-    for lod in (0, 1):
+    for lod in (0, 1, 2):
         g = a.begin(lod)
+        if lod >= 2:
+            g.box((0, 0.05, 0), (0.36, 0.10, 0.36), "Lib_Black")
+            g.cylinder((0, 1.70, 0), 0.036, 3.10, "Lib_Black", 6)
+            g.sphere((0, 3.30, 0), 0.18, "Lib_Glass", 6)
+            g.cone((0, 3.56, 0), 0.04, 0.012, 0.14, "Lib_Black", 6)
+            a.end()
+            continue
         seg = lod_pick(lod, 16, 8)
         bev = lod_pick(lod, 0.004, 0.0)
         bs = lod_pick(lod, 1, 0)

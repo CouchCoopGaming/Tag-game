@@ -712,6 +712,7 @@ class Asset(object):
         self.vault_note = ""
         self.allow_below = False
         self.warnings = []
+        self.extras = []
 
     def begin(self, lod):
         self._geo = Geo(lod)
@@ -722,6 +723,20 @@ class Asset(object):
         g.prepare()
         self.lods[g.lod] = g
         self._geo = None
+
+    def begin_extra(self, name):
+        """A sibling mesh, not an LOD. The prefab keeps it as its own child."""
+        self._geo = Geo(0)
+        self._extra_name = name
+        return self._geo
+
+    def end_extra(self):
+        g = self._geo
+        g.prepare()
+        g.extra_name = self._extra_name
+        self.extras.append(g)
+        self._geo = None
+        self._extra_name = None
 
     def box(self, name, center, size, euler=(0, 0, 0), approx=False):
         col = {
@@ -997,6 +1012,8 @@ def export_fbx(asset):
     for lod in sorted(asset.lods):
         obj = _object_from_geo(asset.lods[lod], "LOD%d" % lod)
         objects.append(obj)
+    for extra in getattr(asset, "extras", []):
+        objects.append(_object_from_geo(extra, extra.extra_name))
     bpy.ops.object.select_all(action="DESELECT")
     for obj in objects:
         obj.select_set(True)
@@ -1058,7 +1075,22 @@ def manifest_entry(asset, fbx_names):
         "vaultNote": asset.vault_note,
         "warnings": asset.warnings,
         "fbxNames": fbx_names,
+        "extras": [
+            {
+                "mesh": g.extra_name,
+                "tris": g.tri_count(),
+                "materials": list(g.mats),
+                "fileID": mesh_file_id(g.extra_name),
+            }
+            for g in getattr(asset, "extras", [])
+        ],
         "slackCm": getattr(asset, "collider_slack_cm", 0),
+        "license": {
+            "spdx": "CC0-1.0",
+            "source": "original",
+            "url": "",
+            "notes": "Procedural mesh built in this repo.",
+        },
     }
 
 

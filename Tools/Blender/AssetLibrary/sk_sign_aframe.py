@@ -11,12 +11,7 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from _common import Asset, register, lod_pick
-from sk_parts import chain
-
-_FONT = os.path.normpath(os.path.join(
-    os.path.dirname(os.path.abspath(__file__)),
-    "..", "..", "StrafeJumpSim", "Fonts", "Overpass-Bold.ttf",
-))
+from sk_parts import block_word_euler, chain
 
 ANG = 21.0
 _C = math.cos(math.radians(ANG))
@@ -51,7 +46,7 @@ def create():
     )
     a.climb_note = "Smooth board. Not a cling."
     a.vault_note = "Too short to vault."
-    for lod in (0, 1):
+    for lod in (0, 1, 2):
         g = a.begin(lod)
         bev = lod_pick(lod, 0.002, 0.0)
         bs = 1 if lod == 0 else 0
@@ -72,21 +67,24 @@ def create():
         if lod == 0:
             for x in (-0.16, 0.0, 0.16):
                 g.cylinder((x, hinge[1], 0.0), 0.022, 0.030, "Lib_Steel", 8, axis="X")
-            chain(g, (0.26, 0.28, 0.234), (0.26, 0.28, -0.234), n=6, sag=0.045, radius=0.004)
-            chain(g, (-0.26, 0.28, 0.234), (-0.26, 0.28, -0.234), n=6, sag=0.045, radius=0.004)
-            for along, body, size in (
-                (0.20, "OPEN", 0.078),
-                (0.05, "Coffee", 0.040),
-                (-0.07, "Tea", 0.040),
-                (-0.19, "Pastry", 0.040),
+            chain(g, (0.26, 0.28, 0.234), (0.26, 0.28, -0.234), n=4, sag=0.045, radius=0.004)
+            chain(g, (-0.26, 0.28, 0.234), (-0.26, 0.28, -0.234), n=4, sag=0.045, radius=0.004)
+            for along, body, tall in (
+                (0.18, "OPEN", 0.090),
+                (0.02, "COFFEE", 0.042),
+                (-0.08, "TEA", 0.040),
+                (-0.18, "PASTRY", 0.038),
             ):
-                g.text(body, _front(along, 0.031), size, "Lib_PaintCream", extrude=0.003, pitch=-ANG, font=_FONT)
-                g.text(
-                    body, _back(along, 0.031), size, "Lib_PaintCream",
-                    extrude=0.003, yaw=180.0, pitch=-ANG, font=_FONT,
+                block_word_euler(
+                    g, body, lambda da, x, along=along: _front(along + da, 0.031, x),
+                    tall, "Lib_PaintCream", (-ANG, 0, 0), depth=0.003,
                 )
-            g.box(_front(0.12, 0.031), (0.30, 0.006, 0.004), "Lib_PaintCream", euler=(-ANG, 0, 0))
-            g.box(_back(0.12, 0.031), (0.30, 0.006, 0.004), "Lib_PaintCream", euler=(ANG, 0, 0))
+                block_word_euler(
+                    g, body, lambda da, x, along=along: _back(along + da, 0.031, x),
+                    tall, "Lib_PaintCream", (ANG, 0, 0), depth=0.003,
+                )
+            g.box(_front(0.10, 0.031), (0.30, 0.006, 0.004), "Lib_PaintCream", euler=(-ANG, 0, 0))
+            g.box(_back(0.10, 0.031), (0.30, 0.006, 0.004), "Lib_PaintCream", euler=(ANG, 0, 0))
         a.end()
     # Inner half of each chalkboard, clear of the stiles, the legend, and the chains.
     a.box("Col_Front", _front(0.02, 0.020), (0.24, 0.32, 0.010), euler=(-ANG, 0, 0))

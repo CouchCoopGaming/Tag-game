@@ -200,6 +200,76 @@ def look_euler(a, b):
     return (pitch, yaw, 0.0)
 
 
+# Block letters. Each stroke is (u, v, w, h) inside a 1 em box, origin at the bottom left.
+_STROKES = {
+    "A": ((0.06, 0.00, 0.20, 0.78), (0.74, 0.00, 0.20, 0.78), (0.20, 0.40, 0.60, 0.16), (0.20, 0.82, 0.60, 0.16)),
+    "C": ((0.10, 0.08, 0.20, 0.84), (0.22, 0.82, 0.60, 0.16), (0.22, 0.02, 0.60, 0.16)),
+    "E": ((0.10, 0.02, 0.20, 0.96), (0.24, 0.82, 0.60, 0.16), (0.24, 0.42, 0.46, 0.16), (0.24, 0.02, 0.60, 0.16)),
+    "F": ((0.10, 0.02, 0.20, 0.96), (0.24, 0.82, 0.60, 0.16), (0.24, 0.42, 0.46, 0.16)),
+    "H": ((0.08, 0.00, 0.20, 1.00), (0.72, 0.00, 0.20, 1.00), (0.20, 0.42, 0.60, 0.16)),
+    "I": ((0.36, 0.00, 0.28, 1.00),),
+    "M": ((0.02, 0.00, 0.16, 1.00), (0.82, 0.00, 0.16, 1.00), (0.26, 0.38, 0.16, 0.62), (0.58, 0.38, 0.16, 0.62)),
+    "N": ((0.06, 0.00, 0.20, 1.00), (0.74, 0.00, 0.20, 1.00), (0.26, 0.36, 0.48, 0.22)),
+    "O": ((0.08, 0.08, 0.20, 0.84), (0.72, 0.08, 0.20, 0.84), (0.18, 0.82, 0.64, 0.16), (0.18, 0.02, 0.64, 0.16)),
+    "P": ((0.10, 0.00, 0.20, 1.00), (0.26, 0.82, 0.48, 0.16), (0.62, 0.52, 0.20, 0.34), (0.26, 0.46, 0.46, 0.14)),
+    "R": ((0.08, 0.00, 0.20, 1.00), (0.24, 0.82, 0.46, 0.16), (0.58, 0.52, 0.20, 0.34), (0.24, 0.46, 0.44, 0.14), (0.46, 0.00, 0.22, 0.46)),
+    "S": ((0.12, 0.82, 0.70, 0.16), (0.12, 0.52, 0.20, 0.34), (0.12, 0.44, 0.70, 0.14), (0.62, 0.08, 0.20, 0.40), (0.12, 0.02, 0.70, 0.16)),
+    "T": ((0.08, 0.82, 0.84, 0.16), (0.38, 0.00, 0.24, 0.86)),
+    "V": ((0.06, 0.48, 0.22, 0.52), (0.72, 0.48, 0.22, 0.52), (0.32, 0.00, 0.36, 0.52)),
+    "Y": ((0.06, 0.55, 0.22, 0.45), (0.72, 0.55, 0.22, 0.45), (0.38, 0.00, 0.24, 0.58)),
+    "2": ((0.10, 0.82, 0.74, 0.16), (0.64, 0.50, 0.20, 0.36), (0.10, 0.44, 0.74, 0.14), (0.10, 0.08, 0.20, 0.40), (0.10, 0.02, 0.74, 0.16)),
+    "5": ((0.10, 0.82, 0.74, 0.16), (0.10, 0.50, 0.20, 0.36), (0.10, 0.44, 0.74, 0.14), (0.64, 0.08, 0.20, 0.40), (0.10, 0.02, 0.74, 0.16)),
+    "0": ((0.08, 0.08, 0.20, 0.84), (0.72, 0.08, 0.20, 0.84), (0.18, 0.82, 0.64, 0.16), (0.18, 0.02, 0.64, 0.16)),
+}
+
+
+def _word_offsets(word, height, advance):
+    chars = list(word)
+    widths = [0.40 if ch == ":" else advance for ch in chars]
+    total = sum(widths) * height
+    cursor = -total * 0.5
+    out = []
+    for ch, wadv in zip(chars, widths):
+        left = cursor
+        cursor += wadv * height
+        out.append((ch, left))
+    return out
+
+
+def block_word(g, word, origin, height, mat, axis="x", depth=0.004, advance=0.78):
+    """Axis-aligned block letters centered on origin. 'x' runs along +X. 'z' runs along +Z."""
+    ox, oy, oz = origin
+    for ch, left in _word_offsets(word, height, advance):
+        if ch == " ":
+            continue
+        if ch == ":":
+            cx = left + 0.20 * height
+            for dy in (0.22, -0.22):
+                if axis == "z":
+                    g.box((ox, oy + dy, oz + cx), (depth, 0.16 * height, 0.16 * height), mat)
+                else:
+                    g.box((ox + cx, oy + dy, oz), (0.16 * height, 0.16 * height, depth), mat)
+            continue
+        for u, v, w, h in _STROKES.get(ch.upper(), ()):
+            x_off = left + (u + w * 0.5) * height
+            y_off = (v + h * 0.5 - 0.5) * height
+            if axis == "z":
+                g.box((ox, oy + y_off, oz + x_off), (depth, h * height, w * height), mat)
+            else:
+                g.box((ox + x_off, oy + y_off, oz), (w * height, h * height, depth), mat)
+
+
+def block_word_euler(g, word, place, height, mat, euler, depth=0.004, advance=0.78):
+    """Block letters on a tilted board. place(along, x) returns the stroke center."""
+    for ch, left in _word_offsets(word, height, advance):
+        if ch in (" ", ":"):
+            continue
+        for u, v, w, h in _STROKES.get(ch.upper(), ()):
+            x_off = left + (u + w * 0.5) * height
+            along = (v + h * 0.5 - 0.5) * height
+            g.box(place(along, x_off), (w * height, h * height, depth), mat, euler=euler)
+
+
 def span_collider(a, b, radius):
     """Inscribed box along a pipe. Cross-section sits inside the tube."""
     dx = b[0] - a[0]
@@ -324,7 +394,7 @@ def _hose_nozzle(g, lod, sign, y, cap, nut, seg):
         g,
         (sign * 0.214, y - 0.064, 0.0),
         (sign * 0.088, 0.292, 0.014),
-        n=5,
+        n=4,
         sag=0.030,
         radius=0.0038,
     )
@@ -343,7 +413,7 @@ def _pumper_nozzle(g, lod, y, cap, nut, seg):
         g,
         (0.0, y - 0.086, 0.245),
         (0.036, 0.300, 0.082),
-        n=5,
+        n=4,
         sag=0.026,
         radius=0.0038,
     )
@@ -355,14 +425,12 @@ def add_hydrant(g, lod, body, cap, nut, band=None, wheel=False):
     Wheel variant is the industrial yard hydrant. Hose nozzles are 2.5 in,
     the steamer is 4.5 in, and the operating nut lands near 0.78 m.
     """
-    seg = 28 if lod == 0 else 12
-    nose = 24 if lod == 0 else 10
+    seg = 12 if lod == 0 else 8
+    nose = 8 if lod == 0 else 6
     painted = (0.168, 0.248, band) if band and not wheel else None
     _lathe(g, _hydrant_profile(wheel), seg, body, band=painted)
     if lod == 0:
-        bolt_ring(g, (0.0, 0.030, 0.0), 0.118, 6, 0.008, 0.014)
-        g.torus((0.0, 0.140, 0.0), 0.096, 0.005, body, seg, 6)
-        g.torus((0.0, 0.310, 0.0), 0.096, 0.005, body, seg, 6)
+        bolt_ring(g, (0.0, 0.030, 0.0), 0.118, 4, 0.008, 0.014)
     y = 0.446
     for sign in (-1, 1):
         _hose_nozzle(g, lod, sign, y, cap, nut, nose)
@@ -370,7 +438,7 @@ def add_hydrant(g, lod, body, cap, nut, band=None, wheel=False):
     if wheel:
         g.cylinder((0.0, 0.70, 0.0), 0.020, 0.16, nut, 8)
         g.cylinder((0.0, 0.775, 0.0), 0.088, 0.028, cap, seg)
-        g.torus((0.0, 0.775, 0.0), 0.108, 0.012, "Lib_Steel", 16 if lod == 0 else 8, 6)
+        g.torus((0.0, 0.775, 0.0), 0.108, 0.012, "Lib_Steel", 10 if lod == 0 else 8, 5)
         if lod == 0:
             for i in range(4):
                 ang = math.radians(i * 90.0 + 18.0)
@@ -390,7 +458,7 @@ def add_hydrant(g, lod, body, cap, nut, band=None, wheel=False):
 def hydrant_colliders(a, wheel=False):
     # Flange box sits in the casting foot. Barrel capsule stays in the
     # straight 0.090 m section, clear of the nozzle bosses.
-    a.box("Col_Flange", (0.0, 0.014, 0.0), (0.16, 0.020, 0.16))
+    a.box("Col_Flange", (0.0, 0.016, 0.0), (0.12, 0.016, 0.12))
     a.capsule("Col_Barrel", (0.0, 0.200, 0.0), 0.062, 0.22, 1)
     # Sphere-like capsules in the middle of each cap, past the brass boss.
     a.capsule("Col_Nozzle_L", (-0.210, 0.446, 0.0), 0.020, 0.040, 0)

@@ -18,7 +18,7 @@ def create():
     a.climb_note = "Back slats are too broken up to cling. Not a wall-run panel."
     a.vault_note = "Seat top is 0.45 m. Below the 0.90–1.05 m vault band."
     xs = (-0.78, 0.0, 0.78)
-    for lod in (0, 1):
+    for lod in (0, 1, 2):
         g = a.begin(lod)
         bev = lod_pick(lod, 0.004, 0.0)
         bs = lod_pick(lod, 2, 1)
@@ -51,7 +51,7 @@ def create():
                 for x in (-0.78, 0.78):
                     g.cylinder((x, 0.452, z), 0.008, 0.012, "Lib_Steel", 6, axis="Z")
         for i, y in enumerate((0.58, 0.70, 0.82)):
-            if lod == 1 and i == 1:
+            if lod >= 1 and i == 1:
                 continue
             g.box((0, y, -0.32), (1.78, 0.04, 0.022), "Lib_Wood", bevel=bev, segs=bs, uv_scale=1.2)
         a.end()

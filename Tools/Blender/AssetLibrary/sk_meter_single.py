@@ -6,6 +6,7 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from _common import Asset, register, lod_pick
+from sk_parts import block_word
 
 _FONT = os.path.normpath(os.path.join(
     os.path.dirname(os.path.abspath(__file__)),
@@ -47,7 +48,7 @@ def meter_head(g, lod, x, font):
         # Negative pitch tips the cell face up and toward the front.
         g.box((x, 1.350, 0.012), (0.116, 0.012, 0.078), "Lib_PaintBlue", euler=(-42, 0, 0))
         g.box((x, 1.356, 0.016), (0.008, 0.006, 0.054), "Lib_PaintWhite", euler=(-42, 0, 0))
-        g.text("2:00", (x, 1.200, 0.072), 0.046, "Lib_SignalGreen", extrude=0.003, font=font)
+        block_word(g, "2:00", (x, 1.200, 0.074), 0.040, "Lib_SignalGreen", depth=0.002, advance=0.70)
 
 
 def meter_foot(g, lod, width, depth):

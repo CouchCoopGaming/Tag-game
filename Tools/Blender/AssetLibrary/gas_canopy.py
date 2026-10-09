@@ -19,7 +19,7 @@ def create():
     a.climbable = True
     a.climb_note = "Columns are 22 cm. The shop walls are cling."
     a.vault_note = "No rail. The roof is at 3.50 m. Shop wall top is 3.15 m."
-    for lod in (0, 1):
+    for lod in (0, 1, 2):
         g = a.begin(lod)
         seg = lod_pick(lod, 8, 6)
         bev = 0.004 if lod == 0 else 0

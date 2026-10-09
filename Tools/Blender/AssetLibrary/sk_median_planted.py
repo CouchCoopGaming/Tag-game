@@ -17,7 +17,7 @@ WIDTH = 6.0
 
 def _curb_wall(g, x, z, sx, sz, lod):
     bev = 0.003 if lod == 0 else 0.0
-    g.box((x, 0.16, z), (sx, 0.24, sz), "Lib_Concrete", bevel=bev, segs=1 if lod == 0 else 0)
+    g.box((x, 0.16, z), (sx, 0.24, sz), "Lib_Concrete", bevel=0.0, segs=0)
 
 
 @register
@@ -49,7 +49,7 @@ def create():
             g.blob(
                 [((0.0, 0.50, z), 0.30), ((0.10, 0.58, z + 0.08), 0.16), ((-0.08, 0.42, z - 0.06), 0.14)],
                 "Lib_Foliage",
-                voxel=0.045 if lod == 0 else 0.08,
+                voxel=0.08 if lod == 0 else 0.12,
             )
         a.end()
     # Lanes stay off the curb. Curb colliders sit above the asphalt, in concrete only.

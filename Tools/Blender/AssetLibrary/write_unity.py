@@ -499,6 +499,29 @@ MeshFilter:
 """ % (mf, go, lod["fileID"], fbx_guid))
         parts.append(RENDERER.format(fid=mr, go=go, mats=mats))
 
+    for i, extra in enumerate(entry.get("extras") or []):
+        go = 210000 + i * 10
+        tr = go + 1
+        mf = go + 2
+        mr = go + 3
+        child_transforms.append(tr)
+        mats = "".join(
+            "  - {fileID: 2100000, guid: %s, type: 2}\n" % mat_guids[name]
+            for name in extra["materials"]
+        )
+        parts.append(go_block(go, extra["mesh"], [tr, mf, mr]))
+        parts.append(transform_block(tr, go, 100001, []))
+        parts.append("""--- !u!33 &%d
+MeshFilter:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: %d}
+  m_Mesh: {fileID: %d, guid: %s, type: 3}
+""" % (mf, go, extra["fileID"], fbx_guid))
+        parts.append(RENDERER.format(fid=mr, go=go, mats=mats))
+
     for i, col in enumerate(entry["colliders"]):
         go = 300000 + i * 10
         tr = go + 1

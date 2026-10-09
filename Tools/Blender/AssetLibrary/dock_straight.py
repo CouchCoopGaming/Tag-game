@@ -21,7 +21,7 @@ def create():
     a.climb_note = "Deck is a walk surface. Pilings are round, not cling panels."
     a.vault_note = "No rail on this module. Deck height is 0.62 m, under a vault."
     piles = ((-1.15, -2.40), (1.15, -2.40), (-1.15, 2.40), (1.15, 2.40))
-    for lod in (0, 1):
+    for lod in (0, 1, 2):
         g = a.begin(lod)
         bev = 0.003 if lod == 0 else 0
         seg = lod_pick(lod, 10, 6)

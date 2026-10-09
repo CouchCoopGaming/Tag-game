@@ -39,9 +39,14 @@ def create():
             g.pipe((-0.86, 0.40, 0.64), (0.86, 1.50, 0.64), 0.016, "Lib_Steel", 6)
             g.box((0, 1.74, 0.62), (1.55, 0.12, 0.06), "Lib_Wood")
         a.end()
-    a.capsule("Col_PostA", (-0.90, 0.85, -0.60), 0.014, 1.30)
-    a.capsule("Col_PostB", (0.90, 0.85, -0.60), 0.014, 1.30)
-    a.capsule("Col_PostC", (-0.90, 0.85, 0.60), 0.014, 1.30)
-    a.capsule("Col_PostD", (0.90, 0.85, 0.60), 0.014, 1.30)
+    # Tube is 48 mm and runs from the ground to above the deck. The capsule
+    # stays inside it: bottom 1.5 cm off the pivot, top 2.5 cm under the deck.
+    for name, x, z in (
+        ("Col_PostA", -0.90, -0.60),
+        ("Col_PostB", 0.90, -0.60),
+        ("Col_PostC", -0.90, 0.60),
+        ("Col_PostD", 0.90, 0.60),
+    ):
+        a.capsule(name, (x, 0.835, z), 0.016, 1.640)
     a.box("Col_Deck", (0, 1.688, 0), (1.40, 0.016, 0.80))
     return a

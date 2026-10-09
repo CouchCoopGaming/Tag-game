@@ -10,11 +10,7 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from _common import Asset, register, lod_pick
-
-_FONT = os.path.normpath(os.path.join(
-    os.path.dirname(os.path.abspath(__file__)),
-    "..", "..", "StrafeJumpSim", "Fonts", "Overpass-Bold.ttf",
-))
+from sk_parts import block_word
 
 
 @register
@@ -53,15 +49,15 @@ def create():
             g.box((0.024, y, 0), (0.032, 0.014, 0.040), "Lib_Steel", bevel=bev, segs=bs)
             g.cylinder((0.044, y, 0.0), 0.007, 0.005, "Lib_Steel", 6, axis="X")
         if lod == 0:
-            # Cap height is about 0.7 of the em. 0.20 m is roughly 6 in on a 9 in blade.
-            g.text("MAIN", (-0.10, 2.855, 0.044), 0.23, "Lib_PaintWhite", extrude=0.001, font=_FONT)
-            g.text("ST", (0.34, 2.830, 0.044), 0.10, "Lib_PaintWhite", extrude=0.001, font=_FONT)
-            g.text("MAIN", (-0.10, 2.855, 0.038), 0.23, "Lib_PaintWhite", extrude=0.001, yaw=180.0, font=_FONT)
-            g.text("ST", (0.34, 2.830, 0.038), 0.10, "Lib_PaintWhite", extrude=0.001, yaw=180.0, font=_FONT)
-            g.text("5TH", (0.044, 3.125, -0.08), 0.21, "Lib_PaintWhite", extrude=0.001, yaw=90.0, font=_FONT)
-            g.text("AVE", (0.044, 3.100, 0.22), 0.09, "Lib_PaintWhite", extrude=0.001, yaw=90.0, font=_FONT)
-            g.text("5TH", (0.038, 3.125, -0.08), 0.21, "Lib_PaintWhite", extrude=0.001, yaw=-90.0, font=_FONT)
-            g.text("AVE", (0.038, 3.100, 0.22), 0.09, "Lib_PaintWhite", extrude=0.001, yaw=-90.0, font=_FONT)
+            # Block letters sit just off each face of the 3 mm blade.
+            block_word(g, "MAIN", (-0.12, 2.855, 0.045), 0.16, "Lib_PaintWhite", depth=0.002)
+            block_word(g, "ST", (0.34, 2.840, 0.045), 0.09, "Lib_PaintWhite", depth=0.002)
+            block_word(g, "MAIN", (-0.12, 2.855, 0.037), 0.16, "Lib_PaintWhite", depth=0.002)
+            block_word(g, "ST", (0.34, 2.840, 0.037), 0.09, "Lib_PaintWhite", depth=0.002)
+            block_word(g, "5TH", (0.045, 3.125, -0.10), 0.15, "Lib_PaintWhite", axis="z", depth=0.002)
+            block_word(g, "AVE", (0.045, 3.100, 0.22), 0.08, "Lib_PaintWhite", axis="z", depth=0.002)
+            block_word(g, "5TH", (0.037, 3.125, -0.10), 0.15, "Lib_PaintWhite", axis="z", depth=0.002)
+            block_word(g, "AVE", (0.037, 3.100, 0.22), 0.08, "Lib_PaintWhite", axis="z", depth=0.002)
         a.end()
     a.box("Col_Base", (0, 0.005, 0), (0.12, 0.006, 0.12))
     a.capsule("Col_Pole", (0, 1.30, 0), 0.018, 2.30)
