@@ -139,6 +139,7 @@ namespace Tag.Level
             BatchStatic(spawns);
             BatchStatic(dress);
             BatchStatic(zones);
+            BuildWorldDistrict();
 
             MegaParkP1Layout.Audit audit = MegaParkP1Layout.Run();
             LayoutOk = audit.Ok;
@@ -433,8 +434,63 @@ namespace Tag.Level
                 }
                 else if (r != null)
                     r.sharedMaterial = Pick(s.Mat);
+                if (MegaParkWorldDistrict.Hides(s.Name))
+                {
+                    // The court replaces these infield lumps. Both go off so the
+                    // hidden-collider note does not see a box with no mesh.
+                    if (r != null)
+                        r.enabled = false;
+                    Collider box = go.GetComponent<Collider>();
+                    if (box != null)
+                        box.enabled = false;
+                }
             }
             return g;
+        }
+
+        /// <summary>
+        /// Z7 street and court. Editor play loads the library prefabs. A player
+        /// build without those references leaves the hidden lumps off and logs
+        /// the miss; it does not invent a second gray box.
+        /// </summary>
+        void BuildWorldDistrict()
+        {
+            Transform g = Group("WorldZ7");
+            MegaParkWorldDistrict.Place[] places = MegaParkWorldDistrict.Places;
+            int placed = 0;
+            for (int i = 0; i < places.Length; i++)
+            {
+                MegaParkWorldDistrict.Place p = places[i];
+                GameObject prefab = LoadLibraryPrefab(p.Prefab);
+                if (prefab == null)
+                {
+                    Debug.LogError("[MegaPark] world prefab missing " + p.Prefab);
+                    continue;
+                }
+                GameObject go = Instantiate(prefab, g);
+                go.name = p.Name;
+                go.transform.localPosition = new Vector3(p.X, p.Y, p.Z);
+                go.transform.localRotation = Quaternion.Euler(0f, p.Yaw, 0f);
+                go.transform.localScale = Vector3.one;
+                Transform[] nodes = go.GetComponentsInChildren<Transform>(true);
+                for (int n = 0; n < nodes.Length; n++)
+                    nodes[n].gameObject.isStatic = true;
+                placed++;
+            }
+            Debug.Log("[MegaPark] world Z7 placed " + placed.ToString() + "/" + places.Length.ToString());
+        }
+
+        static GameObject LoadLibraryPrefab(string assetPath)
+        {
+            System.Type db = System.Type.GetType("UnityEditor.AssetDatabase, UnityEditor");
+            if (db == null)
+                return null;
+            System.Reflection.MethodInfo mi = db.GetMethod(
+                "LoadAssetAtPath",
+                new System.Type[] { typeof(string), typeof(System.Type) });
+            if (mi == null)
+                return null;
+            return mi.Invoke(null, new object[] { assetPath, typeof(GameObject) }) as GameObject;
         }
 
         void BuildRailFence(Transform parent, MegaParkP1Layout.Solid s)
