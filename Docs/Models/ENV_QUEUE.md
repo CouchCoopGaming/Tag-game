@@ -2,6 +2,12 @@
 
 Environment sub-lead is buildings, draft PR #122, branch `cursor/tag-asset-library`. Helpers are vehicles B2 #125 (`cursor/tag-asset-street-kit`) and street props B3 #129 (`cursor/tag-street-objects`). The Models lead owns `Docs/Models/STANDARD.md`, the validator, and the ledger. Do not rebase these branches onto each other.
 
+## Still framing
+
+This is the camera rule for #122, #125, and #129. Hero, side, and scale each show the whole object. Leave at least 4% of the frame as margin on every edge. The longer side of that screen box covers 25–85% of the frame. Solve the distance from the mesh bounds, at a 35 mm lens, 1280×720. The scale frame also keeps the 1.8 m figure fully in view. A roof close-up is not a hero.
+
+#122 checked the binding hero, side, and scale of every library mesh. 32 quartets already met the rule. 94 did not, and those frames were reshot into `Docs/AssetStills/pass36/`. `Brick_Door` and `Brick_Window` stay in `pass36/brick_door/` and `pass36/brick_window/` so `door` and `window` stay folder tokens.
+
 ## Vehicles helper (#125)
 
 License first: one CC0-1.0 row per asset. A family note does not count.
