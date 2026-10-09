@@ -36,9 +36,12 @@ namespace Tag.Art
 
         public const float TuckThigh = 76f;
         public const float TuckKnee = -112f;
-        public const float TuckArmPitch = -126f;
-        public const float TuckArmYaw = 18f;
-        public const float TuckElbow = -26f;
+        /// <summary>Overhead tuck that stays out of the chest. Roll and thigh yaw carry it.</summary>
+        public const float TuckArmPitch = -110f;
+        public const float TuckArmYaw = 14f;
+        public const float TuckArmRoll = 50f;
+        public const float TuckElbow = -40f;
+        public const float TuckThighYaw = 36f;
         public const float TuckSpine = -8f;
         public const float TuckHip = 14f;
 
@@ -60,6 +63,8 @@ namespace Tag.Art
             public float ThighL, ThighR, KneeL, KneeR;
             public float ArmPitchL, ArmPitchR, ArmYawL, ArmYawR;
             public float ElbowL, ElbowR;
+            public float ArmRollL, ArmRollR;
+            public float ThighYawL, ThighYawR;
             public float Hip, Spine;
         }
 
@@ -130,16 +135,24 @@ namespace Tag.Art
             float pitch = Mathf.Lerp(Mathf.Lerp(TuckArmPitch, FallArmPitch, extend), SwingArmPitch, take);
             float yaw = Mathf.Lerp(Mathf.Lerp(TuckArmYaw, FallArmYaw, extend), SwingArmYaw, take);
             float elbow = Mathf.Lerp(Mathf.Lerp(TuckElbow, FallElbow, extend), SwingElbow, take);
+            float spread = Mathf.Lerp(TuckThighYaw, 0f, extend);
+            spread = Mathf.Lerp(spread, 0f, take);
+            float armRoll = Mathf.Lerp(TuckArmRoll, 0f, extend);
+            armRoll = Mathf.Lerp(armRoll, 0f, take);
             return new Sample
             {
                 ThighL = Mathf.Lerp(bodyThighL, takeL, take),
                 ThighR = Mathf.Lerp(bodyThighR, takeR, take),
                 KneeL = Mathf.Lerp(bodyKneeL, takeKl, take),
                 KneeR = Mathf.Lerp(bodyKneeR, takeKr, take),
+                ThighYawL = -spread,
+                ThighYawR = spread,
                 ArmPitchL = pitch,
                 ArmPitchR = pitch,
                 ArmYawL = yaw,
                 ArmYawR = yaw,
+                ArmRollL = armRoll,
+                ArmRollR = -armRoll,
                 ElbowL = elbow,
                 ElbowR = elbow,
                 Hip = Mathf.Lerp(Mathf.Lerp(TuckHip, FallHip, extend), CrouchHip, take),
@@ -360,6 +373,10 @@ namespace Tag.Art
                 ArmPitchR = Mathf.Lerp(a.ArmPitchR, b.ArmPitchR, t),
                 ArmYawL = Mathf.Lerp(a.ArmYawL, b.ArmYawL, t),
                 ArmYawR = Mathf.Lerp(a.ArmYawR, b.ArmYawR, t),
+                ArmRollL = Mathf.Lerp(a.ArmRollL, b.ArmRollL, t),
+                ArmRollR = Mathf.Lerp(a.ArmRollR, b.ArmRollR, t),
+                ThighYawL = Mathf.Lerp(a.ThighYawL, b.ThighYawL, t),
+                ThighYawR = Mathf.Lerp(a.ThighYawR, b.ThighYawR, t),
                 ElbowL = Mathf.Lerp(a.ElbowL, b.ElbowL, t),
                 ElbowR = Mathf.Lerp(a.ElbowR, b.ElbowR, t),
                 Hip = Mathf.Lerp(a.Hip, b.Hip, t),
