@@ -55,6 +55,8 @@ namespace Tag.Tools
             int ambient = 0;
             int comparison = 0;
             int zip = 0;
+            int compression = 0;
+            int concatChain = 0;
 
             foreach (string file in files)
             {
@@ -109,6 +111,9 @@ namespace Tag.Tools
                         log.Add("zipPoint-unassigned " + rel + ":" + LineOf(text, m.Index));
                     }
                 }
+
+                compression += AmbiguousCompression(text, rel, log);
+                concatChain += ConcatChain(text, rel, log);
             }
 
             int gui = GuiSkinOutsideOnGui(files, root, log);
@@ -119,6 +124,8 @@ namespace Tag.Tools
                 + " ambient=" + ambient
                 + " comparison=" + comparison
                 + " zipPoint=" + zip
+                + " compression=" + compression
+                + " concat-chain=" + concatChain
                 + " unity-refs=" + (unityRefs ? "present" : "absent");
             string guiLine = "qa-gui-skin outside-ongui=" + gui;
             var body = new System.Text.StringBuilder();
@@ -129,7 +136,77 @@ namespace Tag.Tools
             line = patterns + " | " + guiLine;
             report = body.ToString();
             return bareInput == 0 && gamepadNull == 0 && tagShadow == 0
-                && ambient == 0 && comparison == 0 && zip == 0 && gui == 0;
+                && ambient == 0 && comparison == 0 && zip == 0 && gui == 0
+                && compression == 0 && concatChain == 0;
+        }
+
+        /// <summary>
+        /// Unity 6000.3 defines UnityEngine.CompressionLevel. A file that also
+        /// imports System.IO.Compression must spell the BCL type in full.
+        /// </summary>
+        static int AmbiguousCompression(string text, string rel, List<string> log)
+        {
+            bool unity = Regex.IsMatch(text, @"(?m)^using\s+UnityEngine\s*;");
+            bool io = Regex.IsMatch(text, @"(?m)^using\s+System\.IO\.Compression\s*;");
+            if (!unity || !io) return 0;
+            int n = 0;
+            foreach (Match m in Regex.Matches(text, @"(?<![\w.])CompressionLevel\b"))
+            {
+                n++;
+                log.Add("ambiguous-CompressionLevel " + rel + ":" + LineOf(text, m.Index));
+            }
+            return n;
+        }
+
+        /// <summary>
+        /// A long chain of binary + expressions overflows csc (0xC00000FD) inside
+        /// BinaryExpressionSyntax. Sixty-four operands is the gate. Real pose
+        /// data belongs in an array or a file, not in one expression.
+        /// </summary>
+        static int ConcatChain(string text, string rel, List<string> log)
+        {
+            const int Limit = 64;
+            string[] lines = text.Split('\n');
+            int run = 0;
+            int best = 0;
+            int bestLine = 1;
+            for (int i = 0; i < lines.Length; i++)
+            {
+                string s = lines[i].Trim();
+                if (s.Length == 0) continue;
+                if (s.EndsWith("+", StringComparison.Ordinal))
+                {
+                    run++;
+                    if (run > best)
+                    {
+                        best = run;
+                        bestLine = i + 1;
+                    }
+                }
+                else
+                {
+                    run = 0;
+                }
+                int plus = 0;
+                bool inString = false;
+                for (int c = 0; c < s.Length; c++)
+                {
+                    char ch = s[c];
+                    if (ch == '"' && (c == 0 || s[c - 1] != '\\')) inString = !inString;
+                    else if (ch == '+' && !inString) plus++;
+                }
+                if (plus > Limit)
+                {
+                    log.Add("concat-chain " + rel + ":" + (i + 1) + " depth=" + plus);
+                    return plus;
+                }
+            }
+            if (best > Limit)
+            {
+                log.Add("concat-chain " + rel + ":" + bestLine + " depth=" + best);
+                return best;
+            }
+            return 0;
         }
 
         static int GamepadLocalNull(string text, string rel, List<string> log)
@@ -364,6 +441,8 @@ namespace Tag.Tools
         {
             string[] roots =
             {
+                Environment.GetEnvironmentVariable("UNITY_REF_DIR"),
+                "/tmp/unity-6000",
                 "/opt/unity",
                 "/usr/lib/unity",
                 "/opt/Unity",
@@ -371,11 +450,14 @@ namespace Tag.Tools
             };
             foreach (string dir in roots)
             {
-                if (!Directory.Exists(dir)) continue;
-                foreach (string file in Directory.GetFiles(dir, "UnityEngine.dll", SearchOption.AllDirectories))
+                if (string.IsNullOrEmpty(dir) || !Directory.Exists(dir)) continue;
+                foreach (string name in new[] { "UnityEngine.CoreModule.dll", "UnityEngine.dll" })
                 {
-                    if (file.IndexOf("InputSystem", StringComparison.Ordinal) >= 0) continue;
-                    return true;
+                    foreach (string file in Directory.GetFiles(dir, name, SearchOption.AllDirectories))
+                    {
+                        if (file.IndexOf("InputSystem", StringComparison.Ordinal) >= 0) continue;
+                        return true;
+                    }
                 }
             }
             return false;
