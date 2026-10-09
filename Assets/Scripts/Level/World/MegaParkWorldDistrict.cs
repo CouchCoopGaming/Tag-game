@@ -6,7 +6,8 @@ namespace Tag.Level
     /// Dressed Mega Park districts. Z7 is the kickball field the four split
     /// cameras share. Z1 dresses around the soft-play decks. Z2 dresses the
     /// east lawn of the cling lanes. Z3 dresses the merry lawns outside
-    /// Crossing B. Z4 dresses the north lawn of the slide mountain. Placements
+    /// Crossing B. Z4 dresses the north lawn of the slide mountain. Z5 dresses
+    /// the north lawn of the swing grove. Placements
     /// are real meters, yaw degrees, scale 1. The headless layout audit still
     /// counts the gray solids; play mode hides only the Z7 infield lumps.
     /// Feel locks are not stored here.
@@ -210,9 +211,32 @@ namespace Tag.Level
             new Place("Sl_Light", S + "LightPost_Single.prefab", 48.6f, 0f, 86.0f, 180f),
         };
 
+        /// <summary>
+        /// Z5 swing grove. Gray posts, beams, rails, the vault line, and the
+        /// north rims stay. These props sit on the north lawn, south of the
+        /// z = 92 loop and north of the swing rails. Play batches the group.
+        /// </summary>
+        public static readonly Place[] Swing =
+        {
+            new Place("Sw_ClimbA", B + "Brick_Wall.prefab", 62f, 0f, 86.15f, 90f),
+            new Place("Sw_ClimbB", B + "Brick_Wall.prefab", 62f, 0f, 88.5f, 90f),
+            // Yaw 180 puts the entry on the west, toward the climb.
+            new Place("Sw_Gazebo", P + "Gazebo.prefab", 67.48f, 0f, 87.32f, 180f),
+            new Place("Sw_AC", B + "RooftopAC.prefab", 67.48f, 3.53f, 87.32f, 0f),
+            new Place("Sw_ScaffoldA", S + "Scaffold_Bay.prefab", 72.2f, 0f, 87.3f, 0f),
+            new Place("Sw_ScaffoldB", S + "Scaffold_Bay.prefab", 74.95f, 0f, 87.3f, 0f),
+            new Place("Sw_Tree", P + "Tree_Maple.prefab", 78.5f, 0f, 85.8f, 0f),
+            new Place("Sw_Planter", P + "Planter.prefab", 80.8f, 0f, 85.9f, 0f),
+            new Place("Sw_Bench", S + "Bench_Wood.prefab", 78.2f, 0f, 89.2f, 0f),
+            new Place("Sw_Trash", S + "TrashCan_Lidded.prefab", 81.0f, 0f, 89.0f, 0f),
+            new Place("Sw_Shrub", P + "Shrub.prefab", 83.5f, 0f, 88.2f, 0f),
+            new Place("Sw_Picnic", P + "PicnicTable.prefab", 86.0f, 0f, 87.2f, 90f),
+            new Place("Sw_Light", S + "LightPost_Single.prefab", 88.5f, 0f, 85.6f, 180f),
+        };
+
         public static Place[] AllPlaces()
         {
-            var all = new Place[Places.Length + SoftPlay.Length + Cling.Length + Merry.Length + Slide.Length];
+            var all = new Place[Places.Length + SoftPlay.Length + Cling.Length + Merry.Length + Slide.Length + Swing.Length];
             int n = 0;
             for (int i = 0; i < Places.Length; i++)
                 all[n++] = Places[i];
@@ -224,6 +248,8 @@ namespace Tag.Level
                 all[n++] = Merry[i];
             for (int i = 0; i < Slide.Length; i++)
                 all[n++] = Slide[i];
+            for (int i = 0; i < Swing.Length; i++)
+                all[n++] = Swing[i];
             return all;
         }
 

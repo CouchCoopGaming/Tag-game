@@ -1,6 +1,6 @@
 # World ledger
 
-Status of each map area after pass 5. Gray means the live solids are still the Mega Park cubes from `MegaParkP1Layout.BuildSolids`. Polished means library prefabs are placed on top. Z7 hides its infield lumps in play. Z1, Z2, Z3, and Z4 leave their gray toys in place. This head includes the `cursor/tag-street-objects` merge (`7dc3e222`), the street-kit merges (`bc02b9c4`, then `3040d2e5`), and the asset-library merge (`723cc137`). GateLeaf, the fixed bench and trash colliders, and the StrafeJumpSim proof line stayed.
+Status of each map area after pass 6. Gray means the live solids are still the Mega Park cubes from `MegaParkP1Layout.BuildSolids`. Polished means library prefabs are placed on top. Z7 hides its infield lumps in play. Z1, Z2, Z3, Z4, and Z5 leave their gray toys in place. This head includes the `cursor/tag-street-objects` merge (`7dc3e222`), the street-kit merges (`bc02b9c4`, then `3040d2e5`), and the asset-library merge (`723cc137`). GateLeaf, the fixed bench and trash colliders, and the StrafeJumpSim proof line stayed. Street-kit is still `3040d2e5`, so the compact wheel boxes and the pickup nose were not merged. Asset-library `1eec03a1` adds seven buildings and stills, and it does not rebuild the store letters, so that branch was not merged.
 
 The headless audit still counts every solid. Hiding a lump in `MegaParkP1Bootstrap` does not change `BuildSolids`, so the Mega Park proof line stays the same.
 
@@ -14,7 +14,7 @@ Zone boxes are `MegaParkP1Layout.Pass6.ZoneBoxes`.
 | Z2 Cling | x[2, 18] z[38, 78] | Polished pass 3. Gray cling faces stay. 13 props on the east lawn, static-batched. |
 | Z3 Merry | x[22, 46] z[34, 60] | Polished pass 3. Crossing B, x[22, 46] × z[44, 52], stays empty. 13 props on the south lawn and the north strip, static-batched. |
 | Z4 Slide mountain | x[22, 56] z[72, 98] | Polished pass 5. Gray towers, yellow chutes, rims, and the landmark stay. 13 props on the north lawn, static-batched. |
-| Z5 Swings | x[58, 100] z[78, 98] | Gray. |
+| Z5 Swings | x[58, 100] z[78, 98] | Polished pass 6. Gray swing frames, vault line, rims, and the landmark stay. 13 props on the north lawn, static-batched. |
 | Z6 Twin forts | x[118, 158] z[10, 90] | Gray. East spine x[130, 138] and gap z[46, 54] stay empty. |
 | Z7 Kickball | x[64, 114] z[28, 68] | Polished. Pass 5 replaces the east door wall with the closed cabin and parks `Pickup_FullSize_25`. 46 instances, 26 unique, static-batched. |
 | Z8 Crash bowl | x[46, 78] z[34, 66] | Gray. Open rect x[52, 72] z[40, 58] has no new props. |
@@ -201,6 +201,26 @@ Check line:
 
 Stills: `Docs/WorldStills/pass5/`. Z4 rasters are `z4_*.png`. Z7 rasters in that folder are `before_*.png`, `after_*.png`, and `split4.png`. Collider rasters. Pass 1 through 4 images were left in place.
 
+## Z5 this pass
+
+Placements: `Swing` in `Assets/Scripts/Level/World/MegaParkWorldDistrict.cs`. 13 instances, 11 unique prefabs. Z7 is 46 instances and 26 unique, so this set is smaller. Play static-batches the group the same way as Z7.
+
+The gray swing posts, beams, rails, the five vault lips, the north rims, and `Landmark_Z5` stay. Nothing overlaps them, the bowl, the open rect, Crossing B, or the z = 92 loop. Two brick climb faces, yaw 90, sit at x = 62, z = 86.15 and 88.5. The union face is 6.35 m, height 3.19 m. Gazebo at (67.48, 0, 87.32), yaw 180, entry toward the climb. AC on the roof at y = 3.53. The scaffold dash is east of the gazebo.
+
+Check line:
+
+`world-check routes=5 reachable=5/5 floatingProps=0 missingColliders=0 scaleFails=0`
+
+| Route | Measured |
+|---|---|
+| WestClimb | Wall 3.19 m. Wall-run 4.00 m on a 6.35 m face. Deck gap 4.10 m. At 30° off the wall the capsule leaves with feet at 0.05 m and lands at (67.18, 87.33). At 60° it lands at (67.78, 87.23). |
+| EastGrapple | 27.90 m from the east lawn to the climb cornice. |
+| GazeboVault | Rail 0.95 m. East walk-around open. |
+| SlideDash | Under-clear 1.68 m. Air-dash gap 0.92 m. |
+| ChaseLoop | 79.4 m around the north lawn. Worst clearance 0.85 m against `Sw_ClimbB`. |
+
+Stills: `Docs/WorldStills/pass6/z5_*.png`. Collider rasters. Pass 1 through 5 images were left in place.
+
 ## Next district
 
-The next gray row is Z5 swings, x[58, 100] z[78, 98]. Do not recolor the yellow chutes. Do not fill the bowl, the kickball sightline, Crossing B, the soft-play decks, or the cling lanes. Keep the next set batched, and keep loading it from `WorldPropTable`.
+The next gray row is Z6 twin forts, x[118, 158] z[10, 90]. East spine x[130, 138] and gap z[46, 54] stay empty. Do not recolor the yellow chutes. Do not fill the bowl, the kickball sightline, Crossing B, the soft-play decks, or the cling lanes. Keep the next set batched, and keep loading it from `WorldPropTable`.
