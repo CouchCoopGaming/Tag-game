@@ -6234,14 +6234,15 @@ def pass30_shape(center, right, up, kind, color, size):
         nt.links.new(emit.outputs["Emission"], out.inputs["Surface"])
         obj.data.materials.append(mat)
         return
+    # Still sizes only. The sim keeps DustLook's real metres.
     if kind == "sheet":
-        sx, sy = size * 1.7, size * 0.38
+        sx, sy = size * 1.8, size * 0.50
     elif kind == "splinter":
-        sx, sy = size * 0.16, size * 1.5
+        sx, sy = size * 0.28, size * 1.7
     elif kind == "streak":
-        sx, sy = size * 1.8, size * 0.16
+        sx, sy = size * 2.2, size * 0.32
     elif kind == "tick":
-        sx, sy = size * 0.14, size * 0.7
+        sx, sy = size * 0.26, size * 1.15
     else:
         sx, sy = size * 0.55, size * 0.42
     c = Vector(center)
@@ -6251,6 +6252,44 @@ def pass30_shape(center, right, up, kind, color, size):
         [c - rr * sx + uu * sy, c + rr * sx + uu * sy, c + rr * sx - uu * sy, c - rr * sx - uu * sy],
         color,
     )
+
+
+def pass30_family(center, right, up, kind, color, size=0.36):
+    """One readable cluster for the still. Grass is a small puff, dirt a fat cloud."""
+    right = Vector(right)
+    up = Vector(up)
+    center = Vector(center)
+    if kind == "puff":
+        for i in range(3):
+            off = right * ((i - 1) * size * 0.35) + up * ((i % 2) * size * 0.2)
+            pass30_shape(center + off, right, up, "puff", color, size * 0.55)
+        return
+    if kind == "cloud":
+        for i in range(6):
+            off = right * (((i % 3) - 1) * size * 0.55) + up * ((i // 3 - 0.5) * size * 0.4)
+            pass30_shape(center + off, right, up, "cloud", color, size * 0.7)
+        return
+    if kind == "splinter":
+        for i in range(3):
+            off = right * ((i - 1) * size * 0.28) + up * ((i - 1) * size * 0.05)
+            pass30_shape(center + off, right, up, "splinter", color, size * 0.85)
+        return
+    if kind == "streak":
+        for i in range(3):
+            off = up * ((i - 1) * size * 0.28)
+            pass30_shape(center + off, right, up, "streak", color, size * 0.7)
+        return
+    if kind == "tick":
+        for i in range(4):
+            off = right * ((i - 1.5) * size * 0.22) + up * (-0.15 - (i % 2) * size * 0.25)
+            pass30_shape(center + off, right, up, "tick", color, size * 0.7)
+        return
+    if kind == "chip":
+        for i in range(3):
+            off = right * ((i - 1) * size * 0.45) + up * ((i % 2) * size * 0.12)
+            pass30_shape(center + off, right, up, "chip", color, size * 0.55)
+        return
+    pass30_shape(center, right, up, kind, color, size)
 
 
 def render_pass29(arm, cam):
@@ -6461,12 +6500,16 @@ def render_pass30(arm, cam):
         foot = p11_foot(arm)
         p14_aim(cam, foot, yaw)
         bpy.context.view_layer.update()
-        fwd, left = p11_heading(yaw)
-        origin, right, up, _hw, _hh = pass29_cam_axes(cam, 5.2)
-        for i, (_name, color, kind, size) in enumerate(row):
-            at = foot + left * ((i - 3) * 0.42) + fwd * 0.85 + Vector((0.0, 0.0, 0.35))
-            use = kind if shaped else ("cloud" if kind == "cloud" else "puff")
-            pass30_shape(at, right, up, use, color, size)
+        origin, right, up, _hw, _hh = pass29_cam_axes(cam, 2.5)
+        # Drawn large in the pane so the shape family reads. Counts stay in DustLook.
+        for i, (_name, color, kind, _size) in enumerate(row):
+            at = origin + right * ((i - 3) * 0.62) + up * 0.05
+            if shaped:
+                pass30_family(at, right, up, kind, color)
+            else:
+                puff = "cloud" if kind == "cloud" else "puff"
+                span = 0.34 if kind == "cloud" else 0.16
+                pass30_family(at, right, up, puff, color, span)
         shoot(label, cells, titles)
     p14_grid(cells, titles, "Surface shape   chase camera   quarter pane   tint / shape", os.path.join(out_dir, "shape-compare.jpg"), 2)
 
@@ -6480,14 +6523,14 @@ def render_pass30(arm, cam):
         p14_aim(cam, foot, yaw)
         bpy.context.view_layer.update()
         fwd, left = p11_heading(yaw)
-        origin, right, up, _hw, _hh = pass29_cam_axes(cam, 5.0)
+        origin, right, up, _hw, _hh = pass29_cam_axes(cam, 3.2)
         if mark:
-            at = foot + fwd * 0.15 + Vector((0.0, 0.0, 0.04))
-            pass30_shape(at, left, fwd, "sheet", (0.42, 0.42, 0.40), 0.28)
+            at = origin + up * -0.15
+            pass30_shape(at, right, up, "sheet", (0.42, 0.42, 0.40), 0.62)
         else:
             for i in range(6):
-                at = foot + left * ((i - 2.5) * 0.08) + fwd * (0.05 + i * 0.04) + Vector((0.0, 0.0, 0.12))
-                pass30_shape(at, right, up, "puff", (0.78, 0.78, 0.76), 0.16)
+                at = origin + right * ((i - 2.5) * 0.16) + up * ((i % 2) * 0.10)
+                pass30_shape(at, right, up, "puff", (0.78, 0.78, 0.76), 0.20)
         shoot(label, cells, titles)
     p14_grid(cells, titles, "Contact mark   chase camera   quarter pane   puff / stain", os.path.join(out_dir, "mark-compare.jpg"), 2)
 
@@ -6521,13 +6564,13 @@ def render_pass30(arm, cam):
         foot_at = foot + Vector((0.0, 0.0, 0.2))
         up = Vector((0.0, 0.0, 1.0))
         if shaped:
-            pass30_shape(metal_at, along, up, "streak", (1.0, 0.90, 0.45), 0.22)
-            pass30_shape(foot_at, along, up, "streak", (1.0, 0.90, 0.45), 0.16)
-            pass30_shape(nick_at, along, up, "sheet", (0.78, 0.78, 0.76), 0.18)
+            pass30_shape(metal_at, along, up, "streak", (1.0, 0.90, 0.45), 0.90)
+            pass30_shape(foot_at, along, up, "streak", (1.0, 0.90, 0.45), 0.70)
+            pass30_shape(nick_at, along, up, "sheet", (0.78, 0.78, 0.76), 0.55)
         else:
-            pass30_shape(metal_at, along, up, "puff", (0.75, 0.72, 0.66), 0.18)
-            pass30_shape(foot_at, along, up, "puff", (0.75, 0.72, 0.66), 0.14)
-            pass30_shape(nick_at, along, up, "puff", (0.75, 0.72, 0.66), 0.16)
+            pass30_shape(metal_at, along, up, "puff", (0.75, 0.72, 0.66), 0.36)
+            pass30_shape(foot_at, along, up, "puff", (0.75, 0.72, 0.66), 0.28)
+            pass30_shape(nick_at, along, up, "puff", (0.75, 0.72, 0.66), 0.32)
         shoot(label, cells, titles)
     p14_grid(cells, titles, "Wall matches foot   chase camera   quarter pane   gray puff / streak and nick", os.path.join(out_dir, "wall-compare.jpg"), 2)
 
