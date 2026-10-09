@@ -229,7 +229,7 @@ static class PoseKeyDump
             }
             Emit(w, c, "zip", t, s.ThighL, s.ThighR, s.KneeL, s.KneeR, 0f, 0f,
                 s.ArmPitchL, s.ArmPitchR, s.ArmYawL, s.ArmYawR, 0f, 0f,
-                s.ElbowL, s.ElbowR, s.Hip, s.Spine, s.Head, s.LeanZ, 0f, 0f, 0f, 0f, 0f);
+                s.ElbowL, s.ElbowR, s.Hip, s.Spine, s.Head, s.LeanZ, 0f, 0f, s.FootL, s.FootR, 0f);
             if (t >= dur) break;
         }
     }
@@ -252,6 +252,8 @@ static class PoseKeyDump
             Spine = Mathf.Lerp(a.Spine, b.Spine, u),
             Head = Mathf.Lerp(a.Head, b.Head, u),
             LeanZ = Mathf.Lerp(a.LeanZ, b.LeanZ, u),
+            FootL = Mathf.Lerp(a.FootL, b.FootL, u),
+            FootR = Mathf.Lerp(a.FootR, b.FootR, u),
         };
     }
 
@@ -410,8 +412,9 @@ static class PoseKeyDump
             float phase = rate * t;
             GaitBlend.Legs legs = GaitBlend.At(phase, speed);
             float sin = Mathf.Sin(phase);
-            Emit(w, c, name, t, legs.ThighL, legs.ThighR, legs.KneeL, legs.KneeR, 0f, 0f,
-                LocoFeel.ArmPitch(-sin, speed), LocoFeel.ArmPitch(sin, speed), 8f, -8f, 0f, 0f,
+            Emit(w, c, name, t, legs.ThighL, legs.ThighR, legs.KneeL, legs.KneeR,
+                -LocoFeel.ThighSpread, LocoFeel.ThighSpread,
+                LocoFeel.ArmPitch(-sin, speed), LocoFeel.ArmPitch(sin, speed), 0f, 0f, 0f, 0f,
                 -16f, -20f,
                 0f, LocoFeel.CruiseTarget(speed), -LocoFeel.CruiseTarget(speed) * 0.35f, 0f, 0f, 0f,
                 legs.FootL, legs.FootR, 0f);

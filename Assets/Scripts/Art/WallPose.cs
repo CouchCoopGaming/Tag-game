@@ -442,6 +442,8 @@ namespace Tag.Art
                 Spine = hang.Spine,
                 Head = hang.Head,
                 LeanZ = hang.LeanZ,
+                FootL = hang.FootL,
+                FootR = hang.FootR,
             };
         }
 

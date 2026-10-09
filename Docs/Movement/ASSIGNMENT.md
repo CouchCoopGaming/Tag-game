@@ -1,10 +1,10 @@
 # E assignment
 
-Branch `cursor/tag-movement-evasion`, cut from `cursor/tag-movement` at `1d54919b`. Draft only. The lead merges with `git merge` after a measured pass. `EvasionMoves.Enabled` stays off. `EvasionPose.Holds` stays as folded.
+Branch `cursor/tag-movement-evasion`. Draft only. The lead merges with `git merge` after a measured pass. `EvasionMoves.Enabled` stays off. `EvasionPose.Holds` stays as folded.
 
 ## Clips
 
-Evasion, the played roll, the played stagger, and the landing and roll exits.
+Evasion, the played roll, the played stagger, and the landing and roll exits. Pass 7 closed spin, jukeR, the dive, soft, hard, the 65% roll, exit-Roll, and exit-RollAbsorb. Stagger stays open.
 
 | Clip | Hip-sit fails | Pose |
 |---|---|---|
