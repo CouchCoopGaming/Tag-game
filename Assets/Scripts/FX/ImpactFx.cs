@@ -25,8 +25,9 @@ namespace Tag.FX
         const int PieceMax = BitsMax + PlumeMax;
         const int Slots = 4;
         const float RingOuter = 0.96f;
-        // Narrower band than the 0.78 hole. Timing of the expand and fade is unchanged.
-        const float RingInner = 0.90f;
+        // Wider band than 0.90 so a 0.80 m ring has a stroke at quarter-pane size.
+        // The outer edge stays at 0.96, so the ring does not grow past its radius.
+        const float RingInner = 0.74f;
         const float ShapeSoft = 0f;
         const float ShapeChunk = 3f;
         const float ShapeSplinter = 4f;
@@ -201,6 +202,24 @@ namespace Tag.FX
             float u = (age - 0.16f) / (PlumeLife - 0.16f);
             if (u > 1f) u = 1f;
             return body * (1f - u);
+        }
+
+        /// <summary>
+        /// Wall-run start. Pops up to the 0.26 m cap, then sits on the authored radius.
+        /// A slow contact never draws larger than 0.26 m.
+        /// </summary>
+        public static float WallShown(float radius, float age)
+        {
+            float pop = 1f;
+            if (age < 0.08f)
+            {
+                float t = age / 0.08f;
+                if (t < 0f) t = 0f;
+                pop = 1.22f - 0.22f * t;
+            }
+            float shown = radius * pop;
+            if (radius < 0.261f && shown > 0.26f) shown = 0.26f;
+            return shown;
         }
 
         /// <summary>0.22 at the pop, 1 once the ring has reached its radius.</summary>
@@ -463,7 +482,8 @@ namespace Tag.FX
                 bool ringOn = _age[i] < LifeSeconds;
                 float grow = Grow(ringOn ? _age[i] : LifeSeconds, LifeSeconds);
                 float fade = ringOn ? Fade(_age[i], LifeSeconds) : 0f;
-                float shown = _radius[i] * grow;
+                // Land rings keep Grow(). A wall-run ring pops, then settles.
+                float shown = _wide[i] > 0 ? WallShown(_radius[i], _age[i]) : _radius[i] * grow;
                 float diameter = shown * 2f / RingOuter;
                 Vector3 n = _normal[i];
                 _ring[i].localPosition = n * 0.03f;
@@ -1057,12 +1077,12 @@ namespace Tag.FX
                     float dy = (y - mid) / mid;
                     float r = Mathf.Sqrt(dx * dx + dy * dy);
                     float a = 0f;
-                    // Donut. Inner radius stays at least 70% of the outer edge.
+                    // Donut. The stroke is wider than the old 0.90 hole. Outer edge is unchanged.
                     if (r <= RingOuter && r >= RingInner)
                     {
-                    float rise = (r - RingInner) / 0.012f;
+                    float rise = (r - RingInner) / 0.028f;
                     if (rise > 1f) rise = 1f;
-                    float fall = (RingOuter - r) / 0.012f;
+                    float fall = (RingOuter - r) / 0.028f;
                         if (fall > 1f) fall = 1f;
                         a = rise < fall ? rise : fall;
                     }
@@ -1077,14 +1097,14 @@ namespace Tag.FX
         }
 
         /// <summary>
-        /// Thicker band for the wall-run start. The land ring keeps RingTex.
-        /// Inner 0.42 on outer 0.96, so a 0.22 m ring has a stroke you can see.
+        /// Thick band for the wall-run start. The land ring keeps RingTex.
+        /// Inner 0.30 on outer 0.96, so a 0.26 m ring has a stroke and a hole.
         /// </summary>
         static Texture2D RingWideTex()
         {
             const int n = 128;
-            const float inner = 0.42f;
-            const float edge = 0.045f;
+            const float inner = 0.30f;
+            const float edge = 0.05f;
             var tex = new Texture2D(n, n, TextureFormat.RGBA32, false);
             var pixels = new Color[n * n];
             float mid = (n - 1) * 0.5f;

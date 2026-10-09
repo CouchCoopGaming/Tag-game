@@ -4827,7 +4827,7 @@ def impact22_state(surface, speed, age_u=0.56, legacy=False, radius_override=Non
     if thin < 0.2:
         thin = 0.2
     base_op = (0.42 + k * 0.48) if legacy else (0.12 + k * 0.10)
-    ring_inner = 0.78 if legacy else 0.90
+    ring_inner = 0.78 if legacy else 0.74
     state = {
         "radius": radius,
         "shown": radius * grow,
@@ -5999,6 +5999,212 @@ def pass27_land(arm, cam, foot, yaw, age, radius, chunky, bits):
     print("RING", "r", round(state["radius"], 2), "shown", round(state["shown"], 2), "bits", state["bits"])
 
 
+def pass28_trail(arm, travel, tint, cam):
+    """Old trail ribbons. Prints the screen span so a short diagonal is visible in the log."""
+    trail = -travel
+    if trail.length < 0.001:
+        return 999.0
+    trail = trail.normalized()
+    names = ("Spine", "Hips", "Hand_L", "Hand_R", "Foot_L", "Foot_R", "Head", "UpperArm_L")
+    shortest = 999.0
+    for i, name in enumerate(names):
+        h = (i * 3 % 10) / 9.0
+        length = 0.60 + h * 0.60
+        origin = bone_pos(arm, name)
+        start = origin + trail * 0.22
+        end = start + trail * length
+        pass27_ribbon(start, end, tint, cam.location, 0.045)
+        span = pass27_span(start, end, cam)
+        shortest = min(shortest, span)
+        print("SPAN", "trail", name, round(span, 1))
+    print("SPAN_MIN", round(shortest, 1))
+    return shortest
+
+
+def pass28_bottom(path):
+    from PIL import Image
+
+    image = Image.open(path).convert("RGB")
+    w, h = image.size
+    px = image.load()
+    total = 0.0
+    n = 0
+    for y in range(h - 12, h):
+        for x in range(w):
+            r, g, b = px[x, y]
+            total += 0.3 * r + 0.59 * g + 0.11 * b
+            n += 1
+    print("BOTTOM", os.path.basename(path), round(total / max(n, 1), 2))
+
+
+def render_pass28(arm, cam):
+    """Quarter-pane chase stills for diagonal flares, the wall ring, and the land stroke."""
+    from PIL import Image
+
+    scene = bpy.context.scene
+    for obj in bpy.data.objects:
+        if obj.type == "LIGHT" and obj.data.type == "SUN":
+            obj.data.energy = 1.4
+        elif obj.type == "LIGHT" and obj.data.type == "AREA":
+            obj.data.energy = 28
+    scene.render.resolution_x = 640
+    scene.render.resolution_y = 360
+    scene.eevee.taa_render_samples = 8
+    scene.view_settings.view_transform = "Standard"
+    scene.view_settings.look = "None"
+    scene.view_settings.exposure = 0.0
+    scene.view_settings.gamma = 1.0
+    out_dir = os.path.join(ROOT, "Docs", "FxStills", "pass28")
+    os.makedirs(out_dir, exist_ok=True)
+    tmp = "/tmp/pass28"
+    os.makedirs(tmp, exist_ok=True)
+    yaw = 24.0
+    tint = (0.25, 0.55, 1.0)
+    pull_tint = (1.0, 0.82, 0.15)
+
+    def shoot(name, cells, titles):
+        png = os.path.join(tmp, name + ".png")
+        scene.render.filepath = png
+        bpy.ops.render.render(write_still=True)
+        image = Image.open(png).convert("RGB")
+        p14_jpeg(os.path.join(out_dir, name + ".jpg"), image)
+        cells.append(image.copy())
+        titles.append(name.replace("-", " "))
+        return image
+
+    # 1a. Diagonal dash. Before is trail-aligned. After flares across the camera.
+    diag_cells = []
+    diag_titles = []
+    for label, flare in (("diag-before", False), ("diag-after", True)):
+        p11_clear("P11Fx")
+        p11_ground("concrete", asphalt=True)
+        apply_pose(arm, lambda a: pose_airdash(a, 0.70, 0.70), 0.85, yaw)
+        foot = p11_foot(arm)
+        p14_aim(cam, foot, yaw)
+        bpy.context.view_layer.update()
+        travel, _rope = pass25_travel(arm, foot, yaw, "dash", 0.70, 0.70)
+        if flare:
+            pass27_burst(arm, cam, tint)
+        else:
+            pass28_trail(arm, travel, tint, cam)
+        shoot(label, diag_cells, diag_titles)
+    p14_grid(
+        diag_cells, diag_titles,
+        "Diagonal dash   chase camera   quarter pane   trail / flare",
+        os.path.join(out_dir, "diag-compare.jpg"), 2,
+    )
+
+    # 1b. Grapple pull along the rope. Same flare, plus the rope tell.
+    pull_cells = []
+    pull_titles = []
+    for label, flare in (("pull-before", False), ("pull-after", True)):
+        p11_clear("P11Fx")
+        p11_ground("concrete", asphalt=True)
+        apply_pose(arm, pose_grapple, 0.75, yaw)
+        foot = p11_foot(arm)
+        p14_aim(cam, foot, yaw)
+        bpy.context.view_layer.update()
+        travel, _rope = pass25_travel(arm, foot, yaw, "pull", 0.0, 1.0)
+        pass25_rope(arm, foot, yaw, 0.0, 1.0)
+        if flare:
+            pass27_burst(arm, cam, pull_tint)
+        else:
+            pass28_trail(arm, travel, pull_tint, cam)
+        shoot(label, pull_cells, pull_titles)
+    p14_grid(
+        pull_cells, pull_titles,
+        "Grapple pull   chase camera   quarter pane   trail / flare",
+        os.path.join(out_dir, "pull-compare.jpg"), 2,
+    )
+
+    # 2. Wall-run start. Before is the 0.21 m thin hole. After pops to 0.26 m with a thicker stroke.
+    wall_cells = []
+    wall_titles = []
+    for after in (False, True):
+        p11_clear("P11Fx")
+        p11_clear("P11Geo")
+        p11_ground("concrete", asphalt=True)
+        apply_pose(arm, pose_wall, 0.0, 0.0)
+        foot = p11_foot(arm)
+        p14_aim(cam, foot, 0.0)
+        bpy.context.view_layer.update()
+        fwd, _left = p11_heading(0.0)
+        normal = -fwd
+        center = foot + fwd * 0.55
+        center.z = 1.15
+        along = Vector((-normal.y, normal.x, 0.0))
+        if along.length < 0.001:
+            along = Vector((1.0, 0.0, 0.0))
+        along.normalize()
+        hit = center + along * 0.95
+        hit.z = 1.25
+        bpy.ops.mesh.primitive_cube_add(size=1.0, location=(center.x + fwd.x * 0.08, center.y + fwd.y * 0.08, 1.6))
+        wall = bpy.context.active_object
+        wall.name = p11_name("Geo")
+        wall.scale = (2.6, 0.12, 3.2)
+        wall.data.materials.append(make_mat(p11_name("Mat"), (0.62, 0.62, 0.60, 1.0), 0.9))
+        pass26_scuff(hit, normal, 8.0, (0.20, 0.20, 0.19), (0.84, 0.83, 0.80), cam.location)
+        if after:
+            radius = 0.26
+            inner = 0.30
+        else:
+            radius = 0.21
+            inner = 0.42
+        state = impact22_state("concrete", 13.8, age_u=0.04 / 0.25, radius_override=radius, bits_override=0)
+        state["bits"] = 0
+        state["plumes"] = 0
+        state["ring_inner"] = inner
+        state["opacity"] = 0.96
+        state["dust"] = (0.96, 0.94, 0.90)
+        state["shown"] = radius
+        impact22_draw(hit, normal, state, cam.location)
+        nrm = Vector(normal).normalized()
+        # Hole across the ring, in pixels, so a few-px hole fails the log.
+        hole = radius * (inner / 0.96)
+        span = pass27_span(hit - along * hole, hit + along * hole, cam)
+        print("WALL", "after" if after else "before", "r", radius, "inner", inner, "hole_px", round(span, 1))
+        if after:
+            for i in range(2):
+                h = p11_rand(i, 9)
+                pos = Vector(hit) + nrm * (0.36 + h * 0.10) + along * ((i - 0.5) * 0.22)
+                pos.z = hit.z + 0.62 + h * 0.12
+                impact24_puff(pos, 0.32, (0.90, 0.88, 0.84), 0.78, cam.location)
+        name = "wall-after" if after else "wall-before"
+        shoot(name, wall_cells, wall_titles)
+    p14_grid(
+        wall_cells, wall_titles,
+        "Wall-run start   chase camera   quarter pane   0.21 m / 0.26 m pop",
+        os.path.join(out_dir, "wall-compare.jpg"), 2,
+    )
+
+    # 3. Hard-land ring. Same 0.80 m radius. The stroke is the difference.
+    ring_cells = []
+    ring_titles = []
+    for label, inner in (("ring-before", 0.90), ("ring-after", 0.74)):
+        p11_clear("P11Fx")
+        p11_ground("concrete", asphalt=True)
+        apply_pose(arm, pose_land, 0.0, yaw)
+        foot = p11_foot(arm)
+        p14_aim(cam, foot, yaw)
+        bpy.context.view_layer.update()
+        state = impact22_state(
+            "concrete", 36.5, age_u=0.12 / 0.25,
+            radius_override=0.80, bits_override=5,
+        )
+        state["ring_inner"] = inner
+        state["bits"] = 5
+        state["plumes"] = 0
+        impact22_draw(Vector((foot.x, foot.y, 0.02)), (0.0, 0.0, 1.0), state, cam.location)
+        print("RING", label, "r", round(state["shown"], 2), "inner", inner)
+        shoot(label, ring_cells, ring_titles)
+        pass28_bottom(os.path.join(out_dir, label + ".jpg"))
+    p14_grid(
+        ring_cells, ring_titles,
+        "Hard-land ring   chase camera   quarter pane   thin stroke / thick stroke",
+        os.path.join(out_dir, "ring-compare.jpg"), 2,
+    )
+
+
 def render_pass27(arm, cam):
     """Quarter-pane chase stills. Before and after for each pass 27 fix."""
     from PIL import Image
@@ -6182,6 +6388,9 @@ def main():
     bpy.ops.import_scene.fbx(filepath=FBX)
     arm = next(obj for obj in bpy.data.objects if obj.type == "ARMATURE")
     cam = setup_world(arm)
+    if os.environ.get("FX_PASS28") == "1":
+        render_pass28(arm, cam)
+        return
     if os.environ.get("FX_PASS27") == "1":
         render_pass27(arm, cam)
         return

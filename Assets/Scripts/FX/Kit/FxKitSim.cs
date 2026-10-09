@@ -868,14 +868,11 @@ namespace Tag.FX
             }
             if (travel.sqrMagnitude < 0.0001f) travel = Vector3.forward;
             travel.Normalize();
-            // Streaks trail opposite the velocity, back along the dash or the rope.
-            Vector3 trail = -travel;
             Vector3 side = Vector3.Cross(Vector3.up, travel);
             if (side.sqrMagnitude < 0.0001f) side = Vector3.right;
             else side.Normalize();
             Vector3 camRight = side;
             Vector3 camUp = Vector3.up;
-            bool headOn = false;
             if (_cam != null)
             {
                 camRight = _cam.transform.right;
@@ -884,42 +881,22 @@ namespace Tag.FX
                 camUp = _cam.transform.up;
                 if (camUp.sqrMagnitude < 0.0001f) camUp = Vector3.up;
                 else camUp.Normalize();
-                Vector3 toCam = _cam.transform.position - origin;
-                if (toCam.sqrMagnitude > 0.0001f)
-                {
-                    toCam.Normalize();
-                    headOn = Mathf.Abs(Vector3.Dot(trail, toCam)) > 0.82f;
-                }
             }
-            int count = dash ? _air.Length : AirLong;
+            // Dash and grapple both flare across the camera. A trail ribbon
+            // collapses on a diagonal the same way a head-on dash does.
             for (int i = 0; i < _air.Length; i++)
             {
                 _airWide[i] = 0;
-                if (i >= count)
-                {
-                    _airAge[i] = -1f;
-                    continue;
-                }
                 if (i < AirLong)
                 {
                     float h = (i * 3 % 10) / 9f;
-                    float len = 0.60f + h * 0.60f;
                     Vector3 start = LimbPoint(i, origin);
-                    if (dash && headOn)
-                    {
-                        // A ribbon aimed at the camera collapses. Flare it across the frame.
-                        float sign = (i & 1) == 0 ? 1f : -1f;
-                        float flare = 0.95f + h * 0.45f;
-                        float lift = (i & 1) == 0 ? 0.16f : -0.10f;
-                        _airA[i] = start + camRight * sign * 0.22f;
-                        _airB[i] = _airA[i] + camRight * sign * flare + camUp * lift;
-                        _airWide[i] = 1;
-                    }
-                    else
-                    {
-                        _airA[i] = start;
-                        _airB[i] = start + trail * len;
-                    }
+                    float sign = (i & 1) == 0 ? 1f : -1f;
+                    float flare = 0.95f + h * 0.45f;
+                    float lift = (i & 1) == 0 ? 0.16f : -0.10f;
+                    _airA[i] = start + camRight * sign * 0.22f;
+                    _airB[i] = _airA[i] + camRight * sign * flare + camUp * lift;
+                    _airWide[i] = 1;
                 }
                 else
                 {
