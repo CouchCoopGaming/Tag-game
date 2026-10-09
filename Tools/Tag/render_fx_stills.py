@@ -6086,7 +6086,8 @@ def pass28_strip(start, end, normal, cam):
         ]
 
     pass28_card(quad(width * 0.5, 0.02), (0.08, 0.05, 0.04))
-    pass28_card(quad(core * 0.5, 0.04), (0.95, 0.28, 0.32))
+    # P1 red from BodyFoam. The dark edge stays.
+    pass28_card(quad(core * 0.5, 0.04), (0.88, 0.22, 0.24))
     span = pass27_span(
         Vector(start) + up * (width * 0.5),
         Vector(start) - up * (width * 0.5),
@@ -6693,8 +6694,9 @@ def render_pass28(arm, cam):
     tmp = "/tmp/pass28"
     os.makedirs(tmp, exist_ok=True)
     yaw = 24.0
-    tint = (0.25, 0.55, 1.0)
-    pull_tint = (1.0, 0.82, 0.15)
+    # BodyFoam seats, same values as pass 29. P2 blue on the dash, P3 orange on the pull.
+    tint = (0.42, 0.68, 0.92)
+    pull_tint = (0.94, 0.42, 0.14)
 
     def shoot(name, cells, titles):
         png = os.path.join(tmp, name + ".png")

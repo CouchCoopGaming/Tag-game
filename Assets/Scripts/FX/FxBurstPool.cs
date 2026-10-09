@@ -164,8 +164,15 @@ namespace Tag.FX
             if (!_ready || _ps == null) return;
             if (Calmed()) return;
             // The mark is the contact. A metal plant still emits nothing.
+            // DustLook.Life stays on the proof line. The drawn puff ends with the mark
+            // so a concrete sprint (0.50 s) cannot outlast the 0.42 s sheet.
+            // Brick still places one chip; the airborne count is unchanged.
             if (kind == FxBurstKind.Run && puff.Stamp != 0)
+            {
                 PlaceMark(worldPos, puff);
+                if (puff.Life > MarkLife)
+                    puff.Life = MarkLife;
+            }
             if (puff.Count <= 0) return;
             if (puff.Shape > 0.5f && (kind == FxBurstKind.Run || kind == FxBurstKind.WallScuff))
             {
