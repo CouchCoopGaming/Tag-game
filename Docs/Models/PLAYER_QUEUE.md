@@ -6,7 +6,7 @@ Lead grade on `35085dbf`: `models-validate assets=7 pass=0 fail=7`. Proof `pose=
 
 Pass 7 is on `Dummy_Mannequin_Tan_Hier_Clearance.fbx`, measured after FBX reimport. `rigJoint=0`. Hip flexion is clear on both legs from 0° through 120°, extension 20°, and abduction 35°. The authoritative test is enclosure: a vertex is inside the other piece only when a ray in each of six axis directions hits an odd number of faces. One ray across an open strip does not count. The normal test is not authoritative for cuff vertices on the bone axis. `rigJoint` at rest still uses the normal test. Twist is clamped to ±10° at 60° of flexion (15° is not enclosed). Knee L clears 160°, knee R clears 155° and fails 160° by 0.91 cm. Ankle enclosure is dorsi 25°, plantar 45°, inv 15°, ev 15°. The normal test still reads the ankle at 20° dorsiflexion, so the combined dorsi number is 15°.
 
-#131 is unblocked for the flex range. The stills are not accepted yet, so do not bind this rig, and Bram stays a Reed tint until Landon says the stills are good. LOD and joint close-ups still wait on that.
+#131 is unblocked. Flexion is clean on the reimported file, so the 12 costumes can refit and Bram can leave the Reed tint. Do not bind this rig into #118 until Landon accepts the stills. LOD1/LOD2, the joint close-up, and the scale still still wait on that review.
 
 ## Order
 
@@ -17,4 +17,4 @@ Pass 7 is on `Dummy_Mannequin_Tan_Hier_Clearance.fbx`, measured after FBX reimpo
 
 ## Helper
 
-#131 may refit the 12 costumes to this rig. The flex range is clean after export. LOD1/LOD2, joint close-up, and the scale still still wait on Landon's still review. Bram stays a Reed tint until then.
+#131 refits the 12 costumes to this rig. The flex range is clean after export, so Bram no longer has to stay a Reed tint. LOD1/LOD2, the joint close-up, and the scale still wait on Landon's review of `Docs/Models/RigStills/pass7/`.
