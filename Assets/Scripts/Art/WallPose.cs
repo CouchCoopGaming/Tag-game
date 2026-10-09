@@ -41,8 +41,9 @@ namespace Tag.Art
         /// <summary>High hand on the wall in front. Open elbow, yaw slightly in.</summary>
         public const float ClimbReachPitch = -120f;
         public const float PullPitch = -70f;
-        public const float ReachYaw = -16f;
-        public const float PullYaw = 16f;
+        /// <summary>Both hands stay spread. Equal yaws keep the reach from crossing the chest.</summary>
+        public const float ReachYaw = -28f;
+        public const float PullYaw = -28f;
         public const float ReachElbow = -16f;
         public const float PullElbow = -48f;
         public const float DriveThigh = 76f;
@@ -56,6 +57,8 @@ namespace Tag.Art
         public const float ClimbHip = 8f;
         /// <summary>Look up the wall. Negative is up, same sign as the air head.</summary>
         public const float ClimbHead = -26f;
+        /// <summary>Thighs stay apart so the drive knee clears the spine. Not a stiffness lock.</summary>
+        public const float ClimbThighYaw = 36f;
 
         public const float DragPitch = -112f;
         public const float DragYaw = 8f;
@@ -72,11 +75,14 @@ namespace Tag.Art
 
         /// <summary>Roll off the wall, 15–20°. Wall-on-the-left is negative.</summary>
         public const float RunTilt = 20f;
-        public const float InnerPitch = 4f;
+        /// <summary>Inner hand sits up off the chest. A pitch near zero sinks the upper arm into it.</summary>
+        public const float InnerPitch = 46f;
         public const float InnerSway = 3f;
         public const float InnerYaw = 36f;
         public const float InnerElbow = -18f;
-        public const float OuterFwdPitch = -78f;
+        /// <summary>Forward pump stays at or below this. The swing steps to the back pitch
+        /// so it does not travel through the chest.</summary>
+        public const float OuterFwdPitch = -48f;
         public const float OuterBackPitch = 24f;
         public const float OuterYaw = 12f;
         public const float OuterFwdElbow = -12f;
@@ -90,6 +96,8 @@ namespace Tag.Art
         public const float RunSpine = 12f;
         public const float RunHip = 6f;
         public const float RunHead = -4f;
+        /// <summary>Both legs stay out. The forward thigh then clears the spine.</summary>
+        public const float RunThighYaw = 24f;
         public const float HipRollShare = 0.45f;
         public const float HeadRollShare = 0.25f;
 
@@ -115,6 +123,7 @@ namespace Tag.Art
             public float ElbowL, ElbowR;
             public float Hip, Spine, Head, LeanZ;
             public float FootL, FootR;
+            public float ThighYawL, ThighYawR;
         }
 
         /// <summary>0 while climbing, 1 at the locked slip speed and below.</summary>
@@ -257,6 +266,8 @@ namespace Tag.Art
                 LeanZ = a.LeanZ + (b.LeanZ - a.LeanZ) * t,
                 FootL = a.FootL + (b.FootL - a.FootL) * t,
                 FootR = a.FootR + (b.FootR - a.FootR) * t,
+                ThighYawL = a.ThighYawL + (b.ThighYawL - a.ThighYawL) * t,
+                ThighYawR = a.ThighYawR + (b.ThighYawR - a.ThighYawR) * t,
             };
         }
 
@@ -301,6 +312,8 @@ namespace Tag.Art
                 LeanZ = 0f,
                 FootL = Mathf.Lerp(12f, 8f, slip),
                 FootR = Mathf.Lerp(12f, 8f, slip),
+                ThighYawL = -ClimbThighYaw,
+                ThighYawR = ClimbThighYaw,
             };
             float hold = HoldWeight(verticalSpeed);
             if (hold <= 0.0001f) return moving;
@@ -323,8 +336,10 @@ namespace Tag.Art
             float along = span > 0.01f ? (outerThigh - OuterThighBack) / span : 0.5f;
             if (along < 0f) along = 0f;
             if (along > 1f) along = 1f;
-            float outerPitch = Mathf.Lerp(OuterFwdPitch, OuterBackPitch, along);
-            float outerElbow = Mathf.Lerp(OuterFwdElbow, OuterBackElbow, along);
+            // A linear sweep from the forward pump to the back swing passes the upper
+            // arm through the chest. The two pitches are each clear, so the arm steps.
+            float outerPitch = along < 0.5f ? OuterFwdPitch : OuterBackPitch;
+            float outerElbow = along < 0.5f ? OuterFwdElbow : OuterBackElbow;
             // The inner swing stays tucked. The planted foot keeps the full step,
             // plus a short toe-off, so a 9.5 wall run does not skate.
             const float pi = 3.14159265f;
@@ -336,8 +351,9 @@ namespace Tag.Art
             float thighR = legs.ThighR * tuckR - FootSlide.WallTrail(legs.ThighR * tuckR);
             float kneeL = legs.KneeL;
             float kneeR = legs.KneeR;
-            float footL = wallLeft ? 6f : GaitBlend.SoleLevelDeg(thighL, kneeL);
-            float footR = wallLeft ? GaitBlend.SoleLevelDeg(thighR, kneeR) : 6f;
+            // A positive inner-foot pitch rolls the toe through the floor under the wall lean.
+            float footL = wallLeft ? 0f : GaitBlend.SoleLevelDeg(thighL, kneeL);
+            float footR = wallLeft ? GaitBlend.SoleLevelDeg(thighR, kneeR) : 0f;
             if (wallLeft)
             {
                 return new Sample
@@ -358,6 +374,8 @@ namespace Tag.Art
                     LeanZ = lean,
                     FootL = footL,
                     FootR = footR,
+                    ThighYawL = -RunThighYaw,
+                    ThighYawR = RunThighYaw,
                 };
             }
 
@@ -379,6 +397,8 @@ namespace Tag.Art
                 LeanZ = lean,
                 FootL = footL,
                 FootR = footR,
+                ThighYawL = -RunThighYaw,
+                ThighYawR = RunThighYaw,
             };
         }
 
@@ -738,6 +758,7 @@ namespace Tag.Art
                 + " plantKnee=" + PlantKnee.ToString("0")
                 + " climbSpine=" + ClimbSpine.ToString("0")
                 + " climbHip=" + ClimbHip.ToString("0")
+                + " thighYaw=" + ClimbThighYaw.ToString("0") + "/" + RunThighYaw.ToString("0")
                 + " climbHead=" + ClimbHead.ToString("0")
                 + " dragPitch=" + DragPitch.ToString("0")
                 + " dragYaw=" + DragYaw.ToString("0")

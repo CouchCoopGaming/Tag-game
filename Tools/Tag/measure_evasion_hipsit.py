@@ -3,7 +3,10 @@
 pelvisBack is how far the hips head sits behind the support sole, along
 the facing direction. Positive means the pelvis is behind the foot.
 hinge is hip pitch over lumbar plus chest pitch. Chest is not keyed, so
-lumbar is the spine pitch. A near-zero spine with a flexed hip passes.
+lumbar is the spine pitch. A plant still needs hip flexion of at least 25°.
+A crouch still needs hip flexion of at least 35° and spine flexion of at
+least 15°. The ratio stays at least 1.5. A small pair that divides to 1.5
+fails those floors.
 Drop is not used as a horizontal offset.
 
   blender --background --python Tools/Tag/measure_evasion_hipsit.py
@@ -124,9 +127,7 @@ def obligation(clip, t):
     if clip != "dive":
         return in_move
     local = t - ENTRY
-    # The push-off is the planted frame. After that the body is airborne and stretched,
-    # so those frames are not plants.
-    takeoff = 0.0 <= local <= 0.02
+    takeoff = 0.0 <= local <= 0.22
     rollup = 0.76 <= local <= 0.817
     return takeoff or rollup
 
@@ -148,6 +149,8 @@ def main():
     hinge_min = None
     knee_min = None
     drop_min = None
+    hip_flex_min = None
+    spine_flex_min = None
     fails = []
     cruise = []
     rig_max = 0.0
@@ -203,7 +206,12 @@ def main():
             knee_need = 45.0 if crouch else 25.0
             drop_need = 20.0 if crouch else 8.0
             flex, ahead, of_hip, pdrop = support_leg(arm, frame, side)
+            hip_flex = abs(frame["hip"])
+            spine_flex = abs(frame["spine"])
+            hip_need = 35.0 if crouch else 25.0
             hinge_fail = hinge is not None and hinge < 1.5
+            hip_flex_fail = hip_flex < hip_need
+            spine_flex_fail = crouch and spine_flex < 15.0
             back_fail = back < need
             knee_fail = flex < knee_need
             shin_fail = ahead < 0.0 or of_hip < 0.0
@@ -217,8 +225,12 @@ def main():
                 knee_min = flex
             if drop_min is None or pdrop < drop_min:
                 drop_min = pdrop
-            if hinge_fail or back_fail or knee_fail or shin_fail or drop_fail or planted_fail:
-                fails.append((clip, t, side, back, hinge, need, flex, ahead, of_hip, pdrop, gap))
+            if hip_flex_min is None or hip_flex < hip_flex_min:
+                hip_flex_min = hip_flex
+            if spine_flex_min is None or spine_flex < spine_flex_min:
+                spine_flex_min = spine_flex
+            if hinge_fail or hip_flex_fail or spine_flex_fail or back_fail or knee_fail or shin_fail or drop_fail or planted_fail:
+                fails.append((clip, t, side, back, hinge, need, flex, ahead, of_hip, pdrop, gap, hip_flex, spine_flex, hip_flex_fail, spine_flex_fail))
         elif in_move:
             cruise.append((clip, t, back, hinge))
 
@@ -244,13 +256,20 @@ def main():
                     print("OVER", frame["clip"], "%.3f" % frame["t"], hit["a"], hit["b"], round(hit["depth"] * 100, 2), flush=True)
 
     print("FAILS", len(fails), flush=True)
-    for clip, t, side, back, hinge, need, flex, ahead, of_hip, pdrop, gap in fails:
+    for clip, t, side, back, hinge, need, flex, ahead, of_hip, pdrop, gap, hip_flex, spine_flex, hip_flex_fail, spine_flex_fail in fails:
         htxt = "neutral" if hinge is None else "%.2f" % hinge
+        flags = []
+        if hip_flex_fail:
+            flags.append("hipFlex")
+        if spine_flex_fail:
+            flags.append("spineFlex")
         print(
             "FAIL", clip, "%.3f" % t, side,
             "back", round(back, 1), "need", need, "hinge", htxt,
+            "hip", round(hip_flex, 1), "spine", round(spine_flex, 1),
             "knee", round(flex, 1), "shin", round(ahead, 1), "kneeOfHip", round(of_hip, 1),
             "drop", round(pdrop, 1), "gap", round(gap * 100.0, 2),
+            "floors", ",".join(flags) if flags else "-",
             flush=True,
         )
     print("CRUISE", len(cruise), flush=True)
@@ -280,10 +299,11 @@ def main():
     back_txt = "0" if back_min is None else "%.2f" % back_min
     knee_txt = "0" if knee_min is None else "%.1f" % knee_min
     drop_txt = "0" if drop_min is None else "%.1f" % drop_min
-    # Docs/Movement/STANDARD.md. fails is the plant, landing, and crouch count.
+    hip_txt = "0" if hip_flex_min is None else "%.1f" % hip_flex_min
+    spine_txt = "0" if spine_flex_min is None else "%.1f" % spine_flex_min
     print(
-        "hip-sit clips=%d fails=%d pelvisBackMin=%s hingeMin=%s kneeMin=%s pelvisDropMin=%s"
-        % (len(clips), len(fails), back_txt, hinge_txt, knee_txt, drop_txt),
+        "hip-sit clips=%d loadedFrames=%d pelvisBackMin=%s cm hingeMin=%s kneeMin=%s pelvisDropMin=%s cm hipFlexMin=%s spineFlexMin=%s fails=%d"
+        % (len(clips), loaded, back_txt, hinge_txt, knee_txt, drop_txt, hip_txt, spine_txt, len(fails)),
         flush=True,
     )
     if not SKIP_NOCLIP:
@@ -291,8 +311,8 @@ def main():
             print("POSEWHERE", pose_where, flush=True)
         pose_report = 0.0 if pose_max <= n.LIMIT_M else n.cm(pose_max)
         print(
-            "no-clip clips=%d frames=%d worldMax=%s pose=%s rigJoint=%s fails=%d"
-            % (len(clips), loaded, n.cm(world_max), pose_report, n.cm(rig_max), 1 if pose_max > n.LIMIT_M else 0),
+            "no-clip clips=%d frames=%d worldMax=%s rigJoint=%s pose=%s fails=%d"
+            % (len(clips), loaded, n.cm(world_max), n.cm(rig_max), pose_report, 1 if pose_max > n.LIMIT_M else 0),
             flush=True,
         )
     print("EXIT", flush=True)
