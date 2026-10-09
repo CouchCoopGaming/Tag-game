@@ -164,8 +164,8 @@ namespace Tag.Art
 
             float amp = GaitBlend.ArmAmp(gait);
             float idle = 1f - gait;
-            float outY = Mathf.Lerp(12f, 8f, gait);
-            float reachY = Mathf.Lerp(outY, outY + 6f, gait);
+            float outY = Mathf.Lerp(12f, 0f, gait);
+            float reachY = outY;
             float yawL = Mathf.Lerp(outY, reachY, frontR * gait);
             float yawR = Mathf.Lerp(outY, reachY, frontL * gait);
             float elbowReach = Mathf.Lerp(-10f, -6f, gait);
@@ -176,8 +176,8 @@ namespace Tag.Art
                 ThighR = thighR,
                 KneeL = kneeL,
                 KneeR = kneeR,
-                ArmPitchL = ArmPitch(-sinC, amp) - 12f * idle,
-                ArmPitchR = ArmPitch(sinC, amp) - 12f * idle,
+                ArmPitchL = ArmPitch(-sinC, amp) + VerbPoseClips.IdleArmPitch * idle,
+                ArmPitchR = ArmPitch(sinC, amp) + VerbPoseClips.IdleArmPitch * idle,
                 ArmYawL = yawL,
                 ArmYawR = yawR,
                 ElbowL = Mathf.Lerp(elbowReach, elbowPull, frontL * gait),
