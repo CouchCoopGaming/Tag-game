@@ -92,8 +92,8 @@ The rope is the existing grapple, not a new action. `PlayerInputReader` (around 
 | `Docs/CouchPlay.md` | No rope. Seat color "blue / amber / purple / white". | Rope is RMB / LT. Seats are the identity below. |
 | `README.md` controls table | No cling, no rope, sprint "Auto, or L3 / LB", old speeds | Use the table in this file. |
 | `Docs/MOVEMENT.md` | Coyote 140 ms, buffer 140 ms, walk 5.5, sprint 9 | Use the locked feel table. |
-| PR #121 `Docs/Controls.md` and `MenuHost.cs` | Grapple pad column "Not on pad yet" | The pad button is LT. See `DRIFT.md`. |
-| PR #126 `Docs/UiPlan.md` | One pass says LT, a later pass says the tip does not print a pad glyph, and an open-flaws line calls couch grapple a bug | Print LT. The couch rope is intentional. |
+| PR #121 live controls (`0d3b9d74`) | Grapple is RMB / LT. `ActionBinds.GrapplePadDefault` is `leftTrigger`. | Done on the live row. Pass 48 of `Docs/UiPlan.md` and `Docs/WhatsNew.md` still says "Not on pad yet". That sentence is history. |
+| PR #126 | Merged into #121 at `35a535d9` (2026-10-09 00:18 UTC) by cursor[bot]. | Do not unmerge. Do not merge another lane into D1. The couch rope is intentional. |
 
 ## Seat identity
 
@@ -104,9 +104,9 @@ The rope is the existing grapple, not a new action. `PlayerInputReader` (around 
 | P3 | Orange | Square |
 | P4 | Lavender | Diamond |
 
-Menu lane already stores this for the results band: `MenuTheme.BandKey` is `Red`, `Blue`, `Orange`, `Lavender`, and `MenuMannequin.Shape` is 0 circle, 1 triangle, 2 square, 3 diamond (PR #121 `Assets/Scripts/UI/Menu/MenuMannequin.cs`). Swatch RGB lives in `MenuMannequin.Swatch` (Red `0.88, 0.22, 0.24`, Blue `0.42, 0.68, 0.92`, Orange `0.94, 0.42, 0.14`, Lavender `0.70, 0.58, 0.88`).
+The menu lane stores this for the results band. On #121 `0d3b9d74`, `MenuMannequin.Colors.cs` seats are Red/circle, Blue/triangle, Orange/square, Lavender/diamond, and `Accessibility.PlayerGlyph` is `● ▲ ■ ◆`. Red swatch is `0.90, 0.18, 0.20`. Lavender's band is `0.82, 0.70, 0.98` and the shape fill is `0.80, 0.72, 0.92`.
 
-The play tip does not match yet. `Assets/Scripts/Settings/Accessibility.cs` on this tip sets `PlayerGlyph` to circle, square, triangle, diamond (`● ■ ▲ ◆`), so P2 and P3 are swapped. The default palette rows are yellow, green, white, and cyan (`PlayerR/G/B` first four of palette 0: about `0.78, 0.78, 0.00`, `0.57, 0.99, 0.45`, `1, 1, 1`, `0, 0.84, 0.75`), not the four seat colors. Colour-blind palettes stay an option. They are not the default marks. Shapes are what keep red/orange and blue/lavender apart.
+The play tip does not match yet. `Assets/Scripts/Settings/Accessibility.cs` on #118 sets `PlayerGlyph` to circle, square, triangle, diamond (`● ■ ▲ ◆`), so P2 and P3 are swapped. The default palette rows are yellow, green, white, and cyan (`PlayerR/G/B` first four of palette 0: about `0.78, 0.78, 0.00`, `0.57, 0.99, 0.45`, `1, 1, 1`, `0, 0.84, 0.75`), not the four seat colors. The menu copy of that palette is the same measured row; seat chrome is separate. Colour-blind palettes stay an option. They are not the default marks. Shapes are what keep red/orange and blue/lavender apart.
 
 Hier look picks (Blue, Mint, Orange, Lavender, Tan, Red in `LocalProfiles.HierNames`) are costumes on top of the seat. The seat mark stays the table above. Default runner mesh is Tan, default It mesh is Orange (`HierMannequinCatalog`).
 
@@ -127,27 +127,30 @@ This is the order until Landon says otherwise.
 3. Every controls string matches the table above. LT is the pad rope. RT is free.
 4. Props and vehicles stay at player scale. Hoop geometry stays a real rim in front of a real backboard. No vehicle logos.
 5. Costumes stay a prep lab. They do not enter the player build, and they do not grow a second skeleton.
-6. The world lane (`cursor/tag-world`) is not open yet. Do not invent a fourth park on a feature branch.
+6. World dressing is PR #134 (`cursor/tag-world-c420`, stacked on the props branch). It dresses Mega Park. It does not add a fourth park.
+
+Movement consolidation: A1 #118 is the only branch that consolidates. C1 #120 and E #130 stay helpers. Storror S1 #123 is reference only. S2 #124 stays idle.
 
 ## Department map
 
 | Department | Who | Branch / PR | Job |
 |---|---|---|---|
-| Movement lead A1 | Map lane | `cursor/tag-map-lane-pass19-8c95` #118 | The play tip. Feel stays locked. |
-| Movement helper C1 | Animation | `cursor/tag-anim-fx` #120 | Pose the verbs that already exist. |
-| Movement helper E | Evasion | `cursor/tag-evasion-moves` #130 | Stutter, spin, juke, dive. Flag stays off until Landon binds them. |
+| Movement lead A1 | Map lane | `cursor/tag-map-lane-pass19-8c95` #118 | The play tip. Feel stays locked. This branch consolidates. |
+| Movement helper C1 | Animation | `cursor/tag-anim-fx` #120 | Pose the verbs that already exist. Helper. Does not merge itself. |
+| Movement helper E | Evasion | `cursor/tag-evasion-moves` #130 | Stutter, spin, juke, dive. Flag stays off until Landon binds them. Helper. |
 | Effects C2 | FX kit | `cursor/tag-fx-kit` #127 | Land, rope, immunity, stagger, launch, wall, tag flash. Visual only. |
-| Motion reference | Storror reference and clips | `cursor/tag-storror-mocap` #123, `cursor/tag-storror-clips` #124 | Reference poses on Hier. Not a new motor. |
-| Effects researcher | — | No branch this pass | Research notes only, when that seat opens. C2 is the effects worker. |
-| Models lead | — | `cursor/tag-models-lead` is not open | Owns model direction once the branch exists. |
+| Motion reference S1 | Storror reference | `cursor/tag-storror-mocap` #123 | Reference only. Not a motor, and not a ship clip. |
+| Motion reference S2 | Storror clips | `cursor/tag-storror-clips` #124 | Idle. Do not hand clips to A1. |
+| Effects researcher | FX research | `cursor/tag-fx-research` #135 | Notes only, stacked on C2. No feel edits. |
+| Models lead | Model standard | `cursor/tag-models-lead` #133 | Scale, license, and the env and player queues. |
 | Environment sub-lead B1 | Asset library | `cursor/tag-asset-library` #122 | Buildings, harbor, park kit, at player scale. |
-| Vehicles B2 | Street kit | `cursor/tag-asset-street-kit` #125 | Sedans and buses. No logos. |
-| Props B3 | Street objects | `cursor/tag-street-objects` #129 | Props, signs, poles. Same scale rules. |
+| Vehicles B2 | Street kit | `cursor/tag-asset-street-kit` #125 | Sedans and buses. No logos. Court is 22 × 15 m. |
+| Props B3 | Street objects | `cursor/tag-street-objects` #129 | Props, signs, poles. Same court and the 0.375 m face-to-rim gap. |
 | Player sub-lead A2 | Rig | `cursor/tag-loco-smooth` #128 | Locomotion on the Hier rig. The clearance candidate waits for Landon. |
 | Costumes F | Costume lab | `cursor/tag-character-costumes` #131 | Prep only. Not in the player build. |
-| UI D1 | Couch menu | `cursor/tag-ui-menu` #121 | Screens. Secondary screens are #126 on `cursor/tag-ui-screens2`, stacked on D1. |
-| World | World designer | `cursor/tag-world` is not open | Parks and routes, when the branch exists. |
-| Design | This doc | `cursor/tag-design-lead` | Direction and drift. No feature work. |
+| UI D1 | Couch menu | `cursor/tag-ui-menu` #121 | Screens. #126 was merged into this branch. Do not merge another lane into it. |
+| World | World designer | `cursor/tag-world-c420` #134 | Mega Park dressing, stacked on props. Not a fourth park. |
+| Design | This doc | `cursor/tag-design-lead` #132 | Direction and drift. No feature work. Draft only. |
 
 ## Standing rules
 
