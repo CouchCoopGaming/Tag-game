@@ -1,13 +1,13 @@
 # Player queue
 
-Re-graded 9 Oct 2026. Rig worker #128 leads. Costumes #131 help. Neither tip moved since pass 2. Do not bind the clearance rig into #118. Landon accepts stills first.
+Re-checked 9 Oct 2026 with the tightened still and LOD rules. Rig worker #128 leads. Costumes #131 help. Do not bind the clearance rig into #118. Landon accepts stills first.
 
 | Branch | Tip | Baseline | This run |
 | --- | --- | --- | --- |
-| #128 | `35085dbf` | `pass=0/7` paper 5 / geom 2 | `models-validate assets=7 pass=0 fail=7` / `models-split paperwork=5 geometry=2` |
+| #128 | `b804954f` | `pass=0/7` paper 5 / geom 2 | `models-validate assets=7 pass=0 fail=7` / `models-split paperwork=5 geometry=2` |
 | #131 | `e5b34c0e` | `pass=0/18` paper 5 / geom 13 | `models-validate assets=18 pass=0 fail=18` / `models-split paperwork=5 geometry=13` |
 
-No pass to spot-check. The geometry fails are the same ones.
+#128 moved, and the graded Hier files did not. Colour Hier FBX hashes differ from `Dummy_Mannequin_Tan_Hier_Hi`, so they do not inherit the tan stills. No pass to spot-check.
 
 ## Rig (#128)
 
@@ -20,9 +20,9 @@ No pass to spot-check. The geometry fails are the same ones.
 
 ## Costumes (#131)
 
-Nothing new landed. License rows, LOD meshes, and the pass 3 quartet already pass. All 12 loadouts still fail `shell-buried=1%`, `rig-not-clearance`, and `rig-proof-missing`.
+Nothing new landed. License rows and LOD meshes still pass. The shared pass 3 lineup is no longer a quartet for every loadout. All 12 fail `stills-quarter`, `stills-side`, `stills-close`, `stills-scale`, `rig-not-clearance`, and `rig-proof-missing`.
 
-1. Pull the shells out of the grey body. Pass 3 is torn player color on the mannequin, and the knee close-up is about 1% garment. `worldMax=0.38` did not catch it. Clothes sit 0.3–1.0 cm outside the hull, and a clothed figure is at least 15% player color in the still.
+1. Pull the shells out of the grey body, then shoot a quartet per loadout. The pass 3 lineup is torn player color on the mannequin, and the knee close-up is about 1% garment. `worldMax=0.38` did not catch it. Clothes sit 0.3–1.0 cm outside the hull, and a clothed figure is at least 15% player color in that loadout's own still.
 2. Keep the open joint gaps. A gap is fine. A shell inside the chest is not.
 3. Bram stays Reed's meshes with a blue `PlayerColor` until the rig is stable.
 4. Refit Reed, Pip, and Sol to the clearance candidate only after the shells read as clothes and the hip proof is `pose=0`. This branch has no clearance FBX and no pass 5 proof.

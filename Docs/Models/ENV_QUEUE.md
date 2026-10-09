@@ -1,71 +1,57 @@
 # Environment queue
 
-Re-graded 9 Oct 2026 from the current tips. Buildings (#122) leads. Vehicles (#125) and street props (#129) help. Do not rebase these branches onto each other.
+Tightened re-grade, 9 Oct 2026. Buildings (#122) leads. Vehicles (#125) and street props (#129) help. Do not rebase these branches onto each other. Draft lead only. Do not merge.
 
-Measured with `Tools/Models/validate_assets.py` on this lead branch. Self-reports are listed beside them. #125's current tip is `b332ca8f`, which is past the `f32539e8` note.
+The checker now requires three things the last run let through. A colour, year, or variant sibling needs its own quartet unless its FBX is byte-identical to the mesh those stills show. `street` and `corner` are name tokens. LOD2 tris are at most 0.6× LOD1 tris (`lod2-ratio` when they are not).
 
-| Branch | Tip | Baseline (pass 2) | This run | Self-report |
-| --- | --- | --- | --- | --- |
-| #122 | `723cc137` | `pass=0/125` paper 103 / geom 22 | `models-validate assets=125 pass=19 fail=106` / `models-split paperwork=105 geometry=1` | `pass=24/125` |
-| #125 | `b332ca8f` | `pass=0/193` paper 152 / geom 41 | `models-validate assets=191 pass=14 fail=177` / `models-split paperwork=158 geometry=19` | `pass=14/191` at `f32539e8` |
-| #129 | `7dc3e222` | `pass=0/222` paper 190 / geom 32 | `models-validate assets=219 pass=22 fail=197` / `models-split paperwork=188 geometry=9` | `pass=27/219` |
+| Branch | Tip | Previous run | This run |
+| --- | --- | --- | --- |
+| #122 | `723cc137` | `pass=19/125` paper 105 / geom 1 | `models-validate assets=125 pass=10 fail=115` / `models-split paperwork=93 geometry=22` |
+| #125 | `bc02b9c4` | `pass=14/191` paper 158 / geom 19 at `b332ca8f` | `models-validate assets=188 pass=0 fail=188` / `models-split paperwork=136 geometry=52` |
+| #129 | `a92b5987` | `pass=22/219` paper 188 / geom 9 at `7dc3e222` | `models-validate assets=219 pass=11 fail=208` / `models-split paperwork=177 geometry=31` |
 
-#122 and #129 each quote a pass count 5 above this run. The fresh script is the number to use. The only geometry fail left on #122 is the player Hier, which is not this lane.
+#122 did not move. #125 deleted the three renamed street-car blockouts, so the asset count dropped by 3. #129 reseated lamp colliders and rebuilt the court-fence LOD2.
 
-## Spot-check
+## What stopped passing
 
-Three passes opened per branch. These are real objects, not buried shells.
+#122 lost 9. `lod2-ratio`: Cabin (1364/948), GasCanopy (1064/1064), Ranch_House (2340/1688), Boathouse (448/364), Dock_Straight (672/672), FishingBoat (1148/1148), HarborShed (504/324). Stills: `Container_20_Blue` and `Container_20_Green` no longer borrow the red container quartet.
 
-- #122 `Ranch_House` pass 30 scale: hip roof, porch rail, garage, 1.8 m figure. Reads.
-- #122 `WalkUp` pass 30 quarter: fire escape, cornice, roof cap, sidewalk. Reads. Different mesh from #129's walk-up (2736 tris here, 1832 there).
-- #122 `Container_20` pass 30 quarter: corrugated box, doors, figure. The still is one color. `Container_20_Blue` and `Container_20_Green` pass on that same quartet.
-- #125 `Sedan_Mid_A_25` pass 15 side and nose: hard panels, greenhouse, wheel gap, hood shutline. Not the old loft. No badge. Width in the manifest is 1.816 m.
-- #125 `Bus_City40` pass 1 side: city bus, folding door, dark glass. The blue livery has its own blue side still.
-- #129 `WalkUp`, `FireHydrant`, and `Sign_AFrame` pass 25: each reads (simpler walk-up, bonnet and caps, OPEN A-frame, figure in frame). Not torn color on a grey body.
+#125 lost all 14. The four buses fail `lod2-ratio` only (City40 LOD2 is 1280 against LOD1 1504). `Sedan_Mid_A_22` through `_25` and the six paints fail `lod2-ratio` and no longer share `sedan_mid_a/pass15`. `_25` still picks up `pass12/check_front_25.png` and `check_side_25.png`; close and scale are missing, so it does not pass.
 
-## Validator holes
+#129 lost 11. `lod2-ratio`: GasCanopy, Dock_Straight, FishingBoat, Bench_WoodIron, BikeRack_Hoop3, Fountain_Walk, Newsstand_Corner, Sign_AFrame. Stills: `Park/Planter` no longer matches `planter_street_*`. `FireHydrant_Red` and `FireHydrant_Silver` no longer match the red hydrant quartet. `FireHydrant_Yellow` keeps its own pass 25 quartet and still passes.
 
-The pass counts are inflated by the still matcher.
+## Passes that remain
 
-- A color or year suffix is stripped, so one quartet covers every sibling. `Sedan_Mid_A_22` through `_25` and the six paints are 10 passes on `sedan_mid_a/pass15`. LOD0 is 5016, 5176, 5036, and 4908, so the years are not one mesh. `FireHydrant_Silver` is 1148 tris and passes on the red hydrant stills.
-- The token `street` is ignored, so `Park/Planter` passes on `Planter_Street`'s pass 25 quartet.
-- `corner` is a generic suffix, so `WoodFence_Corner` binds `woodfence_quarter.jpg` even though `woodfence_corner_quarter.jpg` exists and shows the return.
-- LOD2 with the same triangle count as LOD1 passes. That is true of `GasCanopy` (1064), `Dock_Straight`, and `FishingBoat` on both #122 and #129, and of `Bench_WoodIron`, `BikeRack_Hoop3`, `Fountain_Walk`, `Newsstand_Corner`, and `Sign_AFrame` on #129. Those are not shown to be coarser meshes.
+#122 (10): WalkUp (2736/2216/1004), WoodFence, WoodFence_Corner, WoodFence_End, WoodFence_Gate, Container_20, Rowboat, CourtFence (3680/2656/620), Gazebo, Road_Junction. WoodFence_Corner now binds `woodfence_corner_*`, which is the return.
 
-Do not treat a shared still or an equal LOD2 as done.
+#125: none.
 
-## Restructure impact
+#129 (11): WalkUp (1832/1300/680), FireHydrant, FireHydrant_Yellow, LightPost_Globe, NewspaperRack, ParkingMeter_Single, ParkingMeter_Twin, Planter_Street, PowerPole_Span, Sign_StreetName, StreetMedian_Planted.
 
-Four redos, one undo.
-
-1. Court, twice. #129 `8effda99` and #125 `c84459a3` both restore #122's 22 m by 15 m court and the 0.375 m face-to-rim gap. `Court`, `CourtFence`, and `Hoop` sizes match on all three tips. Same fix, two helpers.
-2. Walk-up, two meshes. #122 and #129 each closed the landing and each pass. The meshes differ. #125 still fails `land-gap=54.0cm`. Pick the #122 mesh. Do not author a third.
-3. LOD2 shortcut, both tips. #122 and #129 both "added LOD2" on the gas canopy, the straight dock, and the fishing boat with LOD2 tris equal to LOD1. Same numbers, same shortcut.
-4. Cars, deleted on one side and kept on the other. #129 dropped `Car_Sedan`, `Car_Hatch`, and `Car_Pickup`. #125 removed `Sedan_Midsize` and `Sedan_Mid_A_21`, then renamed the three blockouts to `Car_Sedan_25`, `Car_Hatch_25`, and `Car_Pickup_25`. They fail only stills now. The rejection said delete them. The rename undoes that on #125 only.
-
-Container roofs (23 cm), the gazebo (22.2 cm), the rowboat budget, `HarborShed`, and `CourtFence` are closed on #122 and still failing on #125 and #129. That is a missed copy, not a second design. Copy #122. Do not re-close them.
+`Sedan_Compact_25`, `Hatch_Compact_25`, and `Crossover_Compact_25` have pass 17 quartets and fail only `lod2-ratio` (LOD2 is about 0.70× LOD1).
 
 ## Buildings (#122)
 
-Geometry on this tip moved. Next is the library that still has no quartet (105 paperwork fails), not another landing pass.
-
-1. Leave the spot-checked passes. Replace copied LOD2s (`GasCanopy`, `Dock_Straight`, `FishingBoat`) with a mesh that has fewer triangles than LOD1.
-2. Give `Container_20_Blue` and `Container_20_Green` their own quartet, or one still that shows the enamel. The red quartet does not cover them.
-3. New pieces, each with a quartet in the same pass: city alley, subway stair, overpass span, driveway apron, park restroom, bleachers, harbor ferry. No third cabin. No second road junction. No second walk-up.
+1. Leave the 10 passes. Do not shoot another landing pass for them.
+2. Replace copied LOD2s. GasCanopy, Dock_Straight, and FishingBoat are LOD2 equals LOD1. Cabin, Ranch_House, Boathouse, and HarborShed are under the old "not more than LOD1" rule and over 0.6×.
+3. `Container_20_Blue` and `Container_20_Green` need their own quartets. The red container stills stay on `Container_20`.
+4. New pieces, each with a quartet in the same pass: city alley, subway stair, overpass span, driveway apron, park restroom, bleachers, harbor ferry. No third cabin. No second road junction. No second walk-up.
 
 ## Vehicles (#125)
 
-1. Delete `Car_Sedan_25`, `Car_Hatch_25`, and `Car_Pickup_25`. #129 already deleted the old names. Do not bring the blockouts back.
-2. Keep one midsize body. `Sedan_Mid_A_25` is the shell that passed the eye test. Paints share it only when the tris match and the still shows that paint. `_22`, `_23`, and `_24` need their own stills or the same mesh.
-3. `Sedan_Compact_25`, `Hatch_Compact_25`, and `Crossover_Compact_25` are inside the envelope and fail only stills. Shoot the quartet. Do not refit the cage again.
-4. Buses can sit. Width is 2.641 m, LOD2 exists, and the blue side still is actually blue.
-5. Do not restore the court again. Do not re-close landings. Take #122's container, gazebo, rowboat, and walk-up when this branch next touches the shared library.
-6. Trains and trolleys wait until the renamed blockouts are gone.
+1. `Car_Sedan_25`, `Car_Hatch_25`, and `Car_Pickup_25` are deleted on `bc02b9c4`. Leave them deleted. #129 already dropped the old names.
+2. One midsize body. Cut LOD2 to at most 0.6× LOD1 (today 2356 against 3676 on `_25`). `_22`, `_23`, `_24`, and each paint need a quartet of their own unless the FBX bytes match `_25`.
+3. The three compacts have quartets. Cut LOD2 (2344/3325, 2294/3284, 2400/3417) to 0.6×. Do not refit the cage again.
+4. Buses keep their own stills. City40 LOD2 1280 is over 0.6× of 1504. City60 LOD2 1708 is over 0.6× of 2060.
+5. Do not restore the court. Do not re-close landings. Take #122's container, gazebo, rowboat, and walk-up when this branch next touches the shared library.
+6. Trains and trolleys wait until the midsize shell's LOD2 and its own quartet pass.
 
 ## Street props (#129)
 
-1. The pass 25 props that were opened read. Keep them. Replace LOD2 copies (`Bench_WoodIron`, `BikeRack_Hoop3`, `Fountain_Walk`, `Newsstand_Corner`, `Sign_AFrame`, and the three shared with #122) with a coarser mesh.
-2. `FireHydrant_Silver` needs its own still. The red quartet is the red hydrant.
-3. Copy #122's container, gazebo, rowboat, `HarborShed`, and `CourtFence`. Do not rebuild them here. `WalkUp` on this tip is the simpler mesh. Retire it in favor of #122's.
-4. Do not re-import `Car_*`. That delete stays.
-5. `Park/Planter` is not a pass. The checker used `Planter_Street`'s stills.
+1. Leave the 11 passes. `FireHydrant_Yellow` has its own stills. `Planter_Street` is the street planter. `Park/Planter` is a different prop and needs its own quartet.
+2. Replace LOD2 copies: Bench_WoodIron (368/368), BikeRack_Hoop3 (876/876), Fountain_Walk (976/976), Newsstand_Corner (780/780), Sign_AFrame (196/196), plus GasCanopy, Dock_Straight, and FishingBoat.
+3. `FireHydrant_Red` and `FireHydrant_Silver` need their own stills. Silver is 1148 tris. The base hydrant is 1328.
+4. Take #122's container, gazebo, rowboat, HarborShed, and CourtFence. `a92b5987` rebuilt CourtFence to 3664/2640/144. #122's passing fence is 3680/2656/620. Retire the #129 fence. Retire this tip's WalkUp (1832) in favor of #122's (2736).
+5. Do not re-import `Car_*`. That delete stays.
+
+Restructure-impact count is 6. The log is in `Docs/Models/LEDGER.md`.

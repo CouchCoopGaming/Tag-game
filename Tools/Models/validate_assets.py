@@ -16,6 +16,8 @@ is the measurement. A missing measurement fails.
 from __future__ import annotations
 
 import argparse
+import copy
+import hashlib
 import json
 import os
 import re
@@ -115,10 +117,6 @@ BRAND_RE = re.compile(
     re.I,
 )
 
-COLORS = {
-    "white", "black", "grey", "gray", "silver", "navy", "ocean", "red", "blue",
-    "green", "tan", "orange", "mint", "lavender", "crimson",
-}
 CLOTH_OK = (
     "hoodie", "seam", "pocket", "sleeve", "jog", "shoe", "hood", "cap", "brim",
     "helmet", "visor", "collar", "hair", "pack", "roll",
@@ -282,26 +280,11 @@ def brand_hits(text):
 
 
 def snake_keys(name):
-    parts = name.split("_")
-    keys = ["_".join(p.lower() for p in parts)]
-    trimmed = list(parts)
-    changed = True
-    while changed and trimmed:
-        changed = False
-        if trimmed[-1].lower() in COLORS:
-            trimmed = trimmed[:-1]
-            changed = True
-        elif re.fullmatch(r"2[1-6]", trimmed[-1]):
-            trimmed = trimmed[:-1]
-            changed = True
-        if changed and trimmed:
-            keys.append("_".join(p.lower() for p in trimmed))
-    # Unique, longest first.
-    out = []
-    for key in keys:
-        if key and key not in out:
-            out.append(key)
-    return out
+    """Full asset name only. Colour, year, and variant tokens stay on the key."""
+    parts = [part.lower() for part in name.split("_") if part]
+    if not parts:
+        return []
+    return ["_".join(parts)]
 
 
 def role_of(stem):
@@ -320,27 +303,49 @@ def role_of(stem):
     return "quarter"
 
 
-def object_tokens(stem):
-    stem = re.sub(r"\.(png|jpg|jpeg)$", "", stem, flags=re.I)
-    drop = QUARTER | SIDE | CLOSE | SCALE | {
-        "before", "after", "check", "pass", "lineup", "readability", "30px", "variants",
-        "front", "rear", "top", "png", "jpg", "docs", "assetstills", "characters",
-        "locostills", "street", "objects", "kit", "vehicles",
-    }
+# Folder names that are not part of the object. `street` in a filename is.
+_DIR_NOISE = {
+    "docs", "assetstills", "characters", "locostills", "street", "objects",
+    "kit", "vehicles",
+}
+_FILE_NOISE = QUARTER | SIDE | CLOSE | SCALE | {
+    "before", "after", "check", "lineup", "readability", "30px", "variants",
+    "front", "rear", "top",
+}
+
+
+def _push_token(tokens, tok, drop):
+    if not tok or tok in drop or tok in tokens:
+        return
+    if re.fullmatch(r"pass\d*", tok):
+        return
+    # A lone pass index, not a size token such as container 20 or speed 25.
+    if tok.isdigit() and len(tok) == 1:
+        return
+    tokens.append(tok)
+
+
+def object_tokens(rel):
+    """Object tokens in a still path.
+
+    Directory segments drop folder noise, including `street` in `street_kit`.
+    The filename keeps `street` and `corner`.
+    """
+    rel = re.sub(r"\.(png|jpg|jpeg)$", "", rel.replace("\\", "/"), flags=re.I)
+    directory, filename = os.path.split(rel)
     tokens = []
-    for tok in re.split(r"[_\-]+", stem.lower()):
-        if not tok or tok in drop or re.fullmatch(r"pass\d*", tok):
-            continue
-        # A lone pass index, not a size token such as container 20 or speed 25.
-        if tok.isdigit() and len(tok) == 1:
-            continue
-        tokens.append(tok)
+    for part in directory.split("/"):
+        for tok in re.split(r"[_\-]+", part.lower()):
+            _push_token(tokens, tok, _DIR_NOISE)
+    for tok in re.split(r"[_\-]+", filename.lower()):
+        _push_token(tokens, tok, _FILE_NOISE)
     return tokens
 
 
 # Missing tokens that are just a qualifier, not a different object.
+# `street` and `corner` are different objects, not qualifiers.
 GENERIC_SUFFIX = {
-    "post", "single", "corner", "walk", "street", "rack", "planted", "city",
+    "post", "single", "walk", "rack", "planted", "city",
     "small", "large", "wood", "fixed", "removable",
 }
 STILL_ALIASES = {
@@ -421,7 +426,7 @@ class StillIndex(object):
                         "stem": stem,
                         "pass": passed,
                         "role": role_of(stem),
-                        "tokens": object_tokens(rel.replace("/", "_")),
+                        "tokens": object_tokens(rel),
                     })
 
     def match(self, keys, scope, category=None):
@@ -429,12 +434,7 @@ class StillIndex(object):
         best = {}
         key_token_sets = [tuple(part for part in k.split("_") if part) for k in keys if k]
         for row in self.rows:
-            if scope not in row["rel"]:
-                continue
-            if "street_objects/" in row["rel"] or "street_kit/" in row["rel"]:
-                if category not in ("StreetFurniture", "Vehicles", "Roads", "Utility", "Buildings"):
-                    continue
-            if "/vehicles/" in row["rel"] and category not in (None, "Vehicles"):
+            if not still_in_scope(row, scope, category):
                 continue
             if key_token_sets and not any(
                 key_hits(list(tokens), row["tokens"], category) for tokens in key_token_sets
@@ -545,6 +545,9 @@ def check_lod(cls, lods):
         if prev is not None and count > prev:
             reasons.append("lod%d-not-coarser" % index)
         prev = count
+    # LOD2 may keep at most 60% of the LOD1 triangle count.
+    if len(counts) >= 3 and counts[1] > 0 and counts[2] * 5 > counts[1] * 3:
+        reasons.append("lod2-ratio")
     while len(labels) < 3:
         labels.append("-")
     return reasons, "/".join(labels)
@@ -709,6 +712,192 @@ def stills_check(index, keys, scope, extra_readability=False, category=None):
 def check_stills(index, keys, scope, extra_readability=False, category=None):
     reasons, _report = stills_check(index, keys, scope, extra_readability, category)
     return reasons
+
+
+def empty_stills():
+    roles = {}
+    for role in ("quarter", "side", "close", "scale"):
+        roles[role] = {"ok": False, "path": None, "pixels": None, "bytes": None, "pass": None}
+    return {"ok": False, "roles": roles}
+
+
+def name_tokens(name):
+    return [part for part in (name or "").lower().split("_") if part]
+
+
+def tokens_prefix(tokens, prefix):
+    return len(tokens) >= len(prefix) and list(tokens[:len(prefix)]) == list(prefix)
+
+
+def still_allowed(still_tokens, asset_tokens, asset_hash, population):
+    """Exact name always. A shorter still only when every prefixed mesh matches.
+
+    `population` is `(tokens, sha256)` for each mesh asset. A family still such
+    as `sedan_mid_a` is a token prefix of `Sedan_Mid_A_22`. It may be borrowed
+    only when every asset that prefix covers has the same FBX SHA-256. A
+    missing digest denies the borrow. `loadouts.json` is not a mesh digest.
+    """
+    still_tokens = list(still_tokens)
+    asset_tokens = list(asset_tokens)
+    if still_tokens == asset_tokens:
+        return True
+    if not still_tokens or not tokens_prefix(asset_tokens, still_tokens):
+        return False
+    if len(still_tokens) >= len(asset_tokens) or asset_hash is None:
+        return False
+    group = [digest for tokens, digest in population if tokens_prefix(tokens, still_tokens)]
+    return bool(group) and all(digest is not None and digest == asset_hash for digest in group)
+
+
+def mesh_digest(root, rel):
+    if not rel:
+        return None
+    if os.path.basename(rel).lower() == "loadouts.json":
+        return None
+    path = rel if os.path.isabs(rel) else os.path.join(root, *str(rel).split("/"))
+    blob = file_blob(path)
+    if not blob:
+        return None
+    return hashlib.sha256(blob).hexdigest()
+
+
+def still_in_scope(row, scope, category):
+    if scope not in row["rel"]:
+        return False
+    if "street_objects/" in row["rel"] or "street_kit/" in row["rel"]:
+        if category not in ("StreetFurniture", "Vehicles", "Roads", "Utility", "Buildings"):
+            return False
+    if "/vehicles/" in row["rel"] and category not in (None, "Vehicles"):
+        return False
+    return True
+
+
+def still_role_reasons(role, info):
+    if not info or not info.get("path"):
+        return ["stills-" + role]
+    rel = info.get("path") or ""
+    size = info.get("pixels")
+    nbytes = info.get("bytes")
+    if not PASS_RE.search(rel + "/"):
+        return ["stills-%s-pass" % role]
+    if not size or size[0] < STILL_MIN[0] or size[1] < STILL_MIN[1]:
+        return ["stills-%s-res" % role]
+    if nbytes is not None and nbytes > STILL_MAX_BYTES:
+        return ["stills-%s-bytes" % role]
+    return []
+
+
+def role_info_from_still(still):
+    _measure_still(still)
+    size = still.get("pixels")
+    info = {
+        "ok": False,
+        "path": still.get("rel"),
+        "full": still.get("path"),
+        "pass": still.get("pass"),
+        "pixels": list(size) if size else None,
+        "bytes": still.get("bytes"),
+    }
+    info["ok"] = not still_role_reasons(still.get("role") or "quarter", info)
+    return info
+
+
+def refresh_stills(row):
+    report = row.get("stillsCheck") or empty_stills()
+    row["stillsCheck"] = report
+    kept = []
+    for reason in row.get("reasons") or []:
+        if reason.startswith("stills-") and reason != "stills-readability":
+            continue
+        if reason not in kept:
+            kept.append(reason)
+    fresh = []
+    for role in ("quarter", "side", "close", "scale"):
+        info = (report.get("roles") or {}).get(role) or {}
+        for reason in still_role_reasons(role, info):
+            if reason not in fresh:
+                fresh.append(reason)
+    report["ok"] = not fresh
+    row["reasons"] = kept + fresh
+    row["ok"] = not row["reasons"]
+
+
+def borrowed_best(index, asset_tokens, asset_hash, population, scope, category):
+    best = {}
+    for still in index.rows:
+        if not still_in_scope(still, scope, category):
+            continue
+        if not still_allowed(still["tokens"], asset_tokens, asset_hash, population):
+            continue
+        role = still["role"]
+        prev = best.get(role)
+        if prev is None or _better_still(still, prev):
+            best[role] = still
+    return best
+
+
+def fill_borrowed(row, index, population, scope):
+    best = borrowed_best(
+        index, row.get("_tokens") or [], row.get("_digest"), population, scope, row.get("category"),
+    )
+    report = row.get("stillsCheck") or empty_stills()
+    roles = report.setdefault("roles", {})
+    for role, still in best.items():
+        info = roles.get(role) or {}
+        if info.get("ok"):
+            continue
+        borrowed = role_info_from_still(still)
+        if borrowed.get("ok") or not info.get("path"):
+            roles[role] = borrowed
+    row["stillsCheck"] = report
+    refresh_stills(row)
+
+
+def apply_identical_stills(rows, index, root):
+    """Share a shorter still only across byte-identical meshes.
+
+    Colour, year, and variant siblings keep their own quartet when the FBX
+    bytes differ. Player colour Hiers copy the tan quartet only when their
+    FBX hash equals the tan Hier. Costumes are not hashed: `loadouts.json`
+    is one file for every set, so each costume matches its own id.
+    """
+    population = []
+    for row in rows:
+        if row.get("kind") == "costume":
+            row["_digest"] = None
+        else:
+            row["_digest"] = mesh_digest(root, row.get("fbx"))
+        row["_tokens"] = name_tokens(row.get("name"))
+        if row.get("kind") != "costume":
+            population.append((row["_tokens"], row["_digest"]))
+    for row in rows:
+        if row.get("kind") == "library":
+            fill_borrowed(row, index, population, "Docs/AssetStills")
+    tan = None
+    for row in rows:
+        if row.get("kind") != "rig":
+            continue
+        name = row.get("name") or ""
+        rel = row.get("fbx") or ""
+        if "Tan_Hier" in name and "Clearance" not in name and "Candidate" not in rel:
+            tan = row
+            break
+    tan_digest = tan.get("_digest") if tan else None
+    for row in rows:
+        if row.get("kind") != "rig":
+            continue
+        name = row.get("name") or ""
+        if not re.search(r"_(Blue|Lavender|Mint|Orange|Red)_Hier", name):
+            continue
+        if tan is not None and row.get("_digest") and row["_digest"] == tan_digest:
+            row["stillsCheck"] = copy.deepcopy(tan["stillsCheck"])
+        else:
+            _reasons, stills = stills_check(index, snake_keys(name), "Docs")
+            row["stillsCheck"] = stills
+        refresh_stills(row)
+    for row in rows:
+        row.pop("_digest", None)
+        row.pop("_tokens", None)
 
 
 _BLOB_CACHE = {}
@@ -1322,10 +1511,11 @@ def evaluate_hier(root, path, index, licensed, proof, hip_text):
         reasons.append("license-ofl-on-mesh")
     elif name not in licensed:
         reasons.append("license")
-    stills = {"ok": True, "roles": {}, "shared": "tan"}
+    stills = empty_stills()
     if is_color:
-        # Same sculpture as the tan Hier. The tan line carries joints, no-clip, and stills.
-        pass
+        # Joints stay on the tan line. Stills are shared only when the FBX
+        # bytes match that mesh; apply_identical_stills fills them in.
+        reasons.extend(["stills-quarter", "stills-side", "stills-close", "stills-scale"])
     else:
         reasons.extend(check_rig_text(proof, hip_text, root, is_candidate))
         keys = ["hip_hinge_candidate", "clearance"] if is_candidate else ["hip_hinge_current", "hier"]
@@ -1415,7 +1605,9 @@ def evaluate_costume(root, item, index, licensed, fit, fit_lods, fit_text, proof
             reasons.append("rig-pose=%s" % match.group(1))
     else:
         reasons.append("rig-proof-missing")
-    still_reasons, stills = stills_check(index, [], "Docs/Characters", extra_readability=True)
+    still_reasons, stills = stills_check(
+        index, snake_keys(name), "Docs/Characters", extra_readability=True,
+    )
     reasons.extend(still_reasons)
     reasons.extend(shell_buried(stills))
     dedup = []
@@ -1485,6 +1677,7 @@ def run(root, report_path=None):
     fit, fit_lods, fit_text = fit_table(root)
     for item in costume_sets(root):
         rows.append(evaluate_costume(root, item, index, licensed, fit, fit_lods, fit_text, proof))
+    apply_identical_stills(rows, index, root)
     rows.sort(key=lambda row: (row["category"], row["name"]))
     passed = sum(1 for row in rows if row["ok"])
     failed = len(rows) - passed
@@ -1558,6 +1751,30 @@ def self_test():
                 buried[i:i + 3] = red
     assert garment_coverage(bytes(buried), side, side, step=1) < SHELL_COVERAGE_MIN
     assert garment_coverage(bytes(solid), side, side, step=1) >= SHELL_COVERAGE_MIN
+    assert snake_keys("Sedan_Mid_A_22") == ["sedan_mid_a_22"]
+    assert snake_keys("FireHydrant_Red") == ["firehydrant_red"]
+    assert object_tokens("Docs/AssetStills/pass1/planter_street_quarter.jpg") == ["planter", "street"]
+    assert object_tokens("Docs/AssetStills/street_objects/pass1/planter_quarter.jpg") == ["planter"]
+    assert object_tokens("Docs/AssetStills/pass1/woodfence_corner_quarter.jpg") == ["woodfence", "corner"]
+    assert object_tokens("Docs/AssetStills/vehicles/sedan_mid_a/pass15/side.jpg") == ["sedan", "mid", "a"]
+    assert not key_hits(["planter"], ["planter", "street"])
+    assert not key_hits(["woodfence", "corner"], ["woodfence"])
+    assert key_hits(["woodfence", "corner"], ["woodfence", "corner"])
+    ratio_bad, _ratio_lod = check_lod("prop", [{"tris": 400}, {"tris": 196}, {"tris": 196}])
+    assert "lod2-ratio" in ratio_bad
+    ratio_ok, _ratio_ok_lod = check_lod("prop", [{"tris": 400}, {"tris": 200}, {"tris": 100}])
+    assert "lod2-ratio" not in ratio_ok
+    ratio_edge, _ratio_edge_lod = check_lod("prop", [{"tris": 400}, {"tris": 200}, {"tris": 120}])
+    assert "lod2-ratio" not in ratio_edge
+    siblings = [(["sedan", "mid", "a", "22"], "h1"), (["sedan", "mid", "a", "23"], "h2")]
+    assert not still_allowed(["sedan", "mid", "a"], ["sedan", "mid", "a", "22"], "h1", siblings)
+    assert still_allowed(["sedan", "mid", "a", "22"], ["sedan", "mid", "a", "22"], "h1", siblings)
+    same = [(["container", "20"], "h"), (["container", "20", "blue"], "h")]
+    assert still_allowed(["container", "20"], ["container", "20", "blue"], "h", same)
+    fences = [(["woodfence"], "h0"), (["woodfence", "corner"], "h1")]
+    assert still_allowed(["woodfence"], ["woodfence"], "h0", fences)
+    assert not still_allowed(["woodfence"], ["woodfence", "corner"], "h1", fences)
+    assert not still_allowed(["planter"], ["planter", "street"], None, [(["planter", "street"], None)])
     print("self-test ok")
     return 0
 

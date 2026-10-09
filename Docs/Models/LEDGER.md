@@ -1,8 +1,8 @@
 # Model ledger
 
-Graded again 9 Oct 2026 from the five current tips, without modifying them. Status is the models lead's call. The validator column is the script's reason list from the latest branch that actually contains the file. Pass 2 reads LOD meshes instead of a single worn total, accepts one `LICENSES.md` table row per asset, records a per-asset `stillsCheck`, and fails a costume shell that sits inside the body.
+Graded again 9 Oct 2026 from the five current tips, without modifying them. Status in the asset tables is still the lead's earlier call. The validator summary below is the tightened run: a sibling borrows stills only when the FBX is byte-identical, `street` and `corner` are real tokens, and LOD2 is at most 0.6× LOD1.
 
-Nothing is **accepted**. A pass requires `models-validate` with `fail=0` on that asset: license row, scale, colliders, LODs, still quartet, and, for the player, no-clip and hip-sit. No asset clears that bar.
+Nothing is **accepted** in the tables. A pass requires `models-validate` with `fail=0` on that asset: license row, scale, colliders, LODs, still quartet, and, for the player, no-clip and hip-sit. The tightened checker does clear that bar for 10 assets on #122 and 11 on #129. Those rows below were written before this run. Use the summary, not those cells, for the current result.
 
 **needs fix** means the object is the right kind of thing and should be repaired on its lane.
 **rejected** means stop iterating on that mesh. Delete it or replace it. Do not spend another pass resampling it.
@@ -11,13 +11,13 @@ Nothing is **accepted**. A pass requires `models-validate` with `fail=0` on that
 
 | Branch | PR | Tip | Summary |
 | --- | --- | --- | --- |
-| `cursor/tag-asset-library` | #122 | `8576679b38cba0d78417626b29a8e2eb25bbbbf9` | `models-validate assets=125 pass=0 fail=125` / `models-split paperwork=103 geometry=22` |
-| `cursor/tag-asset-street-kit` | #125 | `fee26b6759547dc2823d87444f1f41f82330adc4` | `models-validate assets=193 pass=0 fail=193` / `models-split paperwork=152 geometry=41` |
-| `cursor/tag-street-objects` | #129 | `8effda99fcbd13e3a3d7f091e76092f32dc7811b` | `models-validate assets=222 pass=0 fail=222` / `models-split paperwork=190 geometry=32` |
-| `cursor/tag-loco-smooth` | #128 | `35085dbf9652314325eb0ee77dce0b4252f12391` | `models-validate assets=7 pass=0 fail=7` / `models-split paperwork=5 geometry=2` |
+| `cursor/tag-asset-library` | #122 | `723cc13707d899005491e4816a314a7bd43687df` | `models-validate assets=125 pass=10 fail=115` / `models-split paperwork=93 geometry=22` |
+| `cursor/tag-asset-street-kit` | #125 | `bc02b9c4f650f83a38f6da522094a1bcddf27963` | `models-validate assets=188 pass=0 fail=188` / `models-split paperwork=136 geometry=52` |
+| `cursor/tag-street-objects` | #129 | `a92b5987bf759a7d31e5632cb054b011ed6d3ac4` | `models-validate assets=219 pass=11 fail=208` / `models-split paperwork=177 geometry=31` |
+| `cursor/tag-loco-smooth` | #128 | `b804954f8e93db977c096d21ef93c8724f92978b` | `models-validate assets=7 pass=0 fail=7` / `models-split paperwork=5 geometry=2` |
 | `cursor/tag-character-costumes` | #131 | `e5b34c0e36343405f07f0d5acd098f28a6bd7797` | `models-validate assets=18 pass=0 fail=18` / `models-split paperwork=5 geometry=13` |
 
-Paperwork is license and stills only. Geometry is everything else, including a shell buried in the body. An asset that fails both is counted under geometry. #122 now has a CC0 object on every library row, so license is not why that tip fails. #125 and #129 are not on that commit, so the shared names still fail `license` there, and that is what this column shows for those copies. Collider hug is still inside 3.0 cm. The geometry that remains is landable tops, LOD meshes, the non-square roof bake on #122, vehicle envelopes, the rig, and costume shells.
+Paperwork is license and stills only. Geometry is everything else, including `lod2-ratio` and a shell buried in the body. An asset that fails both is counted under geometry. The asset-table validator cells further down are the earlier grade. This table is the tightened run.
 
 The Hier files are on every branch because they ride along from the game. The validator counts them on each tip. This ledger lists the rig once, under Player, using the #128 proof. #131 does not contain the clearance candidate or that proof.
 
@@ -27,9 +27,9 @@ The Hier files are on every branch because they ride along from the game. The va
 
 - Shared library names sit on #122, #125, and #129, but the current tips are not a linear stack. #125 `fee26b67` does not contain #122 `8576679b`. #129 `8effda99` contains neither. `Lib_Roof.png` is 512×256 on #122 and 256×256 on #125 and #129. WalkUp's land gap is 42 cm on #122 and 54 cm on #129. Cabin's roof gap and texel fail, and the boathouse below-pivot fail, are on #122 only. A fix on one tip does not land on the others.
 - `Ranch_House` and the new `WoodFence_Corner`, `WoodFence_End`, and `WoodFence_Gate` are only on #122. `Road_Junction` and `BikeRack_Wave` are on #125 and missing from #129. The Vehicles category (19 shells) is on #125 only. #129 has 50 street props #125 does not have, including `Barricade_Type3`, `Delineator_Post`, and `Rail_Sidewalk`.
-- `Container_20_Blue` and `Container_20_Green` are the rust-red shell with new enamel. `Bus_City40_Blue` and `Bus_City40_Red` are the same 40 ft body. `Sedan_Mid_A_22` through `_25` and the six `_25` paints share one loft (identical 4.894 × 1.975 × 1.434 m).
+- `Container_20_Blue` and `Container_20_Green` are separate enamels and no longer share the red quartet. `Bus_City40_Blue` and `Bus_City40_Red` have their own stills. `Sedan_Mid_A_22` through `_25` are different meshes (LOD0 5016, 5176, 5036, 4908) and do not share `sedan_mid_a/pass15`.
 - `Dummy_Mannequin_{Blue,Lavender,Mint,Orange,Red}_Hier_Hi` are the tan Hier with a color. Bram's three costumes are Reed's meshes with a blue `PlayerColor`.
-- `Car_Sedan` / `Car_Hatch` / `Car_Pickup` are not duplicates of the Vehicles shells. They are the earlier blockouts. They are rejected so the later shells are the only cars.
+- `Car_Sedan` / `Car_Hatch` / `Car_Pickup` are not duplicates of the Vehicles shells. They are the earlier blockouts. They are rejected so the later shells are the only cars. #125 renamed them to `*_25` and then deleted those files at `bc02b9c4`. #129 had already deleted the old names.
 - Park `Fountain` and `Fountain_Walk` are different props. `Bench_Wood` and `Bench_WoodIron` are different props.
 
 ## Environment, buildings (#122)
@@ -322,7 +322,20 @@ Fit file: `costume-fit sets=12 frames=4128 worldMax=0.38 fails=0`. That number i
 | `Costume/Sol_2_Hood` | costumes (#131) | #131 | needs fix | `slack=n/acm lod=10858/5630/2592 rig-not-clearance,rig-proof-missing,shell-buried=1%` | Purple hood. Same buried Reed-length body. |
 | `Costume/Sol_3_Helmet_Pack` | costumes (#131) | #131 | needs fix | `slack=n/acm lod=11082/5746/2648 rig-not-clearance,rig-proof-missing,shell-buried=1%` | Purple helmet and pack. Same buried shell. Not a tailored jacket. |
 
+## Restructure impact
+
+Running count: **6**. Each line is one redo or conflict for the restructure-impact report. Missed copies are not counted.
+
+1. Court, twice. #129 `8effda99` and #125 `c84459a3` both restore #122's 22 m by 15 m court and the 0.375 m face-to-rim gap. `Court`, `CourtFence`, and `Hoop` sizes matched on all three tips at that grade. Same fix, two helpers.
+2. Walk-up, two meshes. #122 passes at 2736/2216/1004. #129 passes at 1832/1300/680. #125 still fails the old landing. Two buildings, one name.
+3. LOD2 shortcut, both tips. #122 and #129 both filed LOD2 equal to LOD1 on GasCanopy (1064), Dock_Straight, and FishingBoat. #129 also did it on Bench_WoodIron, BikeRack_Hoop3, Fountain_Walk, Newsstand_Corner, and Sign_AFrame. The tightened checker fails these as `lod2-ratio`.
+4. Cars deleted on #129 and kept on #125. #129 dropped `Car_Sedan`, `Car_Hatch`, and `Car_Pickup`. #125 removed `Sedan_Midsize` and `Sedan_Mid_A_21`, then renamed the three blockouts to `Car_Sedan_25`, `Car_Hatch_25`, and `Car_Pickup_25`.
+5. #125 `bc02b9c4` deletes those three `*_25` blockouts after the rename. #125 and #129 now both omit them. The rejection was undone, then redone. Counted separately from 4.
+6. #129 `a92b5987` rebuilds `CourtFence` to 3664/2640/144. #122's fence already passes at 3680/2656/620. Second fence mesh. Take #122's.
+
+Not counted: #128 `b804954f` adds `build_hip_ankle.py` and `clear_hip_flex.py` only. The graded Hier hashes are unchanged, and the validator is still `pass=0/7`. Container roofs, the gazebo, the rowboat, and HarborShed closed on #122 and still open on the helpers are missed copies, not a second design.
+
 ## Counts
 
-Unique library meshes: 241 (5 rejected, 236 needs fix). Rig files on #128: 7, all needs fix. Costume loadouts: 12, all needs fix. Accepted: 0.
+Lead status in the asset tables: accepted 0. Tightened validator, 9 Oct 2026: #122 pass=10/125, #125 pass=0/188, #129 pass=11/219, #128 pass=0/7, #131 pass=0/18. Restructure-impact count: 6.
 

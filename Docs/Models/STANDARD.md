@@ -68,7 +68,7 @@ Pieces that are supposed to extend below the ground pivot (piles, quay foundatio
 
 ## 4. Triangle budgets
 
-LOD meshes are named `LOD0`, `LOD1`, `LOD2`. LOD1 is required when LOD0 is over 400 triangles. LOD2 is required when LOD0 is over 2000, and always for cars and buses. A coarser LOD never has more triangles than the finer one. Ceilings:
+LOD meshes are named `LOD0`, `LOD1`, `LOD2`. LOD1 is required when LOD0 is over 400 triangles. LOD2 is required when LOD0 is over 2000, and always for cars and buses. A coarser LOD never has more triangles than the finer one. LOD2 is at most **0.6×** the LOD1 triangle count. A copy of the LOD1 mesh filed as LOD2 fails `lod2-ratio`. Ceilings:
 
 | Class | LOD0 | LOD1 | LOD2 | What goes here |
 | --- | --- | --- | --- | --- |
@@ -107,7 +107,7 @@ Art/CharacterLab/                           (costume prep, not in the player bui
 
 The builder for a library asset is `Tools/Blender/AssetLibrary/<snake>.py` or `vehicles/<snake>.py`. Rebuild from that script. Do not hand-edit the FBX.
 
-Player color variants of the same Hier mesh are duplicates of `Dummy_Mannequin_Tan_Hier_Hi`, not new bodies. A livery (`Sedan_Mid_A_25_White`, `Bus_City40_Blue`, `Container_20_Green`) is a separate manifest row and shares the base mesh's stills only when the license row says it is a color swap.
+Player colour variants share the tan Hier stills only when that FBX is byte-identical to `Dummy_Mannequin_Tan_Hier_Hi`. A different mesh needs its own quartet. A colour, year, or variant sibling (`Sedan_Mid_A_25`, `Sedan_Mid_A_25_White`, `Bus_City40_Blue`, `Container_20_Green`, `FireHydrant_Red`) is its own manifest row and needs its own still quartet. It may use another asset's stills only when the FBX bytes are identical. `street` and `corner` are part of the object name: `Planter` does not match `planter_street`, and `WoodFence_Corner` does not match `woodfence`.
 
 ## 6. Pivot and orientation
 
@@ -161,6 +161,8 @@ Accepted folders, newest pass wins:
 A PNG or JPEG sitting outside a `passN` directory does not count. `before_` / `after_` pairs are comparison frames, not a substitute for a missing role unless the stem also carries the role token. Costume stills add `readability-30px` (a quarter of 1080p, figures about 30 px tall). That frame is extra. It does not replace the quartet.
 
 Every asset gets a `stillsCheck`. It is the quartet above: each role present in a `passN` folder, 1280×720 or larger, under 400 KB. The check record is on the validator row. A catalog frame at 960×540 fails it.
+
+The quartet is matched on the full asset name. A shorter still — a family folder, or a frame whose name drops a colour, year, or variant token — is shared only when every asset that name prefixes has the same FBX SHA-256. If any of those meshes differ, only the asset whose tokens equal the still may use it. `street` and `corner` in the file name are significant tokens. They are not folder noise and they are not optional suffixes. Costumes match their own id. They do not share one lineup, and `loadouts.json` is not a mesh hash.
 
 ## 10. Player rig
 
