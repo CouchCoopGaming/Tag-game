@@ -6,6 +6,8 @@ Nothing in this note changes feel or gameplay. Leave these locks alone: coyote 0
 
 This pass did not edit scripts, so the proof lines are untouched. `HotPathAlloc` still formats `hot-path allocs before=101 after=` plus the live count. `ropeBody` does not appear anywhere in this branch.
 
+Pass 2 is the last section. It covers who is It in a four-pane split, and the handoff. Every claim there is marked verified (the page or the file was read) or second-hand.
+
 The stills in `Docs/FX/research-pass1/` are labeled composites, not Unity captures. Each one contains one 960×540 cell drawn at 1:1 pixels, which is one pane of a 1920×1080 couch split. The live chase camera was not measured, so the body in each cell is drawn at 108 px (one fifth of 540) on purpose. That height is a stand-in, not a captured scale.
 
 ## Top 5 for C2
@@ -250,3 +252,105 @@ Composites, 1600×900, each with one 960×540 cell at 1:1. Body height 108 px is
 - Unity 6. [Particle System renderer module](https://docs.unity.com/en-us/engine/6000.7/manual/visual-effects/particle-systems/particle-system-modules/part-sys-renderer-module). Mesh instancing only. Page version is 6000.7.
 - Unity. [Reduce rendering work on the CPU or GPU](https://docs.unity3d.com/Manual/OptimizingGraphicsPerformance.html).
 - Kenney, Particle Pack, CC0. [OpenGameArt](https://opengameart.org/content/particle-pack-80-sprites). [kenney.nl](https://kenney.nl/assets/particle-pack).
+
+## Pass 2 — Who is It, and the handoff
+
+Visual only. C2 is already prototyping the wall-run ribbon, then the edge streaks and the contact ink card. This section is the next read after those: which body holds It, in your pane and in the other three, and how the handoff reads without hitstop or slow motion. Feel locks stay as in pass 1. No new settings row.
+
+The stills are composites in `Docs/FX/research-pass2/`. Each is 1600×900 with one 960×540 cell at 1:1. The body is again drawn at 108 px. That height is a stand-in. The live chase camera was not measured.
+
+### What Tag already draws
+
+**Verified, from this branch.**
+
+- `ItMarker` puts a hat, a brim, a tip, a tall beacon, a floor halo, and a point light on the It. The beacon is turned off when the camera is a child of that body, so it does not fill your own lens. In that own view the hat scale is multiplied by 0.82.
+- The same component draws a screen badge (a filled square, the star glyph, and the It label) from `OnGUI`. It uses `Camera.main` only. If that camera is a child of the It, the badge returns and draws nothing. It is not issued once per split camera.
+- `VerbStatusHud` draws an It chip inside that seat’s camera rectangle, and only when that seat’s own body `IsIt`. Another pane does not get a copy of your chip.
+- `AccessibilityPalette.ItGlyph` is `★`. `ItAgainst` picks a crown color that stays off the seat color, and off the zone colors it tests. The shirt and the crown are already meant to be two different reads.
+- Becoming It or losing it plays the pass-5 swell for 0.40 s: seat color when gained, cool white when lost, plus a ring (`Pass5Host`). Reduced flashing and Effects Off hide it.
+- The kit also draws edge bars for 0.18 s on the camera of the pawn whose `TagsLanded` just increased (`FxKitSim.TickFlash`). Those bars are about 8% of the pane width on the sides and about 11% of the height on the top and bottom (0.16 of half the width, 0.22 of half the height). They mark the tag landing. They are not a label that says who holds It now.
+- Tag-back immunity stays 1.0 s. The kit can draw a rim on that body. The rim is the safe window, not the role.
+- The hat pop eases out over 0.34 s (`ItMarker` moves `_pop` toward 0 by `deltaTime / 0.34`).
+
+### How the other games show a role
+
+**Mario Kart 8 Deluxe.** Verified, Nintendo’s battle page, read for this pass: in Coin Runners, “The player in first place is shown by a crown.” Shine Thief is a different sentence on that page: grab the Shine and hold it until time runs out. That page does not say the holder also wears a crown. Verified, Mario Wiki crown article, read for this pass: in Battle Mode the crown sits on the head of the first-place driver, and a short sound plays when someone gets it. In Mario Kart 8 the crown was a minimap icon. The wiki is a community encyclopedia, not a Nintendo manual. The useful part for Tag is the one this pass could check in both places: the role is a shape on the body, in the world, so any camera that can see that driver can see the crown. Tag already has that hat. The gap is the camera that cannot see the body.
+
+**Smash Ultimate.** Verified, SmashWiki radar article, read for this pass: the radar stays hidden until a fighter is far enough off-screen that the camera stops following them. It then appears in the upper corner of the side they left. Every fighter is a diamond in their port color (team color in team battles). The size can be Small or Large, and it can be turned off. The article says this is so players can find each other, and so someone cannot hide off-screen. SmashWiki is a community wiki. This pass did not read a Nintendo page for the radar. Second-hand, and not used below: a search snippet of the versus-splash article lists eight port colors. That page was not opened, so those colors are not cited. Smash has no It role. The lesson is the off-screen mark, and the choice to show it only when the body has left. Showing every player all the time is the clutter the article says they avoided.
+
+**Fall Guys, Tail Tag.** Verified, IGN’s Tail Tag guide, read for this pass: you grab a gold tail off another player, and you qualify by still having a tail when time runs out. The team version hoards tails. The guide is a community writeup, not a Mediatonic post. It does not publish a particle count or a nametag spec. The role is a separate object on the body. Grabbing it moves the object. This pass did not open a page that describes Fall Guys nametags, so none are claimed.
+
+**Gang Beasts.** Verified, Steam store page, read for this pass: you customise the character, and the feature list includes Shared/Split Screen. The page does not describe an It role, a crown, or a split-screen layout. Second-hand: a Steam discussion and a player video describe changing body color, and the video says local play is one shared camera. Those pages were not opened. Steam’s feature list also says Shared/Split Screen, so this pass does not decide how many cameras Gang Beasts uses. The store sentence that does carry is the customised body. That is identity, not a role. Tag already spends seat color and a shape glyph on identity. Painting the whole runner as “the It color” would collide with that.
+
+**Ultimate Chicken Horse.** Verified, Steam store page, read for this pass: local play for up to four, and you play as a chicken, a horse, a sheep, a raccoon, “and other wonderful animals.” The feature list includes Shared/Split Screen. The page does not describe an It role. Identity is which animal you are. A search excerpt of a Steam news post listed seven outfit colors for the horse and said the outfit does not change speed. That post was not opened. Second-hand, and not a build note.
+
+### Top 3 for C2
+
+These sit on top of the hat, the HUD chip, and the 0.40 s swell. They do not replace them. They do not change who is It, the 1.0 s immunity, or the camera.
+
+#### 1. One off-screen wedge, per pane
+
+**What.** When the It body is outside a pane’s frustum, that pane draws one star wedge on the edge it left through. One wedge, not one per player. It points at the It and uses the crown color from `ItAgainst`, with the seat glyph small beside it so you know which runner. If you are It, your own pane keeps the HUD chip and does not also draw a wedge at your own feet. The wedge hides when the hat is inside the pane.
+
+**Reference.** Smash’s radar. Verified from the SmashWiki page above: it appears when someone has left the camera, it uses port color, and it can be turned off. Tag takes the “only when off-screen” rule and drops the “every fighter” part. Four diamonds in a 960×540 pane is the clutter that page says the radar was built to avoid, and Tag only needs the one role.
+
+**Why it fits.** The world hat already answers “who is It” when the body is in frame. `ItMarker.OnGUI` does not answer it per split camera, and it skips the It’s own camera. A chase pane spends a lot of time with the other three runners outside the frame. The wedge is that read.
+
+**Cost.** 0 particles. One screen quad and two short labels per pane, and only while the It is off-screen. Estimated 1 draw. It is UI on that camera, so the other cameras do not redraw it.
+
+**Readability risk.** Low if there is one wedge and it is at least the 36 px the existing badge uses (`mark = 36` in `ItMarker`). High if every runner gets an arrow. High if it pulses. Reduced flashing should hold it steady, the same way it already zeros the hat bob.
+
+**Asset.** Self-made. The star glyph is already in the project.
+
+#### 2. A flat crown plate, separate from the shirt
+
+**What.** A camera-facing plate above the hat: dark backing, crown-color star, about the width of the head. The tall beacon stays hidden in your own view, as it is now. The plate stays on in every view, including your own, at the own-view scale (0.82). It does not add a light. The floor halo stays. The shirt keeps the seat color.
+
+**Reference.** Mario Kart’s battle crown, verified from Nintendo (first place is shown by a crown) and from the Mario Wiki sentence that the crown is on the head. Fall Guys’ gold tail, verified from the IGN guide: a separate object, not a recolor of the body. Gang Beasts and Ultimate Chicken Horse, verified from their Steam pages, put identity on the body itself. That is the seat, which Tag already has. The crown has to be a second shape.
+
+**Why it fits.** A thin beacon reads when the camera is far and disappears when it is your own camera. In a 960×540 pane the body is about a fifth of the height in these stills. A plate the width of the head is a silhouette. `ItAgainst` already exists so the plate does not match the shirt. Do not recolor the runner.
+
+**Cost.** 1 billboard quad on the It. 0 particles. Estimated 1 draw per camera that can see that body. No new light. The existing point light stays as it is. This pass did not profile it.
+
+**Readability risk.** Medium if the plate uses the shirt color. Medium if it bobs enough to leave the head. Reduced flashing already stops the bob. Keep the plate still in that mode.
+
+**Asset.** Self-made quad. No download.
+
+#### 3. The handoff is the crown changing heads
+
+**What.** No freeze and no slow motion. The pawn who loses It keeps the cool-white swell that already plays for 0.40 s, then has no hat and no plate. The pawn who gains It keeps the seat-colored swell and the 0.34 s hat pop, and the plate is there after the pop ends. Your pane’s existing It chip turns on when `IsIt` becomes true and turns off when it becomes false. That chip is the confirmation if you blinked the swell. Do not add a full-pane white, and do not add a second flash on the receiver. The tagger’s 0.18 s edge bars already mark the landing on the tagger’s camera. Other panes learn the new It from the plate, or from the wedge if the body is off-screen. The wedge moves to the new body’s edge. It does not play a second animation.
+
+**Reference.** The Mario Wiki sentence, verified above: a short sound when the crown is obtained, and the crown is then on the new leader. The durable part is the crown sitting on the new head, not a freeze. Fall Guys, verified from the IGN guide: the tail leaves one body and is on the other. Smash hitstop, from pass 1, is the thing Tag does not copy. Sakurai’s free-for-all warning is unchanged.
+
+**Why it fits.** Both players need a different picture. The code already splits gained and lost by color. What a 960×540 pane still needs is the plate remaining after 0.40 s, and the chip in the receiver’s own HUD, which `VerbStatusHud` already draws. The missing picture is the plate and the wedge agreeing about who has it once the swell is gone.
+
+**Cost.** 0 new particles. The swell, the ring, the edge bars, and the chip stay. The plate in idea 2 is the persistent part. Estimated cost is that one quad, not a new system.
+
+**Readability risk.** High if the receiver also gets the tagger’s edge bars. Those bars fill the frame and, on the tagger, mean “you landed the tag,” which is the opposite of “you are It.” Leave them on the tag landing only. High if both bodies flash the same color. The gained and lost colors already differ. Keep that split.
+
+**Asset.** Self-made. The chip uses the glyph and the label the HUD already has.
+
+### What this pass is not asking for
+
+- A radar of all four runners. Smash shows everyone because anyone can be off-stage. Tag’s question is which one body is It.
+- A recolor of the whole mannequin. Seat color is already the player.
+- Hitstop, slow motion, fov pop, or shake.
+- Another point light, or a full-pane flash on the receiver.
+- A new word. The chip already says the It label. Comic words stay on the punch.
+
+### Stills
+
+| Rank | File | Cell |
+| --- | --- | --- |
+| 1 | `Docs/FX/research-pass2/01-offscreen-wedge.png` | You are not It. The It is off the right edge. One wedge. |
+| 2 | `Docs/FX/research-pass2/02-crown-plate.png` | Someone else’s pane. The star plate is the role. The shirt is the seat. |
+| 3 | `Docs/FX/research-pass2/03-handoff-receiver.png` | Your pane, the moment you become It. Plate and chip. No full-pane flash. |
+
+### Pass 2 limits
+
+- No gameplay scripts were edited.
+- Nintendo, Mario Wiki, SmashWiki, the IGN Tail Tag guide, and the two Steam pages were opened and read. Claims from those pages are marked verified. Community wikis are not publisher manuals.
+- The Gang Beasts color-button discussion, the player video about a shared camera, the Smash versus-splash port list, and the Ultimate Chicken Horse outfit-color news post were not opened. They are second-hand and are not build instructions.
+- No Fall Guys nametag claim. No Shine-holder crown claim beyond the two sentences above.
+- The 108 px body is a drawn stand-in. Edge-bar percentages are from the constants in `TickFlash`, not from a captured frame.
+- Draw counts are estimated. No GPU profile.
