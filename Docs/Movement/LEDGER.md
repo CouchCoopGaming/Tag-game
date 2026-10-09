@@ -11,6 +11,7 @@ Nothing in this file is a git merge of a helper branch. Old PRs stay open.
 | This branch | `5d4cd74b` | Played clips, proof locks, vault hip-sit on `MantlePose.Cleared` |
 | C1, exits | `176983ee` | One exit beat per move. Recovery keys were then sat on this branch. The played vault was not replaced. |
 | E, evasion | `65aa8de0` | `stutter`, `spinL`, `spinR`, `jukeL`, `jukeR`, `dive`. Flag stays off. |
+| C1, climb top-out | `a08d687` | Draft #138. `exit-ClimbTopOut` plant. Folded with `git merge`. |
 
 The played vault is `MantlePose.Cleared`. `MantlePose.At` remains the printed proof sample used by the handoff and the still writers. `VerbExitId.Vault` is the recovery after the cross, not a second copy of the vault. The path check looks for `MantlePose.Cleared` on the locomotor.
 
@@ -44,7 +45,7 @@ The pass-21 headline stays historical until a full stride-1 scan of the original
 
 ## Re-keyed exits
 
-Eight recovery beats were sat after the fold: wall run, climb top-out, vault, mantle, slide, launch land, stagger, soft land. Loaded frames only. Spine yaw is 0. Elbows are symmetric. The hips bone is 20 cm down.
+Seven recovery beats stay on the sit measured before this fold: wall run, vault, mantle, slide, launch land, stagger, soft land. Spine yaw is 0. Elbows are symmetric. The hips bone is 20 cm down. That earlier line included the previous climb top-out as well:
 
 `hip-sit clips=8 fails=0 pelvisBackMin=12.2 hingeMin=2.25 kneeMin=79.9 pelvisDropMin=20.0`
 
@@ -52,7 +53,15 @@ Eight recovery beats were sat after the fold: wall run, climb top-out, vault, ma
 
 The deepest non-adjacent reading on those frames is 0.36 cm (`Spine|UpperLeg_R`), under the 0.5 cm bar, so the pass line is `pose=0`. `rigJoint` 7.53 cm is the hip cuff and belongs to the rig lane.
 
-Per clip, same sit, pose fails 0, world 0: wall run 9, climb top-out 11, vault 10, mantle 9, slide 9, launch land 10, stagger 10, soft land 8.
+Per clip, that sit, pose fails 0, world 0: wall run 9, vault 10, mantle 9, slide 9, launch land 10, stagger 10, soft land 8.
+
+`exit-ClimbTopOut` was remeasured after the #138 merge. The capsule is already standing when the exit starts, and both soles stay on the lid, so the frames are a plant. Plant bars are pelvisBack at least 8 cm, knee at least 25°, drop at least 8 cm. All 11 frames:
+
+`hip-sit clips=1 fails=0 pelvisBackMin=20.3 hingeMin=2.25 kneeMin=67.9 pelvisDropMin=17.8`
+
+`no-clip clips=1 frames=11 worldMax=0.0 pose=0 rigJoint=5.99 fails=0`
+
+The keyed knee euler is −70. The geometric support knee is 67.9°. The shin is 17.9 cm ahead of the ankle at the shallowest frame. The sole is 0.05 cm. Pose reading is 0.36 cm (`Spine|UpperLeg_R`), so the pass line is `pose=0`. C1 reported pelvis 13.3 cm back and knee 70°. This scanner reads pelvisBack 20.3 to 20.9 cm and geometric knee 67.9°. The drop matches at 17.8 cm. The plant passes, and it sits inside the +13 to +43 cm, 45–115° band.
 
 ## Evasion
 
@@ -102,7 +111,7 @@ On the clips this scanner already agreed with the earlier exit rescan, the hip f
 | sprint | A1 | 0, cruise | 0.97 Chest\|UpperArm_L world 0 fails 6 |
 | exit-WallRun | C1 | 0 | 0 (0.36) fails 0 |
 | exit-WallJump | C1 | 0, airborne | 0 (0.42) fails 0 |
-| exit-ClimbTopOut | C1 | 0 | 0 (0.36) fails 0 |
+| exit-ClimbTopOut | C1 | 0 plant, back 20.3, knee 67.9, drop 17.8 | 0 (0.36) world 0 fails 0 |
 | exit-ClingDrop | C1 | 0, airborne | 0 (0.36) world 0.31 fails 0 |
 | exit-Vault | C1 | 0, recovery | 0 (0.36) fails 0 |
 | exit-Mantle | C1 | 0 | 0 (0.36) fails 0 |
@@ -151,7 +160,7 @@ Vault, for C1. The played vault already passes its plant and its land. This row 
 
 The run, the pre-vault, and the cross on `09` are under 8 cm or pelvis-in-front. `08_vault_block_close` and `22_pike_vault` keep the pelvis in front through the cross. `22` is unlicensed.
 
-Climb, for C1. The played climb is a cruise. The pose fail is the open work. A plant, when one is keyed, uses these sits.
+Climb, for C1. The played climb is a cruise and was not in the #138 diff. The pose fail on that clip stays open. `exit-ClimbTopOut` is the plant measured above. The reference sits, if a wall plant is keyed on the played climb, are:
 
 | Moment | Pelvis behind | Support knee | Shin |
 |---|---|---|---|
@@ -195,7 +204,7 @@ Stagger is absent from that measurement. E keeps the eight-frame landing fail as
 
 ## Helper queues
 
-- C1, branch `cursor/tag-movement-exits` (#139), off this tip. Vault, climb, mantle, and every exit that is not a landing or a roll. Open on that list: played climb pose 3.74 cm, exit-Punch world 0.84 cm, exit-Lunge pose 0.74 cm and world 0.65 cm, exit-TagBackEnd world 0.86 cm. The eight sat recoveries stay as they are. The vault, climb, and mantle rows above are the target shapes. The filmed files stay on S1's branch.
+- C1, branch `cursor/tag-movement-exits` (#139), off this tip. Vault, climb, mantle, and every exit that is not a landing or a roll. Open on that list: played climb pose 3.74 cm, exit-Punch world 0.84 cm, exit-Lunge pose 0.74 cm and world 0.65 cm, exit-TagBackEnd world 0.86 cm. `exit-ClimbTopOut` is folded from #138. The other sat recoveries stay on the 20 cm sit. The vault, climb, and mantle rows above are the target shapes. The filmed files stay on S1's branch.
 - E, branch `cursor/tag-movement-evasion` (#137). The six evasion clips, the played roll, the played stagger, and the landing and roll exits: exit-LaunchLand, exit-Stagger, exit-SoftLand, exit-Roll, exit-RollAbsorb. The dive roll-up is seated on that branch (13.6 cm, knee 79°, pose 1.74 cm) and is not folded here. Still open: stagger 8 hip fails and pose 0.95 cm, exit-Roll 4 hip fails and pose 0.94 cm, exit-RollAbsorb 2 hip fails and pose 3.32 cm, spin pose 1.4 cm, jukeR pose 0.64 cm. The roll rows above are the target shape for the two roll exits. `EvasionPose.Holds` stays as folded. `leadKnee` stays −10 on the played slide, which is A1's clip.
 
 A1 keeps idle, loco, sprint, slide, wall, punch, zip, pad, grapple, and tag. Slide and wall targets are above. Zip, punch, pad, idle, loco, and sprint were left on the measured keys: zip hang pitch is `WallPose.ReachPitch` and must stay at or under −90°, punch spine yaw is held, wall arm pitch and yaw are held, and the pad is `LaunchPose.At` on the ballistic arc. Gait arm yaw is the locomotor read, and this pass leaves it.
@@ -221,6 +230,8 @@ Default paint, colour-blind setting off: P1 red circle, P2 blue triangle, P3 ora
 Recovery sits, before and after the re-key, same camera: `Docs/AnimStills/movement-pass1/`.
 
 The four deepest pose clips on this scan are zip 5.52 cm, punch 5.09 cm, wall 4.97 cm, and pad 4.28 cm. Those keys were not changed, so there is one measured plate each, same camera, vertical through the support foot, dot on the pelvis: `Docs/Movement/stills/lead1/zip-measured.png`, `punch-measured.png`, `wall-measured.png`, `pad-measured.png`.
+
+Climb top-out, same camera, before the #138 keys and after: `Docs/Movement/stills/lead1/exit-ClimbTopOut-before.png` and `exit-ClimbTopOut-after.png`.
 
 ## Full sim
 
