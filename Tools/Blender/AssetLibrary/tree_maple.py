@@ -31,5 +31,6 @@ def create():
         broadleaf(g, lod, MAPLE)
         a.end()
     a.box("Col_Flare", (0, 0.05, 0), (0.28, 0.10, 0.28))
-    a.capsule("Col_Trunk", (0, 1.2, 0), 0.07, 2.1, 1)
+    # Trunk capsule starts 2 cm above the flare box. The cone mesh covers that band.
+    a.capsule("Col_Trunk", (0, 1.185, 0), 0.07, 2.13, 1)
     return a

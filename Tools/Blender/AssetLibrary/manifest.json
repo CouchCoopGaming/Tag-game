@@ -2566,12 +2566,12 @@
         "type": "box",
         "center": [
           -0.5,
-          1.12,
+          1.145,
           0.17
         ],
         "size": [
           0.05,
-          2.1,
+          2.15,
           0.06
         ],
         "euler": [
@@ -2585,12 +2585,12 @@
         "type": "box",
         "center": [
           0.5,
-          1.12,
+          1.145,
           0.17
         ],
         "size": [
           0.05,
-          2.1,
+          2.15,
           0.06
         ],
         "euler": [
@@ -2650,14 +2650,15 @@
       "LOD1",
       "LOD2"
     ],
+    "extras": [],
     "slackCm": 1.02,
-    "fbx": "Assets/Art/Props/Library/Buildings/Brick_Door.fbx",
     "license": {
       "spdx": "CC0-1.0",
       "source": "original",
       "url": "",
       "notes": "Procedural mesh built in this repo."
-    }
+    },
+    "fbx": "Assets/Art/Props/Library/Buildings/Brick_Door.fbx"
   },
   {
     "name": "Brick_Parapet",
@@ -3012,12 +3013,12 @@
         "type": "box",
         "center": [
           0,
-          0.56,
+          0.545,
           0
         ],
         "size": [
           1.16,
-          0.76,
+          0.73,
           0.3
         ],
         "euler": [
@@ -3093,7 +3094,7 @@
         ],
         "size": [
           0.98,
-          1.22,
+          1.26,
           0.012
         ],
         "euler": [
@@ -3107,13 +3108,32 @@
         "type": "box",
         "center": [
           0,
-          0.96,
+          0.98,
           0.16999999999999998
         ],
         "size": [
           1.28,
-          0.06,
+          0.1,
           0.06
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_HeadFrame",
+        "type": "box",
+        "center": [
+          0,
+          2.375,
+          0.16999999999999998
+        ],
+        "size": [
+          1.2,
+          0.09,
+          0.08
         ],
         "euler": [
           0,
@@ -3134,14 +3154,15 @@
       "LOD1",
       "LOD2"
     ],
-    "slackCm": 0.8,
-    "fbx": "Assets/Art/Props/Library/Buildings/Brick_Window.fbx",
+    "extras": [],
+    "slackCm": 2.6,
     "license": {
       "spdx": "CC0-1.0",
       "source": "original",
       "url": "",
       "notes": "Procedural mesh built in this repo."
-    }
+    },
+    "fbx": "Assets/Art/Props/Library/Buildings/Brick_Window.fbx"
   },
   {
     "name": "Buoy",
@@ -14858,7 +14879,7 @@
     "blurb": "0.90 m square planter, 0.48 m tall, soil and a shrub. Walls are hollow.",
     "size": [
       0.9,
-      0.84,
+      0.74,
       0.9
     ],
     "min": [
@@ -14868,7 +14889,7 @@
     ],
     "max": [
       0.45,
-      0.84,
+      0.74,
       0.45
     ],
     "lods": [
@@ -14997,7 +15018,7 @@
         "type": "sphere",
         "center": [
           0,
-          0.58,
+          0.46,
           0
         ],
         "radius": 0.26
@@ -15014,14 +15035,15 @@
       "LOD0",
       "LOD1"
     ],
+    "extras": [],
     "slackCm": 0.8,
-    "fbx": "Assets/Art/Props/Library/Park/Planter.fbx",
     "license": {
       "spdx": "CC0-1.0",
       "source": "original",
       "url": "",
       "notes": "Procedural mesh built in this repo."
-    }
+    },
+    "fbx": "Assets/Art/Props/Library/Park/Planter.fbx"
   },
   {
     "name": "Playground",
@@ -16945,11 +16967,10 @@
       },
       {
         "lod": 2,
-        "tris": 132,
+        "tris": 36,
         "materials": [
           "Lib_SteelDark",
-          "Lib_Steel",
-          "Lib_Black"
+          "Lib_Steel"
         ],
         "mesh": "LOD2",
         "fileID": 736115405485880582
@@ -16961,12 +16982,12 @@
         "type": "box",
         "center": [
           0,
-          0.48,
+          0.46,
           0
         ],
         "size": [
           1.26,
-          0.68,
+          0.72,
           0.86
         ],
         "euler": [
@@ -17026,14 +17047,15 @@
       "LOD1",
       "LOD2"
     ],
+    "extras": [],
     "slackCm": 2.8,
-    "fbx": "Assets/Art/Props/Library/Buildings/RooftopAC.fbx",
     "license": {
       "spdx": "CC0-1.0",
       "source": "original",
       "url": "",
       "notes": "Procedural mesh built in this repo."
-    }
+    },
+    "fbx": "Assets/Art/Props/Library/Buildings/RooftopAC.fbx"
   },
   {
     "name": "RopeCoil",
@@ -25879,11 +25901,11 @@
         "type": "capsule",
         "center": [
           0,
-          1.2,
+          1.185,
           0
         ],
         "radius": 0.07,
-        "height": 2.1,
+        "height": 2.13,
         "direction": 1
       }
     ],
@@ -25899,14 +25921,15 @@
       "LOD1",
       "LOD2"
     ],
+    "extras": [],
     "slackCm": 2.23,
-    "fbx": "Assets/Art/Props/Library/Park/Tree_Maple.fbx",
     "license": {
       "spdx": "CC0-1.0",
       "source": "original",
       "url": "",
       "notes": "Procedural mesh built in this repo."
-    }
+    },
+    "fbx": "Assets/Art/Props/Library/Park/Tree_Maple.fbx"
   },
   {
     "name": "Tree_Palm",
