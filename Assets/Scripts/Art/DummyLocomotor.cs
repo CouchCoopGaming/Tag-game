@@ -1227,6 +1227,8 @@ namespace Tag.Art
             _punch = punch;
             _root0 = transform.localPosition;
             Cache(visualRoot);
+            VerbExitRider.Ensure(gameObject);
+            Tag.FX.DustEmitter.Ensure(gameObject);
             if (!_bound && !_loggedBindFail)
             {
                 _loggedBindFail = true;
@@ -15582,6 +15584,40 @@ namespace Tag.Art
                 _jumpPoseAge = -1f;
             if (_dashPoseHeld && _dashPoseAge >= 0f)
                 _dashPoseAge += dt;
+            ApplyEvasionPose();
+        }
+
+        /// <summary>
+        /// Flag-off returns before any bone write. The clip is in-place.
+        /// Sample.Drop lowers the hips bone. The visual root and the capsule stay put.
+        /// </summary>
+        void ApplyEvasionPose()
+        {
+            if (!Tag.Gameplay.EvasionMoves.Enabled || _motor == null) return;
+            EvasionPose.Sample s;
+            if (!Tag.Gameplay.EvasionMoves.TrySample(_motor.GetInstanceID(), out s)) return;
+            if (_hips != null) _hips.localRotation = _hips0 * Quaternion.Euler(s.Hip, s.HipYaw, s.Lean);
+            if (_spine != null) _spine.localRotation = _spine0 * Quaternion.Euler(s.Spine, s.SpineYaw, 0f);
+            if (_head != null) _head.localRotation = _head0 * Quaternion.Euler(s.Head, s.HeadYaw, 0f);
+            if (_upperLegL != null) _upperLegL.localRotation = _ulL0 * Quaternion.Euler(s.ThighL, s.YawL, s.ThighRollL);
+            if (_upperLegR != null) _upperLegR.localRotation = _ulR0 * Quaternion.Euler(s.ThighR, s.YawR, s.ThighRollR);
+            if (_lowerLegL != null) _lowerLegL.localRotation = _llL0 * Quaternion.Euler(s.KneeL, 0f, 0f);
+            if (_lowerLegR != null) _lowerLegR.localRotation = _llR0 * Quaternion.Euler(s.KneeR, 0f, 0f);
+            if (_footL != null) _footL.localRotation = _ftL0 * Quaternion.Euler(s.FootL, 0f, 0f);
+            if (_footR != null) _footR.localRotation = _ftR0 * Quaternion.Euler(s.FootR, 0f, 0f);
+            if (_upperArmL != null) _upperArmL.localRotation = _uaL0 * Quaternion.Euler(s.ArmL, s.ArmYawL, s.RollL);
+            if (_upperArmR != null) _upperArmR.localRotation = _uaR0 * Quaternion.Euler(s.ArmR, s.ArmYawR, s.RollR);
+            if (_lowerArmL != null) _lowerArmL.localRotation = _laL0 * Quaternion.Euler(s.ElbowL, s.ElbowYawL, 0f);
+            if (_lowerArmR != null) _lowerArmR.localRotation = _laR0 * Quaternion.Euler(s.ElbowR, s.ElbowYawR, 0f);
+            if (_hips != null)
+            {
+                if (!_hipsPosSet)
+                {
+                    _hipsPos0 = _hips.localPosition;
+                    _hipsPosSet = true;
+                }
+                _hips.localPosition = _hipsPos0 + new Vector3(0f, s.Drop, 0f);
+            }
         }
 
         /// <summary>

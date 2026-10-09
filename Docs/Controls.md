@@ -31,6 +31,19 @@ F6 toggles the frame budget overlay. It stays off until you press it. The card s
 
 Practice restart, ghost, and the input display are sampled the same way. T and North (`buttonNorth`) restart a practice run. G and left stick press hide the ghost. I and right stick press show which verbs are held. They are not rebind rows. They do not use F3, F6, M, or Comma. See `Docs/Practice.md`.
 
+## Evasion
+
+These read the pad only while `EvasionMoves.Enabled` is on. The flag starts off, so a normal match does not run them. Keyboard equivalents are written up in `Docs/EvasionMoves.md` and are not bound.
+
+| Move | Gamepad, flag on | Keyboard |
+|---|---|---|
+| Juke | Right stick flicked left or right | Not bound |
+| Spin | Right stick half circle, same direction as the spin | Not bound |
+| Stutter | Double-tap RT, flag on. Side from the left stick. LT stays the couch rope | Not bound |
+| Dive | Airborne forward flick on the right stick, flag on. A held tilt stays look | Not bound |
+
+A sideways flick that returns to center is a juke. A half circle is a spin. An airborne forward flick that returns the same way is a dive. A slow pan, a fast pan that holds, tracking a runner, a snap to look behind, and looking up or down, including an airborne tilt that stays forward, do not start a move. When a juke, a spin, or a dive does start, that one gesture does not also turn the camera. RB stays air dash. LB stays sprint. LT stays the couch rope.
+
 ## Settings
 
 Pause → Settings. The same card is on the direct-play pause menu. Values save to PlayerPrefs (`Tag.GameSettingsJson`) and to `tag-settings.json` under the persistent data path, and they load on boot.

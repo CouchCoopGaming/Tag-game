@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Tag.FX;
 using Tag.Gameplay;
 using Tag.Local;
 using UnityEngine;
@@ -433,6 +434,8 @@ namespace Tag.Level
                 }
                 else if (r != null)
                     r.sharedMaterial = Pick(s.Mat);
+                string dust = s.Kind == "fence" ? "steel" : s.Mat;
+                SurfaceTag.Apply(go, dust, go.name);
             }
             return g;
         }
@@ -563,6 +566,8 @@ namespace Tag.Level
             }
             else if (rend != null)
                 rend.sharedMaterial = Pick(r.Mat);
+            if (keepCollider)
+                SurfaceTag.Apply(go, r.Mat, go.name);
             if (!keepCollider)
             {
                 Collider col = go.GetComponent<Collider>();

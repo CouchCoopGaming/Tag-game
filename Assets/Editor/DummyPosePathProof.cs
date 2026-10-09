@@ -89,7 +89,7 @@ public static class DummyPosePathProof
             report.Fail("slide pose is not on the dummy pose path");
         if (!loco.Contains("DummyPosePaths.Crouch") || !loco.Contains("CrouchPose"))
             report.Fail("crouch pose is not on the dummy pose path");
-        if (!loco.Contains("DummyPosePaths.Mantle") || !loco.Contains("MantlePose.At"))
+        if (!loco.Contains("DummyPosePaths.Mantle") || !loco.Contains("MantlePose.Cleared"))
             report.Fail("mantle pose is not on the dummy pose path");
         if (!loco.Contains("DummyPosePaths.Land") || !loco.Contains("JumpLandTell.ForPawn"))
             report.Fail("land thud is not on the dummy pose path");

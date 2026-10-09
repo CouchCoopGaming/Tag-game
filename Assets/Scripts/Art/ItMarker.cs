@@ -60,7 +60,7 @@ namespace Tag.Art
             SetIdentity(plateName, tint, 0);
         }
 
-        /// <summary>Shape 0 circle, 1 square, 2 capsule, 3 diamond. The glyph matches.</summary>
+        /// <summary>Shape 0 circle, 1 triangle, 2 square, 3 diamond. The glyph matches.</summary>
         public void SetIdentity(string plateName, Color tint, int shape)
         {
             _plateName = plateName ?? "";
@@ -76,11 +76,16 @@ namespace Tag.Art
         {
             if (_plateBuilt || !_hasPlate) return;
             _plateBuilt = true;
-            PrimitiveType kind = PrimitiveType.Sphere;
-            if (_shape == 1) kind = PrimitiveType.Cube;
-            else if (_shape == 2) kind = PrimitiveType.Capsule;
-            else if (_shape == 3) kind = PrimitiveType.Cylinder;
-            var go = GameObject.CreatePrimitive(kind);
+            GameObject go;
+            if (_shape == 1)
+                go = TrianglePlate();
+            else
+            {
+                PrimitiveType kind = PrimitiveType.Sphere;
+                if (_shape == 2) kind = PrimitiveType.Cube;
+                else if (_shape == 3) kind = PrimitiveType.Cylinder;
+                go = GameObject.CreatePrimitive(kind);
+            }
             go.name = "NameTag";
             go.transform.SetParent(transform, false);
             go.transform.localPosition = new Vector3(0f, 2.45f, 0f);
@@ -311,6 +316,36 @@ namespace Tag.Art
             hatGo.SetActive(on);
             haloGo.SetActive(on);
             _light.enabled = on;
+        }
+
+        static GameObject TrianglePlate()
+        {
+            var go = new GameObject("NameTag");
+            var mesh = new Mesh { name = "SeatTriangle" };
+            mesh.vertices = new[]
+            {
+                new Vector3(0f, 0.55f, 0f),
+                new Vector3(-0.5f, -0.4f, 0.08f),
+                new Vector3(0.5f, -0.4f, 0.08f),
+                new Vector3(0f, 0.55f, 0f),
+                new Vector3(0.5f, -0.4f, -0.08f),
+                new Vector3(-0.5f, -0.4f, -0.08f)
+            };
+            mesh.triangles = new[]
+            {
+                0, 2, 1,
+                3, 4, 5,
+                0, 1, 5,
+                0, 5, 3,
+                0, 4, 2,
+                0, 3, 4,
+                1, 2, 4,
+                1, 4, 5
+            };
+            mesh.RecalculateNormals();
+            go.AddComponent<MeshFilter>().sharedMesh = mesh;
+            go.AddComponent<MeshRenderer>();
+            return go;
         }
 
         static void DestroyCollider(GameObject go)

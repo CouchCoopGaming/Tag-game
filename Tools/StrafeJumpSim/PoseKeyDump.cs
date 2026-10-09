@@ -30,6 +30,31 @@ static class PoseKeyDump
         Idle(w, c);
         Loco(w, c, "loco", LocoFeel.Walk);
         Loco(w, c, "sprint", LocoFeel.Sprint);
+        Exits(w, c);
+    }
+
+    static void Exits(TextWriter w, CultureInfo c)
+    {
+        for (int k = 0; k < VerbExitClock.Catalog.Length; k++)
+        {
+            VerbExitId id = VerbExitClock.Catalog[k];
+            float dur = VerbExitClock.Duration(id);
+            int n = Frames(dur);
+            for (int i = 0; i <= n; i++)
+            {
+                float t = i * Dt;
+                if (t > dur) t = dur;
+                float u = dur > 0.0001f ? t / dur : 1f;
+                if (u > 1f) u = 1f;
+                VerbExitSample s = VerbExitClips.At(id, u, 1f, false, false);
+                Emit(w, c, "exit-" + id, t,
+                    s.ThighL, s.ThighR, s.KneeL, s.KneeR, s.ThighYawL, s.ThighYawR,
+                    s.ArmPitchL, s.ArmPitchR, s.ArmYawL, s.ArmYawR, s.ArmRollL, s.ArmRollR,
+                    s.ElbowL, s.ElbowR, s.Hip, s.Spine, s.Head, s.HipRoll, s.HipYaw, s.SpineYaw,
+                    s.FootL, s.FootR, 0f, 0f, 0f, 0f, s.ThighRollL, s.ThighRollR, s.Drop);
+                if (t >= dur) break;
+            }
+        }
     }
 
     static void Vault(TextWriter w, CultureInfo c)

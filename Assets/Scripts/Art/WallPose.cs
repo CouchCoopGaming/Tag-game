@@ -49,6 +49,8 @@ namespace Tag.Art
         public const float PlantThigh = 56f;
         public const float DriveKnee = -88f;
         public const float PlantKnee = -60f;
+        /// <summary>Thigh roll the exit plant reads. The wall proof does not print it.</summary>
+        public const float PlantRoll = -36f;
         /// <summary>Chest into the wall, short of folding the hands off the surface.</summary>
         public const float ClimbSpine = 14f;
         public const float ClimbHip = 8f;

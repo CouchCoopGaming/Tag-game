@@ -1,0 +1,7 @@
+no-clip clips=6 frames=115 worldMax=0.12 rigJoint=7.96 pose=0.0 fails=0
+ground-contact stutter planted=9/12 maxGap=0.44 frames=0.133:L:0.44,0.167:L:0.44,0.200:R:0.44,0.233:R:0.44,0.267:L:0.44,0.300:L:0.40,0.333:R:0.29,0.367:R:0.31,0.433:L:0.39
+ground-contact spinL planted=11/11 maxGap=0.43 frames=0.100:R:0.43,0.133:R:0.30,0.167:R:0.14,0.200:R:0.25,0.233:R:0.33,0.267:R:0.33,0.300:R:0.30,0.333:R:0.28,0.367:R:0.19,0.400:R:0.18,0.433:R:0.04
+ground-contact spinR planted=11/11 maxGap=0.43 frames=0.100:L:0.43,0.133:L:0.30,0.167:L:0.14,0.200:L:0.25,0.233:L:0.33,0.267:L:0.33,0.300:L:0.30,0.333:L:0.28,0.367:L:0.19,0.400:L:0.18,0.433:L:0.04
+ground-contact jukeL planted=7/7 maxGap=0.47 frames=0.100:L:0.40,0.133:L:0.33,0.167:L:0.42,0.200:L:0.44,0.233:L:0.47,0.267:L:0.44,0.300:L:0.44
+ground-contact jukeR planted=7/7 maxGap=0.47 frames=0.100:R:0.40,0.133:R:0.33,0.167:R:0.42,0.200:R:0.44,0.233:R:0.47,0.267:R:0.44,0.300:R:0.44
+none

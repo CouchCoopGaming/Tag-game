@@ -31,7 +31,8 @@ namespace Tag.Audio
             ZipLoop,
             ZipDrop,
             CountdownBeep,
-            RoundEnd
+            RoundEnd,
+            LandingRoll
         }
 
         public static readonly string[] Names =
@@ -55,7 +56,8 @@ namespace Tag.Audio
             "zip loop",
             "zip drop",
             "countdown beep",
-            "round end"
+            "round end",
+            "landing roll"
         };
 
         public static event System.Action<Hook, Vector3> Raised;
@@ -107,6 +109,7 @@ namespace Tag.Audio
                 case Hook.TagBackBlocked: TagSfx.TagBackThunk(position); break;
                 case Hook.CountdownBeep: TagSfx.CountdownBeep(); break;
                 case Hook.RoundEnd: TagSfx.RoundEnd(); break;
+                case Hook.LandingRoll: TagSfx.PlayAt(TagSfx.HookClip(Hook.LandHard), position, 0.5f, VoiceBudget.PriLandHard); break;
                 default: TagSfx.PlayHook(hook, position); break;
             }
         }
