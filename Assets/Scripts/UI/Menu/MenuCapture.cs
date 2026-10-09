@@ -217,10 +217,26 @@ namespace Tag.Ui.Menu
                 world = true;
             }
 
+            // URP base cameras ignore Depth/Nothing and always clear their target,
+            // so drawing the UI into the world RT wiped the arena (flat HUD panes).
+            // Draw the UI into its own transparent RT and composite on the CPU.
+            Texture2D worldTex = null;
+            if (world)
+            {
+                RenderTexture.active = rt;
+                worldTex = new Texture2D(w, h, TextureFormat.RGBA32, false);
+                worldTex.ReadPixels(new Rect(0f, 0f, w, h), 0, 0);
+                worldTex.Apply();
+                RenderTexture.active = prev;
+                RenderTexture.active = rt;
+                GL.Clear(true, true, new Color(0f, 0f, 0f, 0f));
+                RenderTexture.active = prev;
+            }
             var camGo = new GameObject("MenuGrabCam");
             var cam = camGo.AddComponent<Camera>();
             cam.enabled = false;
-            cam.clearFlags = world ? CameraClearFlags.Depth : CameraClearFlags.Nothing;
+            cam.clearFlags = CameraClearFlags.SolidColor;
+            cam.backgroundColor = world ? new Color(0f, 0f, 0f, 0f) : new Color(0.02f, 0.04f, 0.08f, 1f);
             cam.orthographic = true;
             cam.nearClipPlane = 0.01f;
             cam.farClipPlane = 10f;
@@ -253,6 +269,26 @@ namespace Tag.Ui.Menu
             tex.ReadPixels(new Rect(0f, 0f, w, h), 0, 0);
             tex.Apply();
             RenderTexture.active = prev;
+            if (worldTex != null)
+            {
+                Color32[] ui = tex.GetPixels32();
+                Color32[] back = worldTex.GetPixels32();
+                for (int p = 0; p < ui.Length; p++)
+                {
+                    float a = ui[p].a / 255f;
+                    // From a 0 clear, UI blending leaves colour premultiplied by a and
+                    // writes about a^2 into alpha; recover a, then composite "over".
+                    a = Mathf.Sqrt(a);
+                    float k = 1f - a;
+                    ui[p] = new Color32(
+                        (byte)Mathf.Min(255f, ui[p].r + back[p].r * k),
+                        (byte)Mathf.Min(255f, ui[p].g + back[p].g * k),
+                        (byte)Mathf.Min(255f, ui[p].b + back[p].b * k), 255);
+                }
+                tex.SetPixels32(ui);
+                tex.Apply();
+                Kill(worldTex);
+            }
             for (int i = 0; i < canvases.Length; i++)
             {
                 if (canvases[i] == null) continue;
