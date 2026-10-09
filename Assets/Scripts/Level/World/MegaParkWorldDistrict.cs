@@ -6,9 +6,10 @@ namespace Tag.Level
     /// Dressed Mega Park districts. Z7 is the kickball field the four split
     /// cameras share. Z1 dresses around the soft-play decks. Z2 dresses the
     /// east lawn of the cling lanes. Z3 dresses the merry lawns outside
-    /// Crossing B. Placements are real meters, yaw degrees, scale 1. The
-    /// headless layout audit still counts the gray solids; play mode hides
-    /// only the Z7 infield lumps. Feel locks are not stored here.
+    /// Crossing B. Z4 dresses the north lawn of the slide mountain. Placements
+    /// are real meters, yaw degrees, scale 1. The headless layout audit still
+    /// counts the gray solids; play mode hides only the Z7 infield lumps.
+    /// Feel locks are not stored here.
     /// </summary>
     public static class MegaParkWorldDistrict
     {
@@ -79,7 +80,10 @@ namespace Tag.Level
             new Place("WalkUp", B + "WalkUp.prefab", 85.5f, 0f, 24.63f, 0f),
             new Place("Facade_Wall", B + "Brick_Wall.prefab", 92f, 0f, 28.15f, 0f),
             new Place("Facade_WindowB", B + "Brick_Window.prefab", 96f, 0f, 28.15f, 0f),
-            new Place("Facade_DoorB", B + "Brick_Door.prefab", 100f, 0f, 28.15f, 0f),
+            // Closed cabin from the asset library. Replaces the east door wall.
+            // Front is +Z. The step ends at z = 28.52, just south of the sidewalk.
+            // West face is x = 98.08, just east of the window bay.
+            new Place("Cabin", B + "Cabin.prefab", 100.25f, 0f, 24.65f, 0f),
             new Place("AC_Facade", B + "RooftopAC.prefab", 92f, 3.2f, 28.15f, 0f),
 
             new Place("Climb_A", B + "Brick_Wall.prefab", 71.75f, 0f, 33f, 90f),
@@ -93,7 +97,7 @@ namespace Tag.Level
             new Place("Car_Sedan", V + "Sedan_Compact_25.prefab", 84.6f, 0.12f, 35.55f, 90f),
             new Place("Car_Hatch", V + "Hatch_Compact_25.prefab", 89.4f, 0.12f, 35.55f, 90f),
             new Place("Car_Crossover", V + "Crossover_Compact_25.prefab", 94.4f, 0.12f, 35.55f, 90f),
-            new Place("Car_Pickup", V + "Car_Pickup_25.prefab", 99.8f, 0.12f, 35.55f, 90f),
+            new Place("Car_Pickup", V + "Pickup_FullSize_25.prefab", 99.8f, 0.12f, 35.55f, 90f),
 
             new Place("Light_W", S + "LightPost_Single.prefab", 81.0f, 0f, 29.0f, 0f),
             new Place("Light_E", S + "LightPost_Single.prefab", 110.2f, 0f, 30.4f, 180f),
@@ -182,9 +186,33 @@ namespace Tag.Level
             new Place("My_Light", S + "LightPost_Single.prefab", 44.3f, 0f, 56.2f, 0f),
         };
 
+        /// <summary>
+        /// Z4 slide mountain. Gray towers, chutes, rims, spiral, and the
+        /// landmark stay. These props sit on the north lawn, south of the
+        /// z = 92 loop and north of Rim_SlideIn. Play batches the group.
+        /// Yellow chutes stay yellow.
+        /// </summary>
+        public static readonly Place[] Slide =
+        {
+            new Place("Sl_ClimbA", B + "Brick_Wall.prefab", 24f, 0f, 86f, 90f),
+            new Place("Sl_ClimbB", B + "Brick_Wall.prefab", 24f, 0f, 88.5f, 90f),
+            // Yaw 180 puts the entry on the west, toward the climb.
+            new Place("Sl_Gazebo", P + "Gazebo.prefab", 29.48f, 0f, 87.52f, 180f),
+            new Place("Sl_AC", B + "RooftopAC.prefab", 29.48f, 3.53f, 87.52f, 0f),
+            new Place("Sl_ScaffoldA", S + "Scaffold_Bay.prefab", 34.2f, 0f, 87.5f, 0f),
+            new Place("Sl_ScaffoldB", S + "Scaffold_Bay.prefab", 36.95f, 0f, 87.5f, 0f),
+            new Place("Sl_Tree", P + "Tree_Maple.prefab", 41.0f, 0f, 86.2f, 0f),
+            new Place("Sl_Planter", P + "Planter.prefab", 43.2f, 0f, 86.3f, 0f),
+            new Place("Sl_Bench", S + "Bench_Wood.prefab", 40.4f, 0f, 89.3f, 0f),
+            new Place("Sl_Trash", S + "TrashCan_Lidded.prefab", 43.0f, 0f, 89.2f, 0f),
+            new Place("Sl_Shrub", P + "Shrub.prefab", 45.2f, 0f, 88.4f, 0f),
+            new Place("Sl_Picnic", P + "PicnicTable.prefab", 47.2f, 0f, 87.4f, 90f),
+            new Place("Sl_Light", S + "LightPost_Single.prefab", 48.6f, 0f, 86.0f, 180f),
+        };
+
         public static Place[] AllPlaces()
         {
-            var all = new Place[Places.Length + SoftPlay.Length + Cling.Length + Merry.Length];
+            var all = new Place[Places.Length + SoftPlay.Length + Cling.Length + Merry.Length + Slide.Length];
             int n = 0;
             for (int i = 0; i < Places.Length; i++)
                 all[n++] = Places[i];
@@ -194,6 +222,8 @@ namespace Tag.Level
                 all[n++] = Cling[i];
             for (int i = 0; i < Merry.Length; i++)
                 all[n++] = Merry[i];
+            for (int i = 0; i < Slide.Length; i++)
+                all[n++] = Slide[i];
             return all;
         }
 

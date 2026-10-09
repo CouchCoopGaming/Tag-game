@@ -61,7 +61,7 @@ Terminal fall is `maxFallSpeed = 56.16`.
 
 `mantleMinLedgeHeight = 0.45`, `mantleMaxLedgeHeight = 2.55`, `mantleDuration = 0.40`, `mantleForward = 0.95`. The layout audit rejects a vault lip outside `MantleMin + 0.04` to `MantleMax − 0.04`.
 
-The asset catalog's park vault band is 0.90–1.05 m (`Docs/AssetLibrary.md` line 3). A rail in that band is the one to build a route on. `Gangway` is `vault 0.88 m`, under the band. Do not place it as a vault.
+The asset catalog's park vault band is 0.90–1.05 m (`Docs/AssetLibrary.md` line 3). A rail in that band is the one to build a route on. `Gangway` is dropped from Mega Park. The rail is 0.88 m above the plate, 0.02 m under that band, and the plate collider starts at y = 0.728 because the mesh is a harbor ramp. It stays in the harbor library. Mega Park does not place it.
 
 `Gazebo` is `vault 0.95 m`. Deck is 0.32 m, rail center y = 1.27 (`Docs/AssetLibrary.md`).
 
