@@ -701,6 +701,20 @@ P3 stays `(0.94, 0.42, 0.14)`. The load frame, the pause stripe, and the results
 
 `glyph-cover clean=0` and `glyph-cover check=0`. `screen-roots clean=1` and `screen-roots stacked=1`. The sim print has no FAIL line. `no-clip screens=5 frames=1778 worldMax=0.00 selfMax=0.08 fails=0 idle=0.00 ready=0.00 run=0.00 step=0.00 cheer=0.08 slump=0.00 rail=0.00 rigJoint=26 pose=0`.
 
+## Pass 57
+
+Station job 3 showed giant capsules on RESULTS, menu figures lying flat, and a grey box over PLAY. Each one was fixed in `85d7ad3b` ("Make the menu compile on Unity 6000.3 and keep RESULTS and the main-menu figures in frame").
+
+The giant capsules were the comic wipe. That commit draws the wipe bars at 140 by 220, flat, and skips the wipe on RESULTS. `FigureHeight` would have caught it. The menu figure's height along the pair camera, and each results slot at 100 px per metre, stay between 1.6 m and 2.0 m. `FitHeight` uses that same band.
+
+The figures were lying flat because the Hier file is Z-up and the spawn left identity rotation. That commit stands the mesh up in `MenuMannequin.StandUp`. `AlignUp` then tips the root so its up-vector is world up and leaves the children where they are. `FigureStandsUp` fails if that up-vector is more than 5° off world up.
+
+The grey box was the park camera drawing the preview meshes over PLAY. That commit puts those meshes on layer 31 and keeps the menu canvas in screen space, so the park camera cannot paint them. `NoOverlayOnFocus` fails if an Image with alpha of at least 0.5 paints over a focusable button. PLAY has to be one of those buttons.
+
+When captures resume, the station runs CompileSmokeTest plus `FigureStandsUp`, `FigureHeight`, and `NoOverlayOnFocus`. CompileSmokeTest is the station's own check. It is not in this repo.
+
+Unity is not installed here. The frames in `Docs/UiStills/pass57/` are headless. `57-load.png`, `57-pause.png`, and `57-results.png` show the dark keyline on the load band, the pause stripe, and the results bar. The orange seat stays `(0.94, 0.42, 0.14)`. They are not Unity captures.
+
 ## Later passes
 
 - Left on a rule returns to the modes only when the label does not change. That matches the stored value, so it is the floor of the rule. Right from the right-hand mode, and Left at that floor, already move between the columns.

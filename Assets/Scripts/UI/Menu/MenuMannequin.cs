@@ -96,7 +96,34 @@ namespace Tag.Ui.Menu
                 inst.transform.localRotation = best;
             }
             FaceForward(inst);
+            AlignUp(inst);
             FitHeight(inst);
+        }
+
+        /// <summary>
+        /// The stand rotation can leave local Y on its side. Tip the root so
+        /// its up-vector is world up, and keep the children where they are.
+        /// </summary>
+        static void AlignUp(GameObject inst)
+        {
+            Transform root = inst.transform;
+            if (Vector3.Angle(root.up, Vector3.up) <= 5f) return;
+            int n = root.childCount;
+            var pos = new Vector3[n];
+            var rot = new Quaternion[n];
+            for (int i = 0; i < n; i++)
+            {
+                Transform child = root.GetChild(i);
+                pos[i] = child.position;
+                rot[i] = child.rotation;
+            }
+            root.rotation = Quaternion.FromToRotation(root.up, Vector3.up) * root.rotation;
+            for (int i = 0; i < n; i++)
+            {
+                Transform child = root.GetChild(i);
+                child.position = pos[i];
+                child.rotation = rot[i];
+            }
         }
 
         static float StandScore(GameObject inst)
@@ -124,7 +151,9 @@ namespace Tag.Ui.Menu
             Bounds b = BoundsOf(inst);
             float h = b.size.y;
             if (h < 0.05f) return;
-            if (h >= 1.15f && h <= 2.7f) return;
+            // Screen-space height has to stay 1.6–2.0 m. A wild import, including
+            // a giant capsule, scales to 1.8. A mesh already in that band stays.
+            if (h >= 1.6f && h <= 2.0f) return;
             inst.transform.localScale *= 1.8f / h;
         }
 

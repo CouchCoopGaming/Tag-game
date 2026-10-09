@@ -444,6 +444,8 @@ The fifty-fifth pass stops counting parent-child cuffs as overlap. A joint that 
 
 The fifty-sixth pass puts a check mark in both menu fonts and keeps one screen root up. The orange seat stays (0.94, 0.42, 0.14). A dark keyline rings the band, and the seat shape counts in the pair distance, so orange against red clears 0.35. Space still jumps.
 
+The fifty-seventh pass points the last real capture at `85d7ad3b`. That commit dropped the giant wipe capsules on RESULTS, stood the menu figures up, and kept the preview meshes off PLAY. `FigureStandsUp` keeps the figure within 5° of world up. `FigureHeight` keeps it between 1.6 m and 2.0 m. `NoOverlayOnFocus` rejects an Image painted over a focusable button. The frames in `Docs/UiStills/pass57/` are headless, and they show the dark keyline. When captures resume, the station runs CompileSmokeTest plus these tests. Space still jumps.
+
 ## Motion, ninth pass
 
 The wall jump, the rope, the zip, the launch pad, a landing, the dash flash, a hard turnaround, and a punch while you run all ease instead of snapping. Speeds, the jump, and the dash length are the same.
