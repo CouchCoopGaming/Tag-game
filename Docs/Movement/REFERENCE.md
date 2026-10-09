@@ -2,7 +2,7 @@
 
 This is the catalog of reference poses. It is not gameplay. Nothing here is root motion, and the raw video stays off the repo.
 
-Pull the MediaPipe curves from `Docs/Storror/out/json/<id>.json` (clips 01–20) and `Docs/Movement/pose/<id>.json` (clips 21–24 and the emotes). Stick strips are next to those JSON files. Hier keys for the tic-tac live in `Docs/HierStills/v080/pass5/keyed_clips.json`. Hier keys for the CC BY emotes live in `Docs/Movement/emotes/keyed_emotes.json`. The pass 16 video retargets live in `Docs/Movement/emotes/pass16/keyed_emotes.json` and stay reference-only. The four hand-keyed emotes live in `Docs/Movement/emotes/pass17/keyed_emotes.json` and are parked. Hip-rule measurements for the movement lead live in `Docs/Movement/hipref/`.
+Pull the MediaPipe curves from `Docs/Storror/out/json/<id>.json` (clips 01–20) and `Docs/Movement/pose/<id>.json` (clips 21–31 and the parked emotes). Stick strips are next to those JSON files. Hier keys for the tic-tac live in `Docs/HierStills/v080/pass5/keyed_clips.json`. Hier keys for the CC BY emotes live in `Docs/Movement/emotes/keyed_emotes.json`. The pass 16 video retargets live in `Docs/Movement/emotes/pass16/keyed_emotes.json` and stay reference-only. The four hand-keyed emotes live in `Docs/Movement/emotes/pass17/keyed_emotes.json` and are parked. Hip-rule measurements for the movement lead live in `Docs/Movement/hipref/`.
 
 Grades: **A** clean enough to retarget. **B** usable with the note. **C** timing only. **D** do not copy the pose.
 
@@ -75,6 +75,26 @@ These windows are the moves the older set does not label: a tuck landing, a pike
 | `24_landing_roll` | same film 14.60–17.20 s | approach, body goes to the ground, then stands | roll | C. 66 f, 43 detected, 47 usable, vis 0.43. Better than `21_tuck_land` (vis 0.33). 17 of the usable frames stay upright. Feet stay near vis 0.27. REFERENCE-ONLY / DO-NOT-SHIP |
 
 A 320×240 praise-dance clip was extracted and rejected (38 of 121 frames detected). It is not in the catalog.
+
+## New windows for Hier retarget
+
+Five short windows, pose JSON and stick strips only. Nothing here is bound to the player, and no feel lock was touched. Raw video stays off the repo. None of these are CC0 or public domain. Each header says `REFERENCE-ONLY / DO-NOT-SHIP`.
+
+Grades: **A** clean enough to retarget. **B** usable with the note. **C** timing only.
+
+| Clip | Source and time | Good for | Game move | Quality |
+|---|---|---|---|---|
+| `25_side_absorb` | [Palestine Parkour - Gaza Free Running](https://www.youtube.com/watch?v=cSMbjuzhqiQ), Archive mirror [youtube-cSMbjuzhqiQ](https://archive.org/details/youtube-cSMbjuzhqiQ), TheFlexEffect, 4.20–8.00 s | side absorb, feet together | softland | B. 115 f, 104 detected, 113 usable, vis 0.62. Opens already folded (knee 138°), stands to 27° by 2.4 s, folds again to 134° at 3.3 s. Foot gap stays under 0.1 m. 640×480. REFERENCE-ONLY / DO-NOT-SHIP |
+| `30_gym_pike` | [Sport-Freestyle-freerunning](https://archive.org/details/vimeo-721018662) `vimeo-721018662`, 22.60–26.00 s | pike into a stand | vault | B. 86 f, 80 detected, 85 usable, vis 0.71. Knee 20° to 132° with hip flex 146° near 2.2 s, then the knee opens to 11°. Hands stay near the hips, so this is a pike, not a two-hand plant. Different file from clips 21–24. REFERENCE-ONLY / DO-NOT-SHIP |
+| `29_gym_clear` | same gym film 45.20–49.20 s | one leg drives up | vault | B. 101 f, 90 detected, 91 usable, vis 0.56. At 2.52 s hip flex is 138° and the feet are 1.07 m apart. Hands stay above the hips. Use the split. REFERENCE-ONLY / DO-NOT-SHIP |
+| `27_wall_reach` | Gaza film 174.60–180.20 s | opening reach, then the track breaks | cat leap | C. 169 f, 130 detected, 139 usable, vis 0.59. The first second is knee 144° and hip flex 156°, then the hands rise. At 4.7 s hip flex reads −131°. Use the opening. Do not retarget the whole window. REFERENCE-ONLY / DO-NOT-SHIP |
+| `31_gym_split` | gym film 4.20–5.60 s | one stride with the hip high | wall run | C. 35 f, 29 detected, 30 usable, vis 0.61. Hip flex peaks at 156° and the foot gap peaks at 0.55 m, then it closes. One stride, not a repeating wall run. REFERENCE-ONLY / DO-NOT-SHIP |
+
+No Creative Commons license is stated on either Archive item. The Gaza film is a YouTube mirror, so the YouTube standard license applies. The gym film is the Vimeo upload behind `vimeo-721018662`.
+
+A repeating wall run and a one-foot tic-tac did not show up as a clean track. Windows that looked like them on a coarse pass were a frozen opening frame, a 36% detection rate, or a single stride already in `31_gym_split`. They are not in the catalog.
+
+Stick strips: `Docs/Movement/strips/<id>.png`. Pose: `Docs/Movement/pose/<id>.json`.
 
 ## Emotes
 
