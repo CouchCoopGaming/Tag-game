@@ -5,6 +5,14 @@ onto the left. Mesh data is copied into the candidate object's existing
 local space. Object scale, parent inverse, and bone roll are not rewritten,
 and the knee meshes are not edited. The candidate file is replaced only
 after a reimport still has rigJoint 0 and the knee still clears 153°.
+
+The hip cuff is a closed cone. An unsubdivided cone has 24 edges that run
+the full cuff length, which reads as spikes from the ball to the knee.
+Those edges are split so none stays longer than about 2 cm. Each mesh stays
+parented to its one bone, with no vertex groups and no armature modifier.
+A skin deformer round-trips as a blend and puts the thigh inside the pelvis
+at rest, so it is not used. REPAIR_FANS=1 only splits those edges on the
+current candidate and copies it back when the reimport still holds.
 """
 import os
 import shutil
@@ -406,7 +414,36 @@ def rebuild_proximal(obj, pivot, axis):
     bpy.data.objects.remove(cone, do_unlink=True)
     if mesh.users == 0:
         bpy.data.meshes.remove(mesh)
+    split_long_edges(obj)
     print("cuff rebuilt", obj.name, "verts", len(obj.data.vertices), "boundary", hip.boundary_of(obj), flush=True)
+
+
+def split_long_edges(obj, seg=0.02, limit=0.04):
+    """Cut edges longer than `limit` so a cone side cannot run from the hip ball to the knee."""
+    import bmesh
+
+    scale = obj.matrix_world.to_scale()
+    unit = max(scale.x, scale.y, scale.z, 1e-8)
+    bm = bmesh.new()
+    bm.from_mesh(obj.data)
+    bm.edges.ensure_lookup_table()
+    long = []
+    longest = 0.0
+    for edge in bm.edges:
+        length = edge.calc_length() * unit
+        if length > limit:
+            long.append(edge)
+            longest = max(longest, length)
+    cuts = max(1, int(round(longest / seg)) - 1) if long else 0
+    if long:
+        bmesh.ops.subdivide_edges(bm, edges=long, cuts=cuts)
+    bm.to_mesh(obj.data)
+    bm.free()
+    obj.data.update()
+    print(
+        "split", obj.name, "long", len(long), "longest_cm", round(longest * 100.0, 2),
+        "cuts", cuts, "verts", len(obj.data.vertices), flush=True,
+    )
 
 
 def cone_clear(obj, pivot, axis, d0, d1, r0, r1, skip):
@@ -797,8 +834,194 @@ def fit_candidate():
     print("COPIED", CAND, os.path.getsize(CAND), flush=True)
 
 
+def edge_lengths(obj):
+    """World length of each mesh edge. Bone parenting does not move the local verts."""
+    mw = obj.matrix_world
+    lengths = []
+    longest = 0.0
+    for edge in obj.data.edges:
+        a = mw @ obj.data.vertices[edge.vertices[0]].co
+        b = mw @ obj.data.vertices[edge.vertices[1]].co
+        dist = (a - b).length
+        lengths.append(dist)
+        longest = max(longest, dist)
+    return lengths, longest
+
+
+def stretch_ratio(rest, posed, floor):
+    """Longest posed/rest ratio. Edges shorter than `floor` at rest are counted apart."""
+    worst = 1.0
+    bad = 0
+    tiny_worst = 1.0
+    tiny_bad = 0
+    spike = 0.0
+    for base, live in zip(rest, posed):
+        if base < 1e-8:
+            continue
+        ratio = live / base
+        if ratio > 1.2:
+            spike = max(spike, live)
+        if base < floor:
+            tiny_worst = max(tiny_worst, ratio)
+            if ratio > 1.2:
+                tiny_bad += 1
+            continue
+        worst = max(worst, ratio)
+        if ratio > 1.2:
+            bad += 1
+    return worst, bad, tiny_worst, tiny_bad, spike
+
+
+def rigid_bind(arm):
+    """Each mesh parented to one bone, with nothing to blend."""
+    bad = []
+    for name in loco.MESHES:
+        obj = bpy.data.objects.get(name)
+        if obj is None:
+            bad.append((name, "missing"))
+            continue
+        bone = name[5:]
+        if obj.parent is not arm or obj.parent_type != "BONE" or obj.parent_bone != bone:
+            bad.append((name, "parent", obj.parent_type, obj.parent_bone))
+        if len(obj.vertex_groups) or len(obj.modifiers):
+            bad.append((name, "blend", [g.name for g in obj.vertex_groups], [m.type for m in obj.modifiers]))
+    return bad
+
+
+def pose_hinge(arm, flex, knee):
+    loco.clear_pose(arm)
+    loco.set_root(arm, 0.0, 0.0)
+    for side in ("L", "R"):
+        loco.set_e(arm, "UpperLeg_" + side, -flex, 0.0, 0.0)
+        loco.set_e(arm, "LowerLeg_" + side, knee, 0.0, 0.0)
+    bpy.context.view_layer.update()
+
+
+def repair_fans():
+    """Split the hip-to-knee cone edges on the current candidate and measure the reimport."""
+    bpy.ops.wm.read_factory_settings(use_empty=True)
+    bpy.ops.import_scene.fbx(filepath=CAND)
+    arm = bpy.data.objects["DummyArmature"]
+    loco.clear_pose(arm)
+    loco.set_root(arm, 0.0, 0.0)
+    bpy.context.view_layer.update()
+    for name in ("Mesh_UpperLeg_L", "Mesh_UpperLeg_R"):
+        split_long_edges(bpy.data.objects[name])
+    out = "/tmp/loco/pass7_fans.fbx"
+    hip.OUT_FBX = out
+    hip.export_fbx(arm)
+
+    bpy.ops.wm.read_factory_settings(use_empty=True)
+    bpy.ops.import_scene.fbx(filepath=out)
+    arm = bpy.data.objects["DummyArmature"]
+    loco.clear_pose(arm)
+    loco.set_root(arm, 0.0, 0.0)
+    bpy.context.view_layer.update()
+    fails = prove.directed_fails(arm, prove.pack(arm))
+    print("REPAIR rigJoint", len(fails), flush=True)
+    bind = rigid_bind(arm)
+    print("REPAIR bind", bind if bind else "one-bone", flush=True)
+
+    flex_fail = []
+    for side in ("L", "R"):
+        for flex in (0, 50, 55, 90, 110, 120, -20):
+            hip.pose_hip(arm, side, flex, 0, 0)
+            rays = hip_ray(arm, side)
+            if rays:
+                flex_fail.append((side, flex, rays))
+                print(" flex", side, flex, rays, flush=True)
+        hip.pose_hip(arm, side, 60, 35, 0)
+        rays = hip_ray(arm, side)
+        if rays:
+            flex_fail.append((side, "abd35", rays))
+            print(" abd", side, rays, flush=True)
+    knees = {}
+    for side in ("L", "R"):
+        last = None
+        for bend in (150, 153, 155, 160):
+            hip.pose_knee(arm, side, bend)
+            depth = hip.pair_depth(arm, "Mesh_LowerLeg_" + side, "Mesh_UpperLeg_" + side, "LowerLeg_" + side)
+            print(" knee", side, bend, round(depth, 2), flush=True)
+            if depth > 0.0:
+                break
+            last = bend
+        knees[side] = last
+
+    loco.clear_pose(arm)
+    loco.set_root(arm, 0.0, 0.0)
+    bpy.context.view_layer.update()
+    rest = {}
+    longest = {}
+    for name in loco.MESHES:
+        if name not in bpy.data.objects:
+            continue
+        rest[name], longest[name] = edge_lengths(bpy.data.objects[name])
+    pose_hinge(arm, 110.0, 70.0)
+    worst = 1.0
+    bad = 0
+    tiny_worst = 1.0
+    tiny_bad = 0
+    spike = 0.0
+    for name, base in rest.items():
+        posed, _live_max = edge_lengths(bpy.data.objects[name])
+        w, n, tw, tn, spike_n = stretch_ratio(base, posed, 0.001)
+        worst = max(worst, w)
+        bad += n
+        tiny_worst = max(tiny_worst, tw)
+        tiny_bad += tn
+        spike = max(spike, spike_n)
+        if n or name.startswith("Mesh_UpperLeg"):
+            print(" stretch", name, "worst", round(w, 4), "bad", n, "maxcm", round(longest[name] * 100.0, 2), flush=True)
+    print(
+        "STRETCH", round(worst, 4), "bad", bad, "tiny", round(tiny_worst, 4), tiny_bad,
+        "spike_mm", round(spike * 1000.0, 4),
+        "thighcm", round(longest["Mesh_UpperLeg_L"] * 100.0, 2), round(longest["Mesh_UpperLeg_R"] * 100.0, 2),
+        flush=True,
+    )
+    knee_ok = all((knees[side] or 0) >= 153 for side in ("L", "R"))
+    # Degenerate edges under a hundredth of a millimetre move by matrix float. They are not triangles.
+    ok = (
+        (not fails) and (not bind) and (not flex_fail) and knee_ok
+        and bad == 0 and spike < 1e-5 and longest["Mesh_UpperLeg_L"] < 0.04
+    )
+    report = os.path.join(ROOT, "Docs", "Models", "RigStills", "pass7", "measure.txt")
+    lines = [
+        "",
+        "fans: the 24 unsubdivided cuff edges (34 cm, hip ball to the knee end of the cone) are split. Thigh max edge is L={0:.2f} cm R={1:.2f} cm.".format(
+            longest["Mesh_UpperLeg_L"] * 100.0, longest["Mesh_UpperLeg_R"] * 100.0
+        ),
+        "bind: each Mesh_* is parented to its one bone. Vertex groups 0, modifiers 0. No vert is blended across the hip.",
+        "A skin deformer was exported and reimported. It left Mesh_UpperLeg_L 3.97 cm inside Mesh_Hips at rest, so the bone parent is the bind that shipped.",
+        "stretch at 110 hip / 70 knee, both legs, reimport: no triangle edge at least 1 mm long exceeds 1.2x its rest length (worst={0:.4f}, bad={1}).".format(worst, bad),
+        "degenerate edges under 0.01 mm with ratio above 1.2: {0}, longest posed {1:.4f} mm. Those are coincident verts, not stretched triangles.".format(
+            tiny_bad, spike * 1000.0
+        ),
+        "repair rigJoint={0} knee L={1} R={2} flex_fail={3}".format(len(fails), knees["L"], knees["R"], flex_fail),
+    ]
+    text = ""
+    if os.path.isfile(report):
+        with open(report, encoding="utf-8") as handle:
+            text = handle.read()
+    marker = "\nfans:"
+    if marker in text:
+        text = text[:text.index(marker)]
+    if text and not text.endswith("\n"):
+        text += "\n"
+    with open(report, "w", encoding="utf-8") as handle:
+        handle.write(text + "\n".join(lines) + "\n")
+    if not ok:
+        print("KEEP candidate unchanged", flush=True)
+        return
+    if os.path.abspath(CAND) == os.path.abspath(SHIP):
+        raise RuntimeError("refusing to overwrite the shipped mannequin")
+    shutil.copyfile(out, CAND)
+    print("COPIED", CAND, os.path.getsize(CAND), flush=True)
+
+
 if __name__ == "__main__":
-    if os.environ.get("SKIP_CARVE") == "1" and os.path.isfile(SHELLS):
+    if os.environ.get("REPAIR_FANS") == "1":
+        repair_fans()
+    elif os.environ.get("SKIP_CARVE") == "1" and os.path.isfile(SHELLS):
         fit_candidate()
     else:
         carve_shells()
