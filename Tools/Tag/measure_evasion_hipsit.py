@@ -280,9 +280,10 @@ def main():
     back_txt = "0" if back_min is None else "%.2f" % back_min
     knee_txt = "0" if knee_min is None else "%.1f" % knee_min
     drop_txt = "0" if drop_min is None else "%.1f" % drop_min
+    # Docs/Movement/STANDARD.md. fails is the plant, landing, and crouch count.
     print(
-        "hip-sit clips=%d loadedFrames=%d pelvisBackMin=%s cm hingeMin=%s kneeMin=%s pelvisDropMin=%s cm fails=%d"
-        % (len(clips), loaded, back_txt, hinge_txt, knee_txt, drop_txt, len(fails)),
+        "hip-sit clips=%d fails=%d pelvisBackMin=%s hingeMin=%s kneeMin=%s pelvisDropMin=%s"
+        % (len(clips), len(fails), back_txt, hinge_txt, knee_txt, drop_txt),
         flush=True,
     )
     if not SKIP_NOCLIP:
@@ -290,8 +291,8 @@ def main():
             print("POSEWHERE", pose_where, flush=True)
         pose_report = 0.0 if pose_max <= n.LIMIT_M else n.cm(pose_max)
         print(
-            "no-clip clips=%d frames=%d worldMax=%s rigJoint=%s pose=%s fails=%d"
-            % (len(clips), loaded, n.cm(world_max), n.cm(rig_max), pose_report, 1 if pose_max > n.LIMIT_M else 0),
+            "no-clip clips=%d frames=%d worldMax=%s pose=%s rigJoint=%s fails=%d"
+            % (len(clips), loaded, n.cm(world_max), pose_report, n.cm(rig_max), 1 if pose_max > n.LIMIT_M else 0),
             flush=True,
         )
     print("EXIT", flush=True)

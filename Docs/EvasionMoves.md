@@ -67,7 +67,7 @@ Dive is a prototype behind the flag. It is the juke's flick rule on the forward 
 
 No-clip, every 30 fps frame of the six clips. A pair that shares a joint is `rigJoint`. `pose` is non-adjacent pairs plus the floor, and it is 0 when every one of those is at or under 0.5 cm:
 
-`no-clip clips=6 frames=115 worldMax=0.0 rigJoint=7.89 pose=1.74 fails=1`
+`no-clip clips=6 frames=115 worldMax=0.0 pose=1.74 rigJoint=7.89 fails=1`
 
 `rigJoint` is the hip/thigh cuff, owned by the rig lane. The floor is clear. `pose` is not 0. The deepest report is 1.74 cm, the spine into both thighs on the dive roll-up. The spin still reports 1.4 cm of that pair, and `jukeR` reports 0.64 cm. Those three stay rig-blocked. Knee and hip joint overlap stays `rigJoint`.
 
@@ -85,6 +85,6 @@ Support soles, within 0.5 cm. Planted frames and the max gap, in centimetres:
 
 Hip-sit on the stutter, juke, and spin plants, on the dive push-off, and on the dive roll-up. The airborne stretch is not a plant. `pelvisBack` is how far the pelvis sits behind the support foot. `hinge` is hip flexion over lumbar flexion. `kneeMin` is support-knee flexion. `pelvisDrop` is how far the pelvis bone is below its standing height. The roll-up frames clear the crouch bar: 13.6 cm behind the foot, knee 79°, drop at least 20 cm, sole 0.2 cm. `pelvisBackMin` is the lowest passing plant, not the roll-up.
 
-`hip-sit clips=6 loadedFrames=115 pelvisBackMin=9.27 cm hingeMin=1.50 kneeMin=50.0 pelvisDropMin=8.9 cm fails=0`
+`hip-sit clips=6 fails=0 pelvisBackMin=9.27 hingeMin=1.50 kneeMin=50.0 pelvisDropMin=8.9`
 
 Stills for the forward dive and the seated roll-up are in `Docs/Movement/evasion-pass6/`. `before/` is the earlier crouch hop and the 9.0 cm roll-up. `after/` is the lean and reach, and the roll-up with the pelvis 13.6 cm behind the foot. Side views have a vertical line through the support foot and a dot on the pelvis. Three-quarter views cover 0.17 s, 0.35 s, and 0.52 s. Pass 5 is still in `Docs/EvasionStills/pass5/`. Pass 4 is still in `Docs/EvasionStills/pass4/`. Pass 3 is still in `Docs/EvasionStills/pass3/`. Pass 2 is still in `Docs/EvasionStills/pass2/`. Pass 1 is still in `Docs/EvasionStills/pass1/`.

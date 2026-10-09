@@ -47,11 +47,24 @@ Per clip, same sit, pose fails 0, world 0: wall run 9, climb top-out 11, vault 1
 
 Owner E. Flag off. The six clips were folded from `65aa8de0`. The dive stretch and the roll-up seat below are measured on the evasion sub-branch and are not folded yet.
 
-`hip-sit clips=6 loadedFrames=115 pelvisBackMin=9.27 cm hingeMin=1.50 kneeMin=50.0 pelvisDropMin=8.9 cm fails=0`
+`hip-sit clips=6 fails=0 pelvisBackMin=9.27 hingeMin=1.50 kneeMin=50.0 pelvisDropMin=8.9`
 
-`no-clip clips=6 frames=115 worldMax=0.0 rigJoint=7.89 pose=1.74 fails=1`
+`no-clip clips=6 frames=115 worldMax=0.0 pose=1.74 rigJoint=7.89 fails=1`
 
 The roll-up at 0.867 s and 0.900 s sits 13.6 cm behind the support foot, knee 79°, sole 0.2 cm, and clears the 20 cm drop bar. The thigh is 55°. The spine is 1.74 cm inside both upper legs on those frames. That pair is rig-blocked. Spin stays 1.4 cm on the pivot thigh. `jukeR` stays 0.64 cm (0.55 cm at 0.333 s). `jukeL` is clear. Those poses were not retuned. `EvasionMoves.Enabled` stays false, and RT is sampled only while that flag is on.
+
+## Landings and the 65% roll
+
+Inventory on this sub-branch. `LandPose` and `HandoffFeel` were not edited. The land-pose proof line locks `softKnee=-26`, `softThigh=18`, `softDrop=0.02`, `hardKnee=-125`, `hardThigh=74`, `hardDrop=0.50`. `RollThigh` 62 changes `RollStep` and the handoff line. Game euler: positive thigh, knee already negative. Drop is the hips bone.
+
+| Pose | pelvisBack | knee | hinge | drop | sole | pose |
+|---|---|---|---|---|---|---|
+| Soft | −6.4 cm | 26° | 1.33 | 2.0 cm | −0.3 cm | 1.40 cm chest into upper arm |
+| Hard | −25.8 cm | 125° | 1.64 | 50 cm | 3.2 cm | 4.35 cm spine into thigh |
+| Roll peak | −34.2 cm | 88° | 0.78 | 25 cm | 6.1 cm / 14.3 cm | 6.91 cm hand into thigh; spine 1.86 cm |
+| Roll impact | −25.8 cm | 125° | 1.64 | 50 cm | 3.2 cm | 4.35 cm spine into thigh |
+
+Soft is proof-locked under the 45° knee and the 20 cm drop. Hard and the roll put the foot behind the pelvis, and the thigh is already through the spine. Same rig pair as the spin. Not retuned. Shin is forward on all four (soft +13.5 cm, hard +48.6 cm, roll peak +46.6 cm). `RollSpeed` stays 36.504.
 
 ## Clip list
 
@@ -115,7 +128,7 @@ The Hier rig rebuild is not approved and is not bound.
 ## Helper queues
 
 - C1 `bc-621b414b` — vault, climb, mantle, and the exit catalog, on a sub-branch off `cursor/tag-movement`. The eight sits above are the current keys. Open pose on the played climb and the played wall run is still theirs to propose. Do not add a second clip for a move that already has one.
-- E `bc-ad550372` — evasion, plus landings and rolls, on a sub-branch off `cursor/tag-movement`. The six evasion clips stay flag-off. The dive roll-up now clears 12 cm behind the foot. Spin 1.4 cm, `jukeR` 0.64 cm, and the roll-up spine-into-thigh 1.74 cm stay rig-blocked. Roll and roll-absorb landings are still open. Do not loosen `EvasionPose.Holds` to clear the dive. Do not retune `leadKnee` on the played slide.
+- E `bc-ad550372` — evasion, plus landings and rolls, on `cursor/tag-movement-evasion`. The six evasion clips stay flag-off. The dive roll-up clears 12 cm behind the foot. Spin 1.4 cm, `jukeR` 0.64 cm, and the roll-up spine-into-thigh 1.74 cm stay rig-blocked. Soft, hard, and the 65% roll are inventoried above and were not retuned. `exit-Roll` and `exit-RollAbsorb` are still open. Do not loosen `EvasionPose.Holds` to clear the dive. Do not retune `leadKnee` on the played slide.
 
 ## Seats
 
