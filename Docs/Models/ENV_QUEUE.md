@@ -8,7 +8,7 @@ A colour or paint sibling uses the base quartet when vertex positions, indices, 
 | --- | --- | --- | --- |
 | #122 | `15c0a983` | `pass=12/125` paper 91 / geom 22 at `723cc137` | `models-validate assets=125 pass=12 fail=113` / `models-split paperwork=91 geometry=22` |
 | #125 | `3040d2e5` | `pass=14/189` paper 136 / geom 39 at `29caae02` | `models-validate assets=189 pass=18 fail=171` / `models-split paperwork=136 geometry=35` |
-| #129 | `cf295d9b` | `pass=27/220` paper 176 / geom 17 at `8f7686a5` | `models-validate assets=220 pass=27 fail=193` / `models-split paperwork=176 geometry=17` |
+| #129 | `30af0ae6` | `pass=27/220` paper 176 / geom 17 at `cf295d9b` | `models-validate assets=220 pass=43 fail=177` / `models-split paperwork=161 geometry=16` |
 
 `Container_20_Blue` and `Container_20_Green` match `Container_20` and pass as `material-variant of Container_20` on #122 and #129. `FireHydrant_Red` does not match the base cage. On #125 the six `_25` paints each have a pass 18 quartet and pass on their own. Their cage still matches `Sedan_Mid_A_25`.
 
@@ -16,9 +16,9 @@ A colour or paint sibling uses the base quartet when vertex positions, indices, 
 
 #122 (12): WalkUp, WoodFence, WoodFence_Corner, WoodFence_End, WoodFence_Gate, Container_20, Container_20_Blue, Container_20_Green, Rowboat, CourtFence, Gazebo, Road_Junction.
 
-#125 (18): `Pickup_FullSize_25`, the three compacts, `Sedan_Mid_A_22` through `_25`, the six `_25` paints, and the four buses. `3040d2e5` cuts bus LOD2 to 900 and 1192. #129's model count did not change at `cf295d9b`.
+#125 (18): `Pickup_FullSize_25`, the three compacts, `Sedan_Mid_A_22` through `_25`, the six `_25` paints, and the four buses. `3040d2e5` cuts bus LOD2 to 900 and 1192.
 
-#129 (27): GasCanopy, WalkUp (now #122's 2736/2216/1004 cage), WoodFence_Corner, Container_20 plus both enamels, Dock_Straight, FishingBoat, Rowboat, CourtFence, Gazebo, Bench_WoodIron, BikeRack_Hoop3, FireHydrant, FireHydrant_Silver (own pass 31 quartet), FireHydrant_Yellow, Fountain_Walk, LightPost_Globe, NewspaperRack, Newsstand_Corner, ParkingMeter_Single, ParkingMeter_Twin, Planter_Street, PowerPole_Span, Sign_AFrame, Sign_StreetName, StreetMedian_Planted.
+#129 (43): the previous 27, plus Brick_Door, Brick_Wall, Brick_Window, RooftopAC, ParkLamp, PicnicTable, Planter, Shrub, Tree_Maple, Sidewalk, Bench_Wood, FireHydrant_Red, LightPost_Single, Scaffold_Bay, StreetRoad_TwoLane, and TrashCan_Lidded. `FireHydrant_Red` uses its own pass 32 quartet.
 
 ## Buildings (#122)
 
@@ -37,10 +37,10 @@ A colour or paint sibling uses the base quartet when vertex positions, indices, 
 
 ## Street props (#129)
 
-1. Leave the 27 passes. `8f7686a5` copied WalkUp, CourtFence, the containers, Rowboat, HarborShed, Gazebo, and WoodFence_Corner from #122. Do not rebuild those.
+1. Leave the 43 passes. `8f7686a5` copied WalkUp, CourtFence, the containers, Rowboat, HarborShed, Gazebo, and WoodFence_Corner from #122. Do not rebuild those.
 2. GasCanopy, Dock_Straight, and FishingBoat pass the 0.6× cut on this tip and are not #122's meshes. Leave them unless #122's cut lands here later.
-3. `FireHydrant_Red` still needs its own quartet. Its cage does not match `FireHydrant` or `FireHydrant_Yellow`. Silver's pass 31 quartet is the one to keep.
-4. `Park/Planter` is not `Planter_Street`. It still needs its own quartet.
-5. Do not re-import `Car_*`.
+3. `FireHydrant_Red` passes on `pass32/firehydrant_red_*`. Its cage still does not match `FireHydrant`. Leave that quartet.
+4. `Park/Planter` now has its own pass 32 quartet. It is not `Planter_Street`.
+5. Do not re-import `Car_*`. Do not seal Planter, Tree_Maple, or RooftopAC a second time. This tip already changed those three cages away from #122.
 
-Restructure-impact count is 6. `Pickup_FullSize_25` is not a redo. #129 `cf295d9b` did not change a mesh. See `Docs/Models/LEDGER.md`.
+Restructure-impact count is 7. `Pickup_FullSize_25` is not a redo. See `Docs/Models/LEDGER.md`.
