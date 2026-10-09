@@ -422,16 +422,16 @@ def _cutters(spec):
                 (depth, y_hi - y_lo, z_hi - z_lo),
             ))
         spec["glass_tests"].append((x_skin - 0.008, ymid, zmid))
-    # Handle pockets on the two doors, biting the skin.
-    for z0, z1 in spec["doors"]:
-        z = (z0 + z1) * 0.5 + 0.04
-        x = _x_out(z, spec)
-        y = spec["belt"] - 0.06
-        for sign in (1.0, -1.0):
-            pockets.append(((sign * (x - 0.004), y, z), (0.045, 0.032, 0.090)))
-    # 4 mm door-gap grooves, 8 mm deep, so the black line sits in a slot.
-    for center, size in _door_slots(spec):
-        pockets.append((center, size))
+    # Handle pockets and door grooves are LOD0/LOD1. LOD2 keeps the window holes only.
+    if spec.get("_lod", 0) < 2:
+        for z0, z1 in spec["doors"]:
+            z = (z0 + z1) * 0.5 + 0.04
+            x = _x_out(z, spec)
+            y = spec["belt"] - 0.06
+            for sign in (1.0, -1.0):
+                pockets.append(((sign * (x - 0.004), y, z), (0.045, 0.032, 0.090)))
+        for center, size in _door_slots(spec):
+            pockets.append((center, size))
     if spec.get("panel_gaps") and spec.get("_lod", 0) < 2:
         pockets.extend(_panel_slots(spec))
     return pockets, prisms
@@ -568,7 +568,7 @@ def _wheels(g, spec, lod):
     if spec.get("tread"):
         _wheels_tread(g, spec, lod)
         return
-    seg = 16 if lod == 0 else 10
+    seg = 16 if lod == 0 else (6 if lod >= 2 else 10)
     r = spec["tire_r"]
     half_w = spec["tire_half_w"]
     for z in spec["axles"]:
@@ -872,7 +872,7 @@ def _wells(spec):
 def build_sedan(g, spec, lod):
     spec["_lod"] = lod
     level = 1 if lod == 0 else 0
-    step = 0.08 if lod == 0 else (0.32 if lod >= 2 else 0.16)
+    step = 0.08 if lod == 0 else (0.48 if lod >= 2 else 0.16)
     extra = [k[0] for k in spec["keys"]]
     extra.extend(spec["axles"])
     for axle in spec["axles"]:
@@ -882,7 +882,8 @@ def build_sedan(g, spec, lod):
     pockets, prisms = _cutters(spec)
     _loft(g, rings, spec["paint"], level, _wells(spec), pockets, prisms, 42.0)
     _glass(g, spec)
-    _door_lines(g, spec)
+    if lod < 2:
+        _door_lines(g, spec)
     _mirrors(g, spec, lod)
     _fascia(g, spec, lod)
     if spec.get("cladding"):

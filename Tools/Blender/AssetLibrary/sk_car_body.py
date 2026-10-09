@@ -552,7 +552,7 @@ def wheel_boxes(asset, spec, axles, name_fn):
 
 
 def _wheels(g, spec, lod, axles):
-    seg = 16 if lod == 0 else 10
+    seg = 16 if lod == 0 else (6 if lod >= 2 else 10)
     r = spec["tire_r"]
     half_w = spec["tire_half_w"]
     for z in axles:
@@ -619,13 +619,21 @@ def _bed(g, spec, step, mat, level):
 
 
 def build(g, spec, lod):
-    level = 1 if lod == 0 else 0
-    step = spec["step"] if lod == 0 else spec["step"] * 1.8
+    if lod >= 2:
+        level = 0
+        step = spec["step"] * 4.2
+    elif lod == 1:
+        level = 0
+        step = spec["step"] * 1.8
+    else:
+        level = 1
+        step = spec["step"]
     _shell(g, spec, step, spec["paint"], spec["axles"], level)
-    _cabin(g, spec)
+    if lod < 2:
+        _cabin(g, spec)
+        _seams(g, spec)
+        _handles(g, spec)
     _glass(g, spec)
-    _seams(g, spec)
-    _handles(g, spec)
     _mirrors(g, spec, lod)
     _lamps(g, spec, lod)
     _wheels(g, spec, lod, spec["wheel_axles"])

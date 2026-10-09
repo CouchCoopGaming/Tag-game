@@ -51,7 +51,7 @@ def create():
     )
     asset.climb_note = "Sheet metal. Not a cling wall."
     asset.vault_note = "Hood and roof are landings, not vault rails."
-    for lod in (0, 1):
+    for lod in (0, 1, 2):
         geo = asset.begin(lod)
         shell.build_sedan(geo, body, lod)
         asset.end()

@@ -28,6 +28,16 @@ def guid(*parts):
     return hashlib.md5(("tag-asset-library-v1|" + "|".join(parts)).encode("utf-8")).hexdigest()
 
 
+def kept_guid(meta_path, *parts):
+    """Keep a guid already on disk so a rebuild does not retarget scenes."""
+    if meta_path and os.path.isfile(meta_path):
+        text = open(meta_path, encoding="utf-8").read()
+        match = re.search(r"^guid: ([0-9a-fA-F]+)", text, re.M)
+        if match:
+            return match.group(1)
+    return guid(*parts)
+
+
 def load_palette():
     text = open(COMMON, encoding="utf-8").read()
     block = re.search(r"PALETTE = (\{.*?\n\})", text, re.S).group(1)
@@ -145,7 +155,7 @@ MonoImporter:
 
 
 def prefab_meta(path, key):
-    write(path + ".meta", "fileFormatVersion: 2\nguid: %s\nPrefabImporter:\n  externalObjects: {}\n  userData: \n  assetBundleName: \n  assetBundleVariant: \n" % guid("prefab", key))
+    write(path + ".meta", "fileFormatVersion: 2\nguid: %s\nPrefabImporter:\n  externalObjects: {}\n  userData: \n  assetBundleName: \n  assetBundleVariant: \n" % kept_guid(path + ".meta", "prefab", key))
 
 
 def scene_meta(path):
@@ -318,10 +328,11 @@ def write_fbx_meta(entry):
     rel = entry["fbx"]
     path = os.path.join(REPO, rel)
     text = open(BENCH_META, encoding="utf-8").read()
-    text = re.sub(r"^guid: [0-9a-f]+", "guid: " + guid("fbx", entry["category"], entry["name"]), text, count=1, flags=re.M)
+    kept = kept_guid(path + ".meta", "fbx", entry["category"], entry["name"])
+    text = re.sub(r"^guid: [0-9a-f]+", "guid: " + kept, text, count=1, flags=re.M)
     text = text.replace("materialImportMode: 1", "materialImportMode: 0")
     write(path + ".meta", text)
-    return guid("fbx", entry["category"], entry["name"])
+    return kept
 
 
 RENDERER = """--- !u!23 &{fid}

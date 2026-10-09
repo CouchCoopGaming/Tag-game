@@ -70,7 +70,7 @@ def create():
     )
     a.climb_note = "Sheet metal. Not a cling wall."
     a.vault_note = "Bed sides are about 1.12 m. Not a vault rail."
-    for lod in (0, 1):
+    for lod in (0, 1, 2):
         g = a.begin(lod)
         body.build(g, SPEC, lod)
         a.end()

@@ -67,7 +67,7 @@ def create():
     )
     a.climb_note = "Sheet metal. Not a cling wall."
     a.vault_note = "Roof is a landing, not a vault rail."
-    for lod in (0, 1):
+    for lod in (0, 1, 2):
         g = a.begin(lod)
         body.build(g, SPEC, lod)
         a.end()

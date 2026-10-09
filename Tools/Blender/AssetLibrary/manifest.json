@@ -36359,7 +36359,7 @@
   {
     "name": "Sedan_Compact_25",
     "category": "Vehicles",
-    "blurb": "2025 model. Compact sedan shell, 4.694 m long, 1.801 m wide, roof 1.415 m. Flush glass, two doors a side, lower grille.",
+    "blurb": "2025 compact sedan shell, 4.694 m long, 1.801 m wide, roof 1.415 m. Flush glass, two doors a side, lower grille.",
     "size": [
       1.998,
       1.412,
@@ -36407,6 +36407,22 @@
         ],
         "mesh": "LOD1",
         "fileID": -179393741545503174
+      },
+      {
+        "lod": 2,
+        "tris": 2438,
+        "materials": [
+          "Lib_PaintRed",
+          "Lib_TintGlass",
+          "Lib_Black",
+          "Lib_SteelDark",
+          "Lib_Steel",
+          "Lib_Headlamp",
+          "Lib_Taillamp",
+          "Lib_Rubber"
+        ],
+        "mesh": "LOD2",
+        "fileID": 736115405485880582
       }
     ],
     "colliders": [
@@ -36510,12 +36526,12 @@
         "type": "box",
         "center": [
           0.0,
-          1.3447799999999999,
+          1.3247799999999998,
           -0.17588007657221683
         ],
         "size": [
-          0.7203440000000001,
-          0.045,
+          0.6483096,
+          0.036,
           0.5679643200000001
         ],
         "euler": [
@@ -36533,9 +36549,9 @@
           1.7061100000000002
         ],
         "size": [
-          1.0444988,
-          0.1,
-          0.5126799999999999
+          0.8283956000000001,
+          0.08,
+          0.358876
         ],
         "euler": [
           0,
@@ -36572,7 +36588,8 @@
     "fbxNames": [
       "LODBoxS",
       "LOD0",
-      "LOD1"
+      "LOD1",
+      "LOD2"
     ],
     "slackCm": 0.0,
     "fbx": "Assets/Art/Props/Library/Vehicles/Sedan_Compact_25.fbx"
@@ -36580,7 +36597,7 @@
   {
     "name": "Crossover_Compact_25",
     "category": "Vehicles",
-    "blurb": "2025 model. Compact crossover shell, 4.694 m long, 1.867 m wide, roof 1.681 m. High hatch, dark rocker cladding, flush glass.",
+    "blurb": "2025 compact crossover shell, 4.694 m long, 1.867 m wide, roof 1.681 m. High hatch, dark rocker cladding, flush glass.",
     "size": [
       2.065,
       1.68,
@@ -36628,6 +36645,22 @@
         ],
         "mesh": "LOD1",
         "fileID": -179393741545503174
+      },
+      {
+        "lod": 2,
+        "tris": 2380,
+        "materials": [
+          "Lib_PaintCream",
+          "Lib_TintGlass",
+          "Lib_Black",
+          "Lib_SteelDark",
+          "Lib_Steel",
+          "Lib_Headlamp",
+          "Lib_Taillamp",
+          "Lib_Rubber"
+        ],
+        "mesh": "LOD2",
+        "fileID": 736115405485880582
       }
     ],
     "colliders": [
@@ -36754,9 +36787,9 @@
           1.5924600000000002
         ],
         "size": [
-          1.0828019999999998,
-          0.1,
-          0.6036
+          0.858774,
+          0.08,
+          0.42252
         ],
         "euler": [
           0,
@@ -36793,7 +36826,8 @@
     "fbxNames": [
       "LODBoxS",
       "LOD0",
-      "LOD1"
+      "LOD1",
+      "LOD2"
     ],
     "slackCm": 0.0,
     "fbx": "Assets/Art/Props/Library/Vehicles/Crossover_Compact_25.fbx"
@@ -39946,7 +39980,7 @@
   {
     "name": "Hatch_Compact_25",
     "category": "Vehicles",
-    "blurb": "2025 model. Compact hatch shell, 4.547 m long, 1.801 m wide, roof 1.415 m. Fastback tail, flush glass.",
+    "blurb": "2025 compact hatch shell, 4.547 m long, 1.801 m wide, roof 1.415 m. Fastback tail, flush glass.",
     "size": [
       1.998,
       1.413,
@@ -39994,6 +40028,22 @@
         ],
         "mesh": "LOD1",
         "fileID": -179393741545503174
+      },
+      {
+        "lod": 2,
+        "tris": 2334,
+        "materials": [
+          "Lib_PaintGreen",
+          "Lib_TintGlass",
+          "Lib_Black",
+          "Lib_SteelDark",
+          "Lib_Steel",
+          "Lib_Headlamp",
+          "Lib_Taillamp",
+          "Lib_Rubber"
+        ],
+        "mesh": "LOD2",
+        "fileID": 736115405485880582
       }
     ],
     "colliders": [
@@ -40159,7 +40209,8 @@
     "fbxNames": [
       "LODBoxS",
       "LOD0",
-      "LOD1"
+      "LOD1",
+      "LOD2"
     ],
     "slackCm": 0.0,
     "fbx": "Assets/Art/Props/Library/Vehicles/Hatch_Compact_25.fbx"
@@ -44192,7 +44243,7 @@
   {
     "name": "Car_Sedan_25",
     "category": "StreetFurniture",
-    "blurb": "2025 model. Sedan shell, about 4.56 m long, roof 1.56 m. Taller greenhouse, shorter hood, quarter glass in the C-pillar.",
+    "blurb": "2025 sedan shell, about 4.56 m long, roof 1.56 m. Taller greenhouse, shorter hood, quarter glass in the C-pillar.",
     "size": [
       1.9,
       1.581,
@@ -44216,8 +44267,8 @@
           "Lib_PaintBlue",
           "Lib_Interior",
           "Lib_Black",
-          "Lib_TintGlass",
           "Lib_SteelDark",
+          "Lib_TintGlass",
           "Lib_Steel",
           "Lib_Headlamp",
           "Lib_Taillamp",
@@ -44233,8 +44284,8 @@
           "Lib_PaintBlue",
           "Lib_Interior",
           "Lib_Black",
-          "Lib_TintGlass",
           "Lib_SteelDark",
+          "Lib_TintGlass",
           "Lib_Steel",
           "Lib_Headlamp",
           "Lib_Taillamp",
@@ -44242,6 +44293,22 @@
         ],
         "mesh": "LOD1",
         "fileID": -179393741545503174
+      },
+      {
+        "lod": 2,
+        "tris": 2588,
+        "materials": [
+          "Lib_PaintBlue",
+          "Lib_Black",
+          "Lib_TintGlass",
+          "Lib_Steel",
+          "Lib_Headlamp",
+          "Lib_Taillamp",
+          "Lib_Rubber",
+          "Lib_SteelDark"
+        ],
+        "mesh": "LOD2",
+        "fileID": 736115405485880582
       }
     ],
     "colliders": [
@@ -44407,7 +44474,8 @@
     "fbxNames": [
       "LODBoxS",
       "LOD0",
-      "LOD1"
+      "LOD1",
+      "LOD2"
     ],
     "slackCm": 0.0,
     "fbx": "Assets/Art/Props/Library/StreetFurniture/Car_Sedan_25.fbx"
@@ -44415,7 +44483,7 @@
   {
     "name": "Car_Hatch_25",
     "category": "StreetFurniture",
-    "blurb": "2025 model. Hatchback shell, about 4.00 m long, roof 1.52 m. Closed body, pillars, glass, and fenders over the tires.",
+    "blurb": "2025 hatchback shell, about 4.00 m long, roof 1.52 m. Closed body, pillars, glass, and fenders over the tires.",
     "size": [
       1.82,
       1.522,
@@ -44439,8 +44507,8 @@
           "Lib_PaintRed",
           "Lib_Interior",
           "Lib_Black",
-          "Lib_TintGlass",
           "Lib_SteelDark",
+          "Lib_TintGlass",
           "Lib_Steel",
           "Lib_Headlamp",
           "Lib_Taillamp",
@@ -44456,8 +44524,8 @@
           "Lib_PaintRed",
           "Lib_Interior",
           "Lib_Black",
-          "Lib_TintGlass",
           "Lib_SteelDark",
+          "Lib_TintGlass",
           "Lib_Steel",
           "Lib_Headlamp",
           "Lib_Taillamp",
@@ -44465,6 +44533,22 @@
         ],
         "mesh": "LOD1",
         "fileID": -179393741545503174
+      },
+      {
+        "lod": 2,
+        "tris": 2352,
+        "materials": [
+          "Lib_PaintRed",
+          "Lib_Black",
+          "Lib_TintGlass",
+          "Lib_Steel",
+          "Lib_Headlamp",
+          "Lib_Taillamp",
+          "Lib_Rubber",
+          "Lib_SteelDark"
+        ],
+        "mesh": "LOD2",
+        "fileID": 736115405485880582
       }
     ],
     "colliders": [
@@ -44630,7 +44714,8 @@
     "fbxNames": [
       "LODBoxS",
       "LOD0",
-      "LOD1"
+      "LOD1",
+      "LOD2"
     ],
     "slackCm": 0.0,
     "fbx": "Assets/Art/Props/Library/StreetFurniture/Car_Hatch_25.fbx"
@@ -44638,7 +44723,7 @@
   {
     "name": "Car_Pickup_25",
     "category": "StreetFurniture",
-    "blurb": "2025 model. Pickup shell, about 5.06 m long. Cab roof 1.76 m, bed rails 1.12 m. Closed cab and wrapped fenders.",
+    "blurb": "2025 pickup shell, about 5.06 m long. Cab roof 1.76 m, bed rails 1.12 m. Closed cab and wrapped fenders.",
     "size": [
       1.999,
       1.761,
@@ -44662,8 +44747,8 @@
           "Lib_PaintWhite",
           "Lib_Interior",
           "Lib_Black",
-          "Lib_TintGlass",
           "Lib_SteelDark",
+          "Lib_TintGlass",
           "Lib_Steel",
           "Lib_Headlamp",
           "Lib_Taillamp",
@@ -44679,8 +44764,8 @@
           "Lib_PaintWhite",
           "Lib_Interior",
           "Lib_Black",
-          "Lib_TintGlass",
           "Lib_SteelDark",
+          "Lib_TintGlass",
           "Lib_Steel",
           "Lib_Headlamp",
           "Lib_Taillamp",
@@ -44688,6 +44773,22 @@
         ],
         "mesh": "LOD1",
         "fileID": -179393741545503174
+      },
+      {
+        "lod": 2,
+        "tris": 1812,
+        "materials": [
+          "Lib_PaintWhite",
+          "Lib_Black",
+          "Lib_TintGlass",
+          "Lib_Steel",
+          "Lib_Headlamp",
+          "Lib_Taillamp",
+          "Lib_Rubber",
+          "Lib_SteelDark"
+        ],
+        "mesh": "LOD2",
+        "fileID": 736115405485880582
       }
     ],
     "colliders": [
@@ -44891,7 +44992,8 @@
     "fbxNames": [
       "LODBoxS",
       "LOD0",
-      "LOD1"
+      "LOD1",
+      "LOD2"
     ],
     "slackCm": 0.0,
     "fbx": "Assets/Art/Props/Library/StreetFurniture/Car_Pickup_25.fbx"
