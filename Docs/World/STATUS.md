@@ -1,8 +1,8 @@
 # Mega Park status
 
-Pass 9 on `cursor/tag-world-c420`. Draft only. Feel numbers are unchanged. These are collider rasters, not Unity captures.
+Pass 10 on `cursor/tag-world-c420`. Draft only. Feel numbers are unchanged. `MegaParkP1Layout.BuildSolids` is unchanged.
 
-`Docs/Models/ENV_QUEUE.md` on #122 (`c727dc0e`) has no shared camera rule. The Z8–Z10 stills follow the rule for this pass: the whole subject in frame, a margin, both screen axes between 25% and 85%, a 1.8 m figure in frame, vertical field of view at most 70°, each file under 400 KB.
+Z1 through Z10 are dressed. This pass did not add a district. Pass 9 eye stills were collider boxes on empty sky. Pass 10 reshoots from library LOD0 meshes, with the placed diffuse colors, on park ground. Each file is under 400 KB. Unity and Blender are not in this environment, so these are mesh rasters, not engine captures.
 
 Parked cars were not re-seated. B2 `20f0d9fa` adds 2022–2026 bodies and leaves the shipped 2025 shells alone. `Sedan_Compact_25`, `Hatch_Compact_25`, `Crossover_Compact_25`, and `Pickup_FullSize_25` match `0aa3061e` byte for byte. Compact pivots stay y = 0.102. The pickup pivot stays y = 0.100. The road slab tops at y = 0.112 and every wheel bottom sits on it (gap 0).
 
@@ -21,13 +21,13 @@ The Z9 curb line used to run through the Z7 walk-up (south face z = 21.17, x 81.
 | Z9 | Bar highway | 5 | floating 0, missing 0, scale 0 | Crouch slot under the steel stays empty. Chase is 155.0 m and notches around the walk-up. Clearance 0.94 m against `BarPost_N0`. |
 | Z10 | Hopscotch | 5 | floating 0, missing 0, scale 0 | Hops stay uncovered. Subway steps run to y = −1.51 and clip park ground. Alley-to-roof gap is 5.00 m. |
 
-Every zone line is `world-check routes=5 reachable=5/5 floatingProps=0 missingColliders=0 scaleFails=0`.
+Every zone line is `world-check routes=5 reachable=5/5 floatingProps=0 missingColliders=0 scaleFails=0`. Re-run this pass, each checker exit 0.
 
-Stills:
+Stills (library LOD0, 1.8 m figure in frame):
 
-- `Docs/WorldStills/pass9/z8_overview.png`
-- `Docs/WorldStills/pass9/z8_eye.png`
-- `Docs/WorldStills/pass9/z9_overview.png`
-- `Docs/WorldStills/pass9/z9_eye.png`
-- `Docs/WorldStills/pass9/z10_overview.png`
-- `Docs/WorldStills/pass9/z10_eye.png`
+- `Docs/WorldStills/pass10/z8_top.png` and `z8_eye.png` — wash houses and playground on the north lip
+- `Docs/WorldStills/pass10/z9_top.png` and `z9_eye.png` — three newsstands, mailbox, and meter
+- `Docs/WorldStills/pass10/z7_top.png` and `z7_eye.png` — sedan, hatch, crossover, and pickup on the road
+- `Docs/WorldStills/pass10/z10_top.png` and `z10_eye.png` — subway entrance and alley north of the hops
+
+The Z8 pair frames the north lip. The south-apron newsstands stay in the bowl placement and are the subject of the Z9 pair.

@@ -1,6 +1,6 @@
 # World ledger
 
-Status of each map area after pass 9. Dressing is still the pass 8 set. Pass 9 notches the Z9 curb chase around the Z7 walk-up and adds framed stills in `Docs/WorldStills/pass9/`. Gray means the live solids are still the Mega Park cubes from `MegaParkP1Layout.BuildSolids`. Polished means library prefabs are placed on top. Z7 hides its infield lumps in play. Z1 through Z6, Z8, Z9, and Z10 leave their gray toys in place. This head includes the `cursor/tag-street-objects` merge (`7dc3e222`), the street-kit merges (`bc02b9c4`, `3040d2e5`, then `0aa3061e`), and the asset-library merges (`723cc137`, then `a066d987`). GateLeaf, the fixed bench and trash colliders, and the StrafeJumpSim proof line stayed. `PoseKeyDump` stayed deleted. Street-kit `0aa3061e` seats compact wheels at y = 0.010 and the pickup bumper at z = 2.493. Library `a066d987` is merged: MARKET, DINER, and WASH are two outward sheets, `Container_20` `Climb_Body` starts at y = 0, and `Dock_Straight` planks top at y = 0.620. Piles still end at y = −1.165, which that branch calls a water seat.
+Status of each map area after pass 10. Dressing is still the pass 8 set. Pass 9 notches the Z9 curb chase around the Z7 walk-up. Pass 10 reshoots eye and top stills from library LOD0 meshes in `Docs/WorldStills/pass10/`. Gray means the live solids are still the Mega Park cubes from `MegaParkP1Layout.BuildSolids`. Polished means library prefabs are placed on top. Z7 hides its infield lumps in play. Z1 through Z6, Z8, Z9, and Z10 leave their gray toys in place. This head includes the `cursor/tag-street-objects` merge (`7dc3e222`), the street-kit merges (`bc02b9c4`, `3040d2e5`, then `0aa3061e`), and the asset-library merges (`723cc137`, then `a066d987`). GateLeaf, the fixed bench and trash colliders, and the StrafeJumpSim proof line stayed. `PoseKeyDump` stayed deleted. Street-kit `0aa3061e` seats compact wheels at y = 0.010 and the pickup bumper at z = 2.493. Library `a066d987` is merged: MARKET, DINER, and WASH are two outward sheets, `Container_20` `Climb_Body` starts at y = 0, and `Dock_Straight` planks top at y = 0.620. Piles still end at y = −1.165, which that branch calls a water seat.
 
 The headless audit still counts every solid. Hiding a lump in `MegaParkP1Bootstrap` does not change `BuildSolids`, so the Mega Park proof line stays the same.
 
@@ -80,7 +80,7 @@ No placement hits the open rect. None sits on the 472 m loop.
 - District props load from `Resources/World/WorldPropTable`. `WorldPropTable` and the district list live in assembly `Tag.World`. The EditMode asmdef references that assembly. A test asmdef cannot reference `Assembly-CSharp`. A missing table or a missing entry is `Debug.LogError`, and the count line is an error when placed is short of the list. Z7 is 46 instances and 26 unique prefabs. Play disables LOD1 and LOD2 on that group and calls `StaticBatchingUtility.Combine`, the same path as Z1. `DrawCap` 120 is the graybox batch only. Four cameras still submit the combined batch.
 - KICKBALL and the other zone labels are two TextMesh faces, yaw 0 and yaw 180, scale (1, 1, 1), on `Tag/SignText` (Cull Back). `ZoneNameMarkers` no longer billboards with `LookRotation(-toCam)`. Brick bays, `WalkUp`, and `Cabin` have no letter mesh. Shop words (MARKET, DINER, WASH) are still inside the store LOD meshes, so one side reads mirrored. That rebuild is logged for buildings #122 in `Docs/Models/ENV_QUEUE.md`. The world lane does not edit those FBX files.
 - Play hides `GateLeaf` in the same pass that turns `Col_Gate` off. The merged CourtFence in this checkout has that child, so the missing-leaf error does not fire on these bytes. A fence prefab without the child would still log an error.
-- Stills in `Docs/WorldStills/pass4/` are the pass 4 collider rasters. Pass 1, 2, and 3 images were left in place. Canopies, glass, and brick courses are not in the image. Unity and Blender are not in this environment.
+- Stills in `Docs/WorldStills/pass4/` are the pass 4 collider rasters. Pass 1, 2, and 3 images were left in place. Canopies, glass, and brick courses are not in the image. Unity and Blender are not in this environment. `Docs/WorldStills/pass10/z7_top.png` and `z7_eye.png` show the four parked cars from their LOD0 meshes.
 
 ## Z1 this pass
 
@@ -263,7 +263,7 @@ Check line:
 | StandDash | Newsstand undersides 1.10 m. Gap 0.89 m. |
 | LipChase | 115.0 m around the lips. Worst clearance 0.90 m against `Rim_DropN`. |
 
-Stills: `Docs/WorldStills/pass8/z8_*.png`.
+Stills: `Docs/WorldStills/pass10/z8_top.png` and `z8_eye.png` show the wash houses and playground. Pass 8 collider rasters stay in `pass8/`.
 
 ## Z9 this pass
 
@@ -281,7 +281,7 @@ Check line:
 | StandDash | Newsstand undersides 1.10 m. Gap 0.89 m. |
 | CurbChase | 155.0 m on the north curb. The return notches around the Z7 walk-up, whose south face is z = 21.17. Worst clearance 0.94 m against `BarPost_N0`. |
 
-Stills: `Docs/WorldStills/pass8/z9_*.png`.
+Stills: `Docs/WorldStills/pass10/z9_top.png` and `z9_eye.png` show the three newsstands. Pass 8 collider rasters stay in `pass8/`.
 
 ## Z10 this pass
 
@@ -299,7 +299,7 @@ Check line:
 | ChalkDash | Barricade rail underside 1.33 m. Gap 0.90 m. |
 | HopChase | 60.0 m around the hops. Worst clearance 0.86 m against `Hp_Subway`. |
 
-Stills: `Docs/WorldStills/pass8/z10_*.png`.
+Stills: `Docs/WorldStills/pass10/z10_top.png` and `z10_eye.png` show the subway entrance and the alley. Pass 8 collider rasters stay in `pass8/`.
 
 ## Next district
 
