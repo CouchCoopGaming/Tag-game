@@ -19,8 +19,8 @@ INCH = 0.0254
 
 def spec():
     return shell.make_sedan(
-        length=184.8 * INCH,
-        width=70.9 * INCH,
+        length=4.66,
+        width=1.74,
         height=55.7 * INCH,
         wheelbase=107.7 * INCH,
         track=60.9 * INCH,
@@ -39,7 +39,7 @@ def create():
     asset = Asset(
         "Sedan_Compact_25",
         "Vehicles",
-        "2025 compact sedan shell, 4.694 m long, 1.801 m wide, roof 1.415 m. Flush glass, two doors a side, lower grille.",
+        "2025 compact sedan. Body 4.66 m long and 1.74 m wide so the mirrors and tires stay inside 4.70 x 1.82 m. Roof 1.415 m. Flush glass, two doors a side.",
     )
     asset.climb_note = "Sheet metal. Not a cling wall."
     asset.vault_note = "Hood and roof are landings, not vault rails."

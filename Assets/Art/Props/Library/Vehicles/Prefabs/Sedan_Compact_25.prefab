@@ -53,7 +53,7 @@ LODGroup:
   m_GameObject: {fileID: 100000}
   serializedVersion: 2
   m_LocalReferencePoint: {x: 0, y: 0.706, z: 0}
-  m_Size: 4.78
+  m_Size: 4.66
   m_FadeMode: 0
   m_AnimateCrossFading: 0
   m_LastLODIsBillboard: 0
@@ -84,7 +84,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Tag.Art.Library.LibraryPropMeta
   category: "Vehicles"
-  summary: "2025 compact sedan shell, 4.694 m long, 1.801 m wide, roof 1.415 m. Flush glass, two doors a side, lower grille."
+  summary: "2025 compact sedan. Body 4.66 m long and 1.74 m wide so the mirrors and tires stay inside 4.70 x 1.82 m. Roof 1.415 m. Flush glass, two doors a side."
   climbable: 0
   vaultable: 0
   vaultHeightMeters: 0
@@ -160,10 +160,10 @@ MeshRenderer:
   - {fileID: 2100000, guid: b3b631afc4486454bb9ffc0fca5fac39, type: 2}
   - {fileID: 2100000, guid: b0ae13624c44bb51920d1571b19a6d8d, type: 2}
   - {fileID: 2100000, guid: beb173626a35c30c1ff350a8ec04f0d1, type: 2}
-  - {fileID: 2100000, guid: 3378749727762f35ade0a2e55dedd4ed, type: 2}
   - {fileID: 2100000, guid: 758dd8b834f41e35f975f297e4a11c7d, type: 2}
   - {fileID: 2100000, guid: 92b590158a957c29b6c0c3df0ad97d91, type: 2}
   - {fileID: 2100000, guid: 9d48e58f7d43c8e7e8e4e7f59e31f57a, type: 2}
+  - {fileID: 2100000, guid: 3378749727762f35ade0a2e55dedd4ed, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -257,10 +257,10 @@ MeshRenderer:
   - {fileID: 2100000, guid: b3b631afc4486454bb9ffc0fca5fac39, type: 2}
   - {fileID: 2100000, guid: b0ae13624c44bb51920d1571b19a6d8d, type: 2}
   - {fileID: 2100000, guid: beb173626a35c30c1ff350a8ec04f0d1, type: 2}
-  - {fileID: 2100000, guid: 3378749727762f35ade0a2e55dedd4ed, type: 2}
   - {fileID: 2100000, guid: 758dd8b834f41e35f975f297e4a11c7d, type: 2}
   - {fileID: 2100000, guid: 92b590158a957c29b6c0c3df0ad97d91, type: 2}
   - {fileID: 2100000, guid: 9d48e58f7d43c8e7e8e4e7f59e31f57a, type: 2}
+  - {fileID: 2100000, guid: 3378749727762f35ade0a2e55dedd4ed, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -354,10 +354,10 @@ MeshRenderer:
   - {fileID: 2100000, guid: b3b631afc4486454bb9ffc0fca5fac39, type: 2}
   - {fileID: 2100000, guid: b0ae13624c44bb51920d1571b19a6d8d, type: 2}
   - {fileID: 2100000, guid: beb173626a35c30c1ff350a8ec04f0d1, type: 2}
-  - {fileID: 2100000, guid: 3378749727762f35ade0a2e55dedd4ed, type: 2}
   - {fileID: 2100000, guid: 758dd8b834f41e35f975f297e4a11c7d, type: 2}
   - {fileID: 2100000, guid: 92b590158a957c29b6c0c3df0ad97d91, type: 2}
   - {fileID: 2100000, guid: 9d48e58f7d43c8e7e8e4e7f59e31f57a, type: 2}
+  - {fileID: 2100000, guid: 3378749727762f35ade0a2e55dedd4ed, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -407,7 +407,7 @@ Transform:
   m_GameObject: {fileID: 300000}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.78633, y: 0.32145, z: -1.29032}
+  m_LocalPosition: {x: -0.78633, y: 0.32145, z: -1.30728}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -460,7 +460,7 @@ Transform:
   m_GameObject: {fileID: 300010}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.78633, y: 0.32145, z: -1.29032}
+  m_LocalPosition: {x: 0.78633, y: 0.32145, z: -1.30728}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -513,7 +513,7 @@ Transform:
   m_GameObject: {fileID: 300020}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.78633, y: 0.32145, z: 1.44526}
+  m_LocalPosition: {x: -0.78633, y: 0.32145, z: 1.4283}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -566,7 +566,7 @@ Transform:
   m_GameObject: {fileID: 300030}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.78633, y: 0.32145, z: 1.44526}
+  m_LocalPosition: {x: 0.78633, y: 0.32145, z: 1.4283}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -619,7 +619,7 @@ Transform:
   m_GameObject: {fileID: 300040}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.55, z: 0.08747}
+  m_LocalPosition: {x: 0, y: 0.55, z: 0.07051}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -644,7 +644,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 1.11653, y: 0.46, z: 1.14894}
+  m_Size: {x: 1.0788, y: 0.46, z: 1.14894}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300050
 GameObject:
@@ -672,7 +672,7 @@ Transform:
   m_GameObject: {fileID: 300050}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 1.32478, z: -0.17588}
+  m_LocalPosition: {x: 0, y: 1.32478, z: -0.18911}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -697,7 +697,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.64831, y: 0.036, z: 0.56796}
+  m_Size: {x: 0.6264, y: 0.036, z: 0.56386}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300060
 GameObject:
@@ -725,7 +725,7 @@ Transform:
   m_GameObject: {fileID: 300060}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.64566, z: 1.70611}
+  m_LocalPosition: {x: 0, y: 0.64566, z: 1.68915}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -750,7 +750,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.8284, y: 0.08, z: 0.35888}
+  m_Size: {x: 0.8004, y: 0.08, z: 0.35888}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300070
 GameObject:
@@ -778,7 +778,7 @@ Transform:
   m_GameObject: {fileID: 300070}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.56, z: -1.76425}
+  m_LocalPosition: {x: 0, y: 0.56, z: -1.76052}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -803,5 +803,5 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.86441, y: 0.14, z: 0.41955}
+  m_Size: {x: 0.8352, y: 0.14, z: 0.41003}
   m_Center: {x: 0, y: 0, z: 0}

@@ -36359,67 +36359,67 @@
   {
     "name": "Sedan_Compact_25",
     "category": "Vehicles",
-    "blurb": "2025 compact sedan shell, 4.694 m long, 1.801 m wide, roof 1.415 m. Flush glass, two doors a side, lower grille.",
+    "blurb": "2025 compact sedan. Body 4.66 m long and 1.74 m wide so the mirrors and tires stay inside 4.70 x 1.82 m. Roof 1.415 m. Flush glass, two doors a side.",
     "size": [
-      1.998,
+      1.808,
       1.412,
-      4.78
+      4.66
     ],
     "min": [
-      -0.999,
+      -0.904,
       0.0,
-      -2.39
+      -2.33
     ],
     "max": [
-      0.999,
+      0.904,
       1.412,
-      2.39
+      2.33
     ],
     "lods": [
       {
         "lod": 0,
-        "tris": 11919,
+        "tris": 11955,
         "materials": [
           "Lib_PaintRed",
           "Lib_TintGlass",
           "Lib_Black",
           "Lib_SteelDark",
-          "Lib_Steel",
           "Lib_Headlamp",
           "Lib_Taillamp",
-          "Lib_Rubber"
+          "Lib_Rubber",
+          "Lib_Steel"
         ],
         "mesh": "LOD0",
         "fileID": -1633821710574564935
       },
       {
         "lod": 1,
-        "tris": 3437,
+        "tris": 3417,
         "materials": [
           "Lib_PaintRed",
           "Lib_TintGlass",
           "Lib_Black",
           "Lib_SteelDark",
-          "Lib_Steel",
           "Lib_Headlamp",
           "Lib_Taillamp",
-          "Lib_Rubber"
+          "Lib_Rubber",
+          "Lib_Steel"
         ],
         "mesh": "LOD1",
         "fileID": -179393741545503174
       },
       {
         "lod": 2,
-        "tris": 2438,
+        "tris": 2400,
         "materials": [
           "Lib_PaintRed",
           "Lib_TintGlass",
           "Lib_Black",
           "Lib_SteelDark",
-          "Lib_Steel",
           "Lib_Headlamp",
           "Lib_Taillamp",
-          "Lib_Rubber"
+          "Lib_Rubber",
+          "Lib_Steel"
         ],
         "mesh": "LOD2",
         "fileID": 736115405485880582
@@ -36432,7 +36432,7 @@
         "center": [
           -0.78633,
           0.32145,
-          -1.29032
+          -1.30728
         ],
         "size": [
           0.016,
@@ -36451,7 +36451,7 @@
         "center": [
           0.78633,
           0.32145,
-          -1.29032
+          -1.30728
         ],
         "size": [
           0.016,
@@ -36470,7 +36470,7 @@
         "center": [
           -0.78633,
           0.32145,
-          1.4452600000000002
+          1.4283000000000001
         ],
         "size": [
           0.016,
@@ -36489,7 +36489,7 @@
         "center": [
           0.78633,
           0.32145,
-          1.4452600000000002
+          1.4283000000000001
         ],
         "size": [
           0.016,
@@ -36508,10 +36508,10 @@
         "center": [
           0.0,
           0.55,
-          0.08747000000000016
+          0.07051000000000007
         ],
         "size": [
-          1.1165332000000001,
+          1.0788,
           0.46,
           1.1489436
         ],
@@ -36527,12 +36527,12 @@
         "center": [
           0.0,
           1.3247799999999998,
-          -0.17588007657221683
+          -0.18910887657221698
         ],
         "size": [
-          0.6483096,
+          0.6264,
           0.036,
-          0.5679643200000001
+          0.5638600000000001
         ],
         "euler": [
           0,
@@ -36546,10 +36546,10 @@
         "center": [
           0.0,
           0.6456557,
-          1.7061100000000002
+          1.6891500000000002
         ],
         "size": [
-          0.8283956000000001,
+          0.8004,
           0.08,
           0.358876
         ],
@@ -36565,12 +36565,12 @@
         "center": [
           0.0,
           0.56,
-          -1.7642519025745587
+          -1.7605207025745586
         ],
         "size": [
-          0.8644128,
+          0.8351999999999999,
           0.14,
-          0.41954983014631786
+          0.41002509414631777
         ],
         "euler": [
           0,
@@ -36597,67 +36597,67 @@
   {
     "name": "Crossover_Compact_25",
     "category": "Vehicles",
-    "blurb": "2025 compact crossover shell, 4.694 m long, 1.867 m wide, roof 1.681 m. High hatch, dark rocker cladding, flush glass.",
+    "blurb": "2025 compact crossover. Body 4.66 m long and 1.80 m wide so the tires stay inside 4.70 x 1.90 m. Roof 1.681 m. High hatch, dark rocker cladding, flush glass.",
     "size": [
-      2.065,
+      1.891,
       1.68,
-      4.78
+      4.66
     ],
     "min": [
-      -1.033,
+      -0.946,
       0.0,
-      -2.39
+      -2.33
     ],
     "max": [
-      1.033,
+      0.946,
       1.68,
-      2.39
+      2.33
     ],
     "lods": [
       {
         "lod": 0,
-        "tris": 11881,
+        "tris": 11861,
         "materials": [
           "Lib_PaintCream",
           "Lib_TintGlass",
           "Lib_Black",
           "Lib_SteelDark",
-          "Lib_Steel",
           "Lib_Headlamp",
           "Lib_Taillamp",
-          "Lib_Rubber"
+          "Lib_Rubber",
+          "Lib_Steel"
         ],
         "mesh": "LOD0",
         "fileID": -1633821710574564935
       },
       {
         "lod": 1,
-        "tris": 3341,
+        "tris": 3325,
         "materials": [
           "Lib_PaintCream",
           "Lib_TintGlass",
           "Lib_Black",
           "Lib_SteelDark",
-          "Lib_Steel",
           "Lib_Headlamp",
           "Lib_Taillamp",
-          "Lib_Rubber"
+          "Lib_Rubber",
+          "Lib_Steel"
         ],
         "mesh": "LOD1",
         "fileID": -179393741545503174
       },
       {
         "lod": 2,
-        "tris": 2380,
+        "tris": 2344,
         "materials": [
           "Lib_PaintCream",
           "Lib_TintGlass",
           "Lib_Black",
           "Lib_SteelDark",
-          "Lib_Steel",
           "Lib_Headlamp",
           "Lib_Taillamp",
-          "Lib_Rubber"
+          "Lib_Rubber",
+          "Lib_Steel"
         ],
         "mesh": "LOD2",
         "fileID": 736115405485880582
@@ -36670,7 +36670,7 @@
         "center": [
           -0.8192799999999999,
           0.36865,
-          -1.2420599999999997
+          -1.2590199999999998
         ],
         "size": [
           0.016,
@@ -36689,7 +36689,7 @@
         "center": [
           0.8192799999999999,
           0.36865,
-          -1.2420599999999997
+          -1.2590199999999998
         ],
         "size": [
           0.016,
@@ -36708,7 +36708,7 @@
         "center": [
           -0.8192799999999999,
           0.36865,
-          1.4579600000000001
+          1.441
         ],
         "size": [
           0.016,
@@ -36727,7 +36727,7 @@
         "center": [
           0.8192799999999999,
           0.36865,
-          1.4579600000000001
+          1.441
         ],
         "size": [
           0.016,
@@ -36746,10 +36746,10 @@
         "center": [
           0.0,
           0.55,
-          0.11795000000000022
+          0.10099000000000014
         ],
         "size": [
-          1.157478,
+          1.116,
           0.46,
           1.1340084
         ],
@@ -36765,12 +36765,12 @@
         "center": [
           0.0,
           1.59148,
-          -0.8087931182123067
+          -0.8203259182123066
         ],
         "size": [
-          0.672084,
+          0.648,
           0.036,
-          0.8261299200000003
+          0.8201600000000001
         ],
         "euler": [
           0,
@@ -36784,10 +36784,10 @@
         "center": [
           0.0,
           0.8696662,
-          1.5924600000000002
+          1.5755000000000001
         ],
         "size": [
-          0.858774,
+          0.8280000000000001,
           0.08,
           0.42252
         ],
@@ -36803,12 +36803,12 @@
         "center": [
           0.0,
           0.56,
-          -2.043927484752122
+          -2.038500284752122
         ],
         "size": [
-          0.896112,
+          0.864,
           0.14,
-          0.2181834109784723
+          0.2098797949784724
         ],
         "euler": [
           0,
@@ -39980,67 +39980,67 @@
   {
     "name": "Hatch_Compact_25",
     "category": "Vehicles",
-    "blurb": "2025 compact hatch shell, 4.547 m long, 1.801 m wide, roof 1.415 m. Fastback tail, flush glass.",
+    "blurb": "2025 compact hatch. Body 4.42 m long and 1.76 m wide so the full shell stays inside 4.50 x 1.85 m. Roof 1.415 m. Fastback tail, flush glass.",
     "size": [
-      1.998,
+      1.818,
       1.413,
-      4.633
+      4.42
     ],
     "min": [
-      -0.999,
+      -0.909,
       0.0,
-      -2.316
+      -2.21
     ],
     "max": [
-      0.999,
+      0.909,
       1.413,
-      2.316
+      2.21
     ],
     "lods": [
       {
         "lod": 0,
-        "tris": 11689,
+        "tris": 11645,
         "materials": [
           "Lib_PaintGreen",
           "Lib_TintGlass",
           "Lib_Black",
           "Lib_SteelDark",
-          "Lib_Steel",
           "Lib_Headlamp",
           "Lib_Taillamp",
-          "Lib_Rubber"
+          "Lib_Rubber",
+          "Lib_Steel"
         ],
         "mesh": "LOD0",
         "fileID": -1633821710574564935
       },
       {
         "lod": 1,
-        "tris": 3300,
+        "tris": 3284,
         "materials": [
           "Lib_PaintGreen",
           "Lib_TintGlass",
           "Lib_Black",
           "Lib_SteelDark",
-          "Lib_Steel",
           "Lib_Headlamp",
           "Lib_Taillamp",
-          "Lib_Rubber"
+          "Lib_Rubber",
+          "Lib_Steel"
         ],
         "mesh": "LOD1",
         "fileID": -179393741545503174
       },
       {
         "lod": 2,
-        "tris": 2334,
+        "tris": 2294,
         "materials": [
           "Lib_PaintGreen",
           "Lib_TintGlass",
           "Lib_Black",
           "Lib_SteelDark",
-          "Lib_Steel",
           "Lib_Headlamp",
           "Lib_Taillamp",
-          "Lib_Rubber"
+          "Lib_Rubber",
+          "Lib_Steel"
         ],
         "mesh": "LOD2",
         "fileID": 736115405485880582
@@ -40053,7 +40053,7 @@
         "center": [
           -0.78245,
           0.3226,
-          -1.3639800000000002
+          -1.42728
         ],
         "size": [
           0.016,
@@ -40072,7 +40072,7 @@
         "center": [
           0.78245,
           0.3226,
-          -1.3639800000000002
+          -1.42728
         ],
         "size": [
           0.016,
@@ -40091,7 +40091,7 @@
         "center": [
           -0.78245,
           0.3226,
-          1.3716
+          1.3083
         ],
         "size": [
           0.016,
@@ -40110,7 +40110,7 @@
         "center": [
           0.78245,
           0.3226,
-          1.3716
+          1.3083
         ],
         "size": [
           0.016,
@@ -40129,10 +40129,10 @@
         "center": [
           0.0,
           0.55,
-          0.013809999999999878
+          -0.049490000000000034
         ],
         "size": [
-          1.1165332000000001,
+          1.0912,
           0.46,
           1.1489436
         ],
@@ -40148,12 +40148,12 @@
         "center": [
           0.0,
           1.3247799999999998,
-          -0.3951988765722171
+          -0.439508876572217
         ],
         "size": [
-          0.6483096,
+          0.6335999999999999,
           0.036,
-          0.750189
+          0.7292999999999998
         ],
         "euler": [
           0,
@@ -40167,10 +40167,10 @@
         "center": [
           0.0,
           0.6756557000000001,
-          1.64245
+          1.57915
         ],
         "size": [
-          0.8283956000000001,
+          0.8096,
           0.08,
           0.353276
         ],
@@ -40186,12 +40186,12 @@
         "center": [
           0.0,
           0.56,
-          -1.7493206850709915
+          -1.7303306850709914
         ],
         "size": [
-          0.8644128,
+          0.8448,
           0.14,
-          0.37726510674888614
+          0.3453619067488862
         ],
         "euler": [
           0,
@@ -44243,26 +44243,26 @@
   {
     "name": "Car_Sedan_25",
     "category": "StreetFurniture",
-    "blurb": "2025 sedan shell, about 4.56 m long, roof 1.56 m. Taller greenhouse, shorter hood, quarter glass in the C-pillar.",
+    "blurb": "2025 midsize sedan shell. Length and roof sit in the midsize band. Quarter glass in the C-pillar.",
     "size": [
       1.9,
-      1.581,
-      4.595
+      1.46,
+      4.835
     ],
     "min": [
       -0.95,
       0.0,
-      -2.298
+      -2.418
     ],
     "max": [
       0.95,
-      1.581,
-      2.297
+      1.46,
+      2.417
     ],
     "lods": [
       {
         "lod": 0,
-        "tris": 14440,
+        "tris": 14732,
         "materials": [
           "Lib_PaintBlue",
           "Lib_Interior",
@@ -44279,7 +44279,7 @@
       },
       {
         "lod": 1,
-        "tris": 3768,
+        "tris": 3791,
         "materials": [
           "Lib_PaintBlue",
           "Lib_Interior",
@@ -44296,7 +44296,7 @@
       },
       {
         "lod": 2,
-        "tris": 2588,
+        "tris": 2615,
         "materials": [
           "Lib_PaintBlue",
           "Lib_Black",
@@ -44318,12 +44318,12 @@
         "center": [
           0,
           0.5,
-          -0.2
+          -0.21052631578947367
         ],
         "size": [
           1.05,
           0.4,
-          1.7
+          1.789473684210526
         ],
         "euler": [
           0,
@@ -44336,13 +44336,13 @@
         "type": "box",
         "center": [
           0,
-          1.52,
-          -0.36
+          1.4,
+          -0.3789473684210526
         ],
         "size": [
-          0.52,
-          0.035,
-          1.05
+          0.48,
+          0.04,
+          0.9473684210526315
         ],
         "euler": [
           0,
@@ -44356,7 +44356,7 @@
         "center": [
           0,
           0.46,
-          1.9
+          1.9999999999999998
         ],
         "size": [
           1.05,
@@ -44375,7 +44375,7 @@
         "center": [
           0,
           0.48,
-          -1.95
+          -2.052631578947368
         ],
         "size": [
           1.15,
@@ -44394,7 +44394,7 @@
         "center": [
           -0.78,
           0.03,
-          -1.35
+          -1.4211
         ],
         "size": [
           0.05,
@@ -44413,7 +44413,7 @@
         "center": [
           0.78,
           0.03,
-          -1.35
+          -1.4211
         ],
         "size": [
           0.05,
@@ -44432,7 +44432,7 @@
         "center": [
           -0.78,
           0.03,
-          1.35
+          1.4211
         ],
         "size": [
           0.05,
@@ -44451,7 +44451,7 @@
         "center": [
           0.78,
           0.03,
-          1.35
+          1.4211
         ],
         "size": [
           0.05,

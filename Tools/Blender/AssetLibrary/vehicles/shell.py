@@ -530,9 +530,10 @@ def _mirrors(g, spec, lod):
     bev = 0.003 if lod == 0 else 0.0
     segs = 1 if lod == 0 else 0
     for sign in (1.0, -1.0):
-        g.box((sign * (x + 0.035), y, z), (0.070, 0.012, 0.022), "Lib_Black")
-        g.box((sign * (x + 0.085), y + 0.008, z), (0.046, 0.062, 0.100), "Lib_Black", bevel=bev, segs=segs)
-        g.box((sign * (x + 0.110), y + 0.008, z), (0.008, 0.040, 0.064), "Lib_Steel")
+        # The head ends 1.8 cm outside the skin. A longer stalk pushed the
+        # full AABB past the compact width cap.
+        g.box((sign * (x + 0.002), y, z), (0.016, 0.010, 0.016), "Lib_Black")
+        g.box((sign * (x + 0.012), y + 0.006, z), (0.012, 0.036, 0.064), "Lib_Black", bevel=bev, segs=segs)
 
 
 def _fascia(g, spec, lod):
@@ -548,18 +549,19 @@ def _fascia(g, spec, lod):
     bev = 0.004 if lod == 0 else 0.0
     segs = 1 if lod == 0 else 0
     half = spec["width"] * 0.5
-    # The loft cap is the body-color nose. Lamps and the lower grille sit on that face.
+    # Lamps and bumpers end on the published face. A box past z1/z0
+    # made the AABB longer than the envelope.
     for sign in (-1.0, 1.0):
-        g.box((sign * spec["lamp_x"], spec["lamp_y"], z1 + 0.004), (0.30, 0.100, 0.016), "Lib_Black", bevel=bev, segs=segs)
-        g.box((sign * spec["lamp_x"], spec["lamp_y"], z1 + 0.014), (0.22, 0.064, 0.010), "Lib_Headlamp")
-        g.box((sign * spec["lamp_x"], spec["tail_y"], z0 - 0.004), (0.32, 0.110, 0.016), "Lib_Black", bevel=bev, segs=segs)
-        g.box((sign * spec["lamp_x"], spec["tail_y"], z0 - 0.014), (0.24, 0.070, 0.010), "Lib_Taillamp")
-    g.box((0.0, spec["grille_y"], z1 + 0.002), (spec["grille_w"], 0.16, 0.024), "Lib_Black")
-    slats = 4 if lod == 0 else 2
+        g.box((sign * spec["lamp_x"], spec["lamp_y"], z1 - 0.012), (0.30, 0.100, 0.016), "Lib_Black", bevel=bev, segs=segs)
+        g.box((sign * spec["lamp_x"], spec["lamp_y"], z1 - 0.006), (0.22, 0.064, 0.008), "Lib_Headlamp")
+        g.box((sign * spec["lamp_x"], spec["tail_y"], z0 + 0.012), (0.32, 0.110, 0.016), "Lib_Black", bevel=bev, segs=segs)
+        g.box((sign * spec["lamp_x"], spec["tail_y"], z0 + 0.006), (0.24, 0.070, 0.008), "Lib_Taillamp")
+    g.box((0.0, spec["grille_y"], z1 - 0.016), (spec["grille_w"], 0.16, 0.024), "Lib_Black")
+    slats = 4 if lod == 0 else (2 if lod == 1 else 0)
     for i in range(slats):
-        g.box((0.0, spec["grille_y"] - 0.055 + i * 0.032, z1 + 0.016), (spec["grille_w"] - 0.08, 0.008, 0.006), "Lib_SteelDark")
-    g.box((0.0, spec["bumper_y"], z1 + 0.008), (half * 1.70, 0.12, 0.070), "Lib_Black", bevel=bev, segs=segs)
-    g.box((0.0, spec["bumper_y"], z0 - 0.008), (half * 1.75, 0.14, 0.070), "Lib_Black", bevel=bev, segs=segs)
+        g.box((0.0, spec["grille_y"] - 0.055 + i * 0.032, z1 - 0.008), (spec["grille_w"] - 0.08, 0.008, 0.006), "Lib_SteelDark")
+    g.box((0.0, spec["bumper_y"], z1 - 0.040), (half * 1.70, 0.12, 0.060), "Lib_Black", bevel=bev, segs=segs)
+    g.box((0.0, spec["bumper_y"], z0 + 0.040), (half * 1.75, 0.14, 0.060), "Lib_Black", bevel=bev, segs=segs)
     for sign in (-1.0, 1.0):
         g.box((sign * (half * 0.78), spec["bumper_y"] + 0.01, z1 - 0.12), (0.12, 0.14, 0.22), "Lib_Black")
 

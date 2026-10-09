@@ -53,7 +53,7 @@ LODGroup:
   m_GameObject: {fileID: 100000}
   serializedVersion: 2
   m_LocalReferencePoint: {x: 0, y: 0.7065, z: 0}
-  m_Size: 4.633
+  m_Size: 4.42
   m_FadeMode: 0
   m_AnimateCrossFading: 0
   m_LastLODIsBillboard: 0
@@ -84,7 +84,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Tag.Art.Library.LibraryPropMeta
   category: "Vehicles"
-  summary: "2025 compact hatch shell, 4.547 m long, 1.801 m wide, roof 1.415 m. Fastback tail, flush glass."
+  summary: "2025 compact hatch. Body 4.42 m long and 1.76 m wide so the full shell stays inside 4.50 x 1.85 m. Roof 1.415 m. Fastback tail, flush glass."
   climbable: 0
   vaultable: 0
   vaultHeightMeters: 0
@@ -160,10 +160,10 @@ MeshRenderer:
   - {fileID: 2100000, guid: b3b631afc4486454bb9ffc0fca5fac39, type: 2}
   - {fileID: 2100000, guid: b0ae13624c44bb51920d1571b19a6d8d, type: 2}
   - {fileID: 2100000, guid: beb173626a35c30c1ff350a8ec04f0d1, type: 2}
-  - {fileID: 2100000, guid: 3378749727762f35ade0a2e55dedd4ed, type: 2}
   - {fileID: 2100000, guid: 758dd8b834f41e35f975f297e4a11c7d, type: 2}
   - {fileID: 2100000, guid: 92b590158a957c29b6c0c3df0ad97d91, type: 2}
   - {fileID: 2100000, guid: 9d48e58f7d43c8e7e8e4e7f59e31f57a, type: 2}
+  - {fileID: 2100000, guid: 3378749727762f35ade0a2e55dedd4ed, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -257,10 +257,10 @@ MeshRenderer:
   - {fileID: 2100000, guid: b3b631afc4486454bb9ffc0fca5fac39, type: 2}
   - {fileID: 2100000, guid: b0ae13624c44bb51920d1571b19a6d8d, type: 2}
   - {fileID: 2100000, guid: beb173626a35c30c1ff350a8ec04f0d1, type: 2}
-  - {fileID: 2100000, guid: 3378749727762f35ade0a2e55dedd4ed, type: 2}
   - {fileID: 2100000, guid: 758dd8b834f41e35f975f297e4a11c7d, type: 2}
   - {fileID: 2100000, guid: 92b590158a957c29b6c0c3df0ad97d91, type: 2}
   - {fileID: 2100000, guid: 9d48e58f7d43c8e7e8e4e7f59e31f57a, type: 2}
+  - {fileID: 2100000, guid: 3378749727762f35ade0a2e55dedd4ed, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -354,10 +354,10 @@ MeshRenderer:
   - {fileID: 2100000, guid: b3b631afc4486454bb9ffc0fca5fac39, type: 2}
   - {fileID: 2100000, guid: b0ae13624c44bb51920d1571b19a6d8d, type: 2}
   - {fileID: 2100000, guid: beb173626a35c30c1ff350a8ec04f0d1, type: 2}
-  - {fileID: 2100000, guid: 3378749727762f35ade0a2e55dedd4ed, type: 2}
   - {fileID: 2100000, guid: 758dd8b834f41e35f975f297e4a11c7d, type: 2}
   - {fileID: 2100000, guid: 92b590158a957c29b6c0c3df0ad97d91, type: 2}
   - {fileID: 2100000, guid: 9d48e58f7d43c8e7e8e4e7f59e31f57a, type: 2}
+  - {fileID: 2100000, guid: 3378749727762f35ade0a2e55dedd4ed, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -407,7 +407,7 @@ Transform:
   m_GameObject: {fileID: 300000}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.78245, y: 0.3226, z: -1.36398}
+  m_LocalPosition: {x: -0.78245, y: 0.3226, z: -1.42728}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -460,7 +460,7 @@ Transform:
   m_GameObject: {fileID: 300010}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.78245, y: 0.3226, z: -1.36398}
+  m_LocalPosition: {x: 0.78245, y: 0.3226, z: -1.42728}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -513,7 +513,7 @@ Transform:
   m_GameObject: {fileID: 300020}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.78245, y: 0.3226, z: 1.3716}
+  m_LocalPosition: {x: -0.78245, y: 0.3226, z: 1.3083}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -566,7 +566,7 @@ Transform:
   m_GameObject: {fileID: 300030}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.78245, y: 0.3226, z: 1.3716}
+  m_LocalPosition: {x: 0.78245, y: 0.3226, z: 1.3083}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -619,7 +619,7 @@ Transform:
   m_GameObject: {fileID: 300040}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.55, z: 0.01381}
+  m_LocalPosition: {x: 0, y: 0.55, z: -0.04949}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -644,7 +644,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 1.11653, y: 0.46, z: 1.14894}
+  m_Size: {x: 1.0912, y: 0.46, z: 1.14894}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300050
 GameObject:
@@ -672,7 +672,7 @@ Transform:
   m_GameObject: {fileID: 300050}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 1.32478, z: -0.3952}
+  m_LocalPosition: {x: 0, y: 1.32478, z: -0.43951}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -697,7 +697,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.64831, y: 0.036, z: 0.75019}
+  m_Size: {x: 0.6336, y: 0.036, z: 0.7293}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300060
 GameObject:
@@ -725,7 +725,7 @@ Transform:
   m_GameObject: {fileID: 300060}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.67566, z: 1.64245}
+  m_LocalPosition: {x: 0, y: 0.67566, z: 1.57915}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -750,7 +750,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.8284, y: 0.08, z: 0.35328}
+  m_Size: {x: 0.8096, y: 0.08, z: 0.35328}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300070
 GameObject:
@@ -778,7 +778,7 @@ Transform:
   m_GameObject: {fileID: 300070}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.56, z: -1.74932}
+  m_LocalPosition: {x: 0, y: 0.56, z: -1.73033}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -803,5 +803,5 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.86441, y: 0.14, z: 0.37727}
+  m_Size: {x: 0.8448, y: 0.14, z: 0.34536}
   m_Center: {x: 0, y: 0, z: 0}

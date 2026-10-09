@@ -21,8 +21,8 @@ INCH = 0.0254
 
 def spec():
     return shell.make_sedan(
-        length=179.0 * INCH,
-        width=70.9 * INCH,
+        length=4.42,
+        width=1.76,
         height=55.7 * INCH,
         wheelbase=107.7 * INCH,
         track=60.5 * INCH,
@@ -46,7 +46,7 @@ def create():
     asset = Asset(
         "Hatch_Compact_25",
         "Vehicles",
-        "2025 compact hatch shell, 4.547 m long, 1.801 m wide, roof 1.415 m. Fastback tail, flush glass.",
+        "2025 compact hatch. Body 4.42 m long and 1.76 m wide so the full shell stays inside 4.50 x 1.85 m. Roof 1.415 m. Fastback tail, flush glass.",
     )
     asset.climb_note = "Sheet metal. Not a cling wall."
     asset.vault_note = "Hood and roof are landings, not vault rails."

@@ -20,8 +20,8 @@ INCH = 0.0254
 
 def spec():
     body = shell.make_sedan(
-        length=184.8 * INCH,
-        width=73.5 * INCH,
+        length=4.66,
+        width=1.80,
         height=66.2 * INCH,
         wheelbase=106.3 * INCH,
         track=63.4 * INCH,
@@ -47,7 +47,7 @@ def create():
     asset = Asset(
         "Crossover_Compact_25",
         "Vehicles",
-        "2025 compact crossover shell, 4.694 m long, 1.867 m wide, roof 1.681 m. High hatch, dark rocker cladding, flush glass.",
+        "2025 compact crossover. Body 4.66 m long and 1.80 m wide so the tires stay inside 4.70 x 1.90 m. Roof 1.681 m. High hatch, dark rocker cladding, flush glass.",
     )
     asset.climb_note = "Sheet metal. Not a cling wall."
     asset.vault_note = "Hood and roof are landings, not vault rails."
