@@ -36,8 +36,8 @@ namespace Tag.Tests.EditMode
                 built++;
             }
             Assert.Greater(built, 0);
-            if (host is Object unity)
-                Object.DestroyImmediate(unity.gameObject);
+            if (host is Component unity)
+                UnityEngine.Object.DestroyImmediate(unity.gameObject);
         }
 
         static Type Find(string name)

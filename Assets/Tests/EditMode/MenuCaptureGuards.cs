@@ -129,7 +129,7 @@ namespace Tag.Tests.EditMode
                     foreach (Component image in root.GetComponentsInChildren(imageType, false))
                     {
                         if (!image.gameObject.activeInHierarchy) continue;
-                        if (!image.enabled) continue;
+                        if (image is Behaviour behaviour && !behaviour.enabled) continue;
                         if (image.transform == button.transform || image.transform.IsChildOf(button.transform))
                             continue;
                         if (button.transform.IsChildOf(image.transform)) continue;
