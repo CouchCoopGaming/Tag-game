@@ -324,7 +324,7 @@ Fit file: `costume-fit sets=12 frames=4128 worldMax=0.38 fails=0`. That number i
 
 ## Restructure impact
 
-Running count: **7**. Each line is one redo or conflict for the restructure-impact report. Missed copies are not counted.
+Running count: **6**. Each line is one redo or conflict for the restructure-impact report. Missed copies are not counted.
 
 1. Court, twice. #129 `8effda99` and #125 `c84459a3` both restore #122's 22 m by 15 m court and the 0.375 m face-to-rim gap. `Court`, `CourtFence`, and `Hoop` sizes matched on all three tips at that grade. Same fix, two helpers.
 2. Walk-up, two meshes. #122 passes at 2736/2216/1004. #129's earlier mesh was 1832/1300/680. #125 still fails the old landing. Two buildings, one name. #129 `8f7686a5` later copied #122's cage (geometry hash matches). The event stays counted.
@@ -333,11 +333,11 @@ Running count: **7**. Each line is one redo or conflict for the restructure-impa
 5. #125 `bc02b9c4` deletes those three `*_25` blockouts after the rename. #125 and #129 now both omit them. The rejection was undone, then redone. Counted separately from 4.
 6. #129 `a92b5987` rebuilds `CourtFence` to 3664/2640/144. #122's fence already passes at 3680/2656/620. Second fence mesh. #129 `8f7686a5` then copied #122's fence, and the geometry hash matches. The rebuild stays counted.
 
-7. #125 `9c61fe70` restores the rejected pickup. `Car_Pickup_25` was deleted at `bc02b9c4`. This commit puts `sk_car_body.py` back and adds `Pickup_FullSize_25` as that old shell, with pass 17 stills. No FBX and no manifest row are in the tree, so the validator still reports 188 assets. Do not export it.
+Not a redo: `Pickup_FullSize_25` on #125 `9c61fe70`. Logging it as redo 7 was a chain-of-command error on the models-lead side. Ororo asked for that truck, and Landon wants an F-150-style full-size pickup in the vehicle set. `Car_Pickup_25` stays rejected. The new pickup is a different asset. It is not graded yet: pass 17 stills are 1280×720 and under 400 KB, and the tree has no FBX and no manifest row.
 
-Not counted: #128 `b804954f` adds `build_hip_ankle.py` and `clear_hip_flex.py` only. The graded Hier geometry is unchanged, and the validator is still `pass=0/7`. #129 `8f7686a5` also copied Container_20 (and both enamels), Rowboat, HarborShed, Gazebo, and WoodFence_Corner from #122. Those hashes match, so they are copies, not a seventh redo. GasCanopy, Dock_Straight, and FishingBoat on that tip were cut locally and do not match #122. #125 has not taken the #122 copies. #125 `d77f0728` only adds pass 16 stills for the 2022–2024 midsize sedans.
+Not counted: #128 `b804954f` adds `build_hip_ankle.py` and `clear_hip_flex.py` only. The graded Hier geometry is unchanged, and the validator is still `pass=0/7`. #129 `8f7686a5` also copied Container_20 (and both enamels), Rowboat, HarborShed, Gazebo, and WoodFence_Corner from #122. Those hashes match, so they are copies, not another redo. GasCanopy, Dock_Straight, and FishingBoat on that tip were cut locally and do not match #122. #125 has not taken the #122 copies. #125 `d77f0728` only adds pass 16 stills for the 2022–2024 midsize sedans.
 
 ## Counts
 
-Lead status in the asset tables: accepted 0. Geometry-hash re-grade, 9 Oct 2026: #122 pass=12/125, #125 pass=0/188 at `9c61fe70`, #129 pass=27/220, #128 pass=0/7, #131 pass=0/18. Restructure-impact count: 7.
+Lead status in the asset tables: accepted 0. Geometry-hash re-grade, 9 Oct 2026: #122 pass=12/125, #125 pass=0/188 at `9c61fe70`, #129 pass=27/220, #128 pass=0/7, #131 pass=0/18. Restructure-impact count: 6. `Pickup_FullSize_25` is not in that count.
 

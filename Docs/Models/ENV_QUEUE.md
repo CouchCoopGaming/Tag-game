@@ -28,7 +28,7 @@ A colour or paint sibling uses the base quartet when vertex positions, indices, 
 
 ## Vehicles (#125)
 
-1. `Car_Sedan_25`, `Car_Hatch_25`, and `Car_Pickup_25` stay deleted. `9c61fe70` brings `sk_car_body.py` back and adds `Pickup_FullSize_25` as the old pickup shell. There is no FBX and no manifest row yet. Do not export that blockout.
+1. `Car_Sedan_25`, `Car_Hatch_25`, and `Car_Pickup_25` stay deleted. `Pickup_FullSize_25` is the requested F-150-style truck, not that blockout. Pass 17 stills are already 1280×720 and under 400 KB. Export the FBX and add the manifest row, then it gets graded. Until both are in the tree it is not an asset.
 2. One midsize body per year. `_22`, `_23`, and `_24` have their own pass 16 quartets. Cut LOD2 to at most 0.6× LOD1 (2356 against 3736, 2436 against 3880, 2356 against 3756). The FBX on this tip is still those counts.
 3. `_25` has a pass 18 quartet. The six paints use it (`material-variant of Sedan_Mid_A_25`) and fail only `lod2-ratio` (2356 against 3676). Cut that LOD2 in the shipped file.
 4. The three compacts have quartets. Cut LOD2 (2344/3325, 2294/3284, 2400/3417) to 0.6×.
@@ -44,4 +44,4 @@ A colour or paint sibling uses the base quartet when vertex positions, indices, 
 4. `Park/Planter` is not `Planter_Street`. It still needs its own quartet.
 5. Do not re-import `Car_*`.
 
-Restructure-impact count is 7. #129 did not move past `8f7686a5`. See `Docs/Models/LEDGER.md`.
+Restructure-impact count is 6. `Pickup_FullSize_25` is not a redo. #129 did not move past `8f7686a5`. See `Docs/Models/LEDGER.md`.
