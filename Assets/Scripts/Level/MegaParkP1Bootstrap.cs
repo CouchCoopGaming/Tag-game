@@ -955,12 +955,23 @@ namespace Tag.Level
             Label(g, "SWING", 78f, 86f);
             Label(g, "FORTS", 140f, 48f);
             Label(g, "KICKBALL", 96f, 52f);
-            // Twin just past the east fence, turned to face down the court, so the
-            // eye-height court shot (looking east) reads it instead of edge-on.
-            Label(g, "KICKBALL", 97.6f, 53.2f, 90f, "Label_KICKBALL_Court");
+            // Court-end sign for the eye-height view down the court (looking east).
+            // One face toward the west, low on the east fence and north of the main
+            // label, smaller, so it does not stack on the main sign from above.
+            CourtSign(g, "KICKBALL", 96.9f, 2.3f, 60f, 90f);
             Label(g, "CRASH", 62f, 50f);
             Label(g, "BARS", 78f, 16f);
             Label(g, "HOPSCOTCH", 136f, 18f);
+        }
+
+        void CourtSign(Transform parent, string text, float x, float y, float z, float yaw)
+        {
+            var go = new GameObject("Label_" + text + "_Court");
+            go.transform.SetParent(parent, false);
+            go.transform.localPosition = new Vector3(x, y, z);
+            go.transform.localRotation = Quaternion.Euler(0f, yaw, 0f);
+            go.transform.localScale = Vector3.one;
+            WorldSign.AddOneSided(go.transform, text, 48, 0.22f, new Color(1f, 0.95f, 0.75f, 1f));
         }
 
         void Label(Transform parent, string text, float x, float z, float yaw = 0f, string name = null)
@@ -1002,9 +1013,13 @@ namespace Tag.Level
             RenderSettings.sun = sun;
 
             RenderSettings.ambientMode = UnityEngine.Rendering.AmbientMode.Trilight;
-            RenderSettings.ambientSkyColor = new Color(MegaParkP1Layout.AmbSkyR, MegaParkP1Layout.AmbSkyG, MegaParkP1Layout.AmbSkyB, 1f);
-            RenderSettings.ambientEquatorColor = new Color(MegaParkP1Layout.AmbEqR, MegaParkP1Layout.AmbEqG, MegaParkP1Layout.AmbEqB, 1f);
-            RenderSettings.ambientGroundColor = new Color(MegaParkP1Layout.AmbGndR, MegaParkP1Layout.AmbGndG, MegaParkP1Layout.AmbGndB, 1f);
+            // Trilight ignores ambientIntensity (it only scales the skybox source),
+            // so the brightening never reached the frame. Fold the intensity into
+            // the three colours, which is what the look checks already assume.
+            float amb = MegaParkP1Layout.AmbIntensity;
+            RenderSettings.ambientSkyColor = new Color(MegaParkP1Layout.AmbSkyR * amb, MegaParkP1Layout.AmbSkyG * amb, MegaParkP1Layout.AmbSkyB * amb, 1f);
+            RenderSettings.ambientEquatorColor = new Color(MegaParkP1Layout.AmbEqR * amb, MegaParkP1Layout.AmbEqG * amb, MegaParkP1Layout.AmbEqB * amb, 1f);
+            RenderSettings.ambientGroundColor = new Color(MegaParkP1Layout.AmbGndR * amb, MegaParkP1Layout.AmbGndG * amb, MegaParkP1Layout.AmbGndB * amb, 1f);
             RenderSettings.ambientIntensity = MegaParkP1Layout.AmbIntensity;
 
             Shader skyShader = Shader.Find("Skybox/Procedural");
@@ -1029,6 +1044,9 @@ namespace Tag.Level
                     sky.SetFloat("_SunSizeConvergence", 5f);
                 RenderSettings.skybox = sky;
             }
+            // Set from script, the ambient probe keeps the scene's old values until
+            // the environment is recomputed (edit mode, batch captures, builds).
+            DynamicGI.UpdateEnvironment();
         }
 
         Transform BuildDressing()

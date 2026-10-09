@@ -91,12 +91,52 @@ public static class TagStationWorldCapture
         if (Application.isBatchMode) EditorApplication.Exit(code);
     }
 
+    // Fort pieces from MegaParkP1Layout: Army_* / Knight_* (crawl, spiral core,
+    // steps), Rim_Army / Rim_Knight, Slide_Army* / Slide_Knight*, the Z6 masts.
+    static readonly string[] FortPrefixes =
+    {
+        "Army_", "Knight_", "Rim_Army", "Rim_Knight", "Slide_Army", "Slide_Knight",
+        "Landmark_Z6_Army", "Landmark_Z6_Knight"
+    };
+
     static Shot Forts(StringBuilder audit)
     {
-        Vector3 look = new Vector3(142f, 2.5f, 49f);
-        Vector3 eye = new Vector3(112f, 19f, 49f);
-        audit.AppendLine("z6-forts target src=forts look=" + look);
+        Bounds b = default;
+        int hits = 0;
+        foreach (Renderer r in Object.FindObjectsByType<Renderer>(FindObjectsInactive.Exclude, FindObjectsSortMode.None))
+        {
+            if (!IsFort(r.transform)) continue;
+            if (hits == 0) b = r.bounds; else b.Encapsulate(r.bounds);
+            hits++;
+        }
+        Vector3 look;
+        Vector3 eye;
+        if (hits > 0)
+        {
+            look = new Vector3(b.center.x, Mathf.Min(b.center.y, 2.5f), b.center.z);
+            // Fit the longer footprint side into a 62 deg view from the west-southwest.
+            float span = Mathf.Max(b.size.x, b.size.z) * 0.5f + 3f;
+            float dist = span / Mathf.Tan(31f * Mathf.Deg2Rad);
+            Vector3 dir = new Vector3(-0.85f, 0f, -0.35f).normalized;
+            eye = look + dir * dist + Vector3.up * (dist * 0.55f);
+        }
+        else
+        {
+            look = new Vector3(142f, 2.5f, 49f);
+            eye = new Vector3(112f, 19f, 49f);
+        }
+        audit.AppendLine("z6-forts target src=" + (hits > 0 ? "fort-objects n=" + hits + " min=" + b.min + " max=" + b.max : "fallback") + " look=" + look);
         return S("z6-forts", eye, look, 62f);
+    }
+
+    static bool IsFort(Transform t)
+    {
+        for (int depth = 0; t != null && depth < 3; depth++, t = t.parent)
+        {
+            for (int i = 0; i < FortPrefixes.Length; i++)
+                if (t.name.StartsWith(FortPrefixes[i], System.StringComparison.Ordinal)) return true;
+        }
+        return false;
     }
 
     static Shot Zone(string name, string group, Vector3 fallback, Vector3 offset, StringBuilder audit)

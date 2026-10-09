@@ -15,6 +15,15 @@ namespace Tag.Level
             AddFace(parent, text, fontSize, characterSize, color, 180f, -0.02f, "Face_180");
         }
 
+        /// <summary>
+        /// One culled face, read only from the side its yaw faces. For a sign
+        /// aimed at one view that should not show from behind.
+        /// </summary>
+        public static void AddOneSided(Transform parent, string text, int fontSize, float characterSize, Color color)
+        {
+            AddFace(parent, text, fontSize, characterSize, color, 0f, 0f, "Face_0");
+        }
+
         static void AddFace(Transform parent, string text, int fontSize, float characterSize, Color color, float yaw, float z, string name)
         {
             var go = new GameObject(name);
