@@ -333,11 +333,57 @@ namespace Tag.Level
             new Place("Hp_Post", S + "Delineator_Post.prefab", 130.2f, 0f, 11.15f, 0f),
         };
 
+        /// <summary>
+        /// Library trees and cabins outside the fence. Pivots keep each mesh off the 160×100 play box.
+        /// They are not on a route. Yaw faces the park for the cabins.
+        /// </summary>
+        public static readonly Place[] Edge =
+        {
+            new Place("Edge_Maple_S0", P + "Tree_Maple.prefab", 10f, 0f, -4f, 20f),
+            new Place("Edge_Pine_S1", P + "Tree_Pine.prefab", 26f, 0f, -4f, 40f),
+            new Place("Edge_Maple_S2", P + "Tree_Maple.prefab", 42f, 0f, -4f, 15f),
+            new Place("Edge_Pine_S3", P + "Tree_Pine.prefab", 58f, 0f, -4f, 55f),
+            new Place("Edge_Maple_S4", P + "Tree_Maple.prefab", 74f, 0f, -4f, 25f),
+            new Place("Edge_Pine_S5", P + "Tree_Pine.prefab", 90f, 0f, -4f, 70f),
+            new Place("Edge_Maple_S6", P + "Tree_Maple.prefab", 106f, 0f, -4f, 10f),
+            new Place("Edge_Pine_S7", P + "Tree_Pine.prefab", 122f, 0f, -4f, 35f),
+            new Place("Edge_Maple_S8", P + "Tree_Maple.prefab", 138f, 0f, -4f, 50f),
+            new Place("Edge_Pine_S9", P + "Tree_Pine.prefab", 154f, 0f, -4f, 80f),
+            new Place("Edge_Cabin_S0", B + "Cabin.prefab", 22f, 0f, -8f, 0f),
+            new Place("Edge_Cabin_S1", B + "Cabin.prefab", 80f, 0f, -8f, 0f),
+            new Place("Edge_Cabin_S2", B + "Cabin.prefab", 136f, 0f, -8f, 0f),
+            new Place("Edge_Maple_N0", P + "Tree_Maple.prefab", 12f, 0f, 104f, 200f),
+            new Place("Edge_Pine_N1", P + "Tree_Pine.prefab", 28f, 0f, 104f, 160f),
+            new Place("Edge_Maple_N2", P + "Tree_Maple.prefab", 44f, 0f, 104f, 210f),
+            new Place("Edge_Pine_N3", P + "Tree_Pine.prefab", 60f, 0f, 104f, 185f),
+            new Place("Edge_Maple_N4", P + "Tree_Maple.prefab", 76f, 0f, 104f, 155f),
+            new Place("Edge_Pine_N5", P + "Tree_Pine.prefab", 92f, 0f, 104f, 220f),
+            new Place("Edge_Maple_N6", P + "Tree_Maple.prefab", 108f, 0f, 104f, 175f),
+            new Place("Edge_Pine_N7", P + "Tree_Pine.prefab", 124f, 0f, 104f, 195f),
+            new Place("Edge_Maple_N8", P + "Tree_Maple.prefab", 140f, 0f, 104f, 165f),
+            new Place("Edge_Pine_N9", P + "Tree_Pine.prefab", 156f, 0f, 104f, 205f),
+            new Place("Edge_Cabin_N0", B + "Cabin.prefab", 24f, 0f, 108f, 180f),
+            new Place("Edge_Cabin_N1", B + "Cabin.prefab", 84f, 0f, 108f, 180f),
+            new Place("Edge_Cabin_N2", B + "Cabin.prefab", 140f, 0f, 108f, 180f),
+            new Place("Edge_Maple_W0", P + "Tree_Maple.prefab", -4f, 0f, 18f, 80f),
+            new Place("Edge_Pine_W1", P + "Tree_Pine.prefab", -4f, 0f, 40f, 100f),
+            new Place("Edge_Maple_W2", P + "Tree_Maple.prefab", -4f, 0f, 62f, 60f),
+            new Place("Edge_Pine_W3", P + "Tree_Pine.prefab", -4f, 0f, 84f, 120f),
+            new Place("Edge_Cabin_W0", B + "Cabin.prefab", -7f, 0f, 30f, 90f),
+            new Place("Edge_Cabin_W1", B + "Cabin.prefab", -7f, 0f, 70f, 90f),
+            new Place("Edge_Maple_E0", P + "Tree_Maple.prefab", 164f, 0f, 18f, 260f),
+            new Place("Edge_Pine_E1", P + "Tree_Pine.prefab", 164f, 0f, 40f, 280f),
+            new Place("Edge_Maple_E2", P + "Tree_Maple.prefab", 164f, 0f, 62f, 250f),
+            new Place("Edge_Pine_E3", P + "Tree_Pine.prefab", 164f, 0f, 84f, 300f),
+            new Place("Edge_Cabin_E0", B + "Cabin.prefab", 167f, 0f, 30f, 270f),
+            new Place("Edge_Cabin_E1", B + "Cabin.prefab", 167f, 0f, 70f, 270f),
+        };
+
         public static Place[] AllPlaces()
         {
             var all = new Place[
                 Places.Length + SoftPlay.Length + Cling.Length + Merry.Length + Slide.Length
-                + Swing.Length + Forts.Length + Bowl.Length + Bars.Length + Hops.Length];
+                + Swing.Length + Forts.Length + Bowl.Length + Bars.Length + Hops.Length + Edge.Length];
             int n = 0;
             for (int i = 0; i < Places.Length; i++)
                 all[n++] = Places[i];
@@ -359,6 +405,8 @@ namespace Tag.Level
                 all[n++] = Bars[i];
             for (int i = 0; i < Hops.Length; i++)
                 all[n++] = Hops[i];
+            for (int i = 0; i < Edge.Length; i++)
+                all[n++] = Edge[i];
             return all;
         }
 

@@ -25,7 +25,7 @@ namespace Tag.Level
 
         Transform _p1;
         Material _mulch, _grass, _sand, _rubber, _blue, _yellow, _steel, _concrete, _cedar, _bark, _rim, _field;
-        Material _soft, _pad, _merry, _amber, _swing, _army, _knight, _kick, _hop, _cover, _plate;
+        Material _soft, _pad, _merry, _amber, _swing, _army, _knight, _kick, _hop, _cover, _plate, _asphalt;
         Material _fence, _rail, _horizon, _leaf, _wood, _lamp, _trash, _skyline;
         Material _zbrick, _zwine, _zindigo, _zolive, _zslate, _ztrim;
         Material _abrick, _aclay, _aindigo, _aolive, _aslate;
@@ -189,6 +189,7 @@ namespace Tag.Level
             _yellow = Face("slide");
             _steel = Face("steel");
             _concrete = Face("concrete");
+            _asphalt = Face("asphalt");
             _cedar = Face("cedar");
             _bark = Face("bark");
             _rim = Face("rim");
@@ -317,7 +318,7 @@ namespace Tag.Level
                         float grain = 0.96f + 0.08f * Mathf.Abs(Mathf.Sin(y * 0.55f + Hash(x / 8, 0) * 3f));
                         p = c * Mathf.Min(1.04f, grain);
                     }
-                    else if (kind == "concrete" || kind == "skyline")
+                    else if (kind == "concrete" || kind == "skyline" || kind == "asphalt")
                     {
                         float seam = (x % 16 == 0 || y % 16 == 0) ? 0.96f : 1.02f;
                         p = c * seam;
@@ -363,6 +364,7 @@ namespace Tag.Level
                 case "yellow": return _yellow;
                 case "steel": return _steel;
                 case "concrete": return _concrete;
+                case "asphalt": return _asphalt;
                 case "cedar": return _cedar;
                 case "bark": return _bark;
                 case "rim": return _rim;
@@ -474,6 +476,7 @@ namespace Tag.Level
             BuildDistrict("WorldZ8", MegaParkWorldDistrict.Bowl, table, true);
             BuildDistrict("WorldZ9", MegaParkWorldDistrict.Bars, table, true);
             BuildDistrict("WorldZ10", MegaParkWorldDistrict.Hops, table, true);
+            BuildDistrict("WorldEdge", MegaParkWorldDistrict.Edge, table, true);
         }
 
         void BuildDistrict(string group, MegaParkWorldDistrict.Place[] places, WorldPropTable table, bool batch)

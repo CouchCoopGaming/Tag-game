@@ -285,6 +285,7 @@ def main():
         "yes" if smaller else "NO",
         "yes" if 'BuildDistrict("WorldZ1"' in open(os.path.join(z.ROOT, "Assets/Scripts/Level/MegaParkP1Bootstrap.cs"), encoding="utf-8").read() and "BatchDistrictMeshes" in open(os.path.join(z.ROOT, "Assets/Scripts/Level/MegaParkP1Bootstrap.cs"), encoding="utf-8").read() else "NO",
     ))
+    floating.extend(z.gray_route_floats("Z1"))
     if floating:
         print("floating: " + ", ".join(floating))
     if open_hits:

@@ -254,6 +254,7 @@ namespace Tag.Level
             if (!eye) report.Fail("a split view lost its landmarks");
             if (!cvd) report.Fail("zone colors collide under a cvd sim");
             if (!contrast) report.Fail("a zone color missed 3:1");
+            if (!CrownsSeated(report)) report.Fail("a crown is floating");
             report.Line = "zones arenas=3 zones=" + zones.ToString(CultureInfo.InvariantCulture)
                 + " landmarks=" + landmarks.ToString(CultureInfo.InvariantCulture)
                 + " eyeVisible=" + (eye ? "ok" : "bad")
@@ -369,7 +370,9 @@ namespace Tag.Level
             }
             Water(list, "Water", "abrick", "zbrick", 24f, 58f, 18f);
             Crane(list, "Crane", "aolive", "zolive", 72f, 84f, 22f);
-            Clock(list, "Clock", "aindigo", "zindigo", 88f, 48f, 20f);
+            // West of the kickball fence (west face x = 80.65). The old seat (88, 48) stood in the court.
+            // This mark has no collider and is not a route. Landmark_Z7 at (109, 58) is the zone mast.
+            Clock(list, "Clock", "aindigo", "zindigo", 74.2f, 46.5f, 18.2f);
             Sign(list, "Sign", "aclay", "zwine", 86f, 14f, 14f);
             Light(list, "Light", "aslate", "zslate", 138f, 58f, 24f);
         }
@@ -392,7 +395,7 @@ namespace Tag.Level
             Box(list, "Landmark_Body_" + tag + "C", body, x - 1.5f, leg * 0.5f, z + 1.5f, 0.5f, leg, 0.5f);
             Box(list, "Landmark_Body_" + tag + "D", body, x + 1.5f, leg * 0.5f, z + 1.5f, 0.5f, leg, 0.5f);
             Box(list, "Landmark_Body_" + tag + "T", body, x, 13.2f, z, 4.6f, 3.4f, 4.6f);
-            Crown(list, tag, accent, x, top, z, 3.4f, 1.6f, 3.4f);
+            Crown(list, tag, accent, x, 14.9f + 1.6f, z, 3.4f, 1.6f, 3.4f);
         }
 
         static void Crane(List<Mark> list, string tag, string accent, string body, float x, float z, float top)
@@ -401,14 +404,14 @@ namespace Tag.Level
             Box(list, "Landmark_Body_" + tag + "J", body, x + 4.2f, 17.6f, z, 9.2f, 0.7f, 0.7f);
             Box(list, "Landmark_Body_" + tag + "K", body, x - 2.2f, 17.2f, z, 2.4f, 1.1f, 1.1f);
             Box(list, "Landmark_Body_" + tag + "C", body, x, 15.2f, z, 1.8f, 1.6f, 1.8f);
-            Crown(list, tag, accent, x, top, z, 2.2f, 2f, 2.2f);
+            Crown(list, tag, accent, x, 18f + 2f, z, 2.2f, 2f, 2.2f);
         }
 
         static void Clock(List<Mark> list, string tag, string accent, string body, float x, float z, float top)
         {
             Box(list, "Landmark_Body_" + tag + "S", body, x, 8f, z, 2.6f, 16f, 2.6f);
             Box(list, "Landmark_Body_" + tag + "F", "ztrim", x, 15.2f, z + 1.35f, 2.2f, 2.2f, 0.2f);
-            Crown(list, tag, accent, x, top, z, 3.4f, 2.2f, 3.4f);
+            Crown(list, tag, accent, x, 16f + 2.2f, z, 3.4f, 2.2f, 3.4f);
         }
 
         static void Sign(List<Mark> list, string tag, string accent, string body, float x, float z, float top)
@@ -416,7 +419,7 @@ namespace Tag.Level
             Box(list, "Landmark_Body_" + tag + "L", body, x - 3f, 6f, z, 0.55f, 12f, 0.55f);
             Box(list, "Landmark_Body_" + tag + "R", body, x + 3f, 6f, z, 0.55f, 12f, 0.55f);
             Box(list, "Landmark_Body_" + tag + "P", body, x, 9.4f, z, 6.6f, 4.4f, 0.45f);
-            Crown(list, tag, accent, x, top, z, 7.2f, 0.9f, 0.7f);
+            Crown(list, tag, accent, x, 12f + 0.9f, z, 7.2f, 0.9f, 0.7f);
         }
 
         static void Light(List<Mark> list, string tag, string accent, string body, float x, float z, float top)
@@ -425,7 +428,7 @@ namespace Tag.Level
             Box(list, "Landmark_Body_" + tag + "M", body, x, 12f, z, 1.7f, 8f, 1.7f);
             Box(list, "Landmark_Body_" + tag + "G", body, x, 16.6f, z, 3.4f, 0.7f, 3.4f);
             Box(list, "Landmark_Body_" + tag + "L", "ztrim", x, 18.4f, z, 1.3f, 2.6f, 1.3f);
-            Crown(list, tag, accent, x, top, z, 2.4f, 1.8f, 2.4f);
+            Crown(list, tag, accent, x, 19.7f + 1.8f, z, 2.4f, 1.8f, 2.4f);
         }
 
         static void Windmill(List<Mark> list, string tag, string accent, string body, float x, float z, float top)
@@ -434,14 +437,14 @@ namespace Tag.Level
             Box(list, "Landmark_Body_" + tag + "H", body, x, 13.2f, z, 1.6f, 1.6f, 1.6f);
             Box(list, "Landmark_Body_" + tag + "A", body, x, 13.2f, z, 6.4f, 0.35f, 0.35f);
             Box(list, "Landmark_Body_" + tag + "B", body, x, 13.2f, z, 0.35f, 6.4f, 0.35f);
-            Crown(list, tag, accent, x, top, z, 1.8f, 1.2f, 1.8f);
+            Crown(list, tag, accent, x, 14f + 1.2f, z, 1.8f, 1.2f, 1.8f);
         }
 
         static void Archway(List<Mark> list, string tag, string accent, string body, float x, float z, float top)
         {
             Box(list, "Landmark_Body_" + tag + "L", body, x - 2.2f, 6f, z, 0.7f, 12f, 0.7f);
             Box(list, "Landmark_Body_" + tag + "R", body, x + 2.2f, 6f, z, 0.7f, 12f, 0.7f);
-            Crown(list, tag, accent, x, top, z, 5.6f, 1.3f, 0.9f);
+            Crown(list, tag, accent, x, 12f + 1.3f, z, 5.6f, 1.3f, 0.9f);
         }
 
         static void Board(List<Mark> list, string tag, string accent, string body, float x, float z, float top)
@@ -449,21 +452,21 @@ namespace Tag.Level
             Box(list, "Landmark_Body_" + tag + "L", body, x - 2.4f, 6f, z, 0.45f, 12f, 0.45f);
             Box(list, "Landmark_Body_" + tag + "R", body, x + 2.4f, 6f, z, 0.45f, 12f, 0.45f);
             Box(list, "Landmark_Body_" + tag + "P", body, x, 10.2f, z, 5.6f, 3.6f, 0.4f);
-            Crown(list, tag, accent, x, top, z, 6f, 0.8f, 0.6f);
+            Crown(list, tag, accent, x, 12f + 0.8f, z, 6f, 0.8f, 0.6f);
         }
 
         static void Buoy(List<Mark> list, string tag, string accent, string body, float x, float z, float top)
         {
             Box(list, "Landmark_Body_" + tag + "P", body, x, 7f, z, 1.3f, 14f, 1.3f);
             Box(list, "Landmark_Body_" + tag + "R", body, x, 13.4f, z, 2.8f, 0.5f, 2.8f);
-            Crown(list, tag, accent, x, top, z, 2.2f, 2.2f, 2.2f);
+            Crown(list, tag, accent, x, 14f + 2.2f, z, 2.2f, 2.2f, 2.2f);
         }
 
         static void Chimney(List<Mark> list, string tag, string accent, string body, float x, float z, float top)
         {
             Box(list, "Landmark_Body_" + tag + "A", body, x - 1.3f, 8f, z, 1.5f, 16f, 1.5f);
             Box(list, "Landmark_Body_" + tag + "B", body, x + 1.3f, 6.5f, z, 1.3f, 13f, 1.3f);
-            Crown(list, tag, accent, x - 1.3f, top, z, 2f, 2f, 2f);
+            Crown(list, tag, accent, x - 1.3f, 16f + 2f, z, 2f, 2f, 2f);
         }
 
         static void Gantry(List<Mark> list, string tag, string accent, string body, float x, float z, float top)
@@ -471,7 +474,7 @@ namespace Tag.Level
             Box(list, "Landmark_Body_" + tag + "L", body, x - 4f, 6.5f, z, 0.6f, 13f, 0.6f);
             Box(list, "Landmark_Body_" + tag + "R", body, x + 4f, 6.5f, z, 0.6f, 13f, 0.6f);
             Box(list, "Landmark_Body_" + tag + "B", body, x, 13.2f, z, 9f, 0.7f, 0.7f);
-            Crown(list, tag, accent, x, top, z, 2.4f, 1.6f, 1.4f);
+            Crown(list, tag, accent, x, 13.55f + 1.6f, z, 2.4f, 1.6f, 1.4f);
         }
 
         static void Radio(List<Mark> list, string tag, string accent, string body, float x, float z, float top)
@@ -479,7 +482,7 @@ namespace Tag.Level
             Box(list, "Landmark_Body_" + tag + "P", body, x, 9f, z, 0.55f, 18f, 0.55f);
             Box(list, "Landmark_Body_" + tag + "D", body, x + 1.6f, 14f, z, 2.6f, 0.35f, 2.6f);
             Box(list, "Landmark_Body_" + tag + "A", body, x, 8f, z, 4f, 0.25f, 0.25f);
-            Crown(list, tag, accent, x, top, z, 1.4f, 2.2f, 1.4f);
+            Crown(list, tag, accent, x, 18f + 2.2f, z, 1.4f, 2.2f, 1.4f);
         }
 
         static void Billboard(List<Mark> list, string tag, string accent, string body, float x, float z, float top)
@@ -487,7 +490,7 @@ namespace Tag.Level
             Box(list, "Landmark_Body_" + tag + "L", body, x - 3.2f, 6f, z, 0.5f, 12f, 0.5f);
             Box(list, "Landmark_Body_" + tag + "R", body, x + 3.2f, 6f, z, 0.5f, 12f, 0.5f);
             Box(list, "Landmark_Body_" + tag + "P", body, x, 10f, z, 7.2f, 4f, 0.4f);
-            Crown(list, tag, accent, x, top, z, 7.6f, 0.8f, 0.7f);
+            Crown(list, tag, accent, x, 12f + 0.8f, z, 7.6f, 0.8f, 0.7f);
         }
 
         static void Gates(List<Mark> list, int arena)
@@ -511,6 +514,39 @@ namespace Tag.Level
                     list.Add(new Mark { Name = name + "B", Mat = mat, X = gate.X, Y = y + 1.05f, Z = gate.Z, Sx = 1.4f, Sy = 0.16f, Sz = 0.16f });
                 }
             }
+        }
+
+        static bool CrownsSeated(Report report)
+        {
+            const string crownPre = "Landmark_Crown_";
+            const string bodyPre = "Landmark_Body_";
+            for (int a = 0; a < 3; a++)
+            {
+                Mark[] marks = Fill(a, Solids(a));
+                for (int i = 0; i < marks.Length; i++)
+                {
+                    Mark crown = marks[i];
+                    if (crown.Name == null || !crown.Name.StartsWith(crownPre, StringComparison.Ordinal))
+                        continue;
+                    string tag = crown.Name.Substring(crownPre.Length);
+                    float support = float.MinValue;
+                    for (int j = 0; j < marks.Length; j++)
+                    {
+                        Mark body = marks[j];
+                        if (body.Name == null || !body.Name.StartsWith(bodyPre + tag, StringComparison.Ordinal))
+                            continue;
+                        float top = body.Y + body.Sy * 0.5f;
+                        if (top > support) support = top;
+                    }
+                    float bottom = crown.Y - crown.Sy * 0.5f;
+                    if (support == float.MinValue || bottom > support + 0.08f)
+                    {
+                        report.Fail(crown.Name + " floats");
+                        return false;
+                    }
+                }
+            }
+            return true;
         }
 
         static int CountCrowns()

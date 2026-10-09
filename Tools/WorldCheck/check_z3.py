@@ -307,6 +307,7 @@ def main():
         "yes" if batch_ok else "NO",
         "yes" if not cross_hits else "NO",
     ))
+    floating.extend(z.gray_route_floats("Z3"))
     if floating:
         print("floating: " + ", ".join(floating))
     if open_hits:

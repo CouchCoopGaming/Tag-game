@@ -314,6 +314,207 @@ def pivot_supported(inst, others):
     return False
 
 
+# Zone boxes from MegaParkP1Layout.Pass6. Zone boxes are the route districts.
+_ZONE_BOX = {
+    "Z1": (2.0, 38.0, 2.0, 36.0),
+    "Z2": (2.0, 18.0, 38.0, 78.0),
+    "Z3": (22.0, 46.0, 34.0, 60.0),
+    "Z4": (22.0, 56.0, 72.0, 98.0),
+    "Z5": (58.0, 100.0, 78.0, 98.0),
+    "Z6": (118.0, 158.0, 10.0, 90.0),
+    "Z7": (64.0, 114.0, 28.0, 68.0),
+    "Z8": (46.0, 78.0, 34.0, 66.0),
+    "Z9": (38.0, 118.0, 12.0, 20.0),
+    "Z10": (118.0, 156.0, 2.0, 22.0),
+}
+
+_ROUTE_KINDS = {"vault", "bar", "block", "post", "wall", "bump", "toy", "landmark", "anchor", "cap"}
+_LAYOUT_CS = [
+    os.path.join(ROOT, "Assets/Scripts/Level/MegaParkP1Layout.cs"),
+    os.path.join(ROOT, "Assets/Scripts/Level/MegaParkP1Layout.Pass9.cs"),
+]
+_READ_CS = os.path.join(ROOT, "Assets/Scripts/Level/ZoneReadability.cs")
+
+
+def _in_zone(zone, x, z):
+    x0, x1, z0, z1 = _ZONE_BOX[zone]
+    return x0 <= x <= x1 and z0 <= z <= z1
+
+
+def _solid(name, zone, kind, x, y, z, sx, sy, sz, support):
+    return {
+        "name": name, "zone": zone, "kind": kind,
+        "x": x, "y": y, "z": z, "sx": sx, "sy": sy, "sz": sz,
+        "support": support,
+        "bottom": y - sy * 0.5,
+        "top": y + sy * 0.5,
+    }
+
+
+def _literal_solids(text):
+    out = []
+    pat = re.compile(
+        r'Add\(\s*list,\s*"([^"]+)",\s*"([^"]+)",\s*"([^"]+)",\s*"[^"]+",\s*'
+        r'([-0-9.]+)f,\s*([-0-9.]+)f,\s*([-0-9.]+)f,\s*'
+        r'([-0-9.]+)f,\s*([-0-9.]+)f,\s*([-0-9.]+)f,\s*([-0-9.]+)f\s*\)'
+    )
+    for m in pat.finditer(text):
+        name, zone, kind = m.group(1), m.group(2), m.group(3)
+        nums = [float(m.group(i)) for i in range(4, 11)]
+        out.append(_solid(name, zone, kind, *nums))
+    return out
+
+
+def _generated_solids(text):
+    """Loops and masts whose Add() line is not all literals. Same numbers as the layout."""
+    out = []
+    # Bars. 12 bays, x = 44 + i*6.
+    for i in range(12):
+        x = 44.0 + i * 6.0
+        out.append(_solid("BarPost_S%d" % i, "Z9", "post", x, 0.57, 12.7, 0.22, 1.14, 0.22, 0.0))
+        out.append(_solid("BarPost_N%d" % i, "Z9", "post", x, 0.57, 19.3, 0.22, 1.14, 0.22, 0.0))
+        out.append(_solid("Bar_%d" % i, "Z9", "bar", x, 1.2, 16.0, 0.14, 0.12, 6.8, 1.14))
+        out.append(_solid("BarVault_N%d" % i, "Z9", "vault", x + 1.6, 0.48, 18.55, 1.30, 0.96, 0.90, 0.0))
+        out.append(_solid("BarVault_S%d" % i, "Z9", "vault", x + 3.0, 0.48, 13.55, 1.30, 0.96, 0.90, 0.0))
+    # Hops. lip = 0.72 + (i%4)*0.22, bottom is 0, support is 0.
+    for i in range(8):
+        x = 124.0 + i * 3.1
+        lip = 0.72 + (i % 4) * 0.22
+        out.append(_solid("Hop_%d" % i, "Z10", "vault", x, lip * 0.5, 15.0, 1.15, lip, 1.15, 0.0))
+    # Landmark masts. poleTop = LandmarkCrown 16 - flag 1.6.
+    pole_top = 14.4
+    for m in re.finditer(
+        r'Mast\(\s*list,\s*"([^"]+)",\s*"([^"]+)",\s*"[^"]+",\s*([-0-9.]+)f,\s*([-0-9.]+)f,\s*([-0-9.]+)f',
+        text,
+    ):
+        name, zone, x, z, deck = m.group(1), m.group(2), float(m.group(3)), float(m.group(4)), float(m.group(5))
+        sy = pole_top - deck
+        out.append(_solid(name + "_Pole", zone, "landmark", x, deck + sy * 0.5, z, 0.42, sy, 0.42, deck))
+        out.append(_solid(name + "_Flag", zone, "landmark", x, pole_top + 0.8, z, 2.2, 1.6, 0.16, pole_top))
+    return out
+
+
+def _xz_hit(a, b):
+    return abs(a["x"] - b["x"]) <= (a["sx"] + b["sx"]) * 0.5 + 0.02 and abs(a["z"] - b["z"]) <= (a["sz"] + b["sz"]) * 0.5 + 0.02
+
+
+def _gray_supported(s, solids):
+    if abs(s["bottom"] - s["support"]) > 0.03:
+        return False
+    if s["support"] > 0.02:
+        for o in solids:
+            if o["name"] == s["name"]:
+                continue
+            if abs(o["top"] - s["support"]) <= 0.03 and _xz_hit(s, o):
+                return True
+        return False
+    return True
+
+
+def _crown_floats():
+    text = open(_READ_CS, encoding="utf-8").read()
+    # One function per tower. Crown top is `shaft + sy` and must meet the tallest literal body.
+    floats = []
+    parts = re.split(r'\n\s*static void ', text)
+    box_y = re.compile(
+        r'Box\(\s*list,\s*"Landmark_Body_"\s*\+\s*tag\s*\+\s*"[^"]+",\s*[^,]+,\s*[^,]+,\s*([-0-9.]+)f,\s*[^,]+,\s*([-0-9.]+)f,\s*([-0-9.]+)f,\s*([-0-9.]+)f\s*\)'
+    )
+    crown = re.compile(
+        r'Crown\(\s*list,\s*tag,\s*accent,\s*[^,]+,\s*([-0-9.]+)f\s*\+\s*([-0-9.]+)f,\s*[^,]+,\s*([-0-9.]+)f,\s*([-0-9.]+)f,\s*([-0-9.]+)f\s*\)'
+    )
+    # Call sites in the mega Towers() body, after the stack return.
+    mega = text.split("Water(list,", 1)[-1]
+    sites = {}
+    for m in re.finditer(
+        r'(Water|Crane|Clock|Sign|Light)\(\s*list,\s*"([^"]+)",\s*"[^"]+",\s*"[^"]+",\s*([-0-9.]+)f,\s*([-0-9.]+)f',
+        mega,
+    ):
+        sites[m.group(1)] = (m.group(2), float(m.group(3)), float(m.group(4)))
+    for part in parts:
+        name = part.split("(", 1)[0].strip()
+        if name not in sites:
+            continue
+        bodies = []
+        for b in box_y.finditer(part):
+            y, sx, sy, sz = (float(b.group(i)) for i in range(1, 5))
+            bodies.append(y + sy * 0.5)
+        c = crown.search(part)
+        if not c or not bodies:
+            floats.append("Landmark_Crown_%s unparsed" % sites[name][0])
+            continue
+        shaft, add, _sx, sy, _sz = (float(c.group(i)) for i in range(1, 6))
+        bottom = shaft + add - sy
+        if bottom > max(bodies) + 0.08:
+            tag, x, z = sites[name]
+            floats.append((tag, x, z))
+    return floats
+
+
+def _edge_in_park():
+    """A library edge mesh that crosses into 160×100 is a placement miss."""
+    hits = []
+    places = parse_places(open(DISTRICT_CS, encoding="utf-8").read(), "Edge")
+    yaw_cache = {}
+    for p in places:
+        rel = p["path"]
+        folder, fname = os.path.split(rel)
+        if folder.endswith("/Prefabs"):
+            folder = folder[: -len("/Prefabs")]
+        path = os.path.join(ROOT, folder, fname.replace(".prefab", ".fbx"))
+        if path not in yaw_cache:
+            import fbx_mesh
+            meshes = fbx_mesh.load_lod0(path)
+            pts = [v for _n, tris in meshes for tri in tris for v in tri[:3]]
+            yaw_cache[path] = pts
+        pts = yaw_cache[path]
+        if not pts:
+            hits.append(p["name"])
+            continue
+        rad = math.radians(p["yaw"])
+        c, s = math.cos(rad), math.sin(rad)
+        for v in pts:
+            x = c * v[0] + s * v[2] + p["x"]
+            z = -s * v[0] + c * v[2] + p["z"]
+            if 0.0 < x < 160.0 and 0.0 < z < 100.0:
+                hits.append(p["name"])
+                break
+    return hits
+
+
+def gray_route_floats(zone):
+    """Graybox route pieces and readability crowns in this zone, plus an edge mesh in the park."""
+    if not hasattr(gray_route_floats, "_cache"):
+        text = ""
+        for path in _LAYOUT_CS:
+            text += open(path, encoding="utf-8").read() + "\n"
+        solids = _literal_solids(text) + _generated_solids(text)
+        bad = []
+        for s in solids:
+            if s["kind"] not in _ROUTE_KINDS:
+                continue
+            if not _gray_supported(s, solids):
+                bad.append(s)
+        crowns = _crown_floats()
+        edge = _edge_in_park()
+        gray_route_floats._cache = (bad, crowns, edge)
+    bad, crowns, edge = gray_route_floats._cache
+    names = []
+    for s in bad:
+        if s["zone"] == zone or _in_zone(zone, s["x"], s["z"]):
+            names.append(s["name"])
+    for item in crowns:
+        if isinstance(item, str):
+            if zone == "Z7":
+                names.append(item)
+            continue
+        tag, x, z = item
+        if _in_zone(zone, x, z):
+            names.append("Landmark_Crown_" + tag)
+    if zone == "Z7":
+        names.extend(edge)
+    return names
+
+
 def dist_point_aabb(x, z, box):
     dx = 0.0 if box[0] <= x <= box[3] else (box[0] - x if x < box[0] else x - box[3])
     dz = 0.0 if box[2] <= z <= box[5] else (box[2] - z if z < box[2] else z - box[5])
@@ -749,6 +950,7 @@ def main():
         "wall-jump perp 0 deg %.3f m  off-wall 30 deg %.3f m  60 deg %.3f m  into-wall -30 deg %.3f m  -60 deg %.3f m"
         % (perp_range(0), perp_range(30), perp_range(60), perp_range(-30), perp_range(-60))
     )
+    floating.extend(gray_route_floats("Z7"))
     if floating:
         print("floating: " + ", ".join(floating))
     if open_hits:

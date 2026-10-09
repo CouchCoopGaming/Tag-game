@@ -294,6 +294,7 @@ def main():
     print("instances %d unique %d (Z7 instances %d unique %d)" % (len(instances), len(cache), len(z7), z7_unique))
     print("smaller-than-z7 %s static-batch %s gray-locked %s" % (
         "yes" if smaller else "NO", "yes" if batch_ok else "NO", "yes" if slide_lock else "NO"))
+    floating.extend(z.gray_route_floats("Z4"))
     if floating:
         print("floating: " + ", ".join(floating))
     if open_hits:

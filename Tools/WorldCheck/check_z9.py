@@ -253,6 +253,7 @@ def main():
     print(line)
     print("instances %d unique %d" % (len(instances), len(cache)))
     print("smaller-than-z7 %s static-batch %s" % ("yes" if smaller else "NO", "yes" if batch_ok else "NO"))
+    floating.extend(z.gray_route_floats("Z9"))
     if floating:
         print("floating: " + ", ".join(floating))
     if loop_hits:

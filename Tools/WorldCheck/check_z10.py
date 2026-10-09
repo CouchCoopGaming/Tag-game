@@ -285,6 +285,7 @@ def main():
     print(line)
     print("instances %d unique %d" % (len(instances), len({inst["place"]["path"] for inst in instances})))
     print("smaller-than-z7 %s static-batch %s" % ("yes" if smaller else "NO", "yes" if batch_ok else "NO"))
+    floating.extend(z.gray_route_floats("Z10"))
     if floating:
         print("floating: " + ", ".join(floating))
     if loop_hits:

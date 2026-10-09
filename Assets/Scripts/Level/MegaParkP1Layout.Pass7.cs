@@ -55,6 +55,8 @@ namespace Tag.Level
             new Swatch { Name = "rubber", R = 0x2C / 255f, G = 0x2A / 255f, B = 0x28 / 255f, Smooth = 0.12f, Metal = 0f },
             new Swatch { Name = "steel", R = 0x32 / 255f, G = 0x3C / 255f, B = 0x48 / 255f, Smooth = 0.48f, Metal = 0.55f },
             new Swatch { Name = "concrete", R = 46f / 255f, G = 52f / 255f, B = 58f / 255f, Smooth = 0.08f, Metal = 0f },
+            // Cooler and a step lighter than concrete so a paved yard reads apart from rubber and turf.
+            new Swatch { Name = "asphalt", R = 0.24f, G = 0.25f, B = 0.27f, Smooth = 0.06f, Metal = 0f },
             new Swatch { Name = "cedar", R = 0x64 / 255f, G = 0x40 / 255f, B = 0x2E / 255f, Smooth = 0.16f, Metal = 0f },
             new Swatch { Name = "bark", R = 0x3A / 255f, G = 0x2A / 255f, B = 0x1E / 255f, Smooth = 0.05f, Metal = 0f },
             new Swatch { Name = "rim", R = 0x5A / 255f, G = 0x3E / 255f, B = 0x32 / 255f, Smooth = 0.12f, Metal = 0f },
@@ -177,32 +179,117 @@ namespace Tag.Level
 
         static void TreeLine(List<Dress> list)
         {
-            float[] xs = { 20f, 60f, 100f, 140f };
-            for (int i = 0; i < xs.Length; i++)
+            // Outside the fence. Varied trees and houses, not one flat leaf slab.
+            RowX(list, "S", -18f);
+            RowX(list, "N", 118f);
+            RowZ(list, "W", -18f);
+            RowZ(list, "E", 178f);
+        }
+
+        static void RowX(List<Dress> list, string side, float z)
+        {
+            float[] x = { 14f, 34f, 54f, 74f, 94f, 114f, 134f, 152f };
+            float[] h = { 8.5f, 12.5f, 7.2f, 14f, 9.4f, 11.2f, 6.8f, 13.2f };
+            for (int i = 0; i < x.Length; i++)
             {
-                string n = i.ToString(CultureInfo.InvariantCulture);
-                AddDress(list, "Treeline_S" + n, "leaf", xs[i], 8f, -28f, 34f, 16f, 0.35f, false);
-                AddDress(list, "Treeline_N" + n, "leaf", xs[i], 8f, 128f, 34f, 16f, 0.35f, false);
+                string id = "Treeline_" + side + i.ToString(CultureInfo.InvariantCulture);
+                if (i % 3 == 2)
+                    HouseSil(list, id, x[i], z, h[i], true);
+                else
+                    TreeSil(list, id, x[i], z, h[i], true);
             }
-            float[] zs = { 22f, 50f, 78f };
-            for (int i = 0; i < zs.Length; i++)
+        }
+
+        static void RowZ(List<Dress> list, string side, float x)
+        {
+            float[] z = { 14f, 36f, 58f, 80f };
+            float[] h = { 9f, 13.4f, 7.6f, 11.8f };
+            for (int i = 0; i < z.Length; i++)
             {
-                string n = i.ToString(CultureInfo.InvariantCulture);
-                AddDress(list, "Treeline_W" + n, "leaf", -28f, 8f, zs[i], 0.35f, 16f, 26f, false);
-                AddDress(list, "Treeline_E" + n, "leaf", 188f, 8f, zs[i], 0.35f, 16f, 26f, false);
+                string id = "Treeline_" + side + i.ToString(CultureInfo.InvariantCulture);
+                if (i % 2 == 1)
+                    HouseSil(list, id, x, z[i], h[i], false);
+                else
+                    TreeSil(list, id, x, z[i], h[i], false);
+            }
+        }
+
+        static void TreeSil(List<Dress> list, string id, float x, float z, float h, bool alongX)
+        {
+            float trunk = h * 0.42f;
+            AddDress(list, id + "_Trunk", "bark", x, trunk * 0.5f, z, 0.7f, trunk, 0.7f, false);
+            float low = h * 0.28f;
+            float lowY = trunk + low * 0.35f;
+            float high = h * 0.36f;
+            float highY = trunk + low * 0.2f + high * 0.5f;
+            if (alongX)
+            {
+                AddDress(list, id + "_LeafA", "leaf", x - 0.6f, lowY, z, 3.4f, low, 2.4f, false);
+                AddDress(list, id + "_LeafB", "leaf", x + 0.5f, highY, z + 0.2f, 2.2f, high, 1.8f, false);
+            }
+            else
+            {
+                AddDress(list, id + "_LeafA", "leaf", x, lowY, z - 0.6f, 2.4f, low, 3.4f, false);
+                AddDress(list, id + "_LeafB", "leaf", x + 0.2f, highY, z + 0.5f, 1.8f, high, 2.2f, false);
+            }
+        }
+
+        static void HouseSil(List<Dress> list, string id, float x, float z, float h, bool alongX)
+        {
+            float body = h * 0.72f;
+            float roof = h * 0.22f;
+            float cap = h * 0.16f;
+            if (alongX)
+            {
+                AddDress(list, id + "_Wall", "skyline", x, body * 0.5f, z, 7.2f, body, 2.4f, false);
+                AddDress(list, id + "_Roof", "wood", x, body + roof * 0.5f, z, 5.2f, roof, 1.8f, false);
+                AddDress(list, id + "_Cap", "skyline", x + 2.2f, body + roof + cap * 0.5f, z, 1.1f, cap, 1.1f, false);
+            }
+            else
+            {
+                AddDress(list, id + "_Wall", "skyline", x, body * 0.5f, z, 2.4f, body, 7.2f, false);
+                AddDress(list, id + "_Roof", "wood", x, body + roof * 0.5f, z, 1.8f, roof, 5.2f, false);
+                AddDress(list, id + "_Cap", "skyline", x, body + roof + cap * 0.5f, z + 2.2f, 1.1f, cap, 1.1f, false);
             }
         }
 
         static void Skyline(List<Dress> list)
         {
-            AddDress(list, "Skyline_S0", "skyline", 40f, 6.5f, -38f, 52f, 12f, 0.3f, false);
-            AddDress(list, "Skyline_S1", "skyline", 120f, 7.5f, -38f, 56f, 14f, 0.3f, false);
-            AddDress(list, "Skyline_N0", "skyline", 48f, 6.5f, 138f, 52f, 12f, 0.3f, false);
-            AddDress(list, "Skyline_N1", "skyline", 118f, 8f, 138f, 60f, 15f, 0.3f, false);
-            AddDress(list, "Skyline_W0", "skyline", -38f, 6f, 30f, 0.3f, 11f, 36f, false);
-            AddDress(list, "Skyline_W1", "skyline", -38f, 7f, 72f, 0.3f, 13f, 40f, false);
-            AddDress(list, "Skyline_E0", "skyline", 198f, 6.5f, 28f, 0.3f, 12f, 36f, false);
-            AddDress(list, "Skyline_E1", "skyline", 198f, 7.5f, 70f, 0.3f, 14f, 40f, false);
+            // Stepped masses. The old cards were one flat slab each.
+            CardX(list, "S0", 22f, -38f, 8f, 13f, 9f, 15f);
+            CardX(list, "S1", 102f, -38f, 11f, 7f, 16f, 10f);
+            CardX(list, "N0", 26f, 138f, 9f, 14f, 8f, 12f);
+            CardX(list, "N1", 100f, 138f, 12f, 8f, 17f, 10f);
+            CardZ(list, "W0", -38f, 16f, 10f, 14f, 8f);
+            CardZ(list, "W1", -38f, 62f, 8f, 15f, 11f);
+            CardZ(list, "E0", 198f, 16f, 11f, 7f, 13f);
+            CardZ(list, "E1", 198f, 62f, 9f, 16f, 10f);
+        }
+
+        static void CardX(List<Dress> list, string id, float x0, float z, float a, float b, float c, float d)
+        {
+            float[] h = { a, b, c, d };
+            float[] w = { 8f, 10f, 7f, 9f };
+            float x = x0;
+            for (int i = 0; i < h.Length; i++)
+            {
+                AddDress(list, "Skyline_" + id + "_" + i.ToString(CultureInfo.InvariantCulture), "skyline",
+                    x + w[i] * 0.5f, h[i] * 0.5f, z, w[i] - 0.4f, h[i], 1.2f, false);
+                x += w[i];
+            }
+        }
+
+        static void CardZ(List<Dress> list, string id, float x, float z0, float a, float b, float c)
+        {
+            float[] h = { a, b, c };
+            float[] w = { 10f, 12f, 8f };
+            float z = z0;
+            for (int i = 0; i < h.Length; i++)
+            {
+                AddDress(list, "Skyline_" + id + "_" + i.ToString(CultureInfo.InvariantCulture), "skyline",
+                    x, h[i] * 0.5f, z + w[i] * 0.5f, 1.2f, h[i], w[i] - 0.4f, false);
+                z += w[i];
+            }
         }
 
         static void Benches(List<Dress> list)

@@ -312,6 +312,7 @@ def main():
     print("instances %d unique %d (Z7 instances %d unique %d)" % (
         len(instances), len({inst["place"]["path"] for inst in instances}), len(z7), z7_unique))
     print("smaller-than-z7 %s static-batch %s" % ("yes" if smaller else "NO", "yes" if batch_ok else "NO"))
+    floating.extend(z.gray_route_floats("Z8"))
     if floating:
         print("floating: " + ", ".join(floating))
     if open_hits:

@@ -1,6 +1,15 @@
 # Mega Park status
 
-Pass 10 on `cursor/tag-world-c420`. Draft only. Feel numbers are unchanged. `MegaParkP1Layout.BuildSolids` is unchanged.
+Pass 11 on `cursor/tag-world-c420`. Draft only. Feel numbers are unchanged. Route solids kept their positions and sizes. Ground footprints did not move; only their material names changed.
+
+What moved:
+
+- The kickball clock (`Landmark_Crown_Clock`) left (88, 48), inside the fence, for (74.2, 46.5), west of the fence (west face x = 80.65). It is a visual mark with no collider. It is not a route. `Landmark_Z7` at (109, 58) is the zone mast and stayed.
+- Readability crowns now sit on the shaft under them. The dark cube over the bowl's north side was the crane crown at (72, 84), 2 m above its mast. The same gap was on the other pole caps.
+- The flat green treeline slabs and the flat skyline cards outside the fence are now trees and houses of different heights. Library maples, pines, and cabins stand further in, still outside the 160×100 play box.
+- Play slabs: west rubber, south asphalt, kickball mid turf, north grass, east concrete. Bowl sand stayed sand.
+
+Graybox route pieces and those crowns are in the floatingProps count. Each zone is still 0.
 
 Z1 through Z10 are dressed. This pass did not add a district. Pass 9 eye stills were collider boxes on empty sky. Pass 10 reshoots from library LOD0 meshes, with the placed diffuse colors, on park ground. Each file is under 400 KB. Unity and Blender are not in this environment, so these are mesh rasters, not engine captures.
 
