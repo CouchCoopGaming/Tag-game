@@ -6,7 +6,7 @@ Nothing in this note changes feel or gameplay. Leave these locks alone: coyote 0
 
 This pass did not edit scripts, so the proof lines are untouched. `HotPathAlloc` still formats `hot-path allocs before=101 after=` plus the live count. `ropeBody` does not appear anywhere in this branch.
 
-Pass 2 is the last section. It covers who is It in a four-pane split, and the handoff. Every claim there is marked verified (the page or the file was read) or second-hand.
+Pass 3 is the last section. It covers how a foot, a wall, and a landing read on the surfaces Tag already has, and which emote silhouettes survive a quarter pane. Every claim there is marked verified (the page or the file was read) or second-hand. Pass 2, just before it, covers who is It and the handoff.
 
 The stills in `Docs/FX/research-pass1/` are labeled composites, not Unity captures. Each one contains one 960×540 cell drawn at 1:1 pixels, which is one pane of a 1920×1080 couch split. The live chase camera was not measured, so the body in each cell is drawn at 108 px (one fifth of 540) on purpose. That height is a stand-in, not a captured scale.
 
@@ -354,3 +354,135 @@ These sit on top of the hat, the HUD chip, and the 0.40 s swell. They do not rep
 - No Fall Guys nametag claim. No Shine-holder crown claim beyond the two sentences above.
 - The 108 px body is a drawn stand-in. Edge-bar percentages are from the constants in `TickFlash`, not from a captured frame.
 - Draw counts are estimated. No GPU profile.
+
+## Pass 3 — Surface contact, and emote silhouettes
+
+Visual only. C2 already has the running-dust table and `surfaces=6`. This section is how that table reads in one 960×540 pane, and a separate note for the motion-reference worker on celebrations. Feel locks stay as in pass 1. No new settings row. No gameplay scripts.
+
+The stills are composites in `Docs/FX/research-pass3/`. Each is 1600×900 with one 960×540 cell at 1:1. The body is again drawn at 108 px. That height is a stand-in. The live chase camera was not measured.
+
+### What Tag already draws
+
+**Verified, from this branch.**
+
+- `DustLook.SurfaceCount` is 6: grass, dirt, concrete, wood, metal, wet. Brick is kind 6, an extra tint. It uses the concrete size curve and a red tint `(0.62, 0.28, 0.16)`. The comment in the enum says the count stays 6 so the running-dust proof line does not change. `Holds()` returns false if the count is not 6.
+- Sprint proof numbers `Holds()` checks: grass size 0.13, opacity 0.50, count 6. Dirt 0.34, 0.88, 11. Concrete 0.20, 0.82, 9, span 0.72. Wood 0.10, 0.78, 8. Metal count 0 and `Spark` 1. A metal pivot is the only metal foot burst with a count, and that count is 3, size 0.045, life 0.10. Wet sets `Splash` 1 and stays darker in blue than in red.
+- Those flags do not change the picture. `FxBurstPool.PlayShaped` still emits the same particle. Splash raises gravity. Spark raises speed and lowers gravity. A metal plant emits nothing, because the count is 0 and the method returns when the count is 0.
+- `LandDust` then overwrites size, life, and count for every surface, including metal. The count runs from 8 up to 16 and does not go past 16. Life is 0.36 s plus a term that reaches 0.50 s at the roll threshold. The roll pool is already 16 (`FxKitLook.DustRoll`).
+- A hard landing already picks a bit shape in `ImpactFx`. Grass bits are splinters, and every fourth grass bit is a chunk. Wood bits are splinters. Dirt, brick, concrete, metal, and wet bits are chunks. Plumes, where a surface has them, stay a soft puff. Metal sets no plumes. That split is the landing burst, not the foot plant.
+- The wall scuff is one soft smear (`ShapeSoft`) for 0.42 s (`ScuffSeconds`). Its puffs hide after 0.24 s. `ScuffTint` has three colors: brick, wood, and a gray for everything else. Metal, wet, grass, dirt, and concrete walls share that gray unless the material name says brick or wood.
+- `Pass5Look.ScrapeSpark` is true for metal and for concrete, and false for grass. `ScrapeDrop` is true only for wet. `Holds()` checks those two facts. A wall-run on grass emits 0 scrape bits.
+
+### How the other games tell surfaces apart
+
+**Mirror’s Edge Catalyst.** Verified, MCV/DEVELOP, 5 August 2016, James Slavin, read for this pass: they added surface types, and “squeaky polished glass and clean marble contrast greatly with corrugated metal and dirty concrete.” Those sounds “give Faith her friction, physicality and weight as she runs, scrapes, slides, jumps, lands and rolls.” He says they told the story from the feet up. Verified, GamesBeat, 17 October 2015, the same director, read for this pass: in first person the footsteps and the landing thumps are how you know how you are doing, and the team recorded footfalls with the microphone at ear level. Neither page lists a particle count, a brick, a wood, a grass, or a wet visual. Second-hand: a search snippet of a Game Design Gazette writeup (the page did not return article text when opened) has the writer, not Slavin, saying sound outperforms the picture for velocity, and it mentions a dull concrete slide and a gutter that sounds lighter than a metal pipe. That snippet is not a build note.
+
+**Dying Light 2.** Verified, A Sound Effect, 14 December 2022, Wojciech Siadak, read for this pass: more than 150 player movement events. Steps change volume, pitch, and equalization with speed. A very slow walk is “a gently placed foot” instead of a stock step. Two microphones on the shoes and a pair at the ears. He jumped on walls, fences, lamps, and barriers. A boot shuffle on the wall plays only once stamina is below half. The page is audio. It does not publish a dust color or a mote count for concrete, brick, wood, metal, grass, or wet.
+
+**Titanfall.** Verified in pass 1 from the Game Developer interview with Respawn. This pass did not re-open that page. The search snippet of the same URL still has no surface particle table. The published wall read is the camera tilt and the hand on the wall, and the landing read is a camera spring with the movement code left alone. Tag still cannot take the tilt. Nothing in that interview is a mote budget.
+
+**Celeste.** Second-hand. A search snippet of a transcript of the GMTK video “Why Does Celeste Feel So Good to Play?” describes tiny dust when Madeline hits the ground, and a four-frame pause on the dash. The video was not opened, and the transcript page was not opened. There is no surface table in that snippet. Tag does not copy the pause. Hitstop and shake stay 0.
+
+**Neon White.** Verified, The Verge, 3 July 2022, Ben Esposito, read for this pass: levels had to be “really, really clear” so a player can enter what he called the speed zone. The mission-complete moment is a short cutscene: the character flips in front of the camera, says the same line, and “MISSION COMPLETE” comes up. He calls that a victory dance with a sound cue and a repeated line. Verified, Game Developer, 16 March 2023, the same director, read for this pass: a clean, low-detail look with lots of negative space, so the path reads at once. Red doors are the main path. Green ivy means you are going the right way. The game does not ask for platforming, shooting, and cards in the same beat. Neither page describes foot dust. The visual lesson is that one clear shape beats a busy cloud. The flip is used in the emote note below, not as a surface effect.
+
+No page opened for this pass says how those games retint dust for a 960×540 split. Do not invent their particle counts.
+
+### Top 3 for C2
+
+These sit on the dust table. They do not change `SurfaceCount`, the `At` numbers `Holds()` checks, `LandDust`’s cap of 16, or `ScrapeSpark` / `ScrapeDrop`.
+
+#### 1. The sprite is the surface. The count stays.
+
+**What.** Keep every size, opacity, life, count, span, and color `Holds()` already checks. Change the quad.
+
+| Surface | Sprite | Count, unchanged |
+| --- | --- | --- |
+| Grass | The small pale puff that already ships. | Sprint count 6, size 0.13. |
+| Dirt | One thick cloud. This is the only fat puff. | Sprint count 11, size 0.34. |
+| Concrete | A short soft gray sheet, wider than it is tall. | Sprint count 9, size 0.20, span 0.72. |
+| Wood | Thin splinter lines, not a round puff. | Sprint count 8, size 0.10. |
+| Metal | Short bright streaks. A normal plant still emits 0. A pivot still emits 3, size 0.045, life 0.10. | `Spark` stays 1. |
+| Wet | Falling ticks, not a round puff. Gravity can stay where splash already puts it. | `Splash` stays 1. |
+| Brick | Hard chips. Same size curve as concrete. The red tint stays. | Not a seventh counted surface. |
+
+**Reference.** Slavin, verified above: glass, marble, metal, and concrete are different materials, and the feet are how you know. Siadak, verified above: a slow step is not the same sound as a run. Neither man published a sprite. The Tag table already changes size and color. At 108 px of body, a red circle and a gray circle are the same event.
+
+**Why it fits.** Brick and concrete share a size curve on purpose. Wood is only a little smaller than grass. Hue is what is left, and hue fails when the mote is a few pixels. A streak, a tick, a chip, and a splinter are different pictures at that size. Dirt stays the one cloud, so “thick puff” keeps meaning dirt.
+
+**Cost.** 0 extra particles. The emit counts stay. Estimated 0 extra draws if the shapes are frames of the particle texture the pool already uses. A separate renderer per surface would be the wrong cost. This pass did not profile it.
+
+**Readability risk.** High if metal’s quiet plant grows a puff. The count stays 0. High if brick chips use a new count and the proof line’s `surfaces=6` has to move. High if every surface gets a cloud plus a streak. One sprite each.
+
+**Asset.** Self-made. CC0 particle art is optional and not required. Kenney’s pack is already listed in pass 1. Do not buy anything.
+
+#### 2. One mark that is still there when the puff is gone
+
+**What.** One quad on the contact, in the same shape family as the sprite above. Wet leaves a dark oval. Metal leaves a scratch. Brick leaves two or three chips. Wood leaves a short line. Concrete leaves a short pale streak. Grass leaves nothing: a lawn does not take a stain, and the pale puff is the whole read. The quad uses the life the scuff already has (0.34 s in `FxKitLook`, 0.42 s in `ImpactFx`) and it should still be visible after the foot puff has faded. Do not add motes. Do not raise `DustRoll`. Do not change `LandDust`.
+
+**Reference.** The same Slavin sentence, verified above: she scrapes, slides, lands, and rolls, and the surface is the evidence. Jet Set Radio’s mark that stays, from pass 1, is the picture version of that. This is the foot-sized version of the roll skid already proposed in pass 1. It is not a second dust system.
+
+**Why it fits.** A sprint concrete puff lives about half a second and then the pane is empty. In a four-player chase the foot is often at the edge of the cell or already gone. The mark is what the other panes can still see. The wall scuff already does this for brick and wood (the smear outlasts the puffs). The foot plant does not, and metal, wet, and concrete walls still fall through to the same gray smear.
+
+**Cost.** 1 quad per contact, inside the scuff slots that already exist (4 in the kit). 0 extra dust. Estimated 1 draw if the marks share the scuff renderer. No new light.
+
+**Readability risk.** High if grass also stamps a dark oval. That reads as dirt. High if the mark is white on concrete. Keep it darker than the sheet, with a 2 px seat-colored edge only when the surface is gray enough to swallow it. That edge width is estimated in the 960×540 cell, the same way pass 1 estimated the roll streak.
+
+**Asset.** Self-made quad. No texture required.
+
+#### 3. The wall uses the foot’s shape, so a streak means metal in both places
+
+**What.** Foot and wall share the sprite table in idea 1. A metal wall streak is the same streak as a metal pivot. A wet wall is the falling tick, which `ScrapeDrop` already flags. A brick wall is chips, not only the dark red smear `ScuffTint` uses today. Concrete may keep sparking, because `ScrapeSpark` is true for concrete and `Holds()` checks that. Those concrete bits use the short pale nick, not the bright metal streak. Grass stays at 0 scrape bits. Do not add a surface. Do not change the two bools.
+
+**Reference.** Titanfall, as cited in pass 1: the hand on the wall is the contact. Tag already has a hand scrape. Slavin, verified above, treats a scrape and a footstep as the same material story. Siadak, verified above, recorded the wall as a surface you jump on, not as a different material language from the ground. The boot shuffle is stamina, which Tag does not copy.
+
+**Why it fits.** Today a metal wall and a concrete wall can both set `Spark`, and the scuff under them is the same soft gray unless the name says brick or wood. In a small pane the player learns one vocabulary. If streaks are metal on the ground and sparks are “any hard wall,” the word is lost.
+
+**Cost.** 0 new particles. The scrape counts in `Pass5Look` stay. Estimated cost is a texture frame, not a new emitter.
+
+**Readability risk.** High if concrete and metal share the bright streak. The bool can stay true and the picture can still split. High if the wall-run ribbon from pass 1 is recolored per surface. The ribbon is the seat. The streak is the material. They are two reads.
+
+**Asset.** The same self-made frames as idea 1.
+
+### What this pass is not asking C2 to build
+
+- A seventh counted surface, or a new proof token. Brick stays outside the 6.
+- New mote counts, a louder metal plant, or a bigger `DustRoll`.
+- Camera tilt, shake, hitstop, or a stamina shuffle.
+- A second dust system on top of `LandDust`. The landing bits already have splinters. Do not rebuild that burst. The mark in idea 2 is the part that remains.
+
+### Emotes, for the motion-reference worker
+
+This is not an FX build and not a movement lock. Coyote, buffer, speeds, terminal, and root motion stay as they are. If a celebration plays, the capsule stays free the way the landing roll is a pose on top of movement. Do not add a stun, a cancel window, or a settings row.
+
+**Smash Ultimate.** Verified, SmashWiki taunt page, read for this pass. The page is a community wiki, not a Nintendo manual. A taunt is a motion of the whole character. Durations vary: Young Link’s Melee taunt takes more than three times as long as Kirby’s, which the page calls the fastest in that game. In Ultimate, most taunts can be interrupted on frame 50, except the ones that affect gameplay (Greninja and Luigi’s down taunt are the examples given). The page does not state a frame rate. If the game is running at 60 frames a second, frame 50 is about 0.83 s. That 0.83 s is an estimate, not a number on the page. Do not copy the interrupt. It is gameplay, and it would be a new lock. Verified on the same page, the Wii U digital manual: “Taunting leaves you exposed to enemy attacks, so taunt wisely.” Tag’s answer to that sentence is that the body keeps its movement. The celebration does not become a hitbox.
+
+**Neon White.** Verified, The Verge, above. The victory is a full-body flip across the camera, then a line of text. Esposito’s point, verified in both interviews above, is that the picture stays obvious. A chase pane will not put the face in front of the lens the way that cutscene does. Take the whole body crossing the frame. Leave the one-liner. Comic words stay on the punch.
+
+**What a 2–4 s clip needs at this size.** No opened page measures a celebration inside a 960×540 couch pane. The still is the test this pass could run. At the 108 px stand-in the head is 22 px across. A mouth, a brow, and a hand sign do not survive that. A shrug keeps the arms against the torso, so the outline is the same as a run. These outlines do survive, from the side and from behind:
+
+- Both arms in a V, held out past the shoulders.
+- One arm straight up, the other still out, so the pose is not a spike with no width.
+- A wide star: arms and legs both leave the torso.
+- A full-body spin, so the body crosses itself. That is the Neon White lesson in chase-camera form.
+
+Hold the extreme for about 0.4 s, estimated, inside the first second. A glance across the couch happens in that second. The rest of the 2–4 s can be the return to the run. Do not spend the first second on a wind-up. A prop smaller than the head fails the same way a face fails.
+
+### Stills
+
+| File | Cell |
+| --- | --- |
+| `Docs/FX/research-pass3/01-shape-not-tint.png` | Six surfaces, one sprite each. Counts are the ones already in `Holds()`. |
+| `Docs/FX/research-pass3/02-contact-mark.png` | The puff is gone. One mark is still on the concrete. |
+| `Docs/FX/research-pass3/03-wall-matches-foot.png` | Metal is a streak on the wall and at the foot. Concrete is a nick. |
+| `Docs/FX/research-pass3/04-emote-silhouette.png` | A held V against a shrug, both at 108 px. For the motion worker. |
+
+### Pass 3 limits
+
+- No gameplay scripts were edited. The proof line is untouched, including `surfaces=6`.
+- MCV/DEVELOP, GamesBeat, A Sound Effect, The Verge, Game Developer, and the SmashWiki taunt page were opened and read. Claims from those pages are marked verified. SmashWiki is not a Nintendo manual.
+- The Game Design Gazette page did not return article text. The glass-squeak sentences from it are second-hand.
+- The GMTK Celeste video and its transcript were not opened. The dust sentence is second-hand. The four-frame pause is not a Tag request.
+- The Titanfall interview was not re-opened. This pass used the pass-1 reading and a search snippet of the same URL. No new Titanfall numbers.
+- No particle counts from Mirror’s Edge, Dying Light, Celeste, Titanfall, or Neon White. Those pages do not publish them.
+- The 108 px body is a drawn stand-in. The 0.4 s pose hold and the 2 px mark edge are estimates. The 0.83 s reading of Smash frame 50 assumes 60 fps, which the wiki page does not state.
+- Draw counts are estimated. No GPU profile. No live split-screen capture.
