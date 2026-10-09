@@ -137,29 +137,9 @@ namespace Tag.Art
                 0.68f, LegsOver(),
                 0.84f, Plant(),
                 1f, Rise());
-            // The plant rolls the thighs the other way from the invert.
-            // Open the yaw and the roll before the thigh folds, so the blend does not pass through the spine.
-            if (u > 0.68f && u < 0.84f)
-            {
-                float span = (u - 0.68f) / 0.16f;
-                float open = PoseHandoff.Ease(span * 3f);
-                VerbExitSample over = LegsOver();
-                VerbExitSample plant = Plant();
-                s.ThighYawL = Mathf.Lerp(over.ThighYawL, plant.ThighYawL, open);
-                s.ThighYawR = Mathf.Lerp(over.ThighYawR, plant.ThighYawR, open);
-                s.ThighRollL = Mathf.Lerp(over.ThighRollL, plant.ThighRollL, open);
-                s.ThighRollR = Mathf.Lerp(over.ThighRollR, plant.ThighRollR, open);
-                // The feet meet the floor with the sit, not halfway through the fold.
-                if (u < 0.82f)
-                    s.Drop = 0f;
-            }
-            if (u > 0.82f && u < 0.84f)
-            {
-                if (s.Hip < 35f) s.Hip = 35f;
-                if (s.Spine < 15f) s.Spine = 15f;
-            }
             s.RootSpin = SpinAt(u);
             s.RootPitch = 0f;
+            // Only Rise carries a hips-bone drop; the other pieces are 0, so this ramps in after Plant.
             if (shoulderLeft)
                 s = VerbExitSample.Mirror(s);
             return s;
@@ -171,6 +151,7 @@ namespace Tag.Art
             if (u > 1f) u = 1f;
             VerbExitSample deep = HandsDown();
             VerbExitSample up = Rise();
+            up.Head = -4f;
             if (u < 0.42f)
                 return VerbExitSample.Lerp(deep, deep, 1f);
             return VerbExitSample.Lerp(deep, up, PoseHandoff.Ease((u - 0.42f) / 0.58f));
@@ -434,8 +415,6 @@ namespace Tag.Art
             s.ElbowR = -66f;
             s.ThighRollL = -14f;
             s.ThighRollR = 14f;
-            s.ThighYawL = -24f;
-            s.ThighYawR = 24f;
             s.SpineRoll = 6f;
             return s;
         }
@@ -460,8 +439,6 @@ namespace Tag.Art
             s.ElbowR = -66f;
             s.ThighRollL = -10f;
             s.ThighRollR = 10f;
-            s.ThighYawL = -24f;
-            s.ThighYawR = 24f;
             s.SpineRoll = -22f;
             return s;
         }
@@ -486,8 +463,6 @@ namespace Tag.Art
             s.ElbowR = -64f;
             s.ThighRollL = -12f;
             s.ThighRollR = 12f;
-            s.ThighYawL = -24f;
-            s.ThighYawR = 24f;
             s.SpineRoll = -16f;
             return s;
         }
@@ -512,8 +487,6 @@ namespace Tag.Art
             s.ElbowR = -62f;
             s.ThighRollL = -12f;
             s.ThighRollR = 12f;
-            s.ThighYawL = -24f;
-            s.ThighYawR = 24f;
             s.SpineRoll = 20f;
             s.HipRoll = -8f;
             return s;
@@ -537,56 +510,77 @@ namespace Tag.Art
             s.ElbowR = -64f;
             s.ThighRollL = -36f;
             s.ThighRollR = 36f;
-            s.ThighYawL = -24f;
-            s.ThighYawR = 24f;
             s.SpineRoll = 18f;
-            return s;
-        }
-
-        /// <summary>Same seated land as LandPose. Pelvis behind the support foot.</summary>
-        static VerbExitSample Seated()
-        {
-            LandPose.Sample sit = LandPose.Soft();
-            VerbExitSample s = default;
-            s.Hip = sit.Hip;
-            s.Spine = sit.Spine;
-            s.Head = sit.Head;
-            s.ThighL = sit.ThighL;
-            s.ThighR = sit.ThighR;
-            s.ThighYawL = sit.ThighYawL;
-            s.ThighYawR = sit.ThighYawR;
-            s.ThighRollL = sit.ThighRollL;
-            s.ThighRollR = sit.ThighRollR;
-            s.ArmYawL = sit.ArmYawL;
-            s.ArmYawR = sit.ArmYawR;
-            s.ArmRollL = sit.ArmRollL;
-            s.ArmRollR = sit.ArmRollR;
-            s.KneeL = sit.KneeL;
-            s.KneeR = sit.KneeR;
-            s.ArmPitchL = sit.ArmPitchL;
-            s.ArmPitchR = sit.ArmPitchR;
-            s.ElbowL = sit.ElbowL;
-            s.ElbowR = sit.ElbowR;
-            s.FootL = sit.FootL;
-            s.FootR = sit.FootR;
-            s.Drop = sit.Drop;
             return s;
         }
 
         static VerbExitSample Plant()
         {
-            return Seated();
+            VerbExitSample s = default;
+            // Feet arrive under the stand-up sit (see Rise): same thighs and knees,
+            // same hips-bone drop, so the plant frames keep the pelvis behind the feet.
+            s.Hip = 12f;
+            s.Spine = 8f;
+            s.Head = -8f;
+            s.ThighL = 40f;
+            s.ThighR = 40f;
+            s.KneeL = -30f;
+            s.KneeR = -30f;
+            s.Drop = 0.048f;
+            s.ArmPitchL = -20f;
+            s.ArmPitchR = -12f;
+            s.ElbowL = -36f;
+            s.ElbowR = -28f;
+            s.SpineRoll = 8f;
+            return s;
         }
 
         static VerbExitSample Rise()
         {
-            return Seated();
+            VerbExitSample s = default;
+            // Stand-up sit, roll-exit reference (01_roll_grass 0.80 s: chest +19.9,
+            // pelvis +18 cm, knee 52). Chest 14 + 6 = 20. The hips bone drops 4.8 cm so
+            // both soles stay on the floor with the knees bent.
+            s.Hip = 14f;
+            s.Spine = 6f;
+            s.Head = -2f;
+            s.ThighL = 40f;
+            s.ThighR = 40f;
+            s.KneeL = -30f;
+            s.KneeR = -30f;
+            s.Drop = 0.048f;
+            s.ArmPitchL = -18f;
+            s.ArmPitchR = -10f;
+            s.ElbowL = -16f;
+            s.ElbowR = -14f;
+            return s;
         }
 
-        /// <summary>Absorb holds the seated land. A palm on the thigh was 3.32 cm of pose.</summary>
+        /// <summary>Both palms on the ground, chin in, hips down.</summary>
         static VerbExitSample HandsDown()
         {
-            return Seated();
+            VerbExitSample s = default;
+            s.Hip = 28f;
+            s.Spine = 36f;
+            s.Head = -32f;
+            s.ThighL = 72f;
+            s.ThighR = 68f;
+            s.ThighRollL = -24f;
+            s.ThighRollR = 24f;
+            s.KneeL = -136f;
+            s.KneeR = -132f;
+            // Palms reach further forward and out (pitch -16, yaw 10) so the
+            // forearms land beside the thighs, not inside them; thighs turn out 8.
+            s.ArmPitchL = -68f;
+            s.ArmPitchR = -64f;
+            s.ArmYawL = -10f;
+            s.ArmYawR = 10f;
+            s.ThighYawL = -8f;
+            s.ThighYawR = 8f;
+            s.ElbowL = -12f;
+            s.ElbowR = -14f;
+            s.HipYaw = 6f;
+            return s;
         }
 
         static void Light(out VerbExitSample a, out VerbExitSample b, out VerbExitSample c)
@@ -747,7 +741,7 @@ namespace Tag.Art
             if (tuck.Head > -20f || tuck.KneeL > -60f) return false;
             if (shoulder.SpineRoll < 18f || shoulder.RootSpin < 170f) return false;
             if (over.ThighL < 36f || over.ThighL > 60f || over.RootSpin < 220f) return false;
-            if (rise.RootSpin < 350f || rise.ThighL > 120f) return false;
+            if (rise.RootSpin < 350f || rise.ThighL > 40f) return false;
             VerbExitSample left = RollAt(0.52f, true);
             if (left.SpineRoll > -18f) return false;
             Figure contact = PoseFigure(shoulder, shoulder.RootSpin, false);
@@ -757,7 +751,7 @@ namespace Tag.Art
             if (leftC.Shoulder.y - leftC.MinY > 0.12f) return false;
 
             VerbExitSample absorb = AbsorbAt(0.2f);
-            if (absorb.KneeL > -70f || absorb.ArmPitchL > 24f || absorb.ArmPitchR > 24f) return false;
+            if (absorb.KneeL > -120f || absorb.ArmPitchL > -40f || absorb.ArmPitchR > -40f) return false;
             Figure hands = PoseFigure(absorb, 0f, false);
             float handGap = hands.Hand.y - hands.Foot.y;
             if (handGap < 0f) handGap = -handGap;

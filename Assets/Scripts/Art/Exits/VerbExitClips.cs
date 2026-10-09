@@ -188,12 +188,15 @@ namespace Tag.Art
         /// <summary>Both feet down, hips behind them. Arms are what make one exit readable from another.</summary>
         static VerbExitSample Sit(float head, float aPL, float aPR, float aYL, float aYR, float eL, float eR)
         {
-            // Same legs as the vault landing that plants: symmetric thighs, shins forward,
-            // hips bone down 20 cm. Hip roll stays 0. A roll sinks the lower sole.
-            VerbExitSample s = P(18f, 8f, head, 64f, 64f, -82f, -82f, aPL, aPR, aYL, aYR, eL, eR);
-            s.Drop = 0.20f;
-            s.ThighYawL = -26f;
-            s.ThighYawR = 26f;
+            // Loaded landing / slide-crouch sit (Oct 9 floors: hip >= 30, spine >= 10,
+            // pelvis >= 12 cm behind the support sole, hinge >= 1.5). Hip 32 / spine 12.
+            // Thighs are relative to the hips bone, so they rise with it; the wider
+            // thigh yaw keeps the spine and chest off the thighs (< 0.5 cm).
+            // Hips bone down 31.5 cm puts both soles back on the floor. Hip roll stays 0.
+            VerbExitSample s = P(32f, 12f, head, 86f, 86f, -72f, -72f, aPL, aPR, aYL, aYR, eL, eR);
+            s.Drop = 0.315f;
+            s.ThighYawL = -42f;
+            s.ThighYawR = 42f;
             return s;
         }
 
@@ -202,17 +205,19 @@ namespace Tag.Art
             out VerbExitSample a, out VerbExitSample b, out VerbExitSample c)
         {
             // Arm pitch stays in the band that clears the chest and the thigh.
-            b = Sit(head, -40f, -40f, aYL, aYR, eL, eR);
+            // The deeper 32/12 sit raises the thighs, so the arms carry 10 more
+            // pitch to keep the forearms off them (< 0.5 cm).
+            b = Sit(head, -50f, -50f, aYL, aYR, eL, eR);
             b.HipYaw = hipYaw;
             b.SpineYaw = spineYaw;
             a = b;
             a.Head = head - 8f;
-            a.ArmPitchL = -46f;
-            a.ArmPitchR = -46f;
+            a.ArmPitchL = -56f;
+            a.ArmPitchR = -56f;
             c = b;
             c.Head = head + 6f;
-            c.ArmPitchL = -32f;
-            c.ArmPitchR = -32f;
+            c.ArmPitchL = -42f;
+            c.ArmPitchR = -42f;
         }
 
         /// <summary>The foot is down. The hips sit. The outside arm is what reads as the wall.</summary>

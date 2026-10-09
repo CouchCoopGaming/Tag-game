@@ -262,3 +262,11 @@ The full sim was not re-run on this tip. The earlier run stops at the zone check
 - Pose still open on A1: punch 5.09 cm, pad 4.28 cm. The printed cock, strike, rise, and apex numbers stay. Wall 4.97 cm and climb 3.74 cm are C1's. Zip, idle, loco, and sprint now pass.
 - Default red and orange are under 3:1 on wood. Shapes separate those seats. Palette 0 is the exemption.
 - Soles on the eight sits read 0.47 cm, inside the 0.5 cm window.
+
+## Oct 9 floors re-scan and sit re-key
+
+See `HIPFLOOR-OCT9.md`. Shared sit (`VerbExitClips.Sit`) re-keyed 18/8 -> 32/12, pelvis 15.3 cm behind; the seven sit exits clear landing 30/10 and slide 30/10/12 cm with pose 0.41 cm. Full table: `HIP loaded 120 hipFails 107 -> 42`, `NOCLIP poseFails 86` unchanged. Remaining fails: slide clip (A1), stutter/spin plants hip 14 (E), stagger contact, rolls unscored (no reference table), pad/punch/spinR/RollAbsorb pose.
+
+## Oct 9 pass 2
+
+See `HIPFLOOR-OCT9B.md`. Evasion key layout fixed in the scanner, so the earlier evasion rows were misread. Stutter, spin, dive, exit-Roll and exit-RollAbsorb re-keyed. Same-scanner table: hip fails 67 -> 21, pose fails 74 -> 67. Left open: the back-lean slide versus the crouch floor (needs Landon's call), the juke hip floor versus the EvasionPose drop lock, and the punch and pad overlaps locked by printed proofs.
