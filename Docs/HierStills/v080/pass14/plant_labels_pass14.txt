@@ -1,0 +1,32 @@
+PLANT LABELS after the 8 cm retarget fix
+Compared the keyed pelvisBack with the tracked footage on every loaded frame.
+Footage plant: tracked pelvisBack >= 8 cm, sole down, not a bridged crash or jump.
+plant-ok: footage plant and the keyed pelvis is at least 8 cm behind the support foot.
+retarget-limit / reference-only: the footage plants, and the leg cannot reach 8 cm without the thigh entering the spine or the sole leaving the floor. Do not copy these as plants.
+not-a-plant / reference-only: the footage itself is under 8 cm, or the frame is airborne, a wall drive, a crash, or a heap. Do not copy these as plants.
+f=34 wall kick is not-a-plant / reference-only. Tracked pelvisBack is -14.7 cm (pelvis in front of the trailing foot). The keyed pose keeps that drive. It is not a heel-sit plant.
+f=76 is not-a-plant / reference-only. Tracked pelvisBack is -13.6 cm. The body is ahead of the foot in the footage.
+Frames 118-152 are the landing crouch copied from f=110. The track there is a prone heap and is not a plant.
+Standing hip height 89.0 cm. Pelvis drop is that height minus the posed hip.
+Tightened plant: knee flex >= 25 deg, pelvis drop >= 8 cm, shin forward (knee ahead of the ankle).
+Tightened landing: knee flex >= 45 deg, pelvis drop >= 20 cm, shin forward.
+f=0 not-a-plant / reference-only keyed=14.5cm track=n/a knee=19 drop=-0.1cm shin=-4.0cm feet=L landing=0 air=0 garbage=1
+f=12 retarget-limit / reference-only keyed=-5.0cm track=42.1cm knee=87 drop=29.6cm shin=10.0cm feet=L landing=0 air=0 garbage=0
+f=13 retarget-limit / reference-only keyed=-6.1cm track=44.6cm knee=84 drop=24.8cm shin=-15.9cm feet=L landing=0 air=0 garbage=0
+f=15 plant-ok keyed=27.0cm track=47.5cm knee=40 drop=18.5cm shin=-3.0cm feet=L landing=0 air=0 garbage=0
+f=34 not-a-plant / reference-only keyed=-4.7cm track=-14.7cm knee=16 drop=0.9cm shin=3.7cm feet=R landing=0 air=0 garbage=0
+f=46 retarget-limit / reference-only keyed=3.7cm track=16.0cm knee=5 drop=4.7cm shin=0.3cm feet=L landing=0 air=0 garbage=0
+f=57 retarget-limit / reference-only keyed=0.8cm track=12.1cm knee=42 drop=11.2cm shin=11.9cm feet=L landing=0 air=0 garbage=0
+f=76 not-a-plant / reference-only keyed=-12.0cm track=-13.6cm knee=18 drop=5.9cm shin=12.9cm feet=L landing=0 air=0 garbage=0
+f=94 retarget-limit / reference-only keyed=1.3cm track=24.5cm knee=23 drop=0.9cm shin=7.0cm feet=R landing=0 air=0 garbage=0
+f=97 retarget-limit / reference-only keyed=-13.6cm track=27.9cm knee=18 drop=0.3cm shin=10.8cm feet=R landing=0 air=0 garbage=0
+f=102 retarget-limit / reference-only keyed=-8.2cm track=21.9cm knee=59 drop=7.5cm shin=-1.3cm feet=R landing=0 air=0 garbage=0
+f=103 retarget-limit / reference-only keyed=0.7cm track=23.3cm knee=19 drop=8.6cm shin=5.8cm feet=R landing=0 air=0 garbage=0
+f=106 plant-ok keyed=12.3cm track=25.6cm knee=49 drop=11.2cm shin=11.5cm feet=R landing=0 air=0 garbage=0
+f=110 plant-ok keyed=11.4cm track=29.9cm knee=25 drop=33.1cm shin=-9.6cm feet=LR landing=1 air=0 garbage=0
+f=112 retarget-limit / reference-only keyed=4.0cm track=38.8cm knee=24 drop=30.8cm shin=0.3cm feet=L landing=0 air=0 garbage=0
+f=145 landing-copy of f=110 keyed=11.4cm track=n/a knee=25 drop=33.1cm shin=-9.6cm feet=LR landing=1 air=0 garbage=1
+f=152 landing-copy of f=110 keyed=11.4cm track=n/a knee=25 drop=33.1cm shin=-9.6cm feet=LR landing=1 air=0 garbage=1
+plant-labels frames=169 footagePlants=53 plantOk=44 retargetLimit=9 landingCopy=35 notAPlant=81
+hip-sit clips=1 loadedFrames=169 pelvisBackMin=-34.5 cm hingeMin=-18.01 fails=90
+tightened kneeMiss=68 dropMiss=34 shinMiss=68 kneeFrames=17,18,19,21,22,23,28,42,43,44,45,46,53,54,59,88,89,92,93,94,96,97,98,101,103,110,111,112,118,119,120,121,122,123,124,125,126,127,128,129,130,131,132,133,134,135,136,137,138,139,140,141,142,143,144,145,146,147,148,149,150,151,152,157,160,161,164,165 dropFrames=18,19,20,21,22,23,24,28,43,44,45,46,52,53,54,55,58,59,88,89,92,93,94,95,96,97,98,102,157,160,161,164,165,166 shinFrames=13,15,17,18,19,21,22,23,28,42,44,45,52,53,54,55,89,92,93,96,98,101,102,104,105,108,110,111,113,118,119,120,121,122,123,124,125,126,127,128,129,130,131,132,133,134,135,136,137,138,139,140,141,142,143,144,145,146,147,148,149,150,151,152,157,160,161,165

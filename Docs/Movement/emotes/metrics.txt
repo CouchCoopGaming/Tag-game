@@ -1,0 +1,14 @@
+EMOTE RETARGET
+These are emotes, not plants. not-a-plant / reference-only.
+The rig stays standing. A floor step reads as a crouch because there is no root drop.
+Tightened plant thresholds are reported and are not the target for an emote.
+emote_6step
+hip-sit clips=1 loadedFrames=120 pelvisBackMin=-26.0 cm hingeMin=n/a fails=emote
+tightened emote_6step knee=4-109 deg pelvisDrop=0.0-0.0 cm shin=-9.6-41.0 cm label=not-a-plant / emote reference
+both-leg knee 18-135 deg. Pelvis drop stays 0 because the Hips bone is not keyed. Only the limbs rotate.
+no-clip clips=1 frames=120 absMax=7.26 worldMax=6.34 rigJoint=1593 poseFails=405 pose=405
+emote_charleston
+hip-sit clips=1 loadedFrames=84 pelvisBackMin=-24.4 cm hingeMin=n/a fails=emote
+tightened emote_charleston knee=9-28 deg pelvisDrop=0.0-0.0 cm shin=3.7-16.5 cm label=not-a-plant / emote reference
+both-leg knee 23-79 deg. The 9-28 deg range is the standing leg. The 79 deg is the kick. Pelvis drop stays 0 because the Hips bone is not keyed.
+no-clip clips=1 frames=84 absMax=4.70 worldMax=5.12 rigJoint=978 poseFails=97 pose=97

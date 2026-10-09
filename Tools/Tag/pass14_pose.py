@@ -1713,6 +1713,341 @@ def sit_hips():
     rh._reset(arm)
 
 
+def _joint_angle(a, b, c):
+    u = a - b
+    v = c - b
+    n = u.length * v.length
+    if n < 1e-8:
+        return 0.0
+    return math.degrees(math.acos(max(-1.0, min(1.0, u.dot(v) / n))))
+
+
+def _knee_flex_deg(arm, side):
+    hip = arm.matrix_world @ arm.pose.bones[f"UpperLeg_{side}"].head
+    knee = arm.matrix_world @ arm.pose.bones[f"LowerLeg_{side}"].head
+    ankle = arm.matrix_world @ arm.pose.bones[f"Foot_{side}"].head
+    return 180.0 - _joint_angle(hip, knee, ankle)
+
+
+def _shin_forward_m(arm, side, fwd):
+    """Metres the knee sits ahead of the ankle along facing. Positive is a forward shin."""
+    knee = arm.matrix_world @ arm.pose.bones[f"LowerLeg_{side}"].head
+    ankle = arm.matrix_world @ arm.pose.bones[f"Foot_{side}"].head
+    return (knee - ankle).dot(fwd)
+
+
+def _rest_hip_z(arm):
+    saved = [(pb, pb.rotation_euler.copy()) for pb in arm.pose.bones]
+    for pb, _rot in saved:
+        pb.rotation_euler = (0.0, 0.0, 0.0)
+    bpy.context.view_layer.update()
+    z = (arm.matrix_world @ arm.pose.bones["Hips"].head).z
+    for pb, rot in saved:
+        pb.rotation_euler = rot
+    bpy.context.view_layer.update()
+    return z
+
+
+def _in_jumps(i):
+    for start, end in JUMPS:
+        if start <= i <= end:
+            return True
+    return False
+
+
+def _retarget_error_frames(arm, keys, caps, worlds, cleaned, ids, local):
+    """Frames where the footage plants at >= 8 cm and the keyed pose does not."""
+    out = []
+    for i, key in enumerate(keys):
+        if _garbage_track(i) or _in_jumps(i):
+            continue
+        _apply(arm, key["bones"], caps[i])
+        feet = _feet_for(i, cleaned)
+        if not feet:
+            continue
+        soles = [p12._sole_z(ids, local, side)[1] for side in feet]
+        if min(soles) > 0.08:
+            continue
+        back, _hip, _fwd, _foot = _support_back(arm, ids, local, feet)
+        track = _track_back(worlds[i], feet)
+        if track is None or track < 0.08:
+            continue
+        if back < 0.08 - 0.005:
+            out.append(i)
+    return out
+
+
+def _sit_to_eight(i, arm, bones, cap, feet, ids, local, locals_c, polys):
+    """Creep the support thigh until the pelvis is 8 cm back. Stop at the spine.
+
+    The target is the plant minimum, not the full tracked offset. A step is
+    kept when the sole stays on the floor and the thigh does not enter the
+    torso or the other shin.
+    """
+    target = 0.08
+    start = _copy_bones(bones)
+    accepted = _copy_bones(bones)
+    _apply(arm, bones, cap)
+    back, _hip, _fwd, _foot = _support_back(arm, ids, local, feet)
+    if back >= target - 0.005:
+        return back, "met"
+    packs = p13._torso_packs(locals_c, polys)
+    plate0 = max(p13._leg_depth("L", locals_c, polys, packs), p13._leg_depth("R", locals_c, polys, packs))
+    cross0 = max(
+        p13._pair_depth("Mesh_UpperLeg_L", "Mesh_UpperLeg_R", locals_c, polys),
+        p13._pair_depth("Mesh_LowerLeg_L", "Mesh_LowerLeg_R", locals_c, polys),
+    )
+    why = "met"
+    lock_left = i == 34
+    for _step in range(10):
+        _apply(arm, bones, cap)
+        back, _hip, _fwd, _foot = _support_back(arm, ids, local, feet)
+        if back >= target - 0.005:
+            why = "met"
+            break
+        cands = []
+        for side in feet:
+            if lock_left and side == "L":
+                continue
+            ul = f"UpperLeg_{side}"
+            ll = f"LowerLeg_{side}"
+            base_ul = bones[ul][:]
+            k0 = bones[ll][0]
+            for axis in range(3):
+                for delta in (-6.0, 6.0, -12.0, 12.0, -18.0, 18.0):
+                    if abs((base_ul[axis] + delta) - start[ul][axis]) > 36.0:
+                        continue
+                    bones[ul] = base_ul[:]
+                    bones[ul][axis] = base_ul[axis] + delta
+                    bones[ll][0] = k0
+                    planted = _plant_knee(arm, bones, cap, side, ids, local, k0)
+                    _apply(arm, bones, cap)
+                    med = p12._sole_z(ids, local, side)[1]
+                    low = p11._min_z(f"Mesh_Foot_{side}")
+                    shin_low = p11._min_z(f"Mesh_LowerLeg_{side}")
+                    if not planted and (low < -0.008 or med > 0.04):
+                        continue
+                    if low < -0.008 or med > 0.045 or shin_low < -0.004:
+                        continue
+                    new_back, _h, _f, _ft = _support_back(arm, ids, local, feet)
+                    if new_back < back + 0.004:
+                        continue
+                    cands.append((new_back, _copy_bones(bones)))
+            bones[ul] = base_ul
+            bones[ll][0] = k0
+        if not cands:
+            why = "leg cannot put the sole far enough forward without leaving the floor"
+            break
+        cands.sort(key=lambda c: -c[0])
+        took = False
+        for _new_back, pose in cands[:6]:
+            for name, vals in pose.items():
+                bones[name] = vals
+            _apply(arm, bones, cap)
+            packs = p13._torso_packs(locals_c, polys)
+            plate = max(p13._leg_depth("L", locals_c, polys, packs), p13._leg_depth("R", locals_c, polys, packs))
+            cross = max(
+                p13._pair_depth("Mesh_UpperLeg_L", "Mesh_UpperLeg_R", locals_c, polys),
+                p13._pair_depth("Mesh_LowerLeg_L", "Mesh_LowerLeg_R", locals_c, polys),
+            )
+            if plate > 0.005 and plate > plate0 + 0.001:
+                continue
+            if cross > 0.005 and cross > cross0 + 0.001:
+                continue
+            took = True
+            back = _new_back
+            break
+        if not took:
+            why = "the thigh meets the spine before the pelvis is far enough back"
+            break
+        accepted = _copy_bones(bones)
+    else:
+        why = "met" if back >= target - 0.005 else "stopped short of 8 cm"
+    if why != "met":
+        for name, vals in accepted.items():
+            bones[name] = vals
+        _apply(arm, bones, cap)
+        back, _hip, _fwd, _foot = _support_back(arm, ids, local, feet)
+    if back >= target - 0.005:
+        why = "met"
+    return back, why
+
+
+def fix_retarget():
+    """Sit footage-plants to 8 cm. Leave frames the footage does not plant."""
+    os.makedirs(PASS14, exist_ok=True)
+    arm = bpy.data.objects["DummyArmature"]
+    rh._prepare_scene()
+    p10._ensure_pose(arm)
+    pieces = proof._pieces(arm)
+    locals_c = {obj.name: proof._local_coords(obj) for obj in pieces}
+    polys = {obj.name: proof._polys(obj) for obj in pieces}
+    ids, local = p10._sole_ids(arm)
+    doc = json.load(open(JSON_PATH))
+    entry = doc["clips"][TIC]
+    data = sp.load_clip(TIC)
+    worlds = data["world_xyz_m"]
+    cleaned = p11._cleaned(worlds, p11._spike_flags(worlds))
+    keys = entry["keys"]
+    caps = entry["capsule_preview_m"]
+    todo = _retarget_error_frames(arm, keys, caps, worlds, cleaned, ids, local)
+    notes = [
+        "RETARGET FIX",
+        "Only frames the footage plants (tracked pelvisBack >= 8 cm, sole down, not a bridged crash).",
+        "Target is 8 cm behind the support foot. The tracked offset above 8 cm is kept as reference, not forced.",
+        "Frame 34 is not in this pass: the footage has the pelvis in front of the trailing foot.",
+    ]
+    fixed = []
+    short = []
+    for i in todo:
+        bones = _copy_bones(keys[i]["bones"])
+        cap = [float(v) for v in caps[i]]
+        before_cap = cap[:]
+        feet = _feet_for(i, cleaned)
+        _apply(arm, bones, cap)
+        back0, _h, _f, _ft = _support_back(arm, ids, local, feet)
+        back, why = _sit_to_eight(i, arm, bones, cap, feet, ids, local, locals_c, polys)
+        if [round(v, 4) for v in cap] != [round(v, 4) for v in before_cap]:
+            raise RuntimeError(f"capsule moved on retarget fix f={i}")
+        keys[i]["bones"] = p10._round_eulers(bones)
+        line = f"f={i} {back0 * 100:.1f}cm -> {back * 100:.1f}cm {why}"
+        notes.append(line)
+        print(line, flush=True)
+        if back >= 0.08 - 0.005:
+            fixed.append(i)
+        else:
+            short.append(i)
+        if i == 110:
+            for j in range(118, 153):
+                keys[j]["bones"] = _copy_bones(keys[110]["bones"])
+            notes.append("Copied the landing crouch from f=110 through f=152.")
+    notes.append(f"retarget-fix fixed={len(fixed)} stillShort={len(short)} fixedFrames={','.join(str(i) for i in fixed) or 'none'}")
+    notes.append(f"retarget-limit frames={','.join(str(i) for i in short) or 'none'}")
+    with open(JSON_PATH, "w") as f:
+        json.dump(doc, f)
+    with open(ERROR_PATH, "a") as f:
+        f.write("\n".join(notes) + "\n")
+    print(notes[-2], flush=True)
+    print("wrote", JSON_PATH, flush=True)
+
+
+def label_plants():
+    """Say which loaded frames are plants, and which the footage itself is not.
+
+    A plant the footage sits behind the support foot (tracked pelvisBack >= 8 cm)
+    is a retarget error when the keyed pose is still under 8 cm. A frame the
+    footage puts the pelvis in front of the support foot, or a bridged crash,
+    jump, or heap, is labeled not-a-plant / reference-only. Those stay honest.
+    """
+    os.makedirs(PASS14, exist_ok=True)
+    arm = bpy.data.objects["DummyArmature"]
+    rh._prepare_scene()
+    p10._ensure_pose(arm)
+    ids, local = p10._sole_ids(arm)
+    doc = json.load(open(JSON_PATH))
+    entry = doc["clips"][TIC]
+    data = sp.load_clip(TIC)
+    worlds = data["world_xyz_m"]
+    cleaned = p11._cleaned(worlds, p11._spike_flags(worlds))
+    keys = entry["keys"]
+    caps = entry["capsule_preview_m"]
+    rest_z = _rest_hip_z(arm)
+    lines = [
+        "PLANT LABELS after the 8 cm retarget fix",
+        "Compared the keyed pelvisBack with the tracked footage on every loaded frame.",
+        "Footage plant: tracked pelvisBack >= 8 cm, sole down, not a bridged crash or jump.",
+        "plant-ok: footage plant and the keyed pelvis is at least 8 cm behind the support foot.",
+        "retarget-limit / reference-only: the footage plants, and the leg cannot reach 8 cm without the thigh entering the spine or the sole leaving the floor. Do not copy these as plants.",
+        "not-a-plant / reference-only: the footage itself is under 8 cm, or the frame is airborne, a wall drive, a crash, or a heap. Do not copy these as plants.",
+        "f=34 wall kick is not-a-plant / reference-only. Tracked pelvisBack is -14.7 cm (pelvis in front of the trailing foot). The keyed pose keeps that drive. It is not a heel-sit plant.",
+        "f=76 is not-a-plant / reference-only. Tracked pelvisBack is -13.6 cm. The body is ahead of the foot in the footage.",
+        "Frames 118-152 are the landing crouch copied from f=110. The track there is a prone heap and is not a plant.",
+        f"Standing hip height {rest_z * 100:.1f} cm. Pelvis drop is that height minus the posed hip.",
+        "Tightened plant: knee flex >= 25 deg, pelvis drop >= 8 cm, shin forward (knee ahead of the ankle).",
+        "Tightened landing: knee flex >= 45 deg, pelvis drop >= 20 cm, shin forward.",
+    ]
+    counts = {"footage-plant": 0, "retarget-limit": 0, "not-a-plant": 0, "plant-ok": 0, "landing-copy": 0}
+    backs = []
+    hinges = []
+    knee_miss = []
+    drop_miss = []
+    shin_miss = []
+    for i, key in enumerate(keys):
+        _apply(arm, key["bones"], caps[i])
+        feet = _feet_for(i, cleaned)
+        back, hip, fwd, _foot = _support_back(arm, ids, local, feet)
+        garbage = _garbage_track(i) or _in_jumps(i)
+        track = None if garbage else _track_back(worlds[i], feet or ["L", "R"])
+        soles = []
+        for side in feet or ["L", "R"]:
+            soles.append(p12._sole_z(ids, local, side)[1])
+        airborne = min(soles) > 0.08 if soles else True
+        landing = i == 110 or 118 <= i <= 152
+        knee = min(_knee_flex_deg(arm, side) for side in (feet or ["L", "R"]))
+        shin = min(_shin_forward_m(arm, side, fwd) for side in (feet or ["L", "R"]))
+        drop = rest_z - hip.z
+        _hip2, _fwd2, up = _rig_fwd(arm)
+        ratio, _hip_deg, _lumbar, _chest = _hinge(arm, feet, fwd, up)
+        backs.append(back)
+        hinges.append(ratio)
+        if 118 <= i <= 152:
+            kind = "landing-copy of f=110"
+            counts["landing-copy"] += 1
+        elif garbage or airborne or track is None or track < 0.08:
+            kind = "not-a-plant / reference-only"
+            counts["not-a-plant"] += 1
+        elif back < 0.08 - 0.005:
+            kind = "retarget-limit / reference-only"
+            counts["retarget-limit"] += 1
+            counts["footage-plant"] += 1
+        else:
+            kind = "plant-ok"
+            counts["plant-ok"] += 1
+            counts["footage-plant"] += 1
+        if kind in ("plant-ok", "landing-copy of f=110", "retarget-limit / reference-only"):
+            need_knee = 45.0 if landing else 25.0
+            need_drop = 0.20 if landing else 0.08
+            if knee < need_knee:
+                knee_miss.append(i)
+            if drop < need_drop:
+                drop_miss.append(i)
+            if shin <= 0.0:
+                shin_miss.append(i)
+        if i in STORY or kind == "retarget-limit / reference-only":
+            track_cm = "n/a" if track is None else f"{track * 100:.1f}cm"
+            lines.append(
+                f"f={i} {kind} keyed={back * 100:.1f}cm track={track_cm} "
+                f"knee={knee:.0f} drop={drop * 100:.1f}cm shin={shin * 100:.1f}cm "
+                f"feet={''.join(feet) or '-'} landing={int(landing)} air={int(airborne)} garbage={int(garbage)}"
+            )
+    lines.append(
+        "plant-labels "
+        f"frames={len(keys)} footagePlants={counts['footage-plant']} "
+        f"plantOk={counts['plant-ok']} retargetLimit={counts['retarget-limit']} "
+        f"landingCopy={counts['landing-copy']} notAPlant={counts['not-a-plant']}"
+    )
+    lines.append(
+        f"hip-sit clips=1 loadedFrames={len(keys)} "
+        f"pelvisBackMin={min(backs) * 100:.1f} cm hingeMin={min(hinges):.2f} "
+        f"fails={counts['retarget-limit'] + counts['not-a-plant']}"
+    )
+    lines.append(
+        "tightened "
+        f"kneeMiss={len(knee_miss)} dropMiss={len(drop_miss)} shinMiss={len(shin_miss)} "
+        f"kneeFrames={','.join(str(i) for i in knee_miss) or 'none'} "
+        f"dropFrames={','.join(str(i) for i in drop_miss) or 'none'} "
+        f"shinFrames={','.join(str(i) for i in shin_miss) or 'none'}"
+    )
+    text = "\n".join(lines) + "\n"
+    with open(ERROR_PATH, "a") as f:
+        f.write(text)
+    label_path = os.path.join(PASS14, "plant_labels_pass14.txt")
+    with open(label_path, "w") as f:
+        f.write(text)
+    print(text, flush=True)
+    print("wrote", label_path, flush=True)
+
+
 if __name__ == "__main__":
     stage = os.environ.get("PASS14_STAGE", "pose")
     if stage == "pose":
@@ -1725,6 +2060,10 @@ if __name__ == "__main__":
         sit_hips()
     elif stage == "hipstill":
         render_hipsit(os.environ.get("HIP_TAG", "before"))
+    elif stage == "label":
+        label_plants()
+    elif stage == "fix":
+        fix_retarget()
     else:
         solve()
         repair()
