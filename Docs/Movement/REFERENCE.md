@@ -2,7 +2,7 @@
 
 This is the catalog of reference poses. It is not gameplay. Nothing here is root motion, and the raw video stays off the repo.
 
-Pull the MediaPipe curves from `Docs/Storror/out/json/<id>.json` (clips 01–20) and `Docs/Movement/pose/<id>.json` (clips 21–24 and the emotes). Stick strips are next to those JSON files. Hier keys for the tic-tac live in `Docs/HierStills/v080/pass5/keyed_clips.json`. Hier keys for the CC BY emotes live in `Docs/Movement/emotes/keyed_emotes.json`. Hier keys for the CC0 emotes live in `Docs/Movement/emotes/pass16/keyed_emotes.json`.
+Pull the MediaPipe curves from `Docs/Storror/out/json/<id>.json` (clips 01–20) and `Docs/Movement/pose/<id>.json` (clips 21–24 and the emotes). Stick strips are next to those JSON files. Hier keys for the tic-tac live in `Docs/HierStills/v080/pass5/keyed_clips.json`. Hier keys for the CC BY emotes live in `Docs/Movement/emotes/keyed_emotes.json`. The pass 16 video retargets live in `Docs/Movement/emotes/pass16/keyed_emotes.json` and stay reference-only. The shippable hand-keyed emotes live in `Docs/Movement/emotes/pass17/keyed_emotes.json`.
 
 Grades: **A** clean enough to retarget. **B** usable with the note. **C** timing only. **D** do not copy the pose.
 
@@ -10,7 +10,7 @@ Grades: **A** clean enough to retarget. **B** usable with the note. **C** timing
 
 Clips 01–20 are STORROR YouTube uploads. The YouTube standard license applies (all rights reserved). They are reference only. The raw files are not in the repo.
 
-The project ships CC0 or OFL only. A clip with no license, or a CC BY license, can guide a hand-keyed pose. It must not be retargeted into shipped animation.
+The project ships CC0 or OFL only. A clip with no license, or a CC BY license, can guide a hand-keyed pose. It must not be retargeted into shipped animation. Every clip that came from video stays REFERENCE-ONLY, including the two CC0 Commons dances. The four pass 17 emotes are original poses, labeled SHIPPABLE (own work, CC0).
 
 Clips 21–23 and clip 24 are one Internet Archive mirror of a Vimeo upload, [Sport-Freestyle-freerunning](https://vimeo.com/721018315) (`vimeo-721018315`). No Creative Commons license is stated on the Archive item or in the Vimeo oEmbed record. Treat them as all-rights-reserved. Each pose header says `REFERENCE-ONLY / DO-NOT-SHIP`. YouTube itself refused the download without cookies, which this pass does not use.
 
@@ -112,12 +112,14 @@ Two own-work Commons files checked out as CC0. The license line on each file pag
 
 The FX note (PR #135) asks for a silhouette that still reads at quarter-pane size, held about 0.4 s inside the first second: both arms in a V, one arm straight up with the other still out, a wide star, or a full-body spin. A shrug, a face, a hand sign, or a small prop does not. These two clips do not clear that bar. The picture of Tizi has both wrists above the shoulders for about 0.45 s at the start of the window, both toward the same side of the frame. The 3D track only keeps the right arm up, and the rear still at 0.15 s and 0.45 s does not show a V, a star, or one arm straight up. Agbadja never holds any of those outlines. Do not treat either retarget as a finished quarter-pane celebration.
 
+The retarget is REFERENCE-ONLY. Do not ship these keys. Pass 17 does not copy the poses. The Commons files stay here as a reminder of timing only.
+
 The Hips bone is keyed. Local Y is world up. Negative Y is the pelvis drop. The armature stays at the origin. Both are standing, so the rig is not asked to lie down. They are not plants.
 
 | Clip | Source and time | Good for | Game move | Quality |
 |---|---|---|---|---|
-| `emote_agbadja` | [Danse Agbadja](https://commons.wikimedia.org/wiki/File:Danse_Agbadja_avec_%C3%A0_Cotonou_au_B%C3%A9nin_avec_Gessi_Zolawadji.webm), Adoscam, own work, CC0, 3.40–7.40 s | standing steps | emote | C. 118/118 detected, body vis 0.57. Right ankle vis 0.20, so the leg bend is thin. No quarter-pane silhouette. CC0, may be retargeted. The 10 capped frames leave the sole as high as 8.6 cm |
-| `emote_tizi` | [Tizi BR](https://commons.wikimedia.org/wiki/File:Tizi_BR.webm), Poiana11, own work, CC0, 35.70–39.10 s | one arm rises, then a step | emote | C. 103/103 detected, body vis 0.44. One frame near 1.1 s drops the head. The opening is not a held V. CC0, may be retargeted |
+| `emote_agbadja` | [Danse Agbadja](https://commons.wikimedia.org/wiki/File:Danse_Agbadja_avec_%C3%A0_Cotonou_au_B%C3%A9nin_avec_Gessi_Zolawadji.webm), Adoscam, own work, CC0, 3.40–7.40 s | standing steps | emote | C. 118/118 detected, body vis 0.57. Right ankle vis 0.20, so the leg bend is thin. No quarter-pane silhouette. REFERENCE-ONLY. The 10 capped frames leave the sole as high as 8.6 cm |
+| `emote_tizi` | [Tizi BR](https://commons.wikimedia.org/wiki/File:Tizi_BR.webm), Poiana11, own work, CC0, 35.70–39.10 s | one arm rises, then a step | emote | C. 103/103 detected, body vis 0.44. One frame near 1.1 s drops the head. The opening is not a held V. REFERENCE-ONLY |
 
 Stills, side, front, and rear:
 
@@ -139,3 +141,56 @@ Pelvis drop is 0.2–22.0 cm. The 22 cm cap caught 10 frames. Support knee stays
 `no-clip clips=1 frames=103 absMax=4.85 worldMax=14.47 rigJoint=1228 poseFails=215 pose=215`
 
 Pelvis drop is −0.3–13.3 cm. The sole stays at 0.8 cm. The 4.85 cm absolute pair is the hip-thigh rest nest (rest 4.50 cm) plus a little. The 14.47 cm world pair is a limb through the torso on the bad frame. Support knee stays 2–34°. The minimum pelvisBack is a step, not a plant.
+
+## Pass 17 — hand-keyed emotes
+
+Video tracking left pose intersections in the hundreds, and the hips did not read as a celebration. These four clips are original poses on the Hier. The Commons dances were a reminder of how long a cheer or a step feels. No tracked pose was copied. The label is **SHIPPABLE (own work, CC0)**.
+
+Each frame keeps an athletic sit: the pelvis is behind the feet, the hinge is at the hip, the knees are bent, and the shins point forward. Hips local Y is the pelvis drop. On the cheer it also lifts the hop. The armature stays at the origin.
+
+| Clip | Length | What it is |
+|---|---|---|
+| `emote_vcheer` | 1.2 s | Both arms rise into a V by 0.20 s and stay there through the hop and the landing. The hop is 0.28–0.78 s. |
+| `emote_fistpump` | 1.0 s | The right elbow stays at 90°. The fist pumps twice, at 0.25 s and 0.75 s. The other arm stays slightly out. |
+| `emote_groove` | 2.0 s loop | Step to the left at 0.50 s, step to the right at 1.50 s. The shoulder on the stepping side rises, and the support hip flexes on each step. Frame 0 matches the end. |
+| `emote_shrug` | 1.0 s | Elbows flare past the ribs and the shoulders lift. Held from 0.18 s to 0.62 s so the outline is wider than a run at 240 px. |
+
+Stills are a 240 px tall render. The strip is `Docs/Movement/emotes/pass17/emote_<id>_<view>.png`. The held pose alone is `emote_<id>_<view>_hero.png`. Views are `side`, `front`, and `threequarter`.
+
+`emote_vcheer` `hip-sit clips=1 loadedFrames=37 pelvisBackMin=17.0 cm hingeMin=10.23 fails=0`
+
+`no-clip clips=1 frames=37 absMax=5.01 worldMax=0.20 rigJoint=407 poseFails=0 pose=0`
+
+Plant frames are 22. The other 15 are the hop. Sole median on plants is 0.40 cm. The deepest foot vertex is 0.20 cm into the floor. Knee 50°. Shin 9.4 cm forward. Pelvis drop 10.9 cm.
+
+`emote_fistpump` `hip-sit clips=1 loadedFrames=31 pelvisBackMin=17.0 cm hingeMin=10.23 fails=0`
+
+`no-clip clips=1 frames=31 absMax=5.01 worldMax=0.20 rigJoint=372 poseFails=0 pose=0`
+
+The right elbow is 90.3° on every frame. The fist travels from 1.00 m to 1.53 m. Sole median 0.40 cm. Mesh min −0.20 cm. Knee 50°. Shin 9.4 cm. Drop 10.9 cm.
+
+`emote_groove` `hip-sit clips=1 loadedFrames=61 pelvisBackMin=11.5 cm hingeMin=10.20 fails=0`
+
+`no-clip clips=1 frames=61 absMax=6.11 worldMax=0.20 rigJoint=667 poseFails=0 pose=0`
+
+The support sole stays at 0.47 cm or lower. Mesh min −0.20 cm. Knee 50°. Shin 9.3 cm. Drop 10.9–12.2 cm. The 11.5 cm sit is the low frame. A crouch wants 12 cm, and the fail line is 1 cm under that, so this frame still passes. The stepping foot is off the floor and is not a plant.
+
+`emote_shrug` `hip-sit clips=1 loadedFrames=31 pelvisBackMin=17.0 cm hingeMin=10.23 fails=0`
+
+`no-clip clips=1 frames=31 absMax=5.01 worldMax=0.20 rigJoint=285 poseFails=0 pose=0`
+
+Sole median 0.40 cm. Mesh min −0.20 cm. Knee 50°. Shin 9.4 cm. Drop 10.9 cm.
+
+The 5.01 cm and 6.11 cm absolute pairs are the hip-thigh rest nest, counted as rig joints. Non-adjacent pairs and the floor stay at or under 0.5 cm, so pose=0 on all four.
+
+## Landing-roll search, pass 17
+
+No filmed parkour landing roll with a verified CC0 or public-domain license turned up. Clip 24 is still the clearer live roll, and it stays REFERENCE-ONLY / DO-NOT-SHIP.
+
+These were checked and not used:
+
+- Archive items that carry a CC0 URL but are someone else's film. `storror-scc` is "STORROR X STUNT CAMERA CREW", creator MUV MEDIA. `drops-from-the-top` is "DROPS FROM THE TOP", creator muvmag.com. `MovimentosDeParkour` is "Movimentos de Parkour", creator Cross Fit - Saut Guerrier. The CC0 tag is on the upload. It is not a dedication by the rights holder.
+- Commons parkour GIFs tagged CC0 by tusfacti0n (`CatLeap.gif`, `KongVault.gif`, `LazyVault.gif`, `WallRun.gif`). The source line is a Photobucket URL, not own work. The other files in that category are CC BY-SA (`King Kong Vault.gif`, the side-flip GIF) or CC BY 3.0 (`Monkey Vault.gif`).
+- [19 grundtechniken roulade.png](https://commons.wikimedia.org/wiki/File:19_grundtechniken_roulade.png), Roger Widmer / ParkourONE, is a roll drawing under CC BY-SA 4.0. That is not a ship license.
+
+One public-domain roll animation did verify. [Dive Roll over Table](https://commons.wikimedia.org/wiki/File:Dive_Roll_over_Table.gif), Brianoob, own work, 27 October 2009, `{{PD-self}}`. The license line on the file page is: "I, the copyright holder of this work, release this work into the public domain. This applies worldwide. In some countries this may not be legally possible; if so: I grant anyone the right to use this work for any purpose, without any conditions, unless such conditions are required by law." It is a 128×96 GIF of a dive roll over a picnic table, also filed under hapkido. It is not a live landing from a drop, and it is not retargeted here. Use it for the roll shape only.
