@@ -1,6 +1,6 @@
 # World ledger
 
-Status of each map area after pass 7. Gray means the live solids are still the Mega Park cubes from `MegaParkP1Layout.BuildSolids`. Polished means library prefabs are placed on top. Z7 hides its infield lumps in play. Z1, Z2, Z3, Z4, Z5, and Z6 leave their gray toys in place. This head includes the `cursor/tag-street-objects` merge (`7dc3e222`), the street-kit merges (`bc02b9c4`, `3040d2e5`, then `0aa3061e`), and the asset-library merge (`723cc137`). GateLeaf, the fixed bench and trash colliders, and the StrafeJumpSim proof line stayed. Street-kit `0aa3061e` is merged: compact wheel boxes sit at y = 0.010 and the pickup bumper reaches z = 2.493. Asset-library tip `09958348` cuts LOD2 and does not rebuild the store letters, so that branch was not merged.
+Status of each map area after pass 7. Gray means the live solids are still the Mega Park cubes from `MegaParkP1Layout.BuildSolids`. Polished means library prefabs are placed on top. Z7 hides its infield lumps in play. Z1, Z2, Z3, Z4, Z5, and Z6 leave their gray toys in place. This head includes the `cursor/tag-street-objects` merge (`7dc3e222`), the street-kit merges (`bc02b9c4`, `3040d2e5`, then `0aa3061e`), and the asset-library merges (`723cc137`, then `a066d987`). GateLeaf, the fixed bench and trash colliders, and the StrafeJumpSim proof line stayed. `PoseKeyDump` stayed deleted. Street-kit `0aa3061e` seats compact wheels at y = 0.010 and the pickup bumper at z = 2.493. Library `a066d987` is merged: MARKET, DINER, and WASH are two outward sheets, `Container_20` `Climb_Body` starts at y = 0, and `Dock_Straight` planks top at y = 0.620. Piles still end at y = −1.165, which that branch calls a water seat.
 
 The headless audit still counts every solid. Hiding a lump in `MegaParkP1Bootstrap` does not change `BuildSolids`, so the Mega Park proof line stays the same.
 
@@ -150,7 +150,7 @@ Stills: `Docs/WorldStills/pass3/z3_*.png`. Collider rasters. The Z2 set in the s
 
 ## Asset bugs for the models lane
 
-The world lane does not edit the vehicle, walk-up, or store meshes. This checkout merged street-kit `0aa3061e` and asset-library `723cc137`. `Tools/WorldCheck/check_z7.py` was re-run on the parked cars.
+The world lane does not edit the vehicle, walk-up, or store meshes. This checkout merged street-kit `0aa3061e` and asset-library `a066d987`. `Tools/WorldCheck/check_z7.py` was re-run on the parked cars, and `check_z6.py` was re-run on the seated container and the 0.62 m dock.
 
 Closed, remeasured here:
 
@@ -164,6 +164,8 @@ Closed, remeasured here:
 | Street-kit pickup tailgate | `Col_Tailgate` started at y = 0.73, 0.17 m above the bed. | `Pickup_FullSize_25` starts the tailgate at y = 0.585. The bed tops at y = 0.560, so the gap is 0.025 m. The blockout file is gone. |
 | `Sedan_Compact_25`, `Hatch_Compact_25`, `Crossover_Compact_25` | Wheel boxes started at y = 0.167, 0.168, and 0.192. | `0aa3061e` seats `Col_Wheel_*` at y = 0.010–0.046. Not edited here. |
 | `Pickup_FullSize_25` nose | Boxes stopped at local z = 1.625. | `Col_Nose` reaches z = 2.420 and `Col_Bumper` reaches z = 2.493. Wheels stay at y = 0.012. Not edited here. |
+| `Store_Corner`, `Store_Diner`, `Store_Laundromat` | MARKET, DINER, and WASH mirrored from the back. | `a066d987` rebuilds each word as two outward sheets at positive scale. Not edited here. Not placed in Mega Park. |
+| `Container_20`, `Container_20_Blue` | `Climb_Body` started at y = 0.22. | `a066d987` seats the body at y = 0.000–2.320. Roof stays y = 2.48–2.54. Not edited here. |
 
 `CourtFence` in this checkout draws the gate as the child mesh `GateLeaf`. Play hides that mesh and turns `Col_Gate` off. That leaf is not an open models bug.
 
@@ -175,9 +177,7 @@ Still open. Relayed to the models lane. Not edited here:
 | `ParkLamp` | 0.24 m under the pole collider at y = 0.49. The base reaches y = 0.07. |
 | `WalkUp` | Climb faces start at y = 0.40, 0.25 m above the stoop. The body is enclosed. Not edited here. |
 | `Cabin` | Placed. Door is closed. An internal gap of 0.20 m sits under a collider at y = 2.38. Not edited here. |
-| `Store_Corner`, `Store_Diner`, `Store_Laundromat` | Baked MARKET, DINER, and WASH letters mirror from the back. Reported to buildings #122 in `Docs/Models/ENV_QUEUE.md`. Not edited here. Library `09958348` rebuilds LOD2, not those letters. |
-| `Container_20`, `Container_20_Blue` | Placed in Z6. `Climb_Body` starts at y = 0.22, so the shell sits 0.22 m above the pivot. Reported in `Docs/Models/ENV_QUEUE.md`. Not edited here. |
-| `Dock_Straight` | Placed in Z6. Piles run down to y = −1.165, a water seat, so on park ground they clip the floor. Reported in `Docs/Models/ENV_QUEUE.md`. Not edited here. |
+| `Dock_Straight` piles | Placed in Z6. Deck top is now 0.620. Piles still run to y = −1.165. Library `a066d987` calls that a water seat on purpose. Not edited here. |
 
 `Gangway` is dropped from Mega Park. The prefab field is `vaultHeightMeters: 0.88`, and the rail boxes top at y = 1.758 over a plate whose top is y = 0.892, so the rail is 0.87 m above the plate. The catalog band is 0.90–1.05 m. The plate itself starts at y = 0.728, which is a harbor ramp seat, not a park ground contact. Raising the rail would edit the harbor mesh. It stays in the harbor library and is not a Mega Park route.
 
@@ -235,8 +235,8 @@ Check line:
 
 | Route | Measured |
 |---|---|
-| YardClimb | West jump off `Container_20`. Wall 2.32 m on a 5.54 m face. Deck gap 3.60 m onto `Dock_Straight` planks. At 30° off the wall the capsule leaves with feet at 0.05 m and lands at (121.20, 17.49). At 60° it lands at (120.66, 16.96). |
-| GapGrapple | 12.39 m from (128.5, 1.6, 43.0), south of the empty gap, to the blue container's south cornice. The rope crosses z[46, 54]. No prop sits in that band. |
+| YardClimb | West jump off `Container_20`. After `a066d987` the wall is 2.54 m on a 5.54 m face. Deck gap 3.60 m onto `Dock_Straight` planks (top 0.62 m). At 30° off the wall the capsule leaves with feet at 0.05 m and lands at (121.22, 17.48). At 60° it lands at (120.69, 16.95). |
+| GapGrapple | 12.38 m from (128.5, 1.6, 43.0), south of the empty gap, to the blue container's south cornice. The rope crosses z[46, 54]. No prop sits in that band. |
 | RailVault | `HarborRail` at 1.05 m, the top of the vault band. West walk-up is open. |
 | ShelterDash | Two `BusShelter` roofs, underside 2.44 m. The dash gap between them is 0.90 m. |
 | FortChase | 167.5 m around the forts. South leg under the hopscotch, east leg through the empty gap, north leg past the shelters, west leg clear of the rims. Worst clearance 0.83 m against `Ft_Anchor`. |

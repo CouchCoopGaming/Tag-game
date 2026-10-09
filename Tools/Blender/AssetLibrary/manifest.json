@@ -972,7 +972,7 @@
       },
       {
         "lod": 2,
-        "tris": 948,
+        "tris": 792,
         "materials": [
           "Lib_Log0",
           "Lib_Log1",
@@ -980,8 +980,6 @@
           "Lib_Log3",
           "Lib_Chink",
           "Lib_Log4",
-          "Lib_Batten",
-          "Lib_ShopGlass",
           "Lib_Wood",
           "Lib_WoodDark",
           "Lib_Roof"
@@ -2263,71 +2261,64 @@
   {
     "name": "Boathouse",
     "category": "Harbor",
-    "blurb": "Boathouse 6.4 m wide, 4.4 m deep, walls 2.7 m, ridge at 4.15 m. The +Z side is an open slip, 2.4 m wide.",
+    "blurb": "Wood boathouse 6.6 m wide, 8.4 m deep, eave 2.90 m, ridge about 4.25 m. The +Z gable is an open slip 3.20 m clear, wide enough for the 3 m dock. Side walks use the dock board: 20 cm planks, 5 cm gaps, top at 0.62 m. Piles match the dock pile. A steel lift beam, cables, and two bunks sit in the slip. Roof slopes are landings. The piles extend below the pivot.",
     "size": [
-      6.9,
-      4.218,
-      4.784
+      7.133,
+      5.554,
+      8.8
     ],
     "min": [
-      -3.45,
-      0.0,
-      -2.392
+      -3.566,
+      -1.22,
+      -4.4
     ],
     "max": [
-      3.45,
-      4.218,
-      2.392
+      3.566,
+      4.334,
+      4.4
     ],
     "lods": [
       {
         "lod": 0,
-        "tris": 264,
+        "tris": 1952,
         "materials": [
-          "Lib_WoodDark",
           "Lib_Wood",
-          "Lib_Roof",
-          "Lib_Glass"
+          "Lib_WoodDark",
+          "Lib_SteelDark",
+          "Lib_Steel",
+          "Lib_RanchRoof",
+          "Lib_Glass",
+          "Lib_Batten"
         ],
         "mesh": "LOD0",
         "fileID": -1633821710574564935
       },
       {
         "lod": 1,
-        "tris": 120,
+        "tris": 448,
         "materials": [
-          "Lib_WoodDark",
           "Lib_Wood",
-          "Lib_Roof"
+          "Lib_WoodDark",
+          "Lib_SteelDark",
+          "Lib_RanchRoof"
         ],
         "mesh": "LOD1",
         "fileID": -179393741545503174
-      },
-      {
-        "lod": 2,
-        "tris": 108,
-        "materials": [
-          "Lib_WoodDark",
-          "Lib_Wood",
-          "Lib_Roof"
-        ],
-        "mesh": "LOD2",
-        "fileID": 736115405485880582
       }
     ],
     "colliders": [
       {
-        "name": "Col_Floor",
+        "name": "Col_Plank",
         "type": "box",
         "center": [
-          0,
-          0.08,
-          0
+          -2.4,
+          0.6,
+          -3.875
         ],
         "size": [
-          6.4,
-          0.16,
-          4.4
+          1.4,
+          0.02,
+          0.16
         ],
         "euler": [
           0,
@@ -2336,17 +2327,1385 @@
         ]
       },
       {
-        "name": "Climb_Back",
+        "name": "Col_Plank_2",
         "type": "box",
         "center": [
-          0,
-          1.45,
-          -2.12
+          -2.4,
+          0.6,
+          -3.625
         ],
         "size": [
-          6.16,
-          2.5,
-          0.12
+          1.4,
+          0.02,
+          0.16
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Plank_3",
+        "type": "box",
+        "center": [
+          -2.4,
+          0.6,
+          -3.375
+        ],
+        "size": [
+          1.4,
+          0.02,
+          0.16
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Plank_4",
+        "type": "box",
+        "center": [
+          -2.4,
+          0.6,
+          -3.125
+        ],
+        "size": [
+          1.4,
+          0.02,
+          0.16
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Plank_5",
+        "type": "box",
+        "center": [
+          -2.4,
+          0.6,
+          -2.875
+        ],
+        "size": [
+          1.4,
+          0.02,
+          0.16
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Plank_6",
+        "type": "box",
+        "center": [
+          -2.4,
+          0.6,
+          -2.625
+        ],
+        "size": [
+          1.4,
+          0.02,
+          0.16
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Plank_7",
+        "type": "box",
+        "center": [
+          -2.4,
+          0.6,
+          -2.375
+        ],
+        "size": [
+          1.4,
+          0.02,
+          0.16
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Plank_8",
+        "type": "box",
+        "center": [
+          -2.4,
+          0.6,
+          -2.125
+        ],
+        "size": [
+          1.4,
+          0.02,
+          0.16
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Plank_9",
+        "type": "box",
+        "center": [
+          -2.4,
+          0.6,
+          -1.875
+        ],
+        "size": [
+          1.4,
+          0.02,
+          0.16
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Plank_10",
+        "type": "box",
+        "center": [
+          -2.4,
+          0.6,
+          -1.625
+        ],
+        "size": [
+          1.4,
+          0.02,
+          0.16
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Plank_11",
+        "type": "box",
+        "center": [
+          -2.4,
+          0.6,
+          -1.375
+        ],
+        "size": [
+          1.4,
+          0.02,
+          0.16
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Plank_12",
+        "type": "box",
+        "center": [
+          -2.4,
+          0.6,
+          -1.125
+        ],
+        "size": [
+          1.4,
+          0.02,
+          0.16
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Plank_13",
+        "type": "box",
+        "center": [
+          -2.4,
+          0.6,
+          -0.875
+        ],
+        "size": [
+          1.4,
+          0.02,
+          0.16
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Plank_14",
+        "type": "box",
+        "center": [
+          -2.4,
+          0.6,
+          -0.625
+        ],
+        "size": [
+          1.4,
+          0.02,
+          0.16
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Plank_15",
+        "type": "box",
+        "center": [
+          -2.4,
+          0.6,
+          -0.375
+        ],
+        "size": [
+          1.4,
+          0.02,
+          0.16
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Plank_16",
+        "type": "box",
+        "center": [
+          -2.4,
+          0.6,
+          -0.125
+        ],
+        "size": [
+          1.4,
+          0.02,
+          0.16
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Plank_17",
+        "type": "box",
+        "center": [
+          -2.4,
+          0.6,
+          0.125
+        ],
+        "size": [
+          1.4,
+          0.02,
+          0.16
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Plank_18",
+        "type": "box",
+        "center": [
+          -2.4,
+          0.6,
+          0.375
+        ],
+        "size": [
+          1.4,
+          0.02,
+          0.16
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Plank_19",
+        "type": "box",
+        "center": [
+          -2.4,
+          0.6,
+          0.625
+        ],
+        "size": [
+          1.4,
+          0.02,
+          0.16
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Plank_20",
+        "type": "box",
+        "center": [
+          -2.4,
+          0.6,
+          0.875
+        ],
+        "size": [
+          1.4,
+          0.02,
+          0.16
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Plank_21",
+        "type": "box",
+        "center": [
+          -2.4,
+          0.6,
+          1.125
+        ],
+        "size": [
+          1.4,
+          0.02,
+          0.16
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Plank_22",
+        "type": "box",
+        "center": [
+          -2.4,
+          0.6,
+          1.375
+        ],
+        "size": [
+          1.4,
+          0.02,
+          0.16
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Plank_23",
+        "type": "box",
+        "center": [
+          -2.4,
+          0.6,
+          1.625
+        ],
+        "size": [
+          1.4,
+          0.02,
+          0.16
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Plank_24",
+        "type": "box",
+        "center": [
+          -2.4,
+          0.6,
+          1.875
+        ],
+        "size": [
+          1.4,
+          0.02,
+          0.16
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Plank_25",
+        "type": "box",
+        "center": [
+          -2.4,
+          0.6,
+          2.125
+        ],
+        "size": [
+          1.4,
+          0.02,
+          0.16
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Plank_26",
+        "type": "box",
+        "center": [
+          -2.4,
+          0.6,
+          2.375
+        ],
+        "size": [
+          1.4,
+          0.02,
+          0.16
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Plank_27",
+        "type": "box",
+        "center": [
+          -2.4,
+          0.6,
+          2.625
+        ],
+        "size": [
+          1.4,
+          0.02,
+          0.16
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Plank_28",
+        "type": "box",
+        "center": [
+          -2.4,
+          0.6,
+          2.875
+        ],
+        "size": [
+          1.4,
+          0.02,
+          0.16
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Plank_29",
+        "type": "box",
+        "center": [
+          -2.4,
+          0.6,
+          3.125
+        ],
+        "size": [
+          1.4,
+          0.02,
+          0.16
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Plank_30",
+        "type": "box",
+        "center": [
+          -2.4,
+          0.6,
+          3.375
+        ],
+        "size": [
+          1.4,
+          0.02,
+          0.16
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Plank_31",
+        "type": "box",
+        "center": [
+          -2.4,
+          0.6,
+          3.625
+        ],
+        "size": [
+          1.4,
+          0.02,
+          0.16
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Plank_32",
+        "type": "box",
+        "center": [
+          -2.4,
+          0.6,
+          3.875
+        ],
+        "size": [
+          1.4,
+          0.02,
+          0.16
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Plank_33",
+        "type": "box",
+        "center": [
+          2.4,
+          0.6,
+          -3.875
+        ],
+        "size": [
+          1.4,
+          0.02,
+          0.16
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Plank_34",
+        "type": "box",
+        "center": [
+          2.4,
+          0.6,
+          -3.625
+        ],
+        "size": [
+          1.4,
+          0.02,
+          0.16
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Plank_35",
+        "type": "box",
+        "center": [
+          2.4,
+          0.6,
+          -3.375
+        ],
+        "size": [
+          1.4,
+          0.02,
+          0.16
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Plank_36",
+        "type": "box",
+        "center": [
+          2.4,
+          0.6,
+          -3.125
+        ],
+        "size": [
+          1.4,
+          0.02,
+          0.16
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Plank_37",
+        "type": "box",
+        "center": [
+          2.4,
+          0.6,
+          -2.875
+        ],
+        "size": [
+          1.4,
+          0.02,
+          0.16
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Plank_38",
+        "type": "box",
+        "center": [
+          2.4,
+          0.6,
+          -2.625
+        ],
+        "size": [
+          1.4,
+          0.02,
+          0.16
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Plank_39",
+        "type": "box",
+        "center": [
+          2.4,
+          0.6,
+          -2.375
+        ],
+        "size": [
+          1.4,
+          0.02,
+          0.16
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Plank_40",
+        "type": "box",
+        "center": [
+          2.4,
+          0.6,
+          -2.125
+        ],
+        "size": [
+          1.4,
+          0.02,
+          0.16
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Plank_41",
+        "type": "box",
+        "center": [
+          2.4,
+          0.6,
+          -1.875
+        ],
+        "size": [
+          1.4,
+          0.02,
+          0.16
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Plank_42",
+        "type": "box",
+        "center": [
+          2.4,
+          0.6,
+          -1.625
+        ],
+        "size": [
+          1.4,
+          0.02,
+          0.16
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Plank_43",
+        "type": "box",
+        "center": [
+          2.4,
+          0.6,
+          -1.375
+        ],
+        "size": [
+          1.4,
+          0.02,
+          0.16
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Plank_44",
+        "type": "box",
+        "center": [
+          2.4,
+          0.6,
+          -1.125
+        ],
+        "size": [
+          1.4,
+          0.02,
+          0.16
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Plank_45",
+        "type": "box",
+        "center": [
+          2.4,
+          0.6,
+          -0.875
+        ],
+        "size": [
+          1.4,
+          0.02,
+          0.16
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Plank_46",
+        "type": "box",
+        "center": [
+          2.4,
+          0.6,
+          -0.625
+        ],
+        "size": [
+          1.4,
+          0.02,
+          0.16
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Plank_47",
+        "type": "box",
+        "center": [
+          2.4,
+          0.6,
+          -0.375
+        ],
+        "size": [
+          1.4,
+          0.02,
+          0.16
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Plank_48",
+        "type": "box",
+        "center": [
+          2.4,
+          0.6,
+          -0.125
+        ],
+        "size": [
+          1.4,
+          0.02,
+          0.16
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Plank_49",
+        "type": "box",
+        "center": [
+          2.4,
+          0.6,
+          0.125
+        ],
+        "size": [
+          1.4,
+          0.02,
+          0.16
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Plank_50",
+        "type": "box",
+        "center": [
+          2.4,
+          0.6,
+          0.375
+        ],
+        "size": [
+          1.4,
+          0.02,
+          0.16
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Plank_51",
+        "type": "box",
+        "center": [
+          2.4,
+          0.6,
+          0.625
+        ],
+        "size": [
+          1.4,
+          0.02,
+          0.16
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Plank_52",
+        "type": "box",
+        "center": [
+          2.4,
+          0.6,
+          0.875
+        ],
+        "size": [
+          1.4,
+          0.02,
+          0.16
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Plank_53",
+        "type": "box",
+        "center": [
+          2.4,
+          0.6,
+          1.125
+        ],
+        "size": [
+          1.4,
+          0.02,
+          0.16
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Plank_54",
+        "type": "box",
+        "center": [
+          2.4,
+          0.6,
+          1.375
+        ],
+        "size": [
+          1.4,
+          0.02,
+          0.16
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Plank_55",
+        "type": "box",
+        "center": [
+          2.4,
+          0.6,
+          1.625
+        ],
+        "size": [
+          1.4,
+          0.02,
+          0.16
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Plank_56",
+        "type": "box",
+        "center": [
+          2.4,
+          0.6,
+          1.875
+        ],
+        "size": [
+          1.4,
+          0.02,
+          0.16
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Plank_57",
+        "type": "box",
+        "center": [
+          2.4,
+          0.6,
+          2.125
+        ],
+        "size": [
+          1.4,
+          0.02,
+          0.16
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Plank_58",
+        "type": "box",
+        "center": [
+          2.4,
+          0.6,
+          2.375
+        ],
+        "size": [
+          1.4,
+          0.02,
+          0.16
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Plank_59",
+        "type": "box",
+        "center": [
+          2.4,
+          0.6,
+          2.625
+        ],
+        "size": [
+          1.4,
+          0.02,
+          0.16
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Plank_60",
+        "type": "box",
+        "center": [
+          2.4,
+          0.6,
+          2.875
+        ],
+        "size": [
+          1.4,
+          0.02,
+          0.16
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Plank_61",
+        "type": "box",
+        "center": [
+          2.4,
+          0.6,
+          3.125
+        ],
+        "size": [
+          1.4,
+          0.02,
+          0.16
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Plank_62",
+        "type": "box",
+        "center": [
+          2.4,
+          0.6,
+          3.375
+        ],
+        "size": [
+          1.4,
+          0.02,
+          0.16
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Plank_63",
+        "type": "box",
+        "center": [
+          2.4,
+          0.6,
+          3.625
+        ],
+        "size": [
+          1.4,
+          0.02,
+          0.16
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Plank_64",
+        "type": "box",
+        "center": [
+          2.4,
+          0.6,
+          3.875
+        ],
+        "size": [
+          1.4,
+          0.02,
+          0.16
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Stringer",
+        "type": "box",
+        "center": [
+          -2.4,
+          0.476,
+          0.0
+        ],
+        "size": [
+          0.03,
+          0.12,
+          7.43
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Stringer_2",
+        "type": "box",
+        "center": [
+          2.4,
+          0.476,
+          0.0
+        ],
+        "size": [
+          0.03,
+          0.12,
+          7.43
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Pile",
+        "type": "box",
+        "center": [
+          -2.4,
+          -0.385,
+          -3.0
+        ],
+        "size": [
+          0.16,
+          1.43,
+          0.16
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Pile_2",
+        "type": "box",
+        "center": [
+          -2.4,
+          -0.385,
+          -1.0
+        ],
+        "size": [
+          0.16,
+          1.43,
+          0.16
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Pile_3",
+        "type": "box",
+        "center": [
+          -2.4,
+          -0.385,
+          1.0
+        ],
+        "size": [
+          0.16,
+          1.43,
+          0.16
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Pile_4",
+        "type": "box",
+        "center": [
+          -2.4,
+          -0.385,
+          3.0
+        ],
+        "size": [
+          0.16,
+          1.43,
+          0.16
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Pile_5",
+        "type": "box",
+        "center": [
+          2.4,
+          -0.385,
+          -3.0
+        ],
+        "size": [
+          0.16,
+          1.43,
+          0.16
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Pile_6",
+        "type": "box",
+        "center": [
+          2.4,
+          -0.385,
+          -1.0
+        ],
+        "size": [
+          0.16,
+          1.43,
+          0.16
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Pile_7",
+        "type": "box",
+        "center": [
+          2.4,
+          -0.385,
+          1.0
+        ],
+        "size": [
+          0.16,
+          1.43,
+          0.16
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Pile_8",
+        "type": "box",
+        "center": [
+          2.4,
+          -0.385,
+          3.0
+        ],
+        "size": [
+          0.16,
+          1.43,
+          0.16
         ],
         "euler": [
           0,
@@ -2358,14 +3717,14 @@
         "name": "Climb_SideL",
         "type": "box",
         "center": [
-          -3.12,
+          -3.25,
           1.45,
-          0
+          0.0
         ],
         "size": [
-          0.12,
-          2.5,
-          4.16
+          0.06,
+          2.7399999999999998,
+          8.200000000000001
         ],
         "euler": [
           0,
@@ -2377,14 +3736,33 @@
         "name": "Climb_SideR",
         "type": "box",
         "center": [
-          3.12,
+          3.25,
           1.45,
-          0
+          0.0
         ],
         "size": [
-          0.12,
-          2.5,
-          4.16
+          0.06,
+          2.7399999999999998,
+          8.200000000000001
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Back",
+        "type": "box",
+        "center": [
+          0.0,
+          1.45,
+          -4.15
+        ],
+        "size": [
+          6.22,
+          2.7399999999999998,
+          0.06
         ],
         "euler": [
           0,
@@ -2396,14 +3774,14 @@
         "name": "Climb_FrontL",
         "type": "box",
         "center": [
-          -2.15,
-          1.15,
-          2.12
+          -2.3979999999999997,
+          1.28,
+          4.15
         ],
         "size": [
-          1.7,
-          1.9,
-          0.08
+          1.5159999999999996,
+          2.3,
+          0.06
         ],
         "euler": [
           0,
@@ -2415,14 +3793,14 @@
         "name": "Climb_FrontR",
         "type": "box",
         "center": [
-          2.15,
-          1.15,
-          2.12
+          2.3979999999999997,
+          1.28,
+          4.15
         ],
         "size": [
-          1.7,
-          1.9,
-          0.08
+          1.5159999999999996,
+          2.3,
+          0.06
         ],
         "euler": [
           0,
@@ -2431,17 +3809,17 @@
         ]
       },
       {
-        "name": "Climb_Header",
+        "name": "Col_Header",
         "type": "box",
         "center": [
-          0,
-          2.55,
-          2.12
+          0.0,
+          2.73,
+          4.15
         ],
         "size": [
-          6.0,
+          6.22,
           0.24,
-          0.1
+          0.06
         ],
         "euler": [
           0,
@@ -2450,64 +3828,139 @@
         ]
       },
       {
-        "name": "Col_RoofS",
+        "name": "Col_Beam",
         "type": "box",
         "center": [
           0.0,
-          3.4556372964607887,
-          -1.1939038637736779
+          2.48,
+          2.5
         ],
         "size": [
-          5.658,
-          0.04,
-          1.9329381780077706
+          2.92,
+          0.045,
+          0.06
         ],
         "euler": [
-          -31.67546873810922,
-          0.0,
-          0.0
+          0,
+          0,
+          0
         ]
       },
       {
-        "name": "Col_RoofN",
+        "name": "Col_Beam_2",
         "type": "box",
         "center": [
           0.0,
-          3.4556372964607887,
-          1.1939038637736779
+          2.48,
+          -1.1
         ],
         "size": [
-          5.658,
-          0.04,
-          1.9329381780077706
+          2.92,
+          0.045,
+          0.06
         ],
         "euler": [
-          31.67546873810922,
-          0.0,
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_BunkL",
+        "type": "box",
+        "center": [
+          -0.62,
+          0.28,
+          0.4
+        ],
+        "size": [
+          0.08,
+          0.06,
+          5.8
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_BunkR",
+        "type": "box",
+        "center": [
+          0.62,
+          0.28,
+          0.4
+        ],
+        "size": [
+          0.08,
+          0.06,
+          5.8
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_RoofR",
+        "type": "box",
+        "center": [
+          1.9814416433749829,
+          3.52831054994955,
           0.0
+        ],
+        "size": [
+          1.541249569508075,
+          0.018,
+          5.06
+        ],
+        "euler": [
+          0.0,
+          0.0,
+          -20.82089285331082
+        ]
+      },
+      {
+        "name": "Col_RoofL",
+        "type": "box",
+        "center": [
+          -1.9814416433749829,
+          3.52831054994955,
+          0.0
+        ],
+        "size": [
+          1.541249569508075,
+          0.018,
+          5.06
+        ],
+        "euler": [
+          0.0,
+          0.0,
+          20.82089285331082
         ]
       }
     ],
     "climbable": true,
     "vaultable": false,
     "vaultHeight": 0.0,
-    "climbNote": "Side and back walls are cling. The slip opening on +Z is empty. Roof slopes are landings.",
-    "vaultNote": "No rail. Wall top is 2.7 m.",
+    "climbNote": "Side and back walls are cling. The slip on +Z is empty. Roof slopes are landings.",
+    "vaultNote": "No rail. Wall top is 2.90 m.",
     "warnings": [],
     "fbxNames": [
       "LODBoxS",
       "LOD0",
-      "LOD1",
-      "LOD2"
+      "LOD1"
     ],
-    "slackCm": 0.02,
-    "fbx": "Assets/Art/Props/Library/Harbor/Boathouse.fbx",
+    "slackCm": 0.0,
     "license": {
       "spdx": "CC0-1.0",
       "source": "original",
       "url": "",
       "notes": "Procedural mesh built in this repo."
-    }
+    },
+    "fbx": "Assets/Art/Props/Library/Harbor/Boathouse.fbx"
   },
   {
     "name": "Bollard",
@@ -3109,19 +4562,6 @@
         ],
         "mesh": "LOD1",
         "fileID": -179393741545503174
-      },
-      {
-        "lod": 2,
-        "tris": 312,
-        "materials": [
-          "Lib_Brick",
-          "Lib_Concrete",
-          "Lib_Wood",
-          "Lib_WoodDark",
-          "Lib_ShopGlass"
-        ],
-        "mesh": "LOD2",
-        "fileID": 736115405485880582
       }
     ],
     "colliders": [
@@ -3192,17 +4632,16 @@
     "fbxNames": [
       "LODBoxS",
       "LOD0",
-      "LOD1",
-      "LOD2"
+      "LOD1"
     ],
     "slackCm": 0.47,
-    "fbx": "Assets/Art/Props/Library/Buildings/Brick_Wall.fbx",
     "license": {
       "spdx": "CC0-1.0",
       "source": "original",
       "url": "",
       "notes": "Procedural mesh built in this repo."
-    }
+    },
+    "fbx": "Assets/Art/Props/Library/Buildings/Brick_Wall.fbx"
   },
   {
     "name": "Brick_Window",
@@ -4316,13 +5755,32 @@
         "type": "box",
         "center": [
           0,
-          1.29,
+          1.16,
           0
         ],
         "size": [
           1.96,
-          2.14,
+          2.32,
           5.539999999999999
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Roof",
+        "type": "box",
+        "center": [
+          0,
+          2.51,
+          0
+        ],
+        "size": [
+          2.04,
+          0.06,
+          5.56
         ],
         "euler": [
           0,
@@ -4344,13 +5802,13 @@
       "LOD2"
     ],
     "slackCm": 0.0,
-    "fbx": "Assets/Art/Props/Library/Harbor/Container_20.fbx",
     "license": {
       "spdx": "CC0-1.0",
       "source": "original",
       "url": "",
       "notes": "Procedural mesh built in this repo."
-    }
+    },
+    "fbx": "Assets/Art/Props/Library/Harbor/Container_20.fbx"
   },
   {
     "name": "Container_40",
@@ -4414,13 +5872,32 @@
         "type": "box",
         "center": [
           0,
-          1.29,
+          1.16,
           0
         ],
         "size": [
           1.96,
-          2.14,
+          2.32,
           11.67
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Roof",
+        "type": "box",
+        "center": [
+          0,
+          2.51,
+          0
+        ],
+        "size": [
+          2.04,
+          0.06,
+          11.69
         ],
         "euler": [
           0,
@@ -4442,13 +5919,13 @@
       "LOD2"
     ],
     "slackCm": 0.0,
-    "fbx": "Assets/Art/Props/Library/Harbor/Container_40.fbx",
     "license": {
       "spdx": "CC0-1.0",
       "source": "original",
       "url": "",
       "notes": "Procedural mesh built in this repo."
-    }
+    },
+    "fbx": "Assets/Art/Props/Library/Harbor/Container_40.fbx"
   },
   {
     "name": "Court",
@@ -4832,18 +6309,6 @@
         ],
         "mesh": "LOD1",
         "fileID": -179393741545503174
-      },
-      {
-        "lod": 2,
-        "tris": 136,
-        "materials": [
-          "Lib_Concrete",
-          "Lib_SteelDark",
-          "Lib_Steel",
-          "Lib_CraneYellow"
-        ],
-        "mesh": "LOD2",
-        "fileID": 736115405485880582
       }
     ],
     "colliders": [
@@ -5033,17 +6498,16 @@
     "fbxNames": [
       "LODBoxS",
       "LOD0",
-      "LOD1",
-      "LOD2"
+      "LOD1"
     ],
     "slackCm": 0.0,
-    "fbx": "Assets/Art/Props/Library/Harbor/HarborCrane.fbx",
     "license": {
       "spdx": "CC0-1.0",
       "source": "original",
       "url": "",
       "notes": "Procedural mesh built in this repo."
-    }
+    },
+    "fbx": "Assets/Art/Props/Library/Harbor/HarborCrane.fbx"
   },
   {
     "name": "Crate",
@@ -6190,13 +7654,12 @@
       },
       {
         "lod": 2,
-        "tris": 672,
+        "tris": 336,
         "materials": [
           "Lib_PileWet",
           "Lib_PileAlgae",
           "Lib_Pile",
           "Lib_WoodDark",
-          "Lib_Wood",
           "Lib_WoodWeather"
         ],
         "mesh": "LOD2",
@@ -6374,12 +7837,12 @@
         "type": "box",
         "center": [
           0,
-          0.5995,
+          0.6015,
           -2.875
         ],
         "size": [
           2.4,
-          0.025199999999999997,
+          0.036,
           0.17200000000000001
         ],
         "euler": [
@@ -6393,12 +7856,12 @@
         "type": "box",
         "center": [
           0,
-          0.599,
+          0.601,
           -2.625
         ],
         "size": [
           2.4,
-          0.025199999999999997,
+          0.036,
           0.17200000000000001
         ],
         "euler": [
@@ -6412,12 +7875,12 @@
         "type": "box",
         "center": [
           0,
-          0.5985,
+          0.6005,
           -2.375
         ],
         "size": [
           2.4,
-          0.025199999999999997,
+          0.036,
           0.17200000000000001
         ],
         "euler": [
@@ -6431,12 +7894,12 @@
         "type": "box",
         "center": [
           0,
-          0.6,
+          0.602,
           -2.125
         ],
         "size": [
           2.4,
-          0.025199999999999997,
+          0.036,
           0.17200000000000001
         ],
         "euler": [
@@ -6450,12 +7913,12 @@
         "type": "box",
         "center": [
           0,
-          0.5995,
+          0.6015,
           -1.875
         ],
         "size": [
           2.4,
-          0.025199999999999997,
+          0.036,
           0.17200000000000001
         ],
         "euler": [
@@ -6469,12 +7932,12 @@
         "type": "box",
         "center": [
           0,
-          0.599,
+          0.601,
           -1.625
         ],
         "size": [
           2.4,
-          0.025199999999999997,
+          0.036,
           0.17200000000000001
         ],
         "euler": [
@@ -6488,12 +7951,12 @@
         "type": "box",
         "center": [
           0,
-          0.5985,
+          0.6005,
           -1.375
         ],
         "size": [
           2.4,
-          0.025199999999999997,
+          0.036,
           0.17200000000000001
         ],
         "euler": [
@@ -6507,12 +7970,12 @@
         "type": "box",
         "center": [
           0,
-          0.6,
+          0.602,
           -1.125
         ],
         "size": [
           2.4,
-          0.025199999999999997,
+          0.036,
           0.17200000000000001
         ],
         "euler": [
@@ -6526,12 +7989,12 @@
         "type": "box",
         "center": [
           0,
-          0.5995,
+          0.6015,
           -0.875
         ],
         "size": [
           2.4,
-          0.025199999999999997,
+          0.036,
           0.17200000000000001
         ],
         "euler": [
@@ -6545,12 +8008,12 @@
         "type": "box",
         "center": [
           0,
-          0.599,
+          0.601,
           -0.625
         ],
         "size": [
           2.4,
-          0.025199999999999997,
+          0.036,
           0.17200000000000001
         ],
         "euler": [
@@ -6564,12 +8027,12 @@
         "type": "box",
         "center": [
           0,
-          0.5985,
+          0.6005,
           -0.375
         ],
         "size": [
           2.4,
-          0.025199999999999997,
+          0.036,
           0.17200000000000001
         ],
         "euler": [
@@ -6583,12 +8046,12 @@
         "type": "box",
         "center": [
           0,
-          0.6,
+          0.602,
           -0.125
         ],
         "size": [
           2.4,
-          0.025199999999999997,
+          0.036,
           0.17200000000000001
         ],
         "euler": [
@@ -6602,12 +8065,12 @@
         "type": "box",
         "center": [
           0,
-          0.5995,
+          0.6015,
           0.125
         ],
         "size": [
           2.4,
-          0.025199999999999997,
+          0.036,
           0.17200000000000001
         ],
         "euler": [
@@ -6621,12 +8084,12 @@
         "type": "box",
         "center": [
           0,
-          0.599,
+          0.601,
           0.375
         ],
         "size": [
           2.4,
-          0.025199999999999997,
+          0.036,
           0.17200000000000001
         ],
         "euler": [
@@ -6640,12 +8103,12 @@
         "type": "box",
         "center": [
           0,
-          0.5985,
+          0.6005,
           0.625
         ],
         "size": [
           2.4,
-          0.025199999999999997,
+          0.036,
           0.17200000000000001
         ],
         "euler": [
@@ -6659,12 +8122,12 @@
         "type": "box",
         "center": [
           0,
-          0.6,
+          0.602,
           0.875
         ],
         "size": [
           2.4,
-          0.025199999999999997,
+          0.036,
           0.17200000000000001
         ],
         "euler": [
@@ -6678,12 +8141,12 @@
         "type": "box",
         "center": [
           0,
-          0.5995,
+          0.6015,
           1.125
         ],
         "size": [
           2.4,
-          0.025199999999999997,
+          0.036,
           0.17200000000000001
         ],
         "euler": [
@@ -6697,12 +8160,12 @@
         "type": "box",
         "center": [
           0,
-          0.599,
+          0.601,
           1.375
         ],
         "size": [
           2.4,
-          0.025199999999999997,
+          0.036,
           0.17200000000000001
         ],
         "euler": [
@@ -6716,12 +8179,12 @@
         "type": "box",
         "center": [
           0,
-          0.5985,
+          0.6005,
           1.625
         ],
         "size": [
           2.4,
-          0.025199999999999997,
+          0.036,
           0.17200000000000001
         ],
         "euler": [
@@ -6735,12 +8198,12 @@
         "type": "box",
         "center": [
           0,
-          0.6,
+          0.602,
           1.875
         ],
         "size": [
           2.4,
-          0.025199999999999997,
+          0.036,
           0.17200000000000001
         ],
         "euler": [
@@ -6754,12 +8217,12 @@
         "type": "box",
         "center": [
           0,
-          0.5995,
+          0.6015,
           2.125
         ],
         "size": [
           2.4,
-          0.025199999999999997,
+          0.036,
           0.17200000000000001
         ],
         "euler": [
@@ -6773,12 +8236,12 @@
         "type": "box",
         "center": [
           0,
-          0.599,
+          0.601,
           2.375
         ],
         "size": [
           2.4,
-          0.025199999999999997,
+          0.036,
           0.17200000000000001
         ],
         "euler": [
@@ -6792,12 +8255,12 @@
         "type": "box",
         "center": [
           0,
-          0.5985,
+          0.6005,
           2.625
         ],
         "size": [
           2.4,
-          0.025199999999999997,
+          0.036,
           0.17200000000000001
         ],
         "euler": [
@@ -6811,12 +8274,12 @@
         "type": "box",
         "center": [
           0,
-          0.6,
+          0.602,
           2.875
         ],
         "size": [
           2.4,
-          0.025199999999999997,
+          0.036,
           0.17200000000000001
         ],
         "euler": [
@@ -7798,18 +9261,6 @@
         ],
         "mesh": "LOD1",
         "fileID": -179393741545503174
-      },
-      {
-        "lod": 2,
-        "tris": 120,
-        "materials": [
-          "Lib_Siding",
-          "Lib_PaintWhite",
-          "Lib_Concrete",
-          "Lib_Roof"
-        ],
-        "mesh": "LOD2",
-        "fileID": 736115405485880582
       }
     ],
     "colliders": [
@@ -8032,17 +9483,16 @@
     "fbxNames": [
       "LODBoxS",
       "LOD0",
-      "LOD1",
-      "LOD2"
+      "LOD1"
     ],
     "slackCm": 0.19,
-    "fbx": "Assets/Art/Props/Library/Buildings/Garage.fbx",
     "license": {
       "spdx": "CC0-1.0",
       "source": "original",
       "url": "",
       "notes": "Procedural mesh built in this repo."
-    }
+    },
+    "fbx": "Assets/Art/Props/Library/Buildings/Garage.fbx"
   },
   {
     "name": "GasCanopy",
@@ -8105,19 +9555,13 @@
       },
       {
         "lod": 2,
-        "tris": 1064,
+        "tris": 120,
         "materials": [
           "Lib_Asphalt",
           "Lib_PaintWhite",
-          "Lib_PaintRed",
           "Lib_Steel",
-          "Lib_Black",
-          "Lib_PaintYellow",
-          "Lib_Concrete",
           "Lib_Siding",
-          "Lib_Roof",
-          "Lib_WoodDark",
-          "Lib_ShopGlass"
+          "Lib_Roof"
         ],
         "mesh": "LOD2",
         "fileID": 736115405485880582
@@ -9651,12 +11095,12 @@
     "lods": [
       {
         "lod": 0,
-        "tris": 2000,
+        "tris": 2096,
         "materials": [
           "Lib_Siding",
-          "Lib_PaintWhite",
           "Lib_Concrete",
           "Lib_Window",
+          "Lib_PaintWhite",
           "Lib_Interior",
           "Lib_WoodDark",
           "Lib_Wood",
@@ -9670,12 +11114,12 @@
       },
       {
         "lod": 1,
-        "tris": 1724,
+        "tris": 1820,
         "materials": [
           "Lib_Siding",
-          "Lib_PaintWhite",
           "Lib_Concrete",
           "Lib_Window",
+          "Lib_PaintWhite",
           "Lib_Interior",
           "Lib_WoodDark",
           "Lib_Wood",
@@ -9688,14 +11132,9 @@
       },
       {
         "lod": 2,
-        "tris": 1624,
+        "tris": 48,
         "materials": [
           "Lib_Siding",
-          "Lib_PaintWhite",
-          "Lib_Concrete",
-          "Lib_Window",
-          "Lib_Interior",
-          "Lib_WoodDark",
           "Lib_Wood",
           "Lib_Roof",
           "Lib_Brick"
@@ -9913,11 +11352,11 @@
         "center": [
           -2.0238400000000003,
           1.52,
-          2.01
+          2.058
         ],
         "size": [
-          0.6766,
-          0.8975999999999998,
+          0.646,
+          0.867,
           0.008
         ],
         "euler": [
@@ -9951,11 +11390,11 @@
         "center": [
           2.0238400000000003,
           1.52,
-          2.01
+          2.058
         ],
         "size": [
-          0.6766,
-          0.8975999999999998,
+          0.646,
+          0.867,
           0.008
         ],
         "euler": [
@@ -10103,11 +11542,11 @@
         "center": [
           -1.0119200000000002,
           1.5,
-          -4.45
+          -4.498
         ],
         "size": [
-          0.6426,
-          0.8466,
+          0.612,
+          0.8160000000000001,
           0.008
         ],
         "euler": [
@@ -10122,11 +11561,11 @@
         "center": [
           1.0119200000000002,
           1.5,
-          -4.45
+          -4.498
         ],
         "size": [
-          0.6426,
-          0.8466,
+          0.612,
+          0.8160000000000001,
           0.008
         ],
         "euler": [
@@ -10272,14 +11711,14 @@
         "name": "Col_Glass_5",
         "type": "box",
         "center": [
-          3.63,
+          3.678,
           1.5,
           -0.89992
         ],
         "size": [
           0.008,
-          0.8466,
-          0.6426
+          0.8160000000000001,
+          0.612
         ],
         "euler": [
           0,
@@ -10291,14 +11730,14 @@
         "name": "Col_Glass_6",
         "type": "box",
         "center": [
-          3.63,
+          3.678,
           1.5,
           0.89992
         ],
         "size": [
           0.008,
-          0.8466,
-          0.6426
+          0.8160000000000001,
+          0.612
         ],
         "euler": [
           0,
@@ -10443,14 +11882,14 @@
         "name": "Col_Glass_7",
         "type": "box",
         "center": [
-          -3.63,
+          -3.678,
           1.5,
           -0.89992
         ],
         "size": [
           0.008,
-          0.8466,
-          0.6426
+          0.8160000000000001,
+          0.612
         ],
         "euler": [
           0,
@@ -10462,14 +11901,14 @@
         "name": "Col_Glass_8",
         "type": "box",
         "center": [
-          -3.63,
+          -3.678,
           1.5,
           0.89992
         ],
         "size": [
           0.008,
-          0.8466,
-          0.6426
+          0.8160000000000001,
+          0.612
         ],
         "euler": [
           0,
@@ -10586,13 +12025,13 @@
       "LOD2"
     ],
     "slackCm": 1.9,
-    "fbx": "Assets/Art/Props/Library/Buildings/House_Gable.fbx",
     "license": {
       "spdx": "CC0-1.0",
       "source": "original",
       "url": "",
       "notes": "Procedural mesh built in this repo."
-    }
+    },
+    "fbx": "Assets/Art/Props/Library/Buildings/House_Gable.fbx"
   },
   {
     "name": "House_Hip",
@@ -10616,12 +12055,12 @@
     "lods": [
       {
         "lod": 0,
-        "tris": 2008,
+        "tris": 2104,
         "materials": [
           "Lib_PaintCream",
-          "Lib_PaintWhite",
           "Lib_Concrete",
           "Lib_Window",
+          "Lib_PaintWhite",
           "Lib_Interior",
           "Lib_WoodDark",
           "Lib_Wood",
@@ -10635,12 +12074,12 @@
       },
       {
         "lod": 1,
-        "tris": 1732,
+        "tris": 1828,
         "materials": [
           "Lib_PaintCream",
-          "Lib_PaintWhite",
           "Lib_Concrete",
           "Lib_Window",
+          "Lib_PaintWhite",
           "Lib_Interior",
           "Lib_WoodDark",
           "Lib_Wood",
@@ -10653,14 +12092,9 @@
       },
       {
         "lod": 2,
-        "tris": 1592,
+        "tris": 48,
         "materials": [
           "Lib_PaintCream",
-          "Lib_PaintWhite",
-          "Lib_Concrete",
-          "Lib_Window",
-          "Lib_Interior",
-          "Lib_WoodDark",
           "Lib_Wood",
           "Lib_Roof",
           "Lib_Brick"
@@ -10878,11 +12312,11 @@
         "center": [
           -2.2478400000000005,
           1.52,
-          2.2600000000000002
+          2.3080000000000003
         ],
         "size": [
-          0.6766,
-          0.8975999999999998,
+          0.646,
+          0.867,
           0.008
         ],
         "euler": [
@@ -10916,11 +12350,11 @@
         "center": [
           2.2478400000000005,
           1.52,
-          2.2600000000000002
+          2.3080000000000003
         ],
         "size": [
-          0.6766,
-          0.8975999999999998,
+          0.646,
+          0.867,
           0.008
         ],
         "euler": [
@@ -11068,11 +12502,11 @@
         "center": [
           -1.1239200000000003,
           1.5,
-          -4.6
+          -4.648
         ],
         "size": [
-          0.6426,
-          0.8466,
+          0.612,
+          0.8160000000000001,
           0.008
         ],
         "euler": [
@@ -11087,11 +12521,11 @@
         "center": [
           1.1239200000000003,
           1.5,
-          -4.6
+          -4.648
         ],
         "size": [
-          0.6426,
-          0.8466,
+          0.612,
+          0.8160000000000001,
           0.008
         ],
         "euler": [
@@ -11237,14 +12671,14 @@
         "name": "Col_Glass_5",
         "type": "box",
         "center": [
-          4.03,
+          4.078,
           1.5,
           -0.9559200000000001
         ],
         "size": [
           0.008,
-          0.8466,
-          0.6426
+          0.8160000000000001,
+          0.612
         ],
         "euler": [
           0,
@@ -11256,14 +12690,14 @@
         "name": "Col_Glass_6",
         "type": "box",
         "center": [
-          4.03,
+          4.078,
           1.5,
           0.9559200000000001
         ],
         "size": [
           0.008,
-          0.8466,
-          0.6426
+          0.8160000000000001,
+          0.612
         ],
         "euler": [
           0,
@@ -11408,14 +12842,14 @@
         "name": "Col_Glass_7",
         "type": "box",
         "center": [
-          -4.03,
+          -4.078,
           1.5,
           -0.9559200000000001
         ],
         "size": [
           0.008,
-          0.8466,
-          0.6426
+          0.8160000000000001,
+          0.612
         ],
         "euler": [
           0,
@@ -11427,14 +12861,14 @@
         "name": "Col_Glass_8",
         "type": "box",
         "center": [
-          -4.03,
+          -4.078,
           1.5,
           0.9559200000000001
         ],
         "size": [
           0.008,
-          0.8466,
-          0.6426
+          0.8160000000000001,
+          0.612
         ],
         "euler": [
           0,
@@ -11550,14 +12984,14 @@
       "LOD1",
       "LOD2"
     ],
-    "slackCm": 2.02,
-    "fbx": "Assets/Art/Props/Library/Buildings/House_Hip.fbx",
+    "slackCm": 1.9,
     "license": {
       "spdx": "CC0-1.0",
       "source": "original",
       "url": "",
       "notes": "Procedural mesh built in this repo."
-    }
+    },
+    "fbx": "Assets/Art/Props/Library/Buildings/House_Hip.fbx"
   },
   {
     "name": "LaneArrow",
@@ -16971,16 +18405,6 @@
         ],
         "mesh": "LOD1",
         "fileID": -179393741545503174
-      },
-      {
-        "lod": 2,
-        "tris": 36,
-        "materials": [
-          "Lib_Brick",
-          "Lib_Concrete"
-        ],
-        "mesh": "LOD2",
-        "fileID": 736115405485880582
       }
     ],
     "colliders": [
@@ -17051,17 +18475,16 @@
     "fbxNames": [
       "LODBoxS",
       "LOD0",
-      "LOD1",
-      "LOD2"
+      "LOD1"
     ],
     "slackCm": 2.2,
-    "fbx": "Assets/Art/Props/Library/Buildings/Roof_Parapet.fbx",
     "license": {
       "spdx": "CC0-1.0",
       "source": "original",
       "url": "",
       "notes": "Procedural mesh built in this repo."
-    }
+    },
+    "fbx": "Assets/Art/Props/Library/Buildings/Roof_Parapet.fbx"
   },
   {
     "name": "RooftopAC",
@@ -17104,17 +18527,6 @@
         ],
         "mesh": "LOD1",
         "fileID": -179393741545503174
-      },
-      {
-        "lod": 2,
-        "tris": 132,
-        "materials": [
-          "Lib_SteelDark",
-          "Lib_Steel",
-          "Lib_Black"
-        ],
-        "mesh": "LOD2",
-        "fileID": 736115405485880582
       }
     ],
     "colliders": [
@@ -17185,17 +18597,16 @@
     "fbxNames": [
       "LODBoxS",
       "LOD0",
-      "LOD1",
-      "LOD2"
+      "LOD1"
     ],
     "slackCm": 2.8,
-    "fbx": "Assets/Art/Props/Library/Buildings/RooftopAC.fbx",
     "license": {
       "spdx": "CC0-1.0",
       "source": "original",
       "url": "",
       "notes": "Procedural mesh built in this repo."
-    }
+    },
+    "fbx": "Assets/Art/Props/Library/Buildings/RooftopAC.fbx"
   },
   {
     "name": "RopeCoil",
@@ -17544,18 +18955,6 @@
         ],
         "mesh": "LOD1",
         "fileID": -179393741545503174
-      },
-      {
-        "lod": 2,
-        "tris": 96,
-        "materials": [
-          "Lib_Brick",
-          "Lib_Window",
-          "Lib_SteelDark",
-          "Lib_WoodDark"
-        ],
-        "mesh": "LOD2",
-        "fileID": 736115405485880582
       }
     ],
     "colliders": [
@@ -17683,17 +19082,16 @@
     "fbxNames": [
       "LODBoxS",
       "LOD0",
-      "LOD1",
-      "LOD2"
+      "LOD1"
     ],
     "slackCm": 1.5,
-    "fbx": "Assets/Art/Props/Library/Buildings/ShopFront.fbx",
     "license": {
       "spdx": "CC0-1.0",
       "source": "original",
       "url": "",
       "notes": "Procedural mesh built in this repo."
-    }
+    },
+    "fbx": "Assets/Art/Props/Library/Buildings/ShopFront.fbx"
   },
   {
     "name": "Shrub",
@@ -18128,12 +19526,12 @@
     "category": "Buildings",
     "blurb": "Corner shop, 8.0 x 7.2 m, two stories to a 6.4 m parapet. Glazed MARKET shopfronts on +Z and +X: kickplate, mullions, a recessed door with a transom, sign band, brick string course, and a sloped awning. Alley face is -Z.",
     "size": [
-      9.44,
+      9.59,
       7.725,
       9.25
     ],
     "min": [
-      -4.11,
+      -4.26,
       -0.005,
       -4.32
     ],
@@ -18145,12 +19543,12 @@
     "lods": [
       {
         "lod": 0,
-        "tris": 4732,
+        "tris": 6004,
         "materials": [
           "Lib_Brick",
-          "Lib_PaintCream",
           "Lib_Concrete",
           "Lib_Window",
+          "Lib_PaintCream",
           "Lib_WindowLit",
           "Lib_Interior",
           "Lib_Brass",
@@ -18168,12 +19566,12 @@
       },
       {
         "lod": 1,
-        "tris": 3388,
+        "tris": 4732,
         "materials": [
           "Lib_Brick",
-          "Lib_PaintCream",
           "Lib_Concrete",
           "Lib_Window",
+          "Lib_PaintCream",
           "Lib_WindowLit",
           "Lib_Interior",
           "Lib_SteelDark",
@@ -18189,20 +19587,11 @@
       },
       {
         "lod": 2,
-        "tris": 2676,
+        "tris": 344,
         "materials": [
           "Lib_Brick",
-          "Lib_PaintCream",
           "Lib_Concrete",
-          "Lib_Window",
-          "Lib_WindowLit",
-          "Lib_Interior",
-          "Lib_ShopGlass",
-          "Lib_Wood",
-          "Lib_WoodDark",
-          "Lib_SteelDark",
-          "Lib_PaintRed",
-          "Lib_Awning"
+          "Lib_PaintCream"
         ],
         "mesh": "LOD2",
         "fileID": 736115405485880582
@@ -18576,11 +19965,11 @@
         "center": [
           -1.7612,
           5.525,
-          3.41
+          3.458
         ],
         "size": [
-          0.8720999999999998,
-          0.8720999999999998,
+          0.8414999999999999,
+          0.8414999999999999,
           0.008
         ],
         "euler": [
@@ -18595,11 +19984,11 @@
         "center": [
           0.0,
           5.525,
-          3.41
+          3.458
         ],
         "size": [
-          0.8720999999999998,
-          0.8720999999999998,
+          0.8414999999999999,
+          0.8414999999999999,
           0.008
         ],
         "euler": [
@@ -18614,11 +20003,11 @@
         "center": [
           1.7612,
           5.525,
-          3.41
+          3.458
         ],
         "size": [
-          0.8720999999999998,
-          0.8720999999999998,
+          0.8414999999999999,
+          0.8414999999999999,
           0.008
         ],
         "euler": [
@@ -18766,11 +20155,11 @@
         "center": [
           -1.3586399999999998,
           1.15,
-          -3.41
+          -3.458
         ],
         "size": [
-          0.7445999999999999,
-          1.7220999999999997,
+          0.714,
+          1.6915,
           0.008
         ],
         "euler": [
@@ -18785,11 +20174,11 @@
         "center": [
           1.66056,
           3.968,
-          -3.41
+          -3.458
         ],
         "size": [
-          0.6596,
-          0.7871,
+          0.629,
+          0.7565,
           0.008
         ],
         "euler": [
@@ -18884,7 +20273,7 @@
         ],
         "size": [
           0.14,
-          2.3600000000000003,
+          2.3200000000000003,
           1.0496999999999999
         ],
         "euler": [
@@ -18979,7 +20368,7 @@
         ],
         "size": [
           0.14,
-          2.3600000000000003,
+          2.3200000000000003,
           1.0495999999999999
         ],
         "euler": [
@@ -19074,7 +20463,7 @@
         ],
         "size": [
           0.14,
-          2.3600000000000003,
+          2.3200000000000003,
           1.0496999999999999
         ],
         "euler": [
@@ -19163,14 +20552,14 @@
         "name": "Col_Glass_6",
         "type": "box",
         "center": [
-          3.81,
+          3.858,
           5.525,
           -1.5745333333333336
         ],
         "size": [
           0.008,
-          0.8720999999999998,
-          0.8123279999999999
+          0.8414999999999999,
+          0.781728
         ],
         "euler": [
           0,
@@ -19182,14 +20571,14 @@
         "name": "Col_Glass_7",
         "type": "box",
         "center": [
-          3.81,
+          3.858,
           5.525,
           0.0
         ],
         "size": [
           0.008,
-          0.8720999999999998,
-          0.8123279999999999
+          0.8414999999999999,
+          0.781728
         ],
         "euler": [
           0,
@@ -19201,14 +20590,14 @@
         "name": "Col_Glass_8",
         "type": "box",
         "center": [
-          3.81,
+          3.858,
           5.525,
           1.5745333333333336
         ],
         "size": [
           0.008,
-          0.8720999999999998,
-          0.8123279999999999
+          0.8414999999999999,
+          0.781728
         ],
         "euler": [
           0,
@@ -19296,14 +20685,14 @@
         "name": "Col_Glass_9",
         "type": "box",
         "center": [
-          -3.81,
+          -3.858,
           3.968,
           0.0
         ],
         "size": [
           0.008,
-          0.8720999999999998,
-          0.9145999999999999
+          0.8414999999999999,
+          0.884
         ],
         "euler": [
           0,
@@ -19388,12 +20777,88 @@
         ]
       },
       {
+        "name": "Col_String",
+        "type": "box",
+        "center": [
+          0.0,
+          3.52,
+          3.66
+        ],
+        "size": [
+          7.616000000000001,
+          0.04,
+          0.03
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_String_2",
+        "type": "box",
+        "center": [
+          4.0600000000000005,
+          3.52,
+          0.0
+        ],
+        "size": [
+          0.03,
+          0.04,
+          6.816
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Cornice",
+        "type": "box",
+        "center": [
+          0.0,
+          3.68,
+          3.7700000000000005
+        ],
+        "size": [
+          7.736000000000001,
+          0.08,
+          0.08
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Cornice_2",
+        "type": "box",
+        "center": [
+          4.17,
+          3.68,
+          0.0
+        ],
+        "size": [
+          0.08,
+          0.08,
+          6.936000000000001
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
         "name": "Col_Kick",
         "type": "box",
         "center": [
           -2.9416666666666673,
-          0.24,
-          3.49
+          0.265,
+          3.5300000000000002
         ],
         "size": [
           0.9046666666666665,
@@ -19411,8 +20876,8 @@
         "type": "box",
         "center": [
           -1.9770000000000003,
-          0.24,
-          3.49
+          0.265,
+          3.5300000000000002
         ],
         "size": [
           0.9046666666666667,
@@ -19430,8 +20895,8 @@
         "type": "box",
         "center": [
           -1.0123333333333338,
-          0.24,
-          3.49
+          0.265,
+          3.5300000000000002
         ],
         "size": [
           0.9046666666666667,
@@ -19449,8 +20914,8 @@
         "type": "box",
         "center": [
           1.0123333333333333,
-          0.24,
-          3.49
+          0.265,
+          3.5300000000000002
         ],
         "size": [
           0.9046666666666667,
@@ -19468,8 +20933,8 @@
         "type": "box",
         "center": [
           1.977,
-          0.24,
-          3.49
+          0.265,
+          3.5300000000000002
         ],
         "size": [
           0.9046666666666665,
@@ -19487,8 +20952,8 @@
         "type": "box",
         "center": [
           2.941666666666667,
-          0.24,
-          3.49
+          0.265,
+          3.5300000000000002
         ],
         "size": [
           0.904666666666667,
@@ -19507,7 +20972,7 @@
         "center": [
           -2.9416666666666673,
           1.5275,
-          3.5450000000000004
+          3.4600000000000004
         ],
         "size": [
           0.8846666666666666,
@@ -19526,7 +20991,7 @@
         "center": [
           -1.9770000000000003,
           1.5275,
-          3.5450000000000004
+          3.4600000000000004
         ],
         "size": [
           0.8846666666666668,
@@ -19545,7 +21010,7 @@
         "center": [
           -1.0123333333333338,
           1.5275,
-          3.5450000000000004
+          3.4600000000000004
         ],
         "size": [
           0.8846666666666668,
@@ -19564,7 +21029,7 @@
         "center": [
           1.0123333333333333,
           1.5275,
-          3.5450000000000004
+          3.4600000000000004
         ],
         "size": [
           0.8846666666666668,
@@ -19583,7 +21048,7 @@
         "center": [
           1.977,
           1.5275,
-          3.5450000000000004
+          3.4600000000000004
         ],
         "size": [
           0.8846666666666666,
@@ -19602,7 +21067,7 @@
         "center": [
           2.941666666666667,
           1.5275,
-          3.5450000000000004
+          3.4600000000000004
         ],
         "size": [
           0.884666666666667,
@@ -19624,9 +21089,9 @@
           2.99
         ],
         "size": [
-          0.8246666666666667,
-          0.016,
-          0.14
+          0.5277866666666666,
+          0.008,
+          0.05
         ],
         "euler": [
           0,
@@ -19643,9 +21108,9 @@
           2.99
         ],
         "size": [
-          0.8246666666666667,
-          0.016,
-          0.14
+          0.5277866666666666,
+          0.008,
+          0.05
         ],
         "euler": [
           0,
@@ -19662,9 +21127,9 @@
           2.99
         ],
         "size": [
-          0.8246666666666669,
-          0.016,
-          0.14
+          0.5277866666666668,
+          0.008,
+          0.05
         ],
         "euler": [
           0,
@@ -19681,9 +21146,9 @@
           2.99
         ],
         "size": [
-          0.8246666666666669,
-          0.016,
-          0.14
+          0.5277866666666668,
+          0.008,
+          0.05
         ],
         "euler": [
           0,
@@ -19700,9 +21165,9 @@
           2.99
         ],
         "size": [
-          0.8246666666666669,
-          0.016,
-          0.14
+          0.5277866666666668,
+          0.008,
+          0.05
         ],
         "euler": [
           0,
@@ -19719,9 +21184,9 @@
           2.99
         ],
         "size": [
-          0.8246666666666669,
-          0.016,
-          0.14
+          0.5277866666666668,
+          0.008,
+          0.05
         ],
         "euler": [
           0,
@@ -19738,9 +21203,9 @@
           2.99
         ],
         "size": [
-          0.8246666666666669,
-          0.016,
-          0.14
+          0.5277866666666668,
+          0.008,
+          0.05
         ],
         "euler": [
           0,
@@ -19757,9 +21222,9 @@
           2.99
         ],
         "size": [
-          0.8246666666666669,
-          0.016,
-          0.14
+          0.5277866666666668,
+          0.008,
+          0.05
         ],
         "euler": [
           0,
@@ -19776,9 +21241,9 @@
           2.99
         ],
         "size": [
-          0.8246666666666667,
-          0.016,
-          0.14
+          0.5277866666666666,
+          0.008,
+          0.05
         ],
         "euler": [
           0,
@@ -19795,47 +21260,9 @@
           2.99
         ],
         "size": [
-          0.8246666666666667,
-          0.016,
-          0.14
-        ],
-        "euler": [
-          0,
-          0,
-          0
-        ]
-      },
-      {
-        "name": "Col_Shelf_11",
-        "type": "box",
-        "center": [
-          2.941666666666667,
-          1.08,
-          2.99
-        ],
-        "size": [
-          0.8246666666666671,
-          0.016,
-          0.14
-        ],
-        "euler": [
-          0,
-          0,
-          0
-        ]
-      },
-      {
-        "name": "Col_Shelf_12",
-        "type": "box",
-        "center": [
-          2.941666666666667,
-          1.58,
-          2.99
-        ],
-        "size": [
-          0.8246666666666671,
-          0.016,
-          0.14
+          0.5277866666666666,
+          0.008,
+          0.05
         ],
         "euler": [
           0,
@@ -19887,7 +21314,7 @@
         "center": [
           0.0,
           2.3550000000000004,
-          3.5450000000000004
+          3.4600000000000004
         ],
         "size": [
           0.82,
@@ -19939,144 +21366,11 @@
         ]
       },
       {
-        "name": "Col_String",
-        "type": "box",
-        "center": [
-          0.0,
-          3.56,
-          3.6550000000000002
-        ],
-        "size": [
-          7.268,
-          0.07,
-          0.035
-        ],
-        "euler": [
-          0,
-          0,
-          0
-        ]
-      },
-      {
-        "name": "Col_Cornice",
-        "type": "box",
-        "center": [
-          0.0,
-          3.74,
-          3.7
-        ],
-        "size": [
-          7.268,
-          0.06,
-          0.06
-        ],
-        "euler": [
-          0,
-          0,
-          0
-        ]
-      },
-      {
-        "name": "Col_Awning",
-        "type": "box",
-        "center": [
-          0.0,
-          2.42064,
-          3.7560000000000002
-        ],
-        "size": [
-          5.63176,
-          0.011200000000000002,
-          0.1386
-        ],
-        "euler": [
-          0,
-          0,
-          0
-        ]
-      },
-      {
-        "name": "Col_Awning_2",
-        "type": "box",
-        "center": [
-          0.0,
-          2.33664,
-          4.008
-        ],
-        "size": [
-          5.63176,
-          0.011200000000000002,
-          0.1386
-        ],
-        "euler": [
-          0,
-          0,
-          0
-        ]
-      },
-      {
-        "name": "Col_Awning_3",
-        "type": "box",
-        "center": [
-          0.0,
-          2.25264,
-          4.26
-        ],
-        "size": [
-          5.63176,
-          0.011200000000000002,
-          0.1386
-        ],
-        "euler": [
-          0,
-          0,
-          0
-        ]
-      },
-      {
-        "name": "Col_Awning_4",
-        "type": "box",
-        "center": [
-          0.0,
-          2.16864,
-          4.5120000000000005
-        ],
-        "size": [
-          5.63176,
-          0.011200000000000002,
-          0.1386
-        ],
-        "euler": [
-          0,
-          0,
-          0
-        ]
-      },
-      {
-        "name": "Col_Awning_5",
-        "type": "box",
-        "center": [
-          0.0,
-          2.08464,
-          4.764
-        ],
-        "size": [
-          5.63176,
-          0.011200000000000002,
-          0.1386
-        ],
-        "euler": [
-          0,
-          0,
-          0
-        ]
-      },
-      {
         "name": "Col_Kick_7",
         "type": "box",
         "center": [
-          3.89,
-          0.24,
+          3.93,
+          0.265,
           -2.4005
         ],
         "size": [
@@ -20094,8 +21388,8 @@
         "name": "Col_Kick_8",
         "type": "box",
         "center": [
-          3.89,
-          0.24,
+          3.93,
+          0.265,
           -1.1535
         ],
         "size": [
@@ -20113,8 +21407,8 @@
         "name": "Col_Kick_9",
         "type": "box",
         "center": [
-          3.89,
-          0.24,
+          3.93,
+          0.265,
           1.1535000000000002
         ],
         "size": [
@@ -20132,8 +21426,8 @@
         "name": "Col_Kick_10",
         "type": "box",
         "center": [
-          3.89,
-          0.24,
+          3.93,
+          0.265,
           2.4005000000000005
         ],
         "size": [
@@ -20151,7 +21445,7 @@
         "name": "Col_Glass_16",
         "type": "box",
         "center": [
-          3.9450000000000003,
+          3.8600000000000003,
           1.5275,
           -2.4005
         ],
@@ -20170,7 +21464,7 @@
         "name": "Col_Glass_17",
         "type": "box",
         "center": [
-          3.9450000000000003,
+          3.8600000000000003,
           1.5275,
           -1.1535
         ],
@@ -20189,7 +21483,7 @@
         "name": "Col_Glass_18",
         "type": "box",
         "center": [
-          3.9450000000000003,
+          3.8600000000000003,
           1.5275,
           1.1535000000000002
         ],
@@ -20208,7 +21502,7 @@
         "name": "Col_Glass_19",
         "type": "box",
         "center": [
-          3.9450000000000003,
+          3.8600000000000003,
           1.5275,
           2.4005000000000005
         ],
@@ -20224,7 +21518,7 @@
         ]
       },
       {
-        "name": "Col_Shelf_13",
+        "name": "Col_Shelf_11",
         "type": "box",
         "center": [
           3.39,
@@ -20232,9 +21526,47 @@
           -2.4005
         ],
         "size": [
-          0.14,
-          0.016,
-          1.1070000000000002
+          0.05,
+          0.008,
+          0.7084800000000001
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Shelf_12",
+        "type": "box",
+        "center": [
+          3.39,
+          1.58,
+          -2.4005
+        ],
+        "size": [
+          0.05,
+          0.008,
+          0.7084800000000001
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Shelf_13",
+        "type": "box",
+        "center": [
+          3.39,
+          1.08,
+          -1.1535
+        ],
+        "size": [
+          0.05,
+          0.008,
+          0.7084800000000001
         ],
         "euler": [
           0,
@@ -20248,12 +21580,12 @@
         "center": [
           3.39,
           1.58,
-          -2.4005
+          -1.1535
         ],
         "size": [
-          0.14,
-          0.016,
-          1.1070000000000002
+          0.05,
+          0.008,
+          0.7084800000000001
         ],
         "euler": [
           0,
@@ -20267,12 +21599,12 @@
         "center": [
           3.39,
           1.08,
-          -1.1535
+          1.1535000000000002
         ],
         "size": [
-          0.14,
-          0.016,
-          1.1070000000000002
+          0.05,
+          0.008,
+          0.7084800000000001
         ],
         "euler": [
           0,
@@ -20286,12 +21618,12 @@
         "center": [
           3.39,
           1.58,
-          -1.1535
+          1.1535000000000002
         ],
         "size": [
-          0.14,
-          0.016,
-          1.1070000000000002
+          0.05,
+          0.008,
+          0.7084800000000001
         ],
         "euler": [
           0,
@@ -20305,12 +21637,12 @@
         "center": [
           3.39,
           1.08,
-          1.1535000000000002
+          2.4005000000000005
         ],
         "size": [
-          0.14,
-          0.016,
-          1.1070000000000002
+          0.05,
+          0.008,
+          0.7084800000000003
         ],
         "euler": [
           0,
@@ -20324,50 +21656,12 @@
         "center": [
           3.39,
           1.58,
-          1.1535000000000002
-        ],
-        "size": [
-          0.14,
-          0.016,
-          1.1070000000000002
-        ],
-        "euler": [
-          0,
-          0,
-          0
-        ]
-      },
-      {
-        "name": "Col_Shelf_19",
-        "type": "box",
-        "center": [
-          3.39,
-          1.08,
           2.4005000000000005
         ],
         "size": [
-          0.14,
-          0.016,
-          1.1070000000000004
-        ],
-        "euler": [
-          0,
-          0,
-          0
-        ]
-      },
-      {
-        "name": "Col_Shelf_20",
-        "type": "box",
-        "center": [
-          3.39,
-          1.58,
-          2.4005000000000005
-        ],
-        "size": [
-          0.14,
-          0.016,
-          1.1070000000000004
+          0.05,
+          0.008,
+          0.7084800000000003
         ],
         "euler": [
           0,
@@ -20417,7 +21711,7 @@
         "name": "Col_Transom_2",
         "type": "box",
         "center": [
-          3.9450000000000003,
+          3.8600000000000003,
           2.3550000000000004,
           0.0
         ],
@@ -20469,139 +21763,6 @@
           0,
           0
         ]
-      },
-      {
-        "name": "Col_String_2",
-        "type": "box",
-        "center": [
-          4.055,
-          3.56,
-          0.0
-        ],
-        "size": [
-          0.035,
-          0.07,
-          6.468
-        ],
-        "euler": [
-          0,
-          0,
-          0
-        ]
-      },
-      {
-        "name": "Col_Cornice_2",
-        "type": "box",
-        "center": [
-          4.1000000000000005,
-          3.74,
-          0.0
-        ],
-        "size": [
-          0.06,
-          0.06,
-          6.468
-        ],
-        "euler": [
-          0,
-          0,
-          0
-        ]
-      },
-      {
-        "name": "Col_Awning_6",
-        "type": "box",
-        "center": [
-          4.156000000000001,
-          2.42064,
-          0.0
-        ],
-        "size": [
-          0.1386,
-          0.011200000000000002,
-          4.97576
-        ],
-        "euler": [
-          0,
-          0,
-          0
-        ]
-      },
-      {
-        "name": "Col_Awning_7",
-        "type": "box",
-        "center": [
-          4.408,
-          2.33664,
-          0.0
-        ],
-        "size": [
-          0.1386,
-          0.011200000000000002,
-          4.97576
-        ],
-        "euler": [
-          0,
-          0,
-          0
-        ]
-      },
-      {
-        "name": "Col_Awning_8",
-        "type": "box",
-        "center": [
-          4.66,
-          2.25264,
-          0.0
-        ],
-        "size": [
-          0.1386,
-          0.011200000000000002,
-          4.97576
-        ],
-        "euler": [
-          0,
-          0,
-          0
-        ]
-      },
-      {
-        "name": "Col_Awning_9",
-        "type": "box",
-        "center": [
-          4.912,
-          2.16864,
-          0.0
-        ],
-        "size": [
-          0.1386,
-          0.011200000000000002,
-          4.97576
-        ],
-        "euler": [
-          0,
-          0,
-          0
-        ]
-      },
-      {
-        "name": "Col_Awning_10",
-        "type": "box",
-        "center": [
-          5.164,
-          2.08464,
-          0.0
-        ],
-        "size": [
-          0.1386,
-          0.011200000000000002,
-          4.97576
-        ],
-        "euler": [
-          0,
-          0,
-          0
-        ]
       }
     ],
     "climbable": true,
@@ -20616,43 +21777,44 @@
       "LOD1",
       "LOD2"
     ],
-    "slackCm": 2.4,
-    "fbx": "Assets/Art/Props/Library/Buildings/Store_Corner.fbx",
+    "slackCm": 0.91,
     "license": {
       "spdx": "CC0-1.0",
       "source": "original",
       "url": "",
       "notes": "Procedural mesh built in this repo."
-    }
+    },
+    "fbx": "Assets/Art/Props/Library/Buildings/Store_Corner.fbx"
   },
   {
     "name": "Store_Diner",
     "category": "Buildings",
     "blurb": "Diner, 10.0 x 7.0 m, walls 4.6 m under a parapet. Cream body, a long mullioned DINER front with a red rail, recessed door, sign band, brick string course, and a sloped red awning. Alley face is -Z.",
     "size": [
-      10.22,
+      10.52,
       5.925,
       9.05
     ],
     "min": [
-      -5.11,
+      -5.26,
       -0.005,
       -4.22
     ],
     "max": [
-      5.11,
+      5.26,
       5.92,
       4.83
     ],
     "lods": [
       {
         "lod": 0,
-        "tris": 2604,
+        "tris": 3516,
         "materials": [
           "Lib_PaintCream",
-          "Lib_PaintRed",
+          "Lib_Brick",
           "Lib_Concrete",
           "Lib_Window",
+          "Lib_PaintRed",
           "Lib_Brass",
           "Lib_Interior",
           "Lib_WindowLit",
@@ -20661,47 +21823,38 @@
           "Lib_Wood",
           "Lib_WoodDark",
           "Lib_ShopGlass",
-          "Lib_Orange",
-          "Lib_Brick"
+          "Lib_Orange"
         ],
         "mesh": "LOD0",
         "fileID": -1633821710574564935
       },
       {
         "lod": 1,
-        "tris": 1932,
+        "tris": 2784,
         "materials": [
           "Lib_PaintCream",
-          "Lib_PaintRed",
+          "Lib_Brick",
           "Lib_Concrete",
           "Lib_Window",
+          "Lib_PaintRed",
           "Lib_Interior",
           "Lib_WindowLit",
           "Lib_SteelDark",
           "Lib_Steel",
           "Lib_Wood",
           "Lib_WoodDark",
-          "Lib_ShopGlass",
-          "Lib_Brick"
+          "Lib_ShopGlass"
         ],
         "mesh": "LOD1",
         "fileID": -179393741545503174
       },
       {
         "lod": 2,
-        "tris": 1284,
+        "tris": 176,
         "materials": [
           "Lib_PaintCream",
-          "Lib_PaintRed",
           "Lib_Concrete",
-          "Lib_Window",
-          "Lib_Interior",
-          "Lib_WindowLit",
-          "Lib_Steel",
-          "Lib_ShopGlass",
-          "Lib_Wood",
-          "Lib_SteelDark",
-          "Lib_Brick"
+          "Lib_PaintRed"
         ],
         "mesh": "LOD2",
         "fileID": 736115405485880582
@@ -20923,11 +22076,11 @@
         "center": [
           -1.71864,
           1.15,
-          -3.31
+          -3.358
         ],
         "size": [
-          0.7445999999999999,
-          1.7220999999999997,
+          0.714,
+          1.6915,
           0.008
         ],
         "euler": [
@@ -20942,11 +22095,11 @@
         "center": [
           2.10056,
           2.852,
-          -3.31
+          -3.358
         ],
         "size": [
-          0.6596,
-          0.7871,
+          0.629,
+          0.7565,
           0.008
         ],
         "euler": [
@@ -20984,7 +22137,7 @@
         ],
         "size": [
           0.14,
-          2.2470000000000003,
+          2.2070000000000003,
           1.17
         ],
         "euler": [
@@ -21035,14 +22188,14 @@
         "name": "Col_Glass_3",
         "type": "box",
         "center": [
-          4.81,
+          4.858,
           2.852,
           0.0
         ],
         "size": [
           0.008,
-          0.8720999999999998,
-          0.9145999999999999
+          0.8414999999999999,
+          0.884
         ],
         "euler": [
           0,
@@ -21098,7 +22251,7 @@
         ],
         "size": [
           0.14,
-          1.143,
+          1.063,
           1.17
         ],
         "euler": [
@@ -21117,7 +22270,7 @@
         ],
         "size": [
           0.14,
-          4.569999999999999,
+          4.449999999999999,
           2.644
         ],
         "euler": [
@@ -21130,14 +22283,14 @@
         "name": "Col_Glass_4",
         "type": "box",
         "center": [
-          -4.81,
+          -4.858,
           2.852,
           0.0
         ],
         "size": [
           0.008,
-          0.8720999999999998,
-          0.9145999999999999
+          0.8414999999999999,
+          0.884
         ],
         "euler": [
           0,
@@ -21222,12 +22375,50 @@
         ]
       },
       {
+        "name": "Col_String",
+        "type": "box",
+        "center": [
+          0.0,
+          3.52,
+          3.56
+        ],
+        "size": [
+          9.616,
+          0.04,
+          0.03
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Cornice",
+        "type": "box",
+        "center": [
+          0.0,
+          3.68,
+          3.67
+        ],
+        "size": [
+          9.736,
+          0.08,
+          0.08
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
         "name": "Col_Kick",
         "type": "box",
         "center": [
           -3.7799999999999994,
-          0.17279999999999998,
-          3.39
+          0.19499999999999998,
+          3.43
         ],
         "size": [
           1.2280000000000002,
@@ -21245,8 +22436,8 @@
         "type": "box",
         "center": [
           -2.491999999999999,
-          0.17279999999999998,
-          3.39
+          0.19499999999999998,
+          3.43
         ],
         "size": [
           1.2279999999999998,
@@ -21264,8 +22455,8 @@
         "type": "box",
         "center": [
           -1.2039999999999995,
-          0.17279999999999998,
-          3.39
+          0.19499999999999998,
+          3.43
         ],
         "size": [
           1.2279999999999998,
@@ -21283,8 +22474,8 @@
         "type": "box",
         "center": [
           0.08400000000000052,
-          0.17279999999999998,
-          3.39
+          0.19499999999999998,
+          3.43
         ],
         "size": [
           1.2280000000000002,
@@ -21302,8 +22493,8 @@
         "type": "box",
         "center": [
           1.3720000000000008,
-          0.17279999999999998,
-          3.39
+          0.19499999999999998,
+          3.43
         ],
         "size": [
           1.2280000000000002,
@@ -21321,8 +22512,8 @@
         "type": "box",
         "center": [
           2.6600000000000006,
-          0.17279999999999998,
-          3.39
+          0.19499999999999998,
+          3.43
         ],
         "size": [
           1.2279999999999993,
@@ -21341,7 +22532,7 @@
         "center": [
           -3.7799999999999994,
           1.4575,
-          3.4450000000000003
+          3.3600000000000003
         ],
         "size": [
           1.2080000000000002,
@@ -21360,7 +22551,7 @@
         "center": [
           -2.491999999999999,
           1.4575,
-          3.4450000000000003
+          3.3600000000000003
         ],
         "size": [
           1.2079999999999997,
@@ -21379,7 +22570,7 @@
         "center": [
           -1.2039999999999995,
           1.4575,
-          3.4450000000000003
+          3.3600000000000003
         ],
         "size": [
           1.2079999999999997,
@@ -21398,7 +22589,7 @@
         "center": [
           0.08400000000000052,
           1.4575,
-          3.4450000000000003
+          3.3600000000000003
         ],
         "size": [
           1.2080000000000002,
@@ -21417,7 +22608,7 @@
         "center": [
           1.3720000000000008,
           1.4575,
-          3.4450000000000003
+          3.3600000000000003
         ],
         "size": [
           1.2080000000000002,
@@ -21436,7 +22627,7 @@
         "center": [
           2.6600000000000006,
           1.4575,
-          3.4450000000000003
+          3.3600000000000003
         ],
         "size": [
           1.2079999999999993,
@@ -21458,9 +22649,9 @@
           2.89
         ],
         "size": [
-          1.1480000000000001,
-          0.016,
-          0.14
+          0.7347200000000002,
+          0.008,
+          0.05
         ],
         "euler": [
           0,
@@ -21477,9 +22668,9 @@
           2.89
         ],
         "size": [
-          1.1480000000000001,
-          0.016,
-          0.14
+          0.7347200000000002,
+          0.008,
+          0.05
         ],
         "euler": [
           0,
@@ -21496,9 +22687,9 @@
           2.89
         ],
         "size": [
-          1.1479999999999997,
-          0.016,
-          0.14
+          0.7347199999999998,
+          0.008,
+          0.05
         ],
         "euler": [
           0,
@@ -21515,9 +22706,9 @@
           2.89
         ],
         "size": [
-          1.1479999999999997,
-          0.016,
-          0.14
+          0.7347199999999998,
+          0.008,
+          0.05
         ],
         "euler": [
           0,
@@ -21534,9 +22725,9 @@
           2.89
         ],
         "size": [
-          1.1479999999999997,
-          0.016,
-          0.14
+          0.7347199999999998,
+          0.008,
+          0.05
         ],
         "euler": [
           0,
@@ -21553,9 +22744,9 @@
           2.89
         ],
         "size": [
-          1.1479999999999997,
-          0.016,
-          0.14
+          0.7347199999999998,
+          0.008,
+          0.05
         ],
         "euler": [
           0,
@@ -21572,9 +22763,9 @@
           2.89
         ],
         "size": [
-          1.1480000000000001,
-          0.016,
-          0.14
+          0.7347200000000002,
+          0.008,
+          0.05
         ],
         "euler": [
           0,
@@ -21591,9 +22782,9 @@
           2.89
         ],
         "size": [
-          1.1480000000000001,
-          0.016,
-          0.14
+          0.7347200000000002,
+          0.008,
+          0.05
         ],
         "euler": [
           0,
@@ -21610,9 +22801,9 @@
           2.89
         ],
         "size": [
-          1.1480000000000001,
-          0.016,
-          0.14
+          0.7347200000000002,
+          0.008,
+          0.05
         ],
         "euler": [
           0,
@@ -21629,9 +22820,9 @@
           2.89
         ],
         "size": [
-          1.1480000000000001,
-          0.016,
-          0.14
+          0.7347200000000002,
+          0.008,
+          0.05
         ],
         "euler": [
           0,
@@ -21648,9 +22839,9 @@
           2.89
         ],
         "size": [
-          1.1479999999999992,
-          0.016,
-          0.14
+          0.7347199999999995,
+          0.008,
+          0.05
         ],
         "euler": [
           0,
@@ -21667,9 +22858,9 @@
           2.89
         ],
         "size": [
-          1.1479999999999992,
-          0.016,
-          0.14
+          0.7347199999999995,
+          0.008,
+          0.05
         ],
         "euler": [
           0,
@@ -21721,7 +22912,7 @@
         "center": [
           3.8339999999999996,
           2.3550000000000004,
-          3.4450000000000003
+          3.3600000000000003
         ],
         "size": [
           0.82,
@@ -21771,139 +22962,6 @@
           0,
           0
         ]
-      },
-      {
-        "name": "Col_String",
-        "type": "box",
-        "center": [
-          0.0,
-          3.56,
-          3.555
-        ],
-        "size": [
-          9.268,
-          0.07,
-          0.035
-        ],
-        "euler": [
-          0,
-          0,
-          0
-        ]
-      },
-      {
-        "name": "Col_Cornice",
-        "type": "box",
-        "center": [
-          0.0,
-          3.74,
-          3.6
-        ],
-        "size": [
-          9.268,
-          0.06,
-          0.06
-        ],
-        "euler": [
-          0,
-          0,
-          0
-        ]
-      },
-      {
-        "name": "Col_Awning",
-        "type": "box",
-        "center": [
-          0.0,
-          2.42064,
-          3.656
-        ],
-        "size": [
-          7.27176,
-          0.011200000000000002,
-          0.1386
-        ],
-        "euler": [
-          0,
-          0,
-          0
-        ]
-      },
-      {
-        "name": "Col_Awning_2",
-        "type": "box",
-        "center": [
-          0.0,
-          2.33664,
-          3.9080000000000004
-        ],
-        "size": [
-          7.27176,
-          0.011200000000000002,
-          0.1386
-        ],
-        "euler": [
-          0,
-          0,
-          0
-        ]
-      },
-      {
-        "name": "Col_Awning_3",
-        "type": "box",
-        "center": [
-          0.0,
-          2.25264,
-          4.16
-        ],
-        "size": [
-          7.27176,
-          0.011200000000000002,
-          0.1386
-        ],
-        "euler": [
-          0,
-          0,
-          0
-        ]
-      },
-      {
-        "name": "Col_Awning_4",
-        "type": "box",
-        "center": [
-          0.0,
-          2.16864,
-          4.412
-        ],
-        "size": [
-          7.27176,
-          0.011200000000000002,
-          0.1386
-        ],
-        "euler": [
-          0,
-          0,
-          0
-        ]
-      },
-      {
-        "name": "Col_Awning_5",
-        "type": "box",
-        "center": [
-          0.0,
-          2.08464,
-          4.664
-        ],
-        "size": [
-          7.27176,
-          0.011200000000000002,
-          0.1386
-        ],
-        "euler": [
-          0,
-          0,
-          0
-        ]
       }
     ],
     "climbable": true,
@@ -21918,21 +22976,21 @@
       "LOD1",
       "LOD2"
     ],
-    "slackCm": 1.71,
-    "fbx": "Assets/Art/Props/Library/Buildings/Store_Diner.fbx",
+    "slackCm": 2.4,
     "license": {
       "spdx": "CC0-1.0",
       "source": "original",
       "url": "",
       "notes": "Procedural mesh built in this repo."
-    }
+    },
+    "fbx": "Assets/Art/Props/Library/Buildings/Store_Diner.fbx"
   },
   {
     "name": "Store_Laundromat",
     "category": "Buildings",
-    "blurb": "Laundromat, 9.2 x 6.8 m, walls 4.8 m under a parapet. White body, narrow WASH bays, a high kickplate, recessed door, teal sign and sloped awning, brick string course. Alley face is -Z.",
+    "blurb": "Laundromat, 9.2 x 6.8 m, walls 4.8 m under a parapet. White body, WASH bays, a high kickplate, recessed door, teal sign and sloped awning. Alley face is -Z.",
     "size": [
-      10.64,
+      10.79,
       6.125,
       8.85
     ],
@@ -21942,67 +23000,58 @@
       -4.12
     ],
     "max": [
-      4.71,
+      4.86,
       6.12,
       4.73
     ],
     "lods": [
       {
         "lod": 0,
-        "tris": 5228,
+        "tris": 4624,
         "materials": [
           "Lib_PaintWhite",
-          "Lib_PaintTeal",
           "Lib_Concrete",
           "Lib_Window",
+          "Lib_PaintTeal",
           "Lib_WindowLit",
           "Lib_Interior",
+          "Lib_Brick",
           "Lib_Brass",
           "Lib_SteelDark",
           "Lib_Steel",
           "Lib_Wood",
           "Lib_WoodDark",
-          "Lib_ShopGlass",
-          "Lib_Orange",
-          "Lib_Brick"
+          "Lib_ShopGlass"
         ],
         "mesh": "LOD0",
         "fileID": -1633821710574564935
       },
       {
         "lod": 1,
-        "tris": 3868,
+        "tris": 4048,
         "materials": [
           "Lib_PaintWhite",
-          "Lib_PaintTeal",
           "Lib_Concrete",
           "Lib_Window",
+          "Lib_PaintTeal",
           "Lib_WindowLit",
           "Lib_Interior",
+          "Lib_Brick",
           "Lib_SteelDark",
           "Lib_Steel",
           "Lib_Wood",
           "Lib_WoodDark",
-          "Lib_ShopGlass",
-          "Lib_Brick"
+          "Lib_ShopGlass"
         ],
         "mesh": "LOD1",
         "fileID": -179393741545503174
       },
       {
         "lod": 2,
-        "tris": 3060,
+        "tris": 268,
         "materials": [
           "Lib_PaintWhite",
-          "Lib_PaintTeal",
-          "Lib_Concrete",
-          "Lib_Window",
-          "Lib_WindowLit",
-          "Lib_Interior",
-          "Lib_ShopGlass",
-          "Lib_Wood",
-          "Lib_SteelDark",
-          "Lib_Brick"
+          "Lib_Concrete"
         ],
         "mesh": "LOD2",
         "fileID": 736115405485880582
@@ -22376,11 +23425,11 @@
         "center": [
           -2.0412,
           4.25,
-          3.21
+          3.258
         ],
         "size": [
-          0.8720999999999998,
-          0.3366,
+          0.8414999999999999,
+          0.306,
           0.008
         ],
         "euler": [
@@ -22395,11 +23444,11 @@
         "center": [
           0.0,
           4.25,
-          3.21
+          3.258
         ],
         "size": [
-          0.8720999999999998,
-          0.3366,
+          0.8414999999999999,
+          0.306,
           0.008
         ],
         "euler": [
@@ -22414,11 +23463,11 @@
         "center": [
           2.0412,
           4.25,
-          3.21
+          3.258
         ],
         "size": [
-          0.8720999999999998,
-          0.3366,
+          0.8414999999999999,
+          0.306,
           0.008
         ],
         "euler": [
@@ -22566,11 +23615,11 @@
         "center": [
           -1.5746399999999998,
           1.15,
-          -3.21
+          -3.258
         ],
         "size": [
-          0.7445999999999999,
-          1.7220999999999997,
+          0.714,
+          1.6915,
           0.008
         ],
         "euler": [
@@ -22585,11 +23634,11 @@
         "center": [
           1.9245599999999998,
           2.976,
-          -3.21
+          -3.258
         ],
         "size": [
-          0.6596,
-          0.7871,
+          0.629,
+          0.7565,
           0.008
         ],
         "euler": [
@@ -22627,7 +23676,7 @@
         ],
         "size": [
           0.14,
-          2.371,
+          2.331,
           1.17
         ],
         "euler": [
@@ -22678,14 +23727,14 @@
         "name": "Col_Glass_6",
         "type": "box",
         "center": [
-          4.409999999999999,
+          4.457999999999999,
           2.976,
           0.0
         ],
         "size": [
           0.008,
-          0.8720999999999998,
-          0.9145999999999999
+          0.8414999999999999,
+          0.884
         ],
         "euler": [
           0,
@@ -23058,14 +24107,14 @@
         "name": "Col_Glass_7",
         "type": "box",
         "center": [
-          -4.409999999999999,
+          -4.457999999999999,
           4.25,
           -1.4812
         ],
         "size": [
           0.008,
-          0.3366,
-          0.7579279999999999
+          0.306,
+          0.7273279999999999
         ],
         "euler": [
           0,
@@ -23077,14 +24126,14 @@
         "name": "Col_Glass_8",
         "type": "box",
         "center": [
-          -4.409999999999999,
+          -4.457999999999999,
           4.25,
           0.0
         ],
         "size": [
           0.008,
-          0.3366,
-          0.7579279999999999
+          0.306,
+          0.7273279999999999
         ],
         "euler": [
           0,
@@ -23096,14 +24145,14 @@
         "name": "Col_Glass_9",
         "type": "box",
         "center": [
-          -4.409999999999999,
+          -4.457999999999999,
           4.25,
           1.4812
         ],
         "size": [
           0.008,
-          0.3366,
-          0.7579279999999999
+          0.306,
+          0.7273279999999999
         ],
         "euler": [
           0,
@@ -23188,15 +24237,91 @@
         ]
       },
       {
+        "name": "Col_String",
+        "type": "box",
+        "center": [
+          0.0,
+          3.52,
+          3.46
+        ],
+        "size": [
+          8.815999999999999,
+          0.04,
+          0.03
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_String_2",
+        "type": "box",
+        "center": [
+          -4.659999999999999,
+          3.52,
+          0.0
+        ],
+        "size": [
+          0.03,
+          0.04,
+          6.4159999999999995
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Cornice",
+        "type": "box",
+        "center": [
+          0.0,
+          3.68,
+          3.5700000000000003
+        ],
+        "size": [
+          8.936,
+          0.08,
+          0.08
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Cornice_2",
+        "type": "box",
+        "center": [
+          -4.77,
+          3.68,
+          0.0
+        ],
+        "size": [
+          0.08,
+          0.08,
+          6.5360000000000005
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
         "name": "Col_Kick",
         "type": "box",
         "center": [
-          -2.589090909090909,
-          0.3072,
-          3.29
+          -2.326666666666666,
+          0.335,
+          3.33
         ],
         "size": [
-          0.5698181818181816,
+          1.0946666666666665,
           0.44799999999999995,
           0.1
         ],
@@ -23210,12 +24335,12 @@
         "name": "Col_Kick_2",
         "type": "box",
         "center": [
-          -1.9592727272727268,
-          0.3072,
-          3.29
+          -1.1719999999999997,
+          0.335,
+          3.33
         ],
         "size": [
-          0.5698181818181818,
+          1.0946666666666665,
           0.44799999999999995,
           0.1
         ],
@@ -23229,12 +24354,12 @@
         "name": "Col_Kick_3",
         "type": "box",
         "center": [
-          -1.3294545454545452,
-          0.3072,
-          3.29
+          -0.0173333333333332,
+          0.335,
+          3.33
         ],
         "size": [
-          0.5698181818181818,
+          1.0946666666666665,
           0.44799999999999995,
           0.1
         ],
@@ -23248,12 +24373,12 @@
         "name": "Col_Kick_4",
         "type": "box",
         "center": [
-          -0.6996363636363634,
-          0.3072,
-          3.29
+          1.1373333333333333,
+          0.335,
+          3.33
         ],
         "size": [
-          0.5698181818181816,
+          1.0946666666666665,
           0.44799999999999995,
           0.1
         ],
@@ -23267,12 +24392,12 @@
         "name": "Col_Kick_5",
         "type": "box",
         "center": [
-          -0.06981818181818178,
-          0.3072,
-          3.29
+          2.292,
+          0.335,
+          3.33
         ],
         "size": [
-          0.5698181818181816,
+          1.0946666666666665,
           0.44799999999999995,
           0.1
         ],
@@ -23286,107 +24411,12 @@
         "name": "Col_Kick_6",
         "type": "box",
         "center": [
-          0.56,
-          0.3072,
-          3.29
+          3.4466666666666663,
+          0.335,
+          3.33
         ],
         "size": [
-          0.569818181818182,
-          0.44799999999999995,
-          0.1
-        ],
-        "euler": [
-          0,
-          0,
-          0
-        ]
-      },
-      {
-        "name": "Col_Kick_7",
-        "type": "box",
-        "center": [
-          1.1898181818181817,
-          0.3072,
-          3.29
-        ],
-        "size": [
-          0.5698181818181811,
-          0.44799999999999995,
-          0.1
-        ],
-        "euler": [
-          0,
-          0,
-          0
-        ]
-      },
-      {
-        "name": "Col_Kick_8",
-        "type": "box",
-        "center": [
-          1.8196363636363633,
-          0.3072,
-          3.29
-        ],
-        "size": [
-          0.569818181818182,
-          0.44799999999999995,
-          0.1
-        ],
-        "euler": [
-          0,
-          0,
-          0
-        ]
-      },
-      {
-        "name": "Col_Kick_9",
-        "type": "box",
-        "center": [
-          2.4494545454545453,
-          0.3072,
-          3.29
-        ],
-        "size": [
-          0.569818181818182,
-          0.44799999999999995,
-          0.1
-        ],
-        "euler": [
-          0,
-          0,
-          0
-        ]
-      },
-      {
-        "name": "Col_Kick_10",
-        "type": "box",
-        "center": [
-          3.079272727272727,
-          0.3072,
-          3.29
-        ],
-        "size": [
-          0.5698181818181811,
-          0.44799999999999995,
-          0.1
-        ],
-        "euler": [
-          0,
-          0,
-          0
-        ]
-      },
-      {
-        "name": "Col_Kick_11",
-        "type": "box",
-        "center": [
-          3.709090909090908,
-          0.3072,
-          3.29
-        ],
-        "size": [
-          0.5698181818181816,
+          1.094666666666666,
           0.44799999999999995,
           0.1
         ],
@@ -23400,12 +24430,12 @@
         "name": "Col_Glass_10",
         "type": "box",
         "center": [
-          -2.589090909090909,
+          -2.326666666666666,
           1.5975000000000001,
-          3.345
+          3.2600000000000002
         ],
         "size": [
-          0.5498181818181817,
+          1.0746666666666664,
           1.745,
           0.008
         ],
@@ -23419,12 +24449,12 @@
         "name": "Col_Glass_11",
         "type": "box",
         "center": [
-          -1.9592727272727268,
+          -1.1719999999999997,
           1.5975000000000001,
-          3.345
+          3.2600000000000002
         ],
         "size": [
-          0.5498181818181819,
+          1.0746666666666664,
           1.745,
           0.008
         ],
@@ -23438,12 +24468,12 @@
         "name": "Col_Glass_12",
         "type": "box",
         "center": [
-          -1.3294545454545452,
+          -0.0173333333333332,
           1.5975000000000001,
-          3.345
+          3.2600000000000002
         ],
         "size": [
-          0.5498181818181819,
+          1.0746666666666664,
           1.745,
           0.008
         ],
@@ -23457,12 +24487,12 @@
         "name": "Col_Glass_13",
         "type": "box",
         "center": [
-          -0.6996363636363634,
+          1.1373333333333333,
           1.5975000000000001,
-          3.345
+          3.2600000000000002
         ],
         "size": [
-          0.5498181818181817,
+          1.0746666666666664,
           1.745,
           0.008
         ],
@@ -23476,12 +24506,12 @@
         "name": "Col_Glass_14",
         "type": "box",
         "center": [
-          -0.06981818181818178,
+          2.292,
           1.5975000000000001,
-          3.345
+          3.2600000000000002
         ],
         "size": [
-          0.5498181818181817,
+          1.0746666666666664,
           1.745,
           0.008
         ],
@@ -23495,527 +24525,14 @@
         "name": "Col_Glass_15",
         "type": "box",
         "center": [
-          0.56,
+          3.4466666666666663,
           1.5975000000000001,
-          3.345
+          3.2600000000000002
         ],
         "size": [
-          0.5498181818181821,
+          1.074666666666666,
           1.745,
           0.008
-        ],
-        "euler": [
-          0,
-          0,
-          0
-        ]
-      },
-      {
-        "name": "Col_Glass_16",
-        "type": "box",
-        "center": [
-          1.1898181818181817,
-          1.5975000000000001,
-          3.345
-        ],
-        "size": [
-          0.5498181818181812,
-          1.745,
-          0.008
-        ],
-        "euler": [
-          0,
-          0,
-          0
-        ]
-      },
-      {
-        "name": "Col_Glass_17",
-        "type": "box",
-        "center": [
-          1.8196363636363633,
-          1.5975000000000001,
-          3.345
-        ],
-        "size": [
-          0.5498181818181821,
-          1.745,
-          0.008
-        ],
-        "euler": [
-          0,
-          0,
-          0
-        ]
-      },
-      {
-        "name": "Col_Glass_18",
-        "type": "box",
-        "center": [
-          2.4494545454545453,
-          1.5975000000000001,
-          3.345
-        ],
-        "size": [
-          0.5498181818181821,
-          1.745,
-          0.008
-        ],
-        "euler": [
-          0,
-          0,
-          0
-        ]
-      },
-      {
-        "name": "Col_Glass_19",
-        "type": "box",
-        "center": [
-          3.079272727272727,
-          1.5975000000000001,
-          3.345
-        ],
-        "size": [
-          0.5498181818181812,
-          1.745,
-          0.008
-        ],
-        "euler": [
-          0,
-          0,
-          0
-        ]
-      },
-      {
-        "name": "Col_Glass_20",
-        "type": "box",
-        "center": [
-          3.709090909090908,
-          1.5975000000000001,
-          3.345
-        ],
-        "size": [
-          0.5498181818181817,
-          1.745,
-          0.008
-        ],
-        "euler": [
-          0,
-          0,
-          0
-        ]
-      },
-      {
-        "name": "Col_Shelf",
-        "type": "box",
-        "center": [
-          -2.589090909090909,
-          1.08,
-          2.79
-        ],
-        "size": [
-          0.48981818181818165,
-          0.016,
-          0.14
-        ],
-        "euler": [
-          0,
-          0,
-          0
-        ]
-      },
-      {
-        "name": "Col_Shelf_2",
-        "type": "box",
-        "center": [
-          -2.589090909090909,
-          1.58,
-          2.79
-        ],
-        "size": [
-          0.48981818181818165,
-          0.016,
-          0.14
-        ],
-        "euler": [
-          0,
-          0,
-          0
-        ]
-      },
-      {
-        "name": "Col_Shelf_3",
-        "type": "box",
-        "center": [
-          -1.9592727272727268,
-          1.08,
-          2.79
-        ],
-        "size": [
-          0.4898181818181819,
-          0.016,
-          0.14
-        ],
-        "euler": [
-          0,
-          0,
-          0
-        ]
-      },
-      {
-        "name": "Col_Shelf_4",
-        "type": "box",
-        "center": [
-          -1.9592727272727268,
-          1.58,
-          2.79
-        ],
-        "size": [
-          0.4898181818181819,
-          0.016,
-          0.14
-        ],
-        "euler": [
-          0,
-          0,
-          0
-        ]
-      },
-      {
-        "name": "Col_Shelf_5",
-        "type": "box",
-        "center": [
-          -1.3294545454545452,
-          1.08,
-          2.79
-        ],
-        "size": [
-          0.4898181818181819,
-          0.016,
-          0.14
-        ],
-        "euler": [
-          0,
-          0,
-          0
-        ]
-      },
-      {
-        "name": "Col_Shelf_6",
-        "type": "box",
-        "center": [
-          -1.3294545454545452,
-          1.58,
-          2.79
-        ],
-        "size": [
-          0.4898181818181819,
-          0.016,
-          0.14
-        ],
-        "euler": [
-          0,
-          0,
-          0
-        ]
-      },
-      {
-        "name": "Col_Shelf_7",
-        "type": "box",
-        "center": [
-          -0.6996363636363634,
-          1.08,
-          2.79
-        ],
-        "size": [
-          0.48981818181818165,
-          0.016,
-          0.14
-        ],
-        "euler": [
-          0,
-          0,
-          0
-        ]
-      },
-      {
-        "name": "Col_Shelf_8",
-        "type": "box",
-        "center": [
-          -0.6996363636363634,
-          1.58,
-          2.79
-        ],
-        "size": [
-          0.48981818181818165,
-          0.016,
-          0.14
-        ],
-        "euler": [
-          0,
-          0,
-          0
-        ]
-      },
-      {
-        "name": "Col_Shelf_9",
-        "type": "box",
-        "center": [
-          -0.06981818181818178,
-          1.08,
-          2.79
-        ],
-        "size": [
-          0.48981818181818165,
-          0.016,
-          0.14
-        ],
-        "euler": [
-          0,
-          0,
-          0
-        ]
-      },
-      {
-        "name": "Col_Shelf_10",
-        "type": "box",
-        "center": [
-          -0.06981818181818178,
-          1.58,
-          2.79
-        ],
-        "size": [
-          0.48981818181818165,
-          0.016,
-          0.14
-        ],
-        "euler": [
-          0,
-          0,
-          0
-        ]
-      },
-      {
-        "name": "Col_Shelf_11",
-        "type": "box",
-        "center": [
-          0.56,
-          1.08,
-          2.79
-        ],
-        "size": [
-          0.4898181818181821,
-          0.016,
-          0.14
-        ],
-        "euler": [
-          0,
-          0,
-          0
-        ]
-      },
-      {
-        "name": "Col_Shelf_12",
-        "type": "box",
-        "center": [
-          0.56,
-          1.58,
-          2.79
-        ],
-        "size": [
-          0.4898181818181821,
-          0.016,
-          0.14
-        ],
-        "euler": [
-          0,
-          0,
-          0
-        ]
-      },
-      {
-        "name": "Col_Shelf_13",
-        "type": "box",
-        "center": [
-          1.1898181818181817,
-          1.08,
-          2.79
-        ],
-        "size": [
-          0.4898181818181812,
-          0.016,
-          0.14
-        ],
-        "euler": [
-          0,
-          0,
-          0
-        ]
-      },
-      {
-        "name": "Col_Shelf_14",
-        "type": "box",
-        "center": [
-          1.1898181818181817,
-          1.58,
-          2.79
-        ],
-        "size": [
-          0.4898181818181812,
-          0.016,
-          0.14
-        ],
-        "euler": [
-          0,
-          0,
-          0
-        ]
-      },
-      {
-        "name": "Col_Shelf_15",
-        "type": "box",
-        "center": [
-          1.8196363636363633,
-          1.08,
-          2.79
-        ],
-        "size": [
-          0.4898181818181821,
-          0.016,
-          0.14
-        ],
-        "euler": [
-          0,
-          0,
-          0
-        ]
-      },
-      {
-        "name": "Col_Shelf_16",
-        "type": "box",
-        "center": [
-          1.8196363636363633,
-          1.58,
-          2.79
-        ],
-        "size": [
-          0.4898181818181821,
-          0.016,
-          0.14
-        ],
-        "euler": [
-          0,
-          0,
-          0
-        ]
-      },
-      {
-        "name": "Col_Shelf_17",
-        "type": "box",
-        "center": [
-          2.4494545454545453,
-          1.08,
-          2.79
-        ],
-        "size": [
-          0.4898181818181821,
-          0.016,
-          0.14
-        ],
-        "euler": [
-          0,
-          0,
-          0
-        ]
-      },
-      {
-        "name": "Col_Shelf_18",
-        "type": "box",
-        "center": [
-          2.4494545454545453,
-          1.58,
-          2.79
-        ],
-        "size": [
-          0.4898181818181821,
-          0.016,
-          0.14
-        ],
-        "euler": [
-          0,
-          0,
-          0
-        ]
-      },
-      {
-        "name": "Col_Shelf_19",
-        "type": "box",
-        "center": [
-          3.079272727272727,
-          1.08,
-          2.79
-        ],
-        "size": [
-          0.4898181818181812,
-          0.016,
-          0.14
-        ],
-        "euler": [
-          0,
-          0,
-          0
-        ]
-      },
-      {
-        "name": "Col_Shelf_20",
-        "type": "box",
-        "center": [
-          3.079272727272727,
-          1.58,
-          2.79
-        ],
-        "size": [
-          0.4898181818181812,
-          0.016,
-          0.14
-        ],
-        "euler": [
-          0,
-          0,
-          0
-        ]
-      },
-      {
-        "name": "Col_Shelf_21",
-        "type": "box",
-        "center": [
-          3.709090909090908,
-          1.08,
-          2.79
-        ],
-        "size": [
-          0.48981818181818165,
-          0.016,
-          0.14
-        ],
-        "euler": [
-          0,
-          0,
-          0
-        ]
-      },
-      {
-        "name": "Col_Shelf_22",
-        "type": "box",
-        "center": [
-          3.709090909090908,
-          1.58,
-          2.79
-        ],
-        "size": [
-          0.48981818181818165,
-          0.016,
-          0.14
         ],
         "euler": [
           0,
@@ -24067,7 +24584,7 @@
         "center": [
           -3.4339999999999993,
           2.3550000000000004,
-          3.345
+          3.2600000000000002
         ],
         "size": [
           0.82,
@@ -24119,150 +24636,17 @@
         ]
       },
       {
-        "name": "Col_String",
+        "name": "Col_Kick_7",
         "type": "box",
         "center": [
-          0.0,
-          3.56,
-          3.455
-        ],
-        "size": [
-          8.468,
-          0.07,
-          0.035
-        ],
-        "euler": [
-          0,
-          0,
-          0
-        ]
-      },
-      {
-        "name": "Col_Cornice",
-        "type": "box",
-        "center": [
-          0.0,
-          3.74,
-          3.5
-        ],
-        "size": [
-          8.468,
-          0.06,
-          0.06
-        ],
-        "euler": [
-          0,
-          0,
-          0
-        ]
-      },
-      {
-        "name": "Col_Awning",
-        "type": "box",
-        "center": [
-          0.0,
-          2.42064,
-          3.556
-        ],
-        "size": [
-          6.615759999999999,
-          0.011200000000000002,
-          0.1386
-        ],
-        "euler": [
-          0,
-          0,
-          0
-        ]
-      },
-      {
-        "name": "Col_Awning_2",
-        "type": "box",
-        "center": [
-          0.0,
-          2.33664,
-          3.808
-        ],
-        "size": [
-          6.615759999999999,
-          0.011200000000000002,
-          0.1386
-        ],
-        "euler": [
-          0,
-          0,
-          0
-        ]
-      },
-      {
-        "name": "Col_Awning_3",
-        "type": "box",
-        "center": [
-          0.0,
-          2.25264,
-          4.0600000000000005
-        ],
-        "size": [
-          6.615759999999999,
-          0.011200000000000002,
-          0.1386
-        ],
-        "euler": [
-          0,
-          0,
-          0
-        ]
-      },
-      {
-        "name": "Col_Awning_4",
-        "type": "box",
-        "center": [
-          0.0,
-          2.16864,
-          4.311999999999999
-        ],
-        "size": [
-          6.615759999999999,
-          0.011200000000000002,
-          0.1386
-        ],
-        "euler": [
-          0,
-          0,
-          0
-        ]
-      },
-      {
-        "name": "Col_Awning_5",
-        "type": "box",
-        "center": [
-          0.0,
-          2.08464,
-          4.564
-        ],
-        "size": [
-          6.615759999999999,
-          0.011200000000000002,
-          0.1386
-        ],
-        "euler": [
-          0,
-          0,
-          0
-        ]
-      },
-      {
-        "name": "Col_Kick_12",
-        "type": "box",
-        "center": [
-          -4.489999999999999,
-          0.3072,
-          -1.3805714285714283
+          -4.529999999999999,
+          0.335,
+          -1.138
         ],
         "size": [
           0.1,
           0.44799999999999995,
-          0.586857142857143
+          1.072
         ],
         "euler": [
           0,
@@ -24271,17 +24655,17 @@
         ]
       },
       {
-        "name": "Col_Kick_13",
+        "name": "Col_Kick_8",
         "type": "box",
         "center": [
-          -4.489999999999999,
-          0.3072,
-          -0.7337142857142855
+          -4.529999999999999,
+          0.335,
+          -0.005999999999999783
         ],
         "size": [
           0.1,
           0.44799999999999995,
-          0.5868571428571427
+          1.072
         ],
         "euler": [
           0,
@@ -24290,17 +24674,17 @@
         ]
       },
       {
-        "name": "Col_Kick_14",
+        "name": "Col_Kick_9",
         "type": "box",
         "center": [
-          -4.489999999999999,
-          0.3072,
-          -0.08685714285714263
+          -4.529999999999999,
+          0.335,
+          1.1260000000000003
         ],
         "size": [
           0.1,
           0.44799999999999995,
-          0.586857142857143
+          1.072
         ],
         "euler": [
           0,
@@ -24309,17 +24693,17 @@
         ]
       },
       {
-        "name": "Col_Kick_15",
+        "name": "Col_Kick_10",
         "type": "box",
         "center": [
-          -4.489999999999999,
-          0.3072,
-          0.5600000000000003
+          -4.529999999999999,
+          0.335,
+          2.2580000000000005
         ],
         "size": [
           0.1,
           0.44799999999999995,
-          0.5868571428571427
+          1.0720000000000003
         ],
         "euler": [
           0,
@@ -24328,74 +24712,17 @@
         ]
       },
       {
-        "name": "Col_Kick_16",
+        "name": "Col_Glass_16",
         "type": "box",
         "center": [
-          -4.489999999999999,
-          0.3072,
-          1.206857142857143
-        ],
-        "size": [
-          0.1,
-          0.44799999999999995,
-          0.5868571428571427
-        ],
-        "euler": [
-          0,
-          0,
-          0
-        ]
-      },
-      {
-        "name": "Col_Kick_17",
-        "type": "box",
-        "center": [
-          -4.489999999999999,
-          0.3072,
-          1.853714285714286
-        ],
-        "size": [
-          0.1,
-          0.44799999999999995,
-          0.5868571428571434
-        ],
-        "euler": [
-          0,
-          0,
-          0
-        ]
-      },
-      {
-        "name": "Col_Kick_18",
-        "type": "box",
-        "center": [
-          -4.489999999999999,
-          0.3072,
-          2.5005714285714293
-        ],
-        "size": [
-          0.1,
-          0.44799999999999995,
-          0.5868571428571427
-        ],
-        "euler": [
-          0,
-          0,
-          0
-        ]
-      },
-      {
-        "name": "Col_Glass_21",
-        "type": "box",
-        "center": [
-          -4.544999999999999,
+          -4.459999999999999,
           1.5975000000000001,
-          -1.3805714285714283
+          -1.138
         ],
         "size": [
           0.008,
           1.745,
-          0.5668571428571431
+          1.052
         ],
         "euler": [
           0,
@@ -24404,17 +24731,17 @@
         ]
       },
       {
-        "name": "Col_Glass_22",
+        "name": "Col_Glass_17",
         "type": "box",
         "center": [
-          -4.544999999999999,
+          -4.459999999999999,
           1.5975000000000001,
-          -0.7337142857142855
+          -0.005999999999999783
         ],
         "size": [
           0.008,
           1.745,
-          0.5668571428571428
+          1.052
         ],
         "euler": [
           0,
@@ -24423,17 +24750,17 @@
         ]
       },
       {
-        "name": "Col_Glass_23",
+        "name": "Col_Glass_18",
         "type": "box",
         "center": [
-          -4.544999999999999,
+          -4.459999999999999,
           1.5975000000000001,
-          -0.08685714285714263
+          1.1260000000000003
         ],
         "size": [
           0.008,
           1.745,
-          0.5668571428571431
+          1.052
         ],
         "euler": [
           0,
@@ -24442,340 +24769,17 @@
         ]
       },
       {
-        "name": "Col_Glass_24",
+        "name": "Col_Glass_19",
         "type": "box",
         "center": [
-          -4.544999999999999,
+          -4.459999999999999,
           1.5975000000000001,
-          0.5600000000000003
+          2.2580000000000005
         ],
         "size": [
           0.008,
           1.745,
-          0.5668571428571428
-        ],
-        "euler": [
-          0,
-          0,
-          0
-        ]
-      },
-      {
-        "name": "Col_Glass_25",
-        "type": "box",
-        "center": [
-          -4.544999999999999,
-          1.5975000000000001,
-          1.206857142857143
-        ],
-        "size": [
-          0.008,
-          1.745,
-          0.5668571428571428
-        ],
-        "euler": [
-          0,
-          0,
-          0
-        ]
-      },
-      {
-        "name": "Col_Glass_26",
-        "type": "box",
-        "center": [
-          -4.544999999999999,
-          1.5975000000000001,
-          1.853714285714286
-        ],
-        "size": [
-          0.008,
-          1.745,
-          0.5668571428571435
-        ],
-        "euler": [
-          0,
-          0,
-          0
-        ]
-      },
-      {
-        "name": "Col_Glass_27",
-        "type": "box",
-        "center": [
-          -4.544999999999999,
-          1.5975000000000001,
-          2.5005714285714293
-        ],
-        "size": [
-          0.008,
-          1.745,
-          0.5668571428571428
-        ],
-        "euler": [
-          0,
-          0,
-          0
-        ]
-      },
-      {
-        "name": "Col_Shelf_23",
-        "type": "box",
-        "center": [
-          -3.9899999999999993,
-          1.08,
-          -1.3805714285714283
-        ],
-        "size": [
-          0.14,
-          0.016,
-          0.5068571428571431
-        ],
-        "euler": [
-          0,
-          0,
-          0
-        ]
-      },
-      {
-        "name": "Col_Shelf_24",
-        "type": "box",
-        "center": [
-          -3.9899999999999993,
-          1.58,
-          -1.3805714285714283
-        ],
-        "size": [
-          0.14,
-          0.016,
-          0.5068571428571431
-        ],
-        "euler": [
-          0,
-          0,
-          0
-        ]
-      },
-      {
-        "name": "Col_Shelf_25",
-        "type": "box",
-        "center": [
-          -3.9899999999999993,
-          1.08,
-          -0.7337142857142855
-        ],
-        "size": [
-          0.14,
-          0.016,
-          0.5068571428571429
-        ],
-        "euler": [
-          0,
-          0,
-          0
-        ]
-      },
-      {
-        "name": "Col_Shelf_26",
-        "type": "box",
-        "center": [
-          -3.9899999999999993,
-          1.58,
-          -0.7337142857142855
-        ],
-        "size": [
-          0.14,
-          0.016,
-          0.5068571428571429
-        ],
-        "euler": [
-          0,
-          0,
-          0
-        ]
-      },
-      {
-        "name": "Col_Shelf_27",
-        "type": "box",
-        "center": [
-          -3.9899999999999993,
-          1.08,
-          -0.08685714285714263
-        ],
-        "size": [
-          0.14,
-          0.016,
-          0.5068571428571431
-        ],
-        "euler": [
-          0,
-          0,
-          0
-        ]
-      },
-      {
-        "name": "Col_Shelf_28",
-        "type": "box",
-        "center": [
-          -3.9899999999999993,
-          1.58,
-          -0.08685714285714263
-        ],
-        "size": [
-          0.14,
-          0.016,
-          0.5068571428571431
-        ],
-        "euler": [
-          0,
-          0,
-          0
-        ]
-      },
-      {
-        "name": "Col_Shelf_29",
-        "type": "box",
-        "center": [
-          -3.9899999999999993,
-          1.08,
-          0.5600000000000003
-        ],
-        "size": [
-          0.14,
-          0.016,
-          0.5068571428571429
-        ],
-        "euler": [
-          0,
-          0,
-          0
-        ]
-      },
-      {
-        "name": "Col_Shelf_30",
-        "type": "box",
-        "center": [
-          -3.9899999999999993,
-          1.58,
-          0.5600000000000003
-        ],
-        "size": [
-          0.14,
-          0.016,
-          0.5068571428571429
-        ],
-        "euler": [
-          0,
-          0,
-          0
-        ]
-      },
-      {
-        "name": "Col_Shelf_31",
-        "type": "box",
-        "center": [
-          -3.9899999999999993,
-          1.08,
-          1.206857142857143
-        ],
-        "size": [
-          0.14,
-          0.016,
-          0.5068571428571429
-        ],
-        "euler": [
-          0,
-          0,
-          0
-        ]
-      },
-      {
-        "name": "Col_Shelf_32",
-        "type": "box",
-        "center": [
-          -3.9899999999999993,
-          1.58,
-          1.206857142857143
-        ],
-        "size": [
-          0.14,
-          0.016,
-          0.5068571428571429
-        ],
-        "euler": [
-          0,
-          0,
-          0
-        ]
-      },
-      {
-        "name": "Col_Shelf_33",
-        "type": "box",
-        "center": [
-          -3.9899999999999993,
-          1.08,
-          1.853714285714286
-        ],
-        "size": [
-          0.14,
-          0.016,
-          0.5068571428571436
-        ],
-        "euler": [
-          0,
-          0,
-          0
-        ]
-      },
-      {
-        "name": "Col_Shelf_34",
-        "type": "box",
-        "center": [
-          -3.9899999999999993,
-          1.58,
-          1.853714285714286
-        ],
-        "size": [
-          0.14,
-          0.016,
-          0.5068571428571436
-        ],
-        "euler": [
-          0,
-          0,
-          0
-        ]
-      },
-      {
-        "name": "Col_Shelf_35",
-        "type": "box",
-        "center": [
-          -3.9899999999999993,
-          1.08,
-          2.5005714285714293
-        ],
-        "size": [
-          0.14,
-          0.016,
-          0.5068571428571429
-        ],
-        "euler": [
-          0,
-          0,
-          0
-        ]
-      },
-      {
-        "name": "Col_Shelf_36",
-        "type": "box",
-        "center": [
-          -3.9899999999999993,
-          1.58,
-          2.5005714285714293
-        ],
-        "size": [
-          0.14,
-          0.016,
-          0.5068571428571429
+          1.0520000000000003
         ],
         "euler": [
           0,
@@ -24825,7 +24829,7 @@
         "name": "Col_Transom_2",
         "type": "box",
         "center": [
-          -4.544999999999999,
+          -4.459999999999999,
           2.3550000000000004,
           -2.234
         ],
@@ -24877,139 +24881,6 @@
           0,
           0
         ]
-      },
-      {
-        "name": "Col_String_2",
-        "type": "box",
-        "center": [
-          -4.654999999999999,
-          3.56,
-          0.0
-        ],
-        "size": [
-          0.035,
-          0.07,
-          6.068
-        ],
-        "euler": [
-          0,
-          0,
-          0
-        ]
-      },
-      {
-        "name": "Col_Cornice_2",
-        "type": "box",
-        "center": [
-          -4.699999999999999,
-          3.74,
-          0.0
-        ],
-        "size": [
-          0.06,
-          0.06,
-          6.068
-        ],
-        "euler": [
-          0,
-          0,
-          0
-        ]
-      },
-      {
-        "name": "Col_Awning_6",
-        "type": "box",
-        "center": [
-          -4.755999999999999,
-          2.42064,
-          0.0
-        ],
-        "size": [
-          0.1386,
-          0.011200000000000002,
-          4.64776
-        ],
-        "euler": [
-          0,
-          0,
-          0
-        ]
-      },
-      {
-        "name": "Col_Awning_7",
-        "type": "box",
-        "center": [
-          -5.007999999999999,
-          2.33664,
-          0.0
-        ],
-        "size": [
-          0.1386,
-          0.011200000000000002,
-          4.64776
-        ],
-        "euler": [
-          0,
-          0,
-          0
-        ]
-      },
-      {
-        "name": "Col_Awning_8",
-        "type": "box",
-        "center": [
-          -5.26,
-          2.25264,
-          0.0
-        ],
-        "size": [
-          0.1386,
-          0.011200000000000002,
-          4.64776
-        ],
-        "euler": [
-          0,
-          0,
-          0
-        ]
-      },
-      {
-        "name": "Col_Awning_9",
-        "type": "box",
-        "center": [
-          -5.511999999999999,
-          2.16864,
-          0.0
-        ],
-        "size": [
-          0.1386,
-          0.011200000000000002,
-          4.64776
-        ],
-        "euler": [
-          0,
-          0,
-          0
-        ]
-      },
-      {
-        "name": "Col_Awning_10",
-        "type": "box",
-        "center": [
-          -5.763999999999999,
-          2.08464,
-          0.0
-        ],
-        "size": [
-          0.1386,
-          0.011200000000000002,
-          4.64776
-        ],
-        "euler": [
-          0,
-          0,
-          0
-        ]
       }
     ],
     "climbable": true,
@@ -25024,14 +24895,14 @@
       "LOD1",
       "LOD2"
     ],
-    "slackCm": 1.9,
-    "fbx": "Assets/Art/Props/Library/Buildings/Store_Laundromat.fbx",
+    "slackCm": 2.4,
     "license": {
       "spdx": "CC0-1.0",
       "source": "original",
       "url": "",
       "notes": "Procedural mesh built in this repo."
-    }
+    },
+    "fbx": "Assets/Art/Props/Library/Buildings/Store_Laundromat.fbx"
   },
   {
     "name": "Storefront_Glass",
@@ -25082,20 +24953,6 @@
         ],
         "mesh": "LOD1",
         "fileID": -179393741545503174
-      },
-      {
-        "lod": 2,
-        "tris": 144,
-        "materials": [
-          "Lib_Brick",
-          "Lib_Concrete",
-          "Lib_Window",
-          "Lib_SteelDark",
-          "Lib_WoodDark",
-          "Lib_Wood"
-        ],
-        "mesh": "LOD2",
-        "fileID": 736115405485880582
       }
     ],
     "colliders": [
@@ -25223,17 +25080,16 @@
     "fbxNames": [
       "LODBoxS",
       "LOD0",
-      "LOD1",
-      "LOD2"
+      "LOD1"
     ],
     "slackCm": 0.8,
-    "fbx": "Assets/Art/Props/Library/Buildings/Storefront_Glass.fbx",
     "license": {
       "spdx": "CC0-1.0",
       "source": "original",
       "url": "",
       "notes": "Procedural mesh built in this repo."
-    }
+    },
+    "fbx": "Assets/Art/Props/Library/Buildings/Storefront_Glass.fbx"
   },
   {
     "name": "StormDrain",
@@ -26111,17 +25967,6 @@
         ],
         "mesh": "LOD1",
         "fileID": -179393741545503174
-      },
-      {
-        "lod": 2,
-        "tris": 48,
-        "materials": [
-          "Lib_Bark",
-          "Lib_PalmDry",
-          "Lib_Palm"
-        ],
-        "mesh": "LOD2",
-        "fileID": 736115405485880582
       }
     ],
     "colliders": [
@@ -26147,17 +25992,16 @@
     "fbxNames": [
       "LODBoxS",
       "LOD0",
-      "LOD1",
-      "LOD2"
+      "LOD1"
     ],
     "slackCm": 0.0,
-    "fbx": "Assets/Art/Props/Library/Park/Tree_Palm.fbx",
     "license": {
       "spdx": "CC0-1.0",
       "source": "original",
       "url": "",
       "notes": "Procedural mesh built in this repo."
-    }
+    },
+    "fbx": "Assets/Art/Props/Library/Park/Tree_Palm.fbx"
   },
   {
     "name": "Tree_Pine",
@@ -26203,7 +26047,7 @@
       },
       {
         "lod": 2,
-        "tris": 528,
+        "tris": 384,
         "materials": [
           "Lib_Bark",
           "Lib_Needle",
@@ -26259,13 +26103,13 @@
       "LOD2"
     ],
     "slackCm": 2.27,
-    "fbx": "Assets/Art/Props/Library/Park/Tree_Pine.fbx",
     "license": {
       "spdx": "CC0-1.0",
       "source": "original",
       "url": "",
       "notes": "Procedural mesh built in this repo."
-    }
+    },
+    "fbx": "Assets/Art/Props/Library/Park/Tree_Pine.fbx"
   },
   {
     "name": "UtilityPole",
@@ -26995,16 +26839,6 @@
         ],
         "mesh": "LOD1",
         "fileID": -179393741545503174
-      },
-      {
-        "lod": 2,
-        "tris": 180,
-        "materials": [
-          "Lib_SteelDark",
-          "Lib_Steel"
-        ],
-        "mesh": "LOD2",
-        "fileID": 736115405485880582
       }
     ],
     "colliders": [
@@ -27078,17 +26912,16 @@
     "fbxNames": [
       "LODBoxS",
       "LOD0",
-      "LOD1",
-      "LOD2"
+      "LOD1"
     ],
     "slackCm": 1.7,
-    "fbx": "Assets/Art/Props/Library/Buildings/WaterTank.fbx",
     "license": {
       "spdx": "CC0-1.0",
       "source": "original",
       "url": "",
       "notes": "Procedural mesh built in this repo."
-    }
+    },
+    "fbx": "Assets/Art/Props/Library/Buildings/WaterTank.fbx"
   },
   {
     "name": "WoodFence",
@@ -27262,13 +27095,11 @@
       },
       {
         "lod": 2,
-        "tris": 1148,
+        "tris": 260,
         "materials": [
           "Lib_PaintWhite",
           "Lib_SteelDark",
-          "Lib_ShopGlass",
-          "Lib_Steel",
-          "Lib_PaintRed"
+          "Lib_ShopGlass"
         ],
         "mesh": "LOD2",
         "fileID": 736115405485880582
@@ -27429,16 +27260,28 @@
       },
       {
         "lod": 1,
-        "tris": 3084,
+        "tris": 504,
         "materials": [
           "Lib_Concrete",
           "Lib_Board",
-          "Lib_Batten",
           "Lib_Varnish",
+          "Lib_Batten",
           "Lib_Roof"
         ],
         "mesh": "LOD1",
         "fileID": -179393741545503174
+      },
+      {
+        "lod": 2,
+        "tris": 120,
+        "materials": [
+          "Lib_Concrete",
+          "Lib_Board",
+          "Lib_Roof",
+          "Lib_Varnish"
+        ],
+        "mesh": "LOD2",
+        "fileID": 736115405485880582
       }
     ],
     "colliders": [
@@ -27566,16 +27409,17 @@
     "fbxNames": [
       "LODBoxS",
       "LOD0",
-      "LOD1"
+      "LOD1",
+      "LOD2"
     ],
     "slackCm": 2.7,
-    "fbx": "Assets/Art/Props/Library/Harbor/HarborShed.fbx",
     "license": {
       "spdx": "CC0-1.0",
       "source": "original",
       "url": "",
       "notes": "Procedural mesh built in this repo."
-    }
+    },
+    "fbx": "Assets/Art/Props/Library/Harbor/HarborShed.fbx"
   },
   {
     "name": "Pond",
@@ -28949,13 +28793,32 @@
         "type": "box",
         "center": [
           0,
-          1.29,
+          1.16,
           0
         ],
         "size": [
           1.96,
-          2.14,
+          2.32,
           5.539999999999999
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Roof",
+        "type": "box",
+        "center": [
+          0,
+          2.51,
+          0
+        ],
+        "size": [
+          2.04,
+          0.06,
+          5.56
         ],
         "euler": [
           0,
@@ -28977,13 +28840,13 @@
       "LOD2"
     ],
     "slackCm": 0.0,
-    "fbx": "Assets/Art/Props/Library/Harbor/Container_20_Blue.fbx",
     "license": {
       "spdx": "CC0-1.0",
       "source": "original",
       "url": "",
       "notes": "Procedural mesh built in this repo."
-    }
+    },
+    "fbx": "Assets/Art/Props/Library/Harbor/Container_20_Blue.fbx"
   },
   {
     "name": "Container_20_Green",
@@ -29048,13 +28911,32 @@
         "type": "box",
         "center": [
           0,
-          1.29,
+          1.16,
           0
         ],
         "size": [
           1.96,
-          2.14,
+          2.32,
           5.539999999999999
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Roof",
+        "type": "box",
+        "center": [
+          0,
+          2.51,
+          0
+        ],
+        "size": [
+          2.04,
+          0.06,
+          5.56
         ],
         "euler": [
           0,
@@ -29076,13 +28958,13 @@
       "LOD2"
     ],
     "slackCm": 0.0,
-    "fbx": "Assets/Art/Props/Library/Harbor/Container_20_Green.fbx",
     "license": {
       "spdx": "CC0-1.0",
       "source": "original",
       "url": "",
       "notes": "Procedural mesh built in this repo."
-    }
+    },
+    "fbx": "Assets/Art/Props/Library/Harbor/Container_20_Green.fbx"
   },
   {
     "name": "LightPost_Globe",
@@ -56218,17 +56100,13 @@
       },
       {
         "lod": 2,
-        "tris": 1688,
+        "tris": 296,
         "materials": [
           "Lib_Siding",
-          "Lib_Concrete",
-          "Lib_Window",
           "Lib_PaintWhite",
-          "Lib_Interior",
-          "Lib_WoodDark",
-          "Lib_WindowLit",
           "Lib_Wood",
           "Lib_RanchRoof",
+          "Lib_Concrete",
           "Lib_Brick"
         ],
         "mesh": "LOD2",
@@ -59624,5 +59502,1623 @@
     ],
     "slackCm": 0.0,
     "fbx": "Assets/Art/Props/Library/Vehicles/Pickup_FullSize_25.fbx"
+  },
+  {
+    "name": "Alley",
+    "category": "Buildings",
+    "blurb": "Narrow service alley, 2.4 m between the brick faces and about 7.7 m deep. The open end faces +Z. A back door sits in the far wall, with a downspout on the right face.",
+    "size": [
+      3.02,
+      3.436,
+      7.95
+    ],
+    "min": [
+      -1.51,
+      0.0,
+      -3.93
+    ],
+    "max": [
+      1.51,
+      3.436,
+      4.02
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 260,
+        "materials": [
+          "Lib_Brick",
+          "Lib_Concrete",
+          "Lib_Asphalt",
+          "Lib_WoodDark",
+          "Lib_Wood",
+          "Lib_Glass",
+          "Lib_SteelDark",
+          "Lib_Steel"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 132,
+        "materials": [
+          "Lib_Brick",
+          "Lib_Concrete",
+          "Lib_Asphalt",
+          "Lib_WoodDark"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      },
+      {
+        "lod": 2,
+        "tris": 48,
+        "materials": [
+          "Lib_Brick",
+          "Lib_Asphalt"
+        ],
+        "mesh": "LOD2",
+        "fileID": 736115405485880582
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Climb_Left",
+        "type": "box",
+        "center": [
+          -1.35,
+          1.68,
+          0.15
+        ],
+        "size": [
+          0.22000000000000003,
+          3.28,
+          7.58
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Right",
+        "type": "box",
+        "center": [
+          1.35,
+          1.68,
+          0.15
+        ],
+        "size": [
+          0.22000000000000003,
+          3.28,
+          7.58
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_BackL",
+        "type": "box",
+        "center": [
+          -0.86,
+          1.68,
+          -3.78
+        ],
+        "size": [
+          0.56,
+          3.28,
+          0.2
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_BackR",
+        "type": "box",
+        "center": [
+          0.86,
+          1.68,
+          -3.78
+        ],
+        "size": [
+          0.56,
+          3.28,
+          0.2
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Header",
+        "type": "box",
+        "center": [
+          0.0,
+          2.74,
+          -3.78
+        ],
+        "size": [
+          0.88,
+          1.16,
+          0.2
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Door",
+        "type": "box",
+        "center": [
+          0.0,
+          1.02,
+          -3.6
+        ],
+        "size": [
+          0.76,
+          1.92,
+          0.03
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Floor",
+        "type": "box",
+        "center": [
+          0.0,
+          0.02,
+          0.24
+        ],
+        "size": [
+          2.08,
+          0.03,
+          6.8
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "climbable": true,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "Both side walls and the back piers are cling faces. The floor is the ground.",
+    "vaultNote": "No rail. The coping is at 3.4 m.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1",
+      "LOD2"
+    ],
+    "slackCm": 0.0,
+    "license": {
+      "spdx": "CC0-1.0",
+      "source": "original",
+      "url": "",
+      "notes": "Procedural mesh built in this repo."
+    },
+    "fbx": "Assets/Art/Props/Library/Buildings/Alley.fbx"
+  },
+  {
+    "name": "Bleachers",
+    "category": "Park",
+    "blurb": "Four-row aluminum bleachers, 6 m long. Seat tops run from 0.48 m up to 1.56 m. A rail closes the back and the two ends.",
+    "size": [
+      6.15,
+      2.06,
+      3.28
+    ],
+    "min": [
+      -3.075,
+      0.02,
+      -2.08
+    ],
+    "max": [
+      3.075,
+      2.08,
+      1.2
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 300,
+        "materials": [
+          "Lib_Steel",
+          "Lib_SteelDark",
+          "Lib_Concrete"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 216,
+        "materials": [
+          "Lib_Steel",
+          "Lib_SteelDark",
+          "Lib_Concrete"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      },
+      {
+        "lod": 2,
+        "tris": 108,
+        "materials": [
+          "Lib_Steel",
+          "Lib_SteelDark"
+        ],
+        "mesh": "LOD2",
+        "fileID": 736115405485880582
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_Seat_0",
+        "type": "box",
+        "center": [
+          0.0,
+          0.48,
+          0.35
+        ],
+        "size": [
+          5.1,
+          0.02,
+          0.18
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Foot_0",
+        "type": "box",
+        "center": [
+          0.0,
+          0.26,
+          0.75
+        ],
+        "size": [
+          5.1,
+          0.02,
+          0.26
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Seat_1",
+        "type": "box",
+        "center": [
+          0.0,
+          0.84,
+          -0.37
+        ],
+        "size": [
+          5.1,
+          0.02,
+          0.18
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Foot_1",
+        "type": "box",
+        "center": [
+          0.0,
+          0.62,
+          0.030000000000000027
+        ],
+        "size": [
+          5.1,
+          0.02,
+          0.26
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Seat_2",
+        "type": "box",
+        "center": [
+          0.0,
+          1.2,
+          -1.0899999999999999
+        ],
+        "size": [
+          5.1,
+          0.02,
+          0.18
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Foot_2",
+        "type": "box",
+        "center": [
+          0.0,
+          0.98,
+          -0.69
+        ],
+        "size": [
+          5.1,
+          0.02,
+          0.26
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Seat_3",
+        "type": "box",
+        "center": [
+          0.0,
+          1.56,
+          -1.81
+        ],
+        "size": [
+          5.1,
+          0.02,
+          0.18
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Foot_3",
+        "type": "box",
+        "center": [
+          0.0,
+          1.34,
+          -1.4100000000000001
+        ],
+        "size": [
+          5.1,
+          0.02,
+          0.26
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Rail",
+        "type": "box",
+        "center": [
+          0.0,
+          1.85,
+          -2.05
+        ],
+        "size": [
+          5.7,
+          0.7,
+          0.06
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ],
+        "approx": true
+      }
+    ],
+    "climbable": false,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "Seats and footboards are the surfaces. The frame is not a cling wall.",
+    "vaultNote": "The front footboard is under 0.40 m. Not a vault rail.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1",
+      "LOD2"
+    ],
+    "slackCm": 0.0,
+    "license": {
+      "spdx": "CC0-1.0",
+      "source": "original",
+      "url": "",
+      "notes": "Procedural mesh built in this repo."
+    },
+    "fbx": "Assets/Art/Props/Library/Park/Bleachers.fbx"
+  },
+  {
+    "name": "Driveway",
+    "category": "Roads",
+    "blurb": "Apron that replaces two 4 m sidewalk tiles. The -X face is the curb and butts the road edge the same way Sidewalk does. Wings keep the 2 m walk and the 0.27 m top. The curb is cut only in the apron, which rises from the 0.12 m asphalt to that walk. The pad stays at 0.27 m.",
+    "size": [
+      8.0,
+      0.278,
+      7.98
+    ],
+    "min": [
+      -4.0,
+      0.0,
+      -3.99
+    ],
+    "max": [
+      4.0,
+      0.278,
+      3.99
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 72,
+        "materials": [
+          "Lib_Concrete",
+          "Lib_Mortar"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 48,
+        "materials": [
+          "Lib_Concrete"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      },
+      {
+        "lod": 2,
+        "tris": 24,
+        "materials": [
+          "Lib_Concrete"
+        ],
+        "mesh": "LOD2",
+        "fileID": 736115405485880582
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_WingL",
+        "type": "box",
+        "center": [
+          -3.0,
+          0.12,
+          -3.01
+        ],
+        "size": [
+          1.84,
+          0.2,
+          1.8
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_WingR",
+        "type": "box",
+        "center": [
+          -3.0,
+          0.12,
+          3.01
+        ],
+        "size": [
+          1.84,
+          0.2,
+          1.8
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Pad",
+        "type": "box",
+        "center": [
+          1.0,
+          0.12,
+          0.0
+        ],
+        "size": [
+          5.7,
+          0.2,
+          3.7
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Apron_0",
+        "type": "box",
+        "center": [
+          -3.74,
+          0.04975,
+          0.0
+        ],
+        "size": [
+          0.34,
+          0.0995,
+          3.8
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Apron_1",
+        "type": "box",
+        "center": [
+          -3.2800000000000002,
+          0.067,
+          0.0
+        ],
+        "size": [
+          0.34,
+          0.134,
+          3.8
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Apron_2",
+        "type": "box",
+        "center": [
+          -2.8200000000000003,
+          0.08425,
+          0.0
+        ],
+        "size": [
+          0.34,
+          0.1685,
+          3.8
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Apron_3",
+        "type": "box",
+        "center": [
+          -2.3599999999999994,
+          0.10150000000000002,
+          0.0
+        ],
+        "size": [
+          0.34,
+          0.20300000000000004,
+          3.8
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "climbable": false,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "Flat concrete. The curb return on each wing is 0.15 m above the asphalt.",
+    "vaultNote": "Curb is 0.15 m above the road. Not a vault.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1",
+      "LOD2"
+    ],
+    "slackCm": 0.0,
+    "license": {
+      "spdx": "CC0-1.0",
+      "source": "original",
+      "url": "",
+      "notes": "Procedural mesh built in this repo."
+    },
+    "fbx": "Assets/Art/Props/Library/Roads/Driveway.fbx"
+  },
+  {
+    "name": "Ferry",
+    "category": "Harbor",
+    "blurb": "Passenger ferry, 12.4 m overall, beam 4.0 m. Bow is -Z. Open foredeck, wheelhouse aft. The hull extends below the pivot.",
+    "size": [
+      3.77,
+      3.96,
+      11.5
+    ],
+    "min": [
+      -1.885,
+      -0.71,
+      -5.75
+    ],
+    "max": [
+      1.885,
+      3.25,
+      5.75
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 340,
+        "materials": [
+          "Lib_PaintWhite",
+          "Lib_PaintRed",
+          "Lib_Rubber",
+          "Lib_Concrete",
+          "Lib_PaintBlue",
+          "Lib_Glass",
+          "Lib_SteelDark",
+          "Lib_Steel"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 180,
+        "materials": [
+          "Lib_PaintWhite",
+          "Lib_PaintRed",
+          "Lib_Rubber",
+          "Lib_Concrete",
+          "Lib_PaintBlue",
+          "Lib_Glass",
+          "Lib_Steel",
+          "Lib_SteelDark"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      },
+      {
+        "lod": 2,
+        "tris": 72,
+        "materials": [
+          "Lib_PaintWhite",
+          "Lib_Concrete",
+          "Lib_PaintBlue"
+        ],
+        "mesh": "LOD2",
+        "fileID": 736115405485880582
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_Hull",
+        "type": "box",
+        "center": [
+          0.0,
+          -0.05,
+          0.8
+        ],
+        "size": [
+          3.2,
+          1.05,
+          9.4
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Bow",
+        "type": "box",
+        "center": [
+          0.0,
+          -0.02,
+          -4.6
+        ],
+        "size": [
+          1.5,
+          0.6,
+          0.7
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Deck",
+        "type": "box",
+        "center": [
+          0.0,
+          0.575,
+          0.65
+        ],
+        "size": [
+          3.3,
+          0.035,
+          9.8
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_CabinLow",
+        "type": "box",
+        "center": [
+          0.0,
+          1.15,
+          4.0
+        ],
+        "size": [
+          2.3,
+          0.78,
+          2.2
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_CabinHigh",
+        "type": "box",
+        "center": [
+          0.0,
+          2.15,
+          4.0
+        ],
+        "size": [
+          2.2,
+          0.86,
+          2.1
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Roof",
+        "type": "box",
+        "center": [
+          0.0,
+          2.78,
+          4.0
+        ],
+        "size": [
+          2.5,
+          0.08,
+          2.5
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_RailL",
+        "type": "box",
+        "center": [
+          -1.78,
+          1.15,
+          -0.8500000000000001
+        ],
+        "size": [
+          0.06,
+          0.7,
+          6.4
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ],
+        "approx": true
+      },
+      {
+        "name": "Col_RailR",
+        "type": "box",
+        "center": [
+          1.78,
+          1.15,
+          -0.8500000000000001
+        ],
+        "size": [
+          0.06,
+          0.7,
+          6.4
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ],
+        "approx": true
+      }
+    ],
+    "climbable": false,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "The hull side and the wheelhouse wall are cling faces. The foredeck is the standing surface.",
+    "vaultNote": "Rail is about 1.05 m above the deck.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1",
+      "LOD2"
+    ],
+    "slackCm": 0.0,
+    "license": {
+      "spdx": "CC0-1.0",
+      "source": "original",
+      "url": "",
+      "notes": "Procedural mesh built in this repo."
+    },
+    "fbx": "Assets/Art/Props/Library/Harbor/Ferry.fbx"
+  },
+  {
+    "name": "Overpass",
+    "category": "Roads",
+    "blurb": "Single span, 14 m along Z and 6 m wide so it continues a Road_Straight. Asphalt deck top is 5.02 m. Two piers carry it. Clearance under the girders is about 4.2 m.",
+    "size": [
+      6.0,
+      6.06,
+      14.0
+    ],
+    "min": [
+      -3.0,
+      0.0,
+      -7.0
+    ],
+    "max": [
+      3.0,
+      6.06,
+      7.0
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 360,
+        "materials": [
+          "Lib_Concrete",
+          "Lib_Asphalt",
+          "Lib_Steel",
+          "Lib_SteelDark"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 264,
+        "materials": [
+          "Lib_Concrete",
+          "Lib_Asphalt",
+          "Lib_Steel",
+          "Lib_SteelDark"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      },
+      {
+        "lod": 2,
+        "tris": 144,
+        "materials": [
+          "Lib_Concrete",
+          "Lib_Asphalt",
+          "Lib_Steel",
+          "Lib_SteelDark"
+        ],
+        "mesh": "LOD2",
+        "fileID": 736115405485880582
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_Deck",
+        "type": "box",
+        "center": [
+          0.0,
+          4.77,
+          0.0
+        ],
+        "size": [
+          5.8,
+          0.3199999999999999,
+          13.8
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Wearing",
+        "type": "box",
+        "center": [
+          0.0,
+          4.985,
+          0.0
+        ],
+        "size": [
+          5.7,
+          0.04,
+          13.7
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Pier_0",
+        "type": "box",
+        "center": [
+          0.0,
+          2.2,
+          -3.4
+        ],
+        "size": [
+          0.56,
+          4.2,
+          0.7
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Pier_1",
+        "type": "box",
+        "center": [
+          0.0,
+          2.2,
+          3.4
+        ],
+        "size": [
+          0.56,
+          4.2,
+          0.7
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_RailL",
+        "type": "box",
+        "center": [
+          -2.82,
+          5.55,
+          0.0
+        ],
+        "size": [
+          0.08,
+          0.9,
+          13.6
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ],
+        "approx": true
+      },
+      {
+        "name": "Col_RailR",
+        "type": "box",
+        "center": [
+          2.82,
+          5.55,
+          0.0
+        ],
+        "size": [
+          0.08,
+          0.9,
+          13.6
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ],
+        "approx": true
+      }
+    ],
+    "climbable": false,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "The piers are the cling faces. The deck is the road.",
+    "vaultNote": "No rail at street level. The parapet is on the deck.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1",
+      "LOD2"
+    ],
+    "slackCm": 0.3,
+    "license": {
+      "spdx": "CC0-1.0",
+      "source": "original",
+      "url": "",
+      "notes": "Procedural mesh built in this repo."
+    },
+    "fbx": "Assets/Art/Props/Library/Roads/Overpass.fbx"
+  },
+  {
+    "name": "Restroom",
+    "category": "Park",
+    "blurb": "Park restroom, 5.2 m by 3.4 m, wall top 2.52 m, flat roof. Two doors face +Z. A short screen stands in front of the doors.",
+    "size": [
+      5.44,
+      2.99,
+      4.85
+    ],
+    "min": [
+      -2.72,
+      0.0,
+      -2.465
+    ],
+    "max": [
+      2.72,
+      2.99,
+      2.385
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 208,
+        "materials": [
+          "Lib_Concrete",
+          "Lib_SteelDark",
+          "Lib_PaintGreen",
+          "Lib_Steel"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 144,
+        "materials": [
+          "Lib_Concrete",
+          "Lib_PaintGreen"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      },
+      {
+        "lod": 2,
+        "tris": 60,
+        "materials": [
+          "Lib_Concrete"
+        ],
+        "mesh": "LOD2",
+        "fileID": 736115405485880582
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Climb_Left",
+        "type": "box",
+        "center": [
+          -2.5,
+          1.31,
+          -0.645
+        ],
+        "size": [
+          0.16,
+          2.34,
+          3.2399999999999998
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Right",
+        "type": "box",
+        "center": [
+          2.5,
+          1.31,
+          -0.645
+        ],
+        "size": [
+          0.16,
+          2.34,
+          3.2399999999999998
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Back",
+        "type": "box",
+        "center": [
+          0.0,
+          1.31,
+          -2.245
+        ],
+        "size": [
+          4.68,
+          2.34,
+          0.16
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Roof",
+        "type": "box",
+        "center": [
+          0.0,
+          2.586,
+          -0.645
+        ],
+        "size": [
+          4.6,
+          0.06,
+          2.8
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Slab",
+        "type": "box",
+        "center": [
+          0.0,
+          0.04,
+          -0.645
+        ],
+        "size": [
+          5.1000000000000005,
+          0.06,
+          3.3
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_DoorL",
+        "type": "box",
+        "center": [
+          -1.02,
+          1.02,
+          1.083
+        ],
+        "size": [
+          0.64,
+          1.8,
+          0.02
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_DoorR",
+        "type": "box",
+        "center": [
+          1.02,
+          1.02,
+          1.083
+        ],
+        "size": [
+          0.64,
+          1.8,
+          0.02
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "climbable": true,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "The long walls are cling faces. Doors face +Z.",
+    "vaultNote": "No rail. The roof edge is at about 2.7 m.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1",
+      "LOD2"
+    ],
+    "slackCm": 0.0,
+    "license": {
+      "spdx": "CC0-1.0",
+      "source": "original",
+      "url": "",
+      "notes": "Procedural mesh built in this repo."
+    },
+    "fbx": "Assets/Art/Props/Library/Park/Restroom.fbx"
+  },
+  {
+    "name": "Subway_Entrance",
+    "category": "Buildings",
+    "blurb": "Street stair down to a platform run. Side walls are 1.08 m above the sidewalk and the stair run extends below the pivot. The street opening faces +Z. A canopy covers the head.",
+    "size": [
+      3.02,
+      4.02,
+      6.4
+    ],
+    "min": [
+      -1.51,
+      -1.55,
+      -3.2
+    ],
+    "max": [
+      1.51,
+      2.47,
+      3.2
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 300,
+        "materials": [
+          "Lib_Concrete",
+          "Lib_SteelDark",
+          "Lib_Steel",
+          "Lib_PaintYellow"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 180,
+        "materials": [
+          "Lib_Concrete",
+          "Lib_SteelDark",
+          "Lib_Steel"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      },
+      {
+        "lod": 2,
+        "tris": 96,
+        "materials": [
+          "Lib_Concrete",
+          "Lib_Steel"
+        ],
+        "mesh": "LOD2",
+        "fileID": 736115405485880582
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Climb_Left",
+        "type": "box",
+        "center": [
+          -1.42,
+          -0.235,
+          0.0
+        ],
+        "size": [
+          0.13999999999999999,
+          2.55,
+          6.300000000000001
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Right",
+        "type": "box",
+        "center": [
+          1.42,
+          -0.235,
+          0.0
+        ],
+        "size": [
+          0.13999999999999999,
+          2.55,
+          6.300000000000001
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Step_0",
+        "type": "box",
+        "center": [
+          0.0,
+          -0.12,
+          1.3400000000000003
+        ],
+        "size": [
+          2.3,
+          0.08,
+          0.22
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Step_1",
+        "type": "box",
+        "center": [
+          0.0,
+          -0.29000000000000004,
+          0.9800000000000003
+        ],
+        "size": [
+          2.3,
+          0.08,
+          0.22
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Step_2",
+        "type": "box",
+        "center": [
+          0.0,
+          -0.46,
+          0.6200000000000001
+        ],
+        "size": [
+          2.3,
+          0.08,
+          0.22
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Step_3",
+        "type": "box",
+        "center": [
+          0.0,
+          -0.63,
+          0.26
+        ],
+        "size": [
+          2.3,
+          0.08,
+          0.22
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Step_4",
+        "type": "box",
+        "center": [
+          0.0,
+          -0.8,
+          -0.09999999999999987
+        ],
+        "size": [
+          2.3,
+          0.08,
+          0.22
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Step_5",
+        "type": "box",
+        "center": [
+          0.0,
+          -0.9700000000000001,
+          -0.45999999999999974
+        ],
+        "size": [
+          2.3,
+          0.08,
+          0.22
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Step_6",
+        "type": "box",
+        "center": [
+          0.0,
+          -1.1400000000000001,
+          -0.8200000000000001
+        ],
+        "size": [
+          2.3,
+          0.08,
+          0.22
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Step_7",
+        "type": "box",
+        "center": [
+          0.0,
+          -1.3100000000000003,
+          -1.18
+        ],
+        "size": [
+          2.3,
+          0.08,
+          0.22
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Pad",
+        "type": "box",
+        "center": [
+          0.0,
+          0.04,
+          2.1999999999999997
+        ],
+        "size": [
+          2.4,
+          0.06,
+          1.05
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Roof",
+        "type": "box",
+        "center": [
+          0.0,
+          2.42,
+          2.0
+        ],
+        "size": [
+          2.7,
+          0.08,
+          1.35
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "climbable": true,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "The concrete side walls are the cling faces. The steps are the way down.",
+    "vaultNote": "The parapet is about 1.08 m above the sidewalk.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1",
+      "LOD2"
+    ],
+    "slackCm": 0.0,
+    "license": {
+      "spdx": "CC0-1.0",
+      "source": "original",
+      "url": "",
+      "notes": "Procedural mesh built in this repo."
+    },
+    "fbx": "Assets/Art/Props/Library/Buildings/Subway_Entrance.fbx"
   }
 ]

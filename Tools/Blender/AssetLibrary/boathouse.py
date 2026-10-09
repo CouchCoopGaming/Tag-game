@@ -262,7 +262,7 @@ def create():
     a.vaultable = False
     a.climb_note = "Side and back walls are cling. The slip on +Z is empty. Roof slopes are landings."
     a.vault_note = "No rail. Wall top is 2.90 m."
-    for lod in (0, 1, 2):
+    for lod in (0, 1):
         g = a.begin(lod)
         cols = []
         _walls(g, lod)

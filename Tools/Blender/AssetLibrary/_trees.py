@@ -76,7 +76,7 @@ def pine_tree(g, lod):
         (3.55, 0.48, 0.24, "Lib_FoliageDark"),
     )
     for y, reach, cr, mat in whorls:
-        n = 5 if lod == 0 else 3
+        n = 5 if lod == 0 else (2 if lod >= 2 else 3)
         for i in range(n):
             ang = (i / float(n)) * math.tau + y
             tip = (math.cos(ang) * reach, y + 0.15, math.sin(ang) * reach)

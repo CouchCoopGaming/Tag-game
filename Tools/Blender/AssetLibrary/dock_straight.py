@@ -18,10 +18,12 @@ PLANK_GAP = 0.050
 PILE_R = 0.15
 PILE_XS = (-1.08, 0.0, 1.08)
 PILE_ZS = (-2.40, 0.0, 2.40)
+# Water seat, on purpose. Mesh ends here. The pile capsule, caps included, ends at -1.165.
 PILE_BOT = -1.22
 # 6 mm under the stringer so the two closed shells do not weld.
 PILE_TOP = 0.370
-PLANK_TOP = 0.618
+# Catalog deck is 0.62 m. A few boards sit 0.5–1.5 mm lower. None crown above it.
+PLANK_TOP = 0.620
 PLANK_T = 0.036
 # Stringer 5 cm thick and 20 cm deep, sitting directly under the planks.
 STRINGER_X = 1.16
@@ -51,7 +53,7 @@ def create():
         g = a.begin(lod)
         seg = lod_pick(lod, 10, 6)
         for x, z in piles:
-            _pile(g, x, z, seg if lod == 0 else 6)
+            _pile(g, x, z, seg if lod == 0 else (4 if lod == 2 else 6))
         _frame(g, lod)
         _planks(g, lod)
         if lod == 0:
@@ -72,7 +74,7 @@ def create():
     for i in range(PLANKS):
         z = -LENGTH * 0.5 + pitch * (i + 0.5)
         y = PLANK_TOP - PLANK_T * 0.5 + _plank_lift(i)
-        a.box("Col_Plank_%d" % i, (0, y, z), (2.40, PLANK_T * 0.7, board * 0.86))
+        a.box("Col_Plank_%d" % i, (0, y, z), (2.40, PLANK_T, board * 0.86))
     for i, (x, z) in enumerate(((-1.20, -1.55), (-1.20, 1.55), (1.20, -1.55), (1.20, 1.55))):
         a.box("Col_Cleat_%d" % i, (x, 0.706, z), (0.18, 0.020, 0.036))
     for i, (x, z) in enumerate(((-0.55, -1.85), (0.85, 1.70))):
@@ -96,7 +98,7 @@ def _frame(g, lod):
     """One timber per line, directly under the planks. Joists stay behind the stringer faces."""
     for x in (-STRINGER_X, 0.0, STRINGER_X):
         _one_timber(g, (x, STRINGER_Y, 0.0), (STRINGER_T, STRINGER_D, 5.50))
-    count = lod_pick(lod, 7, 4)
+    count = lod_pick(lod, 7, 4, 0)
     # Two bays. Each joist stops short of the stringers so the shells do not overlap,
     # and the ends stay behind the outer stringer face.
     x_outer = STRINGER_X - STRINGER_T * 0.5 - 0.012
@@ -228,7 +230,7 @@ def _plank_lift(i):
 
 
 def _planks(g, lod):
-    count = lod_pick(lod, PLANKS, PLANKS // 2)
+    count = lod_pick(lod, PLANKS, PLANKS // 2, 4)
     pitch = LENGTH / count
     board = pitch - PLANK_GAP
     for i in range(count):

@@ -21,6 +21,19 @@ def create():
     a.vault_note = "No rail. The roof is at 3.50 m. Shop wall top is 3.15 m."
     for lod in (0, 1, 2):
         g = a.begin(lod)
+        if lod == 2:
+            # Shell only. LOD2 stays at or under 0.6× the 1064-triangle LOD1.
+            g.box((0, 0.03, 0), (8.4, 0.06, 6.2), "Lib_Asphalt", uv_scale=0.5)
+            for x in (-3.4, 3.4):
+                for z in (-2.35, 2.35):
+                    g.box((x, 1.72, z), (0.22, 3.28, 0.22), "Lib_PaintWhite")
+            g.box((0, 3.46, 0), (9.0, 0.16, 6.8), "Lib_Steel", uv_scale=0.6)
+            g.box((0, 1.62, -6.40), (6.2, 3.05, 3.6), "Lib_Siding", uv_scale=0.8)
+            g.box((0, 3.22, -6.40), (6.5, 0.10, 3.9), "Lib_Roof", uv_scale=0.7)
+            for x in (-1.6, 1.6):
+                g.box((x, 0.70, 0.10), (0.56, 1.24, 0.36), "Lib_PaintWhite")
+            a.end()
+            continue
         seg = lod_pick(lod, 8, 6)
         bev = 0.004 if lod == 0 else 0
         g.box((0, 0.03, 0), (8.4, 0.06, 6.2), "Lib_Asphalt", uv_scale=0.5)

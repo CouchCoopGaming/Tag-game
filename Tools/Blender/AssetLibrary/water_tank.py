@@ -12,7 +12,7 @@ def create():
     a = Asset("WaterTank", "Buildings", "1.4 m diameter tank on a 2.4 m frame. Overall height 4.15 m. Legs are the footprint.")
     a.climb_note = "Legs are 8 cm tubes, not a cling wall. The tank is round."
     a.vault_note = "No rail at vault height."
-    for lod in (0, 1, 2):
+    for lod in (0, 1):
         g = a.begin(lod)
         seg = lod_pick(lod, 16, 10, 6)
         for x in (-0.55, 0.55):

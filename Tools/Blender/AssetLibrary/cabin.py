@@ -72,7 +72,8 @@ def create():
         step = (_Y1 - _Y0) / max(1, courses - 1)
         radius = max(0.132, step * 0.5 + 0.02)
         _walls(g, lod, courses, radius, step, seg, side_seg)
-        _door_and_window(g, lod, radius)
+        if lod < 2:
+            _door_and_window(g, lod, radius)
         if lod == 0:
             _side_windows(g, radius)
             _gable_ends(g, radius, step, courses)

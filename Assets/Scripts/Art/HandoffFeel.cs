@@ -55,8 +55,9 @@ namespace Tag.Art
 
         /// <summary>
         /// Degrees added on the played roll. <see cref="RollShot"/> does not read this.
-        /// The knees open so the chest sits between the thighs. The arms tuck in
-        /// with the chin. The spine stays rounded.
+        /// The hip takes the fold. The spine stays a little rounded, not flat.
+        /// The thighs swing out to their own sides. The chin stays in.
+        /// Hip-into-thigh and shin-into-thigh stay on the rig.
         /// </summary>
         public struct RollAdd
         {
@@ -75,17 +76,17 @@ namespace Tag.Art
         static readonly RollKey[] ClearKeys =
         {
             // u is the squash fraction. Same samples the pose dump writes.
-            RollKeyAt(0.000000f, -40f, 40f, -28f, -4f, 0f, 0f, -8f, 0f, 0f, 0f, 10f),
-            RollKeyAt(0.103333f, -39f, 39f, -23f, -2f, 0f, 0f, -4f, 0f, 0f, 0f, 9f),
-            RollKeyAt(0.206667f, -38f, 38f, -18f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 8f),
-            RollKeyAt(0.310000f, -36f, 34f, -28f, -18f, 0f, 0f, 0f, 0f, 0f, 2f, 6f),
-            RollKeyAt(0.413333f, -36f, 38f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 2f, 4f),
-            RollKeyAt(0.516667f, -36f, 40f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 4f),
-            RollKeyAt(0.620000f, -36f, 18f, 0f, 0f, 0f, 14f, 0f, -24f, 0f, 3f, 2f),
-            RollKeyAt(0.723333f, -38f, 28f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 2f, 0f),
-            RollKeyAt(0.826667f, -26f, 30f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 4f, 0f),
-            RollKeyAt(0.930000f, -24f, 26f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 2f, 0f),
-            RollKeyAt(1.000000f, -14f, 16f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 2f, 0f),
+            RollKeyAt(0.000000f, -40f, 40f, -28f, -4f, 0f, 0f, -8f, 0f, 4f, -6f, 10f),
+            RollKeyAt(0.103333f, -39f, 39f, -23f, -2f, 0f, 0f, -4f, 0f, 6f, -7f, 9f),
+            RollKeyAt(0.206667f, -38f, 38f, -18f, 0f, 0f, 0f, 0f, 0f, 8f, -10f, 8f),
+            RollKeyAt(0.310000f, -36f, 34f, -28f, -18f, 0f, 0f, 0f, 0f, 12f, -14f, 6f),
+            RollKeyAt(0.413333f, -36f, 38f, 0f, 0f, 0f, 0f, 0f, 0f, 16f, -17f, 4f),
+            RollKeyAt(0.516667f, -36f, 40f, 0f, 0f, 0f, 0f, 0f, 0f, 16f, -18f, 4f),
+            RollKeyAt(0.620000f, -36f, 34f, 0f, -16f, 0f, 18f, 0f, -28f, 12f, -16f, 2f),
+            RollKeyAt(0.723333f, -36f, 36f, 0f, -24f, 0f, 8f, 0f, -20f, 10f, -10f, 0f),
+            RollKeyAt(0.826667f, -26f, 30f, 0f, 0f, 0f, 0f, 0f, 0f, 10f, -6f, 0f),
+            RollKeyAt(0.930000f, -24f, 26f, 0f, 0f, 0f, 0f, 0f, 0f, 10f, -1f, 0f),
+            RollKeyAt(1.000000f, -14f, 16f, 0f, 0f, 0f, 0f, 0f, 0f, 8f, 0f, 0f),
         };
 
         static RollKey RollKeyAt(float u, float yawL, float yawR, float armL, float armR, float ayL, float ayR, float elbL, float elbR, float hip, float spine, float head)

@@ -49,6 +49,7 @@ def load_keys(path):
                 "shoulderL": nums[26] if len(nums) > 26 else 0.0,
                 "thRollL": nums[27] if len(nums) > 27 else 0.0,
                 "thRollR": nums[28] if len(nums) > 28 else 0.0,
+                "hipDrop": nums[29] if len(nums) > 29 else 0.0,
             })
     return frames
 
@@ -82,6 +83,12 @@ def apply_frame(arm, frame):
     set_bone(arm, "LowerArm_R", frame["elbR"], frame.get("elbYawR", 0.0), frame.get("elbRollR", 0.0))
     if abs(frame.get("shoulderL", 0.0)) > 0.001:
         set_bone(arm, "Shoulder_L", 0.0, frame["shoulderL"], 0.0)
+    # Hips is connected to Root, so a Hips location key does not move.
+    # Root has no skin. Dropping Root drops the pelvis bone and the legs.
+    # The armature object stays put. This is not the visual-root drop column.
+    root = arm.pose.bones.get("Root")
+    if root is not None:
+        root.location = (0.0, -frame.get("hipDrop", 0.0), 0.0)
     arm.location = Vector((0.0, 0.0, frame["drop"] + SEAT))
     bpy.context.view_layer.update()
 

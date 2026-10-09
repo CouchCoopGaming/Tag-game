@@ -24,7 +24,7 @@ def create():
         "so the 10 cm door recess does not change the cling surface."
     )
     a.vault_note = "No rail. The cornice is at 3.2 m."
-    for lod in (0, 1, 2):
+    for lod in (0, 1):
         g = a.begin(lod)
         bev = lod_pick(lod, 0.008, 0.004, 0.0)
         bs = lod_pick(lod, 2, 1, 0)
