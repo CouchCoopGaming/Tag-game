@@ -338,44 +338,63 @@ namespace Tag.Art
 
         static Sample Dive(float local)
         {
-            // Takeoff holds through 0.30 s. The legs tuck up before the chest drops.
-            // The roll-up is the seated crouch from 0.76 s, so every landing frame is that pose.
-            float liftAt = 0.36f;
-            float pushAt = 0.42f;
-            float handsAt = 0.48f;
-            float tuckAt = 0.52f;
-            float shoulderAt = 0.60f;
+            // One planted push-off, then a forward stretch through 0.42 s.
+            // Clip times 0.17–0.53 s are that lean: chest pitched, arms ahead, legs trailing.
+            // The knees fold while the chest is still leaning, then the chest drops onto the forearms.
+            // The roll-up is the seated crouch from 0.76 s.
+            float stretchAt = 0.05f;
+            float foldAt = 0.46f;
+            float handsAt = 0.50f;
+            float tuckAt = 0.545f;
+            float shoulderAt = 0.62f;
             float bridgeAt = 0.68f;
             float hipAt = 0.74f;
             float crouchAt = 0.76f;
             Sample reach = DiveReach();
-            Sample lift = DiveLift();
-            Sample push = DivePush();
+            Sample stretch = DiveStretch();
+            Sample fold = DiveFold();
             Sample hands = DiveHands();
             Sample tuck = DiveTuck();
             Sample shoulder = DiveShoulder();
             Sample bridge = DiveBridge();
             Sample hip = DiveHip();
             Sample crouch = DiveCrouch();
-            if (local <= 0.30f)
-                return reach;
-            if (local <= liftAt)
-                return Lerp(reach, lift, Smooth((local - 0.30f) / (liftAt - 0.30f)));
-            if (local <= pushAt)
-                return Lerp(lift, push, Smooth((local - liftAt) / (pushAt - liftAt)));
-            if (local <= handsAt)
-                return Lerp(push, hands, Smooth((local - pushAt) / (handsAt - pushAt)));
-            if (local <= tuckAt)
-                return Lerp(hands, tuck, Smooth((local - handsAt) / (tuckAt - handsAt)));
-            if (local <= shoulderAt)
-                return Lerp(tuck, shoulder, Smooth((local - tuckAt) / (shoulderAt - tuckAt)));
-            if (local <= bridgeAt)
-                return Lerp(shoulder, bridge, Smooth((local - shoulderAt) / (bridgeAt - shoulderAt)));
-            if (local <= hipAt)
-                return Lerp(bridge, hip, Smooth((local - bridgeAt) / (hipAt - bridgeAt)));
-            if (local <= crouchAt)
-                return Lerp(hip, crouch, Smooth((local - hipAt) / (crouchAt - hipAt)));
-            return crouch;
+            Sample posed;
+            if (local <= stretchAt)
+                posed = Lerp(reach, stretch, Smooth(local / stretchAt));
+            else if (local <= 0.42f)
+                posed = stretch;
+            else if (local <= foldAt)
+                posed = Lerp(stretch, fold, Smooth((local - 0.42f) / (foldAt - 0.42f)));
+            else if (local <= handsAt)
+                posed = Lerp(fold, hands, Smooth((local - foldAt) / (handsAt - foldAt)));
+            else if (local <= tuckAt)
+                posed = Lerp(hands, tuck, Smooth((local - handsAt) / (tuckAt - handsAt)));
+            else if (local <= shoulderAt)
+                posed = Lerp(tuck, shoulder, Smooth((local - tuckAt) / (shoulderAt - tuckAt)));
+            else if (local <= bridgeAt)
+                posed = Lerp(shoulder, bridge, Smooth((local - shoulderAt) / (bridgeAt - shoulderAt)));
+            else if (local <= hipAt)
+                posed = Lerp(bridge, hip, Smooth((local - bridgeAt) / (hipAt - bridgeAt)));
+            else if (local <= crouchAt)
+                posed = Lerp(hip, crouch, Smooth((local - hipAt) / (crouchAt - hipAt)));
+            else
+                posed = crouch;
+            // The straight blend walks the hands through each other. The arms arrive at the
+            // stretch first, which is already clear of the chest.
+            if (local < 0.42f)
+            {
+                float armU = Smooth(local / 0.03f);
+                posed.ArmL = Mathf.Lerp(reach.ArmL, stretch.ArmL, armU);
+                posed.ArmR = Mathf.Lerp(reach.ArmR, stretch.ArmR, armU);
+                posed.ArmYawL = Mathf.Lerp(reach.ArmYawL, stretch.ArmYawL, armU);
+                posed.ArmYawR = Mathf.Lerp(reach.ArmYawR, stretch.ArmYawR, armU);
+                posed.ElbowL = Mathf.Lerp(reach.ElbowL, stretch.ElbowL, armU);
+                posed.ElbowR = Mathf.Lerp(reach.ElbowR, stretch.ElbowR, armU);
+                posed.RollL = Mathf.Lerp(reach.RollL, stretch.RollL, armU);
+                posed.RollR = Mathf.Lerp(reach.RollR, stretch.RollR, armU);
+            }
+            return posed;
         }
 
         static Sample DiveReach()
@@ -400,36 +419,44 @@ namespace Tag.Art
             return s;
         }
 
-        /// <summary>Same thigh, more knee bend, so the foot lifts before it swings back.</summary>
-        static Sample DiveLift()
+        /// <summary>
+        /// Forward dive. Chest pitches toward the face, arms reach ahead, legs trail long.
+        /// Thighs stay well under the spine limit. The feet are in the air.
+        /// </summary>
+        static Sample DiveStretch()
         {
-            Sample s = DiveReach();
-            s.KneeL = -75f;
-            s.KneeR = -75f;
-            s.FootL = 8f;
-            s.FootR = 8f;
+            Sample s = new Sample();
+            s.Drop = -0.10f;
+            s.Hip = 58f;
+            s.Spine = 4f;
+            s.Head = -30f;
+            s.Lean = 4f;
+            s.ThighL = 14f;
+            s.ThighR = 6f;
+            s.KneeL = -36f;
+            s.KneeR = -24f;
+            s.YawL = 10f;
+            s.YawR = -12f;
+            s.FootL = 6f;
+            s.FootR = 2f;
+            s.ArmL = -66f;
+            s.ArmR = -60f;
+            s.ArmYawL = 10f;
+            s.ArmYawR = -14f;
+            s.ElbowL = -14f;
+            s.ElbowR = -18f;
             return s;
         }
 
-        /// <summary>Legs leave the floor while the chest is still up, so the next drop does not bury the feet.</summary>
-        static Sample DivePush()
+        /// <summary>Same lean. The knees come up so the forearm drop does not sweep the feet through the floor.</summary>
+        static Sample DiveFold()
         {
-            Sample s = new Sample();
-            s.Drop = -0.093f;
-            s.Hip = 18f;
-            s.Spine = 4f;
-            s.Head = -28f;
-            s.Lean = 4f;
-            s.ThighL = 16f;
-            s.ThighR = 12f;
-            s.KneeL = -90f;
-            s.KneeR = -84f;
-            s.FootL = 6f;
+            Sample s = DiveStretch();
+            s.Drop = -0.11f;
+            s.KneeL = -78f;
+            s.KneeR = -70f;
+            s.FootL = 8f;
             s.FootR = 4f;
-            s.ArmL = -32f;
-            s.ArmR = -32f;
-            s.ElbowL = -30f;
-            s.ElbowR = -30f;
             return s;
         }
 

@@ -124,7 +124,9 @@ def obligation(clip, t):
     if clip != "dive":
         return in_move
     local = t - ENTRY
-    takeoff = 0.0 <= local <= 0.22
+    # The push-off is the planted frame. After that the body is airborne and stretched,
+    # so those frames are not plants.
+    takeoff = 0.0 <= local <= 0.02
     rollup = 0.76 <= local <= 0.817
     return takeoff or rollup
 
