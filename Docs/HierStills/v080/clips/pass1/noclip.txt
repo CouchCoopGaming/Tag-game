@@ -1,0 +1,4 @@
+no-clip clips=3 frames=126 worldMax=0.01 selfMax=1.06 fails=31
+17_slide_slope_crouch foot_slide_cm=0.13 pen_cm=0.01 frames=31
+18_vertical_wallrun_back foot_slide_cm=0.13 pen_cm=0.00 frames=46
+20_wallpop_180 foot_slide_cm=0.52 pen_cm=0.01 frames=49

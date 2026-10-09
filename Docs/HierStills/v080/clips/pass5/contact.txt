@@ -1,0 +1,130 @@
+Sole-to-surface distance in cm. Wall-run plant frames must be 0-1 cm from the vertical face. 180 land frames must be 0-1 cm from the low-wall top.
+17_slide_slope_crouch
+  f=0 t=0.400 hand=29.30
+  f=1 t=0.433 hand=25.57
+  f=2 t=0.467 hand=21.41
+  f=3 t=0.500 hand=17.41
+  f=4 t=0.533 hand=15.84
+  f=5 t=0.567 hand=15.17
+  f=6 t=0.600 hand=17.01
+  f=7 t=0.633 hand=19.98
+  f=8 t=0.667 hand=23.33
+  f=9 t=0.700 hand=22.56
+  f=10 t=0.733 hand=23.86
+  f=11 t=0.767 hand=29.09
+  f=12 t=0.800 hand=32.05
+  f=13 t=0.833 hand=30.29
+  f=14 t=0.867 hand=26.00
+  f=15 t=0.900 hand=20.45
+  f=16 t=0.933 hand=16.74
+  f=17 t=0.967 hand=18.74
+  f=18 t=1.000 hand=21.04
+  f=19 t=1.033 hand=22.84
+  f=20 t=1.067 hand=24.04
+  f=21 t=1.100 hand=24.80
+  f=22 t=1.133 hand=24.95
+  f=23 t=1.167 hand=24.56
+  f=24 t=1.200 hand=26.87
+  f=25 t=1.233 hand=27.62
+  f=26 t=1.267 hand=25.40
+  f=27 t=1.300 hand=19.79
+  f=28 t=1.333 hand=16.15
+  f=29 t=1.367 hand=17.13
+  f=30 t=1.400 hand=19.95
+18_vertical_wallrun_back
+  f=0 t=0.250 soleL=0.50 soleR=20.19 plant=L
+  f=1 t=0.283 soleL=0.50 soleR=15.60 plant=L
+  f=2 t=0.317 soleL=0.50 soleR=19.61 plant=L
+  f=3 t=0.350 soleL=0.50 soleR=26.72 plant=L
+  f=4 t=0.383 soleL=0.50 soleR=34.32 plant=L
+  f=5 t=0.417 soleL=0.50 soleR=39.51 plant=L
+  f=6 t=0.450 soleL=0.50 soleR=22.88 plant=L
+  f=7 t=0.483 soleL=20.49 soleR=0.50 plant=R
+  f=8 t=0.517 soleL=29.50 soleR=0.50 plant=R
+  f=9 t=0.550 soleL=41.75 soleR=0.50 plant=R
+  f=10 t=0.583 soleL=33.88 soleR=0.50 plant=R
+  f=11 t=0.617 soleL=28.54 soleR=0.50 plant=R
+  f=12 t=0.650 soleL=0.50 soleR=23.78 plant=L
+  f=13 t=0.683 soleL=0.50 soleR=17.21 plant=L
+  f=14 t=0.717 soleL=15.45 soleR=0.50 plant=R
+  f=15 t=0.750 soleL=0.50 soleR=25.04 plant=L
+  f=16 t=0.783 soleL=0.50 soleR=44.78 plant=L
+  f=17 t=0.817 soleL=0.50 soleR=40.44 plant=L
+  f=18 t=0.850 soleL=0.50 soleR=41.79 plant=L
+  f=19 t=0.883 soleL=0.50 soleR=47.36 plant=L
+  f=20 t=0.917 soleL=0.50 soleR=30.39 plant=L
+  f=21 t=0.950 soleL=25.64 soleR=0.50 plant=R
+  f=22 t=0.983 soleL=32.48 soleR=0.50 plant=R
+  f=23 t=1.017 soleL=27.21 soleR=0.50 plant=R
+  f=24 t=1.050 soleL=35.58 soleR=0.50 plant=R
+  f=25 t=1.083 soleL=44.36 soleR=0.50 plant=R
+  f=26 t=1.117 soleL=19.09 soleR=0.50 plant=R
+  f=27 t=1.150 soleL=14.48 soleR=0.50 plant=R
+  f=28 t=1.183 soleL=0.50 soleR=24.68 plant=L
+  f=29 t=1.217 soleL=0.50 soleR=20.70 plant=L
+  f=30 t=1.250 soleL=0.50 soleR=29.07 plant=L
+  f=31 t=1.283 soleL=0.50 soleR=37.47 plant=L
+  f=32 t=1.317 soleL=0.50 soleR=39.69 plant=L
+  f=33 t=1.350 soleL=0.50 soleR=40.24 plant=L
+  f=34 t=1.383 soleL=0.50 soleR=38.34 plant=L
+  f=35 t=1.417 soleL=0.50 soleR=34.31 plant=L
+  f=36 t=1.450 soleL=0.50 soleR=29.21 plant=L
+  f=37 t=1.483 soleL=0.50 soleR=24.27 plant=L
+  f=38 t=1.517 soleL=0.50 soleR=50.41 plant=L
+  f=39 t=1.550 soleL=0.50 soleR=52.71 plant=L
+  f=40 t=1.583 soleL=0.50 soleR=54.74 plant=L
+  f=41 t=1.617 soleL=0.50 soleR=56.36 plant=L
+  f=42 t=1.650 soleL=0.50 soleR=18.68 plant=L
+  f=43 t=1.683 soleL=0.50 soleR=19.70 plant=L
+  f=44 t=1.717 soleL=0.50 soleR=21.05 plant=L
+  f=45 t=1.750 soleL=0.50 soleR=61.10 plant=L
+20_wallpop_180
+  f=0 t=0.150 soleL=-104.23 soleR=-81.68 phase=run
+  f=1 t=0.183 soleL=-104.90 soleR=-76.47 phase=run
+  f=2 t=0.217 soleL=-104.33 soleR=-66.81 phase=run
+  f=3 t=0.250 soleL=-102.69 soleR=-86.38 phase=run
+  f=4 t=0.283 soleL=-100.96 soleR=-81.70 phase=run
+  f=5 t=0.317 soleL=-99.59 soleR=-84.77 phase=run
+  f=6 t=0.350 soleL=-98.43 soleR=-93.07 phase=run
+  f=7 t=0.383 soleL=-97.39 soleR=-103.01 phase=run
+  f=8 t=0.417 soleL=-92.71 soleR=-106.59 phase=run
+  f=9 t=0.450 soleL=-91.60 soleR=-108.38 phase=run
+  f=10 t=0.483 soleL=-92.87 soleR=-109.09 phase=run
+  f=11 t=0.517 soleL=-93.11 soleR=-109.29 phase=run
+  f=12 t=0.550 soleL=-94.33 soleR=-109.33 phase=run
+  f=13 t=0.583 soleL=-94.42 soleR=-109.10 phase=run
+  f=14 t=0.617 soleL=-94.19 soleR=-108.37 phase=run
+  f=15 t=0.650 soleL=-94.12 soleR=-107.10 phase=run
+  f=16 t=0.683 soleL=-106.30 soleR=-109.28 phase=run
+  f=17 t=0.717 soleL=-108.75 soleR=-95.15 phase=run
+  f=18 t=0.750 soleL=-109.53 soleR=-95.68 phase=run
+  f=19 t=0.783 soleL=-109.84 soleR=-94.34 phase=run
+  f=20 t=0.817 soleL=-110.00 soleR=-94.84 phase=run
+  f=21 t=0.850 soleL=-110.00 soleR=-95.53 phase=run
+  f=22 t=0.883 soleL=-110.00 soleR=-94.29 phase=run
+  f=23 t=0.917 soleL=-110.00 soleR=-91.67 phase=run
+  f=24 t=0.950 soleL=-71.41 soleR=-52.48 phase=plant
+  f=25 t=0.983 soleL=-69.00 soleR=-46.04 phase=plant
+  f=26 t=1.017 soleL=-67.94 soleR=-40.96 phase=plant
+  f=27 t=1.050 soleL=-69.00 soleR=-39.04 phase=plant
+  f=28 t=1.083 soleL=-71.88 soleR=-39.83 phase=plant
+  f=29 t=1.117 soleL=-75.04 soleR=-32.77 phase=plant
+  f=30 t=1.150 soleL=-77.11 soleR=-24.29 phase=plant
+  f=31 t=1.183 soleL=-78.93 soleR=-28.61 phase=plant
+  f=32 t=1.217 soleL=-79.81 soleR=-33.88 phase=plant
+  f=33 t=1.250 soleL=-36.52 soleR=4.38 phase=air
+  f=34 t=1.283 soleL=8.16 soleR=40.91 phase=air
+  f=35 t=1.317 soleL=45.76 soleR=66.57 phase=air
+  f=36 t=1.350 soleL=72.58 soleR=80.74 phase=air
+  f=37 t=1.383 soleL=87.15 soleR=83.43 phase=air
+  f=38 t=1.417 soleL=89.57 soleR=75.99 phase=air
+  f=39 t=1.450 soleL=81.34 soleR=60.62 phase=air
+  f=40 t=1.483 soleL=26.78 soleR=0.60 phase=land
+  f=41 t=1.517 soleL=31.13 soleR=0.60 phase=land
+  f=42 t=1.550 soleL=35.28 soleR=0.60 phase=land
+  f=43 t=1.583 soleL=35.68 soleR=0.60 phase=land
+  f=44 t=1.617 soleL=33.61 soleR=0.60 phase=land
+  f=45 t=1.650 soleL=1.12 soleR=0.60 phase=land
+  f=46 t=1.683 soleL=0.60 soleR=16.71 phase=land
+  f=47 t=1.717 soleL=0.60 soleR=15.37 phase=land
+  f=48 t=1.750 soleL=0.60 soleR=16.29 phase=land

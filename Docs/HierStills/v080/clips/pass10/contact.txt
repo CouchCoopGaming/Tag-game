@@ -1,0 +1,130 @@
+Distances in cm, every frame. Wall-run soleL/soleR are the sole-to-wall gap (the plant is 0-1 cm, toes up). 180 soleL/soleR are the sole-to-top gap. Slide hand is the trail hand to the concrete.
+17_slide_slope_crouch
+  f=0 t=0.400 soleL=0.60 soleR=21.32 hand=16.33 extra_deg=-6 base_cm=19.3 short_cm=13.3 need_more_deg=27 low=0.60
+  f=1 t=0.433 soleL=0.60 soleR=17.33 hand=12.00 extra_deg=-6 base_cm=14.8 short_cm=9.0 need_more_deg=19 low=0.60
+  f=2 t=0.467 soleL=0.60 soleR=15.71 hand=8.18 extra_deg=-6 base_cm=11.1 short_cm=5.2 need_more_deg=11 low=0.60
+  f=3 t=0.500 soleL=0.60 soleR=15.25 hand=6.22 extra_deg=-6 base_cm=8.1 short_cm=3.2 need_more_deg=10 low=0.60
+  f=4 t=0.533 soleL=0.60 soleR=16.46 hand=3.32 extra_deg=-10 base_cm=7.0 short_cm=0.3 need_more_deg=1 low=0.60
+  f=5 t=0.567 soleL=0.60 soleR=15.26 hand=3.24 extra_deg=-10 base_cm=5.3 short_cm=0.2 need_more_deg=1 low=0.60
+  f=6 t=0.600 soleL=0.60 soleR=52.99 hand=4.38 extra_deg=-10 base_cm=6.8 short_cm=1.4 need_more_deg=6 low=0.60
+  f=7 t=0.633 soleL=0.60 soleR=46.03 hand=7.75 extra_deg=-6 base_cm=8.8 short_cm=4.7 need_more_deg=27 low=0.60
+  f=8 t=0.667 soleL=0.60 soleR=26.52 hand=10.83 extra_deg=6 base_cm=11.3 short_cm=7.8 pitch_wont_close low=0.60
+  f=9 t=0.700 soleL=0.60 soleR=13.70 hand=8.81 extra_deg=6 base_cm=11.1 short_cm=5.8 need_more_deg=15 low=0.49
+  f=10 t=0.733 soleL=0.60 soleR=16.18 hand=10.56 extra_deg=3 base_cm=12.2 short_cm=7.6 need_more_deg=14 low=0.57
+  f=11 t=0.767 soleL=0.60 soleR=20.36 hand=13.30 extra_deg=6 base_cm=16.5 short_cm=10.3 need_more_deg=19 low=0.60
+  f=12 t=0.800 soleL=0.60 soleR=25.33 hand=16.50 extra_deg=6 base_cm=19.0 short_cm=13.5 need_more_deg=32 low=0.60
+  f=13 t=0.833 soleL=0.60 soleR=27.61 hand=15.98 extra_deg=6 base_cm=17.8 short_cm=13.0 need_more_deg=43 low=0.60
+  f=14 t=0.867 soleL=0.60 soleR=26.71 hand=14.27 extra_deg=6 base_cm=15.4 short_cm=11.3 need_more_deg=59 low=0.60
+  f=15 t=0.900 soleL=0.60 soleR=25.45 hand=13.73 extra_deg=6 base_cm=14.6 short_cm=10.7 pitch_wont_close low=0.60
+  f=16 t=0.933 soleL=0.60 soleR=25.66 hand=15.18 extra_deg=6 base_cm=15.9 short_cm=12.2 pitch_wont_close low=0.60
+  f=17 t=0.967 soleL=0.60 soleR=29.86 hand=17.85 extra_deg=-6 base_cm=18.5 short_cm=14.9 pitch_wont_close low=0.60
+  f=18 t=1.000 soleL=0.60 soleR=30.11 hand=19.01 extra_deg=-6 base_cm=20.0 short_cm=16.0 need_more_deg=94 low=0.60
+  f=19 t=1.033 soleL=0.60 soleR=29.35 hand=20.10 extra_deg=-6 base_cm=21.5 short_cm=17.1 need_more_deg=73 low=0.60
+  f=20 t=1.067 soleL=0.60 soleR=27.98 hand=20.87 extra_deg=-6 base_cm=22.8 short_cm=17.9 need_more_deg=57 low=0.60
+  f=21 t=1.100 soleL=0.60 soleR=25.42 hand=21.46 extra_deg=-6 base_cm=23.8 short_cm=18.5 need_more_deg=47 low=0.60
+  f=22 t=1.133 soleL=0.60 soleR=23.37 hand=22.02 extra_deg=-6 base_cm=24.5 short_cm=19.0 need_more_deg=46 low=0.60
+  f=23 t=1.167 soleL=0.60 soleR=22.81 hand=22.38 extra_deg=-6 base_cm=24.8 short_cm=19.4 need_more_deg=48 low=0.60
+  f=24 t=1.200 soleL=0.60 soleR=23.12 hand=25.70 extra_deg=-6 base_cm=27.3 short_cm=22.7 need_more_deg=86 low=0.60
+  f=25 t=1.233 soleL=0.60 soleR=21.31 hand=24.51 extra_deg=-10 base_cm=28.1 short_cm=21.5 need_more_deg=61 low=0.60
+  f=26 t=1.267 soleL=0.60 soleR=16.07 hand=19.13 extra_deg=-10 base_cm=25.7 short_cm=16.1 need_more_deg=25 low=0.60
+  f=27 t=1.300 soleL=0.60 soleR=6.10 hand=11.76 extra_deg=-10 base_cm=19.6 short_cm=8.8 need_more_deg=11 low=0.60
+  f=28 t=1.333 soleL=7.56 soleR=0.60 hand=11.36 extra_deg=-10 base_cm=15.7 short_cm=8.4 need_more_deg=19 low=0.60
+  f=29 t=1.367 soleL=21.63 soleR=0.60 hand=14.02 extra_deg=-10 base_cm=16.6 short_cm=11.0 need_more_deg=43 low=0.60
+  f=30 t=1.400 soleL=37.67 soleR=0.60 hand=14.49 extra_deg=-10 base_cm=20.1 short_cm=11.5 need_more_deg=20 low=0.60
+18_vertical_wallrun_back
+  f=0 t=0.600 soleL=53.87 soleR=82.27 gndL=78.80 gndR=0.60 handL=82.0 handR=10.6 handZ=1.76 hipZ=0.81 step=0 shin=79 below=-0.04 phase=takeoff plant=L
+  f=1 t=0.633 soleL=39.97 soleR=72.83 gndL=81.92 gndR=0.60 handL=88.0 handR=17.8 handZ=1.83 hipZ=0.87 step=0 shin=89 below=-0.01 phase=takeoff plant=L
+  f=2 t=0.667 soleL=38.16 soleR=72.84 gndL=83.56 gndR=0.60 handL=98.9 handR=30.0 handZ=1.86 hipZ=0.90 step=0 shin=76 below=0.00 phase=takeoff plant=L
+  f=3 t=0.700 soleL=17.46 soleR=75.68 gndL=104.51 gndR=22.43 handL=93.0 handR=25.0 handZ=2.07 hipZ=1.10 step=0 shin=65 below=-0.01 phase=takeoff plant=L
+  f=4 t=0.733 soleL=12.37 soleR=83.49 gndL=129.82 gndR=47.14 handL=96.8 handR=29.5 handZ=2.31 hipZ=1.34 step=0 shin=55 below=-0.02 phase=takeoff plant=L
+  f=5 t=0.767 soleL=5.82 soleR=92.64 gndL=149.93 gndR=67.72 handL=98.9 handR=31.7 handZ=2.50 hipZ=1.53 step=0 shin=47 below=-0.04 phase=swing plant=L
+  f=6 t=0.800 soleL=0.50 soleR=77.41 gndL=152.11 gndR=155.09 handL=93.9 handR=22.0 handZ=2.53 hipZ=1.55 step=0 shin=45 below=-0.04 phase=plant plant=L
+  f=7 t=0.833 soleL=0.50 soleR=77.25 gndL=153.90 gndR=156.89 handL=94.3 handR=21.5 handZ=2.55 hipZ=1.56 step=0 shin=45 below=-0.04 phase=plant plant=L
+  f=8 t=0.867 soleL=0.50 soleR=77.22 gndL=155.68 gndR=158.54 handL=95.0 handR=20.7 handZ=2.56 hipZ=1.58 step=0 shin=45 below=-0.04 phase=plant plant=L
+  f=9 t=0.900 soleL=0.50 soleR=77.73 gndL=157.47 gndR=160.03 handL=95.8 handR=19.8 handZ=2.58 hipZ=1.60 step=0 shin=45 below=-0.04 phase=plant plant=L
+  f=10 t=0.933 soleL=0.50 soleR=81.34 gndL=159.25 gndR=161.23 handL=96.5 handR=16.8 handZ=2.59 hipZ=1.62 step=0 shin=45 below=-0.04 phase=plant plant=L
+  f=11 t=0.967 soleL=0.50 soleR=102.76 gndL=162.88 gndR=87.41 handL=111.3 handR=37.1 handZ=2.68 hipZ=1.71 step=0 shin=36 below=0.02 phase=push plant=L
+  f=12 t=1.000 soleL=0.50 soleR=95.83 gndL=157.91 gndR=126.46 handL=120.9 handR=45.9 handZ=2.78 hipZ=1.82 step=0 shin=26 below=0.17 phase=push plant=L
+  f=13 t=1.033 soleL=0.50 soleR=48.70 gndL=153.40 gndR=188.59 handL=117.7 handR=42.2 handZ=2.88 hipZ=1.92 step=0 shin=16 below=0.32 phase=push plant=L
+  f=14 t=1.067 soleL=18.20 soleR=24.00 gndL=130.05 gndR=198.11 handL=39.5 handR=85.9 handZ=3.01 hipZ=2.02 step=1 shin=65 below=-0.02 phase=swing plant=R
+  f=15 t=1.100 soleL=37.81 soleR=23.27 gndL=122.79 gndR=200.43 handL=43.2 handR=91.7 handZ=3.03 hipZ=2.04 step=1 shin=61 below=-0.03 phase=swing plant=R
+  f=16 t=1.133 soleL=56.43 soleR=21.09 gndL=119.12 gndR=202.79 handL=45.1 handR=94.3 handZ=3.06 hipZ=2.06 step=1 shin=57 below=-0.03 phase=swing plant=R
+  f=17 t=1.167 soleL=73.32 soleR=17.46 gndL=118.95 gndR=205.17 handL=45.0 handR=95.7 handZ=3.08 hipZ=2.08 step=1 shin=53 below=-0.03 phase=swing plant=R
+  f=18 t=1.200 soleL=86.65 soleR=12.37 gndL=121.67 gndR=207.56 handL=43.0 handR=95.2 handZ=3.10 hipZ=2.11 step=1 shin=50 below=-0.03 phase=swing plant=R
+  f=19 t=1.233 soleL=95.68 soleR=5.82 gndL=126.21 gndR=209.93 handL=39.2 handR=92.9 handZ=3.12 hipZ=2.13 step=1 shin=47 below=-0.04 phase=swing plant=R
+  f=20 t=1.267 soleL=78.76 soleR=0.50 gndL=212.99 gndR=212.11 handL=28.8 handR=88.7 handZ=3.16 hipZ=2.15 step=1 shin=45 below=-0.04 phase=plant plant=R
+  f=21 t=1.300 soleL=78.78 soleR=0.50 gndL=214.77 gndR=213.90 handL=28.1 handR=89.3 handZ=3.18 hipZ=2.16 step=1 shin=45 below=-0.04 phase=plant plant=R
+  f=22 t=1.333 soleL=79.00 soleR=0.50 gndL=216.46 gndR=215.68 handL=27.5 handR=89.8 handZ=3.20 hipZ=2.18 step=1 shin=45 below=-0.04 phase=plant plant=R
+  f=23 t=1.367 soleL=79.17 soleR=0.50 gndL=218.18 gndR=217.47 handL=27.0 handR=90.2 handZ=3.22 hipZ=2.20 step=1 shin=45 below=-0.04 phase=plant plant=R
+  f=24 t=1.400 soleL=79.28 soleR=0.50 gndL=219.95 gndR=219.25 handL=28.1 handR=90.4 handZ=3.24 hipZ=2.22 step=1 shin=45 below=-0.04 phase=plant plant=R
+  f=25 t=1.433 soleL=105.10 soleR=0.50 gndL=146.58 gndR=222.88 handL=45.8 handR=104.7 handZ=3.33 hipZ=2.31 step=1 shin=36 below=0.02 phase=push plant=R
+  f=26 t=1.467 soleL=97.58 soleR=0.50 gndL=185.78 gndR=217.91 handL=55.2 handR=114.0 handZ=3.44 hipZ=2.42 step=1 shin=26 below=0.17 phase=push plant=R
+  f=27 t=1.500 soleL=50.03 soleR=0.50 gndL=247.57 gndR=213.40 handL=51.9 handR=108.9 handZ=3.55 hipZ=2.52 step=1 shin=16 below=0.32 phase=push plant=R
+  f=28 t=1.533 soleL=24.00 soleR=17.46 gndL=258.11 gndR=188.58 handL=94.1 handR=21.7 handZ=3.54 hipZ=2.62 step=2 shin=65 below=-0.02 phase=swing plant=L
+  f=29 t=1.567 soleL=23.27 soleR=35.66 gndL=260.43 gndR=183.45 handL=98.2 handR=25.8 handZ=3.55 hipZ=2.64 step=2 shin=61 below=-0.03 phase=swing plant=L
+  f=30 t=1.600 soleL=21.09 soleR=53.99 gndL=262.79 gndR=181.09 handL=108.9 handR=28.2 handZ=3.57 hipZ=2.66 step=2 shin=57 below=-0.03 phase=swing plant=L
+  f=31 t=1.633 soleL=17.46 soleR=70.52 gndL=265.17 gndR=181.32 handL=109.6 handR=28.8 handZ=3.59 hipZ=2.68 step=2 shin=53 below=-0.03 phase=swing plant=L
+  f=32 t=1.667 soleL=12.37 soleR=83.70 gndL=267.56 gndR=183.48 handL=108.4 handR=27.7 handZ=3.61 hipZ=2.71 step=2 shin=50 below=-0.03 phase=swing plant=L
+  f=33 t=1.700 soleL=5.82 soleR=92.81 gndL=269.93 gndR=187.54 handL=105.5 handR=24.8 handZ=3.63 hipZ=2.73 step=2 shin=47 below=-0.04 phase=swing plant=L
+  f=34 t=1.733 soleL=0.50 soleR=77.24 gndL=272.11 gndR=274.92 handL=100.4 handR=14.9 handZ=3.64 hipZ=2.75 step=2 shin=45 below=-0.04 phase=plant plant=L
+  f=35 t=1.767 soleL=0.50 soleR=77.32 gndL=273.90 gndR=276.71 handL=92.2 handR=15.2 handZ=3.66 hipZ=2.76 step=2 shin=45 below=-0.04 phase=plant plant=L
+  f=36 t=1.800 soleL=0.50 soleR=78.13 gndL=275.68 gndR=278.50 handL=92.2 handR=24.7 handZ=3.70 hipZ=2.78 step=2 shin=45 below=-0.04 phase=plant plant=L
+  f=37 t=1.833 soleL=0.50 soleR=79.41 gndL=277.47 gndR=280.29 handL=92.1 handR=24.8 handZ=3.72 hipZ=2.80 step=2 shin=45 below=-0.04 phase=plant plant=L
+  f=38 t=1.867 soleL=0.50 soleR=77.70 gndL=279.25 gndR=282.38 handL=92.0 handR=24.9 handZ=3.74 hipZ=2.82 step=2 shin=45 below=-0.04 phase=plant plant=L
+  f=39 t=1.900 soleL=0.50 soleR=123.10 gndL=265.07 gndR=228.36 handL=30.5 handR=28.7 handZ=4.08 hipZ=2.91 step=2 shin=42 below=0.20 phase=push plant=L
+  f=40 t=1.933 soleL=0.50 soleR=99.27 gndL=241.03 gndR=294.91 handL=20.3 handR=18.4 handZ=4.15 hipZ=3.02 step=2 shin=44 below=0.54 phase=push plant=L
+  f=41 t=1.967 soleL=0.50 soleR=78.57 gndL=236.40 gndR=310.08 handL=9.4 handR=7.2 handZ=4.22 hipZ=3.12 step=2 shin=51 below=0.69 phase=push plant=L
+  f=42 t=2.000 soleL=0.50 soleR=80.29 gndL=238.57 gndR=317.89 handL=9.0 handR=7.1 handZ=4.31 hipZ=3.22 step=2 shin=63 below=0.77 phase=push plant=L
+  f=43 t=2.033 soleL=0.50 soleR=80.29 gndL=240.07 gndR=319.39 handL=-1.5 handR=-3.9 handZ=4.35 palmL=18.24 palmR=6.26 palmX=0.027 hipZ=3.24 step=2 shin=63 below=0.77 phase=catch plant=L
+  f=44 t=2.067 soleL=0.50 soleR=80.29 gndL=241.57 gndR=320.89 handL=-1.5 handR=-3.9 handZ=4.37 palmL=19.74 palmR=7.76 palmX=0.027 hipZ=3.25 step=2 shin=63 below=0.77 phase=catch plant=L
+  f=45 t=2.100 soleL=0.50 soleR=80.29 gndL=243.07 gndR=322.39 handL=-5.6 handR=-4.8 handZ=4.13 palmL=0.55 palmR=0.92 palmX=-0.013 hipZ=3.27 step=2 shin=63 below=0.77 phase=catch plant=L
+20_wallpop_180
+  f=0 t=0.150 soleL=-104.23 soleR=-81.68 phase=run
+  f=1 t=0.183 soleL=-104.90 soleR=-76.47 phase=run
+  f=2 t=0.217 soleL=-104.33 soleR=-66.81 phase=run
+  f=3 t=0.250 soleL=-102.69 soleR=-86.38 phase=run
+  f=4 t=0.283 soleL=-100.96 soleR=-81.70 phase=run
+  f=5 t=0.317 soleL=-99.59 soleR=-84.77 phase=run
+  f=6 t=0.350 soleL=-98.43 soleR=-93.07 phase=run
+  f=7 t=0.383 soleL=-97.39 soleR=-103.01 phase=run
+  f=8 t=0.417 soleL=-92.71 soleR=-106.59 phase=run
+  f=9 t=0.450 soleL=-91.60 soleR=-108.38 phase=run
+  f=10 t=0.483 soleL=-92.87 soleR=-109.09 phase=run
+  f=11 t=0.517 soleL=-93.11 soleR=-109.29 phase=run
+  f=12 t=0.550 soleL=-94.33 soleR=-109.33 phase=run
+  f=13 t=0.583 soleL=-94.42 soleR=-109.10 phase=run
+  f=14 t=0.617 soleL=-94.19 soleR=-108.37 phase=run
+  f=15 t=0.650 soleL=-94.12 soleR=-107.10 phase=run
+  f=16 t=0.683 soleL=-106.30 soleR=-109.28 phase=run
+  f=17 t=0.717 soleL=-108.75 soleR=-95.15 phase=run
+  f=18 t=0.750 soleL=-109.53 soleR=-95.68 phase=run
+  f=19 t=0.783 soleL=-109.84 soleR=-94.34 phase=run
+  f=20 t=0.817 soleL=-110.00 soleR=-94.84 phase=run
+  f=21 t=0.850 soleL=-110.00 soleR=-95.53 phase=run
+  f=22 t=0.883 soleL=-110.00 soleR=-94.29 phase=run
+  f=23 t=0.917 soleL=-110.00 soleR=-91.67 phase=run
+  f=24 t=0.950 soleL=-71.41 soleR=-52.48 phase=plant
+  f=25 t=0.983 soleL=-69.00 soleR=-46.04 phase=plant
+  f=26 t=1.017 soleL=-67.94 soleR=-40.96 phase=plant
+  f=27 t=1.050 soleL=-69.00 soleR=-39.04 phase=plant
+  f=28 t=1.083 soleL=-71.88 soleR=-39.83 phase=plant
+  f=29 t=1.117 soleL=-75.04 soleR=-32.77 phase=plant
+  f=30 t=1.150 soleL=-77.11 soleR=-24.29 phase=plant
+  f=31 t=1.183 soleL=-78.93 soleR=-28.61 phase=plant
+  f=32 t=1.217 soleL=-79.81 soleR=-33.88 phase=plant
+  f=33 t=1.250 soleL=-36.52 soleR=4.38 phase=air
+  f=34 t=1.283 soleL=8.16 soleR=40.91 phase=air
+  f=35 t=1.317 soleL=45.76 soleR=66.57 phase=air
+  f=36 t=1.350 soleL=72.58 soleR=80.74 phase=air
+  f=37 t=1.383 soleL=87.15 soleR=83.43 phase=air
+  f=38 t=1.417 soleL=89.57 soleR=75.99 phase=air
+  f=39 t=1.450 soleL=81.34 soleR=60.62 phase=air
+  f=40 t=1.483 soleL=0.69 soleR=0.60 drop_hip=-10 drop_knee=-18 phase=land
+  f=41 t=1.517 soleL=0.58 soleR=0.60 drop_hip=-10 drop_knee=-24 phase=land
+  f=42 t=1.550 soleL=0.51 soleR=0.60 drop_hip=-24 drop_knee=-10 phase=land
+  f=43 t=1.583 soleL=0.45 soleR=0.60 drop_hip=-16 drop_knee=-22 phase=land
+  f=44 t=1.617 soleL=0.39 soleR=0.60 drop_hip=-22 drop_knee=-12 phase=land
+  f=45 t=1.650 soleL=0.55 soleR=0.60 drop_hip=-20 drop_knee=16 phase=land
+  f=46 t=1.683 soleL=0.60 soleR=0.65 drop_hip=24 drop_knee=-22 phase=land
+  f=47 t=1.717 soleL=0.60 soleR=0.53 drop_hip=12 drop_knee=-26 phase=land
+  f=48 t=1.750 soleL=0.60 soleR=0.65 drop_hip=12 drop_knee=-28 phase=land
