@@ -10,13 +10,16 @@ Loaded frame = the clip has a floor class below AND a support sole is within
 0.5 cm of the ground. Airborne frames of a loaded clip and every frame of a
 cruise clip are scored for no-clip only.
 
+Evasion keys must first go through evasion_keys_to_ingame.py (column layout).
+
 Floors (hip/spine are absolute keyed flexion, degrees):
   landing      hip>=30 spine>=10, pelvis>=12 cm behind the support foot (crouch)
   plant        hip>=25 (run/sprint/evasion cuts), pelvis>=8 cm behind
   hand         hip>=12; pelvis-behind waived only on frames where a hand carries
                load (played vault plant); recovery exits on the feet keep >=8 cm
   slide        hip>=30 spine>=10, pelvis>=12 cm behind
-  roll         per reference, no crouch floors while tucked: not floor-scored here
+  roll         per-phase reference (ROLL_REF), grounded frames only; dive takeoff is a plant,
+               dive roll-up (>=0.76 s into the move) is the roll exit
 Every loaded frame also needs hinge = hip/spine >= 1.5. Hip 6 over spine 4 fails
 on the hip floor regardless of ratio.
 No-clip: limit 0.5 cm. Joined parent/child (joint-cuff) overlap is rigJoint and
@@ -36,7 +39,9 @@ import measure_evasion_hipsit as m
 
 CLASS = {
     "exit-WallRun": "landing", "exit-Vault": "landing", "exit-LaunchLand": "landing",
-    "exit-SoftLand": "landing", "exit-Stagger": "landing", "stagger": "landing",
+    "exit-SoftLand": "landing", "exit-Stagger": "landing",
+    # "stagger" (PunchStaggerPose.Stumble) is a hit reaction, not a landing: its only
+    # grounded frame is weight 0, the neutral stand. It is scored for no-clip only.
     "stutter": "plant", "jukeL": "plant", "jukeR": "plant", "spinL": "plant", "spinR": "plant",
     "vault": "hand", "exit-Mantle": "hand", "exit-ClimbTopOut": "hand",
     "slide": "slide", "exit-Slide": "slide",
@@ -48,7 +53,32 @@ FLOOR = {  # hip, spine, pelvisBack
     "hand": (12.0, 0.0, 8.0),
     "slide": (30.0, 10.0, 12.0),
 }
-HAND_LOADED = {"vault"}  # played vault plant: hands on the obstacle
+HAND_LOADED = {"vault"}
+# Per-phase roll reference, Docs/Movement/pose/HIP_TARGETS.md on cursor/tag-storror-mocap
+# (REFERENCE-ONLY film; numbers only). chest = hip + spine pitch, back = pelvis behind (cm).
+#   entry   02_drop_roll_gravel 0.10 s  chest +19.2  back +19.8
+#   contact 01_roll_grass       0.57 s  chest +10.3  back -11.4
+#   exit    01_roll_grass       0.80 s  chest +19.9  back +18.0
+# A grounded roll frame passes when chest >= ref - ROLL_TOL_DEG and back >= ref - ROLL_TOL_CM.
+# Tucked / airborne frames (no sole within 0.5 cm) are not scored: no crouch floors while tucked.
+ROLL_REF = {"entry": (19.2, 19.8), "contact": (10.3, -11.4), "exit": (19.9, 18.0)}
+ROLL_TOL_DEG = 6.0
+ROLL_TOL_CM = 6.0
+DIVE_ENTRY = 0.10
+DIVE_TAKEOFF = 0.22
+DIVE_ROLLUP = 0.76
+
+
+def roll_phase(clip, t, dur):
+    if clip == "dive":
+        local = t - DIVE_ENTRY
+        if 0.0 <= local <= DIVE_TAKEOFF:
+            return "plant"
+        if local >= DIVE_ROLLUP:
+            return "exit"
+        return None
+    u = t / dur if dur > 0 else 0.0
+    return "entry" if u < 1.0 / 3.0 else ("contact" if u < 2.0 / 3.0 else "exit")  # played vault plant: hands on the obstacle
 CONTACT = 0.005
 
 
@@ -56,6 +86,9 @@ def main():
     frames = []
     for path in os.environ["POSE_KEYS"].split(":"):
         frames += g.load_keys(path)
+    only = os.environ.get("CLIPS")
+    if only:
+        frames = [f for f in frames if f["clip"] in only.split(",")]
     bpy.ops.wm.read_factory_settings(use_empty=True)
     bpy.ops.import_scene.fbx(filepath=g.FBX)
     arm = bpy.data.objects["DummyArmature"]
@@ -65,6 +98,9 @@ def main():
     g.prepare(arm)
     m.capture_stand(arm)
 
+    dur = {}
+    for fr in frames:
+        dur[fr["clip"]] = max(dur.get(fr["clip"], 0.0), fr["t"])
     rows = []
     stats = {}
     order = []
@@ -81,13 +117,33 @@ def main():
         gr = p4.sole_gap(arm, "R")
         side, gap = p4.support(clip, gl, gr)
         cls = CLASS.get(clip, "cruise")
-        loaded = cls in FLOOR and -0.0008 <= gap <= CONTACT
+        grounded = -0.0008 <= gap <= CONTACT
+        phase = roll_phase(clip, fr["t"], dur[clip]) if cls == "roll" else None
+        if phase == "plant":
+            cls = "plant"
+        loaded = (cls in FLOOR or (cls == "roll" and phase is not None)) and grounded
         why = []
-        hip = abs(fr["hip"])
-        spine = abs(fr["spine"])
+        # Signed: positive pitch folds the chest forward. A back-lean (the baseball
+        # slide's -22/-14) is not hip flexion and does not count toward a floor.
+        hip = fr["hip"]
+        spine = fr["spine"]
         back = m.pelvis_back(arm, fr, side)
         hinge = m.hinge_of(fr)
-        if loaded:
+        if loaded and cls == "roll":
+            st["loaded"] += 1
+            rc, rb = ROLL_REF[phase]
+            chest = fr["hip"] + fr["spine"]
+            if chest < rc - ROLL_TOL_DEG:
+                why.append("roll%sChest%.0f<%.0f" % (phase, chest, rc - ROLL_TOL_DEG))
+            if back < rb - ROLL_TOL_CM:
+                why.append("roll%sBack%.1f<%.1f" % (phase, back, rb - ROLL_TOL_CM))
+            for key, val in (("hipMin", hip), ("spineMin", spine), ("backMin", back)):
+                if st[key] is None or val < st[key]:
+                    st[key] = val
+            if why:
+                st["hipFails"] += 1
+                st["why"].update(w.rstrip("0123456789.<-") for w in why)
+        elif loaded:
             st["loaded"] += 1
             hn, sn, bn = FLOOR[cls]
             if hip < hn:

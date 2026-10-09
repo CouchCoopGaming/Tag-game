@@ -139,7 +139,7 @@ namespace Tag.Art
                 1f, Rise());
             s.RootSpin = SpinAt(u);
             s.RootPitch = 0f;
-            s.Drop = 0f;
+            // Only Rise carries a hips-bone drop; the other pieces are 0, so this ramps in after Plant.
             if (shoulderLeft)
                 s = VerbExitSample.Mirror(s);
             return s;
@@ -151,10 +151,6 @@ namespace Tag.Art
             if (u > 1f) u = 1f;
             VerbExitSample deep = HandsDown();
             VerbExitSample up = Rise();
-            up.ThighL = 16f;
-            up.ThighR = 10f;
-            up.KneeL = -14f;
-            up.KneeR = -10f;
             up.Head = -4f;
             if (u < 0.42f)
                 return VerbExitSample.Lerp(deep, deep, 1f);
@@ -521,13 +517,16 @@ namespace Tag.Art
         static VerbExitSample Plant()
         {
             VerbExitSample s = default;
+            // Feet arrive under the stand-up sit (see Rise): same thighs and knees,
+            // same hips-bone drop, so the plant frames keep the pelvis behind the feet.
             s.Hip = 12f;
             s.Spine = 8f;
             s.Head = -8f;
-            s.ThighL = 38f;
-            s.ThighR = 22f;
-            s.KneeL = -32f;
-            s.KneeR = -18f;
+            s.ThighL = 40f;
+            s.ThighR = 40f;
+            s.KneeL = -30f;
+            s.KneeR = -30f;
+            s.Drop = 0.048f;
             s.ArmPitchL = -20f;
             s.ArmPitchR = -12f;
             s.ElbowL = -36f;
@@ -539,13 +538,17 @@ namespace Tag.Art
         static VerbExitSample Rise()
         {
             VerbExitSample s = default;
-            s.Hip = 6f;
-            s.Spine = 2f;
+            // Stand-up sit, roll-exit reference (01_roll_grass 0.80 s: chest +19.9,
+            // pelvis +18 cm, knee 52). Chest 14 + 6 = 20. The hips bone drops 4.8 cm so
+            // both soles stay on the floor with the knees bent.
+            s.Hip = 14f;
+            s.Spine = 6f;
             s.Head = -2f;
-            s.ThighL = 24f;
-            s.ThighR = 10f;
-            s.KneeL = -18f;
-            s.KneeR = -12f;
+            s.ThighL = 40f;
+            s.ThighR = 40f;
+            s.KneeL = -30f;
+            s.KneeR = -30f;
+            s.Drop = 0.048f;
             s.ArmPitchL = -18f;
             s.ArmPitchR = -10f;
             s.ElbowL = -16f;
@@ -566,8 +569,14 @@ namespace Tag.Art
             s.ThighRollR = 24f;
             s.KneeL = -136f;
             s.KneeR = -132f;
-            s.ArmPitchL = -52f;
-            s.ArmPitchR = -48f;
+            // Palms reach further forward and out (pitch -16, yaw 10) so the
+            // forearms land beside the thighs, not inside them; thighs turn out 8.
+            s.ArmPitchL = -68f;
+            s.ArmPitchR = -64f;
+            s.ArmYawL = -10f;
+            s.ArmYawR = 10f;
+            s.ThighYawL = -8f;
+            s.ThighYawR = 8f;
             s.ElbowL = -12f;
             s.ElbowR = -14f;
             s.HipYaw = 6f;

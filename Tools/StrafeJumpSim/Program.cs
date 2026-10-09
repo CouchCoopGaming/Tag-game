@@ -34,6 +34,18 @@ static class Program
             }
             return 0;
         }
+        if (args != null && args.Length > 0 && args[0] == "--pose-holds")
+        {
+            // Pose-side holds the full sim checks late, runnable on their own.
+            Console.WriteLine(Tag.Art.VerbExitProof.ProofLine());
+            Console.WriteLine(Tag.Art.LandingRollPose.ProofLine());
+            Console.WriteLine(Tag.Art.VerbExitFit.ProofLine());
+            bool ok = Tag.Art.VerbExitProof.Holds() & Tag.Art.LandingRollPose.Holds() & Tag.Art.VerbExitFit.Holds()
+                & Tag.Art.EvasionPose.Holds();
+            Console.WriteLine("pose-holds verbExit=" + Tag.Art.VerbExitProof.Holds() + " landingRoll=" + Tag.Art.LandingRollPose.Holds()
+                + " exitFit=" + Tag.Art.VerbExitFit.Holds() + " evasionPose=" + Tag.Art.EvasionPose.Holds());
+            return ok ? 0 : 1;
+        }
         if (args != null && args.Length > 0 && args[0] == "--proofs")
         {
             Console.WriteLine(Tag.Art.AirFeel.ProofLine());
