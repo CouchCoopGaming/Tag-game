@@ -922,7 +922,7 @@ namespace Tag.Level
             byte[] deflated;
             using (var ms = new MemoryStream())
             {
-                using (var def = new DeflateStream(ms, CompressionLevel.Fastest, true))
+                using (var def = new DeflateStream(ms, System.IO.Compression.CompressionLevel.Fastest, true))
                     def.Write(raw, 0, raw.Length);
                 deflated = ms.ToArray();
             }

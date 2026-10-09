@@ -191,77 +191,58 @@ def pack(cells, cols, rows):
     return sheet_im
 
 
-def b64_chunk_lines(b64):
-    """String array, not one + chain. A long concat overflows csc (0xC00000FD)."""
-    lines = [
-        "        static readonly string[] Chunks =",
-        "        {",
-    ]
-    for i in range(0, len(b64), 120):
-        lines.append('            "' + b64[i:i + 120] + '",')
-    lines += [
-        "        };",
-        "",
-        "        // One array, joined in a loop. A single + chain overflows csc (0xC00000FD).",
-        "        static string Data",
-        "        {",
-        "            get",
-        "            {",
-        "                if (_joined != null) return _joined;",
-        "                var sb = new System.Text.StringBuilder(Chunks.Length * 120);",
-        "                for (int i = 0; i < Chunks.Length; i++)",
-        "                    sb.Append(Chunks[i]);",
-        "                _joined = sb.ToString();",
-        "                return _joined;",
-        "            }",
-        "        }",
-        "",
-        "        static string _joined;",
-    ]
-    return lines
+def copy_streaming(name, src):
+    dest_dir = os.path.join(ROOT, "Assets", "StreamingAssets", "FX")
+    os.makedirs(dest_dir, exist_ok=True)
+    dest = os.path.join(dest_dir, name)
+    with open(dest, "wb") as f:
+        f.write(open(src, "rb").read())
 
 
 def write_cs(path, class_name, summary, cells, cols, rows, png_bytes):
-    b64 = base64.b64encode(png_bytes).decode("ascii")
-    lines = [
-        "namespace Tag.FX",
-        "{",
-        "    /// <summary>",
-        "    /// %s" % summary,
-        "    /// </summary>",
-        "    public static class %s" % class_name,
-        "    {",
-        "        public const int Cells = %d;" % cells,
-        "        public const int Columns = %d;" % cols,
-        "        public const int Rows = %d;" % rows,
-        "        public const int CellWidth = %d;" % CELL,
-        "        public const int CellHeight = %d;" % CELL,
-        "",
-        "        public static void Uv(int index, out float scaleX, out float scaleY, out float offX, out float offY)",
-        "        {",
-        "            if (index < 0) index = 0;",
-        "            int col = index % Columns;",
-        "            int row = index / Columns;",
-        "            float du = 1f / Columns;",
-        "            float dv = 1f / Rows;",
-        "            float g = 1f / (Columns * CellWidth);",
-        "            scaleX = du - g * 2f;",
-        "            scaleY = dv - g * 2f;",
-        "            offX = col * du + g;",
-        "            offY = 1f - (row + 1f) * dv + g;",
-        "        }",
-        "",
-        "        public static byte[] Png()",
-        "        {",
-        "            return System.Convert.FromBase64String(Data);",
-        "        }",
-        "",
-    ]
-    lines.extend(b64_chunk_lines(b64))
-    lines += ["    }", "}", ""]
+    # The PNG stays a file. A chained base64 literal overflows csc
+    # inside BinaryExpressionSyntax (0xC00000FD on Unity 6000.3).
+    del png_bytes
+    file_name = class_name + ".png"
+    copy_streaming(file_name, os.path.join(ROOT, "Assets", "Art", "FX", file_name))
+    text = """namespace Tag.FX
+{
+    /// <summary>
+    /// %s
+    /// The pixels are Assets/Art/FX/%s. Png() reads that file.
+    /// </summary>
+    public static class %s
+    {
+        public const int Cells = %d;
+        public const int Columns = %d;
+        public const int Rows = %d;
+        public const int CellWidth = %d;
+        public const int CellHeight = %d;
+
+        public static void Uv(int index, out float scaleX, out float scaleY, out float offX, out float offY)
+        {
+            if (index < 0) index = 0;
+            int col = index %% Columns;
+            int row = index / Columns;
+            float du = 1f / Columns;
+            float dv = 1f / Rows;
+            float g = 1f / (Columns * CellWidth);
+            scaleX = du - g * 2f;
+            scaleY = dv - g * 2f;
+            offX = col * du + g;
+            offY = 1f - (row + 1f) * dv + g;
+        }
+
+        public static byte[] Png()
+        {
+            return ComicPng.Read("%s");
+        }
+    }
+}
+""" % (summary, file_name, class_name, cells, cols, rows, CELL, CELL, file_name)
     with open(path, "w") as f:
-        f.write("\n".join(lines))
-    print("CS", os.path.basename(path), len(png_bytes), "bytes png", cells, "cells")
+        f.write(text)
+    print("CS", os.path.basename(path), "file", file_name, cells, "cells")
 
 
 def png_bytes(im):

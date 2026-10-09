@@ -539,60 +539,40 @@ def write_stills(cells):
     park.convert("RGB").save(os.path.join(STILL_DIR, "comic-park.png"), "PNG")
 
 
-def b64_chunk_lines(b64):
-    """String array, not one + chain. A long concat overflows csc (0xC00000FD)."""
-    lines = [
-        "        static readonly string[] Chunks =",
-        "        {",
-    ]
-    for i in range(0, len(b64), 120):
-        lines.append('            "' + b64[i:i + 120] + '",')
-    lines += [
-        "        };",
-        "",
-        "        // One array, joined in a loop. A single + chain overflows csc (0xC00000FD).",
-        "        static string Data",
-        "        {",
-        "            get",
-        "            {",
-        "                if (_joined != null) return _joined;",
-        "                var sb = new System.Text.StringBuilder(Chunks.Length * 120);",
-        "                for (int i = 0; i < Chunks.Length; i++)",
-        "                    sb.Append(Chunks[i]);",
-        "                _joined = sb.ToString();",
-        "                return _joined;",
-        "            }",
-        "        }",
-        "",
-        "        static string _joined;",
-    ]
-    return lines
+def copy_streaming(name, src):
+    dest_dir = os.path.join(ROOT, "Assets", "StreamingAssets", "FX")
+    os.makedirs(dest_dir, exist_ok=True)
+    dest = os.path.join(dest_dir, name)
+    with open(dest, "wb") as f:
+        f.write(open(src, "rb").read())
 
 
 def write_cs(png_bytes):
-    b64 = base64.b64encode(png_bytes).decode("ascii")
-    lines = [
-        "namespace Tag.FX",
-        "{",
-        "    /// <summary>",
-        "    /// Bangers comic words, one 1024 cell each. Built by Tools/BuildComicAtlas.py.",
-        "    /// </summary>",
-        "    public static class ComicAtlas",
-        "    {",
-        "        public const int Cells = 4;",
-        "        public const int CellWidth = %d;" % CELL,
-        "        public const int CellHeight = %d;" % CELL,
-        "",
-        "        public static byte[] Png()",
-        "        {",
-        "            return System.Convert.FromBase64String(Data);",
-        "        }",
-        "",
-    ]
-    lines.extend(b64_chunk_lines(b64))
-    lines += ["    }", "}", ""]
+    # The PNG stays a file. A chained base64 literal overflows csc
+    # inside BinaryExpressionSyntax (0xC00000FD on Unity 6000.3).
+    del png_bytes
+    copy_streaming("ComicAtlas.png", PNG_PATH)
+    text = """namespace Tag.FX
+{
+    /// <summary>
+    /// Bangers comic words, one 1024 cell each. Built by Tools/BuildComicAtlas.py.
+    /// The pixels are Assets/Art/FX/ComicAtlas.png. Png() reads that file.
+    /// </summary>
+    public static class ComicAtlas
+    {
+        public const int Cells = 4;
+        public const int CellWidth = %d;
+        public const int CellHeight = %d;
+
+        public static byte[] Png()
+        {
+            return ComicPng.Read("ComicAtlas.png");
+        }
+    }
+}
+""" % (CELL, CELL)
     with open(CS_PATH, "w") as f:
-        f.write("\n".join(lines))
+        f.write(text)
 
 
 # Angles are degrees clockwise from up. Radii are the fill, before the black outline.
@@ -702,28 +682,27 @@ def write_dizzy(im):
     os.makedirs(os.path.dirname(DIZZY_CS), exist_ok=True)
     im.save(DIZZY_PNG, "PNG", optimize=True)
     raw = open(DIZZY_PNG, "rb").read()
-    b64 = base64.b64encode(raw).decode("ascii")
-    lines = [
-        "namespace Tag.FX",
-        "{",
-        "    /// <summary>",
-        "    /// One comic dizzy star. Same burst, outline, and print dots as the words.",
-        "    /// Built by Tools/BuildComicAtlas.py. Not a fifth atlas cell.",
-        "    /// </summary>",
-        "    public static class ComicDizzy",
-        "    {",
-        "        public const int Size = %d;" % DIZZY_SIZE,
-        "",
-        "        public static byte[] Png()",
-        "        {",
-        "            return System.Convert.FromBase64String(Data);",
-        "        }",
-        "",
-    ]
-    lines.extend(b64_chunk_lines(b64))
-    lines += ["    }", "}", ""]
+    copy_streaming("ComicDizzy.png", DIZZY_PNG)
+    text = """namespace Tag.FX
+{
+    /// <summary>
+    /// One comic dizzy star. Same burst, outline, and print dots as the words.
+    /// Built by Tools/BuildComicAtlas.py. Not a fifth atlas cell.
+    /// The pixels are Assets/Art/FX/ComicDizzy.png. Png() reads that file.
+    /// </summary>
+    public static class ComicDizzy
+    {
+        public const int Size = %d;
+
+        public static byte[] Png()
+        {
+            return ComicPng.Read("ComicDizzy.png");
+        }
+    }
+}
+""" % DIZZY_SIZE
     with open(DIZZY_CS, "w") as f:
-        f.write("\n".join(lines))
+        f.write(text)
     print("dizzy", len(raw))
 
 
