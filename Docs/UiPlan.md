@@ -427,6 +427,14 @@ Load and join still use the bind-pose idle. The stand frame is wider than MenuAl
 
 `Docs/UiStills/pass52/` holds the results before and after. Unity is not installed, so the after still is a composite of the sampled frames on the results layout. pose stays 0.
 
+## Pass 53
+
+The pass 52 stand opened the upper arms far enough to read as an A-pose. The hanging arm is back to about 12 degrees off the torso, which is the bind shoulder, with the forearm brought in so the elbow is soft. Load and join use that hang. Results keeps the celebrate V on first. Second pumps one fist. Third leans onto one leg. Fourth slumps, head down. Same Hier family, same camera, same 1.8 m square. The root is rotated for the lean and then planted. Soles print 0.005. There is no hop.
+
+`glyph-cover check=1 FAIL U+2713` and `screen-roots stacked=2 FAIL two roots` are spike lines, not product bugs. `FontCover.Holds` passes only when every live string is in both UI fonts (`clean=0`) and a planted U+2713 is missing (`dirty>0`), because neither font has a check mark. `ScreenDeck.Holds` passes only when `ShowOnly` leaves one root (`clean=1`) and the old `ShowStacked` open leaves two (`stacked=2`). The ui-flow line stays `glyphs=ok` and does not append `screen roots`. The sim still exits 1 on `no-clip rest overlaps`.
+
+`Docs/UiStills/pass53/` holds results and load before and after. Join uses the same seat atlas as load. Unity is not installed, so the stills are composites. Controls were not reshot. pose stays 0.
+
 ## Screens 2, pass 1
 
 Secondary screens pick up the park wash and a comic wipe under 0.4 s. Arena select is a three-card grid: Mega Park, Pocket Park, and Stack Yard, then Random and Back. Mode tiles are a 2 by 2. Right from the right-hand mode enters the rules. Left on a rule that cannot go lower returns to the modes. Up and down stay in a column. The rules list has a gold scrollbar.

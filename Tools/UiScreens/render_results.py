@@ -1,12 +1,13 @@
 """Results card frames. Same Hier idle family, same camera, soles at 0.5 cm.
 
-First place samples a celebrate frame: both arms in a V, a lean back, no hop.
-Second through fourth sample a relaxed stand. The arms leave the bind hang.
+Rank 0 celebrates: both arms in a V, a lean back, no hop.
+Rank 1 pumps one fist. Rank 2 stands with a side lean. Rank 3 slumps.
+Hanging arms keep the upper arm about 12 degrees off the torso and soften the elbow.
 The root is rotated for the lean, then planted so the sole stays at 0.5 cm.
 Nothing adds MenuAlive.Hop.
 
-On this FBX the raise axis is local Y. Unity's ArmPitch is that raise on the
-imported Unity bone. The degrees below are the sampled frame, not a second clip.
+On this FBX the raise axis is local Y. A side lean is local Y on the root.
+The degrees below are the sampled frame, not a second clip.
 """
 import math
 import os
@@ -31,8 +32,14 @@ def set_delta(obj, x, y, z):
     obj.rotation_quaternion = rest @ unity_euler(x, y, z)
 
 
+def hang_elbows(sl, objs, pitch=-14, yaw=26):
+    """Upper arms stay on the bind, about 12 degrees off the torso."""
+    set_delta(sl.find_named(objs, "LowerArm_L"), pitch, -yaw, 0)
+    set_delta(sl.find_named(objs, "LowerArm_R"), pitch, yaw, 0)
+
+
 def pose_frame(sl, objs, kind):
-    """Celebrate or relaxed stand, on top of the idle knee rest. No root lift."""
+    """One results pose on the idle knee rest. No root lift."""
     arm_l = sl.find_named(objs, "UpperArm_L")
     arm_r = sl.find_named(objs, "UpperArm_R")
     fore_l = sl.find_named(objs, "LowerArm_L")
@@ -48,17 +55,24 @@ def pose_frame(sl, objs, kind):
         set_delta(spine, -2, 0, 0)
         set_delta(head, -14, 0, 0)
         set_delta(root, -16, 0, 0)
+    elif kind == "pump":
+        # One fist near the shoulder. The other arm keeps the natural hang.
+        set_delta(fore_l, -14, -26, 0)
+        set_delta(arm_r, 12, -78, -16)
+        set_delta(fore_r, 100, 0, 0)
+        set_delta(head, -4, 6, 0)
+    elif kind == "shift":
+        # Weight on one side. Local Y leans the shoulders. The arms stay in the hang.
+        hang_elbows(sl, objs)
+        set_delta(root, 0, -14, 0)
+        set_delta(spine, 0, -4, 0)
+        set_delta(head, 0, -10, 0)
     else:
-        # Ready's open chest, with the arms off the bind hang.
-        # Ready's own arm deltas are about 5 degrees and still read as the bind.
-        # Yaw 18 opens the upper arm. The elbow bend breaks the straight hang.
-        set_delta(arm_l, -12, 18, 0)
-        set_delta(arm_r, -12, -18, 0)
-        set_delta(fore_l, -24, 0, 0)
-        set_delta(fore_r, -24, 0, 0)
-        set_delta(spine, -2, 0, 0)
-        set_delta(head, -4, 0, 0)
-        set_delta(root, -10, 0, 0)
+        # Head down, shoulders forward. Hanging arms stay close to the torso.
+        hang_elbows(sl, objs, -10, 18)
+        set_delta(root, 20, 0, 3)
+        set_delta(spine, 16, 0, 0)
+        set_delta(head, 22, -14, 0)
     import bpy
 
     bpy.context.view_layer.update()
@@ -70,19 +84,25 @@ def render_main():
 
     os.makedirs(OUT_DIR, exist_ok=True)
     for index, (prefix, path, color, kind) in enumerate(sl.SEATS):
-        for pose in ("cheer", "stand"):
+        for pose in ("cheer", "pump", "shift", "slump"):
             sl.wipe()
             sl.import_prefixed(path, prefix)
             objs = [obj for obj in __import__("bpy").data.objects if obj.name.startswith(prefix)]
             roots = [obj for obj in objs if obj.parent is None]
             sl.stand_up(roots, objs)
             sl.pose_idle(objs)
+            # Lock the camera before the rank pose. A side lean must not swing it
+            # onto the body's edge, or the weight shift reads as a thin column.
+            face = sl.face_axis(objs)
             pose_frame(sl, objs, pose)
             sl.plant(roots, objs)
             sl.tint(objs, color, prefix)
             lo, hi = sl.world_bounds(objs)
             mid = (lo + hi) * 0.5
-            sl.move_root(roots, -mid.x, sl.YAW)
+            # Center only. Extra yaw is skipped: the root is a quaternion after the
+            # lean, and the celebrate frame that reads was framed without that yaw.
+            for root in roots:
+                root.location.x += -mid.x
             __import__("bpy").context.view_layer.update()
             sl.chest_mark(objs, kind, color)
             feet = [obj for obj in sl.meshes(objs) if "Foot" in obj.name]
@@ -105,7 +125,6 @@ def render_main():
                 "height",
                 round(hi.z - lo.z, 3),
             )
-            face = sl.face_axis(objs)
             sl.lights()
             sl.camera(face)
             sl.render(os.path.join(OUT_DIR, "%s%d.png" % (pose, index)))
@@ -116,7 +135,8 @@ def pack():
 
     raws = []
     names = []
-    for pose in ("cheer", "stand"):
+    poses = ("cheer", "pump", "shift", "slump")
+    for pose in poses:
         for i in range(4):
             path = os.path.join(OUT_DIR, "%s%d.png" % (pose, i))
             im = Image.open(path).convert("RGBA")
@@ -149,7 +169,7 @@ def pack():
         cell = Image.new("RGBA", (side, side), (0, 0, 0, 0))
         cell.paste(im.crop(box), (ox, oy))
         cells.append(cell)
-    atlas = Image.new("RGBA", (side * 4, side * 2), (0, 0, 0, 0))
+    atlas = Image.new("RGBA", (side * 4, side * len(poses)), (0, 0, 0, 0))
     for i, cell in enumerate(cells):
         col = i % 4
         row = i // 4

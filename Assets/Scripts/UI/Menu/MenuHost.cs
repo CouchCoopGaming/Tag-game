@@ -3013,7 +3013,7 @@ namespace Tag.Ui.Menu
             float rowX = (span - rowW) * 0.5f;
             if (rowX < 8f) rowX = 8f;
             // One Hier body, 1.8 m, on every card. Rank is the plinth under the feet.
-            // Rank 0 samples the celebrate frame. The other ranks sample the relaxed stand.
+            // Rank 0 celebrates. Rank 1 pumps a fist. Rank 2 shifts weight. Rank 3 slumps.
             const float hierMeters = 1.8f;
             const float pxPerMeter = 100f;
             float figSide = hierMeters * pxPerMeter;

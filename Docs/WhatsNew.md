@@ -436,6 +436,8 @@ The fifty-first pass keeps those four Hier idles and puts the same body on every
 
 The fifty-second pass puts a celebrate frame on the first-place card and a relaxed stand on the other three. The arms are no longer the bind hang. The body stays the same Hier at 1.8 m, and the feet stay on the plinth. Space still jumps.
 
+The fifty-third pass brings the hanging arms in to about 12 degrees off the torso, with a soft elbow. Load and join use that hang. On results, second pumps a fist, third leans onto one leg, and fourth slumps. First still celebrates. Space still jumps.
+
 ## Motion, ninth pass
 
 The wall jump, the rope, the zip, the launch pad, a landing, the dash flash, a hard turnaround, and a punch while you run all ease instead of snapping. Speeds, the jump, and the dash length are the same.

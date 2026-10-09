@@ -339,7 +339,8 @@ namespace Tag.Ui.Menu
         }
 
         /// <summary>
-        /// Results figure. Rank 0 uses the celebrate row. Every other rank uses the relaxed stand.
+        /// Results figure. Four rows, top to bottom in the file: celebrate, fist pump,
+        /// weight shift, slump. Unity's v origin is the bottom, so rank 0 is v 0.75.
         /// The cell is square and the same size for every seat, so the body stays one height.
         /// Falls back to the idle atlas when the results art is missing.
         /// </summary>
@@ -349,12 +350,14 @@ namespace Tag.Ui.Menu
             if (parent == null || tex == null) return HierSeat(parent, x, y, side, seat);
             if (seat < 0) seat = 0;
             if (seat > 3) seat = 3;
-            float row = rank <= 0 ? 0.5f : 0f;
+            if (rank < 0) rank = 0;
+            if (rank > 3) rank = 3;
+            float row = (3 - rank) * 0.25f;
             RectTransform rt = Place(parent, "HierRank", x, y, side, side);
             RawImage raw = rt.gameObject.AddComponent<RawImage>();
             raw.texture = tex;
             raw.raycastTarget = false;
-            raw.uvRect = new Rect(seat * 0.25f, row, 0.25f, 0.5f);
+            raw.uvRect = new Rect(seat * 0.25f, row, 0.25f, 0.25f);
             return true;
         }
 

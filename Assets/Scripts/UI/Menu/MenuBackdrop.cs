@@ -94,7 +94,7 @@ namespace Tag.Ui.Menu
         }
 
         /// <summary>
-        /// Results cards. Top row is the celebrate frame, bottom row is the relaxed stand.
+        /// Results cards. Four rows: celebrate, fist pump, weight shift, slump.
         /// Four seats, same camera as the idle atlas. Load and join stay on <see cref="SeatLoad"/>.
         /// </summary>
         public static Texture2D SeatResult

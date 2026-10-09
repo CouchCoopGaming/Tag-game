@@ -1,7 +1,8 @@
 """Four Hier idles, one camera. Same pose, same scale, seat color and chest shape.
 
 Not a new clip. Knees at IdlePose.KneeRest (-4 deg). Feet cancel that pitch.
-Soles land at 0.5 cm. Arms stay on the bind pose until an existing clip says otherwise.
+Soles land at 0.5 cm. Upper arms stay about 12 degrees off the torso.
+A soft elbow brings the forearm in so the hang is not a straight bind line.
 """
 import math
 import os
@@ -143,6 +144,25 @@ def pose_idle(objs):
     for obj in feet:
         add_local_x(obj, -KNEE * sign)
     print("pose sign", sign, "sole tilt", round(sole_tilt(objs), 4))
+
+
+def add_delta(obj, x, y, z):
+    if obj is None:
+        return
+    from mathutils import Euler
+
+    rest = obj.rotation_euler.to_quaternion()
+    obj.rotation_mode = "QUATERNION"
+    obj.rotation_quaternion = rest @ Euler(
+        (math.radians(x), math.radians(y), math.radians(z)), "ZXY"
+    ).to_quaternion()
+
+
+def pose_hang(objs):
+    """Forearms in, upper arms left on the bind. About 12 degrees off the torso."""
+    add_delta(find_named(objs, "LowerArm_L"), -14, -26, 0)
+    add_delta(find_named(objs, "LowerArm_R"), -14, 26, 0)
+    bpy.context.view_layer.update()
 
 
 def foot_min_z(objs):
@@ -375,6 +395,7 @@ def prepare(path, prefix, color, kind):
     print(prefix, "count", len(objs))
     stand_up(roots, objs)
     pose_idle(objs)
+    pose_hang(objs)
     plant(roots, objs)
     tint(objs, color, prefix)
     lo, hi = world_bounds(objs)
