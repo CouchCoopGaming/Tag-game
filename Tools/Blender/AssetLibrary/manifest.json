@@ -44188,5 +44188,712 @@
     ],
     "slackCm": 0.53,
     "fbx": "Assets/Art/Props/Library/Vehicles/Sedan_Mid_A_25_Ocean.fbx"
+  },
+  {
+    "name": "Car_Sedan",
+    "category": "StreetFurniture",
+    "blurb": "Sedan shell, about 4.56 m long, roof 1.56 m. Taller greenhouse, shorter hood, quarter glass in the C-pillar.",
+    "size": [
+      1.9,
+      1.581,
+      4.595
+    ],
+    "min": [
+      -0.95,
+      0.0,
+      -2.298
+    ],
+    "max": [
+      0.95,
+      1.581,
+      2.297
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 14440,
+        "materials": [
+          "Lib_PaintBlue",
+          "Lib_Interior",
+          "Lib_Black",
+          "Lib_TintGlass",
+          "Lib_SteelDark",
+          "Lib_Steel",
+          "Lib_Headlamp",
+          "Lib_Taillamp",
+          "Lib_Rubber"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 3768,
+        "materials": [
+          "Lib_PaintBlue",
+          "Lib_Interior",
+          "Lib_Black",
+          "Lib_TintGlass",
+          "Lib_SteelDark",
+          "Lib_Steel",
+          "Lib_Headlamp",
+          "Lib_Taillamp",
+          "Lib_Rubber"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_Body",
+        "type": "box",
+        "center": [
+          0,
+          0.5,
+          -0.2
+        ],
+        "size": [
+          1.05,
+          0.4,
+          1.7
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Roof",
+        "type": "box",
+        "center": [
+          0,
+          1.52,
+          -0.36
+        ],
+        "size": [
+          0.52,
+          0.035,
+          1.05
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Nose",
+        "type": "box",
+        "center": [
+          0,
+          0.46,
+          1.9
+        ],
+        "size": [
+          1.05,
+          0.16,
+          0.32
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Tail",
+        "type": "box",
+        "center": [
+          0,
+          0.48,
+          -1.95
+        ],
+        "size": [
+          1.15,
+          0.18,
+          0.4
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Wheel_00",
+        "type": "box",
+        "center": [
+          -0.78,
+          0.03,
+          -1.35
+        ],
+        "size": [
+          0.05,
+          0.036,
+          0.0806
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Wheel_01",
+        "type": "box",
+        "center": [
+          0.78,
+          0.03,
+          -1.35
+        ],
+        "size": [
+          0.05,
+          0.036,
+          0.0806
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Wheel_10",
+        "type": "box",
+        "center": [
+          -0.78,
+          0.03,
+          1.35
+        ],
+        "size": [
+          0.05,
+          0.036,
+          0.0806
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Wheel_11",
+        "type": "box",
+        "center": [
+          0.78,
+          0.03,
+          1.35
+        ],
+        "size": [
+          0.05,
+          0.036,
+          0.0806
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "climbable": false,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "Sheet metal. Not a cling wall.",
+    "vaultNote": "Hood and roof are landings, not vault rails.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1"
+    ],
+    "slackCm": 0.0,
+    "fbx": "Assets/Art/Props/Library/StreetFurniture/Car_Sedan.fbx"
+  },
+  {
+    "name": "Car_Hatch",
+    "category": "StreetFurniture",
+    "blurb": "Hatchback shell, about 4.00 m long, roof 1.52 m. Closed body, pillars, glass, and fenders over the tires.",
+    "size": [
+      1.82,
+      1.522,
+      4.035
+    ],
+    "min": [
+      -0.91,
+      0.0,
+      -1.998
+    ],
+    "max": [
+      0.91,
+      1.522,
+      2.037
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 13164,
+        "materials": [
+          "Lib_PaintRed",
+          "Lib_Interior",
+          "Lib_Black",
+          "Lib_TintGlass",
+          "Lib_SteelDark",
+          "Lib_Steel",
+          "Lib_Headlamp",
+          "Lib_Taillamp",
+          "Lib_Rubber"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 3414,
+        "materials": [
+          "Lib_PaintRed",
+          "Lib_Interior",
+          "Lib_Black",
+          "Lib_TintGlass",
+          "Lib_SteelDark",
+          "Lib_Steel",
+          "Lib_Headlamp",
+          "Lib_Taillamp",
+          "Lib_Rubber"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_Body",
+        "type": "box",
+        "center": [
+          0,
+          0.52,
+          -0.15
+        ],
+        "size": [
+          1.0,
+          0.4,
+          1.4
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Roof",
+        "type": "box",
+        "center": [
+          0,
+          1.455,
+          -0.3
+        ],
+        "size": [
+          0.48,
+          0.04,
+          0.7
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Nose",
+        "type": "box",
+        "center": [
+          0,
+          0.42,
+          1.74
+        ],
+        "size": [
+          0.9,
+          0.12,
+          0.28
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Tail",
+        "type": "box",
+        "center": [
+          0,
+          0.46,
+          -1.74
+        ],
+        "size": [
+          0.95,
+          0.12,
+          0.22
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Wheel_00",
+        "type": "box",
+        "center": [
+          -0.74,
+          0.03,
+          -1.25
+        ],
+        "size": [
+          0.0475,
+          0.036,
+          0.078
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Wheel_01",
+        "type": "box",
+        "center": [
+          0.74,
+          0.03,
+          -1.25
+        ],
+        "size": [
+          0.0475,
+          0.036,
+          0.078
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Wheel_10",
+        "type": "box",
+        "center": [
+          -0.74,
+          0.03,
+          1.25
+        ],
+        "size": [
+          0.0475,
+          0.036,
+          0.078
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Wheel_11",
+        "type": "box",
+        "center": [
+          0.74,
+          0.03,
+          1.25
+        ],
+        "size": [
+          0.0475,
+          0.036,
+          0.078
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "climbable": false,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "Sheet metal. Not a cling wall.",
+    "vaultNote": "Roof is a landing, not a vault rail.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1"
+    ],
+    "slackCm": 0.0,
+    "fbx": "Assets/Art/Props/Library/StreetFurniture/Car_Hatch.fbx"
+  },
+  {
+    "name": "Car_Pickup",
+    "category": "StreetFurniture",
+    "blurb": "Pickup shell, about 5.06 m long. Cab roof 1.76 m, bed rails 1.12 m. Closed cab and wrapped fenders.",
+    "size": [
+      1.999,
+      1.761,
+      5.105
+    ],
+    "min": [
+      -0.999,
+      0.0,
+      -2.608
+    ],
+    "max": [
+      0.999,
+      1.761,
+      2.497
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 11336,
+        "materials": [
+          "Lib_PaintWhite",
+          "Lib_Interior",
+          "Lib_Black",
+          "Lib_TintGlass",
+          "Lib_SteelDark",
+          "Lib_Steel",
+          "Lib_Headlamp",
+          "Lib_Taillamp",
+          "Lib_Rubber"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 2728,
+        "materials": [
+          "Lib_PaintWhite",
+          "Lib_Interior",
+          "Lib_Black",
+          "Lib_TintGlass",
+          "Lib_SteelDark",
+          "Lib_Steel",
+          "Lib_Headlamp",
+          "Lib_Taillamp",
+          "Lib_Rubber"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_Cab",
+        "type": "box",
+        "center": [
+          0,
+          0.82,
+          0.78
+        ],
+        "size": [
+          0.9,
+          0.48,
+          1.0
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Roof",
+        "type": "box",
+        "center": [
+          0,
+          1.7,
+          0.4
+        ],
+        "size": [
+          0.36,
+          0.04,
+          0.32
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Bed",
+        "type": "box",
+        "center": [
+          0,
+          0.55,
+          -1.2
+        ],
+        "size": [
+          1.2,
+          0.02,
+          1.6
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_SideL",
+        "type": "box",
+        "center": [
+          -0.845,
+          0.98,
+          -1.3
+        ],
+        "size": [
+          0.02,
+          0.12,
+          1.7
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_SideR",
+        "type": "box",
+        "center": [
+          0.845,
+          0.98,
+          -1.3
+        ],
+        "size": [
+          0.02,
+          0.12,
+          1.7
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Tailgate",
+        "type": "box",
+        "center": [
+          0,
+          0.86,
+          -2.568
+        ],
+        "size": [
+          0.9,
+          0.26,
+          0.014
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Fr_00",
+        "type": "box",
+        "center": [
+          -0.84,
+          0.03,
+          1.58
+        ],
+        "size": [
+          0.055,
+          0.036,
+          0.09
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Fr_01",
+        "type": "box",
+        "center": [
+          0.84,
+          0.03,
+          1.58
+        ],
+        "size": [
+          0.055,
+          0.036,
+          0.09
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Rr_00",
+        "type": "box",
+        "center": [
+          -0.84,
+          0.03,
+          -1.62
+        ],
+        "size": [
+          0.055,
+          0.036,
+          0.09
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Rr_01",
+        "type": "box",
+        "center": [
+          0.84,
+          0.03,
+          -1.62
+        ],
+        "size": [
+          0.055,
+          0.036,
+          0.09
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "climbable": false,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "Sheet metal. Not a cling wall.",
+    "vaultNote": "Bed sides are about 1.12 m. Not a vault rail.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1"
+    ],
+    "slackCm": 0.0,
+    "fbx": "Assets/Art/Props/Library/StreetFurniture/Car_Pickup.fbx"
   }
 ]

@@ -530,6 +530,27 @@ def _mirrors(g, spec, lod):
         g.box((sign * (x + 0.036), y + 0.012, z), (0.008, 0.036, 0.060), "Lib_Steel")
 
 
+def wheel_boxes(asset, spec, axles, name_fn):
+    """Tread slab. The contact patch is y = 0 when the axle is the tire radius.
+
+    A box centered on the axle with height about one radius leaves its bottom
+    0.15 m (sedan, hatch) or 0.18 m (pickup) above the rubber. This slab sits
+    in the carcass, 1.2 cm above the patch, inside the 3 cm slack limit.
+    """
+    radius = spec["tire_r"]
+    bottom = 0.012
+    height = 0.036
+    depth = min(0.09, radius * 0.26)
+    y = bottom + height * 0.5
+    for i, z in enumerate(axles):
+        for j, sign in enumerate((-1.0, 1.0)):
+            asset.box(
+                name_fn(i, j),
+                (sign * spec["tire_x"], y, z),
+                (spec["tire_half_w"] * 0.50, height, depth),
+            )
+
+
 def _wheels(g, spec, lod, axles):
     seg = 16 if lod == 0 else 10
     r = spec["tire_r"]

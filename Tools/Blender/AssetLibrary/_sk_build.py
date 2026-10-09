@@ -25,6 +25,9 @@ from _common import (  # noqa: E402
 import write_unity  # noqa: E402
 
 MODULES = (
+    "sk_car_sedan",
+    "sk_car_hatch",
+    "sk_car_pickup",
     "sk_light_globe",
     "sk_light_mast",
     "sk_hydrant_yellow",
