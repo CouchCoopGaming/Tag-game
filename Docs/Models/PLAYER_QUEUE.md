@@ -5,9 +5,9 @@ Re-checked 9 Oct 2026 with the tightened still and LOD rules. Rig worker #128 le
 | Branch | Tip | Baseline | This run |
 | --- | --- | --- | --- |
 | #128 | `44fbff3f` | `pass=0/7` paper 5 / geom 2 at `08a4d6b0` | `models-validate assets=7 pass=0 fail=7` / `models-split paperwork=5 geometry=2` |
-| #131 | `ad1582a8` | `pass=0/18` paper 5 / geom 13 at `331e8e0d` | `models-validate assets=18 pass=0 fail=18` / `models-split paperwork=5 geometry=13` |
+| #131 | `6dc8b9c4` | `pass=0/18` paper 5 / geom 13 at `ad1582a8` | `models-validate assets=18 pass=0 fail=18` / `models-split paperwork=5 geometry=13` |
 
-The framing check did not run on #128 or #131. The quartet roles are missing, so there is no framing-fail list. The counts above are unchanged.
+The framing check did not run on #128 or #131. The quartet roles are missing, so there is no framing-fail list. #131 moved to `6dc8b9c4` and the pass count stayed 0.
 
 #128 `44fbff3f` rewrites `Dummy_Mannequin_Tan_Hier_Clearance.fbx` again. The shipped Hier files did not change. Colour Hier geometry (positions, indices, UVs) still differs from `Dummy_Mannequin_Tan_Hier_Hi`, so they are not `material-variant` of the tan body. The checker still reads `Docs/LocoStills`, and the summary is unchanged: `pass=0/7`. No pass to spot-check.
 
@@ -22,10 +22,10 @@ The framing check did not run on #128 or #131. The quartet roles are missing, so
 
 ## Costumes (#131)
 
-`ad1582a8` splits the shells at the joints and reshoots pass 5. The summary line is unchanged: `pass=0/18`. The checker reads the fit header `worldMax=0.05 fails=0`, so `cloth=7.13cm` is gone. The lines under that header are not what it reads: sprint `worldMax=1.68` fails=12, slide `worldMax=4.14` fails=93, roll `worldMax=3.46` fails=120. Ten of the twelve loadouts fail `lod2-ratio`. Reed hood is 8668/4946/3151. Reed cap 8682/4892/2911 and Sol collar-cap 8650/4876/2903 are under 0.6×. Every loadout still fails `rig-not-clearance`, `rig-proof-missing`, and the four still roles. Cloth-band is `min=0.33 max=0.98`. `accessory-max=11.60` is `Lab_PackBram`.
+`6dc8b9c4` opens the costume shells and adds pass 6. The summary line is unchanged: `pass=0/18`, paperwork 5, geometry 13. The fit header the checker reads is `worldMax=0.46 fails=0`, so there is no `cloth` reason. Sprint is 0.35 cm, slide is 0.43 cm, and roll is 0.46 cm, each with fails=0. Pass 6 is `sprint.png`, `slide.png`, and `roll.png`, each 1280×720 and under 400 KB. They show a colored figure in those three poses. They are not a quartet, so the framing check does not run and `shell-buried` is not measured. All twelve loadouts fail `lod2-ratio`. Reed hood is 7212/3325/2141. Reed cap is 7226/3593/2315. Sol collar-cap is 7194/3566/2298. Every loadout still fails `rig-not-clearance`, `rig-proof-missing`, and the four still roles. Cloth-band is `min=0.34 max=0.98`. `accessory-max=11.60` is `Lab_PackBram`. Not a redo.
 
-1. The header is under 0.5 cm. Sprint, slide, and roll are not. Bring those clips under 0.5 cm. Pass 5 is one shared lineup (`joint-close`, `lineup-side`, `lineup-three-quarter`, `scale-figure`, all 1280×720 and under 400 KB). It does not count as a quartet. Each loadout needs its own.
-2. Cut LOD2 to at most 0.6× LOD1 on the ten loadouts that fail `lod2-ratio`.
+1. Sprint, slide, and roll are under 0.5 cm. Pass 6 does not count as a quartet. Each loadout needs its own quarter, side, close-up, and 1.8 m scale frame.
+2. Cut LOD2 to at most 0.6× LOD1 on all twelve loadouts.
 3. Bram stays Reed's meshes with a blue `PlayerColor` until the rig is stable.
 4. This branch still has no clearance FBX. Refit onto the clearance candidate only after the hip proof the checker reads is `pose=0`. #128 `44fbff3f` does not unblock that.
 
