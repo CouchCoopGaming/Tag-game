@@ -181,7 +181,8 @@ def extract_clip(spec):
             "mean_visibility_body": round(vis_body, 3),
             "frac_usable": round(float(filled.mean()), 3),
         },
-        "reference_only": True,
+        "ship": spec.get("ship", "REFERENCE-ONLY / DO-NOT-SHIP"),
+        "reference_only": bool(spec.get("reference_only", spec.get("ship") != "CC0")),
     }
     # The empty coordinate note above is replaced with the Storror wording.
     doc["coordinate_notes"] = (
