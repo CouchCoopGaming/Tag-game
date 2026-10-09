@@ -4284,11 +4284,10 @@
       },
       {
         "lod": 2,
-        "tris": 2388,
+        "tris": 144,
         "materials": [
           "Lib_SteelDark",
-          "Lib_Steel",
-          "Lib_Chain"
+          "Lib_Steel"
         ],
         "mesh": "LOD2",
         "fileID": 736115405485880582
@@ -11445,12 +11444,12 @@
         "type": "box",
         "center": [
           0,
-          0.16,
+          0.12,
           0
         ],
         "size": [
           0.12,
-          0.16,
+          0.2,
           0.12
         ],
         "euler": [
@@ -11464,11 +11463,11 @@
         "type": "capsule",
         "center": [
           0,
-          2.85,
+          2.709,
           0
         ],
         "radius": 0.042,
-        "height": 4.5,
+        "height": 4.938,
         "direction": 1
       },
       {
@@ -11495,13 +11494,13 @@
         "type": "box",
         "center": [
           0,
-          5.36,
+          5.37,
           1.15
         ],
         "size": [
-          0.58,
-          0.18,
-          0.34
+          0.5,
+          0.1,
+          0.26
         ],
         "euler": [
           0,
@@ -11521,14 +11520,15 @@
       "LOD0",
       "LOD1"
     ],
-    "slackCm": 2.83,
-    "fbx": "Assets/Art/Props/Library/StreetFurniture/LightPost_Single.fbx",
+    "extras": [],
+    "slackCm": 1.29,
     "license": {
       "spdx": "CC0-1.0",
       "source": "original",
       "url": "",
       "notes": "Procedural mesh built in this repo."
-    }
+    },
+    "fbx": "Assets/Art/Props/Library/StreetFurniture/LightPost_Single.fbx"
   },
   {
     "name": "LightPost_Double",
@@ -13125,12 +13125,12 @@
         "type": "box",
         "center": [
           0,
-          0.16,
+          0.13,
           0
         ],
         "size": [
           0.14,
-          0.18,
+          0.22,
           0.14
         ],
         "euler": [
@@ -13144,12 +13144,31 @@
         "type": "capsule",
         "center": [
           0,
-          1.72,
+          1.65,
           0
         ],
         "radius": 0.036,
-        "height": 2.46,
+        "height": 2.78,
         "direction": 1
+      },
+      {
+        "name": "Col_Neck",
+        "type": "box",
+        "center": [
+          0.13,
+          3.12,
+          0.13
+        ],
+        "size": [
+          0.02,
+          0.12,
+          0.02
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
       },
       {
         "name": "Col_Lantern",
@@ -13160,9 +13179,9 @@
           0
         ],
         "size": [
-          0.3,
+          0.28,
           0.04,
-          0.3
+          0.28
         ],
         "euler": [
           0,
@@ -13175,12 +13194,12 @@
         "type": "box",
         "center": [
           0,
-          3.32,
+          3.3,
           0
         ],
         "size": [
           0.08,
-          0.06,
+          0.08,
           0.08
         ],
         "euler": [
@@ -13201,14 +13220,15 @@
       "LOD0",
       "LOD1"
     ],
-    "slackCm": 0.88,
-    "fbx": "Assets/Art/Props/Library/Park/ParkLamp.fbx",
+    "extras": [],
+    "slackCm": 1.61,
     "license": {
       "spdx": "CC0-1.0",
       "source": "original",
       "url": "",
       "notes": "Procedural mesh built in this repo."
-    }
+    },
+    "fbx": "Assets/Art/Props/Library/Park/ParkLamp.fbx"
   },
   {
     "name": "ParkSign",

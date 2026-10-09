@@ -57,6 +57,12 @@ def _fabric(g, axis, origin, length, height, step, normal, gap=None):
             _wire(g, c, d, normal)
 
 
+def _rail_size(axis, length, thick):
+    if axis == "X":
+        return (length, thick, thick)
+    return (thick, thick, length)
+
+
 def _posts(g, axis, origin, length, height, seg):
     # Corners are placed once, at the taller baseline height, so two runs do not occupy the same post.
     count = max(3, int(round(length / 2.0)) + 1)
@@ -85,8 +91,19 @@ def create():
     ]
     for lod in (0, 1, 2):
         g = a.begin(lod)
-        seg = lod_pick(lod, 8, 6, 5)
-        step = lod_pick(lod, 0.72, 1.15, None)
+        if lod >= 2:
+            # Posts and two rails per side. No diamonds. Stays under the dense LOD2 ceiling.
+            for x in (-X, X):
+                for z in (-Z, Z):
+                    g.box((x, 1.52, z), (0.08, 3.04, 0.08), "Lib_SteelDark")
+            for axis, origin, length, height, _normal, _gap in runs:
+                y = height - 0.06
+                g.box(_point(axis, origin, length * 0.5, y), _rail_size(axis, length, 0.04), "Lib_Steel")
+                g.box(_point(axis, origin, length * 0.5, 0.08), _rail_size(axis, length, 0.03), "Lib_SteelDark")
+            a.end()
+            continue
+        seg = lod_pick(lod, 8, 6)
+        step = lod_pick(lod, 0.72, 1.15)
         for x in (-X, X):
             for z in (-Z, Z):
                 g.cylinder((x, 1.525, z), 0.04, 3.05, "Lib_SteelDark", seg)

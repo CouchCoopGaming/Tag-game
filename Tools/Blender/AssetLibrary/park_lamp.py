@@ -35,8 +35,11 @@ def create():
         g.box((0, 3.22, 0), (0.36, 0.06, 0.36), "Lib_SteelDark")
         g.cone((0, 3.32, 0), 0.20, 0.02, 0.12, "Lib_Steel", seg)
         a.end()
-    a.box("Col_Base", (0, 0.16, 0), (0.14, 0.18, 0.14))
-    a.capsule("Col_Post", (0, 1.72, 0), 0.036, 2.46, 1)
-    a.box("Col_Lantern", (0, 3.22, 0), (0.30, 0.04, 0.30))
-    a.box("Col_Cap", (0, 3.32, 0), (0.08, 0.06, 0.08))
+    # Base top 0.24. Post ends at 3.04, under a neck box in one lantern stile.
+    # Lantern and cap then step up by 2 cm. Overlap does not count as support.
+    a.box("Col_Base", (0, 0.13, 0), (0.14, 0.22, 0.14))
+    a.capsule("Col_Post", (0, 1.65, 0), 0.036, 2.78, 1)
+    a.box("Col_Neck", (0.13, 3.12, 0.13), (0.020, 0.12, 0.020))
+    a.box("Col_Lantern", (0, 3.22, 0), (0.28, 0.04, 0.28))
+    a.box("Col_Cap", (0, 3.30, 0), (0.08, 0.08, 0.08))
     return a
