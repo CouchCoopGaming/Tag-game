@@ -25,7 +25,8 @@ namespace Tag.Art
         public const float HangSpine = -6f;
         public const float HangHead = -4f;
         public const float HangElbow = -8f;
-        public const float HangYaw = 8f;
+        // Negative yaw keeps the raised arm on the open side of the chest.
+        public const float HangYaw = -36f;
 
         public const float DropThigh = -24f;
         public const float DropKnee = -10f;
@@ -35,7 +36,9 @@ namespace Tag.Art
         public const float DropElbow = -28f;
 
         public const float ReleasePitch = 28f;
-        public const float ReleaseYaw = 36f;
+        public const float ReleaseYaw = -36f;
+        /// <summary>Degrees. Keeps the trailing sole off the floor. Not a root lift.</summary>
+        public const float SolePitch = 12f;
         public const float ReleaseElbow = -18f;
         public const float ReleaseThigh = 14f;
         public const float ReleaseKnee = -16f;
@@ -49,6 +52,7 @@ namespace Tag.Art
             public float ArmPitchL, ArmPitchR, ArmYawL, ArmYawR;
             public float ElbowL, ElbowR;
             public float Hip, Spine, Head, LeanZ;
+            public float FootL, FootR;
         }
 
         /// <summary>Both hands on the cable. Legs a little forward. Arms stay the cling reach.</summary>
@@ -70,6 +74,8 @@ namespace Tag.Art
                 Spine = HangSpine,
                 Head = HangHead,
                 LeanZ = 0f,
+                FootL = SolePitch,
+                FootR = SolePitch,
             };
         }
 
@@ -92,6 +98,8 @@ namespace Tag.Art
                 Spine = DropSpine,
                 Head = DropHead,
                 LeanZ = 0f,
+                FootL = SolePitch,
+                FootR = SolePitch,
             };
         }
 
@@ -114,6 +122,8 @@ namespace Tag.Art
                 Spine = ReleaseSpine,
                 Head = ReleaseHead,
                 LeanZ = 0f,
+                FootL = SolePitch,
+                FootR = SolePitch,
             };
         }
 

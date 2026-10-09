@@ -1,0 +1,31 @@
+Pass 22. Yank pull, 1.2 cm cord, launch knee-up, dark studio.
+
+Mesh at the stills (after face_travel, feet seated):
+
+grapple-pull before t=0.333
+  hand ahead 3.3 cm, 61.3 cm below the crown, off hand x -10 cm
+  elbow 13.9 deg, torso 81.5 deg off vertical, feet 30 cm apart
+  pose 0.39 cm Spine/UpperLeg_L, world 0
+grapple-pull after t=0.333
+  hand ahead 9.9 cm, 8.9 cm above the crown, off hand x +59 cm
+  elbow 54.9 deg, torso 17.9 deg off vertical, feet 27.5 cm apart, 20.9 cm behind
+  pose 0.05 cm, rig 2.24 cm Hips/UpperLeg_L, world 0
+grapple-release after t=0
+  hand ahead 11.1 cm, 8.7 cm above the crown, off hand x +69 cm
+  pose 0.08 cm, world 0 with the sagged cord
+launch-rise before
+  feet 72.4 cm apart, 36.8 cm behind, foot z 0.24, pose 0.24 cm
+launch-rise after
+  feet 49.4 cm apart, 4.0 cm behind, foot z 0.31, pose 0.24 cm
+  arms unchanged: hands x ±0.47, z 2.07
+
+Rope pixels, side view: before cord 8 px across, pull after 2 px and 1 px off a straight line, hold after bows 4.8 px, release after bows 5.0 px. Game sag is a vertical 6 cm. The still also bows 6 cm off the chord so the side view reads.
+
+Checker, taut cord, seven clips:
+no-clip clips=7 frames=40 worldMax=0.00 poseMax=0.42 rigMax=3.40 poseFails=0 rigJoint=39
+
+Pull 15 frames pose 0.01-0.11. Release 4 frames pose 0.06-0.11. Miss worst pose 0.42 at t=0.167, rig 3.40. Launch rise and mill pose 0.24.
+
+Backdrop about (89, 94, 101). Floor about (150, 149, 146). Red pixels 0. Each PNG under 400 KB.
+
+StrafeJumpSim EXIT 0. Gameplay lines match pass 21. Re-pinned: grapple pose, grapple-pose-polish, rope width, body-line rope, handoff2 grappleOut, exit-fit grapple=-118.

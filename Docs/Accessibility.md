@@ -6,9 +6,9 @@ Palette, captions, rumble, and reduced flashing live on the existing pause setti
 
 The Colorblind palette row cycles five sets: Default, Deuteranopia, Protanopia, Tritanopia, High contrast. Each set colors the four players, the It marker, the tag-back immunity glow, and the dash / safe / stagger / cling HUD marks.
 
-Player colors stay apart under simulated deuteranopia, protanopia, and tritanopia (pairwise distance at least 0.35) and each clears 3:1 contrast against grass, mulch, concrete, sand, metal, and wood on Mega Park, Pocket Park, and Stack Yard.
+Default is the seat paint: P1 red circle, P2 blue triangle, P3 orange square, P4 lavender diamond (● ▲ ■ ◆). Those are the same hues as the menu. The circle, triangle, square, and diamond separate them. Palettes 1–4 are the colour-blind sets and stay behind that row. Those four stay apart under simulated deuteranopia, protanopia, and tritanopia (pairwise distance at least 0.35) and each clears 3:1 contrast against grass, mulch, concrete, sand, metal, and wood on Mega Park, Pocket Park, and Stack Yard.
 
-Color is not the only channel. Name plates use a shape per seat: circle, square, capsule, diamond, with ● ■ ▲ ◆. The It marker draws a star plus the letters IT.
+The It marker draws a star plus the letters IT.
 
 In a split, the Player row chooses which seat those four rows edit. P1’s palette tints the shared world plates, hat, and tag-back glow. Each viewport’s verb HUD, name chip, and It chip use that seat’s palette.
 

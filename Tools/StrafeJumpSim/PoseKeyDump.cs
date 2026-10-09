@@ -30,6 +30,31 @@ static class PoseKeyDump
         Idle(w, c);
         Loco(w, c, "loco", LocoFeel.Walk);
         Loco(w, c, "sprint", LocoFeel.Sprint);
+        Exits(w, c);
+    }
+
+    static void Exits(TextWriter w, CultureInfo c)
+    {
+        for (int k = 0; k < VerbExitClock.Catalog.Length; k++)
+        {
+            VerbExitId id = VerbExitClock.Catalog[k];
+            float dur = VerbExitClock.Duration(id);
+            int n = Frames(dur);
+            for (int i = 0; i <= n; i++)
+            {
+                float t = i * Dt;
+                if (t > dur) t = dur;
+                float u = dur > 0.0001f ? t / dur : 1f;
+                if (u > 1f) u = 1f;
+                VerbExitSample s = VerbExitClips.At(id, u, 1f, false, false);
+                Emit(w, c, "exit-" + id, t,
+                    s.ThighL, s.ThighR, s.KneeL, s.KneeR, s.ThighYawL, s.ThighYawR,
+                    s.ArmPitchL, s.ArmPitchR, s.ArmYawL, s.ArmYawR, s.ArmRollL, s.ArmRollR,
+                    s.ElbowL, s.ElbowR, s.Hip, s.Spine, s.Head, s.HipRoll, s.HipYaw, s.SpineYaw,
+                    s.FootL, s.FootR, 0f, 0f, 0f, 0f, s.ThighRollL, s.ThighRollR, s.Drop);
+                if (t >= dur) break;
+            }
+        }
     }
 
     static void Vault(TextWriter w, CultureInfo c)
@@ -60,7 +85,7 @@ static class PoseKeyDump
             if (t > dur) t = dur;
             float phase = Mathf.Sin(rate * t);
             WallPose.Sample s = WallPose.Climb(phase, WallPose.ClimbSpeedRef);
-            Emit(w, c, "climb", t, s.ThighL, s.ThighR, s.KneeL, s.KneeR, 0f, 0f,
+            Emit(w, c, "climb", t, s.ThighL, s.ThighR, s.KneeL, s.KneeR, s.ThighYawL, s.ThighYawR,
                 s.ArmPitchL, s.ArmPitchR, s.ArmYawL, s.ArmYawR, 0f, 0f,
                 s.ElbowL, s.ElbowR, s.Hip, s.Spine, s.Head, s.LeanZ, 0f, 0f, s.FootL, s.FootR, 0f);
             if (t >= dur) break;
@@ -109,15 +134,15 @@ static class PoseKeyDump
             if (t <= cycle)
             {
                 WallPose.Sample s = WallPose.RunCycle(rate * t, true);
-                Emit(w, c, "wall", t, s.ThighL, s.ThighR, s.KneeL, s.KneeR, 0f, 0f,
+                Emit(w, c, "wall", t, s.ThighL, s.ThighR, s.KneeL, s.KneeR, s.ThighYawL, s.ThighYawR,
                     s.ArmPitchL, s.ArmPitchR, s.ArmYawL, s.ArmYawR, 0f, 0f,
                     s.ElbowL, s.ElbowR, s.Hip, s.Spine, s.Head, s.LeanZ, 0f, 0f, s.FootL, s.FootR, 0f);
             }
             else
             {
                 WallJumpPose.Sample s = WallJumpPose.At(t - cycle, 8f, true, WallPose.WallRunSpeedRef);
-                Emit(w, c, "wall", t, s.ThighL, s.ThighR, s.KneeL, s.KneeR, 0f, 0f,
-                    s.ArmPitchL, s.ArmPitchR, s.ArmYawL, s.ArmYawR, 0f, 0f,
+                Emit(w, c, "wall", t, s.ThighL, s.ThighR, s.KneeL, s.KneeR, s.ThighYawL, s.ThighYawR,
+                    s.ArmPitchL, s.ArmPitchR, s.ArmYawL, s.ArmYawR, s.ArmRollL, s.ArmRollR,
                     s.ElbowL, s.ElbowR, s.Hip, s.Spine, s.Head, s.LeanZ, 0f, 0f, 0f, 0f, 0f);
             }
             if (t >= dur) break;
@@ -202,7 +227,7 @@ static class PoseKeyDump
             }
             Emit(w, c, "zip", t, s.ThighL, s.ThighR, s.KneeL, s.KneeR, 0f, 0f,
                 s.ArmPitchL, s.ArmPitchR, s.ArmYawL, s.ArmYawR, 0f, 0f,
-                s.ElbowL, s.ElbowR, s.Hip, s.Spine, s.Head, s.LeanZ, 0f, 0f, 0f, 0f, 0f);
+                s.ElbowL, s.ElbowR, s.Hip, s.Spine, s.Head, s.LeanZ, 0f, 0f, s.FootL, s.FootR, 0f);
             if (t >= dur) break;
         }
     }
@@ -225,6 +250,8 @@ static class PoseKeyDump
             Spine = Mathf.Lerp(a.Spine, b.Spine, u),
             Head = Mathf.Lerp(a.Head, b.Head, u),
             LeanZ = Mathf.Lerp(a.LeanZ, b.LeanZ, u),
+            FootL = Mathf.Lerp(a.FootL, b.FootL, u),
+            FootR = Mathf.Lerp(a.FootR, b.FootR, u),
         };
     }
 
@@ -383,8 +410,9 @@ static class PoseKeyDump
             float phase = rate * t;
             GaitBlend.Legs legs = GaitBlend.At(phase, speed);
             float sin = Mathf.Sin(phase);
-            Emit(w, c, name, t, legs.ThighL, legs.ThighR, legs.KneeL, legs.KneeR, 0f, 0f,
-                LocoFeel.ArmPitch(-sin, speed), LocoFeel.ArmPitch(sin, speed), 8f, -8f, 0f, 0f,
+            Emit(w, c, name, t, legs.ThighL, legs.ThighR, legs.KneeL, legs.KneeR,
+                -LocoFeel.ThighSpread, LocoFeel.ThighSpread,
+                LocoFeel.ArmPitch(-sin, speed), LocoFeel.ArmPitch(sin, speed), 0f, 0f, 0f, 0f,
                 -16f, -20f,
                 0f, LocoFeel.CruiseTarget(speed), -LocoFeel.CruiseTarget(speed) * 0.35f, 0f, 0f, 0f,
                 legs.FootL, legs.FootR, 0f);

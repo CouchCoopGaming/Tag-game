@@ -1,0 +1,770 @@
+clip	t	class	loaded	side	gapCm	hip	spine	backCm	hinge	fails	poseCm	posePair
+vault	0.000	hand	1	L	0.38	18.0	8.0	2.3	2.25		0.39	Mesh_Spine|Mesh_UpperLeg_R
+vault	0.033	hand	0	R	6.40	22.2	8.0	6.0	2.77		0.34	Mesh_Spine|Mesh_UpperLeg_R
+vault	0.067	hand	0	R	18.16	26.1	8.0	2.9	3.26		0.38	Mesh_Spine|Mesh_UpperLeg_L
+vault	0.100	hand	0	R	25.09	26.9	8.0	0.4	3.36		0.36	Mesh_Spine|Mesh_UpperLeg_R
+vault	0.133	hand	0	R	33.56	27.7	8.0	-4.2	3.47		0.00	
+vault	0.167	hand	0	R	34.97	27.2	8.0	-5.5	3.40		0.00	
+vault	0.200	hand	0	R	32.63	26.0	8.0	-4.7	3.25		0.00	
+vault	0.233	hand	0	R	30.42	24.8	8.0	-3.9	3.10		0.01	Mesh_Spine|Mesh_UpperLeg_R
+vault	0.267	hand	0	R	23.13	23.7	8.0	1.6	2.96		0.32	Mesh_Spine|Mesh_UpperLeg_R
+vault	0.300	hand	0	R	9.07	22.8	8.0	7.3	2.85		0.35	Mesh_Spine|Mesh_UpperLeg_L
+vault	0.333	hand	0	R	2.31	21.7	8.0	1.3	2.72		0.36	Mesh_Spine|Mesh_UpperLeg_L
+vault	0.367	hand	0	R	2.48	20.1	8.0	1.0	2.51		0.42	Mesh_Spine|Mesh_UpperLeg_R
+vault	0.400	hand	1	L	0.06	20.0	8.0	1.5	2.50		0.36	Mesh_Spine|Mesh_UpperLeg_R
+climb	0.000	cruise	0	L	27.76	8.0	14.0	24.1	0.57		0.41	Mesh_Spine|Mesh_UpperLeg_L
+climb	0.033	cruise	0	L	20.30	8.0	14.0	22.3	0.57		0.41	Mesh_Spine|Mesh_UpperLeg_R
+climb	0.067	cruise	0	L	19.31	8.0	14.0	22.0	0.57		0.39	Mesh_Chest|Mesh_UpperLeg_R
+climb	0.100	cruise	0	L	19.31	8.0	14.0	22.0	0.57		0.39	Mesh_Chest|Mesh_UpperLeg_R
+climb	0.133	cruise	0	L	19.31	8.0	14.0	22.0	0.57		0.39	Mesh_Chest|Mesh_UpperLeg_R
+climb	0.167	cruise	0	L	23.91	8.0	14.0	23.3	0.57		0.42	Mesh_Chest|Mesh_UpperLeg_R
+climb	0.200	cruise	0	L	27.76	8.0	14.0	24.1	0.57		0.41	Mesh_Spine|Mesh_UpperLeg_L
+climb	0.233	cruise	0	R	19.31	8.0	14.0	22.0	0.57		0.39	Mesh_Chest|Mesh_UpperLeg_L
+climb	0.267	cruise	0	R	19.31	8.0	14.0	22.0	0.57		0.39	Mesh_Chest|Mesh_UpperLeg_L
+climb	0.300	cruise	0	R	19.31	8.0	14.0	22.0	0.57		0.39	Mesh_Chest|Mesh_UpperLeg_L
+climb	0.333	cruise	0	R	19.31	8.0	14.0	22.0	0.57		0.39	Mesh_Chest|Mesh_UpperLeg_L
+climb	0.367	cruise	0	R	27.43	8.0	14.0	24.0	0.57		0.41	Mesh_Spine|Mesh_UpperLeg_L
+slide	0.000	slide	0	L	15.09	6.0	8.0	58.7	0.75		0.43	Mesh_Spine|Mesh_UpperLeg_L
+slide	0.033	slide	0	L	9.32	-1.3	2.3	58.5	0.55		0.35	Mesh_Spine|Mesh_UpperLeg_L
+slide	0.067	slide	0	L	4.65	-14.7	-8.3	63.6	1.78		0.42	Mesh_Spine|Mesh_UpperLeg_L
+slide	0.100	slide	1	L	0.00	-22.0	-14.0	70.5	1.57	hip-22<30,spine-14<10	0.41	Mesh_Spine|Mesh_UpperLeg_R
+slide	0.133	slide	1	L	0.00	-22.0	-14.0	70.5	1.57	hip-22<30,spine-14<10	0.41	Mesh_Spine|Mesh_UpperLeg_R
+slide	0.167	slide	1	L	0.00	-22.0	-14.0	70.5	1.57	hip-22<30,spine-14<10	0.41	Mesh_Spine|Mesh_UpperLeg_R
+slide	0.200	slide	1	L	0.00	-22.0	-14.0	70.5	1.57	hip-22<30,spine-14<10	0.41	Mesh_Spine|Mesh_UpperLeg_R
+slide	0.233	slide	1	L	0.00	-22.0	-14.0	70.5	1.57	hip-22<30,spine-14<10	0.41	Mesh_Spine|Mesh_UpperLeg_R
+slide	0.267	slide	1	L	0.00	-22.0	-14.0	70.5	1.57	hip-22<30,spine-14<10	0.41	Mesh_Spine|Mesh_UpperLeg_R
+slide	0.300	slide	1	L	0.00	-22.0	-14.0	70.5	1.57	hip-22<30,spine-14<10	0.41	Mesh_Spine|Mesh_UpperLeg_R
+slide	0.333	slide	0	L	4.65	-14.7	-8.3	63.6	1.78		0.42	Mesh_Spine|Mesh_UpperLeg_L
+slide	0.367	slide	0	L	9.32	-1.3	2.3	58.5	0.55		0.35	Mesh_Spine|Mesh_UpperLeg_L
+slide	0.400	slide	0	L	15.09	6.0	8.0	58.7	0.75		0.43	Mesh_Spine|Mesh_UpperLeg_L
+wall	0.000	cruise	0	R	11.46	6.0	12.0	-18.6	0.50		0.15	Mesh_Spine|Mesh_UpperLeg_R
+wall	0.033	cruise	0	L	8.20	6.0	12.0	-16.3	0.50		0.23	Mesh_Spine|Mesh_UpperLeg_R
+wall	0.067	cruise	0	L	11.29	6.0	12.0	58.3	0.50		0.34	Mesh_Spine|Mesh_UpperLeg_L
+wall	0.100	cruise	0	L	-0.31	6.0	12.0	21.5	0.50		0.31	Mesh_Foot_L|Ground
+wall	0.133	cruise	0	L	7.30	6.0	12.0	-38.4	0.50		0.38	Mesh_Spine|Mesh_UpperLeg_R
+wall	0.167	cruise	0	L	23.00	6.0	12.0	-63.2	0.50		0.42	Mesh_Spine|Mesh_UpperLeg_R
+wall	0.200	cruise	0	R	32.44	6.0	12.0	48.6	0.50		0.41	Mesh_Spine|Mesh_UpperLeg_R
+wall	0.233	cruise	0	R	11.67	6.0	12.0	-7.2	0.50		0.17	Mesh_Spine|Mesh_UpperLeg_L
+wall	0.267	cruise	0	L	15.06	-10.0	-22.0	30.3	0.45		0.35	Mesh_Chest|Mesh_UpperLeg_R
+wall	0.300	cruise	0	L	15.06	-10.0	-22.0	30.3	0.45		0.35	Mesh_Chest|Mesh_UpperLeg_R
+wall	0.333	cruise	0	L	15.06	-10.0	-22.0	30.3	0.45		0.35	Mesh_Chest|Mesh_UpperLeg_R
+wall	0.367	cruise	0	L	15.06	-10.0	-22.0	30.3	0.45		0.35	Mesh_Chest|Mesh_UpperLeg_R
+wall	0.400	cruise	0	L	15.22	-9.2	-21.6	29.4	0.43		0.35	Mesh_Chest|Mesh_UpperLeg_R
+wall	0.433	cruise	0	L	18.67	-2.1	-17.4	19.9	0.12		0.39	Mesh_Spine|Mesh_UpperLeg_R
+wall	0.467	cruise	0	L	28.91	7.7	-11.7	8.0	0.66		0.36	Mesh_Spine|Mesh_UpperLeg_L
+wall	0.500	cruise	0	R	34.25	13.8	-8.1	-0.3	1.69		0.43	Mesh_Spine|Mesh_UpperLeg_R
+roll	0.000	roll	0	L	58.95	50.0	22.0	-32.8	2.27		0.41	Mesh_Chest|Mesh_UpperLeg_L
+roll	0.033	roll	0	R	45.46	46.5	20.0	-36.6	2.33		0.41	Mesh_Spine|Mesh_UpperLeg_R
+roll	0.067	roll	0	R	32.70	42.2	18.3	-40.4	2.30		0.43	Mesh_Spine|Mesh_UpperLeg_L
+roll	0.100	roll	0	R	29.62	41.8	17.5	-45.0	2.38		0.43	Mesh_Spine|Mesh_UpperLeg_L
+roll	0.133	roll	0	R	35.66	44.1	17.8	-49.0	2.47		0.34	Mesh_Spine|Mesh_UpperLeg_L
+roll	0.167	roll	0	R	37.85	44.0	17.9	-48.8	2.45		0.35	Mesh_Spine|Mesh_UpperLeg_L
+roll	0.200	roll	0	R	27.22	39.1	17.2	-44.4	2.27		0.38	Mesh_Spine|Mesh_UpperLeg_L
+roll	0.233	roll	0	R	10.94	33.4	16.6	-32.5	2.01		0.43	Mesh_Spine|Mesh_UpperLeg_L
+roll	0.267	roll	0	R	3.78	27.0	12.1	-2.2	2.24		0.40	Mesh_Spine|Mesh_UpperLeg_L
+roll	0.300	roll	0	R	9.14	19.7	9.7	33.5	2.04		0.40	Mesh_Spine|Mesh_UpperLeg_R
+roll	0.323	roll	0	L	14.24	14.0	8.0	54.6	1.75		0.42	Mesh_Spine|Mesh_UpperLeg_R
+pad	0.000	cruise	0	R	6.65	6.0	-4.0	14.1	1.50		0.37	Mesh_Spine|Mesh_UpperLeg_R
+pad	0.033	cruise	0	R	6.65	6.0	-4.0	14.1	1.50		0.37	Mesh_Spine|Mesh_UpperLeg_R
+pad	0.067	cruise	0	R	6.65	6.0	-4.0	14.1	1.50		0.37	Mesh_Spine|Mesh_UpperLeg_R
+pad	0.100	cruise	0	R	6.65	6.0	-4.0	14.1	1.50		0.37	Mesh_Spine|Mesh_UpperLeg_R
+pad	0.133	cruise	0	R	6.65	6.0	-4.0	14.1	1.50		0.37	Mesh_Spine|Mesh_UpperLeg_R
+pad	0.167	cruise	0	R	6.65	6.0	-4.0	14.1	1.50		0.37	Mesh_Spine|Mesh_UpperLeg_R
+pad	0.200	cruise	0	R	6.65	6.0	-4.0	14.1	1.50		0.37	Mesh_Spine|Mesh_UpperLeg_R
+pad	0.233	cruise	0	R	6.65	6.0	-4.0	14.1	1.50		0.37	Mesh_Spine|Mesh_UpperLeg_R
+pad	0.267	cruise	0	R	6.65	6.0	-4.0	14.1	1.50		0.37	Mesh_Spine|Mesh_UpperLeg_R
+pad	0.300	cruise	0	R	6.65	6.0	-4.0	14.1	1.50		0.37	Mesh_Spine|Mesh_UpperLeg_R
+pad	0.333	cruise	0	R	6.65	6.0	-4.0	14.1	1.50		0.37	Mesh_Spine|Mesh_UpperLeg_R
+pad	0.367	cruise	0	R	6.65	6.0	-4.0	14.1	1.50		0.37	Mesh_Spine|Mesh_UpperLeg_R
+pad	0.400	cruise	0	R	6.65	6.0	-4.0	14.1	1.50		0.37	Mesh_Spine|Mesh_UpperLeg_R
+pad	0.433	cruise	0	R	6.65	6.0	-4.0	14.1	1.50		0.37	Mesh_Spine|Mesh_UpperLeg_R
+pad	0.467	cruise	0	R	6.65	6.0	-4.0	14.1	1.50		0.37	Mesh_Spine|Mesh_UpperLeg_R
+pad	0.500	cruise	0	R	6.65	6.0	-4.0	14.1	1.50		0.37	Mesh_Spine|Mesh_UpperLeg_R
+pad	0.533	cruise	0	R	6.65	6.0	-4.0	14.1	1.50		0.37	Mesh_Spine|Mesh_UpperLeg_R
+pad	0.567	cruise	0	R	6.65	6.0	-4.0	14.1	1.50		0.37	Mesh_Spine|Mesh_UpperLeg_R
+pad	0.600	cruise	0	R	6.65	6.0	-4.0	14.1	1.50		0.37	Mesh_Spine|Mesh_UpperLeg_R
+pad	0.633	cruise	0	R	6.65	6.0	-4.0	14.1	1.50		0.37	Mesh_Spine|Mesh_UpperLeg_R
+pad	0.667	cruise	0	R	6.65	6.0	-4.0	14.1	1.50		0.37	Mesh_Spine|Mesh_UpperLeg_R
+pad	0.700	cruise	0	R	6.99	6.1	-4.1	14.3	1.46		0.42	Mesh_Spine|Mesh_UpperLeg_R
+pad	0.733	cruise	0	R	8.05	6.2	-4.6	15.0	1.37		0.43	Mesh_Spine|Mesh_UpperLeg_R
+pad	0.767	cruise	0	R	9.86	6.5	-5.2	16.0	1.25		0.68	Mesh_Spine|Mesh_UpperLeg_L
+pad	0.800	cruise	0	R	12.46	6.8	-6.0	17.2	1.13		0.79	Mesh_Spine|Mesh_UpperLeg_L
+pad	0.833	cruise	0	R	15.85	7.2	-7.0	18.3	1.03		1.07	Mesh_Hand_L|Mesh_Hand_R
+pad	0.867	cruise	0	R	19.93	7.6	-8.1	19.3	0.95		1.68	Mesh_Hand_L|Mesh_Hand_R
+pad	0.900	cruise	0	R	24.59	8.1	-9.2	20.0	0.88		3.10	Mesh_Hand_L|Mesh_Hand_R
+pad	0.933	cruise	0	R	29.64	8.5	-10.2	20.4	0.83		2.87	Mesh_Spine|Mesh_UpperLeg_L
+pad	0.967	cruise	0	R	34.77	8.9	-11.3	20.4	0.79		3.31	Mesh_Spine|Mesh_UpperLeg_L
+pad	1.000	cruise	0	R	39.66	9.3	-12.2	20.1	0.76		3.68	Mesh_Spine|Mesh_UpperLeg_L
+pad	1.033	cruise	0	R	43.94	9.6	-13.0	19.6	0.74		3.96	Mesh_Spine|Mesh_UpperLeg_L
+pad	1.067	cruise	0	R	47.23	9.8	-13.6	19.1	0.72		4.16	Mesh_Spine|Mesh_UpperLeg_L
+pad	1.100	cruise	0	R	49.20	10.0	-13.9	18.8	0.72		4.27	Mesh_Spine|Mesh_UpperLeg_L
+pad	1.133	cruise	0	R	49.47	10.0	-14.0	18.7	0.71		4.28	Mesh_Spine|Mesh_UpperLeg_L
+pad	1.167	cruise	0	R	44.77	9.6	-13.1	19.3	0.73		3.99	Mesh_Spine|Mesh_UpperLeg_L
+pad	1.200	cruise	0	R	35.20	8.7	-11.3	19.6	0.77		3.26	Mesh_Spine|Mesh_UpperLeg_L
+pad	1.233	cruise	0	R	23.56	7.4	-8.8	18.3	0.84		1.81	Mesh_Spine|Mesh_UpperLeg_L
+pad	1.267	cruise	0	R	12.78	6.0	-6.0	14.6	1.00		1.76	Mesh_Chest|Mesh_UpperArm_R
+pad	1.300	cruise	0	R	4.97	4.6	-3.2	9.2	1.43		2.22	Mesh_Chest|Mesh_UpperArm_L
+pad	1.333	cruise	0	R	1.01	3.4	-0.8	3.3	0.00		3.69	Mesh_Chest|Mesh_UpperArm_R
+pad	1.367	cruise	0	R	-0.03	2.5	1.1	-1.5	2.26		3.95	Mesh_Chest|Mesh_UpperArm_L
+pad	1.400	cruise	0	L	-0.05	2.0	2.0	-3.8	1.02		3.49	Mesh_Chest|Mesh_UpperArm_R
+pad	1.433	cruise	0	L	-0.05	2.0	2.0	-3.9	1.00		3.42	Mesh_Chest|Mesh_UpperArm_R
+pad	1.467	cruise	0	L	-0.05	2.0	2.0	-3.9	1.00		3.42	Mesh_Chest|Mesh_UpperArm_R
+pad	1.500	cruise	0	L	-0.05	2.0	2.0	-3.9	1.00		3.42	Mesh_Chest|Mesh_UpperArm_R
+pad	1.533	cruise	0	L	-0.05	2.0	2.0	-3.9	1.00		3.42	Mesh_Chest|Mesh_UpperArm_R
+pad	1.567	cruise	0	L	-0.05	2.0	2.0	-3.9	1.00		3.42	Mesh_Chest|Mesh_UpperArm_R
+pad	1.600	cruise	0	L	-0.05	2.0	2.0	-3.9	1.00		3.42	Mesh_Chest|Mesh_UpperArm_R
+zip	0.000	cruise	0	R	13.53	8.0	6.0	-59.2	1.33		0.18	Mesh_Spine|Mesh_UpperLeg_L
+zip	0.033	cruise	0	R	11.78	7.4	5.6	-55.7	1.33		0.17	Mesh_Spine|Mesh_UpperLeg_L
+zip	0.067	cruise	0	R	7.45	5.9	4.4	-45.2	1.33		0.10	Mesh_Spine|Mesh_UpperLeg_L
+zip	0.100	cruise	0	R	3.24	3.5	2.6	-28.5	1.33		0.00	
+zip	0.133	cruise	0	R	0.46	0.6	0.4	-7.4	0.00		0.00	
+zip	0.167	cruise	0	R	0.40	-2.4	-1.8	14.5	1.33		0.15	Mesh_Spine|Mesh_UpperLeg_L
+zip	0.200	cruise	0	R	3.97	-5.0	-3.7	33.3	1.33		0.21	Mesh_Spine|Mesh_UpperLeg_L
+zip	0.233	cruise	0	R	8.88	-6.9	-5.2	46.5	1.33		0.37	Mesh_Spine|Mesh_UpperLeg_L
+zip	0.267	cruise	0	R	12.06	-7.9	-5.9	52.9	1.33		0.42	Mesh_Spine|Mesh_UpperLeg_R
+zip	0.300	cruise	0	R	12.37	-8.0	-6.0	53.4	1.33		0.41	Mesh_Spine|Mesh_UpperLeg_R
+zip	0.333	cruise	0	R	12.37	-8.0	-6.0	53.4	1.33		0.41	Mesh_Spine|Mesh_UpperLeg_R
+zip	0.367	cruise	0	R	12.37	-8.0	-6.0	53.4	1.33		0.41	Mesh_Spine|Mesh_UpperLeg_R
+zip	0.400	cruise	0	R	12.37	-8.0	-6.0	53.4	1.33		0.41	Mesh_Spine|Mesh_UpperLeg_R
+zip	0.433	cruise	0	R	10.18	-6.9	-6.2	49.2	1.11		0.37	Mesh_Spine|Mesh_UpperLeg_R
+zip	0.467	cruise	0	R	8.20	-5.8	-6.4	44.8	0.91		0.39	Mesh_Spine|Mesh_UpperLeg_L
+zip	0.500	cruise	0	R	6.44	-4.7	-6.6	40.3	0.71		0.29	Mesh_Spine|Mesh_UpperLeg_R
+zip	0.533	cruise	0	R	4.91	-3.6	-6.7	35.7	0.53		0.29	Mesh_Spine|Mesh_UpperLeg_L
+zip	0.567	cruise	0	R	3.61	-2.4	-6.9	31.0	0.35		0.17	Mesh_Spine|Mesh_UpperLeg_R
+zip	0.600	cruise	0	R	2.54	-1.3	-7.1	26.3	0.19		0.19	Mesh_Spine|Mesh_UpperLeg_R
+zip	0.633	cruise	0	R	1.70	-0.2	-7.3	21.5	0.03		0.19	Mesh_Spine|Mesh_UpperLeg_R
+zip	0.667	cruise	0	R	1.10	0.9	-7.5	16.7	0.12		0.20	Mesh_Spine|Mesh_UpperLeg_R
+zip	0.700	cruise	0	R	0.71	2.0	-7.7	11.8	0.26		0.20	Mesh_Spine|Mesh_UpperLeg_R
+zip	0.733	cruise	0	R	0.50	3.1	-7.9	6.9	0.40		0.15	Mesh_Spine|Mesh_UpperLeg_L
+zip	0.760	cruise	0	L	0.50	4.0	-8.0	2.9	0.50		0.16	Mesh_Spine|Mesh_UpperLeg_R
+grapple	0.000	cruise	0	L	0.26	-12.0	10.0	-2.8	1.20		0.22	Mesh_Spine|Mesh_UpperLeg_R
+grapple	0.033	cruise	0	L	0.26	-12.0	10.0	-2.8	1.20		0.22	Mesh_Spine|Mesh_UpperLeg_R
+grapple	0.067	cruise	0	L	0.26	-12.0	10.0	-2.8	1.20		0.22	Mesh_Spine|Mesh_UpperLeg_R
+grapple	0.100	cruise	0	L	0.26	-12.0	10.0	-2.8	1.20		0.22	Mesh_Spine|Mesh_UpperLeg_R
+grapple	0.133	cruise	0	L	0.26	-12.0	10.0	-2.8	1.20		0.22	Mesh_Spine|Mesh_UpperLeg_R
+grapple	0.167	cruise	0	L	0.26	-12.0	10.0	-2.8	1.20		0.22	Mesh_Spine|Mesh_UpperLeg_R
+grapple	0.200	cruise	0	L	0.26	-12.0	10.0	-2.8	1.20		0.22	Mesh_Spine|Mesh_UpperLeg_R
+grapple	0.233	cruise	0	L	0.26	-12.0	10.0	-2.8	1.20		0.22	Mesh_Spine|Mesh_UpperLeg_R
+grapple	0.267	cruise	0	L	0.26	-12.0	10.0	-2.8	1.20		0.22	Mesh_Spine|Mesh_UpperLeg_R
+grapple	0.300	cruise	0	L	0.26	-12.0	10.0	-2.8	1.20		0.22	Mesh_Spine|Mesh_UpperLeg_R
+grapple	0.333	cruise	0	L	0.26	-12.0	10.0	-2.8	1.20		0.22	Mesh_Spine|Mesh_UpperLeg_R
+grapple	0.367	cruise	0	L	0.26	-12.0	10.0	-2.8	1.20		0.22	Mesh_Spine|Mesh_UpperLeg_R
+grapple	0.400	cruise	0	L	0.26	-12.0	10.0	-2.8	1.20		0.22	Mesh_Spine|Mesh_UpperLeg_R
+grapple	0.433	cruise	0	L	0.26	-12.0	10.0	-2.8	1.20		0.22	Mesh_Spine|Mesh_UpperLeg_R
+grapple	0.467	cruise	0	L	0.26	-12.0	10.0	-2.8	1.20		0.22	Mesh_Spine|Mesh_UpperLeg_R
+grapple	0.500	cruise	0	L	0.26	-12.0	10.0	-2.8	1.20		0.22	Mesh_Spine|Mesh_UpperLeg_R
+grapple	0.533	cruise	0	L	0.26	-12.0	10.0	-2.8	1.20		0.22	Mesh_Spine|Mesh_UpperLeg_R
+grapple	0.567	cruise	0	L	0.26	-12.0	10.0	-2.8	1.20		0.22	Mesh_Spine|Mesh_UpperLeg_R
+grapple	0.600	cruise	0	L	0.26	-12.0	10.0	-2.8	1.20		0.22	Mesh_Spine|Mesh_UpperLeg_R
+grapple	0.633	cruise	0	L	0.26	-12.0	10.0	-2.8	1.20		0.22	Mesh_Spine|Mesh_UpperLeg_R
+grapple	0.667	cruise	0	L	0.26	-12.0	10.0	-2.8	1.20		0.22	Mesh_Spine|Mesh_UpperLeg_R
+grapple	0.690	cruise	0	L	0.26	-12.0	10.0	-2.8	1.20		0.22	Mesh_Spine|Mesh_UpperLeg_R
+punch	0.000	cruise	0	L	-0.40	10.0	6.0	-10.7	1.67		4.97	Mesh_Chest|Mesh_UpperArm_R
+punch	0.033	cruise	0	L	-0.40	10.0	6.0	-10.3	1.67		5.02	Mesh_Chest|Mesh_UpperArm_R
+punch	0.067	cruise	0	L	-0.38	10.0	6.0	-9.0	1.67		5.09	Mesh_Chest|Mesh_UpperArm_R
+punch	0.100	cruise	0	L	-0.32	10.0	6.0	-7.1	1.67		4.89	Mesh_Chest|Mesh_UpperArm_R
+punch	0.133	cruise	0	L	-0.18	10.0	6.0	-4.7	1.67		3.97	Mesh_Chest|Mesh_UpperArm_R
+punch	0.167	cruise	0	L	0.06	10.0	6.0	-2.0	1.67		2.96	Mesh_Chest|Mesh_UpperArm_R
+punch	0.200	cruise	0	L	0.30	10.0	6.0	0.8	1.67		1.93	Mesh_Chest|Mesh_UpperArm_R
+punch	0.233	cruise	0	L	0.58	10.0	6.0	3.5	1.67		0.95	Mesh_Chest|Mesh_UpperArm_R
+punch	0.267	cruise	0	L	0.70	10.0	6.0	5.9	1.67		0.17	Mesh_Spine|Mesh_UpperLeg_L
+punch	0.300	cruise	0	L	0.65	10.0	6.0	7.9	1.67		0.36	Mesh_Spine|Mesh_UpperLeg_L
+punch	0.333	cruise	0	L	0.65	10.0	6.0	9.3	1.67		0.23	Mesh_Spine|Mesh_UpperLeg_L
+punch	0.367	cruise	0	L	0.65	10.0	6.0	9.9	1.67		0.17	Mesh_Spine|Mesh_UpperLeg_L
+tag	0.000	cruise	0	R	1.03	2.0	4.0	-6.9	0.50		0.16	Mesh_Spine|Mesh_UpperLeg_R
+tag	0.033	cruise	0	L	1.04	2.1	4.2	-7.1	0.49		0.18	Mesh_Spine|Mesh_UpperLeg_R
+tag	0.067	cruise	0	L	1.09	2.2	4.7	-7.7	0.47		0.20	Mesh_Spine|Mesh_UpperLeg_R
+tag	0.100	cruise	0	L	1.18	2.5	5.5	-8.7	0.45		0.16	Mesh_Spine|Mesh_UpperLeg_L
+tag	0.133	cruise	0	L	1.24	2.8	6.5	-9.9	0.44		0.18	Mesh_Spine|Mesh_UpperLeg_R
+tag	0.167	cruise	0	L	1.37	3.2	7.7	-11.3	0.42		0.38	Mesh_Spine|Mesh_UpperLeg_R
+tag	0.200	cruise	0	L	1.59	3.7	9.0	-12.8	0.41		0.38	Mesh_Spine|Mesh_UpperLeg_R
+tag	0.233	cruise	0	L	1.90	4.1	10.3	-14.3	0.40		0.38	Mesh_Spine|Mesh_UpperLeg_R
+tag	0.267	cruise	0	L	2.29	4.5	11.6	-15.8	0.39		0.39	Mesh_Spine|Mesh_UpperLeg_R
+tag	0.300	cruise	0	L	2.73	5.0	12.9	-17.1	0.39		0.32	Mesh_Spine|Mesh_UpperLeg_R
+tag	0.333	cruise	0	L	3.18	5.3	14.0	-18.3	0.38		0.36	Mesh_Spine|Mesh_UpperLeg_R
+tag	0.367	cruise	0	L	3.60	5.6	14.9	-19.3	0.38		0.32	Mesh_Spine|Mesh_UpperLeg_R
+tag	0.400	cruise	0	L	3.92	5.9	15.6	-20.0	0.38		0.42	Mesh_Spine|Mesh_UpperLeg_R
+tag	0.433	cruise	0	L	4.09	6.0	16.0	-20.4	0.38		0.39	Mesh_Spine|Mesh_UpperLeg_R
+stagger	0.000	cruise	0	L	0.00	-0.0	-0.0	-2.1	0.00		0.00	
+stagger	0.033	cruise	0	R	-0.71	-13.3	-11.9	-5.8	1.12		0.95	Mesh_Chest|Mesh_UpperArm_R
+stagger	0.067	cruise	0	R	-1.08	-18.0	-16.0	-7.0	1.12		1.08	Mesh_Foot_R|Ground
+stagger	0.100	cruise	0	R	-1.08	-18.0	-16.0	-7.0	1.12		1.08	Mesh_Foot_R|Ground
+stagger	0.133	cruise	0	R	-1.08	-18.0	-16.0	-7.0	1.12		1.08	Mesh_Foot_R|Ground
+stagger	0.167	cruise	0	R	-1.06	-17.7	-15.8	-7.0	1.12		1.06	Mesh_Foot_R|Ground
+stagger	0.200	cruise	0	R	-0.48	-10.5	-9.3	-5.0	1.12		0.48	Mesh_Foot_R|Ground
+stagger	0.233	cruise	0	L	-0.12	-1.6	-1.4	4.4	1.12		0.12	Mesh_Foot_L|Ground
+idle	0.000	cruise	0	L	0.12	0.0	0.0	-5.6	0.00		0.09	Mesh_Chest|Mesh_UpperArm_R
+idle	0.033	cruise	0	R	0.10	0.0	0.1	-5.6	0.00		0.09	Mesh_Chest|Mesh_UpperArm_R
+idle	0.067	cruise	0	R	0.08	0.0	0.2	-5.6	0.00		0.09	Mesh_Chest|Mesh_UpperArm_R
+idle	0.100	cruise	0	R	0.07	0.0	0.2	-5.6	0.00		0.09	Mesh_Chest|Mesh_UpperArm_R
+idle	0.133	cruise	0	R	0.05	0.0	0.3	-5.6	0.00		0.09	Mesh_Chest|Mesh_UpperArm_R
+idle	0.167	cruise	0	R	0.03	0.0	0.4	-5.6	0.00		0.09	Mesh_Chest|Mesh_UpperArm_R
+idle	0.200	cruise	0	R	0.02	0.0	0.5	-5.6	0.00		0.09	Mesh_Chest|Mesh_UpperArm_R
+idle	0.233	cruise	0	R	0.00	0.0	0.6	-5.6	0.00		0.09	Mesh_Chest|Mesh_UpperArm_R
+idle	0.267	cruise	0	R	-0.01	0.0	0.6	-5.6	0.00		0.09	Mesh_Chest|Mesh_UpperArm_R
+idle	0.300	cruise	0	R	-0.03	0.0	0.7	-5.6	0.00		0.09	Mesh_Chest|Mesh_UpperArm_R
+idle	0.333	cruise	0	R	-0.04	0.0	0.8	-5.6	0.00		0.09	Mesh_Chest|Mesh_UpperArm_R
+idle	0.367	cruise	0	R	-0.06	0.0	0.9	-5.6	0.00		0.09	Mesh_Chest|Mesh_UpperArm_R
+idle	0.400	cruise	0	R	-0.07	0.0	0.9	-5.6	0.00		0.09	Mesh_Chest|Mesh_UpperArm_R
+idle	0.433	cruise	0	R	-0.09	0.0	1.0	-5.6	0.00		0.09	Mesh_Chest|Mesh_UpperArm_R
+idle	0.467	cruise	0	R	-0.10	0.0	1.1	-5.6	0.00		0.10	Mesh_Foot_R|Ground
+idle	0.500	cruise	0	R	-0.12	0.0	1.1	-5.6	0.00		0.12	Mesh_Foot_R|Ground
+idle	0.533	cruise	0	R	-0.13	0.0	1.2	-5.6	0.00		0.13	Mesh_Foot_R|Ground
+idle	0.567	cruise	0	R	-0.14	0.0	1.2	-5.6	0.00		0.14	Mesh_Foot_R|Ground
+idle	0.600	cruise	0	R	-0.16	0.0	1.3	-5.6	0.00		0.16	Mesh_Foot_R|Ground
+idle	0.633	cruise	0	R	-0.17	0.0	1.3	-5.6	0.00		0.17	Mesh_Foot_R|Ground
+idle	0.667	cruise	0	R	-0.18	0.0	1.4	-5.6	0.00		0.18	Mesh_Foot_R|Ground
+idle	0.700	cruise	0	R	-0.19	0.0	1.4	-5.6	0.00		0.19	Mesh_Foot_R|Ground
+idle	0.733	cruise	0	R	-0.20	0.0	1.5	-5.6	0.00		0.20	Mesh_Foot_R|Ground
+idle	0.767	cruise	0	R	-0.22	0.0	1.5	-5.6	0.00		0.22	Mesh_Foot_R|Ground
+idle	0.800	cruise	0	R	-0.23	0.0	1.5	-5.6	0.00		0.23	Mesh_Foot_R|Ground
+idle	0.833	cruise	0	R	-0.24	0.0	1.5	-5.6	0.00		0.24	Mesh_Foot_R|Ground
+idle	0.867	cruise	0	R	-0.25	0.0	1.6	-5.6	0.00		0.25	Mesh_Foot_R|Ground
+idle	0.900	cruise	0	R	-0.26	0.0	1.6	-5.6	0.00		0.26	Mesh_Foot_R|Ground
+idle	0.933	cruise	0	R	-0.27	0.0	1.6	-5.6	0.00		0.27	Mesh_Foot_R|Ground
+idle	0.967	cruise	0	R	-0.28	0.0	1.6	-5.6	0.00		0.28	Mesh_Foot_R|Ground
+idle	1.000	cruise	0	R	-0.29	0.0	1.6	-5.6	0.00		0.29	Mesh_Foot_R|Ground
+idle	1.033	cruise	0	R	-0.30	0.0	1.6	-5.6	0.00		0.30	Mesh_Foot_R|Ground
+idle	1.067	cruise	0	R	-0.31	0.0	1.6	-5.6	0.00		0.31	Mesh_Foot_R|Ground
+idle	1.100	cruise	0	R	-0.31	0.0	1.6	-5.6	0.00		0.31	Mesh_Foot_R|Ground
+idle	1.133	cruise	0	R	-0.32	0.0	1.6	-5.6	0.00		0.32	Mesh_Foot_R|Ground
+idle	1.167	cruise	0	R	-0.33	0.0	1.6	-5.6	0.00		0.33	Mesh_Foot_R|Ground
+idle	1.200	cruise	0	R	-0.34	0.0	1.5	-5.6	0.00		0.34	Mesh_Foot_R|Ground
+idle	1.233	cruise	0	R	-0.34	0.0	1.5	-5.6	0.00		0.34	Mesh_Foot_R|Ground
+idle	1.267	cruise	0	R	-0.35	0.0	1.5	-5.6	0.00		0.35	Mesh_Foot_R|Ground
+idle	1.300	cruise	0	R	-0.36	0.0	1.4	-5.6	0.00		0.36	Mesh_Foot_R|Ground
+idle	1.333	cruise	0	R	-0.36	0.0	1.4	-5.6	0.00		0.36	Mesh_Foot_R|Ground
+idle	1.367	cruise	0	R	-0.37	0.0	1.4	-5.6	0.00		0.37	Mesh_Foot_R|Ground
+idle	1.400	cruise	0	R	-0.38	0.0	1.3	-5.6	0.00		0.38	Mesh_Foot_R|Ground
+idle	1.433	cruise	0	R	-0.38	0.0	1.3	-5.6	0.00		0.38	Mesh_Foot_R|Ground
+idle	1.467	cruise	0	R	-0.39	0.0	1.2	-5.6	0.00		0.39	Mesh_Foot_R|Ground
+idle	1.500	cruise	0	R	-0.39	0.0	1.2	-5.6	0.00		0.39	Mesh_Foot_R|Ground
+idle	1.533	cruise	0	R	-0.40	0.0	1.1	-5.6	0.00		0.40	Mesh_Foot_R|Ground
+idle	1.567	cruise	0	R	-0.40	0.0	1.0	-5.6	0.00		0.40	Mesh_Foot_R|Ground
+idle	1.600	cruise	0	R	-0.41	0.0	1.0	-5.6	0.00		0.41	Mesh_Foot_R|Ground
+idle	1.633	cruise	0	R	-0.41	0.0	0.9	-5.6	0.00		0.41	Mesh_Foot_R|Ground
+idle	1.667	cruise	0	R	-0.41	0.0	0.8	-5.6	0.00		0.41	Mesh_Foot_R|Ground
+idle	1.700	cruise	0	R	-0.42	0.0	0.8	-5.6	0.00		0.42	Mesh_Foot_R|Ground
+idle	1.733	cruise	0	R	-0.42	0.0	0.7	-5.6	0.00		0.42	Mesh_Foot_R|Ground
+idle	1.767	cruise	0	R	-0.42	0.0	0.6	-5.6	0.00		0.42	Mesh_Foot_R|Ground
+idle	1.800	cruise	0	R	-0.43	0.0	0.6	-5.6	0.00		0.43	Mesh_Foot_R|Ground
+idle	1.833	cruise	0	R	-0.43	0.0	0.5	-5.6	0.00		0.43	Mesh_Foot_R|Ground
+idle	1.867	cruise	0	R	-0.43	0.0	0.4	-5.6	0.00		0.43	Mesh_Foot_R|Ground
+idle	1.900	cruise	0	R	-0.43	0.0	0.3	-5.6	0.00		0.43	Mesh_Foot_R|Ground
+idle	1.933	cruise	0	R	-0.44	0.0	0.2	-5.6	0.00		0.44	Mesh_Foot_R|Ground
+idle	1.967	cruise	0	R	-0.44	0.0	0.1	-5.6	0.00		0.44	Mesh_Foot_R|Ground
+idle	2.000	cruise	0	R	-0.44	0.0	0.1	-5.6	0.00		0.44	Mesh_Foot_R|Ground
+idle	2.033	cruise	0	R	-0.44	0.0	-0.0	-5.6	0.00		0.44	Mesh_Foot_R|Ground
+idle	2.067	cruise	0	R	-0.44	0.0	-0.1	-5.6	0.00		0.44	Mesh_Foot_R|Ground
+idle	2.100	cruise	0	R	-0.44	0.0	-0.2	-5.6	0.00		0.44	Mesh_Foot_R|Ground
+idle	2.133	cruise	0	R	-0.44	0.0	-0.3	-5.6	0.00		0.44	Mesh_Foot_R|Ground
+idle	2.167	cruise	0	R	-0.44	0.0	-0.3	-5.6	0.00		0.44	Mesh_Foot_R|Ground
+idle	2.200	cruise	0	R	-0.44	0.0	-0.4	-5.6	0.00		0.44	Mesh_Foot_R|Ground
+idle	2.233	cruise	0	R	-0.44	0.0	-0.5	-5.6	0.00		0.44	Mesh_Foot_R|Ground
+idle	2.267	cruise	0	R	-0.44	0.0	-0.6	-5.6	0.00		0.44	Mesh_Foot_R|Ground
+idle	2.300	cruise	0	R	-0.44	0.0	-0.7	-5.6	0.00		0.44	Mesh_Foot_R|Ground
+idle	2.333	cruise	0	R	-0.44	0.0	-0.7	-5.6	0.00		0.44	Mesh_Foot_R|Ground
+idle	2.367	cruise	0	R	-0.44	0.0	-0.8	-5.6	0.00		0.44	Mesh_Foot_R|Ground
+idle	2.400	cruise	0	R	-0.44	0.0	-0.9	-5.6	0.00		0.44	Mesh_Foot_R|Ground
+idle	2.433	cruise	0	R	-0.44	0.0	-0.9	-5.6	0.00		0.44	Mesh_Foot_R|Ground
+idle	2.467	cruise	0	R	-0.43	0.0	-1.0	-5.6	0.00		0.43	Mesh_Foot_R|Ground
+idle	2.500	cruise	0	R	-0.43	0.0	-1.1	-5.6	0.00		0.43	Mesh_Foot_R|Ground
+idle	2.533	cruise	0	R	-0.43	0.0	-1.1	-5.6	0.00		0.43	Mesh_Foot_R|Ground
+idle	2.567	cruise	0	R	-0.43	0.0	-1.2	-5.6	0.00		0.43	Mesh_Foot_R|Ground
+idle	2.600	cruise	0	R	-0.42	0.0	-1.2	-5.6	0.00		0.42	Mesh_Foot_R|Ground
+idle	2.633	cruise	0	R	-0.42	0.0	-1.3	-5.6	0.00		0.42	Mesh_Foot_R|Ground
+idle	2.667	cruise	0	R	-0.42	0.0	-1.3	-5.6	0.00		0.42	Mesh_Foot_R|Ground
+idle	2.700	cruise	0	R	-0.41	0.0	-1.4	-5.6	0.00		0.41	Mesh_Foot_R|Ground
+idle	2.733	cruise	0	R	-0.41	0.0	-1.4	-5.6	0.00		0.41	Mesh_Foot_R|Ground
+idle	2.767	cruise	0	R	-0.41	0.0	-1.5	-5.6	0.00		0.41	Mesh_Foot_R|Ground
+idle	2.800	cruise	0	R	-0.40	0.0	-1.5	-5.6	0.00		0.40	Mesh_Foot_R|Ground
+idle	2.833	cruise	0	R	-0.40	0.0	-1.5	-5.6	0.00		0.40	Mesh_Foot_R|Ground
+idle	2.867	cruise	0	R	-0.39	0.0	-1.5	-5.6	0.00		0.39	Mesh_Foot_R|Ground
+idle	2.900	cruise	0	R	-0.39	0.0	-1.6	-5.6	0.00		0.39	Mesh_Foot_R|Ground
+idle	2.933	cruise	0	R	-0.38	0.0	-1.6	-5.6	0.00		0.38	Mesh_Foot_R|Ground
+idle	2.967	cruise	0	R	-0.38	0.0	-1.6	-5.6	0.00		0.38	Mesh_Foot_R|Ground
+idle	3.000	cruise	0	R	-0.37	0.0	-1.6	-5.6	0.00		0.37	Mesh_Foot_R|Ground
+idle	3.033	cruise	0	R	-0.36	0.0	-1.6	-5.6	0.00		0.36	Mesh_Foot_R|Ground
+idle	3.067	cruise	0	R	-0.36	0.0	-1.6	-5.6	0.00		0.36	Mesh_Foot_R|Ground
+idle	3.100	cruise	0	R	-0.35	0.0	-1.6	-5.6	0.00		0.35	Mesh_Foot_R|Ground
+idle	3.133	cruise	0	R	-0.34	0.0	-1.6	-5.6	0.00		0.34	Mesh_Foot_R|Ground
+idle	3.167	cruise	0	R	-0.34	0.0	-1.6	-5.6	0.00		0.34	Mesh_Foot_R|Ground
+idle	3.200	cruise	0	R	-0.33	0.0	-1.6	-5.6	0.00		0.33	Mesh_Foot_R|Ground
+idle	3.233	cruise	0	R	-0.32	0.0	-1.5	-5.6	0.00		0.32	Mesh_Foot_R|Ground
+idle	3.267	cruise	0	R	-0.31	0.0	-1.5	-5.6	0.00		0.31	Mesh_Foot_R|Ground
+idle	3.300	cruise	0	R	-0.30	0.0	-1.5	-5.6	0.00		0.30	Mesh_Foot_R|Ground
+idle	3.333	cruise	0	R	-0.30	0.0	-1.4	-5.6	0.00		0.30	Mesh_Foot_R|Ground
+idle	3.367	cruise	0	R	-0.29	0.0	-1.4	-5.6	0.00		0.29	Mesh_Foot_R|Ground
+idle	3.400	cruise	0	R	-0.28	0.0	-1.4	-5.6	0.00		0.28	Mesh_Foot_R|Ground
+idle	3.433	cruise	0	R	-0.27	0.0	-1.3	-5.6	0.00		0.27	Mesh_Foot_R|Ground
+idle	3.467	cruise	0	R	-0.26	0.0	-1.3	-5.6	0.00		0.26	Mesh_Foot_R|Ground
+idle	3.500	cruise	0	R	-0.25	0.0	-1.2	-5.6	0.00		0.25	Mesh_Foot_R|Ground
+idle	3.533	cruise	0	R	-0.24	0.0	-1.2	-5.6	0.00		0.24	Mesh_Foot_R|Ground
+idle	3.567	cruise	0	R	-0.23	0.0	-1.1	-5.6	0.00		0.23	Mesh_Foot_R|Ground
+idle	3.600	cruise	0	R	-0.21	0.0	-1.0	-5.6	0.00		0.21	Mesh_Foot_R|Ground
+idle	3.633	cruise	0	R	-0.20	0.0	-1.0	-5.6	0.00		0.20	Mesh_Foot_R|Ground
+idle	3.667	cruise	0	R	-0.19	0.0	-0.9	-5.6	0.00		0.19	Mesh_Foot_R|Ground
+idle	3.700	cruise	0	R	-0.18	0.0	-0.8	-5.6	0.00		0.18	Mesh_Foot_R|Ground
+idle	3.733	cruise	0	R	-0.17	0.0	-0.8	-5.6	0.00		0.17	Mesh_Foot_R|Ground
+idle	3.767	cruise	0	R	-0.15	0.0	-0.7	-5.6	0.00		0.15	Mesh_Foot_R|Ground
+idle	3.800	cruise	0	R	-0.14	0.0	-0.6	-5.6	0.00		0.14	Mesh_Foot_R|Ground
+idle	3.833	cruise	0	R	-0.13	0.0	-0.5	-5.6	0.00		0.13	Mesh_Foot_R|Ground
+idle	3.867	cruise	0	R	-0.11	0.0	-0.5	-5.6	0.00		0.11	Mesh_Foot_R|Ground
+idle	3.900	cruise	0	R	-0.10	0.0	-0.4	-5.6	0.00		0.10	Mesh_Foot_R|Ground
+idle	3.933	cruise	0	R	-0.09	0.0	-0.3	-5.6	0.00		0.09	Mesh_Chest|Mesh_UpperArm_R
+idle	3.967	cruise	0	R	-0.07	0.0	-0.2	-5.6	0.00		0.09	Mesh_Chest|Mesh_UpperArm_R
+idle	4.000	cruise	0	R	-0.06	0.0	-0.1	-5.6	0.00		0.09	Mesh_Chest|Mesh_UpperArm_R
+idle	4.033	cruise	0	R	-0.04	0.0	-0.1	-5.6	0.00		0.09	Mesh_Chest|Mesh_UpperArm_R
+idle	4.067	cruise	0	R	-0.03	0.0	0.0	-5.6	0.00		0.09	Mesh_Chest|Mesh_UpperArm_R
+idle	4.100	cruise	0	R	-0.01	0.0	0.1	-5.6	0.00		0.09	Mesh_Chest|Mesh_UpperArm_R
+idle	4.133	cruise	0	R	0.00	0.0	0.2	-5.6	0.00		0.09	Mesh_Chest|Mesh_UpperArm_R
+idle	4.167	cruise	0	R	0.02	0.0	0.3	-5.6	0.00		0.09	Mesh_Chest|Mesh_UpperArm_R
+idle	4.200	cruise	0	R	0.04	0.0	0.4	-5.6	0.00		0.09	Mesh_Chest|Mesh_UpperArm_R
+idle	4.233	cruise	0	R	0.05	0.0	0.4	-5.6	0.00		0.09	Mesh_Chest|Mesh_UpperArm_R
+idle	4.267	cruise	0	R	0.07	0.0	0.5	-5.6	0.00		0.09	Mesh_Chest|Mesh_UpperArm_R
+idle	4.300	cruise	0	R	0.09	0.0	0.6	-5.6	0.00		0.09	Mesh_Chest|Mesh_UpperArm_R
+idle	4.333	cruise	0	R	0.10	0.0	0.7	-5.6	0.00		0.09	Mesh_Chest|Mesh_UpperArm_R
+idle	4.367	cruise	0	L	0.12	0.0	0.7	-5.6	0.00		0.09	Mesh_Chest|Mesh_UpperArm_R
+idle	4.400	cruise	0	L	0.10	0.0	0.8	-5.6	0.00		0.09	Mesh_Chest|Mesh_UpperArm_R
+idle	4.433	cruise	0	L	0.08	0.0	0.9	-5.6	0.00		0.09	Mesh_Chest|Mesh_UpperArm_R
+idle	4.467	cruise	0	L	0.07	0.0	1.0	-5.6	0.00		0.09	Mesh_Chest|Mesh_UpperArm_R
+idle	4.500	cruise	0	L	0.05	0.0	1.0	-5.6	0.00		0.09	Mesh_Chest|Mesh_UpperArm_R
+idle	4.533	cruise	0	L	0.03	0.0	1.1	-5.6	0.00		0.09	Mesh_Chest|Mesh_UpperArm_R
+idle	4.567	cruise	0	L	0.02	0.0	1.1	-5.6	0.00		0.09	Mesh_Chest|Mesh_UpperArm_R
+idle	4.600	cruise	0	L	0.00	0.0	1.2	-5.6	0.00		0.09	Mesh_Chest|Mesh_UpperArm_R
+idle	4.633	cruise	0	L	-0.01	0.0	1.3	-5.6	0.00		0.09	Mesh_Chest|Mesh_UpperArm_R
+idle	4.667	cruise	0	L	-0.03	0.0	1.3	-5.6	0.00		0.09	Mesh_Chest|Mesh_UpperArm_R
+idle	4.700	cruise	0	L	-0.05	0.0	1.3	-5.6	0.00		0.09	Mesh_Chest|Mesh_UpperArm_R
+idle	4.733	cruise	0	L	-0.06	0.0	1.4	-5.6	0.00		0.09	Mesh_Chest|Mesh_UpperArm_R
+idle	4.767	cruise	0	L	-0.08	0.0	1.4	-5.6	0.00		0.09	Mesh_Chest|Mesh_UpperArm_R
+idle	4.800	cruise	0	L	-0.09	0.0	1.5	-5.6	0.00		0.09	Mesh_Chest|Mesh_UpperArm_R
+idle	4.833	cruise	0	L	-0.10	0.0	1.5	-5.6	0.00		0.10	Mesh_Foot_L|Ground
+idle	4.867	cruise	0	L	-0.12	0.0	1.5	-5.6	0.00		0.12	Mesh_Foot_L|Ground
+idle	4.900	cruise	0	L	-0.13	0.0	1.5	-5.6	0.00		0.13	Mesh_Foot_L|Ground
+idle	4.933	cruise	0	L	-0.14	0.0	1.6	-5.6	0.00		0.14	Mesh_Foot_L|Ground
+idle	4.967	cruise	0	L	-0.16	0.0	1.6	-5.6	0.00		0.16	Mesh_Foot_L|Ground
+idle	5.000	cruise	0	L	-0.17	0.0	1.6	-5.6	0.00		0.17	Mesh_Foot_L|Ground
+idle	5.033	cruise	0	L	-0.18	0.0	1.6	-5.6	0.00		0.18	Mesh_Foot_L|Ground
+idle	5.067	cruise	0	L	-0.19	0.0	1.6	-5.6	0.00		0.19	Mesh_Foot_L|Ground
+idle	5.100	cruise	0	L	-0.21	0.0	1.6	-5.6	0.00		0.21	Mesh_Foot_L|Ground
+idle	5.133	cruise	0	L	-0.22	0.0	1.6	-5.6	0.00		0.22	Mesh_Foot_L|Ground
+idle	5.167	cruise	0	L	-0.23	0.0	1.6	-5.6	0.00		0.23	Mesh_Foot_L|Ground
+idle	5.200	cruise	0	L	-0.24	0.0	1.6	-5.6	0.00		0.24	Mesh_Foot_L|Ground
+idle	5.233	cruise	0	L	-0.25	0.0	1.5	-5.6	0.00		0.25	Mesh_Foot_L|Ground
+idle	5.267	cruise	0	L	-0.26	0.0	1.5	-5.6	0.00		0.26	Mesh_Foot_L|Ground
+idle	5.300	cruise	0	L	-0.27	0.0	1.5	-5.6	0.00		0.27	Mesh_Foot_L|Ground
+idle	5.333	cruise	0	L	-0.28	0.0	1.5	-5.6	0.00		0.28	Mesh_Foot_L|Ground
+idle	5.367	cruise	0	L	-0.29	0.0	1.4	-5.6	0.00		0.29	Mesh_Foot_L|Ground
+idle	5.400	cruise	0	L	-0.30	0.0	1.4	-5.6	0.00		0.30	Mesh_Foot_L|Ground
+idle	5.433	cruise	0	L	-0.31	0.0	1.3	-5.6	0.00		0.31	Mesh_Foot_L|Ground
+idle	5.467	cruise	0	L	-0.31	0.0	1.3	-5.6	0.00		0.31	Mesh_Foot_L|Ground
+idle	5.500	cruise	0	L	-0.32	0.0	1.3	-5.6	0.00		0.32	Mesh_Foot_L|Ground
+idle	5.533	cruise	0	L	-0.33	0.0	1.2	-5.6	0.00		0.33	Mesh_Foot_L|Ground
+idle	5.567	cruise	0	L	-0.34	0.0	1.1	-5.6	0.00		0.34	Mesh_Foot_L|Ground
+idle	5.600	cruise	0	L	-0.35	0.0	1.1	-5.6	0.00		0.35	Mesh_Foot_L|Ground
+idle	5.633	cruise	0	L	-0.35	0.0	1.0	-5.6	0.00		0.35	Mesh_Foot_L|Ground
+idle	5.667	cruise	0	L	-0.36	0.0	1.0	-5.6	0.00		0.36	Mesh_Foot_L|Ground
+idle	5.700	cruise	0	L	-0.37	0.0	0.9	-5.6	0.00		0.37	Mesh_Foot_L|Ground
+idle	5.733	cruise	0	L	-0.37	0.0	0.8	-5.6	0.00		0.37	Mesh_Foot_L|Ground
+idle	5.767	cruise	0	L	-0.38	0.0	0.7	-5.6	0.00		0.38	Mesh_Foot_L|Ground
+idle	5.800	cruise	0	L	-0.38	0.0	0.7	-5.6	0.00		0.38	Mesh_Foot_L|Ground
+idle	5.833	cruise	0	L	-0.39	0.0	0.6	-5.6	0.00		0.39	Mesh_Foot_L|Ground
+idle	5.867	cruise	0	L	-0.39	0.0	0.5	-5.6	0.00		0.39	Mesh_Foot_L|Ground
+idle	5.900	cruise	0	L	-0.40	0.0	0.4	-5.6	0.00		0.40	Mesh_Foot_L|Ground
+idle	5.933	cruise	0	L	-0.40	0.0	0.4	-5.6	0.00		0.40	Mesh_Foot_L|Ground
+idle	5.967	cruise	0	L	-0.41	0.0	0.3	-5.6	0.00		0.41	Mesh_Foot_L|Ground
+idle	6.000	cruise	0	L	-0.41	0.0	0.2	-5.6	0.00		0.41	Mesh_Foot_L|Ground
+idle	6.033	cruise	0	L	-0.41	0.0	0.1	-5.6	0.00		0.41	Mesh_Foot_L|Ground
+idle	6.067	cruise	0	L	-0.42	0.0	0.0	-5.6	0.00		0.42	Mesh_Foot_L|Ground
+idle	6.100	cruise	0	L	-0.42	0.0	-0.0	-5.6	0.00		0.42	Mesh_Foot_L|Ground
+idle	6.133	cruise	0	L	-0.42	0.0	-0.1	-5.6	0.00		0.42	Mesh_Foot_L|Ground
+idle	6.167	cruise	0	L	-0.43	0.0	-0.2	-5.6	0.00		0.43	Mesh_Foot_L|Ground
+idle	6.200	cruise	0	L	-0.43	0.0	-0.3	-5.6	0.00		0.43	Mesh_Foot_L|Ground
+idle	6.233	cruise	0	L	-0.43	0.0	-0.4	-5.6	0.00		0.43	Mesh_Foot_L|Ground
+idle	6.267	cruise	0	L	-0.43	0.0	-0.5	-5.6	0.00		0.43	Mesh_Foot_L|Ground
+idle	6.300	cruise	0	L	-0.44	0.0	-0.5	-5.6	0.00		0.44	Mesh_Foot_L|Ground
+idle	6.333	cruise	0	L	-0.44	0.0	-0.6	-5.6	0.00		0.44	Mesh_Foot_L|Ground
+idle	6.367	cruise	0	L	-0.44	0.0	-0.7	-5.6	0.00		0.44	Mesh_Foot_L|Ground
+idle	6.400	cruise	0	L	-0.44	0.0	-0.8	-5.6	0.00		0.44	Mesh_Foot_L|Ground
+idle	6.433	cruise	0	L	-0.44	0.0	-0.8	-5.6	0.00		0.44	Mesh_Foot_L|Ground
+idle	6.467	cruise	0	L	-0.44	0.0	-0.9	-5.6	0.00		0.44	Mesh_Foot_L|Ground
+idle	6.500	cruise	0	L	-0.44	0.0	-1.0	-5.6	0.00		0.44	Mesh_Foot_L|Ground
+idle	6.533	cruise	0	L	-0.44	0.0	-1.0	-5.6	0.00		0.44	Mesh_Foot_L|Ground
+idle	6.567	cruise	0	L	-0.44	0.0	-1.1	-5.6	0.00		0.44	Mesh_Foot_L|Ground
+idle	6.600	cruise	0	L	-0.44	0.0	-1.2	-5.6	0.00		0.44	Mesh_Foot_L|Ground
+idle	6.633	cruise	0	L	-0.44	0.0	-1.2	-5.6	0.00		0.44	Mesh_Foot_L|Ground
+idle	6.667	cruise	0	L	-0.44	0.0	-1.3	-5.6	0.00		0.44	Mesh_Foot_L|Ground
+idle	6.700	cruise	0	L	-0.44	0.0	-1.3	-5.6	0.00		0.44	Mesh_Foot_L|Ground
+idle	6.733	cruise	0	L	-0.44	0.0	-1.4	-5.6	0.00		0.44	Mesh_Foot_L|Ground
+idle	6.767	cruise	0	L	-0.44	0.0	-1.4	-5.6	0.00		0.44	Mesh_Foot_L|Ground
+idle	6.800	cruise	0	L	-0.44	0.0	-1.4	-5.6	0.00		0.44	Mesh_Foot_L|Ground
+idle	6.833	cruise	0	L	-0.43	0.0	-1.5	-5.6	0.00		0.43	Mesh_Foot_L|Ground
+idle	6.867	cruise	0	L	-0.43	0.0	-1.5	-5.6	0.00		0.43	Mesh_Foot_L|Ground
+idle	6.900	cruise	0	L	-0.43	0.0	-1.5	-5.6	0.00		0.43	Mesh_Foot_L|Ground
+idle	6.933	cruise	0	L	-0.43	0.0	-1.6	-5.6	0.00		0.43	Mesh_Foot_L|Ground
+idle	6.967	cruise	0	L	-0.42	0.0	-1.6	-5.6	0.00		0.42	Mesh_Foot_L|Ground
+idle	7.000	cruise	0	L	-0.42	0.0	-1.6	-5.6	0.00		0.42	Mesh_Foot_L|Ground
+idle	7.033	cruise	0	L	-0.42	0.0	-1.6	-5.6	0.00		0.42	Mesh_Foot_L|Ground
+idle	7.067	cruise	0	L	-0.41	0.0	-1.6	-5.6	0.00		0.41	Mesh_Foot_L|Ground
+idle	7.100	cruise	0	L	-0.41	0.0	-1.6	-5.6	0.00		0.41	Mesh_Foot_L|Ground
+idle	7.133	cruise	0	L	-0.41	0.0	-1.6	-5.6	0.00		0.41	Mesh_Foot_L|Ground
+idle	7.167	cruise	0	L	-0.40	0.0	-1.6	-5.6	0.00		0.40	Mesh_Foot_L|Ground
+idle	7.200	cruise	0	L	-0.40	0.0	-1.6	-5.6	0.00		0.40	Mesh_Foot_L|Ground
+idle	7.233	cruise	0	L	-0.39	0.0	-1.6	-5.6	0.00		0.39	Mesh_Foot_L|Ground
+idle	7.267	cruise	0	L	-0.39	0.0	-1.5	-5.6	0.00		0.39	Mesh_Foot_L|Ground
+idle	7.300	cruise	0	L	-0.38	0.0	-1.5	-5.6	0.00		0.38	Mesh_Foot_L|Ground
+idle	7.333	cruise	0	L	-0.38	0.0	-1.5	-5.6	0.00		0.38	Mesh_Foot_L|Ground
+idle	7.367	cruise	0	L	-0.37	0.0	-1.5	-5.6	0.00		0.37	Mesh_Foot_L|Ground
+idle	7.400	cruise	0	L	-0.36	0.0	-1.4	-5.6	0.00		0.36	Mesh_Foot_L|Ground
+idle	7.433	cruise	0	L	-0.36	0.0	-1.4	-5.6	0.00		0.36	Mesh_Foot_L|Ground
+idle	7.467	cruise	0	L	-0.35	0.0	-1.3	-5.6	0.00		0.35	Mesh_Foot_L|Ground
+idle	7.500	cruise	0	L	-0.34	0.0	-1.3	-5.6	0.00		0.34	Mesh_Foot_L|Ground
+idle	7.533	cruise	0	L	-0.34	0.0	-1.2	-5.6	0.00		0.34	Mesh_Foot_L|Ground
+idle	7.567	cruise	0	L	-0.33	0.0	-1.2	-5.6	0.00		0.33	Mesh_Foot_L|Ground
+idle	7.600	cruise	0	L	-0.32	0.0	-1.1	-5.6	0.00		0.32	Mesh_Foot_L|Ground
+idle	7.633	cruise	0	L	-0.31	0.0	-1.1	-5.6	0.00		0.31	Mesh_Foot_L|Ground
+idle	7.667	cruise	0	L	-0.30	0.0	-1.0	-5.6	0.00		0.30	Mesh_Foot_L|Ground
+idle	7.700	cruise	0	L	-0.30	0.0	-0.9	-5.6	0.00		0.30	Mesh_Foot_L|Ground
+idle	7.733	cruise	0	L	-0.29	0.0	-0.9	-5.6	0.00		0.29	Mesh_Foot_L|Ground
+idle	7.767	cruise	0	L	-0.28	0.0	-0.8	-5.6	0.00		0.28	Mesh_Foot_L|Ground
+idle	7.800	cruise	0	L	-0.27	0.0	-0.7	-5.6	0.00		0.27	Mesh_Foot_L|Ground
+idle	7.833	cruise	0	L	-0.26	0.0	-0.7	-5.6	0.00		0.26	Mesh_Foot_L|Ground
+idle	7.867	cruise	0	L	-0.25	0.0	-0.6	-5.6	0.00		0.25	Mesh_Foot_L|Ground
+idle	7.900	cruise	0	L	-0.24	0.0	-0.5	-5.6	0.00		0.24	Mesh_Foot_L|Ground
+idle	7.933	cruise	0	L	-0.23	0.0	-0.4	-5.6	0.00		0.23	Mesh_Foot_L|Ground
+idle	7.967	cruise	0	L	-0.21	0.0	-0.3	-5.6	0.00		0.21	Mesh_Foot_L|Ground
+idle	8.000	cruise	0	L	-0.20	0.0	-0.3	-5.6	0.00		0.20	Mesh_Foot_L|Ground
+idle	8.033	cruise	0	L	-0.19	0.0	-0.2	-5.6	0.00		0.19	Mesh_Foot_L|Ground
+idle	8.067	cruise	0	L	-0.18	0.0	-0.1	-5.6	0.00		0.18	Mesh_Foot_L|Ground
+idle	8.100	cruise	0	L	-0.17	0.0	-0.0	-5.6	0.00		0.17	Mesh_Foot_L|Ground
+idle	8.133	cruise	0	L	-0.15	0.0	0.1	-5.6	0.00		0.15	Mesh_Foot_L|Ground
+idle	8.167	cruise	0	L	-0.14	0.0	0.1	-5.6	0.00		0.14	Mesh_Foot_L|Ground
+idle	8.200	cruise	0	L	-0.13	0.0	0.2	-5.6	0.00		0.13	Mesh_Foot_L|Ground
+idle	8.233	cruise	0	L	-0.11	0.0	0.3	-5.6	0.00		0.11	Mesh_Foot_L|Ground
+idle	8.267	cruise	0	L	-0.10	0.0	0.4	-5.6	0.00		0.10	Mesh_Foot_L|Ground
+idle	8.300	cruise	0	L	-0.09	0.0	0.5	-5.6	0.00		0.09	Mesh_Chest|Mesh_UpperArm_R
+idle	8.333	cruise	0	L	-0.07	0.0	0.5	-5.6	0.00		0.09	Mesh_Chest|Mesh_UpperArm_R
+idle	8.367	cruise	0	L	-0.06	0.0	0.6	-5.6	0.00		0.09	Mesh_Chest|Mesh_UpperArm_R
+idle	8.400	cruise	0	L	-0.04	0.0	0.7	-5.6	0.00		0.09	Mesh_Chest|Mesh_UpperArm_R
+idle	8.433	cruise	0	L	-0.03	0.0	0.8	-5.6	0.00		0.09	Mesh_Chest|Mesh_UpperArm_R
+idle	8.467	cruise	0	L	-0.01	0.0	0.8	-5.6	0.00		0.09	Mesh_Chest|Mesh_UpperArm_R
+idle	8.500	cruise	0	L	0.01	0.0	0.9	-5.6	0.00		0.09	Mesh_Chest|Mesh_UpperArm_R
+idle	8.533	cruise	0	L	0.02	0.0	1.0	-5.6	0.00		0.09	Mesh_Chest|Mesh_UpperArm_R
+idle	8.567	cruise	0	L	0.04	0.0	1.0	-5.6	0.00		0.09	Mesh_Chest|Mesh_UpperArm_R
+idle	8.600	cruise	0	L	0.05	0.0	1.1	-5.6	0.00		0.09	Mesh_Chest|Mesh_UpperArm_R
+idle	8.633	cruise	0	L	0.07	0.0	1.2	-5.6	0.00		0.09	Mesh_Chest|Mesh_UpperArm_R
+idle	8.667	cruise	0	L	0.09	0.0	1.2	-5.6	0.00		0.09	Mesh_Chest|Mesh_UpperArm_R
+idle	8.700	cruise	0	L	0.11	0.0	1.3	-5.6	0.00		0.09	Mesh_Chest|Mesh_UpperArm_R
+idle	8.727	cruise	0	L	0.12	0.0	1.3	-5.6	0.00		0.09	Mesh_Chest|Mesh_UpperArm_R
+loco	0.000	cruise	0	R	0.17	0.0	0.0	-6.3	0.00		0.00	
+loco	0.033	cruise	0	R	6.66	0.0	0.0	-36.6	0.00		0.19	Mesh_Spine|Mesh_UpperLeg_L
+loco	0.067	cruise	0	R	13.71	0.0	0.0	-51.4	0.00		0.39	Mesh_Spine|Mesh_UpperLeg_L
+loco	0.100	cruise	0	L	17.95	0.0	0.0	57.7	0.00		0.38	Mesh_Spine|Mesh_UpperLeg_L
+loco	0.133	cruise	0	L	1.92	0.0	0.0	19.5	0.00		0.28	Mesh_Chest|Mesh_UpperArm_R
+loco	0.167	cruise	0	L	2.62	0.0	0.0	-23.3	0.00		0.29	Mesh_Chest|Mesh_UpperArm_L
+loco	0.200	cruise	0	R	10.28	0.0	0.0	26.8	0.00		0.37	Mesh_Spine|Mesh_UpperLeg_R
+loco	0.233	cruise	0	L	14.21	0.0	0.0	-65.2	0.00		0.41	Mesh_Spine|Mesh_UpperLeg_R
+loco	0.267	cruise	0	R	8.85	0.0	0.0	41.4	0.00		0.22	Mesh_Spine|Mesh_UpperLeg_R
+loco	0.299	cruise	0	R	0.17	0.0	0.0	-6.3	0.00		0.00	
+sprint	0.000	cruise	0	R	0.17	0.0	6.5	-6.3	0.00		0.00	
+sprint	0.033	cruise	0	L	10.02	0.0	6.5	8.8	0.00		0.34	Mesh_Spine|Mesh_UpperLeg_L
+sprint	0.067	cruise	0	R	18.08	0.0	6.5	-70.6	0.00		0.40	Mesh_Spine|Mesh_UpperLeg_L
+sprint	0.100	cruise	0	L	5.77	0.0	6.5	33.7	0.00		0.18	Mesh_Spine|Mesh_UpperLeg_L
+sprint	0.133	cruise	0	L	3.41	0.0	6.5	-26.5	0.00		0.32	Mesh_Spine|Mesh_UpperLeg_R
+sprint	0.167	cruise	0	L	15.70	0.0	6.5	-54.7	0.00		0.39	Mesh_Spine|Mesh_UpperLeg_R
+sprint	0.200	cruise	0	R	20.28	0.0	6.5	61.0	0.00		0.41	Mesh_Spine|Mesh_UpperLeg_R
+sprint	0.233	cruise	0	R	0.02	0.0	6.5	2.3	0.00		0.11	Mesh_Spine|Mesh_UpperLeg_R
+exit-WallRun	0.000	landing	1	R	0.06	32.0	12.0	15.3	2.67		0.41	Mesh_Chest|Mesh_UpperLeg_R
+exit-WallRun	0.033	landing	1	R	0.06	32.0	12.0	15.3	2.67		0.41	Mesh_Chest|Mesh_UpperLeg_R
+exit-WallRun	0.067	landing	1	R	0.06	32.0	12.0	15.3	2.67		0.41	Mesh_Chest|Mesh_UpperLeg_R
+exit-WallRun	0.100	landing	1	R	0.06	32.0	12.0	15.3	2.67		0.41	Mesh_Chest|Mesh_UpperLeg_R
+exit-WallRun	0.133	landing	1	R	0.06	32.0	12.0	15.3	2.67		0.41	Mesh_Chest|Mesh_UpperLeg_R
+exit-WallRun	0.167	landing	1	R	0.06	32.0	12.0	15.3	2.67		0.41	Mesh_Chest|Mesh_UpperLeg_L
+exit-WallRun	0.200	landing	1	R	0.06	32.0	12.0	15.3	2.67		0.41	Mesh_Chest|Mesh_UpperLeg_R
+exit-WallRun	0.233	landing	1	R	0.06	32.0	12.0	15.3	2.67		0.41	Mesh_Chest|Mesh_UpperLeg_R
+exit-WallRun	0.267	landing	1	R	0.06	32.0	12.0	15.3	2.67		0.41	Mesh_Chest|Mesh_UpperLeg_R
+exit-WallJump	0.000	cruise	0	R	4.94	8.0	6.0	10.9	1.33		0.42	Mesh_Spine|Mesh_UpperLeg_L
+exit-WallJump	0.033	cruise	0	R	4.67	8.1	6.1	10.1	1.33		0.37	Mesh_Spine|Mesh_UpperLeg_L
+exit-WallJump	0.067	cruise	0	R	3.98	8.5	6.5	7.9	1.31		0.42	Mesh_Spine|Mesh_UpperLeg_L
+exit-WallJump	0.100	cruise	0	R	3.09	9.0	7.0	4.6	1.28		0.35	Mesh_Spine|Mesh_UpperLeg_R
+exit-WallJump	0.133	cruise	0	R	2.20	9.7	7.7	0.7	1.26		0.42	Mesh_Spine|Mesh_UpperLeg_L
+exit-WallJump	0.167	cruise	0	R	1.42	7.7	5.7	0.9	1.35		0.40	Mesh_Spine|Mesh_UpperLeg_L
+exit-WallJump	0.200	cruise	0	R	1.20	3.3	1.3	5.2	2.59		0.20	Mesh_Spine|Mesh_UpperLeg_R
+exit-WallJump	0.233	cruise	0	R	1.33	-0.5	-2.5	9.0	0.19		0.22	Mesh_Spine|Mesh_UpperLeg_R
+exit-WallJump	0.267	cruise	0	R	1.02	-3.0	-5.0	11.6	0.60		0.14	Mesh_Spine|Mesh_UpperLeg_L
+exit-WallJump	0.300	cruise	0	R	0.87	-4.0	-6.0	12.6	0.67		0.11	Mesh_Spine|Mesh_UpperLeg_L
+exit-ClimbTopOut	0.000	hand	1	R	0.05	18.0	8.0	13.3	2.25		0.36	Mesh_Spine|Mesh_UpperLeg_R
+exit-ClimbTopOut	0.033	hand	1	R	0.05	18.0	8.0	13.3	2.25		0.36	Mesh_Spine|Mesh_UpperLeg_R
+exit-ClimbTopOut	0.067	hand	1	R	0.05	18.0	8.0	13.3	2.25		0.36	Mesh_Spine|Mesh_UpperLeg_R
+exit-ClimbTopOut	0.100	hand	1	R	0.05	18.0	8.0	13.3	2.25		0.36	Mesh_Spine|Mesh_UpperLeg_R
+exit-ClimbTopOut	0.133	hand	1	R	0.05	18.0	8.0	13.3	2.25		0.36	Mesh_Spine|Mesh_UpperLeg_R
+exit-ClimbTopOut	0.167	hand	1	R	0.05	18.0	8.0	13.3	2.25		0.36	Mesh_Spine|Mesh_UpperLeg_R
+exit-ClimbTopOut	0.200	hand	1	R	0.05	18.0	8.0	13.3	2.25		0.36	Mesh_Spine|Mesh_UpperLeg_R
+exit-ClimbTopOut	0.233	hand	1	R	0.05	18.0	8.0	13.3	2.25		0.36	Mesh_Spine|Mesh_UpperLeg_R
+exit-ClimbTopOut	0.267	hand	1	R	0.05	18.0	8.0	13.3	2.25		0.36	Mesh_Spine|Mesh_UpperLeg_R
+exit-ClimbTopOut	0.300	hand	1	R	0.05	18.0	8.0	13.3	2.25		0.36	Mesh_Spine|Mesh_UpperLeg_R
+exit-ClimbTopOut	0.320	hand	1	R	0.05	18.0	8.0	13.3	2.25		0.36	Mesh_Spine|Mesh_UpperLeg_R
+exit-ClingDrop	0.000	cruise	0	R	0.52	4.0	4.0	3.8	1.00		0.36	Mesh_Spine|Mesh_UpperLeg_R
+exit-ClingDrop	0.033	cruise	0	R	0.76	1.8	2.8	5.7	0.64		0.28	Mesh_Spine|Mesh_UpperLeg_R
+exit-ClingDrop	0.067	cruise	0	R	1.65	-3.9	-0.4	10.6	0.00		0.22	Mesh_Spine|Mesh_UpperLeg_R
+exit-ClingDrop	0.100	cruise	0	R	3.42	-11.6	-4.6	16.9	2.49		0.11	Mesh_Spine|Mesh_UpperLeg_L
+exit-ClingDrop	0.133	cruise	0	R	1.92	-8.4	-3.5	11.4	2.39		0.16	Mesh_Spine|Mesh_UpperLeg_L
+exit-ClingDrop	0.167	cruise	0	R	0.24	-1.3	-0.4	1.8	0.00		0.07	Mesh_Spine|Mesh_UpperLeg_L
+exit-ClingDrop	0.200	cruise	0	R	-0.27	3.2	1.6	-4.4	1.94		0.27	Mesh_Foot_R|Ground
+exit-ClingDrop	0.220	cruise	0	R	-0.31	4.0	2.0	-5.6	2.00		0.31	Mesh_Foot_R|Ground
+exit-Vault	0.000	landing	1	R	0.06	32.0	12.0	15.3	2.67		0.41	Mesh_Chest|Mesh_UpperLeg_R
+exit-Vault	0.033	landing	1	R	0.06	32.0	12.0	15.3	2.67		0.41	Mesh_Chest|Mesh_UpperLeg_R
+exit-Vault	0.067	landing	1	R	0.06	32.0	12.0	15.3	2.67		0.41	Mesh_Chest|Mesh_UpperLeg_R
+exit-Vault	0.100	landing	1	R	0.06	32.0	12.0	15.3	2.67		0.41	Mesh_Chest|Mesh_UpperLeg_R
+exit-Vault	0.133	landing	1	R	0.06	32.0	12.0	15.3	2.67		0.41	Mesh_Chest|Mesh_UpperLeg_R
+exit-Vault	0.167	landing	1	R	0.06	32.0	12.0	15.3	2.67		0.41	Mesh_Chest|Mesh_UpperLeg_R
+exit-Vault	0.200	landing	1	R	0.06	32.0	12.0	15.3	2.67		0.41	Mesh_Chest|Mesh_UpperLeg_R
+exit-Vault	0.233	landing	1	R	0.06	32.0	12.0	15.3	2.67		0.41	Mesh_Chest|Mesh_UpperLeg_R
+exit-Vault	0.267	landing	1	R	0.06	32.0	12.0	15.3	2.67		0.41	Mesh_Chest|Mesh_UpperLeg_R
+exit-Vault	0.300	landing	1	R	0.06	32.0	12.0	15.3	2.67		0.41	Mesh_Chest|Mesh_UpperLeg_R
+exit-Mantle	0.000	hand	1	R	0.06	32.0	12.0	15.3	2.67		0.41	Mesh_Chest|Mesh_UpperLeg_L
+exit-Mantle	0.033	hand	1	R	0.06	32.0	12.0	15.3	2.67		0.41	Mesh_Chest|Mesh_UpperLeg_L
+exit-Mantle	0.067	hand	1	R	0.06	32.0	12.0	15.3	2.67		0.41	Mesh_Chest|Mesh_UpperLeg_R
+exit-Mantle	0.100	hand	1	R	0.06	32.0	12.0	15.3	2.67		0.41	Mesh_Chest|Mesh_UpperLeg_R
+exit-Mantle	0.133	hand	1	R	0.06	32.0	12.0	15.3	2.67		0.41	Mesh_Chest|Mesh_UpperLeg_R
+exit-Mantle	0.167	hand	1	R	0.06	32.0	12.0	15.3	2.67		0.41	Mesh_Chest|Mesh_UpperLeg_R
+exit-Mantle	0.200	hand	1	R	0.06	32.0	12.0	15.3	2.67		0.41	Mesh_Chest|Mesh_UpperLeg_R
+exit-Mantle	0.233	hand	1	R	0.06	32.0	12.0	15.3	2.67		0.41	Mesh_Chest|Mesh_UpperLeg_R
+exit-Mantle	0.267	hand	1	R	0.06	32.0	12.0	15.3	2.67		0.41	Mesh_Chest|Mesh_UpperLeg_R
+exit-Slide	0.000	slide	1	R	0.06	32.0	12.0	15.3	2.67		0.41	Mesh_Chest|Mesh_UpperLeg_L
+exit-Slide	0.033	slide	1	R	0.06	32.0	12.0	15.3	2.67		0.41	Mesh_Chest|Mesh_UpperLeg_R
+exit-Slide	0.067	slide	1	R	0.06	32.0	12.0	15.3	2.67		0.41	Mesh_Chest|Mesh_UpperLeg_R
+exit-Slide	0.100	slide	1	R	0.06	32.0	12.0	15.3	2.67		0.41	Mesh_Chest|Mesh_UpperLeg_R
+exit-Slide	0.133	slide	1	R	0.06	32.0	12.0	15.3	2.67		0.41	Mesh_Chest|Mesh_UpperLeg_R
+exit-Slide	0.167	slide	1	R	0.06	32.0	12.0	15.3	2.67		0.41	Mesh_Chest|Mesh_UpperLeg_R
+exit-Slide	0.200	slide	1	R	0.06	32.0	12.0	15.3	2.67		0.41	Mesh_Chest|Mesh_UpperLeg_R
+exit-Slide	0.233	slide	1	R	0.06	32.0	12.0	15.3	2.67		0.41	Mesh_Chest|Mesh_UpperLeg_L
+exit-Slide	0.260	slide	1	R	0.06	32.0	12.0	15.3	2.67		0.41	Mesh_Chest|Mesh_UpperLeg_L
+exit-AirDash	0.000	cruise	0	L	0.56	12.0	14.0	2.5	0.86		0.36	Mesh_Spine|Mesh_UpperLeg_L
+exit-AirDash	0.033	cruise	0	L	0.48	10.2	11.8	2.4	0.86		0.16	Mesh_Spine|Mesh_UpperLeg_L
+exit-AirDash	0.067	cruise	0	R	-0.08	5.8	6.6	-17.7	0.88		0.26	Mesh_Spine|Mesh_UpperLeg_L
+exit-AirDash	0.100	cruise	0	R	0.18	1.7	1.7	0.2	1.00		0.08	Mesh_Spine|Mesh_UpperLeg_L
+exit-AirDash	0.133	cruise	0	R	0.06	0.7	0.7	1.1	0.00		0.05	Mesh_Spine|Mesh_UpperLeg_L
+exit-AirDash	0.167	cruise	0	R	-0.00	0.1	0.1	1.6	0.00		0.02	Mesh_Spine|Mesh_UpperLeg_L
+exit-Punch	0.000	cruise	0	L	0.48	8.0	6.0	6.0	1.33		0.42	Mesh_Spine|Mesh_UpperLeg_L
+exit-Punch	0.033	cruise	0	L	0.51	6.4	5.2	7.2	1.23		0.36	Mesh_Spine|Mesh_UpperLeg_L
+exit-Punch	0.067	cruise	0	L	0.66	2.3	3.1	10.4	0.73		0.16	Mesh_Spine|Mesh_UpperLeg_L
+exit-Punch	0.100	cruise	0	R	0.53	-3.7	0.2	-28.5	0.00		0.17	Mesh_Spine|Mesh_UpperLeg_L
+exit-Punch	0.133	cruise	0	R	-0.71	-10.6	-3.3	-21.3	3.22		0.71	Mesh_Foot_R|Ground
+exit-Punch	0.167	cruise	0	R	-0.84	-8.0	-2.9	-15.9	2.80		0.84	Mesh_Foot_R|Ground
+exit-Punch	0.200	cruise	0	R	-0.64	-3.6	-1.6	-11.3	2.24		0.64	Mesh_Foot_R|Ground
+exit-Punch	0.233	cruise	0	R	-0.38	-0.1	-0.6	-7.8	0.00		0.38	Mesh_Foot_R|Ground
+exit-Punch	0.267	cruise	0	R	-0.22	1.8	-0.1	-5.9	0.00		0.22	Mesh_Foot_R|Ground
+exit-Lunge	0.000	cruise	0	L	4.04	12.0	16.0	24.6	0.75		0.74	Mesh_Spine|Mesh_UpperLeg_L
+exit-Lunge	0.033	cruise	0	R	4.02	10.2	14.2	-41.8	0.72		0.47	Mesh_Spine|Mesh_UpperLeg_L
+exit-Lunge	0.067	cruise	0	R	0.73	5.5	9.5	-28.2	0.58		0.41	Mesh_Spine|Mesh_UpperLeg_L
+exit-Lunge	0.100	cruise	0	R	-0.65	-1.2	2.8	-8.2	0.43		0.65	Mesh_Foot_R|Ground
+exit-Lunge	0.133	cruise	0	R	1.15	-7.5	-3.8	11.7	2.00		0.24	Mesh_Spine|Mesh_UpperLeg_L
+exit-Lunge	0.167	cruise	0	R	0.60	-3.1	-1.5	5.7	2.00		0.13	Mesh_Spine|Mesh_UpperLeg_L
+exit-Lunge	0.200	cruise	0	R	0.09	0.8	0.4	0.6	0.00		0.17	Mesh_Spine|Mesh_UpperLeg_L
+exit-Lunge	0.233	cruise	0	R	-0.09	3.3	1.6	-2.8	2.00		0.17	Mesh_Spine|Mesh_UpperLeg_L
+exit-Lunge	0.260	cruise	0	R	-0.12	4.0	2.0	-3.7	2.00		0.20	Mesh_Spine|Mesh_UpperLeg_L
+exit-ZipDrop	0.000	cruise	0	R	12.75	-8.0	-6.0	52.8	1.33		0.41	Mesh_Spine|Mesh_UpperLeg_R
+exit-ZipDrop	0.033	cruise	0	R	12.75	-8.0	-6.0	52.8	1.33		0.41	Mesh_Spine|Mesh_UpperLeg_R
+exit-ZipDrop	0.067	cruise	0	R	12.75	-8.0	-6.0	52.8	1.33		0.41	Mesh_Spine|Mesh_UpperLeg_R
+exit-ZipDrop	0.100	cruise	0	R	12.75	-8.0	-6.0	52.8	1.33		0.41	Mesh_Spine|Mesh_UpperLeg_R
+exit-ZipDrop	0.133	cruise	0	R	12.75	-8.0	-6.0	52.8	1.33		0.41	Mesh_Spine|Mesh_UpperLeg_R
+exit-ZipDrop	0.167	cruise	0	R	12.75	-8.0	-6.0	52.8	1.33		0.41	Mesh_Spine|Mesh_UpperLeg_R
+exit-ZipDrop	0.200	cruise	0	R	12.75	-8.0	-6.0	52.8	1.33		0.41	Mesh_Spine|Mesh_UpperLeg_R
+exit-ZipDrop	0.233	cruise	0	R	12.75	-8.0	-6.0	52.8	1.33		0.41	Mesh_Spine|Mesh_UpperLeg_R
+exit-LaunchLand	0.000	landing	1	R	0.06	32.0	12.0	15.3	2.67		0.41	Mesh_Chest|Mesh_UpperLeg_L
+exit-LaunchLand	0.033	landing	1	R	0.06	32.0	12.0	15.3	2.67		0.41	Mesh_Chest|Mesh_UpperLeg_L
+exit-LaunchLand	0.067	landing	1	R	0.06	32.0	12.0	15.3	2.67		0.41	Mesh_Chest|Mesh_UpperLeg_R
+exit-LaunchLand	0.100	landing	1	R	0.06	32.0	12.0	15.3	2.67		0.41	Mesh_Chest|Mesh_UpperLeg_R
+exit-LaunchLand	0.133	landing	1	R	0.06	32.0	12.0	15.3	2.67		0.41	Mesh_Chest|Mesh_UpperLeg_R
+exit-LaunchLand	0.167	landing	1	R	0.06	32.0	12.0	15.3	2.67		0.41	Mesh_Chest|Mesh_UpperLeg_R
+exit-LaunchLand	0.200	landing	1	R	0.06	32.0	12.0	15.3	2.67		0.41	Mesh_Chest|Mesh_UpperLeg_R
+exit-LaunchLand	0.233	landing	1	R	0.06	32.0	12.0	15.3	2.67		0.41	Mesh_Chest|Mesh_UpperLeg_R
+exit-LaunchLand	0.267	landing	1	R	0.06	32.0	12.0	15.3	2.67		0.41	Mesh_Chest|Mesh_UpperLeg_L
+exit-LaunchLand	0.300	landing	1	R	0.06	32.0	12.0	15.3	2.67		0.41	Mesh_Chest|Mesh_UpperLeg_L
+exit-GrappleArrive	0.000	cruise	0	R	-0.06	6.0	4.0	-3.6	1.50		0.22	Mesh_Spine|Mesh_UpperLeg_L
+exit-GrappleArrive	0.033	cruise	0	R	-0.07	6.2	4.5	-3.7	1.36		0.20	Mesh_Spine|Mesh_UpperLeg_R
+exit-GrappleArrive	0.067	cruise	0	R	-0.14	6.7	6.0	-4.1	1.12		0.26	Mesh_Spine|Mesh_UpperLeg_L
+exit-GrappleArrive	0.100	cruise	0	R	-0.22	7.3	8.0	-4.7	0.92		0.43	Mesh_Spine|Mesh_UpperLeg_L
+exit-GrappleArrive	0.133	cruise	0	R	-0.25	7.8	9.8	-5.1	0.80		0.25	Mesh_Foot_R|Ground
+exit-GrappleArrive	0.167	cruise	0	R	-0.10	6.4	7.5	-3.1	0.84		0.34	Mesh_Spine|Mesh_UpperLeg_L
+exit-GrappleArrive	0.200	cruise	0	R	0.03	5.1	5.6	-1.4	0.90		0.18	Mesh_Spine|Mesh_UpperLeg_L
+exit-GrappleArrive	0.233	cruise	0	R	0.11	4.2	4.4	-0.3	0.97		0.23	Mesh_Spine|Mesh_UpperLeg_R
+exit-GrappleArrive	0.260	cruise	0	R	0.14	4.0	4.0	0.0	1.00		0.24	Mesh_Spine|Mesh_UpperLeg_L
+exit-GrappleRelease	0.000	cruise	0	R	0.04	4.0	6.0	-1.8	0.67		0.23	Mesh_Spine|Mesh_UpperLeg_L
+exit-GrappleRelease	0.033	cruise	0	R	0.04	3.8	5.5	-1.9	0.68		0.21	Mesh_Spine|Mesh_UpperLeg_L
+exit-GrappleRelease	0.067	cruise	0	R	0.02	3.1	4.2	-1.9	0.74		0.23	Mesh_Spine|Mesh_UpperLeg_L
+exit-GrappleRelease	0.100	cruise	0	R	-0.01	2.3	2.5	-2.0	0.89		0.11	Mesh_Spine|Mesh_UpperLeg_L
+exit-GrappleRelease	0.133	cruise	0	R	0.10	1.4	1.4	-0.9	1.00		0.10	Mesh_Spine|Mesh_UpperLeg_L
+exit-GrappleRelease	0.167	cruise	0	R	0.10	0.6	0.6	0.6	0.00		0.05	Mesh_Spine|Mesh_UpperLeg_L
+exit-GrappleRelease	0.200	cruise	0	R	0.01	0.1	0.1	1.5	0.00		0.03	Mesh_Spine|Mesh_UpperLeg_L
+exit-GrappleRelease	0.220	cruise	0	R	-0.01	0.0	0.0	1.6	0.00		0.01	Mesh_Spine|Mesh_UpperLeg_L
+exit-Stagger	0.000	landing	1	R	0.06	32.0	12.0	15.3	2.67		0.41	Mesh_Chest|Mesh_UpperLeg_R
+exit-Stagger	0.033	landing	1	R	0.06	32.0	12.0	15.3	2.67		0.41	Mesh_Chest|Mesh_UpperLeg_R
+exit-Stagger	0.067	landing	1	R	0.06	32.0	12.0	15.3	2.67		0.41	Mesh_Chest|Mesh_UpperLeg_R
+exit-Stagger	0.100	landing	1	R	0.06	32.0	12.0	15.3	2.67		0.41	Mesh_Chest|Mesh_UpperLeg_R
+exit-Stagger	0.133	landing	1	R	0.06	32.0	12.0	15.3	2.67		0.41	Mesh_Chest|Mesh_UpperLeg_R
+exit-Stagger	0.167	landing	1	R	0.06	32.0	12.0	15.3	2.67		0.41	Mesh_Chest|Mesh_UpperLeg_R
+exit-Stagger	0.200	landing	1	R	0.06	32.0	12.0	15.3	2.67		0.41	Mesh_Chest|Mesh_UpperLeg_R
+exit-Stagger	0.233	landing	1	R	0.06	32.0	12.0	15.3	2.67		0.41	Mesh_Chest|Mesh_UpperLeg_R
+exit-Stagger	0.267	landing	1	R	0.06	32.0	12.0	15.3	2.67		0.41	Mesh_Chest|Mesh_UpperLeg_R
+exit-Stagger	0.300	landing	1	R	0.06	32.0	12.0	15.3	2.67		0.41	Mesh_Chest|Mesh_UpperLeg_R
+exit-TagBackEnd	0.000	cruise	0	L	-0.28	6.0	4.0	-7.3	1.50		0.28	Mesh_Foot_L|Ground
+exit-TagBackEnd	0.033	cruise	0	L	-0.40	5.5	3.8	-6.6	1.47		0.40	Mesh_Foot_L|Ground
+exit-TagBackEnd	0.067	cruise	0	L	-0.62	4.2	3.1	-5.1	1.36		0.62	Mesh_Foot_L|Ground
+exit-TagBackEnd	0.100	cruise	0	L	-0.86	2.5	2.3	-3.8	1.12		0.86	Mesh_Foot_L|Ground
+exit-TagBackEnd	0.133	cruise	0	L	-0.64	1.4	1.4	-1.8	1.00		0.64	Mesh_Foot_L|Ground
+exit-TagBackEnd	0.167	cruise	0	L	-0.23	0.6	0.6	0.4	0.00		0.23	Mesh_Foot_L|Ground
+exit-TagBackEnd	0.200	cruise	0	L	-0.05	0.1	0.1	1.5	0.00		0.05	Mesh_Foot_L|Ground
+exit-TagBackEnd	0.220	cruise	0	L	-0.01	0.0	0.0	1.6	0.00		0.01	Mesh_Foot_L|Ground
+exit-SoftLand	0.000	landing	1	R	0.06	32.0	12.0	15.3	2.67		0.41	Mesh_Chest|Mesh_UpperLeg_R
+exit-SoftLand	0.033	landing	1	R	0.06	32.0	12.0	15.3	2.67		0.41	Mesh_Chest|Mesh_UpperLeg_R
+exit-SoftLand	0.067	landing	1	R	0.06	32.0	12.0	15.3	2.67		0.41	Mesh_Chest|Mesh_UpperLeg_R
+exit-SoftLand	0.100	landing	1	R	0.06	32.0	12.0	15.3	2.67		0.41	Mesh_Chest|Mesh_UpperLeg_R
+exit-SoftLand	0.133	landing	1	R	0.06	32.0	12.0	15.3	2.67		0.41	Mesh_Chest|Mesh_UpperLeg_R
+exit-SoftLand	0.167	landing	1	R	0.06	32.0	12.0	15.3	2.67		0.41	Mesh_Chest|Mesh_UpperLeg_R
+exit-SoftLand	0.200	landing	1	R	0.06	32.0	12.0	15.3	2.67		0.41	Mesh_Chest|Mesh_UpperLeg_R
+exit-SoftLand	0.233	landing	1	R	0.06	32.0	12.0	15.3	2.67		0.41	Mesh_Chest|Mesh_UpperLeg_R
+exit-Roll	0.000	roll	0	R	38.20	28.0	22.0	-53.7	1.27		0.94	Mesh_Spine|Mesh_UpperLeg_L
+exit-Roll	0.033	roll	0	R	35.27	25.1	22.6	-51.6	1.11		0.93	Mesh_Spine|Mesh_UpperLeg_L
+exit-Roll	0.067	roll	0	R	30.47	20.0	23.6	-47.5	0.85		0.57	Mesh_Spine|Mesh_UpperLeg_R
+exit-Roll	0.100	roll	0	R	28.61	17.9	23.9	-45.6	0.75		0.35	Mesh_Spine|Mesh_UpperLeg_L
+exit-Roll	0.133	roll	0	R	26.13	15.7	22.4	-41.7	0.70		0.29	Mesh_Spine|Mesh_UpperLeg_R
+exit-Roll	0.167	roll	0	R	23.33	12.7	20.5	-36.4	0.62		0.42	Mesh_Spine|Mesh_UpperLeg_R
+exit-Roll	0.200	roll	0	R	22.78	11.9	19.7	-34.5	0.60		0.42	Mesh_Spine|Mesh_UpperLeg_R
+exit-Roll	0.233	roll	0	L	20.33	10.8	17.7	-26.4	0.61		0.42	Mesh_Spine|Mesh_UpperLeg_L
+exit-Roll	0.267	roll	0	L	17.99	10.0	16.0	-23.9	0.62		0.41	Mesh_Spine|Mesh_UpperLeg_L
+exit-Roll	0.300	roll	0	L	17.15	5.9	9.6	-10.3	0.62		0.43	Mesh_Spine|Mesh_UpperLeg_R
+exit-Roll	0.333	roll	0	R	28.65	-1.9	-2.7	13.5	0.70		0.36	Mesh_Spine|Mesh_UpperLeg_L
+exit-Roll	0.367	roll	0	R	28.45	-2.9	-5.1	20.2	0.58		0.37	Mesh_Spine|Mesh_UpperLeg_L
+exit-Roll	0.400	roll	0	R	6.94	5.4	2.2	10.8	2.44		0.40	Mesh_Spine|Mesh_UpperLeg_L
+exit-Roll	0.433	roll	1	R	0.39	11.9	7.9	0.7	1.50	rollexitBack0.7<12.0	0.41	Mesh_Spine|Mesh_UpperLeg_L
+exit-Roll	0.467	roll	1	R	0.13	10.2	6.2	-1.2	1.64	rollexitBack-1.2<12.0	0.35	Mesh_Spine|Mesh_UpperLeg_L
+exit-Roll	0.500	roll	0	R	-0.20	6.9	2.9	-4.6	2.39		0.29	Mesh_Chest|Mesh_UpperArm_R
+exit-Roll	0.520	roll	0	R	-0.25	6.0	2.0	-5.5	3.00		0.28	Mesh_Chest|Mesh_UpperArm_R
+exit-RollAbsorb	0.000	roll	0	R	59.17	28.0	36.0	-18.1	0.78		2.54	Mesh_LowerArm_L|Mesh_UpperLeg_L
+exit-RollAbsorb	0.033	roll	0	R	59.17	28.0	36.0	-18.1	0.78		2.54	Mesh_LowerArm_L|Mesh_UpperLeg_L
+exit-RollAbsorb	0.067	roll	0	R	59.17	28.0	36.0	-18.1	0.78		2.54	Mesh_LowerArm_L|Mesh_UpperLeg_L
+exit-RollAbsorb	0.100	roll	0	R	59.17	28.0	36.0	-18.1	0.78		2.54	Mesh_LowerArm_L|Mesh_UpperLeg_L
+exit-RollAbsorb	0.133	roll	0	R	59.17	28.0	36.0	-18.1	0.78		2.54	Mesh_LowerArm_L|Mesh_UpperLeg_L
+exit-RollAbsorb	0.167	roll	0	R	50.94	26.2	33.3	-20.1	0.79		3.32	Mesh_LowerArm_R|Mesh_UpperLeg_R
+exit-RollAbsorb	0.200	roll	0	R	31.23	21.7	26.3	-22.6	0.83		0.66	Mesh_Spine|Mesh_UpperLeg_L
+exit-RollAbsorb	0.233	roll	0	R	11.63	15.9	17.3	-19.8	0.92		0.73	Mesh_Spine|Mesh_UpperLeg_L
+exit-RollAbsorb	0.267	roll	0	R	1.46	10.4	8.8	-12.0	1.18		0.39	Mesh_Spine|Mesh_UpperLeg_R
+exit-RollAbsorb	0.300	roll	0	R	-0.23	6.7	3.1	-5.0	2.17		0.36	Mesh_Chest|Mesh_UpperArm_R
+exit-RollAbsorb	0.320	roll	1	R	-0.06	6.0	2.0	-3.6	3.00	rollexitChest8<14,rollexitBack-3.6<12.0	0.30	Mesh_Chest|Mesh_UpperArm_R
+stutter	0.000	plant	0	L	2.53	8.0	0.0	-36.3	-1.00		0.00	
+stutter	0.033	plant	0	L	2.39	9.6	1.0	-18.2	9.22		0.17	Mesh_Spine|Mesh_UpperLeg_L
+stutter	0.067	plant	0	R	1.30	12.4	3.0	-5.6	4.20		0.42	Mesh_Spine|Mesh_UpperLeg_L
+stutter	0.100	plant	1	L	0.21	14.0	4.0	11.1	3.50	hip14<25	0.37	Mesh_Spine|Mesh_UpperLeg_L
+stutter	0.133	plant	1	L	0.21	14.0	4.0	11.1	3.50	hip14<25	0.37	Mesh_Spine|Mesh_UpperLeg_L
+stutter	0.167	plant	1	L	0.21	14.0	4.0	11.1	3.50	hip14<25	0.37	Mesh_Spine|Mesh_UpperLeg_L
+stutter	0.200	plant	1	R	0.21	14.0	4.0	11.1	3.50	hip14<25	0.37	Mesh_Spine|Mesh_UpperLeg_R
+stutter	0.233	plant	1	R	0.21	14.0	4.0	11.1	3.50	hip14<25	0.37	Mesh_Spine|Mesh_UpperLeg_R
+stutter	0.267	plant	1	L	0.21	14.0	4.0	11.1	3.50	hip14<25	0.37	Mesh_Spine|Mesh_UpperLeg_L
+stutter	0.300	plant	1	L	0.21	14.0	4.0	11.1	3.50	hip14<25	0.37	Mesh_Spine|Mesh_UpperLeg_L
+stutter	0.333	plant	1	R	0.21	14.0	4.0	11.1	3.50	hip14<25	0.37	Mesh_Spine|Mesh_UpperLeg_R
+stutter	0.367	plant	1	R	0.21	14.0	4.0	11.1	3.50	hip14<25	0.37	Mesh_Spine|Mesh_UpperLeg_R
+stutter	0.400	plant	1	L	0.21	14.0	4.0	11.1	3.50	hip14<25	0.37	Mesh_Spine|Mesh_UpperLeg_L
+stutter	0.433	plant	1	L	0.21	14.0	4.0	11.1	3.50	hip14<25	0.37	Mesh_Spine|Mesh_UpperLeg_L
+stutter	0.467	plant	1	L	0.21	14.0	4.0	11.1	3.50	hip14<25	0.37	Mesh_Spine|Mesh_UpperLeg_L
+stutter	0.500	plant	0	R	2.83	13.6	3.7	9.2	3.66		0.32	Mesh_Chest|Mesh_UpperLeg_R
+stutter	0.533	plant	0	R	5.70	11.5	2.3	1.7	4.93		0.24	Mesh_Spine|Mesh_UpperLeg_R
+stutter	0.567	plant	0	R	2.85	9.1	0.8	-6.1	-1.00		0.18	Mesh_Spine|Mesh_UpperLeg_R
+stutter	0.600	plant	0	R	1.93	8.0	0.0	-10.1	-1.00		0.21	Mesh_Spine|Mesh_UpperLeg_L
+spinL	0.000	plant	0	R	2.53	8.0	0.0	-36.3	-1.00		0.00	
+spinL	0.033	plant	0	R	2.87	9.6	1.0	-31.2	9.22		0.07	Mesh_Spine|Mesh_UpperLeg_R
+spinL	0.067	plant	0	R	1.30	12.4	3.0	-5.6	4.20		0.27	Mesh_Spine|Mesh_UpperLeg_R
+spinL	0.100	plant	1	R	0.21	14.0	4.0	11.1	3.50	hip14<25	0.37	Mesh_Spine|Mesh_UpperLeg_R
+spinL	0.133	plant	1	R	0.21	14.0	4.0	11.1	3.50	hip14<25	0.35	Mesh_Spine|Mesh_UpperLeg_R
+spinL	0.167	plant	1	R	0.21	14.0	4.0	11.1	3.50	hip14<25	0.35	Mesh_Spine|Mesh_UpperLeg_R
+spinL	0.200	plant	1	R	0.21	14.0	4.0	11.1	3.50	hip14<25	0.37	Mesh_Spine|Mesh_UpperLeg_R
+spinL	0.233	plant	1	R	0.21	14.0	4.0	11.1	3.50	hip14<25	0.37	Mesh_Spine|Mesh_UpperLeg_R
+spinL	0.267	plant	1	R	0.21	14.0	4.0	11.1	3.50	hip14<25	1.40	Mesh_Spine|Mesh_UpperLeg_R
+spinL	0.300	plant	1	R	0.21	14.0	4.0	11.1	3.50	hip14<25	1.40	Mesh_Spine|Mesh_UpperLeg_R
+spinL	0.333	plant	1	R	0.21	14.0	4.0	11.1	3.50	hip14<25	1.40	Mesh_Spine|Mesh_UpperLeg_R
+spinL	0.367	plant	1	R	0.21	14.0	4.0	11.1	3.50	hip14<25	1.40	Mesh_Spine|Mesh_UpperLeg_R
+spinL	0.400	plant	1	R	0.21	14.0	4.0	11.1	3.50	hip14<25	0.42	Mesh_Spine|Mesh_UpperLeg_R
+spinL	0.433	plant	1	R	0.21	14.0	4.0	11.1	3.50	hip14<25	0.37	Mesh_Spine|Mesh_UpperLeg_R
+spinL	0.467	plant	0	R	2.06	13.7	3.8	9.5	3.61		0.38	Mesh_Chest|Mesh_UpperLeg_R
+spinL	0.500	plant	0	R	5.82	11.7	2.5	1.3	4.71		0.31	Mesh_Chest|Mesh_UpperArm_R
+spinL	0.533	plant	0	R	2.88	9.3	0.9	-7.0	-1.00		0.19	Mesh_Spine|Mesh_UpperLeg_R
+spinL	0.567	plant	0	R	1.92	8.0	0.0	-10.3	-1.00		0.18	Mesh_Spine|Mesh_UpperLeg_L
+spinR	0.000	plant	0	L	2.53	8.0	0.0	-36.3	-1.00		0.00	
+spinR	0.033	plant	0	L	2.39	9.6	1.0	-18.2	9.22		0.17	Mesh_Spine|Mesh_UpperLeg_L
+spinR	0.067	plant	0	L	2.56	12.4	3.0	2.8	4.20		0.42	Mesh_Spine|Mesh_UpperLeg_L
+spinR	0.100	plant	1	L	0.21	14.0	4.0	11.1	3.50	hip14<25	0.37	Mesh_Spine|Mesh_UpperLeg_L
+spinR	0.133	plant	1	L	0.21	14.0	4.0	11.1	3.50	hip14<25	0.37	Mesh_Spine|Mesh_UpperLeg_L
+spinR	0.167	plant	1	L	0.21	14.0	4.0	11.1	3.50	hip14<25	0.37	Mesh_Spine|Mesh_UpperLeg_L
+spinR	0.200	plant	1	L	0.21	14.0	4.0	11.1	3.50	hip14<25	1.40	Mesh_Spine|Mesh_UpperLeg_L
+spinR	0.233	plant	1	L	0.21	14.0	4.0	11.1	3.50	hip14<25	1.40	Mesh_Spine|Mesh_UpperLeg_L
+spinR	0.267	plant	1	L	0.21	14.0	4.0	11.1	3.50	hip14<25	1.40	Mesh_Spine|Mesh_UpperLeg_L
+spinR	0.300	plant	1	L	0.21	14.0	4.0	11.1	3.50	hip14<25	1.40	Mesh_Spine|Mesh_UpperLeg_L
+spinR	0.333	plant	1	L	0.21	14.0	4.0	11.1	3.50	hip14<25	0.37	Mesh_Spine|Mesh_UpperLeg_L
+spinR	0.367	plant	1	L	0.21	14.0	4.0	11.1	3.50	hip14<25	0.37	Mesh_Spine|Mesh_UpperLeg_L
+spinR	0.400	plant	1	L	0.21	14.0	4.0	11.1	3.50	hip14<25	0.35	Mesh_Spine|Mesh_UpperLeg_L
+spinR	0.433	plant	1	L	0.21	14.0	4.0	11.1	3.50	hip14<25	0.35	Mesh_Spine|Mesh_UpperLeg_L
+spinR	0.467	plant	0	L	1.60	13.7	3.8	7.7	3.61		0.30	Mesh_Chest|Mesh_UpperArm_R
+spinR	0.500	plant	0	L	4.57	11.7	2.5	-17.0	4.71		0.31	Mesh_Chest|Mesh_UpperArm_R
+spinR	0.533	plant	0	L	9.72	9.3	0.9	-51.2	-1.00		0.15	Mesh_Chest|Mesh_UpperArm_R
+spinR	0.567	plant	0	L	19.43	8.0	0.0	-69.9	-1.00		0.18	Mesh_Spine|Mesh_UpperLeg_L
+jukeL	0.000	plant	0	L	2.53	8.0	0.0	-36.3	-1.00		0.00	
+jukeL	0.033	plant	0	L	1.96	9.6	1.6	-18.2	6.14		0.17	Mesh_Spine|Mesh_UpperLeg_L
+jukeL	0.067	plant	0	L	1.99	12.4	4.4	2.0	2.80		0.42	Mesh_Spine|Mesh_UpperLeg_L
+jukeL	0.100	plant	1	L	0.29	14.0	6.0	9.3	2.33	hip14<25	0.41	Mesh_Spine|Mesh_UpperLeg_L
+jukeL	0.133	plant	1	L	0.28	14.0	6.0	9.3	2.33	hip14<25	0.41	Mesh_Spine|Mesh_UpperLeg_L
+jukeL	0.167	plant	1	L	0.22	14.0	6.0	9.4	2.33	hip14<25	0.41	Mesh_Spine|Mesh_UpperLeg_L
+jukeL	0.200	plant	1	L	0.21	14.0	6.0	9.7	2.33	hip14<25	0.41	Mesh_Spine|Mesh_UpperLeg_L
+jukeL	0.233	plant	1	L	0.27	14.0	6.0	10.5	2.33	hip14<25	0.41	Mesh_Spine|Mesh_UpperLeg_L
+jukeL	0.267	plant	1	L	0.29	14.0	6.0	11.6	2.33	hip14<25	0.41	Mesh_Spine|Mesh_UpperLeg_L
+jukeL	0.300	plant	1	L	0.26	14.0	6.0	12.6	2.33	hip14<25	0.41	Mesh_Spine|Mesh_UpperLeg_L
+jukeL	0.333	plant	0	L	1.34	13.8	5.8	11.6	2.38		0.33	Mesh_Chest|Mesh_UpperLeg_L
+jukeL	0.367	plant	0	L	4.10	12.0	4.0	-1.2	3.01		0.40	Mesh_Spine|Mesh_UpperLeg_L
+jukeL	0.400	plant	0	L	1.30	9.6	1.6	-25.2	6.14		0.14	Mesh_Spine|Mesh_UpperLeg_L
+jukeL	0.433	plant	0	L	6.25	8.1	0.1	-47.6	-1.00		0.10	Mesh_Chest|Mesh_UpperArm_R
+jukeR	0.000	plant	0	R	2.53	8.0	0.0	-36.3	-1.00		0.00	
+jukeR	0.033	plant	0	R	2.42	9.6	1.6	-31.2	6.14		0.07	Mesh_Spine|Mesh_UpperLeg_R
+jukeR	0.067	plant	0	R	0.68	12.4	4.4	-6.2	2.80		0.42	Mesh_Spine|Mesh_UpperLeg_R
+jukeR	0.100	plant	1	R	0.29	14.0	6.0	9.3	2.33	hip14<25	0.64	Mesh_Spine|Mesh_UpperLeg_R
+jukeR	0.133	plant	1	R	0.28	14.0	6.0	9.3	2.33	hip14<25	0.64	Mesh_Spine|Mesh_UpperLeg_R
+jukeR	0.167	plant	1	R	0.22	14.0	6.0	9.4	2.33	hip14<25	0.64	Mesh_Spine|Mesh_UpperLeg_R
+jukeR	0.200	plant	1	R	0.21	14.0	6.0	9.7	2.33	hip14<25	0.64	Mesh_Spine|Mesh_UpperLeg_R
+jukeR	0.233	plant	1	R	0.27	14.0	6.0	10.5	2.33	hip14<25	0.64	Mesh_Spine|Mesh_UpperLeg_R
+jukeR	0.267	plant	1	R	0.29	14.0	6.0	11.6	2.33	hip14<25	0.64	Mesh_Spine|Mesh_UpperLeg_R
+jukeR	0.300	plant	1	R	0.26	14.0	6.0	12.6	2.33	hip14<25	0.64	Mesh_Spine|Mesh_UpperLeg_R
+jukeR	0.333	plant	0	R	1.07	13.8	5.8	10.6	2.38		0.55	Mesh_Spine|Mesh_UpperLeg_R
+jukeR	0.367	plant	0	R	3.12	12.0	4.0	-5.8	3.01		0.36	Mesh_Spine|Mesh_UpperLeg_R
+jukeR	0.400	plant	0	R	1.00	9.6	1.6	-22.4	6.14		0.11	Mesh_Spine|Mesh_UpperLeg_R
+jukeR	0.433	plant	0	R	2.53	8.1	0.1	-27.1	-1.00		0.10	Mesh_Chest|Mesh_UpperArm_R
+dive	0.000	roll	0	R	5.89	8.0	0.0	-44.1	-1.00		0.00	
+dive	0.033	roll	0	R	4.16	9.6	1.0	-34.9	9.22		0.17	Mesh_Spine|Mesh_UpperLeg_L
+dive	0.067	roll	0	R	0.76	12.4	3.0	-4.0	4.20		0.42	Mesh_Spine|Mesh_UpperLeg_L
+dive	0.100	plant	1	R	0.24	14.0	4.0	15.3	3.50	hip14<25	0.42	Mesh_Spine|Mesh_UpperLeg_R
+dive	0.133	plant	1	R	0.24	14.0	4.0	15.3	3.50	hip14<25	0.42	Mesh_Spine|Mesh_UpperLeg_R
+dive	0.167	plant	1	R	0.24	14.0	4.0	15.3	3.50	hip14<25	0.42	Mesh_Spine|Mesh_UpperLeg_R
+dive	0.200	plant	1	R	0.24	14.0	4.0	15.3	3.50	hip14<25	0.42	Mesh_Spine|Mesh_UpperLeg_R
+dive	0.233	plant	1	R	0.24	14.0	4.0	15.3	3.50	hip14<25	0.42	Mesh_Spine|Mesh_UpperLeg_R
+dive	0.267	plant	1	R	0.24	14.0	4.0	15.3	3.50	hip14<25	0.42	Mesh_Spine|Mesh_UpperLeg_R
+dive	0.300	plant	1	R	0.24	14.0	4.0	15.3	3.50	hip14<25	0.42	Mesh_Spine|Mesh_UpperLeg_R
+dive	0.333	roll	0	R	0.24	14.0	4.0	15.3	3.50		0.42	Mesh_Spine|Mesh_UpperLeg_R
+dive	0.367	roll	0	R	0.24	14.0	4.0	15.3	3.50		0.42	Mesh_Spine|Mesh_UpperLeg_R
+dive	0.400	roll	0	R	0.24	14.0	4.0	15.3	3.50		0.42	Mesh_Spine|Mesh_UpperLeg_R
+dive	0.433	roll	0	R	2.08	14.0	4.0	2.5	3.50		0.42	Mesh_Spine|Mesh_UpperLeg_R
+dive	0.467	roll	0	R	5.25	14.1	4.0	-8.1	3.53		0.43	Mesh_Spine|Mesh_UpperLeg_R
+dive	0.500	roll	0	R	19.97	17.0	4.0	-50.7	4.24		0.34	Mesh_Spine|Mesh_UpperLeg_R
+dive	0.533	roll	0	R	26.86	23.6	4.1	-67.0	5.71		0.19	Mesh_Spine|Mesh_UpperLeg_R
+dive	0.567	roll	0	R	7.13	56.4	4.9	-90.1	11.58		0.27	Mesh_Spine|Mesh_UpperLeg_R
+dive	0.600	roll	0	R	21.79	59.0	4.5	-86.7	13.11		0.37	Mesh_Spine|Mesh_UpperLeg_L
+dive	0.633	roll	0	R	36.98	55.3	3.9	-78.6	14.35		0.35	Mesh_Chest|Mesh_UpperArm_L
+dive	0.667	roll	0	R	31.78	49.8	2.8	-76.1	18.08		0.21	Mesh_Chest|Mesh_UpperArm_L
+dive	0.700	roll	0	R	28.77	46.0	2.0	-74.2	23.00		0.07	Mesh_Spine|Mesh_UpperLeg_R
+dive	0.733	roll	0	R	20.99	31.7	2.8	-73.1	11.52		0.17	Mesh_Spine|Mesh_UpperLeg_L
+dive	0.767	roll	0	R	14.52	10.8	3.9	-53.4	2.81		0.17	Mesh_Spine|Mesh_UpperLeg_R
+dive	0.800	roll	0	R	8.97	7.5	4.0	-35.9	1.87		0.35	Mesh_Spine|Mesh_UpperLeg_R
+dive	0.833	roll	0	R	8.71	6.1	4.0	6.8	1.52		0.34	Mesh_Spine|Mesh_UpperLeg_L
+dive	0.867	roll	1	R	0.30	6.0	4.0	9.0	1.50	rollexitChest10<14,rollexitBack9.0<12.0	0.39	Mesh_Chest|Mesh_UpperLeg_L
+dive	0.900	roll	1	R	0.30	6.0	4.0	9.0	1.50	rollexitChest10<14,rollexitBack9.0<12.0	0.39	Mesh_Chest|Mesh_UpperLeg_L
+dive	0.933	roll	0	R	4.47	6.1	3.8	5.4	1.60		0.40	Mesh_Spine|Mesh_UpperLeg_R
+dive	0.967	roll	0	R	7.04	6.7	2.5	-20.6	2.66		0.33	Mesh_Spine|Mesh_UpperLeg_R
+dive	1.000	roll	0	L	4.49	7.5	0.9	-9.4	0.00		0.17	Mesh_Spine|Mesh_UpperLeg_L
+dive	1.033	roll	0	L	2.92	8.0	0.0	-17.9	0.00		0.17	Mesh_Spine|Mesh_UpperLeg_R

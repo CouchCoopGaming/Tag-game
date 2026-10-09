@@ -52,6 +52,9 @@ Tools/ScriptCompileCheck/bin/
 Tools/UnityAssetAudit/bin/
 !Tools/AudioSynth/AudioSynth.csproj
 Tools/AudioSynth/bin/
+!Tools/NoClipDump/NoClipDump.csproj
+Tools/NoClipDump/bin/
+Tools/NoClipDump/obj/
 .consulo/
 *.apk
 *.aab

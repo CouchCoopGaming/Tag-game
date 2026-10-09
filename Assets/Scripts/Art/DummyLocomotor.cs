@@ -1220,6 +1220,15 @@ namespace Tag.Art
         bool _stanceSole;
         float _solePitchL, _solePitchR;
 
+        /// <summary>Stride phase the dust and exit riders read. Does not write the motor.</summary>
+        public float GaitCycle => _cycle;
+
+        /// <summary>Wall and climb surf phase. Presentation only.</summary>
+        public float SurfPhase => _surfPhase;
+
+        /// <summary>Smoothed hard-turn plant the dust kick reads. Presentation only.</summary>
+        public float HardTurnVis => _hardTurnVis;
+
         public void Bind(Transform visualRoot, PlayerMotor motor, PunchHitbox punch, CharacterController ccIgnored = null)
         {
             _motor = motor;
@@ -1227,6 +1236,8 @@ namespace Tag.Art
             _punch = punch;
             _root0 = transform.localPosition;
             Cache(visualRoot);
+            VerbExitRider.Ensure(gameObject);
+            Tag.FX.DustEmitter.Ensure(gameObject);
             if (!_bound && !_loggedBindFail)
             {
                 _loggedBindFail = true;
@@ -7018,9 +7029,9 @@ namespace Tag.Art
                         float gait = gaitW;
                         float idle = 0f;
                         float amp = Mathf.Lerp(36f, 64f, gait);
-                        float outY = Mathf.Lerp(12f, 8f, gait);
+                        float outY = Mathf.Lerp(12f, 0f, gait);
                         float roll = Mathf.Lerp(0f, armZ, gait);
-                        float reachY = Mathf.Lerp(outY, outY + 6f, _runVis);
+                        float reachY = outY;
                         float turnOut = Mathf.Abs(_turnVis) * 5f;
                         float yL = Mathf.Lerp(outY, reachY, Mathf.Clamp01(-sinC) * gait) + turnOut;
                         float yR = Mathf.Lerp(outY, reachY, Mathf.Clamp01(sinC) * gait) + turnOut;
@@ -7029,8 +7040,8 @@ namespace Tag.Art
                         float elbowPull = Mathf.Lerp(-18f, -30f, _runVis);
                         float elbowL = Mathf.Lerp(elbowReach, elbowPull, Mathf.Clamp01(sinC) * gait);
                         float elbowR = Mathf.Lerp(elbowReach, elbowPull, Mathf.Clamp01(-sinC) * gait);
-                        _uaLT = Quaternion.Slerp(_uaL0 * Quaternion.Euler(RunArmPitch(-sinC, amp) - 12f * idle + armBreath, yL, roll), _uaL0 * Quaternion.Euler(108f, 32f, armZ), pose);
-                        _uaRT = Quaternion.Slerp(_uaR0 * Quaternion.Euler(RunArmPitch(sinC, amp) - 12f * idle + armBreath, -yR, -roll), _uaR0 * Quaternion.Euler(108f, -32f, -armZ), pose);
+                        _uaLT = Quaternion.Slerp(_uaL0 * Quaternion.Euler(RunArmPitch(-sinC, amp) + VerbPoseClips.IdleArmPitch * idle + armBreath, yL, roll), _uaL0 * Quaternion.Euler(108f, 32f, armZ), pose);
+                        _uaRT = Quaternion.Slerp(_uaR0 * Quaternion.Euler(RunArmPitch(sinC, amp) + VerbPoseClips.IdleArmPitch * idle + armBreath, -yR, -roll), _uaR0 * Quaternion.Euler(108f, -32f, -armZ), pose);
                         _laLT = Quaternion.Slerp(_laL0 * Quaternion.Euler(elbowL, 0f, 0f), _laL0 * Quaternion.Euler(-22f, 0f, 0f), pose);
                         _laRT = Quaternion.Slerp(_laR0 * Quaternion.Euler(elbowR, 0f, 0f), _laR0 * Quaternion.Euler(-22f, 0f, 0f), pose);
                         _spineT = Quaternion.Slerp(_spineT, _spine0 * Quaternion.Euler(58f, 0f, 0f), pose);
@@ -7041,9 +7052,9 @@ namespace Tag.Art
                         // The burst ends in the long stride. It does not come to a stop.
                         float gait = Mathf.Max(gaitW, _runVis);
                         float amp = Mathf.Lerp(36f, 64f, gait);
-                        float outY = Mathf.Lerp(12f, 8f, gait);
+                        float outY = Mathf.Lerp(12f, 0f, gait);
                         float roll = Mathf.Lerp(0f, armZ, gait);
-                        float reachY = outY + 6f;
+                        float reachY = outY;
                         float turnOut = Mathf.Abs(_turnVis) * 5f;
                         float yL = Mathf.Lerp(outY, reachY, Mathf.Clamp01(-sinC) * gait) + turnOut;
                         float yR = Mathf.Lerp(outY, reachY, Mathf.Clamp01(sinC) * gait) + turnOut;
@@ -7092,16 +7103,16 @@ namespace Tag.Art
                         float gait = gaitW;
                         float idle = 1f - gait;
                         float amp = Mathf.Lerp(36f, 64f, gait);
-                        float outY = Mathf.Lerp(12f, 8f, gait);
+                        float outY = Mathf.Lerp(12f, 0f, gait);
                         float roll = Mathf.Lerp(0f, armZ, gait);
-                        float reachY = Mathf.Lerp(outY, outY + 6f, _runVis);
+                        float reachY = outY;
                         float yL = Mathf.Lerp(outY, reachY, Mathf.Clamp01(-sinC) * gait);
                         float yR = Mathf.Lerp(outY, reachY, Mathf.Clamp01(sinC) * gait);
                         float armBreath = breath * 0.55f * idle;
                         float elbowReach = Mathf.Lerp(-10f, -6f, _runVis);
                         float elbowPull = Mathf.Lerp(-18f, -30f, _runVis);
-                        _uaLT = Quaternion.Slerp(_uaLT, _uaL0 * Quaternion.Euler(RunArmPitch(-sinC, amp) - 12f * idle + armBreath, yL, roll), intoStride);
-                        _uaRT = Quaternion.Slerp(_uaRT, _uaR0 * Quaternion.Euler(RunArmPitch(sinC, amp) - 12f * idle + armBreath, -yR, -roll), intoStride);
+                        _uaLT = Quaternion.Slerp(_uaLT, _uaL0 * Quaternion.Euler(RunArmPitch(-sinC, amp) + VerbPoseClips.IdleArmPitch * idle + armBreath, yL, roll), intoStride);
+                        _uaRT = Quaternion.Slerp(_uaRT, _uaR0 * Quaternion.Euler(RunArmPitch(sinC, amp) + VerbPoseClips.IdleArmPitch * idle + armBreath, -yR, -roll), intoStride);
                         _laLT = Quaternion.Slerp(_laLT, _laL0 * Quaternion.Euler(Mathf.Lerp(elbowReach, elbowPull, Mathf.Clamp01(sinC) * gait), 0f, 0f), intoStride);
                         _laRT = Quaternion.Slerp(_laRT, _laR0 * Quaternion.Euler(Mathf.Lerp(elbowReach, elbowPull, Mathf.Clamp01(-sinC) * gait), 0f, 0f), intoStride);
                     }
@@ -7335,14 +7346,14 @@ namespace Tag.Art
                         float gait = Mathf.Max(gaitW, _stopGait);
                         float idle = 1f - gait;
                         float amp = Mathf.Lerp(36f, 64f, gait);
-                        float outY = Mathf.Lerp(12f, 8f, gait);
+                        float outY = Mathf.Lerp(12f, 0f, gait);
                         float roll = Mathf.Lerp(0f, armZ, gait);
-                        float reachY = Mathf.Lerp(outY, outY + 6f, _runVis);
+                        float reachY = outY;
                         float yL = Mathf.Lerp(outY, reachY, Mathf.Clamp01(-sinC) * gait);
                         float yR = Mathf.Lerp(outY, reachY, Mathf.Clamp01(sinC) * gait);
                         float armBreath = breath * 0.55f * idle;
-                        Quaternion runL = _uaL0 * Quaternion.Euler(RunArmPitch(-sinC, amp) - 12f * idle + armBreath, yL, roll);
-                        Quaternion runR = _uaR0 * Quaternion.Euler(RunArmPitch(sinC, amp) - 12f * idle + armBreath, -yR, -roll);
+                        Quaternion runL = _uaL0 * Quaternion.Euler(RunArmPitch(-sinC, amp) + VerbPoseClips.IdleArmPitch * idle + armBreath, yL, roll);
+                        Quaternion runR = _uaR0 * Quaternion.Euler(RunArmPitch(sinC, amp) + VerbPoseClips.IdleArmPitch * idle + armBreath, -yR, -roll);
                         float elbowReach = Mathf.Lerp(-10f, -6f, _runVis);
                         float elbowPull = Mathf.Lerp(-18f, -30f, _runVis);
                         float elbowL = Mathf.Lerp(elbowReach, elbowPull, Mathf.Clamp01(sinC) * gait);
@@ -7394,9 +7405,9 @@ namespace Tag.Art
                     {
                         float gait = Mathf.Max(gaitW, _runVis);
                         float amp = Mathf.Lerp(36f, 64f, gait);
-                        float outY = Mathf.Lerp(12f, 8f, gait);
+                        float outY = Mathf.Lerp(12f, 0f, gait);
                         float roll = Mathf.Lerp(0f, armZ, gait);
-                        float reachY = outY + 6f;
+                        float reachY = outY;
                         float turnOut = Mathf.Abs(_turnVis) * 5f;
                         float yL = Mathf.Lerp(outY, reachY, Mathf.Clamp01(-sinC) * gait) + turnOut;
                         float yR = Mathf.Lerp(outY, reachY, Mathf.Clamp01(sinC) * gait) + turnOut;
@@ -7415,15 +7426,15 @@ namespace Tag.Art
                         float gait = Mathf.Max(gaitW, Mathf.Max(_stopGait, _runVis));
                         float idle = 1f - gait;
                         float amp = Mathf.Lerp(36f, 64f, gait);
-                        float outY = Mathf.Lerp(12f, 8f, gait);
+                        float outY = Mathf.Lerp(12f, 0f, gait);
                         float roll = Mathf.Lerp(0f, armZ, gait);
-                        float reachY = Mathf.Lerp(outY, outY + 6f, _runVis);
+                        float reachY = outY;
                         float turnOut = Mathf.Abs(_turnVis) * 5f;
                         float yL = Mathf.Lerp(outY, reachY, Mathf.Clamp01(-sinC) * gait) + turnOut;
                         float yR = Mathf.Lerp(outY, reachY, Mathf.Clamp01(sinC) * gait) + turnOut;
                         float armBreath = breath * 0.55f * idle;
-                        float pitchL = RunArmPitch(-sinC, amp) - 12f * idle + armBreath;
-                        float pitchR = RunArmPitch(sinC, amp) - 12f * idle + armBreath;
+                        float pitchL = RunArmPitch(-sinC, amp) + VerbPoseClips.IdleArmPitch * idle + armBreath;
+                        float pitchR = RunArmPitch(sinC, amp) + VerbPoseClips.IdleArmPitch * idle + armBreath;
                         float elbowReach = Mathf.Lerp(-10f, -6f, _runVis);
                         float elbowPull = Mathf.Lerp(-18f, -30f, _runVis);
                         float elbowL = Mathf.Lerp(elbowReach, elbowPull, Mathf.Clamp01(sinC) * gait);
@@ -7701,14 +7712,14 @@ namespace Tag.Art
                 float idle = 1f - gait;
                 BodyLife.ArmPump(speed);
                 float gaitSin = sinRaw;
-                // Idle hang sits slightly forward and out. The outward yaw stays on through the
+                // Idle hang sits just behind the chest and out. The outward yaw stays on through the
                 // stride so the hands do not drop into the hips as the walk starts.
                 // Roll stays 0 at rest and only picks up the mild A once the stride is moving.
-                float outY = Mathf.Lerp(12f, 8f, gait);
+                float outY = Mathf.Lerp(12f, 0f, gait);
                 float roll = Mathf.Lerp(0f, armZ, gait);
                 // The reach opposite the front knee opens a little wider. The back arm keeps the
                 // shorter yaw so the hand stays out of the hip. Rearward pitch stays short.
-                float reachY = Mathf.Lerp(outY, outY + 6f, _runVis);
+                float reachY = outY;
                 float yL = Mathf.Lerp(outY, reachY, Mathf.Clamp01(-gaitSin) * gait);
                 float yR = Mathf.Lerp(outY, reachY, Mathf.Clamp01(gaitSin) * gait);
                 // A turn opens both hands a little more. No extra roll, so they stay off the hips.
@@ -7733,8 +7744,8 @@ namespace Tag.Art
                     armBreath = 0f;
                 else
                     armBreath *= 1f - _idlePoseW;
-                float pitchL = LocoFeel.ArmPitch(-gaitSin, speed) - 12f * idle + armBreath + lookAdd * reachL;
-                float pitchR = LocoFeel.ArmPitch(gaitSin, speed) - 12f * idle + armBreath + lookAdd * reachR;
+                float pitchL = LocoFeel.ArmPitch(-gaitSin, speed) + VerbPoseClips.IdleArmPitch * idle + armBreath + lookAdd * reachL;
+                float pitchR = LocoFeel.ArmPitch(gaitSin, speed) + VerbPoseClips.IdleArmPitch * idle + armBreath + lookAdd * reachR;
                 // Stop and the first step. Hands stay forward and out so they do not drift into the hips.
                 float stopBlendF = (!stepping && !air && !sliding && !crouch) ? _stopGait : 0f;
                 float startBlend = (stepping && !air && !_walkFromIdle)
@@ -7837,9 +7848,9 @@ namespace Tag.Art
                             float up = slideLeave;
                             float openGait = Mathf.Max(gaitW, _runVis);
                             float openAmp = Mathf.Lerp(36f, 64f, openGait);
-                            float openOut = Mathf.Lerp(12f, 8f, openGait);
+                            float openOut = Mathf.Lerp(12f, 0f, openGait);
                             float openRoll = Mathf.Lerp(0f, armZ, openGait);
-                            float openReachY = openOut + 6f;
+                            float openReachY = openOut;
                             float openTurn = Mathf.Abs(_turnVis) * 5f;
                             float openYL = Mathf.Lerp(openOut, openReachY, Mathf.Clamp01(-sinC) * openGait) + openTurn;
                             float openYR = Mathf.Lerp(openOut, openReachY, Mathf.Clamp01(sinC) * openGait) + openTurn;
@@ -7866,9 +7877,9 @@ namespace Tag.Art
                         float up = 1f - _dropVis;
                         float openGait = Mathf.Max(gaitW, _runVis);
                         float openAmp = Mathf.Lerp(36f, 64f, openGait);
-                        float openOut = Mathf.Lerp(12f, 8f, openGait);
+                        float openOut = Mathf.Lerp(12f, 0f, openGait);
                         float openRoll = Mathf.Lerp(0f, armZ, openGait);
-                        float openReachY = openOut + 6f;
+                        float openReachY = openOut;
                         float openTurn = Mathf.Abs(_turnVis) * 5f;
                         float openYL = Mathf.Lerp(openOut, openReachY, Mathf.Clamp01(-sinC) * openGait) + openTurn;
                         float openYR = Mathf.Lerp(openOut, openReachY, Mathf.Clamp01(sinC) * openGait) + openTurn;
@@ -8401,8 +8412,8 @@ namespace Tag.Art
                     kneeR = strideLegs.KneeR;
                 }
                 EaseReverse(ref thighL, ref thighR, flip, dt);
-                _ulLT = _ulL0 * Quaternion.Euler(thighL, 0f, 0f);
-                _ulRT = _ulR0 * Quaternion.Euler(thighR, 0f, 0f);
+                _ulLT = _ulL0 * Quaternion.Euler(thighL, -LocoFeel.ThighSpread, 0f);
+                _ulRT = _ulR0 * Quaternion.Euler(thighR, LocoFeel.ThighSpread, 0f);
                 _llLT = _llL0 * Quaternion.Euler(kneeL, 0f, 0f);
                 _llRT = _llR0 * Quaternion.Euler(kneeR, 0f, 0f);
                 // First step pushes off the foot that stays down. The other leg reaches into the stride.
@@ -9341,9 +9352,9 @@ namespace Tag.Art
                     _wallDropSnap = false;
                     float gait = Mathf.Max(gaitW, _runVis);
                     float amp = Mathf.Lerp(36f, 64f, gait);
-                    float outY = Mathf.Lerp(12f, 8f, gait);
+                    float outY = Mathf.Lerp(12f, 0f, gait);
                     float roll = Mathf.Lerp(0f, armZ, gait);
-                    float reachY = outY + 6f;
+                    float reachY = outY;
                     float turnOut = Mathf.Abs(_turnVis) * 5f;
                     float yL = Mathf.Lerp(outY, reachY, Mathf.Clamp01(-sinC) * gait) + turnOut;
                     float yR = Mathf.Lerp(outY, reachY, Mathf.Clamp01(sinC) * gait) + turnOut;
@@ -10770,9 +10781,9 @@ namespace Tag.Art
                 {
                     float gait = Mathf.Max(gaitW, _runVis);
                     float amp = Mathf.Lerp(36f, 64f, gait);
-                    float outY = Mathf.Lerp(12f, 8f, gait);
+                    float outY = Mathf.Lerp(12f, 0f, gait);
                     float roll = Mathf.Lerp(0f, armZ, gait);
-                    float reachY = outY + 6f;
+                    float reachY = outY;
                     float turnOut = Mathf.Abs(_turnVis) * 5f;
                     float yL = Mathf.Lerp(outY, reachY, Mathf.Clamp01(-sinC) * gait) + turnOut;
                     float yR = Mathf.Lerp(outY, reachY, Mathf.Clamp01(sinC) * gait) + turnOut;
@@ -10792,15 +10803,15 @@ namespace Tag.Art
                     gait = Mathf.Lerp(gait, 1f, walkGrapple);
                     float idle = (1f - gait) * (1f - walkGrapple);
                     float amp = Mathf.Lerp(36f, 64f, gait);
-                    float outY = Mathf.Lerp(12f, 8f, gait);
+                    float outY = Mathf.Lerp(12f, 0f, gait);
                     float roll = Mathf.Lerp(0f, armZ, gait);
-                    float reachY = Mathf.Lerp(outY, outY + 6f, _runVis);
+                    float reachY = outY;
                     float turnOut = Mathf.Abs(_turnVis) * 5f;
                     float yL = Mathf.Lerp(outY, reachY, Mathf.Clamp01(-sinC) * gait) + turnOut;
                     float yR = Mathf.Lerp(outY, reachY, Mathf.Clamp01(sinC) * gait) + turnOut;
                     float armBreath = breath * 0.55f * idle;
-                    float pitchL = RunArmPitch(-sinC, amp) - 12f * idle + armBreath;
-                    float pitchR = RunArmPitch(sinC, amp) - 12f * idle + armBreath;
+                    float pitchL = RunArmPitch(-sinC, amp) + VerbPoseClips.IdleArmPitch * idle + armBreath;
+                    float pitchR = RunArmPitch(sinC, amp) + VerbPoseClips.IdleArmPitch * idle + armBreath;
                     float elbowReach = Mathf.Lerp(-10f, -6f, _runVis);
                     float elbowPull = Mathf.Lerp(-18f, -30f, _runVis);
                     float elbowL = Mathf.Lerp(elbowReach, elbowPull, Mathf.Clamp01(sinC) * gait);
@@ -10922,9 +10933,9 @@ namespace Tag.Art
                 {
                     float gait = Mathf.Max(gaitW, _runVis);
                     float amp = Mathf.Lerp(36f, 64f, gait);
-                    float outY = Mathf.Lerp(12f, 8f, gait);
+                    float outY = Mathf.Lerp(12f, 0f, gait);
                     float roll = Mathf.Lerp(0f, armZ, gait);
-                    float reachY = outY + 6f;
+                    float reachY = outY;
                     float turnOut = Mathf.Abs(_turnVis) * 5f;
                     float yL = Mathf.Lerp(outY, reachY, Mathf.Clamp01(-sinC) * gait) + turnOut;
                     float yR = Mathf.Lerp(outY, reachY, Mathf.Clamp01(sinC) * gait) + turnOut;
@@ -10946,15 +10957,15 @@ namespace Tag.Art
                     gait = Mathf.Lerp(gait, 1f, walkTag);
                     float idle = (1f - gait) * (1f - walkTag);
                     float amp = Mathf.Lerp(36f, 64f, gait);
-                    float outY = Mathf.Lerp(12f, 8f, gait);
+                    float outY = Mathf.Lerp(12f, 0f, gait);
                     float roll = Mathf.Lerp(0f, armZ, gait);
-                    float reachY = Mathf.Lerp(outY, outY + 6f, _runVis);
+                    float reachY = outY;
                     float turnOut = Mathf.Abs(_turnVis) * 5f;
                     float yL = Mathf.Lerp(outY, reachY, Mathf.Clamp01(-sinC) * gait) + turnOut;
                     float yR = Mathf.Lerp(outY, reachY, Mathf.Clamp01(sinC) * gait) + turnOut;
                     float armBreath = breath * 0.55f * idle;
-                    float pitchL = RunArmPitch(-sinC, amp) - 12f * idle + armBreath;
-                    float pitchR = RunArmPitch(sinC, amp) - 12f * idle + armBreath;
+                    float pitchL = RunArmPitch(-sinC, amp) + VerbPoseClips.IdleArmPitch * idle + armBreath;
+                    float pitchR = RunArmPitch(sinC, amp) + VerbPoseClips.IdleArmPitch * idle + armBreath;
                     float elbowReach = Mathf.Lerp(-10f, -6f, _runVis);
                     float elbowPull = Mathf.Lerp(-18f, -30f, _runVis);
                     float elbowL = Mathf.Lerp(elbowReach, elbowPull, Mathf.Clamp01(sinC) * gait);
@@ -11045,9 +11056,9 @@ namespace Tag.Art
                 {
                     float gait = Mathf.Max(gaitW, _runVis);
                     float amp = Mathf.Lerp(36f, 64f, gait);
-                    float outY = Mathf.Lerp(12f, 8f, gait);
+                    float outY = Mathf.Lerp(12f, 0f, gait);
                     float roll = Mathf.Lerp(0f, armZ, gait);
-                    float reachY = outY + 6f;
+                    float reachY = outY;
                     float turnOut = Mathf.Abs(_turnVis) * 5f;
                     float yL = Mathf.Lerp(outY, reachY, Mathf.Clamp01(-sinC) * gait) + turnOut;
                     float yR = Mathf.Lerp(outY, reachY, Mathf.Clamp01(sinC) * gait) + turnOut;
@@ -11069,15 +11080,15 @@ namespace Tag.Art
                     gait = Mathf.Lerp(gait, 1f, walkClaim);
                     float idle = (1f - gait) * (1f - walkClaim);
                     float amp = Mathf.Lerp(36f, 64f, gait);
-                    float outY = Mathf.Lerp(12f, 8f, gait);
+                    float outY = Mathf.Lerp(12f, 0f, gait);
                     float roll = Mathf.Lerp(0f, armZ, gait);
-                    float reachY = Mathf.Lerp(outY, outY + 6f, _runVis);
+                    float reachY = outY;
                     float turnOut = Mathf.Abs(_turnVis) * 5f;
                     float yL = Mathf.Lerp(outY, reachY, Mathf.Clamp01(-sinC) * gait) + turnOut;
                     float yR = Mathf.Lerp(outY, reachY, Mathf.Clamp01(sinC) * gait) + turnOut;
                     float armBreath = breath * 0.55f * idle;
-                    float pitchL = RunArmPitch(-sinC, amp) - 12f * idle + armBreath;
-                    float pitchR = RunArmPitch(sinC, amp) - 12f * idle + armBreath;
+                    float pitchL = RunArmPitch(-sinC, amp) + VerbPoseClips.IdleArmPitch * idle + armBreath;
+                    float pitchR = RunArmPitch(sinC, amp) + VerbPoseClips.IdleArmPitch * idle + armBreath;
                     float elbowReach = Mathf.Lerp(-10f, -6f, _runVis);
                     float elbowPull = Mathf.Lerp(-18f, -30f, _runVis);
                     float elbowL = Mathf.Lerp(elbowReach, elbowPull, Mathf.Clamp01(sinC) * gait);
@@ -14723,14 +14734,14 @@ namespace Tag.Art
                 float gait = Mathf.Max(gaitW, _stopGait);
                 float idle = 1f - gait;
                 float amp = Mathf.Lerp(36f, 64f, gait);
-                float outY = Mathf.Lerp(12f, 8f, gait);
+                float outY = Mathf.Lerp(12f, 0f, gait);
                 float roll = Mathf.Lerp(0f, armZ, gait);
-                float reachY = Mathf.Lerp(outY, outY + 6f, _runVis);
+                float reachY = outY;
                 float yL = Mathf.Lerp(outY, reachY, Mathf.Clamp01(-sinC) * gait);
                 float yR = Mathf.Lerp(outY, reachY, Mathf.Clamp01(sinC) * gait);
                 float armBreath = breath * 0.55f * idle;
-                Quaternion runL = _uaL0 * Quaternion.Euler(RunArmPitch(-sinC, amp) - 12f * idle + armBreath, yL, roll);
-                Quaternion runR = _uaR0 * Quaternion.Euler(RunArmPitch(sinC, amp) - 12f * idle + armBreath, -yR, -roll);
+                Quaternion runL = _uaL0 * Quaternion.Euler(RunArmPitch(-sinC, amp) + VerbPoseClips.IdleArmPitch * idle + armBreath, yL, roll);
+                Quaternion runR = _uaR0 * Quaternion.Euler(RunArmPitch(sinC, amp) + VerbPoseClips.IdleArmPitch * idle + armBreath, -yR, -roll);
                 float elbowReach = Mathf.Lerp(-10f, -6f, _runVis);
                 float elbowPull = Mathf.Lerp(-18f, -30f, _runVis);
                 float elbowL = Mathf.Lerp(elbowReach, elbowPull, Mathf.Clamp01(sinC) * gait);
@@ -14769,14 +14780,14 @@ namespace Tag.Art
                 float gait = Mathf.Max(gaitW, _stopGait);
                 float idle = 1f - gait;
                 float amp = Mathf.Lerp(36f, 64f, gait);
-                float outY = Mathf.Lerp(12f, 8f, gait);
+                float outY = Mathf.Lerp(12f, 0f, gait);
                 float roll = Mathf.Lerp(0f, armZ, gait);
-                float reachY = Mathf.Lerp(outY, outY + 6f, _runVis);
+                float reachY = outY;
                 float yL = Mathf.Lerp(outY, reachY, Mathf.Clamp01(-sinC) * gait);
                 float yR = Mathf.Lerp(outY, reachY, Mathf.Clamp01(sinC) * gait);
                 float armBreath = breath * 0.55f * idle;
-                Quaternion runL = _uaL0 * Quaternion.Euler(RunArmPitch(-sinC, amp) - 12f * idle + armBreath, yL, roll);
-                Quaternion runR = _uaR0 * Quaternion.Euler(RunArmPitch(sinC, amp) - 12f * idle + armBreath, -yR, -roll);
+                Quaternion runL = _uaL0 * Quaternion.Euler(RunArmPitch(-sinC, amp) + VerbPoseClips.IdleArmPitch * idle + armBreath, yL, roll);
+                Quaternion runR = _uaR0 * Quaternion.Euler(RunArmPitch(sinC, amp) + VerbPoseClips.IdleArmPitch * idle + armBreath, -yR, -roll);
                 float elbowReach = Mathf.Lerp(-10f, -6f, _runVis);
                 float elbowPull = Mathf.Lerp(-18f, -30f, _runVis);
                 float elbowL = Mathf.Lerp(elbowReach, elbowPull, Mathf.Clamp01(sinC) * gait);
@@ -14815,14 +14826,14 @@ namespace Tag.Art
                 float gait = Mathf.Max(gaitW, _stopGait);
                 float idle = 1f - gait;
                 float amp = Mathf.Lerp(36f, 64f, gait);
-                float outY = Mathf.Lerp(12f, 8f, gait);
+                float outY = Mathf.Lerp(12f, 0f, gait);
                 float roll = Mathf.Lerp(0f, armZ, gait);
-                float reachY = Mathf.Lerp(outY, outY + 6f, _runVis);
+                float reachY = outY;
                 float yL = Mathf.Lerp(outY, reachY, Mathf.Clamp01(-sinC) * gait);
                 float yR = Mathf.Lerp(outY, reachY, Mathf.Clamp01(sinC) * gait);
                 float armBreath = breath * 0.55f * idle;
-                Quaternion runL = _uaL0 * Quaternion.Euler(RunArmPitch(-sinC, amp) - 12f * idle + armBreath, yL, roll);
-                Quaternion runR = _uaR0 * Quaternion.Euler(RunArmPitch(sinC, amp) - 12f * idle + armBreath, -yR, -roll);
+                Quaternion runL = _uaL0 * Quaternion.Euler(RunArmPitch(-sinC, amp) + VerbPoseClips.IdleArmPitch * idle + armBreath, yL, roll);
+                Quaternion runR = _uaR0 * Quaternion.Euler(RunArmPitch(sinC, amp) + VerbPoseClips.IdleArmPitch * idle + armBreath, -yR, -roll);
                 float elbowReach = Mathf.Lerp(-10f, -6f, _runVis);
                 float elbowPull = Mathf.Lerp(-18f, -30f, _runVis);
                 float elbowL = Mathf.Lerp(elbowReach, elbowPull, Mathf.Clamp01(sinC) * gait);
@@ -14897,14 +14908,14 @@ namespace Tag.Art
                     float gait = Mathf.Max(gaitW, _stopGait);
                     float idle = 1f - gait;
                     float amp = Mathf.Lerp(36f, 64f, gait);
-                    float outY = Mathf.Lerp(12f, 8f, gait);
+                    float outY = Mathf.Lerp(12f, 0f, gait);
                     float roll = Mathf.Lerp(0f, armZ, gait);
-                    float reachY = Mathf.Lerp(outY, outY + 6f, _runVis);
+                    float reachY = outY;
                     float yL = Mathf.Lerp(outY, reachY, Mathf.Clamp01(-sinC) * gait);
                     float yR = Mathf.Lerp(outY, reachY, Mathf.Clamp01(sinC) * gait);
                     float armBreath = breath * 0.55f * idle;
-                    Quaternion runL = _uaL0 * Quaternion.Euler(RunArmPitch(-sinC, amp) - 12f * idle + armBreath, yL, roll);
-                    Quaternion runR = _uaR0 * Quaternion.Euler(RunArmPitch(sinC, amp) - 12f * idle + armBreath, -yR, -roll);
+                    Quaternion runL = _uaL0 * Quaternion.Euler(RunArmPitch(-sinC, amp) + VerbPoseClips.IdleArmPitch * idle + armBreath, yL, roll);
+                    Quaternion runR = _uaR0 * Quaternion.Euler(RunArmPitch(sinC, amp) + VerbPoseClips.IdleArmPitch * idle + armBreath, -yR, -roll);
                     float elbowReach = Mathf.Lerp(-10f, -6f, _runVis);
                     float elbowPull = Mathf.Lerp(-18f, -30f, _runVis);
                     float elbowL = Mathf.Lerp(elbowReach, elbowPull, Mathf.Clamp01(sinC) * gait);
@@ -14961,14 +14972,14 @@ namespace Tag.Art
                     float gait = Mathf.Max(gaitW, _stopGait);
                     float idle = 1f - gait;
                     float amp = Mathf.Lerp(36f, 64f, gait);
-                    float outY = Mathf.Lerp(12f, 8f, gait);
+                    float outY = Mathf.Lerp(12f, 0f, gait);
                     float roll = Mathf.Lerp(0f, armZ, gait);
-                    float reachY = Mathf.Lerp(outY, outY + 6f, _runVis);
+                    float reachY = outY;
                     float yL = Mathf.Lerp(outY, reachY, Mathf.Clamp01(-sinC) * gait);
                     float yR = Mathf.Lerp(outY, reachY, Mathf.Clamp01(sinC) * gait);
                     float armBreath = breath * 0.55f * idle;
-                    Quaternion runL = _uaL0 * Quaternion.Euler(RunArmPitch(-sinC, amp) - 12f * idle + armBreath, yL, roll);
-                    Quaternion runR = _uaR0 * Quaternion.Euler(RunArmPitch(sinC, amp) - 12f * idle + armBreath, -yR, -roll);
+                    Quaternion runL = _uaL0 * Quaternion.Euler(RunArmPitch(-sinC, amp) + VerbPoseClips.IdleArmPitch * idle + armBreath, yL, roll);
+                    Quaternion runR = _uaR0 * Quaternion.Euler(RunArmPitch(sinC, amp) + VerbPoseClips.IdleArmPitch * idle + armBreath, -yR, -roll);
                     float elbowReach = Mathf.Lerp(-10f, -6f, _runVis);
                     float elbowPull = Mathf.Lerp(-18f, -30f, _runVis);
                     float elbowL = Mathf.Lerp(elbowReach, elbowPull, Mathf.Clamp01(sinC) * gait);
@@ -15434,6 +15445,8 @@ namespace Tag.Art
                 float pump = Mathf.Sin(_zipAge * 9f) * 8f * rideU;
                 hang.ElbowL += pump;
                 hang.ElbowR -= pump * 0.65f;
+                hang.FootL = ZipPose.SolePitch;
+                hang.FootR = ZipPose.SolePitch;
                 ApplyWallSample(hang, armZ);
                 _zipAge += dt;
                 _zipRelease = -1f;
@@ -15582,6 +15595,40 @@ namespace Tag.Art
                 _jumpPoseAge = -1f;
             if (_dashPoseHeld && _dashPoseAge >= 0f)
                 _dashPoseAge += dt;
+            ApplyEvasionPose();
+        }
+
+        /// <summary>
+        /// Flag-off returns before any bone write. The clip is in-place.
+        /// Sample.Drop lowers the hips bone. The visual root and the capsule stay put.
+        /// </summary>
+        void ApplyEvasionPose()
+        {
+            if (!Tag.Gameplay.EvasionMoves.Enabled || _motor == null) return;
+            EvasionPose.Sample s;
+            if (!Tag.Gameplay.EvasionMoves.TrySample(_motor.GetInstanceID(), out s)) return;
+            if (_hips != null) _hips.localRotation = _hips0 * Quaternion.Euler(s.Hip, s.HipYaw, s.Lean);
+            if (_spine != null) _spine.localRotation = _spine0 * Quaternion.Euler(s.Spine, s.SpineYaw, 0f);
+            if (_head != null) _head.localRotation = _head0 * Quaternion.Euler(s.Head, s.HeadYaw, 0f);
+            if (_upperLegL != null) _upperLegL.localRotation = _ulL0 * Quaternion.Euler(s.ThighL, s.YawL, s.ThighRollL);
+            if (_upperLegR != null) _upperLegR.localRotation = _ulR0 * Quaternion.Euler(s.ThighR, s.YawR, s.ThighRollR);
+            if (_lowerLegL != null) _lowerLegL.localRotation = _llL0 * Quaternion.Euler(s.KneeL, 0f, 0f);
+            if (_lowerLegR != null) _lowerLegR.localRotation = _llR0 * Quaternion.Euler(s.KneeR, 0f, 0f);
+            if (_footL != null) _footL.localRotation = _ftL0 * Quaternion.Euler(s.FootL, 0f, 0f);
+            if (_footR != null) _footR.localRotation = _ftR0 * Quaternion.Euler(s.FootR, 0f, 0f);
+            if (_upperArmL != null) _upperArmL.localRotation = _uaL0 * Quaternion.Euler(s.ArmL, s.ArmYawL, s.RollL);
+            if (_upperArmR != null) _upperArmR.localRotation = _uaR0 * Quaternion.Euler(s.ArmR, s.ArmYawR, s.RollR);
+            if (_lowerArmL != null) _lowerArmL.localRotation = _laL0 * Quaternion.Euler(s.ElbowL, s.ElbowYawL, 0f);
+            if (_lowerArmR != null) _lowerArmR.localRotation = _laR0 * Quaternion.Euler(s.ElbowR, s.ElbowYawR, 0f);
+            if (_hips != null)
+            {
+                if (!_hipsPosSet)
+                {
+                    _hipsPos0 = _hips.localPosition;
+                    _hipsPosSet = true;
+                }
+                _hips.localPosition = _hipsPos0 + new Vector3(0f, s.Drop, 0f);
+            }
         }
 
         /// <summary>
@@ -15642,12 +15689,12 @@ namespace Tag.Art
             pose.ArmYawR = Mathf.Lerp(push.ArmYawR, -AirFeel.ApexYaw, arc);
             pose.ElbowL = Mathf.Lerp(push.ElbowL, AirFeel.ApexElbow, arc);
             pose.ElbowR = Mathf.Lerp(push.ElbowR, AirFeel.ApexElbow, arc);
-            _ulLT = _ulL0 * Quaternion.Euler(pose.ThighL, 0f, 0f);
-            _ulRT = _ulR0 * Quaternion.Euler(pose.ThighR, 0f, 0f);
+            _ulLT = _ulL0 * Quaternion.Euler(pose.ThighL, pose.ThighYawL, 0f);
+            _ulRT = _ulR0 * Quaternion.Euler(pose.ThighR, pose.ThighYawR, 0f);
             _llLT = _llL0 * Quaternion.Euler(pose.KneeL, 0f, 0f);
             _llRT = _llR0 * Quaternion.Euler(pose.KneeR, 0f, 0f);
-            _uaLT = _uaL0 * Quaternion.Euler(pose.ArmPitchL, pose.ArmYawL, armZ);
-            _uaRT = _uaR0 * Quaternion.Euler(pose.ArmPitchR, pose.ArmYawR, -armZ);
+            _uaLT = _uaL0 * Quaternion.Euler(pose.ArmPitchL, pose.ArmYawL, armZ + pose.ArmRollL);
+            _uaRT = _uaR0 * Quaternion.Euler(pose.ArmPitchR, pose.ArmYawR, -armZ + pose.ArmRollR);
             _laLT = _laL0 * Quaternion.Euler(pose.ElbowL, 0f, 0f);
             _laRT = _laR0 * Quaternion.Euler(pose.ElbowR, 0f, 0f);
             _spineT = _spine0 * Quaternion.Euler(pose.Spine, 0f, pose.LeanZ);
@@ -15860,8 +15907,8 @@ namespace Tag.Art
 
         void ApplyWallLegs(WallPose.Sample pose)
         {
-            _ulLT = _ulL0 * Quaternion.Euler(pose.ThighL, 0f, 0f);
-            _ulRT = _ulR0 * Quaternion.Euler(pose.ThighR, 0f, 0f);
+            _ulLT = _ulL0 * Quaternion.Euler(pose.ThighL, pose.ThighYawL, 0f);
+            _ulRT = _ulR0 * Quaternion.Euler(pose.ThighR, pose.ThighYawR, 0f);
             _llLT = _llL0 * Quaternion.Euler(pose.KneeL, 0f, 0f);
             _llRT = _llR0 * Quaternion.Euler(pose.KneeR, 0f, 0f);
             if (pose.FootL != 0f || pose.FootR != 0f)
@@ -16912,6 +16959,9 @@ namespace Tag.Art
             _spineT = Quaternion.Slerp(hangSp, _spineT, drop);
             _hipsT = Quaternion.Slerp(hangHp, _hipsT, drop);
             _headT = Quaternion.Slerp(hangHd, _headT, drop);
+            _stanceSole = true;
+            _solePitchL = ZipPose.SolePitch;
+            _solePitchR = ZipPose.SolePitch;
         }
 
         /// <summary>
@@ -16985,12 +17035,12 @@ namespace Tag.Art
             float roll = AirFeel.BraceArmRoll * brace;
             float yawL = Mathf.Lerp(pose.ArmYawL, 0f, brace);
             float yawR = Mathf.Lerp(pose.ArmYawR, 0f, brace);
-            _ulLT = _ulL0 * Quaternion.Euler(showThighL, -legOut, 0f);
-            _ulRT = _ulR0 * Quaternion.Euler(showThighR, legOut, 0f);
+            _ulLT = _ulL0 * Quaternion.Euler(showThighL, -legOut + pose.ThighYawL, 0f);
+            _ulRT = _ulR0 * Quaternion.Euler(showThighR, legOut + pose.ThighYawR, 0f);
             _llLT = _llL0 * Quaternion.Euler(pose.KneeL, 0f, 0f);
             _llRT = _llR0 * Quaternion.Euler(pose.KneeR, 0f, 0f);
-            _uaLT = _uaL0 * Quaternion.Euler(pose.ArmPitchL, yawL, armZ - roll);
-            _uaRT = _uaR0 * Quaternion.Euler(pose.ArmPitchR, -yawR, -armZ + roll);
+            _uaLT = _uaL0 * Quaternion.Euler(pose.ArmPitchL, yawL, armZ - roll + pose.ArmRollL);
+            _uaRT = _uaR0 * Quaternion.Euler(pose.ArmPitchR, -yawR, -armZ + roll + pose.ArmRollR);
             _laLT = _laL0 * Quaternion.Euler(pose.ElbowL, 0f, 0f);
             _laRT = _laR0 * Quaternion.Euler(pose.ElbowR, 0f, 0f);
             _spineT = _spine0 * Quaternion.Euler(pose.Spine, 0f, 0f);

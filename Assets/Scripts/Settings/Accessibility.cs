@@ -37,15 +37,19 @@ namespace Tag.Settings
             "Default", "Deuteranopia", "Protanopia", "Tritanopia", "High contrast"
         };
 
-        public static readonly string[] PlayerGlyph = { "●", "■", "▲", "◆" };
+        // P1 circle, P2 triangle, P3 square, P4 diamond. Same order as the menu seats.
+        public static readonly string[] PlayerGlyph = { "●", "▲", "■", "◆" };
         public const string ItGlyph = "★";
 
-        // Four light player colors per palette. Pairwise distance stays above
-        // MinPairDistance after deuteranopia, protanopia, and tritanopia
-        // simulation, and each clears MinContrast against the ground albedos.
+        // Palette 0 is the seat paint: P1 red, P2 blue, P3 orange, P4 lavender.
+        // The same hues as MenuMannequin.Swatch. Shapes separate those four.
+        // Palettes 1–4 are the colour-blind sets. Those stay light, and their
+        // pairwise distance stays above MinPairDistance after deuteranopia,
+        // protanopia, and tritanopia simulation. Each of those swatches clears
+        // MinContrast against the ground albedos.
         static readonly float[] PlayerR =
         {
-            0.78f, 0.57f, 1.00f, 0.00f,
+            0.88f, 0.42f, 0.94f, 0.70f,
             0.98f, 0.96f, 0.67f, 0.00f,
             0.95f, 0.57f, 1.00f, 0.01f,
             0.64f, 1.00f, 0.62f, 0.00f,
@@ -53,7 +57,7 @@ namespace Tag.Settings
         };
         static readonly float[] PlayerG =
         {
-            0.78f, 0.99f, 1.00f, 0.84f,
+            0.22f, 0.68f, 0.42f, 0.58f,
             0.69f, 1.00f, 1.00f, 0.85f,
             0.79f, 0.81f, 1.00f, 0.81f,
             0.99f, 0.67f, 1.00f, 0.84f,
@@ -61,7 +65,7 @@ namespace Tag.Settings
         };
         static readonly float[] PlayerB =
         {
-            0.00f, 0.45f, 1.00f, 0.75f,
+            0.24f, 0.92f, 0.14f, 0.88f,
             0.00f, 0.38f, 1.00f, 0.67f,
             0.04f, 0.47f, 0.82f, 1.00f,
             0.00f, 0.39f, 1.00f, 0.76f,
@@ -215,25 +219,33 @@ namespace Tag.Settings
         {
             for (int p = 0; p < Count; p++)
             {
-                for (int cvd = 0; cvd < CvdCount; cvd++)
+                // The default seats are red, blue, orange, and lavender. Red sits
+                // next to orange under a colour-blind simulation, and blue sits
+                // next to lavender. The circle, triangle, square, and diamond
+                // are what separate them. The distance and ground gates belong
+                // to the colour-blind palettes.
+                if (p != Default)
                 {
-                    if (MinPlayerDistance(p, cvd) < MinPairDistance)
-                        return false;
-                }
-                for (int s = 0; s < Players; s++)
-                {
-                    Player(p, s, out float r, out float g, out float b);
-                    if (!ClearsGround(r, g, b)) return false;
+                    for (int cvd = 0; cvd < CvdCount; cvd++)
+                    {
+                        if (MinPlayerDistance(p, cvd) < MinPairDistance)
+                            return false;
+                    }
+                    for (int s = 0; s < Players; s++)
+                    {
+                        Player(p, s, out float r, out float g, out float b);
+                        if (!ClearsGround(r, g, b)) return false;
+                    }
+                    for (int v = 0; v < Verbs; v++)
+                    {
+                        Verb(p, v, out float vr, out float vg, out float vb);
+                        if (!ClearsGround(vr, vg, vb)) return false;
+                    }
                 }
                 It(p, out float ir, out float ig, out float ib);
                 Glow(p, out float gr, out float gg, out float gb);
                 if (!ClearsGround(ir, ig, ib) || !ClearsGround(gr, gg, gb))
                     return false;
-                for (int v = 0; v < Verbs; v++)
-                {
-                    Verb(p, v, out float vr, out float vg, out float vb);
-                    if (!ClearsGround(vr, vg, vb)) return false;
-                }
             }
             return true;
         }

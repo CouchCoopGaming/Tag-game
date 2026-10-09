@@ -94,9 +94,9 @@ namespace Tag.Art
         public const float CrouchArmYaw = 18f;
         public const float CrouchDrop = 0.22f;
 
-        // Idle hang on this rig: a little forward, a little out, elbows nearly straight.
-        // A change that stays inside this hang is an arm twitch.
-        public const float IdleArmPitch = -12f;
+        // Idle hang on this rig: just behind the chest, a little out, elbows nearly straight.
+        // Negative pitch reaches through the chest mesh. A change that stays inside this hang is an arm twitch.
+        public const float IdleArmPitch = 12f;
         public const float IdleArmYaw = 12f;
         public const float IdleElbow = -10f;
         public const float IdleHip = 0f;

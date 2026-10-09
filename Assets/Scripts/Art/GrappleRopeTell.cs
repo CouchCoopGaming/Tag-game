@@ -18,13 +18,26 @@ namespace Tag.Art
         // The old line was 0.06 / 0.03 and disappeared at chase-cam distance.
         public const float RopeStartWidth = 0.16f;
         public const float RopeEndWidth = 0.09f;
+        /// <summary>Core line width. The readable start width, not the old hairline.</summary>
+        public const float RopeDiameter = RopeStartWidth;
         public const float HaloExtra = 0.14f;
+        /// <summary>Mid-span drop once the line has slack. A taut pull stays at 0.</summary>
+        public const float HoldSag = 0.06f;
         public const float AimLength = 2.4f;
         public const float AimWidth = 0.10f;
         public const float HookMarkerSize = 0.32f;
         public const float VerticalImpulse = 0f;
 
         public static float HaloWidth => RopeStartWidth + HaloExtra;
+
+        /// <summary>0 while the rope is taut. A hold eases up to <see cref="HoldSag"/>. Presentation only.</summary>
+        public static float CordSag(float slack)
+        {
+            if (slack < 0f) slack = 0f;
+            if (slack > 1f) slack = 1f;
+            if (slack <= 0.08f) return 0f;
+            return HoldSag * (slack - 0.08f) / 0.92f;
+        }
 
         public static Vector3 Hand(Vector3 origin, Vector3 forward)
         {

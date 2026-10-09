@@ -38,6 +38,8 @@ namespace TagArena.Movement
         public float SuperGlideT { get; private set; } = -1f;
         public Vector3 WallNormal => _probe.Wall.normal;
         public bool WallLeft => _probe.Wall.left;
+        public Collider WallCollider => _probe != null ? _probe.Wall.collider : null;
+        public Vector3 WallPoint => _probe != null ? _probe.Wall.point : Vector3.zero;
         /// <summary>Visual lip only. The mantle timer and the stand point write are unchanged.</summary>
         public bool LedgeHit => _probe != null && _probe.Ledge.hit;
         public Vector3 LedgeStand => _probe != null ? _probe.Ledge.standPoint : Vector3.zero;
@@ -275,6 +277,8 @@ namespace TagArena.Movement
             _clingRefused = false;
             if (_in == null || cfg == null) return;
             _in.Read();
+            // Next frame's stick gesture reads this. A return before the write below leaves it clear.
+            _in.EvasionGrounded = false;
             // Edges are latched in this same Update, then the move consumes them.
             // A frozen pause keeps cling grace, the jump buffer, and every verb timer.
             // An unlocked cursor (results, resume gate) still drops the slots so a card click cannot hop.
@@ -402,6 +406,18 @@ namespace TagArena.Movement
             v = ApplyZipRide(v, dt);
 
             _velocity = VerbIntegration.FiniteOrZero(v);
+            // The reader already sampled the stick this frame, using last frame's grounded flag.
+            _in.EvasionGrounded = grounded;
+            _in.EvasionId = GetInstanceID();
+            float evasionX = _velocity.x;
+            float evasionZ = _velocity.z;
+            _in.EvasionPlanarSpeed = Mathf.Sqrt(evasionX * evasionX + evasionZ * evasionZ);
+            Vector3 evasionRight = transform.right;
+            _in.EvasionLateral = evasionX * evasionRight.x + evasionZ * evasionRight.z;
+            // Evasion is off unless the flag is set. Vertical stays the jump the button wrote.
+            if (Tag.Gameplay.EvasionMoves.Enabled)
+                _velocity = Tag.Gameplay.EvasionMoves.Gate(
+                    GetInstanceID(), _velocity, dt, cfg.groundAccel, cfg.sprintSpeed, transform.forward, transform.right);
             FitController(v.y, CeilingClose());
             CollisionFlags flags = CollisionFlags.None;
             if (_cc != null && _cc.enabled)

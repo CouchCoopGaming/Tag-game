@@ -13,6 +13,7 @@ Cling is not a separate button. Holding move into a wall is the cling. Rebinding
 | Slide | Ctrl (C still slides on the default bind) | East (B) |
 | Air dash | Q (Left Alt still dashes on the default bind) | RB |
 | Punch / tag | LMB (E still punches on the default bind) | West (X) |
+| Grapple / rope | RMB | LT |
 | Sprint | Shift | LB |
 | Pause | Esc (Start also pauses) | Start |
 | Minimap | M | Select |
@@ -25,11 +26,26 @@ Cling is not a separate button. Holding move into a wall is the cling. Rebinding
 | Practice ghost | G | Left stick press |
 | Practice input display | I | Right stick press |
 
+RT is free. The stutter double-tap on RT stays behind `EvasionMoves.Enabled`, and that flag defaults off. A single press of RT does nothing. LT stays the couch rope.
+
 ## Debug
 
 F6 toggles the frame budget overlay. It stays off until you press it. The card shows FPS, frame time in milliseconds, and the same cost buckets as the headless budget: movement, AI, pose, HUD, audio, and round flow. F3 is Trail Tag, so the overlay does not use it. F6 is not a gameplay action and is not in the rebind list.
 
 Practice restart, ghost, and the input display are sampled the same way. T and North (`buttonNorth`) restart a practice run. G and left stick press hide the ghost. I and right stick press show which verbs are held. They are not rebind rows. They do not use F3, F6, M, or Comma. See `Docs/Practice.md`.
+
+## Evasion
+
+These read the pad only while `EvasionMoves.Enabled` is on. The flag starts off, so a normal match does not run them. Keyboard equivalents are written up in `Docs/EvasionMoves.md` and are not bound.
+
+| Move | Gamepad, flag on | Keyboard |
+|---|---|---|
+| Juke | Right stick flicked left or right | Not bound |
+| Spin | Right stick half circle, same direction as the spin | Not bound |
+| Stutter | Double-tap RT, flag on. Side from the left stick. LT stays the couch rope | Not bound |
+| Dive | Airborne forward flick on the right stick, flag on. A held tilt stays look | Not bound |
+
+A sideways flick that returns to center is a juke. A half circle is a spin. An airborne forward flick that returns the same way is a dive. A slow pan, a fast pan that holds, tracking a runner, a snap to look behind, and looking up or down, including an airborne tilt that stays forward, do not start a move. When a juke, a spin, or a dive does start, that one gesture does not also turn the camera. RB stays air dash. LB stays sprint. LT stays the couch rope.
 
 ## Settings
 
@@ -45,7 +61,7 @@ Pause → Settings. The same card is on the direct-play pause menu. Values save 
 | SFX | 1.00 | 0 – 1 |
 | Mute | Off | Comma toggles it |
 | HUD scale | 1.00 | 0.75 – 1.50 |
-| Colorblind palette | Off | Blue / yellow / white / cyan marks |
+| Colorblind palette | Off | Colour-blind sets stay behind this row |
 | Minimap | On | M or Select |
 | Reset to defaults | — | Restores this table |
 | Back | — | Returns to pause |
