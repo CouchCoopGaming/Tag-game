@@ -19,7 +19,7 @@ def create():
     a.allow_below = True
     a.climb_note = "The hull side and the wheelhouse wall are cling faces. The foredeck is the standing surface."
     a.vault_note = "Rail is about 1.05 m above the deck."
-    for lod in (0, 1, 2):
+    for lod in (0, 1):
         g = a.begin(lod)
         _hull(g)
         _deck(g)

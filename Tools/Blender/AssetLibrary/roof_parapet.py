@@ -17,7 +17,7 @@ def create():
     a.climbable = True
     a.climb_note = "Short cling face. A roof edge, not a full wall."
     a.vault_note = "Coping is 0.72 m above its own base."
-    for lod in (0, 1, 2):
+    for lod in (0, 1):
         g = a.begin(lod)
         bev = lod_pick(lod, 0.005, 0.0, 0.0)
         g.box((0, 0.28, 0), (4.0, 0.52, 0.30), "Lib_Brick", bevel=bev, segs=lod_pick(lod, 1, 1, 0))

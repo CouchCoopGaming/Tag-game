@@ -22,7 +22,7 @@ def create():
     )
     a.climb_note = "Seats and footboards are the surfaces. The frame is not a cling wall."
     a.vault_note = "The front footboard is under 0.40 m. Not a vault rail."
-    for lod in (0, 1, 2):
+    for lod in (0, 1):
         g = a.begin(lod)
         _rows(g, lod)
         _frame(g, lod)

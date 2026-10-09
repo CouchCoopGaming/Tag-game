@@ -398,10 +398,14 @@ def create():
     for lod in (0, 1, 2):
         g = a.begin(lod)
         cols = []
-        _wall(g, cols, "z", hz - 0.11, -1.0, span_x, 0.0, PLATE, _front_holes(), body, trim, lod, "Climb_Front")
-        _wall(g, cols, "z", -hz + 0.11, 1.0, span_x, 0.0, PLATE, _back_holes(), body, trim, lod, "Climb_Back")
-        _wall(g, cols, "x", hx - 0.11, -1.0, span_z, 0.0, PLATE, _side_holes(True), body, trim, lod, "Climb_Right")
-        _wall(g, cols, "x", -(hx - 0.11), 1.0, span_z, 0.0, PLATE, _side_holes(False), body, trim, lod, "Climb_Left")
+        front_holes = [] if lod == 2 else _front_holes()
+        back_holes = [] if lod == 2 else _back_holes()
+        right_holes = [] if lod == 2 else _side_holes(True)
+        left_holes = [] if lod == 2 else _side_holes(False)
+        _wall(g, cols, "z", hz - 0.11, -1.0, span_x, 0.0, PLATE, front_holes, body, trim, lod, "Climb_Front")
+        _wall(g, cols, "z", -hz + 0.11, 1.0, span_x, 0.0, PLATE, back_holes, body, trim, lod, "Climb_Back")
+        _wall(g, cols, "x", hx - 0.11, -1.0, span_z, 0.0, PLATE, right_holes, body, trim, lod, "Climb_Right")
+        _wall(g, cols, "x", -(hx - 0.11), 1.0, span_z, 0.0, PLATE, left_holes, body, trim, lod, "Climb_Left")
         _garage_door(g, lod)
         _porch(g, cols, lod)
         _steps(g, cols)

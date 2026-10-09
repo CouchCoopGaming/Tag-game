@@ -16,7 +16,7 @@ def create():
     )
     a.climb_note = "The mast is a 0.28 m tube, not a cling wall."
     a.vault_note = "No rail. The jib is overhead."
-    for lod in (0, 1, 2):
+    for lod in (0, 1):
         g = a.begin(lod)
         seg = lod_pick(lod, 12, 8, 6)
         bev = 0.004 if lod == 0 else 0

@@ -162,13 +162,14 @@ def create():
     for lod in (0, 1, 2):
         g = a.begin(lod)
         seg = lod_pick(lod, 8, 6)
-        n = lod_pick(lod, 28, 16)
+        n = lod_pick(lod, 28, 16, 8)
         solid_hull(g, Z0, Z1, n, profile, _top, "Lib_PaintWhite", bow_extra=0.18, section_fn=section_skiff)
         _house(g, lod, seg)
-        steps = lod_pick(lod, 12, 6)
-        _rails(g, seg, steps)
-        _stripe(g, seg, steps)
-        _chine(g, seg, steps)
+        steps = lod_pick(lod, 12, 6, 4)
+        if lod < 2:
+            _rails(g, seg, steps)
+            _stripe(g, seg, steps)
+            _chine(g, seg, steps)
         if lod == 0:
             _planks(g)
             _motor(g, seg)

@@ -29,7 +29,7 @@ def create():
     a.climbable = True
     a.climb_note = "Both side walls and the back piers are cling faces. The floor is the ground."
     a.vault_note = "No rail. The coping is at 3.4 m."
-    for lod in (0, 1, 2):
+    for lod in (0, 1):
         g = a.begin(lod)
         bev = lod_pick(lod, 0.004, 0.0, 0.0)
         _shell(g, bev)

@@ -28,7 +28,7 @@ def create():
     a.climbable = True
     a.climb_note = "The concrete side walls are the cling faces. The steps are the way down."
     a.vault_note = "The parapet is about 1.08 m above the sidewalk."
-    for lod in (0, 1, 2):
+    for lod in (0, 1):
         g = a.begin(lod)
         _walls(g)
         _steps(g, lod)

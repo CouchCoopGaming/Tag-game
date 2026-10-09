@@ -12,7 +12,7 @@ def create():
     a = Asset("RooftopAC", "Buildings", "Rooftop condenser 1.30 x 0.90 m, 0.85 m tall, two fan grilles, sits on 8 cm rails.")
     a.climb_note = "Not a wall."
     a.vault_note = "Too bulky and low to vault. It is a rooftop obstacle."
-    for lod in (0, 1, 2):
+    for lod in (0, 1):
         g = a.begin(lod)
         bev = 0.006 if lod == 0 else 0
         seg = lod_pick(lod, 12, 8, 6)

@@ -857,7 +857,7 @@
       },
       {
         "lod": 2,
-        "tris": 948,
+        "tris": 792,
         "materials": [
           "Lib_Log0",
           "Lib_Log1",
@@ -865,8 +865,6 @@
           "Lib_Log3",
           "Lib_Chink",
           "Lib_Log4",
-          "Lib_Batten",
-          "Lib_ShopGlass",
           "Lib_Wood",
           "Lib_WoodDark",
           "Lib_Roof"
@@ -2191,17 +2189,6 @@
         ],
         "mesh": "LOD1",
         "fileID": -179393741545503174
-      },
-      {
-        "lod": 2,
-        "tris": 364,
-        "materials": [
-          "Lib_Wood",
-          "Lib_WoodDark",
-          "Lib_SteelDark"
-        ],
-        "mesh": "LOD2",
-        "fileID": 736115405485880582
       }
     ],
     "colliders": [
@@ -3849,8 +3836,7 @@
     "fbxNames": [
       "LODBoxS",
       "LOD0",
-      "LOD1",
-      "LOD2"
+      "LOD1"
     ],
     "slackCm": 0.0,
     "license": {
@@ -4461,19 +4447,6 @@
         ],
         "mesh": "LOD1",
         "fileID": -179393741545503174
-      },
-      {
-        "lod": 2,
-        "tris": 312,
-        "materials": [
-          "Lib_Brick",
-          "Lib_Concrete",
-          "Lib_Wood",
-          "Lib_WoodDark",
-          "Lib_ShopGlass"
-        ],
-        "mesh": "LOD2",
-        "fileID": 736115405485880582
       }
     ],
     "colliders": [
@@ -4544,17 +4517,16 @@
     "fbxNames": [
       "LODBoxS",
       "LOD0",
-      "LOD1",
-      "LOD2"
+      "LOD1"
     ],
     "slackCm": 0.47,
-    "fbx": "Assets/Art/Props/Library/Buildings/Brick_Wall.fbx",
     "license": {
       "spdx": "CC0-1.0",
       "source": "original",
       "url": "",
       "notes": "Procedural mesh built in this repo."
-    }
+    },
+    "fbx": "Assets/Art/Props/Library/Buildings/Brick_Wall.fbx"
   },
   {
     "name": "Brick_Window",
@@ -6211,18 +6183,6 @@
         ],
         "mesh": "LOD1",
         "fileID": -179393741545503174
-      },
-      {
-        "lod": 2,
-        "tris": 136,
-        "materials": [
-          "Lib_Concrete",
-          "Lib_SteelDark",
-          "Lib_Steel",
-          "Lib_CraneYellow"
-        ],
-        "mesh": "LOD2",
-        "fileID": 736115405485880582
       }
     ],
     "colliders": [
@@ -6412,17 +6372,16 @@
     "fbxNames": [
       "LODBoxS",
       "LOD0",
-      "LOD1",
-      "LOD2"
+      "LOD1"
     ],
     "slackCm": 0.0,
-    "fbx": "Assets/Art/Props/Library/Harbor/HarborCrane.fbx",
     "license": {
       "spdx": "CC0-1.0",
       "source": "original",
       "url": "",
       "notes": "Procedural mesh built in this repo."
-    }
+    },
+    "fbx": "Assets/Art/Props/Library/Harbor/HarborCrane.fbx"
   },
   {
     "name": "Crate",
@@ -7569,13 +7528,12 @@
       },
       {
         "lod": 2,
-        "tris": 672,
+        "tris": 336,
         "materials": [
           "Lib_PileWet",
           "Lib_PileAlgae",
           "Lib_Pile",
           "Lib_WoodDark",
-          "Lib_Wood",
           "Lib_WoodWeather"
         ],
         "mesh": "LOD2",
@@ -9151,18 +9109,6 @@
         ],
         "mesh": "LOD1",
         "fileID": -179393741545503174
-      },
-      {
-        "lod": 2,
-        "tris": 120,
-        "materials": [
-          "Lib_Siding",
-          "Lib_PaintWhite",
-          "Lib_Concrete",
-          "Lib_Roof"
-        ],
-        "mesh": "LOD2",
-        "fileID": 736115405485880582
       }
     ],
     "colliders": [
@@ -9385,17 +9331,16 @@
     "fbxNames": [
       "LODBoxS",
       "LOD0",
-      "LOD1",
-      "LOD2"
+      "LOD1"
     ],
     "slackCm": 0.19,
-    "fbx": "Assets/Art/Props/Library/Buildings/Garage.fbx",
     "license": {
       "spdx": "CC0-1.0",
       "source": "original",
       "url": "",
       "notes": "Procedural mesh built in this repo."
-    }
+    },
+    "fbx": "Assets/Art/Props/Library/Buildings/Garage.fbx"
   },
   {
     "name": "GasCanopy",
@@ -9458,19 +9403,13 @@
       },
       {
         "lod": 2,
-        "tris": 1064,
+        "tris": 120,
         "materials": [
           "Lib_Asphalt",
           "Lib_PaintWhite",
-          "Lib_PaintRed",
           "Lib_Steel",
-          "Lib_Black",
-          "Lib_PaintYellow",
-          "Lib_Concrete",
           "Lib_Siding",
-          "Lib_Roof",
-          "Lib_WoodDark",
-          "Lib_ShopGlass"
+          "Lib_Roof"
         ],
         "mesh": "LOD2",
         "fileID": 736115405485880582
@@ -11060,14 +10999,9 @@
       },
       {
         "lod": 2,
-        "tris": 1720,
+        "tris": 48,
         "materials": [
           "Lib_Siding",
-          "Lib_Concrete",
-          "Lib_Window",
-          "Lib_PaintWhite",
-          "Lib_Interior",
-          "Lib_WoodDark",
           "Lib_Wood",
           "Lib_Roof",
           "Lib_Brick"
@@ -11958,13 +11892,13 @@
       "LOD2"
     ],
     "slackCm": 1.9,
-    "fbx": "Assets/Art/Props/Library/Buildings/House_Gable.fbx",
     "license": {
       "spdx": "CC0-1.0",
       "source": "original",
       "url": "",
       "notes": "Procedural mesh built in this repo."
-    }
+    },
+    "fbx": "Assets/Art/Props/Library/Buildings/House_Gable.fbx"
   },
   {
     "name": "House_Hip",
@@ -12025,14 +11959,9 @@
       },
       {
         "lod": 2,
-        "tris": 1688,
+        "tris": 48,
         "materials": [
           "Lib_PaintCream",
-          "Lib_Concrete",
-          "Lib_Window",
-          "Lib_PaintWhite",
-          "Lib_Interior",
-          "Lib_WoodDark",
           "Lib_Wood",
           "Lib_Roof",
           "Lib_Brick"
@@ -12923,13 +12852,13 @@
       "LOD2"
     ],
     "slackCm": 1.9,
-    "fbx": "Assets/Art/Props/Library/Buildings/House_Hip.fbx",
     "license": {
       "spdx": "CC0-1.0",
       "source": "original",
       "url": "",
       "notes": "Procedural mesh built in this repo."
-    }
+    },
+    "fbx": "Assets/Art/Props/Library/Buildings/House_Hip.fbx"
   },
   {
     "name": "LaneArrow",
@@ -18131,16 +18060,6 @@
         ],
         "mesh": "LOD1",
         "fileID": -179393741545503174
-      },
-      {
-        "lod": 2,
-        "tris": 36,
-        "materials": [
-          "Lib_Brick",
-          "Lib_Concrete"
-        ],
-        "mesh": "LOD2",
-        "fileID": 736115405485880582
       }
     ],
     "colliders": [
@@ -18211,17 +18130,16 @@
     "fbxNames": [
       "LODBoxS",
       "LOD0",
-      "LOD1",
-      "LOD2"
+      "LOD1"
     ],
     "slackCm": 2.2,
-    "fbx": "Assets/Art/Props/Library/Buildings/Roof_Parapet.fbx",
     "license": {
       "spdx": "CC0-1.0",
       "source": "original",
       "url": "",
       "notes": "Procedural mesh built in this repo."
-    }
+    },
+    "fbx": "Assets/Art/Props/Library/Buildings/Roof_Parapet.fbx"
   },
   {
     "name": "RooftopAC",
@@ -18264,17 +18182,6 @@
         ],
         "mesh": "LOD1",
         "fileID": -179393741545503174
-      },
-      {
-        "lod": 2,
-        "tris": 132,
-        "materials": [
-          "Lib_SteelDark",
-          "Lib_Steel",
-          "Lib_Black"
-        ],
-        "mesh": "LOD2",
-        "fileID": 736115405485880582
       }
     ],
     "colliders": [
@@ -18345,17 +18252,16 @@
     "fbxNames": [
       "LODBoxS",
       "LOD0",
-      "LOD1",
-      "LOD2"
+      "LOD1"
     ],
     "slackCm": 2.8,
-    "fbx": "Assets/Art/Props/Library/Buildings/RooftopAC.fbx",
     "license": {
       "spdx": "CC0-1.0",
       "source": "original",
       "url": "",
       "notes": "Procedural mesh built in this repo."
-    }
+    },
+    "fbx": "Assets/Art/Props/Library/Buildings/RooftopAC.fbx"
   },
   {
     "name": "RopeCoil",
@@ -18704,18 +18610,6 @@
         ],
         "mesh": "LOD1",
         "fileID": -179393741545503174
-      },
-      {
-        "lod": 2,
-        "tris": 96,
-        "materials": [
-          "Lib_Brick",
-          "Lib_Window",
-          "Lib_SteelDark",
-          "Lib_WoodDark"
-        ],
-        "mesh": "LOD2",
-        "fileID": 736115405485880582
       }
     ],
     "colliders": [
@@ -18843,17 +18737,16 @@
     "fbxNames": [
       "LODBoxS",
       "LOD0",
-      "LOD1",
-      "LOD2"
+      "LOD1"
     ],
     "slackCm": 1.5,
-    "fbx": "Assets/Art/Props/Library/Buildings/ShopFront.fbx",
     "license": {
       "spdx": "CC0-1.0",
       "source": "original",
       "url": "",
       "notes": "Procedural mesh built in this repo."
-    }
+    },
+    "fbx": "Assets/Art/Props/Library/Buildings/ShopFront.fbx"
   },
   {
     "name": "Shrub",
@@ -19327,20 +19220,10 @@
       },
       {
         "lod": 2,
-        "tris": 2976,
+        "tris": 60,
         "materials": [
           "Lib_Brick",
-          "Lib_Concrete",
-          "Lib_Window",
-          "Lib_PaintCream",
-          "Lib_WindowLit",
-          "Lib_Interior",
-          "Lib_ShopGlass",
-          "Lib_Wood",
-          "Lib_WoodDark",
-          "Lib_SteelDark",
-          "Lib_PaintRed",
-          "Lib_Awning"
+          "Lib_Concrete"
         ],
         "mesh": "LOD2",
         "fileID": 736115405485880582
@@ -21527,13 +21410,13 @@
       "LOD2"
     ],
     "slackCm": 0.2,
-    "fbx": "Assets/Art/Props/Library/Buildings/Store_Corner.fbx",
     "license": {
       "spdx": "CC0-1.0",
       "source": "original",
       "url": "",
       "notes": "Procedural mesh built in this repo."
-    }
+    },
+    "fbx": "Assets/Art/Props/Library/Buildings/Store_Corner.fbx"
   },
   {
     "name": "Store_Diner",
@@ -21599,19 +21482,10 @@
       },
       {
         "lod": 2,
-        "tris": 1492,
+        "tris": 60,
         "materials": [
           "Lib_PaintCream",
-          "Lib_Brick",
-          "Lib_Concrete",
-          "Lib_Window",
-          "Lib_PaintRed",
-          "Lib_Interior",
-          "Lib_WindowLit",
-          "Lib_Steel",
-          "Lib_ShopGlass",
-          "Lib_Wood",
-          "Lib_SteelDark"
+          "Lib_Concrete"
         ],
         "mesh": "LOD2",
         "fileID": 736115405485880582
@@ -22734,13 +22608,13 @@
       "LOD2"
     ],
     "slackCm": 0.2,
-    "fbx": "Assets/Art/Props/Library/Buildings/Store_Diner.fbx",
     "license": {
       "spdx": "CC0-1.0",
       "source": "original",
       "url": "",
       "notes": "Procedural mesh built in this repo."
-    }
+    },
+    "fbx": "Assets/Art/Props/Library/Buildings/Store_Diner.fbx"
   },
   {
     "name": "Store_Laundromat",
@@ -22805,17 +22679,10 @@
       },
       {
         "lod": 2,
-        "tris": 2736,
+        "tris": 60,
         "materials": [
           "Lib_PaintWhite",
-          "Lib_Concrete",
-          "Lib_Window",
-          "Lib_PaintTeal",
-          "Lib_WindowLit",
-          "Lib_Interior",
-          "Lib_Brick",
-          "Lib_ShopGlass",
-          "Lib_SteelDark"
+          "Lib_Concrete"
         ],
         "mesh": "LOD2",
         "fileID": 736115405485880582
@@ -24660,13 +24527,13 @@
       "LOD2"
     ],
     "slackCm": 0.2,
-    "fbx": "Assets/Art/Props/Library/Buildings/Store_Laundromat.fbx",
     "license": {
       "spdx": "CC0-1.0",
       "source": "original",
       "url": "",
       "notes": "Procedural mesh built in this repo."
-    }
+    },
+    "fbx": "Assets/Art/Props/Library/Buildings/Store_Laundromat.fbx"
   },
   {
     "name": "Storefront_Glass",
@@ -24717,20 +24584,6 @@
         ],
         "mesh": "LOD1",
         "fileID": -179393741545503174
-      },
-      {
-        "lod": 2,
-        "tris": 144,
-        "materials": [
-          "Lib_Brick",
-          "Lib_Concrete",
-          "Lib_Window",
-          "Lib_SteelDark",
-          "Lib_WoodDark",
-          "Lib_Wood"
-        ],
-        "mesh": "LOD2",
-        "fileID": 736115405485880582
       }
     ],
     "colliders": [
@@ -24858,17 +24711,16 @@
     "fbxNames": [
       "LODBoxS",
       "LOD0",
-      "LOD1",
-      "LOD2"
+      "LOD1"
     ],
     "slackCm": 0.8,
-    "fbx": "Assets/Art/Props/Library/Buildings/Storefront_Glass.fbx",
     "license": {
       "spdx": "CC0-1.0",
       "source": "original",
       "url": "",
       "notes": "Procedural mesh built in this repo."
-    }
+    },
+    "fbx": "Assets/Art/Props/Library/Buildings/Storefront_Glass.fbx"
   },
   {
     "name": "StormDrain",
@@ -25736,17 +25588,6 @@
         ],
         "mesh": "LOD1",
         "fileID": -179393741545503174
-      },
-      {
-        "lod": 2,
-        "tris": 48,
-        "materials": [
-          "Lib_Bark",
-          "Lib_PalmDry",
-          "Lib_Palm"
-        ],
-        "mesh": "LOD2",
-        "fileID": 736115405485880582
       }
     ],
     "colliders": [
@@ -25772,17 +25613,16 @@
     "fbxNames": [
       "LODBoxS",
       "LOD0",
-      "LOD1",
-      "LOD2"
+      "LOD1"
     ],
     "slackCm": 0.0,
-    "fbx": "Assets/Art/Props/Library/Park/Tree_Palm.fbx",
     "license": {
       "spdx": "CC0-1.0",
       "source": "original",
       "url": "",
       "notes": "Procedural mesh built in this repo."
-    }
+    },
+    "fbx": "Assets/Art/Props/Library/Park/Tree_Palm.fbx"
   },
   {
     "name": "Tree_Pine",
@@ -25828,7 +25668,7 @@
       },
       {
         "lod": 2,
-        "tris": 528,
+        "tris": 384,
         "materials": [
           "Lib_Bark",
           "Lib_Needle",
@@ -25884,13 +25724,13 @@
       "LOD2"
     ],
     "slackCm": 2.27,
-    "fbx": "Assets/Art/Props/Library/Park/Tree_Pine.fbx",
     "license": {
       "spdx": "CC0-1.0",
       "source": "original",
       "url": "",
       "notes": "Procedural mesh built in this repo."
-    }
+    },
+    "fbx": "Assets/Art/Props/Library/Park/Tree_Pine.fbx"
   },
   {
     "name": "UtilityPole",
@@ -26620,16 +26460,6 @@
         ],
         "mesh": "LOD1",
         "fileID": -179393741545503174
-      },
-      {
-        "lod": 2,
-        "tris": 180,
-        "materials": [
-          "Lib_SteelDark",
-          "Lib_Steel"
-        ],
-        "mesh": "LOD2",
-        "fileID": 736115405485880582
       }
     ],
     "colliders": [
@@ -26703,17 +26533,16 @@
     "fbxNames": [
       "LODBoxS",
       "LOD0",
-      "LOD1",
-      "LOD2"
+      "LOD1"
     ],
     "slackCm": 1.7,
-    "fbx": "Assets/Art/Props/Library/Buildings/WaterTank.fbx",
     "license": {
       "spdx": "CC0-1.0",
       "source": "original",
       "url": "",
       "notes": "Procedural mesh built in this repo."
-    }
+    },
+    "fbx": "Assets/Art/Props/Library/Buildings/WaterTank.fbx"
   },
   {
     "name": "WoodFence",
@@ -27192,13 +27021,11 @@
       },
       {
         "lod": 2,
-        "tris": 1148,
+        "tris": 260,
         "materials": [
           "Lib_PaintWhite",
           "Lib_SteelDark",
-          "Lib_ShopGlass",
-          "Lib_Steel",
-          "Lib_PaintRed"
+          "Lib_ShopGlass"
         ],
         "mesh": "LOD2",
         "fileID": 736115405485880582
@@ -27372,13 +27199,12 @@
       },
       {
         "lod": 2,
-        "tris": 324,
+        "tris": 120,
         "materials": [
           "Lib_Concrete",
           "Lib_Board",
-          "Lib_Varnish",
-          "Lib_Batten",
-          "Lib_Roof"
+          "Lib_Roof",
+          "Lib_Varnish"
         ],
         "mesh": "LOD2",
         "fileID": 736115405485880582
@@ -30224,17 +30050,13 @@
       },
       {
         "lod": 2,
-        "tris": 1688,
+        "tris": 296,
         "materials": [
           "Lib_Siding",
-          "Lib_Concrete",
-          "Lib_Window",
           "Lib_PaintWhite",
-          "Lib_Interior",
-          "Lib_WoodDark",
-          "Lib_WindowLit",
           "Lib_Wood",
           "Lib_RanchRoof",
+          "Lib_Concrete",
           "Lib_Brick"
         ],
         "mesh": "LOD2",
@@ -33305,17 +33127,6 @@
         ],
         "mesh": "LOD1",
         "fileID": -179393741545503174
-      },
-      {
-        "lod": 2,
-        "tris": 108,
-        "materials": [
-          "Lib_Brick",
-          "Lib_Concrete",
-          "Lib_Asphalt"
-        ],
-        "mesh": "LOD2",
-        "fileID": 736115405485880582
       }
     ],
     "colliders": [
@@ -33462,8 +33273,7 @@
     "fbxNames": [
       "LODBoxS",
       "LOD0",
-      "LOD1",
-      "LOD2"
+      "LOD1"
     ],
     "slackCm": 0.0,
     "license": {
@@ -33516,17 +33326,6 @@
         ],
         "mesh": "LOD1",
         "fileID": -179393741545503174
-      },
-      {
-        "lod": 2,
-        "tris": 132,
-        "materials": [
-          "Lib_Concrete",
-          "Lib_SteelDark",
-          "Lib_Steel"
-        ],
-        "mesh": "LOD2",
-        "fileID": 736115405485880582
       }
     ],
     "colliders": [
@@ -33768,8 +33567,7 @@
     "fbxNames": [
       "LODBoxS",
       "LOD0",
-      "LOD1",
-      "LOD2"
+      "LOD1"
     ],
     "slackCm": 0.0,
     "license": {
@@ -34014,15 +33812,6 @@
         ],
         "mesh": "LOD1",
         "fileID": -179393741545503174
-      },
-      {
-        "lod": 2,
-        "tris": 48,
-        "materials": [
-          "Lib_Concrete"
-        ],
-        "mesh": "LOD2",
-        "fileID": 736115405485880582
       }
     ],
     "colliders": [
@@ -34169,8 +33958,7 @@
     "fbxNames": [
       "LODBoxS",
       "LOD0",
-      "LOD1",
-      "LOD2"
+      "LOD1"
     ],
     "slackCm": 0.0,
     "license": {
@@ -34222,15 +34010,6 @@
         ],
         "mesh": "LOD1",
         "fileID": -179393741545503174
-      },
-      {
-        "lod": 2,
-        "tris": 108,
-        "materials": [
-          "Lib_Concrete"
-        ],
-        "mesh": "LOD2",
-        "fileID": 736115405485880582
       }
     ],
     "colliders": [
@@ -34377,8 +34156,7 @@
     "fbxNames": [
       "LODBoxS",
       "LOD0",
-      "LOD1",
-      "LOD2"
+      "LOD1"
     ],
     "slackCm": 0.0,
     "license": {
@@ -34430,17 +34208,6 @@
         ],
         "mesh": "LOD1",
         "fileID": -179393741545503174
-      },
-      {
-        "lod": 2,
-        "tris": 168,
-        "materials": [
-          "Lib_Steel",
-          "Lib_SteelDark",
-          "Lib_Concrete"
-        ],
-        "mesh": "LOD2",
-        "fileID": 736115405485880582
       }
     ],
     "colliders": [
@@ -34626,8 +34393,7 @@
     "fbxNames": [
       "LODBoxS",
       "LOD0",
-      "LOD1",
-      "LOD2"
+      "LOD1"
     ],
     "slackCm": 0.0,
     "license": {
@@ -34689,19 +34455,6 @@
         ],
         "mesh": "LOD1",
         "fileID": -179393741545503174
-      },
-      {
-        "lod": 2,
-        "tris": 120,
-        "materials": [
-          "Lib_PaintWhite",
-          "Lib_PaintRed",
-          "Lib_Rubber",
-          "Lib_Concrete",
-          "Lib_PaintBlue"
-        ],
-        "mesh": "LOD2",
-        "fileID": 736115405485880582
       }
     ],
     "colliders": [
@@ -34869,8 +34622,7 @@
     "fbxNames": [
       "LODBoxS",
       "LOD0",
-      "LOD1",
-      "LOD2"
+      "LOD1"
     ],
     "slackCm": 0.0,
     "license": {

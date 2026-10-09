@@ -834,6 +834,14 @@ def build_store(profile):
         span_z = sz - thick * 2 - 0.012
         for lod in (0, 1, 2):
             g = a.begin(lod)
+            if lod == 2:
+                g.box((0, wall_h * 0.5, front_z), (span_x, wall_h, thick), profile["body"])
+                g.box((0, wall_h * 0.5, back_z), (span_x, wall_h, thick), profile["body"])
+                g.box((side_x, wall_h * 0.5, 0), (thick, wall_h, span_z), profile["body"])
+                g.box((-side_x, wall_h * 0.5, 0), (thick, wall_h, span_z), profile["body"])
+                g.box((0, wall_h + 0.08, 0), (sx, 0.10, sz), "Lib_Concrete", uv_scale=0.6)
+                a.end()
+                continue
             cols = []
             _wall(
                 g, cols, "z", front_z, -1.0, span_x, 0.0, wall_h,
@@ -1037,6 +1045,14 @@ def build_house(profile):
         thick = 0.18
         for lod in (0, 1, 2):
             g = a.begin(lod)
+            if lod == 2:
+                g.box((0, wall_h * 0.5, shift), (sx, wall_h, body_z), profile["body"])
+                deck_z = shift + hz + porch * 0.5
+                g.box((0, 0.30, deck_z), (sx * 0.72, 0.16, porch - 0.05), "Lib_Wood")
+                g.box((0, wall_h + profile["rise"] * 0.35, shift), (sx + 0.2, profile["rise"] * 0.55, body_z + 0.2), "Lib_Roof")
+                g.box((hx * 0.28, wall_h + profile["rise"] + 0.45, shift), (0.50, 0.80, 0.16), "Lib_Brick")
+                a.end()
+                continue
             cols = []
 
             def wz(z):

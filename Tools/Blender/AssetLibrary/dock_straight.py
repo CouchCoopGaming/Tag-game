@@ -51,7 +51,7 @@ def create():
         g = a.begin(lod)
         seg = lod_pick(lod, 10, 6)
         for x, z in piles:
-            _pile(g, x, z, seg if lod == 0 else 6)
+            _pile(g, x, z, seg if lod == 0 else (4 if lod == 2 else 6))
         _frame(g, lod)
         _planks(g, lod)
         if lod == 0:
@@ -96,7 +96,7 @@ def _frame(g, lod):
     """One timber per line, directly under the planks. Joists stay behind the stringer faces."""
     for x in (-STRINGER_X, 0.0, STRINGER_X):
         _one_timber(g, (x, STRINGER_Y, 0.0), (STRINGER_T, STRINGER_D, 5.50))
-    count = lod_pick(lod, 7, 4)
+    count = lod_pick(lod, 7, 4, 0)
     # Two bays. Each joist stops short of the stringers so the shells do not overlap,
     # and the ends stay behind the outer stringer face.
     x_outer = STRINGER_X - STRINGER_T * 0.5 - 0.012
@@ -228,7 +228,7 @@ def _plank_lift(i):
 
 
 def _planks(g, lod):
-    count = lod_pick(lod, PLANKS, PLANKS // 2)
+    count = lod_pick(lod, PLANKS, PLANKS // 2, 4)
     pitch = LENGTH / count
     board = pitch - PLANK_GAP
     for i in range(count):

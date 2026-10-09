@@ -338,7 +338,8 @@ def create():
         g.box((W * 0.5 - 0.04, 1.22, 0), (0.06, 2.15, D - 0.20), "Lib_Board")
         g.box((-0.95, 1.22, D * 0.5 - 0.04), (1.15, 2.15, 0.06), "Lib_Board")
         g.box((1.15, 1.22, D * 0.5 - 0.04), (0.85, 2.15, 0.06), "Lib_Board")
-        g.box((0.175, 2.165, D * 0.5 - 0.04), (1.06, 0.26, 0.06), "Lib_Board")
+        if lod < 2:
+            g.box((0.175, 2.165, D * 0.5 - 0.04), (1.06, 0.26, 0.06), "Lib_Board")
         if lod == 0:
             _siding(g)
             _corners(g)
@@ -347,8 +348,9 @@ def create():
             _door(g, lod)
             _window_z(g, 1.18, 1.58, lod)
             _window_x(g, 0.10, 1.55, lod)
-        _plate(g)
-        _gables(g)
+        if lod < 2:
+            _plate(g)
+            _gables(g)
         _roof(g)
         a.end()
     a.box("Col_Floor", (0, 0.04, 0), (3.40, 0.04, 2.50))

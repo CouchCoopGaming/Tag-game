@@ -27,7 +27,7 @@ def create():
     a.climbable = True
     a.climb_note = "Piers are cling. Glass and the door are solid. Exterior is +Z."
     a.vault_note = "No rail. The head is at 3.2 m."
-    for lod in (0, 1, 2):
+    for lod in (0, 1):
         g = a.begin(lod)
         bev = lod_pick(lod, 0.005, 0.0, 0.0)
         g.box((-1.55, 1.60, 0), (0.90, H, T), "Lib_Brick", bevel=bev, segs=1)

@@ -14,7 +14,7 @@ def create():
     a.climbable = True
     a.climb_note = "Side walls are cling. The overhead door is closed."
     a.vault_note = "No rail."
-    for lod in (0, 1, 2):
+    for lod in (0, 1):
         g = a.begin(lod)
         bev = 0.006 if lod == 0 else 0
         g.box((0, 1.25, -3.02), (3.6, 2.5, 0.16), "Lib_Siding", bevel=bev, segs=1, uv_scale=1.0)

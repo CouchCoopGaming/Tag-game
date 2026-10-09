@@ -26,7 +26,7 @@ def create():
     a.climbable = True
     a.climb_note = "The long walls are cling faces. Doors face +Z."
     a.vault_note = "No rail. The roof edge is at about 2.7 m."
-    for lod in (0, 1, 2):
+    for lod in (0, 1):
         g = a.begin(lod)
         _shell(g, lod)
         if lod < 2:
