@@ -1,6 +1,6 @@
 # World ledger
 
-Status of each map area after pass 7. Gray means the live solids are still the Mega Park cubes from `MegaParkP1Layout.BuildSolids`. Polished means library prefabs are placed on top. Z7 hides its infield lumps in play. Z1, Z2, Z3, Z4, Z5, and Z6 leave their gray toys in place. This head includes the `cursor/tag-street-objects` merge (`7dc3e222`), the street-kit merges (`bc02b9c4`, then `3040d2e5`), and the asset-library merge (`723cc137`). GateLeaf, the fixed bench and trash colliders, and the StrafeJumpSim proof line stayed. Street-kit tip `a5e0e40d` reshapes the midsize sedan and does not seat the compact wheels or add the pickup nose, so it was not merged. Asset-library tip `09958348` cuts LOD2 and does not rebuild the store letters, so that branch was not merged.
+Status of each map area after pass 7. Gray means the live solids are still the Mega Park cubes from `MegaParkP1Layout.BuildSolids`. Polished means library prefabs are placed on top. Z7 hides its infield lumps in play. Z1, Z2, Z3, Z4, Z5, and Z6 leave their gray toys in place. This head includes the `cursor/tag-street-objects` merge (`7dc3e222`), the street-kit merges (`bc02b9c4`, `3040d2e5`, then `0aa3061e`), and the asset-library merge (`723cc137`). GateLeaf, the fixed bench and trash colliders, and the StrafeJumpSim proof line stayed. Street-kit `0aa3061e` is merged: compact wheel boxes sit at y = 0.010 and the pickup bumper reaches z = 2.493. Asset-library tip `09958348` cuts LOD2 and does not rebuild the store letters, so that branch was not merged.
 
 The headless audit still counts every solid. Hiding a lump in `MegaParkP1Bootstrap` does not change `BuildSolids`, so the Mega Park proof line stays the same.
 
@@ -47,7 +47,7 @@ Placed at scale 1, 46 instances, 26 unique prefabs:
 - Five sidewalk bays at z = 29.6. The west door bay and the window beside it are `WalkUp` at (85.50, 0, 24.63), front +Z, stoop ending at z = 28.55. The east door wall is now `Cabin` at (100.25, 0, 24.65), front +Z, step ending at z = 28.52, west face x = 98.08. The window bay at x = 96 and the wall at x = 92 stay. `RooftopAC` stays on the wall top at y = 3.2.
 - Two `Brick_Wall` climb faces, yaw 90, at x = 71.75, z = 33 and 37. Union face is 8.00 m, height 3.19 m.
 - Gazebo at (77.53, 0, 35), yaw 180, so the entry faces the climb. The merged gazebo collider tops at y = 3.53, so the roof AC pivot is y = 3.53. The same seat is used in Z2 and Z3. Outer west face (the step) is x = 75.16. Deck west face stays x = 76.33.
-- Parked on the north lane, yaw 90, pivot y = 0.12: `Sedan_Compact_25` at x = 84.6, `Hatch_Compact_25` at x = 89.4, `Crossover_Compact_25` at x = 94.4, `Pickup_FullSize_25` at x = 99.8. The pickup came in by merging #125 at `3040d2e5`. The restored `Car_Pickup_25` blockout is no longer placed.
+- Parked on the north lane, yaw 90, pivot y = 0.12: `Sedan_Compact_25` at x = 84.6, `Hatch_Compact_25` at x = 89.4, `Crossover_Compact_25` at x = 94.4, `Pickup_FullSize_25` at x = 99.8. Street-kit `0aa3061e` seats the compact wheels at local y = 0.010 and adds `Col_Bumper` on the pickup out to local z = 2.493. With the 0.12 pivot the world bottoms are y = 0.13, about 2 cm over the road top at y = 0.11. The nose grows the pickup to x = 102.29. Gaps to the hatch and the crossover stay about 1.03 m. Nothing overlaps the cabin, the sidewalk, or the next car. The restored `Car_Pickup_25` blockout is no longer placed.
 - Lights, hydrant, two benches, two trash cans, two scaffold bays, two maples, two planters, a picnic table, a park lamp, a shrub.
 
 ### Routes
@@ -150,7 +150,7 @@ Stills: `Docs/WorldStills/pass3/z3_*.png`. Collider rasters. The Z2 set in the s
 
 ## Asset bugs for the models lane
 
-The world lane does not edit the vehicle, walk-up, or store meshes. This checkout merged street-kit `3040d2e5` and asset-library `723cc137`. `Tools/WorldCheck/check_z7.py` was re-run on those files.
+The world lane does not edit the vehicle, walk-up, or store meshes. This checkout merged street-kit `0aa3061e` and asset-library `723cc137`. `Tools/WorldCheck/check_z7.py` was re-run on the parked cars.
 
 Closed, remeasured here:
 
@@ -162,6 +162,8 @@ Closed, remeasured here:
 | `PicnicTable` | Lowest y = 0.37. Gap 0.28 m under y = 0.74. | Feet at y = 0.025. |
 | `Shrub` | Sphere bottom y = 0.16. | Sphere bottom y = 0.020. |
 | Street-kit pickup tailgate | `Col_Tailgate` started at y = 0.73, 0.17 m above the bed. | `Pickup_FullSize_25` starts the tailgate at y = 0.585. The bed tops at y = 0.560, so the gap is 0.025 m. The blockout file is gone. |
+| `Sedan_Compact_25`, `Hatch_Compact_25`, `Crossover_Compact_25` | Wheel boxes started at y = 0.167, 0.168, and 0.192. | `0aa3061e` seats `Col_Wheel_*` at y = 0.010–0.046. Not edited here. |
+| `Pickup_FullSize_25` nose | Boxes stopped at local z = 1.625. | `Col_Nose` reaches z = 2.420 and `Col_Bumper` reaches z = 2.493. Wheels stay at y = 0.012. Not edited here. |
 
 `CourtFence` in this checkout draws the gate as the child mesh `GateLeaf`. Play hides that mesh and turns `Col_Gate` off. That leaf is not an open models bug.
 
@@ -171,8 +173,6 @@ Still open. Relayed to the models lane. Not edited here:
 |---|---|
 | `LightPost_Single` | 0.36 m under the pole collider at y = 0.60. The base reaches y = 0.08. |
 | `ParkLamp` | 0.24 m under the pole collider at y = 0.49. The base reaches y = 0.07. |
-| `Sedan_Compact_25`, `Hatch_Compact_25`, `Crossover_Compact_25` | Reported to vehicles #125 in `Docs/Models/ENV_QUEUE.md`. Wheel boxes start at y = 0.167, 0.168, and 0.192. Not edited here. |
-| `Pickup_FullSize_25` | Placed. Wheels meet y = 0.012. The mesh is about 5.06 m and the boxes stop at local z = 1.625, so the nose past the front wheels has no collider. Reported to #125. |
 | `WalkUp` | Climb faces start at y = 0.40, 0.25 m above the stoop. The body is enclosed. Not edited here. |
 | `Cabin` | Placed. Door is closed. An internal gap of 0.20 m sits under a collider at y = 2.38. Not edited here. |
 | `Store_Corner`, `Store_Diner`, `Store_Laundromat` | Baked MARKET, DINER, and WASH letters mirror from the back. Reported to buildings #122 in `Docs/Models/ENV_QUEUE.md`. Not edited here. Library `09958348` rebuilds LOD2, not those letters. |
@@ -181,7 +181,7 @@ Still open. Relayed to the models lane. Not edited here:
 
 `Gangway` is dropped from Mega Park. The prefab field is `vaultHeightMeters: 0.88`, and the rail boxes top at y = 1.758 over a plate whose top is y = 0.892, so the rail is 0.87 m above the plate. The catalog band is 0.90–1.05 m. The plate itself starts at y = 0.728, which is a harbor ramp seat, not a park ground contact. Raising the rail would edit the harbor mesh. It stays in the harbor library and is not a Mega Park route.
 
-The scanner's first internal gap on the compact shells is the roof above the cabin: sedan and hatch 0.53 m under y = 1.31, crossover 0.66 m under y = 1.57. The pickup's first gap is 0.49 m under the bed at y = 0.54, which is ground clearance over wheels at y = 0.012. Same class of opening: hoop rim above the pole (2.95 m under y = 2.99), brick window glass (0.75 m under y = 0.93), gazebo rail above the deck (0.97 m under y = 1.26).
+The scanner's first internal gap on the compact shells is now the underbody: 0.27 m under `Col_Cabin` at y = 0.32, over wheels at y = 0.010. The pickup's first gap is 0.29 m under a collider at y = 0.34, over wheels at y = 0.012. Same class of opening: hoop rim above the pole (2.95 m under y = 2.99), brick window glass (0.75 m under y = 0.93), gazebo rail above the deck (0.97 m under y = 1.26).
 
 ## Z4 this pass
 

@@ -4,9 +4,7 @@ Environment sub-lead is buildings, draft PR #122, branch `cursor/tag-asset-libra
 
 ## Vehicles helper (#125)
 
-Seat the compact wheel boxes on the ground. Measured after merging `3040d2e5`: `Sedan_Compact_25` `Col_Wheel_*` is y = 0.167–0.476, `Hatch_Compact_25` is y = 0.168–0.477, and `Crossover_Compact_25` is y = 0.192–0.546. `Pickup_FullSize_25` wheels already meet y = 0.012. The world lane is not editing these prefabs.
-
-`Pickup_FullSize_25` mesh runs about z = −2.61 to 2.50 (5.06 m). The prefab boxes stop at z = 1.625, so the nose past the front wheels has no collider. Add a bumper box that meets the mesh.
+Closed on `0aa3061e`, merged into the world branch. `Sedan_Compact_25`, `Hatch_Compact_25`, and `Crossover_Compact_25` `Col_Wheel_*` now sit at y = 0.010–0.046. `Pickup_FullSize_25` wheels stay at y = 0.012. `Col_Nose` reaches z = 2.420 and `Col_Bumper` reaches z = 2.493. The world lane did not edit these prefabs. Parked-car world-check still passes.
 
 License first: one CC0-1.0 row per asset. A family note does not count.
 
@@ -36,4 +34,4 @@ Next, now that those counts moved: a city alley, a subway stair entrance, an ove
 
 `Container_20` and `Container_20_Blue` share one cage. `Climb_Body` starts at y = 0.22, so on park ground the shell floats 0.22 m above the pivot. `Dock_Straight` piles run to y = −1.165. That is a water seat. On park ground the piles clip the floor. The world lane placed both in Z6 and did not edit the meshes.
 
-The lettering request and the compact-wheel / pickup-nose requests above are still open. Library `09958348` cuts LOD2 and does not rebuild MARKET, DINER, or WASH. Street-kit `a5e0e40d` reshapes the midsize sedan. Compact wheel boxes still start at y = 0.167, 0.168, and 0.192. Pickup boxes still stop at local z = 1.625.
+The lettering request above is still open. Library `09958348` cuts LOD2 and does not rebuild MARKET, DINER, or WASH, so that branch is not merged. The compact-wheel and pickup-nose requests are closed by street-kit `0aa3061e`.
