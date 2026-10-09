@@ -48,12 +48,18 @@ namespace Tag.Art
         public struct Sample
         {
             public float ThighL, ThighR, KneeL, KneeR;
+            public float ThighYawL, ThighYawR;
             public float ArmPitchL, ArmPitchR, ArmYawL, ArmYawR;
             public float ElbowL, ElbowR;
             public float Hip, Spine, Head;
             public float FootL, FootR;
             public float Drop;
         }
+
+        /// <summary>
+        /// Hips-bone drop for the seated land. The squash bob still uses SoftDrop and HardDrop.
+        /// </summary>
+        public const float BoneDrop = 0.206f;
 
         /// <summary>Impact at or above land-stun speed. Matches the hard audio gate.</summary>
         public static bool IsHard(float impact)
@@ -67,60 +73,51 @@ namespace Tag.Art
             return impact >= SoftImpact && impact < HardImpact;
         }
 
-        /// <summary>Small knee bend. Both hands stay up. Soles level.</summary>
-        public static Sample Soft()
+        /// <summary>
+        /// Seated land. Knee 79, pelvis 12 cm behind both feet, bone drop 20.6 cm.
+        /// Thigh yaw keeps the spine out of the thigh. HardThigh and HardKnee stay the brace constants.
+        /// </summary>
+        static Sample Seated()
         {
-            float foot = GaitBlend.SoleLevelDeg(SoftThigh, SoftKnee);
             return new Sample
             {
-                ThighL = SoftThigh,
-                ThighR = SoftThigh,
-                KneeL = SoftKnee,
-                KneeR = SoftKnee,
-                ArmPitchL = SoftArmPitch,
-                ArmPitchR = SoftArmPitch,
-                ArmYawL = SoftArmYaw,
-                ArmYawR = -SoftArmYaw,
-                ElbowL = SoftElbow,
-                ElbowR = SoftElbow,
-                Hip = SoftHip,
-                Spine = SoftSpine,
-                Head = SoftHead,
-                FootL = foot,
-                FootR = foot,
-                Drop = SoftDrop,
+                ThighL = 55f,
+                ThighR = 55f,
+                KneeL = -79f,
+                KneeR = -79f,
+                ThighYawL = -20f,
+                ThighYawR = 20f,
+                ArmPitchL = 4f,
+                ArmPitchR = 2f,
+                ArmYawL = 0f,
+                ArmYawR = 0f,
+                ElbowL = -40f,
+                ElbowR = -36f,
+                Hip = 6f,
+                Spine = 4f,
+                Head = -8f,
+                FootL = 8f,
+                FootR = 8f,
+                Drop = BoneDrop,
             };
         }
 
-        /// <summary>Deep crouch. handLeft plants that hand. The other hand stays up.</summary>
+        /// <summary>Both feet down. Hands stay off the chest.</summary>
+        public static Sample Soft()
+        {
+            return Seated();
+        }
+
+        /// <summary>Same sit as the soft land. handLeft used to plant a palm, which put the thigh through the spine.</summary>
         public static Sample Hard(bool handLeft)
         {
-            float foot = GaitBlend.SoleLevelDeg(HardThigh, HardKnee);
-            float pitchL = handLeft ? HardHandPitch : HardFreePitch;
-            float pitchR = handLeft ? HardFreePitch : HardHandPitch;
-            float yawL = handLeft ? HardHandYaw : HardFreeYaw;
-            float yawR = handLeft ? -HardFreeYaw : -HardHandYaw;
-            float elbowL = handLeft ? HardHandElbow : HardFreeElbow;
-            float elbowR = handLeft ? HardFreeElbow : HardHandElbow;
-            return new Sample
+            Sample s = Seated();
+            if (!handLeft)
             {
-                ThighL = HardThigh,
-                ThighR = HardThigh,
-                KneeL = HardKnee,
-                KneeR = HardKnee,
-                ArmPitchL = pitchL,
-                ArmPitchR = pitchR,
-                ArmYawL = yawL,
-                ArmYawR = yawR,
-                ElbowL = elbowL,
-                ElbowR = elbowR,
-                Hip = HardHip,
-                Spine = HardSpine,
-                Head = HardHead,
-                FootL = foot,
-                FootR = foot,
-                Drop = HardDrop,
-            };
+                s.ArmPitchL = 2f;
+                s.ArmPitchR = 4f;
+            }
+            return s;
         }
 
         public static bool Holds()
@@ -138,21 +135,24 @@ namespace Tag.Art
             if (IsSoft(40f) || !IsHard(40f)) return false;
 
             Sample soft = Soft();
-            if (soft.KneeL > -12f || soft.KneeL < -40f) return false;
+            if (soft.KneeL > -45f || soft.KneeR > -45f) return false;
             if (Mathf.Abs(soft.KneeL - soft.KneeR) > 0.01f) return false;
-            if (soft.ThighL > 30f || soft.ThighR > 30f) return false;
-            if (soft.ArmPitchL >= 0f || soft.ArmPitchR >= 0f) return false;
-            if (Mathf.Abs(GaitBlend.StanceWorldPitch(soft.ThighL, soft.KneeL, soft.FootL)) > 0.05f) return false;
-            if (soft.Drop > 0.06f) return false;
+            if (soft.ThighL < 45f || soft.ThighR < 45f) return false;
+            if (soft.ThighYawL > -15f || soft.ThighYawR < 15f) return false;
+            if (soft.Drop < 0.20f) return false;
+            if (soft.Spine < 1f) return false;
+            if (soft.Hip / soft.Spine < 1.5f) return false;
+            if (soft.ArmPitchL > 24f || soft.ArmPitchR > 24f) return false;
 
             Sample hardL = Hard(true);
             Sample hardR = Hard(false);
-            if (hardL.KneeL > -100f || hardL.ThighL < 60f) return false;
-            if (hardL.ArmPitchL < 10f || hardL.ArmPitchR > -10f) return false;
-            if (hardR.ArmPitchR < 10f || hardR.ArmPitchL > -10f) return false;
-            if (Mathf.Abs(GaitBlend.StanceWorldPitch(hardL.ThighL, hardL.KneeL, hardL.FootL)) > 0.05f) return false;
-            if (hardL.Hip < 30f || hardL.Spine < 20f) return false;
-            if (Mathf.Abs(hardL.KneeL - soft.KneeL) < 40f) return false;
+            if (hardL.KneeL > -45f || hardL.ThighL < 45f) return false;
+            if (hardL.Drop < 0.20f) return false;
+            if (hardL.ThighYawL > -15f || hardL.ThighYawR < 15f) return false;
+            if (hardL.ArmPitchL > 24f || hardL.ArmPitchR > 24f) return false;
+            if (hardR.ArmPitchR > 24f || hardR.ArmPitchL > 24f) return false;
+            if (Mathf.Abs(LandPose.HardThigh - 74f) > 0.01f) return false;
+            if (Mathf.Abs(LandPose.HardKnee - -125f) > 0.01f) return false;
             return true;
         }
 
@@ -166,12 +166,12 @@ namespace Tag.Art
                 + " controlDelay=" + ControlDelay.ToString("0.00")
                 + " softKnee=" + soft.KneeL.ToString("0")
                 + " softThigh=" + soft.ThighL.ToString("0")
-                + " softDrop=" + SoftDrop.ToString("0.00")
+                + " softDrop=" + soft.Drop.ToString("0.00")
                 + " hardKnee=" + hard.KneeL.ToString("0")
                 + " hardThigh=" + hard.ThighL.ToString("0")
                 + " hardHand=" + hard.ArmPitchL.ToString("0")
                 + " hardFree=" + hard.ArmPitchR.ToString("0")
-                + " hardDrop=" + HardDrop.ToString("0.00")
+                + " hardDrop=" + hard.Drop.ToString("0.00")
                 + " gate=impact>=" + SoftImpact.ToString("0") + " soft, impact>=" + HardImpact.ToString("0") + " hard"
                 + " matches AudioBus LandSoft/LandHard"
                 + " pose does not delay control"

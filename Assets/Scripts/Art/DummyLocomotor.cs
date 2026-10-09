@@ -10382,8 +10382,8 @@ namespace Tag.Art
                 else if (_landPoseHard || _landPoseSoft)
                 {
                     LandPose.Sample land = _landPoseHard ? LandPose.Hard(sinC >= 0f) : LandPose.Soft();
-                    _ulLT = Quaternion.Slerp(_ulLT, _ulL0 * Quaternion.Euler(land.ThighL, 0f, 0f), kL);
-                    _ulRT = Quaternion.Slerp(_ulRT, _ulR0 * Quaternion.Euler(land.ThighR, 0f, 0f), kR);
+                    _ulLT = Quaternion.Slerp(_ulLT, _ulL0 * Quaternion.Euler(land.ThighL, land.ThighYawL, 0f), kL);
+                    _ulRT = Quaternion.Slerp(_ulRT, _ulR0 * Quaternion.Euler(land.ThighR, land.ThighYawR, 0f), kR);
                     _llLT = Quaternion.Slerp(_llLT, _llL0 * Quaternion.Euler(land.KneeL, 0f, 0f), kL);
                     _llRT = Quaternion.Slerp(_llRT, _llR0 * Quaternion.Euler(land.KneeR, 0f, 0f), kR);
                     _stanceSole = true;
@@ -15533,7 +15533,12 @@ namespace Tag.Art
             EaseFacing(dt, yawWall, climb, sliding);
             AbsorbPop(dt);
             ApplyChestGap(climb || wallRun);
-            ApplyPelvisDrop(mantle, mantle ? vault.PelvisDrop : 0f);
+            float landBone = 0f;
+            if (_landSquash > 0f && (_landPoseHard || _landPoseSoft || _landRoll))
+                landBone = LandPose.BoneDrop * _landSquash;
+            bool boneOn = mantle || landBone > 0.0001f;
+            float boneDrop = mantle ? vault.PelvisDrop : landBone;
+            ApplyPelvisDrop(boneOn, boneDrop);
             ApplyVisualRoot(bob, WallJumpNudge());
             HoldHead(bob, grounded && !air && !sliding && !climb && !wallRun && !mantle);
             bool secondaryYield = climb || wallRun || mantle || punching || lunging || dashing
@@ -16956,22 +16961,23 @@ namespace Tag.Art
         /// </summary>
         void ApplyLandHandoff(float armZ, float speed)
         {
-            float u = 1f - Mathf.Clamp01(_landSquash);
             if (_landRoll)
             {
-                float w = HandoffFeel.RollWeight(u);
-                HandoffFeel.RollAdd add = HandoffFeel.RollClear(u);
-                _ulLT = Quaternion.Slerp(_ulLT * Quaternion.Euler(0f, add.YawL, 0f), _ulL0 * Quaternion.Euler(HandoffFeel.RollThigh, add.YawL, 0f), w);
-                _ulRT = Quaternion.Slerp(_ulRT * Quaternion.Euler(0f, add.YawR, 0f), _ulR0 * Quaternion.Euler(HandoffFeel.RollThigh - 18f, add.YawR, 0f), w);
-                _llLT = Quaternion.Slerp(_llLT, _llL0 * Quaternion.Euler(HandoffFeel.RollKnee, 0f, 0f), w);
-                _llRT = Quaternion.Slerp(_llRT, _llR0 * Quaternion.Euler(HandoffFeel.RollKnee + 20f, 0f, 0f), w);
-                _hipsT = Quaternion.Slerp(_hipsT * Quaternion.Euler(add.Hip, 0f, 0f), _hips0 * Quaternion.Euler(HandoffFeel.RollHip + add.Hip, 0f, 0f), w);
-                _spineT = Quaternion.Slerp(_spineT * Quaternion.Euler(add.Spine, 0f, 0f), _spine0 * Quaternion.Euler(HandoffFeel.RollSpine + add.Spine, 0f, 22f * w), w);
-                _headT = Quaternion.Slerp(_headT * Quaternion.Euler(add.Head, 0f, 0f), _head0 * Quaternion.Euler(HandoffFeel.RollHead + add.Head, 0f, 0f), w);
-                _uaLT = Quaternion.Slerp(_uaLT * Quaternion.Euler(add.ArmL, add.ArmYawL, 0f), _uaL0 * Quaternion.Euler(HandoffFeel.RollArm + add.ArmL, 18f + add.ArmYawL, armZ), w);
-                _uaRT = Quaternion.Slerp(_uaRT * Quaternion.Euler(add.ArmR, add.ArmYawR, 0f), _uaR0 * Quaternion.Euler(HandoffFeel.RollArm + add.ArmR, -18f + add.ArmYawR, -armZ), w);
-                _laLT = Quaternion.Slerp(_laLT * Quaternion.Euler(add.ElbL, 0f, 0f), _laL0 * Quaternion.Euler(HandoffFeel.RollElbow + add.ElbL, 0f, 0f), w);
-                _laRT = Quaternion.Slerp(_laRT * Quaternion.Euler(add.ElbR, 0f, 0f), _laR0 * Quaternion.Euler(HandoffFeel.RollElbow + 16f + add.ElbR, 0f, 0f), w);
+                // The 65% roll plays the seated land. RollThigh stays the step constant.
+                LandPose.Sample sit = LandPose.Soft();
+                _ulLT = _ulL0 * Quaternion.Euler(sit.ThighL, sit.ThighYawL, 0f);
+                _ulRT = _ulR0 * Quaternion.Euler(sit.ThighR, sit.ThighYawR, 0f);
+                _llLT = _llL0 * Quaternion.Euler(sit.KneeL, 0f, 0f);
+                _llRT = _llR0 * Quaternion.Euler(sit.KneeR, 0f, 0f);
+                _hipsT = _hips0 * Quaternion.Euler(sit.Hip, 0f, 0f);
+                _spineT = _spine0 * Quaternion.Euler(sit.Spine, 0f, 0f);
+                _headT = _head0 * Quaternion.Euler(sit.Head, 0f, 0f);
+                _uaLT = _uaL0 * Quaternion.Euler(sit.ArmPitchL, sit.ArmYawL, armZ);
+                _uaRT = _uaR0 * Quaternion.Euler(sit.ArmPitchR, sit.ArmYawR, -armZ);
+                _laLT = _laL0 * Quaternion.Euler(sit.ElbowL, 0f, 0f);
+                _laRT = _laR0 * Quaternion.Euler(sit.ElbowR, 0f, 0f);
+                if (_footL != null) _ftLT = _ftL0 * Quaternion.Euler(sit.FootL, 0f, 0f);
+                if (_footR != null) _ftRT = _ftR0 * Quaternion.Euler(sit.FootR, 0f, 0f);
                 if (_landSquash <= 0.02f) _landRoll = false;
                 return;
             }

@@ -21,6 +21,7 @@ static class PoseKeyDump
         Slide(w, c);
         Wall(w, c);
         Roll(w, c);
+        Land(w, c);
         Pad(w, c);
         Zip(w, c);
         Grapple(w, c);
@@ -151,33 +152,34 @@ static class PoseKeyDump
 
     static void Roll(TextWriter w, CultureInfo c)
     {
+        // Played 65% roll. The sit replaces the thigh-through-spine tuck. RollThigh is unchanged.
         float dur = 1f / HandoffFeel.SquashRate;
-        GaitBlend.Legs legs = GaitBlend.At(1.5707963f, LocoFeel.Sprint);
+        LandPose.Sample s = LandPose.Soft();
         int n = Frames(dur);
         for (int i = 0; i <= n; i++)
         {
             float t = i * Dt;
             if (t > dur) t = dur;
-            float u = dur > 0f ? t / dur : 1f;
-            float weight = HandoffFeel.RollWeight(u);
-            float thigh = Mathf.Lerp(LandPose.HardThigh, legs.ThighL, u);
-            float thL = Mathf.Lerp(thigh, HandoffFeel.RollThigh, weight);
-            float thR = Mathf.Lerp(thigh, HandoffFeel.RollThigh - 18f, weight);
-            float knL = Mathf.Lerp(Mathf.Lerp(LandPose.HardKnee, legs.KneeL, u), HandoffFeel.RollKnee, weight);
-            float knR = Mathf.Lerp(Mathf.Lerp(LandPose.HardKnee, legs.KneeR, u), HandoffFeel.RollKnee + 20f, weight);
-            float hip = Mathf.Lerp(Mathf.Lerp(LandPose.HardHip, HandoffFeel.RunHip, u), HandoffFeel.RollHip, weight);
-            float spine = Mathf.Lerp(Mathf.Lerp(LandPose.HardSpine, HandoffFeel.RunSpine, u), HandoffFeel.RollSpine, weight);
-            float head = Mathf.Lerp(LandPose.HardHead, HandoffFeel.RollHead, weight);
-            HandoffFeel.RollAdd add = HandoffFeel.RollClear(u);
-            Emit(w, c, "roll", t, thL, thR, knL, knR, add.YawL, add.YawR,
-                Mathf.Lerp(-36f, HandoffFeel.RollArm, weight) + add.ArmL,
-                Mathf.Lerp(28f, HandoffFeel.RollArm, weight) + add.ArmR,
-                add.ArmYawL, add.ArmYawR, 0f, 0f,
-                Mathf.Lerp(-18f, HandoffFeel.RollElbow, weight) + add.ElbL,
-                Mathf.Lerp(-24f, HandoffFeel.RollElbow + 16f, weight) + add.ElbR,
-                hip + add.Hip, spine + add.Spine, head + add.Head, 22f * weight, 0f, 0f, 0f, 0f, 0f);
+            Emit(w, c, "roll", t, s.ThighL, s.ThighR, s.KneeL, s.KneeR, s.ThighYawL, s.ThighYawR,
+                s.ArmPitchL, s.ArmPitchR, s.ArmYawL, s.ArmYawR, 0f, 0f,
+                s.ElbowL, s.ElbowR, s.Hip, s.Spine, s.Head, 0f, 0f, 0f,
+                s.FootL, s.FootR, 0f, 0f, 0f, 0f, 0f, 0f, s.Drop);
             if (t >= dur) break;
         }
+    }
+
+    static void Land(TextWriter w, CultureInfo c)
+    {
+        LandPose.Sample soft = LandPose.Soft();
+        LandPose.Sample hard = LandPose.Hard(true);
+        Emit(w, c, "land-soft", 0f, soft.ThighL, soft.ThighR, soft.KneeL, soft.KneeR, soft.ThighYawL, soft.ThighYawR,
+            soft.ArmPitchL, soft.ArmPitchR, soft.ArmYawL, soft.ArmYawR, 0f, 0f,
+            soft.ElbowL, soft.ElbowR, soft.Hip, soft.Spine, soft.Head, 0f, 0f, 0f,
+            soft.FootL, soft.FootR, 0f, 0f, 0f, 0f, 0f, 0f, soft.Drop);
+        Emit(w, c, "land-hard", 0f, hard.ThighL, hard.ThighR, hard.KneeL, hard.KneeR, hard.ThighYawL, hard.ThighYawR,
+            hard.ArmPitchL, hard.ArmPitchR, hard.ArmYawL, hard.ArmYawR, 0f, 0f,
+            hard.ElbowL, hard.ElbowR, hard.Hip, hard.Spine, hard.Head, 0f, 0f, 0f,
+            hard.FootL, hard.FootR, 0f, 0f, 0f, 0f, 0f, 0f, hard.Drop);
     }
 
     static void Pad(TextWriter w, CultureInfo c)

@@ -258,19 +258,22 @@ namespace Tag.Art
             // Pivot thigh stays under 50° so it does not enter the spine. The free foot stays up.
             s.ThighL = 48f;
             s.ThighR = 10f;
+            // Spread the pivot thigh off the spine. Yaw 0 puts the mesh 1.4 cm through it.
+            s.YawL = -20f;
+            s.YawR = 20f;
             s.KneeL = SpinKnee(local);
             s.KneeR = -90f;
             s.FootL = 12f;
             s.FootR = 2f;
-            // Inside arm folds across the chest. Outside arm stays close, elbow bent.
-            s.ArmL = -6f;
-            s.ArmR = 8f;
+            // Arms stay off the chest. A fold across the chest is 0.8 cm of pose.
+            s.ArmL = -36f;
+            s.ArmR = -36f;
             s.ArmYawL = 0f;
-            s.ArmYawR = -4f;
-            s.RollL = 10f;
-            s.RollR = 12f;
-            s.ElbowL = -70f;
-            s.ElbowR = -52f;
+            s.ArmYawR = 0f;
+            s.RollL = 0f;
+            s.RollR = 0f;
+            s.ElbowL = -40f;
+            s.ElbowR = -36f;
             s.ElbowYawL = 8f;
             s.ElbowYawR = -6f;
             if (sign < 0)
@@ -278,12 +281,15 @@ namespace Tag.Art
                 float thigh = s.ThighL;
                 float knee = s.KneeL;
                 float foot = s.FootL;
+                float thighYaw = s.YawL;
                 s.ThighL = s.ThighR;
                 s.KneeL = s.KneeR;
                 s.FootL = s.FootR;
+                s.YawL = -s.YawR;
                 s.ThighR = thigh;
                 s.KneeR = knee;
                 s.FootR = foot;
+                s.YawR = -thighYaw;
                 float arm = s.ArmL;
                 float armYaw = s.ArmYawL;
                 float roll = s.RollL;
@@ -320,7 +326,7 @@ namespace Tag.Art
             s.HeadYaw = Mathf.Lerp(-24f, 18f, headU);
             s.HipYaw = Mathf.Lerp(0f, 8f, hipU);
             s.YawL = 4f;
-            s.YawR = -16f;
+            s.YawR = 0f;
             s.ThighRollL = -4f;
             s.ThighRollR = 12f;
             s.ThighL = 8f;
@@ -410,7 +416,7 @@ namespace Tag.Art
             s.ThighR = 48f;
             s.KneeL = -50f;
             s.KneeR = -50f;
-            s.FootL = 12f;
+            s.FootL = 6f;
             s.FootR = 10f;
             s.ArmL = -30f;
             s.ArmR = -30f;
@@ -574,8 +580,7 @@ namespace Tag.Art
 
         static Sample DiveCrouch()
         {
-            // Seated roll-up. Thigh 55 clears 12 cm behind the foot and 20 cm of drop.
-            // The spine mesh enters the thigh at this angle. That overlap is rig-blocked.
+            // Seated roll-up. Thigh 55, yaw ±20, foot 4/12. Pose stays under 0.5 cm.
             Sample s = new Sample();
             s.Drop = -0.204f;
             s.Hip = 6f;
@@ -584,9 +589,12 @@ namespace Tag.Art
             s.Lean = 2f;
             s.ThighL = 55f;
             s.ThighR = 55f;
+            s.YawL = -20f;
+            s.YawR = 20f;
             s.KneeL = -79f;
             s.KneeR = -79f;
-            s.FootL = 8f;
+            // Yaw spreads the thigh off the spine. Foot 4 keeps that sole inside 0.5 cm.
+            s.FootL = 4f;
             s.FootR = 12f;
             s.ArmL = 4f;
             s.ArmR = 2f;
@@ -607,7 +615,7 @@ namespace Tag.Art
         {
             // Pelvis height that seats the pivot sole. It is a bone drop, not a capsule offset.
             float[] at = { 0f, 0.350f };
-            float[] drop = { -0.104f, -0.104f };
+            float[] drop = { -0.113f, -0.113f };
             return Table(local, at, drop);
         }
 
@@ -615,7 +623,8 @@ namespace Tag.Art
         {
             // Pelvis height that keeps the outside sole down while the trunk leans into the cut.
             float[] at = { 0f, 0.033f, 0.067f, 0.100f, 0.133f, 0.167f, 0.200f, 0.220f };
-            float[] drop = { -0.0894f, -0.0893f, -0.0897f, -0.0906f, -0.0922f, -0.0944f, -0.0961f, -0.0961f };
+            // Yaw 0 sinks the outside sole. These drops put that sole back inside 0.5 cm.
+            float[] drop = { -0.0894f, -0.0893f, -0.0847f, -0.0836f, -0.0855f, -0.0883f, -0.0903f, -0.0903f };
             return Table(local, at, drop);
         }
 

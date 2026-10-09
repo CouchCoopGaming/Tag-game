@@ -47,24 +47,17 @@ Per clip, same sit, pose fails 0, world 0: wall run 9, climb top-out 11, vault 1
 
 Owner E. Flag off. The six clips were folded from `65aa8de0`. The dive stretch and the roll-up seat below are measured on the evasion sub-branch and are not folded yet.
 
-`hip-sit clips=6 fails=0 pelvisBackMin=9.27 hingeMin=1.50 kneeMin=50.0 pelvisDropMin=8.9`
+`hip-sit clips=11 fails=0 pelvisBackMin=9.72 hingeMin=1.50 kneeMin=50.0 pelvisDropMin=8.4`
 
-`no-clip clips=6 frames=115 worldMax=0.0 pose=1.74 rigJoint=7.89 fails=1`
+`no-clip clips=11 frames=156 worldMax=0.0 pose=0.0 rigJoint=7.91 fails=0`
 
-The roll-up at 0.867 s and 0.900 s sits 13.6 cm behind the support foot, knee 79°, sole 0.2 cm, and clears the 20 cm drop bar. The thigh is 55°. The spine is 1.74 cm inside both upper legs on those frames. That pair is rig-blocked. Spin stays 1.4 cm on the pivot thigh. `jukeR` stays 0.64 cm (0.55 cm at 0.333 s). `jukeL` is clear. Those poses were not retuned. `EvasionMoves.Enabled` stays false, and RT is sampled only while that flag is on.
+Pass 7. The eleven clips are the six evasion moves, `land-soft`, `land-hard`, the 65% `roll`, `exit-Roll`, and `exit-RollAbsorb`. Spin spreads the pivot thigh ±20° and holds the arms at −36°, so the 1.4 cm spine hit is gone. `jukeR` thigh yaw is 0, and the drop table seats the outside sole. The dive roll-up keeps thigh 55°, knee 79°, and adds yaw ±20° with the left foot at 4°, so both soles stay inside 0.5 cm and the spine stays out of the thigh. `EvasionMoves.Enabled` stays false, and RT is sampled only while that flag is on.
 
 ## Landings and the 65% roll
 
-Inventory on this sub-branch. `LandPose` and `HandoffFeel` were not edited. The land-pose proof line locks `softKnee=-26`, `softThigh=18`, `softDrop=0.02`, `hardKnee=-125`, `hardThigh=74`, `hardDrop=0.50`. `RollThigh` 62 changes `RollStep` and the handoff line. Game euler: positive thigh, knee already negative. Drop is the hips bone.
+The played sit is thigh 55°, knee 79°, yaw ±20°, hip 6° over a spine of 4°, both feet at 8°, hips bone down 20.6 cm. `HardThigh` 74, `HardKnee` −125, and `HardHip` 46 stay the brace constants, so air-feel and `RollStep` do not move. `RollThigh` 62 stays the step constant. The 65% roll plays this sit for the squash. `RollSpeed` stays 36.504. Soft and hard use the same legs. The old palm-down hard land was the 4.35 cm spine hit.
 
-| Pose | pelvisBack | knee | hinge | drop | sole | pose |
-|---|---|---|---|---|---|---|
-| Soft | −6.4 cm | 26° | 1.33 | 2.0 cm | −0.3 cm | 1.40 cm chest into upper arm |
-| Hard | −25.8 cm | 125° | 1.64 | 50 cm | 3.2 cm | 4.35 cm spine into thigh |
-| Roll peak | −34.2 cm | 88° | 0.78 | 25 cm | 6.1 cm / 14.3 cm | 6.91 cm hand into thigh; spine 1.86 cm |
-| Roll impact | −25.8 cm | 125° | 1.64 | 50 cm | 3.2 cm | 4.35 cm spine into thigh |
-
-Soft is proof-locked under the 45° knee and the 20 cm drop. Hard and the roll put the foot behind the pelvis, and the thigh is already through the spine. Same rig pair as the spin. Not retuned. Shin is forward on all four (soft +13.5 cm, hard +48.6 cm, roll peak +46.6 cm). `RollSpeed` stays 36.504.
+`exit-Roll` and `exit-RollAbsorb` use that sit on the plant, the rise, and the absorb. The invert keys spread the thighs ±24° so the spine stays out. Seconds stay 0.52 and absorb stays 0.32.
 
 ## Clip list
 
@@ -103,15 +96,18 @@ Pose numbers are centimetres. A clip with every non-adjacent pair and the world 
 | exit-Stagger | lead, from C1 | sat | pose 0 (0.36) fails 0 | in the 8-clip pass. Played stagger is still open |
 | exit-TagBackEnd | C1 | open world | pose 0 (0.11) world 0.86 fails 3 | not a plant |
 | exit-SoftLand | lead, from C1 | sat | pose 0 (0.36) fails 0 | in the 8-clip pass |
-| exit-Roll | E next | open hip | pose 0.94 world 0.25 fails 3 | contact frames fail back, knee, and drop |
-| exit-RollAbsorb | E next | open hip and pose | pose 3.32 fails 8 | contact fails back, knee, and drop |
-| stutter | E | pass | inside the 6-clip line | plant sits |
-| spinL, spinR | E | open pose | pose 1.4 on the pivot thigh | plants sit. Pose stays open |
-| jukeL | E | pass | clear at the same thigh angle | plant sits |
-| jukeR | E | open pose | pose 0.64 spine into the outside thigh | plant sits |
-| dive | E | roll-up sits, pose open | pose 1.74 spine into both thighs on the roll-up | push-off sits. Roll-up back 13.6 knee 79 drop clears 20 |
+| exit-Roll | E | pass | inside the 11-clip line | plant and rise sit |
+| exit-RollAbsorb | E | pass | inside the 11-clip line | absorb sits |
+| stutter | E | pass | inside the 11-clip line | plant sits |
+| spinL, spinR | E | pass | inside the 11-clip line | plants sit. Thigh yaw ±20, arms −36 |
+| jukeL | E | pass | inside the 11-clip line | plant sits |
+| jukeR | E | pass | inside the 11-clip line | outside yaw 0. Sole reseated |
+| dive | E | pass | inside the 11-clip line | push-off and roll-up sit. Roll-up yaw ±20 |
+| land-soft | E | pass | inside the 11-clip line | knee 79, drop 20.6, back 12.4 |
+| land-hard | E | pass | inside the 11-clip line | same sit. Brace constants unchanged |
+| roll | E | pass | inside the 11-clip line | 65% roll plays the sit |
 
-Across the 33 dumped locomotion and exit clips, the hip fails that remain are the played slide crouch (7), the played stagger land (8), exit-Roll (4), and exit-RollAbsorb (2). That is 21. The eight re-keyed exits contribute 0. This is not a global `fails=0`.
+The eleven clips in the pass 7 lines above are fails=0. The played slide crouch and the played stagger land are still the lead's, and they are not in that line. This is not a global fails=0 across every locomotion clip.
 
 ## Reference, not owned
 
@@ -128,7 +124,7 @@ The Hier rig rebuild is not approved and is not bound.
 ## Helper queues
 
 - C1 `bc-621b414b` — vault, climb, mantle, and the exit catalog, on a sub-branch off `cursor/tag-movement`. The eight sits above are the current keys. Open pose on the played climb and the played wall run is still theirs to propose. Do not add a second clip for a move that already has one.
-- E `bc-ad550372` — evasion, plus landings and rolls, on `cursor/tag-movement-evasion`. The six evasion clips stay flag-off. The dive roll-up clears 12 cm behind the foot. Spin 1.4 cm, `jukeR` 0.64 cm, and the roll-up spine-into-thigh 1.74 cm stay rig-blocked. Soft, hard, and the 65% roll are inventoried above and were not retuned. `exit-Roll` and `exit-RollAbsorb` are still open. Do not loosen `EvasionPose.Holds` to clear the dive. Do not retune `leadKnee` on the played slide.
+- E `bc-ad550372` — evasion, plus landings and rolls, on `cursor/tag-movement-evasion`. Pass 7 clears the eleven clips above. `EvasionMoves.Enabled` stays false. `EvasionPose.Holds` was not loosened. `leadKnee` on the played slide was not retuned.
 
 ## Seats
 
@@ -138,6 +134,8 @@ Default paint, colour-blind setting off: P1 red circle, P2 blue triangle, P3 ora
 
 Side-by-side before and after for the five recovery sits that were worst before the re-key: exit slide, exit vault, climb top-out, exit stagger, soft land. Same camera. Vertical through the support foot, dot on the pelvis. `Docs/AnimStills/movement-pass1/`.
 
+Pass 7 before and after for the three deepest misses this pass: hard land (spine 4.35 cm), the 65% roll, and exit roll absorb. Same camera. `Docs/Movement/evasion/pass7/`.
+
 ## Full sim
 
 `StrafeJumpSim` was run after the fold. It stops at the zone check with `a zone color missed 3:1`. That check compares zone swatches to every seat color and to cling, slide, plate, zip, and tag. The previous palette already misses 3:1 against those gameplay swatches, so this stop is not new. The run returns before the smooth-still writers. `Docs/SmoothStills/pass11/air.png` and `Docs/SmoothStills/pass12/handoff.png` were not rewritten. The evasion lines above were printed by `--evasion` on the same build.
@@ -146,8 +144,6 @@ Side-by-side before and after for the five recovery sits that were worst before 
 
 - Played slide crouch cannot meet a 45° knee while `leadKnee=-10` keeps the slide proof.
 - Played stagger landing is a lean with the knee behind the pelvis. `PunchStaggerPose` was not re-keyed.
-- Exit roll and exit roll-absorb still fail the landing sit. They are on E's queue.
-- Nine played clips from the historical scan still fail pose: zip, punch, wall, pad, climb, idle, stagger, loco, sprint.
-- Evasion dive roll-up fails the crouch sit. Spin pose is 1.4 cm. `jukeR` pose is 0.64 cm.
+- Nine played clips from the historical scan still fail pose: zip, punch, wall, pad, climb, idle, stagger, loco, sprint. Those stay with the lead.
 - Default red and orange are under 3:1 on wood. Shapes separate those seats. Palette 0 is the exemption.
 - Soles on the eight sits read 0.47 cm, inside the 0.5 cm window, so they are not a float fail. They are not glued to 0.

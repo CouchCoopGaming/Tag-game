@@ -27,14 +27,14 @@ In-place clips on the shipped Tan Hier mannequin. Root motion is off, so the cap
 
 Joined parent/child overlap is `rigJoint`, at any depth, and it belongs to the rig lane. A knee at 55° or a hip pitched forward deepens those cuffs, and that depth is not a pose fail. `pose` is only non-adjacent pairs (chest into an arm, spine into a thigh, hand into the other forearm) plus anything into the floor. The absolute limit is 0.5 cm. Nothing was lifted, damped, or pushed apart to clear it. The pelvis bone is keyed down. That is a pose, not a capsule or root offset. The support sole stays within 0.5 cm.
 
-Plants keep the support thigh near 48°. Past that the upper-leg mesh passes through the spine. The dive roll-up goes to 55° anyway, because the crouch bar is 12 cm behind the foot, and that overlap is logged as rig-blocked. A straight leg leaned backward is not used: the knee stays bent, and the shin points forward so the knee is over or ahead of the ankle.
+A straight leg leaned backward is not used. The knee stays bent, and the shin points forward so the knee is over or ahead of the ankle. Thigh yaw spreads the upper leg off the spine, so a 55° thigh can sit without the spine entering the mesh.
 
 | Clip | Read |
 |---|---|
 | `stutter` | Both plant frames sit. Hips are 14° over a 4° spine, the pelvis is 10.4 cm down, and the plant knee is 55°. The support sole is within 0.21 cm on all 12 move frames, including the two chops that used to leave the floor. Shoulders stay square. |
-| `spinL`, `spinR` | The pivot thigh is 48° and the knee is 55°. The pelvis is 10.4 cm down and the sole is within 0.21 cm on all 11 move frames. The trunk does not lean into the turn. A lean swings the pivot foot behind the pelvis. The head still leads the yaw. At a quarter turn and a half turn the existing overlap test reports the spine 1.4 cm into the pivot thigh. That pair is rig-blocked and was not retuned. |
-| `jukeL`, `jukeR` | The outside thigh is 48°, the knee is 55°, and the pelvis is about 9 cm down. The outside sole is within 0.29 cm on all 7 move frames. The head turns into the cut. The spine stays square, because a spine yaw puts it through the thigh. `jukeR` still reports the spine 0.64 cm into the outside thigh (0.55 cm at 0.333 s). `jukeL` does not. The right thigh mesh sits closer to the spine than the left one at the same angle. `jukeR` is rig-blocked on that pair and was not retuned. |
-| `dive` | One planted push-off, then a forward stretch. The plant is hips 14°, knees 50°, pelvis 9.3 cm down, sole within 0.2 cm. From 0.17 s through 0.53 s the chest is at 58° over a 4° spine, the arms reach ahead, and the legs trail with the feet about 40 cm below the hips. The knees fold while the chest is still leaning, the forearms meet the floor, then the body rolls to a shoulder and back up. No leg is kicked overhead. Root motion stays off. The roll-up crouch is thigh 55°, knee 79°, hips 6° over a 4° spine. At 0.867 s and 0.900 s the pelvis is 13.6 cm behind the support foot and the sole is at 0.2 cm. That clears the 12 cm crouch bar and the 20 cm drop bar. The spine mesh is 1.74 cm inside both thighs there. That overlap is rig-blocked. |
+| `spinL`, `spinR` | The pivot thigh is 48° and the knee is 55°, spread ±20° off the spine. The arms sit at −36° so the chest stays clear through the turn. The trunk does not lean. The head still leads the yaw. |
+| `jukeL`, `jukeR` | The outside thigh is 48°, the knee is 55°, and the outside thigh yaw is 0 so the spine stays out of that mesh. The head turns into the cut. The spine stays square. The outside sole is seated by the drop table. |
+| `dive` | One planted push-off, then a forward stretch. The plant is hips 14°, knees 50°, both soles within 0.5 cm. From 0.17 s through 0.53 s the chest is at 58° over a 4° spine, the arms reach ahead, and the legs trail. The knees fold while the chest is still leaning, the forearms meet the floor, then the body rolls to a shoulder and back up. No leg is kicked overhead. Root motion stays off. The roll-up crouch is thigh 55°, knee 79°, yaw ±20°, hips 6° over a 4° spine, both feet down. That clears the 12 cm crouch bar and the 20 cm drop bar, and the spine stays out of the thigh. |
 
 ## Bindings
 
@@ -67,24 +67,12 @@ Dive is a prototype behind the flag. It is the juke's flick rule on the forward 
 
 No-clip, every 30 fps frame of the six clips. A pair that shares a joint is `rigJoint`. `pose` is non-adjacent pairs plus the floor, and it is 0 when every one of those is at or under 0.5 cm:
 
-`no-clip clips=6 frames=115 worldMax=0.0 pose=1.74 rigJoint=7.89 fails=1`
+Pass 7 measures the six evasion clips together with the soft land, the hard land, the 65% roll, `exit-Roll`, and `exit-RollAbsorb`. `pose` is 0 when every non-adjacent pair and the floor are at or under 0.5 cm. Knee and hip joint overlap stays `rigJoint`.
 
-`rigJoint` is the hip/thigh cuff, owned by the rig lane. The floor is clear. `pose` is not 0. The deepest report is 1.74 cm, the spine into both thighs on the dive roll-up. The spin still reports 1.4 cm of that pair, and `jukeR` reports 0.64 cm. Those three stay rig-blocked. Knee and hip joint overlap stays `rigJoint`.
+`hip-sit clips=11 fails=0 pelvisBackMin=9.72 hingeMin=1.50 kneeMin=50.0 pelvisDropMin=8.4`
 
-Support soles, within 0.5 cm. Planted frames and the max gap, in centimetres:
+`no-clip clips=11 frames=156 worldMax=0.0 pose=0.0 rigJoint=7.91 fails=0`
 
-`ground-contact stutter planted=12/12 maxGap=0.21 frames=0.100:L:0.21,0.133:L:0.21,0.167:L:0.21,0.200:R:0.21,0.233:R:0.21,0.267:L:0.21,0.300:L:0.21,0.333:R:0.21,0.367:R:0.21,0.400:L:0.21,0.433:L:0.21,0.467:L:0.21`
+The airborne dive stretch is not a plant. Loaded frames keep the sole within 0.5 cm. When both soles are within 4 cm, both are support.
 
-`ground-contact spinL planted=11/11 maxGap=0.21 frames=0.100:R:0.21,0.133:R:0.21,0.167:R:0.21,0.200:R:0.21,0.233:R:0.21,0.267:R:0.21,0.300:R:0.21,0.333:R:0.21,0.367:R:0.21,0.400:R:0.21,0.433:R:0.21`
-
-`ground-contact spinR planted=11/11 maxGap=0.21 frames=0.100:L:0.21,0.133:L:0.21,0.167:L:0.21,0.200:L:0.21,0.233:L:0.21,0.267:L:0.21,0.300:L:0.21,0.333:L:0.21,0.367:L:0.21,0.400:L:0.21,0.433:L:0.21`
-
-`ground-contact jukeL planted=7/7 maxGap=0.29 frames=0.100:L:0.29,0.133:L:0.28,0.167:L:0.22,0.200:L:0.21,0.233:L:0.27,0.267:L:0.29,0.300:L:0.26`
-
-`ground-contact jukeR planted=7/7 maxGap=0.29 frames=0.100:R:0.29,0.133:R:0.28,0.167:R:0.22,0.200:R:0.21,0.233:R:0.27,0.267:R:0.29,0.300:R:0.26`
-
-Hip-sit on the stutter, juke, and spin plants, on the dive push-off, and on the dive roll-up. The airborne stretch is not a plant. `pelvisBack` is how far the pelvis sits behind the support foot. `hinge` is hip flexion over lumbar flexion. `kneeMin` is support-knee flexion. `pelvisDrop` is how far the pelvis bone is below its standing height. The roll-up frames clear the crouch bar: 13.6 cm behind the foot, knee 79°, drop at least 20 cm, sole 0.2 cm. `pelvisBackMin` is the lowest passing plant, not the roll-up.
-
-`hip-sit clips=6 fails=0 pelvisBackMin=9.27 hingeMin=1.50 kneeMin=50.0 pelvisDropMin=8.9`
-
-Stills for the forward dive and the seated roll-up are in `Docs/Movement/evasion-pass6/`. `before/` is the earlier crouch hop and the 9.0 cm roll-up. `after/` is the lean and reach, and the roll-up with the pelvis 13.6 cm behind the foot. Side views have a vertical line through the support foot and a dot on the pelvis. Three-quarter views cover 0.17 s, 0.35 s, and 0.52 s. Pass 5 is still in `Docs/EvasionStills/pass5/`. Pass 4 is still in `Docs/EvasionStills/pass4/`. Pass 3 is still in `Docs/EvasionStills/pass3/`. Pass 2 is still in `Docs/EvasionStills/pass2/`. Pass 1 is still in `Docs/EvasionStills/pass1/`.
+Pass 7 side stills of the three deepest misses (hard land, the 65% roll, exit roll absorb) are in `Docs/Movement/evasion/pass7/`. Same camera before and after. A vertical line runs through the support foot and a dot marks the pelvis. Pass 6 stills stay in `Docs/Movement/evasion-pass6/`. Pass 5 is still in `Docs/EvasionStills/pass5/`. Pass 4 is still in `Docs/EvasionStills/pass4/`. Pass 3 is still in `Docs/EvasionStills/pass3/`. Pass 2 is still in `Docs/EvasionStills/pass2/`. Pass 1 is still in `Docs/EvasionStills/pass1/`.
