@@ -210,13 +210,15 @@ namespace Tag.Art
         {
             return new VaultKey[]
             {
-                Key(0.00f, 52f, 52f, -64f, -64f, -12f, 12f, -58f, -58f, -18f, 18f, -46f, -46f, 18f, 8f, -10f, 0.10f),
+                // Plant: thigh 62 and a 13 cm hips-bone drop set the sole in the window
+                // with the pelvis 10 cm behind the foot. Yaw ±24 keeps the spine off the thigh.
+                Key(0.00f, 62f, 62f, -64f, -64f, -24f, 24f, -58f, -58f, -18f, 18f, -46f, -46f, 26f, 8f, -10f, 0.130f),
                 Key(0.16f, 72f, 58f, -48f, -42f, -58f, 48f, -58f, -58f, -18f, 18f, -46f, -46f, 26f, 8f, -8f, 0f),
                 Key(0.36f, 82f, 70f, -40f, -44f, -78f, 70f, -56f, -56f, -16f, 16f, -42f, -42f, 28f, 8f, -6f, 0f),
                 Key(0.64f, 74f, 64f, -40f, -44f, -72f, 66f, -54f, -54f, -16f, 16f, -40f, -40f, 24f, 8f, -4f, 0f),
                 Key(0.82f, 48f, 42f, -42f, -38f, -10f, 10f, -48f, -48f, -16f, 16f, -38f, -38f, 22f, 8f, -4f, 0f),
-                Key(0.92f, 60f, 58f, -72f, -72f, -22f, 22f, -46f, -46f, -16f, 16f, -36f, -36f, 20f, 8f, -4f, 0.12f),
-                Key(1.00f, 64f, 64f, -82f, -82f, -26f, 26f, -46f, -46f, -16f, 16f, -36f, -36f, 20f, 8f, -4f, 0.20f),
+                Key(0.92f, 60f, 58f, -72f, -72f, -22f, 22f, -46f, -46f, -16f, 16f, -36f, -36f, 26f, 8f, -4f, 0.12f),
+                Key(1.00f, 82f, 82f, -82f, -82f, -26f, 26f, -46f, -46f, -16f, 16f, -36f, -36f, 36f, 16f, -4f, 0.226f),
             };
         }
 

@@ -197,6 +197,21 @@ namespace Tag.Art
             return s;
         }
 
+        /// <summary>Landing floor on this lane's sits. Hip 36 and spine 16, hinge 2.25. Shared Sit stays for the landing exits.</summary>
+        static void FloorSit(ref VerbExitSample s, float armPitch)
+        {
+            s.Hip = 36f;
+            s.Spine = 16f;
+            // The extra hip pitch swings the feet back. More thigh puts the sole in front again,
+            // and the extra drop sets that sole back on the lid.
+            s.ThighL += 18f;
+            s.ThighR += 18f;
+            s.Drop = 0.226f;
+            // The raised thigh meets a forearm near -34. -70 and -56 stay clear, and the arm still moves.
+            s.ArmPitchL = armPitch;
+            s.ArmPitchR = armPitch;
+        }
+
         static void Spread(float head, float hipYaw, float spineYaw,
             float aYL, float aYR, float eL, float eR,
             out VerbExitSample a, out VerbExitSample b, out VerbExitSample c)
@@ -222,6 +237,9 @@ namespace Tag.Art
                 Spread(58f, 2f, 0f, -30f, 30f, -50f, -50f, out a, out b, out c);
             else
                 Spread(-18f, 12f, 0f, -20f, 20f, -36f, -36f, out a, out b, out c);
+            FloorSit(ref a, -70f);
+            FloorSit(ref b, -56f);
+            FloorSit(ref c, -56f);
         }
 
         /// <summary>Tuck, then the body opens into the air stride.</summary>
@@ -242,14 +260,13 @@ namespace Tag.Art
         /// <summary>Both feet on the lid. The hips bone is down and the shins point forward.</summary>
         static void ClimbTop(out VerbExitSample a, out VerbExitSample b, out VerbExitSample c)
         {
-            // Thigh 64, knee 70, yaw 26. The knee sits ahead of the pelvis and
-            // ahead of the ankle. Drop is the hips bone, 17.8 cm, which puts
-            // the sole back on the lid. It is not a visual-root offset.
-            b = P(18f, 8f, 26f, 64f, 64f, -70f, -70f, -40f, -40f, -30f, 30f, -50f, -50f);
+            // Thigh 64, knee 70, yaw 26. Hip 26 clears the plant floor. Drop is
+            // the hips bone, 15.3 cm, which puts the sole back on the lid.
+            b = P(26f, 8f, 26f, 64f, 64f, -70f, -70f, -40f, -40f, -30f, 30f, -50f, -50f);
             b.HipYaw = 8f;
             b.ThighYawL = -26f;
             b.ThighYawR = 26f;
-            b.Drop = 0.178f;
+            b.Drop = 0.153f;
             a = b;
             a.Head = 18f;
             a.ArmPitchL = -46f;
@@ -278,18 +295,27 @@ namespace Tag.Art
         {
             // The played vault is MantlePose.Cleared. This beat is the recovery.
             Spread(0f, 10f, 0f, -10f, 10f, -20f, -20f, out a, out b, out c);
+            FloorSit(ref a, -70f);
+            FloorSit(ref b, -56f);
+            FloorSit(ref c, -56f);
         }
 
         /// <summary>Both feet on the lid. Not the climb's arm line.</summary>
         static void Mantle(out VerbExitSample a, out VerbExitSample b, out VerbExitSample c)
         {
             Spread(28f, 0f, 0f, -10f, 10f, -20f, -20f, out a, out b, out c);
+            FloorSit(ref a, -70f);
+            FloorSit(ref b, -56f);
+            FloorSit(ref c, -56f);
         }
 
         /// <summary>The slide recovery sits. Slide boost is not here.</summary>
         static void Slide(out VerbExitSample a, out VerbExitSample b, out VerbExitSample c)
         {
             Spread(12f, 0f, 0f, -20f, 20f, -36f, -36f, out a, out b, out c);
+            FloorSit(ref a, -70f);
+            FloorSit(ref b, -56f);
+            FloorSit(ref c, -56f);
         }
 
         /// <summary>The stretched dash settles back onto the air line.</summary>
