@@ -11,11 +11,11 @@ Nothing is **accepted** in the tables. A pass requires `models-validate` with `f
 
 | Branch | PR | Tip | Summary |
 | --- | --- | --- | --- |
-| `cursor/tag-asset-library` | #122 | `723cc13707d899005491e4816a314a7bd43687df` | `models-validate assets=125 pass=12 fail=113` / `models-split paperwork=91 geometry=22` |
-| `cursor/tag-asset-street-kit` | #125 | `2b8480a749df3b71d616689dc1b93e29e8395535` | `models-validate assets=189 pass=14 fail=175` / `models-split paperwork=136 geometry=39` |
+| `cursor/tag-asset-library` | #122 | `15c0a98345385b95da45b571702868a2725a0e0e` | `models-validate assets=125 pass=12 fail=113` / `models-split paperwork=91 geometry=22` |
+| `cursor/tag-asset-street-kit` | #125 | `29caae02df0073f44f1a58035cc77649156fb06c` | `models-validate assets=189 pass=14 fail=175` / `models-split paperwork=136 geometry=39` |
 | `cursor/tag-street-objects` | #129 | `cf295d9b604e62c76d85ae41703d4395448a40b2` | `models-validate assets=220 pass=27 fail=193` / `models-split paperwork=176 geometry=17` |
 | `cursor/tag-loco-smooth` | #128 | `b804954f8e93db977c096d21ef93c8724f92978b` | `models-validate assets=7 pass=0 fail=7` / `models-split paperwork=5 geometry=2` |
-| `cursor/tag-character-costumes` | #131 | `e5b34c0e36343405f07f0d5acd098f28a6bd7797` | `models-validate assets=18 pass=0 fail=18` / `models-split paperwork=5 geometry=13` |
+| `cursor/tag-character-costumes` | #131 | `331e8e0d0595a1814d798069b4f835eaaf11e076` | `models-validate assets=18 pass=0 fail=18` / `models-split paperwork=5 geometry=13` |
 
 Paperwork is license and stills only. Geometry is everything else, including `lod2-ratio` and a shell buried in the body. An asset that fails both is counted under geometry. The asset-table validator cells further down are the earlier grade. This table is the tightened run.
 
@@ -339,5 +339,5 @@ Not counted: #128 `b804954f` adds `build_hip_ankle.py` and `clear_hip_flex.py` o
 
 ## Counts
 
-Lead status in the asset tables: accepted 0. Re-grade 9 Oct 2026: #122 pass=12/125, #125 pass=14/189 at `2b8480a7`, #129 pass=27/220 at `cf295d9b` (model count unchanged; the tip only qualifies `SmoothMotion.cs`), #128 pass=0/7, #131 pass=0/18. Restructure-impact count: 6. `Pickup_FullSize_25` is not in that count.
+Lead status in the asset tables: accepted 0. Re-grade 9 Oct 2026: #122 pass=12/125 at `15c0a983` (no library mesh change), #125 pass=14/189 at `29caae02` (no library mesh change), #129 pass=27/220 at `cf295d9b`, #128 pass=0/7, #131 pass=0/18 at `331e8e0d`. On #131 every costume now fails `cloth=7.13cm` and `cloth-fails=4128`. Restructure-impact count: 6.
 

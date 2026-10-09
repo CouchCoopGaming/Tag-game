@@ -6,8 +6,8 @@ A colour or paint sibling uses the base quartet when vertex positions, indices, 
 
 | Branch | Tip | Previous tightened run | This run |
 | --- | --- | --- | --- |
-| #122 | `723cc137` | `pass=10/125` paper 93 / geom 22 | `models-validate assets=125 pass=12 fail=113` / `models-split paperwork=91 geometry=22` |
-| #125 | `2b8480a7` | `pass=0/188` paper 136 / geom 52 at `9c61fe70` | `models-validate assets=189 pass=14 fail=175` / `models-split paperwork=136 geometry=39` |
+| #122 | `15c0a983` | `pass=12/125` paper 91 / geom 22 at `723cc137` | `models-validate assets=125 pass=12 fail=113` / `models-split paperwork=91 geometry=22` |
+| #125 | `29caae02` | `pass=14/189` paper 136 / geom 39 at `2b8480a7` | `models-validate assets=189 pass=14 fail=175` / `models-split paperwork=136 geometry=39` |
 | #129 | `cf295d9b` | `pass=27/220` paper 176 / geom 17 at `8f7686a5` | `models-validate assets=220 pass=27 fail=193` / `models-split paperwork=176 geometry=17` |
 
 `Container_20_Blue` and `Container_20_Green` match `Container_20` and pass as `material-variant of Container_20` on #122 and #129. `FireHydrant_Red` does not match the base cage. On #125 the six `_25` paints each have a pass 18 quartet and pass on their own. Their cage still matches `Sedan_Mid_A_25`.
@@ -16,7 +16,7 @@ A colour or paint sibling uses the base quartet when vertex positions, indices, 
 
 #122 (12): WalkUp, WoodFence, WoodFence_Corner, WoodFence_End, WoodFence_Gate, Container_20, Container_20_Blue, Container_20_Green, Rowboat, CourtFence, Gazebo, Road_Junction.
 
-#125 (14): `Pickup_FullSize_25`, the three compacts, `Sedan_Mid_A_22`, `_23`, `_24`, `_25`, and the six `_25` paints. The four buses still fail only `lod2-ratio`. #129's model count did not change at `cf295d9b` (a compile fix in `SmoothMotion.cs` only).
+#125 (14): `Pickup_FullSize_25`, the three compacts, `Sedan_Mid_A_22`, `_23`, `_24`, `_25`, and the six `_25` paints. The four buses still fail only `lod2-ratio`. `15c0a983` and `29caae02` do not change a library mesh. #129's model count did not change at `cf295d9b`.
 
 #129 (27): GasCanopy, WalkUp (now #122's 2736/2216/1004 cage), WoodFence_Corner, Container_20 plus both enamels, Dock_Straight, FishingBoat, Rowboat, CourtFence, Gazebo, Bench_WoodIron, BikeRack_Hoop3, FireHydrant, FireHydrant_Silver (own pass 31 quartet), FireHydrant_Yellow, Fountain_Walk, LightPost_Globe, NewspaperRack, Newsstand_Corner, ParkingMeter_Single, ParkingMeter_Twin, Planter_Street, PowerPole_Span, Sign_AFrame, Sign_StreetName, StreetMedian_Planted.
 
