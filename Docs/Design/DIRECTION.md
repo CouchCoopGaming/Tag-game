@@ -129,7 +129,7 @@ This is the order until Landon says otherwise.
 5. Costumes stay a prep lab. They do not enter the player build, and they do not grow a second skeleton.
 6. World dressing is PR #134 (`cursor/tag-world-c420`, stacked on the props branch). It dresses Mega Park. It does not add a fourth park.
 
-Movement consolidation: A1 #118 is the only branch that consolidates. C1 #120 and E #130 stay helpers. Storror S1 #123 is reference only. S2 #124 stays idle.
+Movement consolidation: A1 #118 is the only branch that consolidates. C1 #120 and E #130 stay helpers. Storror S1 #123 is reference only. S2 #124 stays idle. `cursor/tag-movement` (#136) is not a second play tip. Extra hip floors written on that branch are not this lock.
 
 ## Department map
 

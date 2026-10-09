@@ -371,3 +371,238 @@ Ororo, these are the five to send.
 5. **A1 #118, should-fix.** Evidence: `Docs/Controls.md` on `5d4cd74b` still has no rope row. The motor binds RMB / LT. Correction: Add the rope row as RMB / LT, and say RT is free.
 
 Also for Ororo, not a lane correction: #126 was merged into #121 by cursor[bot] at 00:18 UTC. Standing-rule violation. Do not unmerge. A2 #128 `b804954f` is still unbound, waiting on Landon.
+
+## 2026-10-09 — pass 3
+
+Heads were read after `git fetch`. The requested tips matched. #136 moved during the sample (`bc4ab7ae`, then `9c0d3e7a`). #123 and #124 were not in the request list; both are still open, and #123 moved, so they are included. New drafts #136, #137, and #139 were open. #138 and #140 were already merged.
+
+### Standing rule — never merge
+
+Do not unmerge any of these.
+
+- **#126 into #121.** Still merged. `35a535d9`, 2026-10-09 00:18:04 UTC, `app/cursor`. Parents `b89c5acd` and `31519be7`. The Hier idles, the 1.8 m body, and the LT column stayed.
+- **#118 into #122.** `fee5fb84`, 2026-10-09 00:28 UTC, Cursor Agent. Parents `723cc137` and `5d4cd74b`. Message: merge `origin/cursor/tag-map-lane-pass19-8c95` into `cursor/tag-asset-library`.
+- **#125 into #134.** `6044a939`, 2026-10-09 02:12 UTC, Cursor Agent. Parents `ace60c03` and `0aa3061e`.
+- **#122 into #134.** `b813f3e6`, 2026-10-09 02:46 UTC, Cursor Agent. Parents `8f7b0a49` and `a066d987`.
+- **#138 into #136.** PR #138 is merged (2026-10-09 01:58 UTC). Commit `5d567e43` parents `39f55a3e` and `a08d6872`.
+- **#140 into #136.** PR #140 is merged (2026-10-09 03:01 UTC). Commit `98cfb017` parents `35105dc5` and `ebb8741e`.
+- **#137** `bca44c86` is a merge (parents `bd480d50` and `e1e831d4`). **#139** `246205da` is a merge (parents `da614e24` and `35105dc5`).
+
+`Docs/Movement/LEDGER.md` on #136 says "Nothing in this file is a git merge of a helper branch" and then lists #138 and #140 as folded with `git merge`.
+
+Correction: none of these get undone. No lane merges another lane. A1 #118 is still the only branch that consolidates, and it has not taken these folds.
+
+### A1 Movement — PR #118 — `97f66cb89c8ce47992cb4df94a003e11ee9473a7`
+
+Latest: `97f66cb8` qualifies `CompressionLevel` so Unity 6000.3 compiles. Diff against `5d4cd74b` is the compile stub and `SmoothMotion.cs`. No feel edit.
+
+Aligned: coyote, jump, and the rope binding are unchanged from pass 2. The vault hip-sit from `5d4cd74b` is still the play tip.
+
+Drift:
+
+- **Should-fix.** `PlayerGlyph` is still `● ■ ▲ ◆`. Palette 0 is still yellow, green, white, cyan.
+- **Should-fix.** `Docs/Controls.md` still has no rope row.
+
+Correction: Default marks are P1 red circle, P2 blue triangle, P3 orange square, P4 lavender diamond. Add the rope row as RMB / LT, and say RT is free.
+
+### Movement draft — PR #136 — `9c0d3e7a`
+
+Latest: `9c0d3e7a` records the hip-floor scan and the folded climb and wall pose. The branch calls itself the movement branch.
+
+Aligned: feel locks in `Docs/Movement/LEDGER.md` match direction (coyote 0.10, buffer 0.16, cling grace 0.08, jump speed 24.7, terminal 56.16, roll at 65% of terminal, walk 6.9, crouch 3.68, sprint 13.8, root motion off, one Move per Update). `MovementConfig.cs` still has coyote 0.10, jump speed 24.7, terminal 56.16, and `applyRootMotion = false`. The folded climb top-out clears the direction plant: pelvis 20.3 cm behind, knee 67.9°, drop 17.8 cm, hinge 2.25, pose 0. Evasion flag stays off. LT stays the rope. The ledger says the clearance rig is not approved.
+
+Drift:
+
+- **Blocker.** This branch is not the play tip. A1 #118 consolidates. #136 has already git-merged #138 and #140, and its ledger tells helpers the lead merges with `git merge`.
+- **Should-fix.** `Docs/Movement/STANDARD.md` adds floors direction does not have: plant hip flexion 25°, and on a landing or crouch hip 35°, spine 15°, knee 45°, drop 20 cm. The scan then fails every loaded frame (`HIP clips 39 frames 769 loaded 159 hipFails 159`). A miss of those extra floors is not a direction fail. See `DECISIONS.md`.
+
+Correction: Stay a draft. Do not replace #118, and do not merge another helper. Keep the direction hip-sit bars. The climb plant that already drops 17.8 cm can wait on A1. Do not key a third copy on #120.
+
+### C1 Animation — PR #120 — `176983ee76e5a38dc6dcd24d22e4a1f16cc261e8`
+
+Unchanged since pass 1.
+
+Drift:
+
+- **Should-fix.** Pass 25 of `Docs/AnimFxPlan.md` still says the climb plant has no pelvis drop. The sit that clears direction is the one measured on #136 after the #138 merge, not on this tip.
+
+Correction: Leave this tip as the helper record. Do not merge it, and do not re-key a second climb plant. The 17.8 cm drop already exists on #136.
+
+### Evasion helper — PR #137 — `bca44c86`
+
+Latest: `bca44c86` merges the lead hip table and keeps the pass 7 sit. Base is `cursor/tag-movement`.
+
+Aligned: `EvasionMoves.Enabled` stays off. `Docs/Movement/ASSIGNMENT.md` reports `hip-sit clips=11 fails=0 pelvisBackMin=9.72 hingeMin=1.50 kneeMin=50.0 pelvisDropMin=8.4` and `no-clip clips=11 frames=156 worldMax=0.0 pose=0.0 rigJoint=7.91 fails=0` for the six evasion moves plus the landings and rolls. S1 is cited as reference only.
+
+Drift:
+
+- **Blocker.** The assignment says the lead merges with `git merge` after a measured pass. This tip is already a merge.
+- **Should-fix.** Stagger contact at t=0.00 is back −1.0 cm, knee 2.5°, drop 0. They left it open. If that frame is a plant, it misses the sit.
+
+Correction: Do not merge this branch into #136 or #118. Keep the flag off. On the stagger plant, put the pelvis at least 8 cm behind the support foot, drop it at least 8 cm, and bend the support knee at least 25°.
+
+### Exits helper — PR #139 — `f75cce89`
+
+Latest: `f75cce89` assigns the wall run to C1 with the climb and the exits. `246205da` is a merge of the lead hip table.
+
+Aligned: wall run sitting with the climb and the exits matches C1's helper job. It is not a new motor.
+
+Drift:
+
+- **Should-fix.** The commit says the lead table puts a 4.97 cm wall-run overlap on this branch, next to a played climb at 3.74 cm. Pose has to be 0. Over 0.5 cm is a fail.
+- **Blocker.** It is stacked on #136 and already contains a merge. It does not consolidate into A1 by merging.
+
+Correction: Bring the wall-run pose to 0 without lifting the plant to hide it. Do not merge this branch.
+
+### E Evasion — PR #130 — `8d96a3f2d82be73cbb81de51b1ea85e19396f813`
+
+Latest: `8d96a3f2` stretches the dive takeoff into a forward reach. The 0.17–0.53 s window is a lean, not a crouch hop. Stills: `Docs/Movement/evasion-pass6/`.
+
+Aligned: `EvasionMoves.Enabled` defaults false. LT stays the couch rope. `evasion-moves` still prints `rootMotion=0 flagDefault=off`. The airborne stretch is not scored as a plant. This branch has not taken #137's pass.
+
+Drift:
+
+- **Should-fix.** Dive roll-up still fails the crouch sit. `Docs/EvasionMoves.md`: pelvis 9.0 cm behind where the crouch bar is 12 cm, drop 14.1 cm. `hip-sit clips=6 loadedFrames=115 pelvisBackMin=8.99 cm fails=2`.
+- **Should-fix.** `no-clip clips=6 frames=115 worldMax=0.0 rigJoint=7.89 pose=1.4 fails=1`. The 1.4 cm hit is the spine into the pivot thigh on the spin. They logged it as rig-blocked and did not retune it. Pose is still not 0.
+
+Correction: Keep the flag off. On the dive roll-up, put the pelvis at least 12 cm behind the support foot. Bring the spin pose to 0, or leave it until the rig lane owns that pair as `rigJoint`. Do not treat RT as the stutter button. Do not merge #137 in to paper over this tip.
+
+### A2 Rig — PR #128 — `44fbff3f56b8d2831f6b77d5831378cf3a78b85a`
+
+Latest: `44fbff3f` splits the hip cuff so the 110° hinge does not fan. Before that, `d809c60a` clears hip flex on the reimported candidate.
+
+Aligned: unbound. `Docs/Models/PLAYER_QUEUE.md` says nothing is bound into #118. Pass 7 on `Dummy_Mannequin_Tan_Hier_Clearance.fbx`: `rigJoint=0`, hip flexion clear from 0° through 120° on the enclosure test, thigh edges 2.09 cm and 2.00 cm, no edge at least 1 mm long past 1.2× rest at 110°/70°. Stills: `Docs/Models/RigStills/pass7/`. Binding stays Landon's (`DECISIONS.md`).
+
+Drift:
+
+- **Should-fix.** The same queue says #131 is unblocked and the 12 costumes can refit. #131 `ad1582a8` correctly stayed on the current rig. A refit before Landon accepts the stills binds the candidate in practice.
+
+Correction: Leave the candidate unbound. Costumes stay on the current Hier until Landon accepts `Docs/Models/RigStills/pass7/`.
+
+### D1 UI — PR #121 — `780c79a98b87f8a0059f7b164b5b2751d6d5435a`
+
+Latest: `780c79a9` records the pass 56 sim lines. Between pass 2 and this tip: compile fix, one gold controls row, results poses, rest overlap counted as a rig joint.
+
+Aligned: `GrapplePadDefault` is still `leftTrigger`. `hierMeters` is still 1.8. `MenuSheet.ResultsWord` is still `"RESULTS"`. `PlayerGlyph` is still `● ▲ ■ ◆`. Pass 51–53 still say the body does not grow.
+
+Drift:
+
+- **Nit.** Pass 48 of `Docs/UiPlan.md` and `Docs/WhatsNew.md` still says "Not on pad yet". Pass 50 still says "First is a little taller." Those lines are history.
+
+Correction: none. Leave the old sentences. Keep LT and the 1.8 m body.
+
+### B1 Environment — PR #122 — `c727dc0ebbef2b68be6672dfe16e60e49a04292c`
+
+Latest: `c727dc0e` shoots fresh store, container, and dock stills. The branch contains the play-tip merge `fee5fb84`.
+
+Aligned: `Docs/AssetLibrary.md` line 158 is still a 22 × 15 m court and the real 0.375 m face-to-rim gap.
+
+Drift: the merge is the standing-rule break above. No new court or feel drift on this head.
+
+Correction: Do not merge the play tip again. Keep the 22 × 15 m court.
+
+### B2 Vehicles — PR #125 — `20f0d9fa914747b7feb631e77ecddc7254df07ef`
+
+Latest: `20f0d9fa` adds 2022–2026 model years for each vehicle line.
+
+Aligned: `Docs/AssetLibrary.md` line 147 is still 22 × 15 m and 0.375 m. `sedan_mid_a.py` still says "No badges."
+
+Drift: none on court or logos.
+
+Correction: none. Keep the badges off.
+
+### B3 Props — PR #129 — `6716e242b065f960f2b2043cdf815dfd2492f48e`
+
+Latest: `6716e242` gives the placed street props their still quartets.
+
+Aligned: `Docs/AssetLibrary.md` line 146 is still 22 × 15 m and 0.375 m. `CourtFence` is named as #122's mesh.
+
+Drift: none on the court.
+
+Correction: none.
+
+### C2 Effects — PR #127 — `fc9c8d820433fd5898261e65b03cfdf2ad703672`
+
+Latest: `fc9c8d82` loads comic PNGs from files so the compiler does not overflow. Before that, `c5f2d16f` reshoots pass 29 with body-foam seat colors: red, blue, orange, and lavender.
+
+Aligned: visual only. Seat tints match the seat identity.
+
+Drift: none found on feel or seats.
+
+Correction: none. Do not retune the land.
+
+### F Costumes — PR #131 — `ad1582a8e877d00356ff212ad13a78adc5d284ca`
+
+Latest: `ad1582a8` splits the costume shells at the joints and reshoots pass 5.
+
+Aligned: P4 Sol is lavender in `Docs/Characters/CostumeBrief.md`. The brief says the clearance candidate is not in this branch, the check reports `rig-not-clearance`, and nothing is refitted until the rig is stable. Licenses stay CC0. One skeleton. The pass 1 "purple" nit is closed.
+
+Drift:
+
+- **Nit.** The scale still's hooded figure measures 1.871 m. The note says the shipped Hier already spans 1.8588 m and the hood adds the rest. The body was not rescaled.
+
+Correction: none. Stay on the current rig.
+
+### Models lead — PR #133 — `a0a4df9dd586d95584e05c336ab431838074a556`
+
+Latest: `a0a4df9d` grades the 2022–2026 vehicle years.
+
+Aligned: `Docs/Models/STANDARD.md` still marks the clearance candidate unbound. The ledger still records the 22 × 15 m court and the 0.375 m gap as restored.
+
+Drift: none at blocker or should-fix.
+
+Correction: none. Do not bind the hip candidate.
+
+### World — PR #134 — `5b26a0a3479c9ddcbc692682ea2d1a3c76738845`
+
+Latest: `5b26a0a3` dresses the crash bowl, the bar highway, and the hopscotch. The branch contains the two merges above.
+
+Aligned: still Mega Park dressing. No fourth park in the latest message.
+
+Drift: the merges are the standing-rule break. No new scale drift in the latest commit message.
+
+Correction: Do not merge the asset library or the vehicle lane again. Keep dressing Mega Park.
+
+### Effects research — PR #135 — `c585dc8f988f916686eeffb7be79f85492e1160b`
+
+Latest: `c585dc8f` corrects pass-4 seat tints to red, blue, orange, and lavender. The message says P3 and P4 are the body colors, not the yellow and green stored on `VerbFxLook.PlayerColor`.
+
+Aligned: notes only. The seat table matches direction.
+
+Drift: none.
+
+Correction: none.
+
+### S1 Motion reference — PR #123 — `8fccec65178afb30c4f3bd0dccdc4aa8240d8301`
+
+Latest: `8fccec65` annotates hip-rule reference for roll, vault, climb, mantle, wall, and slide. Before that, `305a621f` hand-keys four original emotes.
+
+Aligned: `Docs/Movement/REFERENCE.md` says every clip that came from video stays reference-only, including the two CC0 Commons dances. The four pass 17 emotes are own work, CC0, and parked. Unlicensed and CC BY stay do-not-ship. This lane stays reference only.
+
+Drift:
+
+- **Nit.** Tic-tac `pose_error_pass14.txt` still reports `fails=90` and `pelvisBackMin=-34.5 cm`. The lane already calls filmed plants reference-only.
+
+Correction: Stay reference only. Do not import the filmed keys into A1.
+
+### S2 Motion clips — PR #124 — `80cd5f146fe945a72e20434bf063d9aa7c5f8db0`
+
+Unchanged. `hip_sit.txt` is still `fails=36`, `pelvisBackMin=-30.5 cm`.
+
+Drift: **should-fix**, same as pass 2. This lane stays idle.
+
+Correction: Stay idle. Do not hand the four clips to A1 until every plant is at least 8 cm behind the support foot.
+
+## Top of this pass
+
+Still true, so do not resend as if they were new: D1 prints LT and keeps a 1.8 m body; #125 and #129 keep 22 × 15 m and 0.375 m; A2 is unbound; #126 stays merged.
+
+Ororo, these are the five to send.
+
+1. **#136, blocker.** Evidence: `Docs/Movement/LEDGER.md` on `9c0d3e7a` calls `cursor/tag-movement` the movement branch and records `git merge` of #138 and #140. A1 is #118 `97f66cb8`. Correction: Stay a draft. Do not replace #118, and do not merge another helper.
+2. **A1 #118, should-fix.** Evidence: `Accessibility.cs` on `97f66cb8`, `PlayerGlyph` `● ■ ▲ ◆`, palette 0 yellow / green / white / cyan. Correction: Default marks are P1 red circle, P2 blue triangle, P3 orange square, P4 lavender diamond. Colour-blind sets stay behind the setting.
+3. **A1 #118, should-fix.** Evidence: `Docs/Controls.md` on `97f66cb8` still has no rope row. Correction: Add the rope row as RMB / LT, and say RT is free.
+4. **E #130, should-fix.** Evidence: `Docs/EvasionMoves.md` on `8d96a3f2`, dive roll-up 9.0 cm behind a 12 cm crouch bar, `fails=2`, and `pose=1.4 fails=1` on the spin. Correction: Keep the flag off. Put the dive roll-up pelvis at least 12 cm behind the support foot, and bring the spin pose to 0. Do not merge #137 in to cover it.
+5. **A2 #128, should-fix.** Evidence: `Docs/Models/PLAYER_QUEUE.md` on `44fbff3f` says #131 can refit now. #131 `ad1582a8` stayed on the current rig. Correction: Leave the clearance candidate unbound until Landon accepts `Docs/Models/RigStills/pass7/`.
+
+Also for Ororo, not a lane undo: #126, the #122 play-tip merge, the #134 asset merges, and the #136 helper merges stay as they are. Do not unmerge. #120's climb plant is still "No Drop" on `176983ee`; the 17.8 cm drop is already measured on #136. Do not ask C1 to key it again.
