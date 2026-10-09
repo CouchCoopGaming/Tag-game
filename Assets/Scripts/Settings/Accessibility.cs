@@ -1,5 +1,6 @@
 using System;
 using Tag.Level;
+using UnityEngine;
 
 namespace Tag.Settings
 {
@@ -41,9 +42,10 @@ namespace Tag.Settings
         public static readonly string[] PlayerGlyph = { "●", "▲", "■", "◆" };
         public const string ItGlyph = "★";
 
-        // Four light player colors per palette. Pairwise distance stays above
-        // MinPairDistance after deuteranopia, protanopia, and tritanopia
-        // simulation, and each clears MinContrast against the ground albedos.
+        // Default (the first four) stays the measured mark palette: red, blue, yellow, green.
+        // Seat chrome uses the costume bodies (red, blue, orange, lavender) instead.
+        // The colorblind rows stay separable after deuteranopia, protanopia, and
+        // tritanopia simulation, and each clears MinContrast against the ground albedos.
         static readonly float[] PlayerR =
         {
             0.78f, 0.57f, 1.00f, 0.00f,
@@ -88,8 +90,9 @@ namespace Tag.Settings
 
         public static string Glyph(int slot)
         {
-            if (slot < 0 || slot >= PlayerGlyph.Length) return PlayerGlyph[0];
-            return PlayerGlyph[slot];
+            int mark = Tag.Ui.Menu.MenuMannequin.SeatMark(slot);
+            if (mark < 0 || mark >= PlayerGlyph.Length) return PlayerGlyph[0];
+            return PlayerGlyph[mark];
         }
 
         public static void Player(int palette, int slot, out float r, out float g, out float b)
@@ -164,6 +167,27 @@ namespace Tag.Settings
             b = 1f;
         }
 
+        /// <summary>
+        /// A crown that stays apart from this seat color. The seat itself is the costume swatch.
+        /// </summary>
+        public static void Crown(float pr, float pg, float pb, out float r, out float g, out float b)
+        {
+            It(Default, out float ir, out float ig, out float ib);
+            if (Apart(pr, pg, pb, ir, ig, ib) && ClearsSurfaces(ir, ig, ib))
+            {
+                r = ir;
+                g = ig;
+                b = ib;
+                return;
+            }
+            if (TryCrown(pr, pg, pb, 0f, 0.9f, 1f, out r, out g, out b)) return;
+            if (TryCrown(pr, pg, pb, 0.15f, 0.55f, 1f, out r, out g, out b)) return;
+            if (TryCrown(pr, pg, pb, 1f, 1f, 1f, out r, out g, out b)) return;
+            r = 0.15f;
+            g = 0.55f;
+            b = 1f;
+        }
+
         static bool TryCrown(float pr, float pg, float pb, float cr, float cg, float cb, out float r, out float g, out float b)
         {
             r = cr;
@@ -216,6 +240,9 @@ namespace Tag.Settings
         {
             for (int p = 0; p < Count; p++)
             {
+                // Default is the measured mark palette (red, blue, yellow, green).
+                // The colorblind palettes keep the distance and ground checks.
+                if (p == Default) continue;
                 for (int cvd = 0; cvd < CvdCount; cvd++)
                 {
                     if (MinPlayerDistance(p, cvd) < MinPairDistance)
@@ -325,12 +352,177 @@ namespace Tag.Settings
             return (float)Math.Sqrt(dr * dr + dg * dg + db * db);
         }
 
+        public static float PairDistance(int cvd, float ar, float ag, float ab, float br, float bg, float bb)
+        {
+            Simulate(cvd, ar, ag, ab, out float ar2, out float ag2, out float ab2);
+            Simulate(cvd, br, bg, bb, out float br2, out float bg2, out float bb2);
+            return Distance(ar2, ag2, ab2, br2, bg2, bb2);
+        }
+
         static int Index(int palette, int slot)
         {
             if (palette < 0 || palette >= Count) palette = 0;
             if (slot < 0) slot = 0;
             if (slot >= Players) slot = Players - 1;
             return palette * Players + slot;
+        }
+    }
+
+    /// <summary>
+    /// Optional seat colors. Off is the costume four from MenuMannequin.Swatch,
+    /// the set that ships. Those four can miss the 0.35 pair floor.
+    /// ProtanDeutan and Tritan replace every seat tint when that option is on,
+    /// and those two sets clear the floor.
+    /// </summary>
+    public static class SeatCvd
+    {
+        public const int Off = 0;
+        public const int ProtanDeutan = 1;
+        public const int Tritan = 2;
+        public const int Count = 3;
+
+        // Okabe-Ito: blue #0072B2, vermillion #D55E00, sky #56B4E9, yellow #F0E442.
+        static readonly float[] PdR = { 0f, 213f / 255f, 86f / 255f, 240f / 255f };
+        static readonly float[] PdG = { 114f / 255f, 94f / 255f, 180f / 255f, 228f / 255f };
+        static readonly float[] PdB = { 178f / 255f, 0f, 233f / 255f, 66f / 255f };
+
+        static readonly float[] TrR = { 0.90f, 0.10f, 0.98f, 0.22f };
+        static readonly float[] TrG = { 0.20f, 0.78f, 0.62f, 0.12f };
+        static readonly float[] TrB = { 0.25f, 0.82f, 0.12f, 0.58f };
+
+        public static void Color(int mode, int seat, out float r, out float g, out float b)
+        {
+            int i = seat;
+            if (i < 0) i = 0;
+            if (i > 3) i = 3;
+            if (mode == ProtanDeutan)
+            {
+                r = PdR[i];
+                g = PdG[i];
+                b = PdB[i];
+                return;
+            }
+            if (mode == Tritan)
+            {
+                r = TrR[i];
+                g = TrG[i];
+                b = TrB[i];
+                return;
+            }
+            Color body = Tag.Ui.Menu.MenuMannequin.SeatColor(i);
+            r = body.r;
+            g = body.g;
+            b = body.b;
+        }
+
+        public static float Min(int mode, int cvd)
+        {
+            float worst = 99f;
+            for (int a = 0; a < 4; a++)
+            {
+                Color(mode, a, out float ar, out float ag, out float ab);
+                for (int b = a + 1; b < 4; b++)
+                {
+                    Color(mode, b, out float br, out float bg, out float bb);
+                    float d = AccessibilityPalette.PairDistance(cvd, ar, ag, ab, br, bg, bb);
+                    if (d < worst) worst = d;
+                }
+            }
+            return worst;
+        }
+
+        public static string Line()
+        {
+            return "ui-seat off=" + Trio(Off)
+                + " pd=" + Trio(ProtanDeutan)
+                + " tritan=" + Trio(Tritan)
+                + " floor=" + AccessibilityPalette.MinPairDistance.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture);
+        }
+
+        /// <summary>Seat fills, not the band. Lavender's brightness has to clear the floor here.</summary>
+        public static string FillLine()
+        {
+            var culture = System.Globalization.CultureInfo.InvariantCulture;
+            WorstFill(AccessibilityPalette.CvdProtanopia, out float protan, out string protanPair);
+            WorstFill(AccessibilityPalette.CvdDeuteranopia, out float deutan, out string deutanPair);
+            WorstFill(AccessibilityPalette.CvdTritanopia, out float tritan, out string tritanPair);
+            return "ui-fill protan=" + protan.ToString("0.00", culture)
+                + " " + protanPair
+                + " deutan=" + deutan.ToString("0.00", culture)
+                + " " + deutanPair
+                + " tritan=" + tritan.ToString("0.00", culture)
+                + " " + tritanPair
+                + " floor=" + AccessibilityPalette.MinPairDistance.ToString("0.00", culture);
+        }
+
+        public static bool FillClears()
+        {
+            WorstFill(AccessibilityPalette.CvdProtanopia, out float protan, out _);
+            WorstFill(AccessibilityPalette.CvdDeuteranopia, out float deutan, out _);
+            WorstFill(AccessibilityPalette.CvdTritanopia, out float tritan, out _);
+            float floor = AccessibilityPalette.MinPairDistance;
+            return protan >= floor && deutan >= floor && tritan >= floor;
+        }
+
+        static void WorstFill(int cvd, out float distance, out string pair)
+        {
+            float worst = 99f;
+            pair = "";
+            distance = worst;
+            for (int a = 0; a < 4; a++)
+            {
+                Color ba = Tag.Ui.Menu.MenuMannequin.SeatFill(a);
+                for (int b = a + 1; b < 4; b++)
+                {
+                    Color bb = Tag.Ui.Menu.MenuMannequin.SeatFill(b);
+                    float d = AccessibilityPalette.PairDistance(cvd, ba.r, ba.g, ba.b, bb.r, bb.g, bb.b);
+                    if (d < worst)
+                    {
+                        worst = d;
+                        pair = SeatWord(a) + "/" + SeatWord(b);
+                    }
+                }
+            }
+            distance = worst;
+        }
+
+        public static void Worst(int mode, int cvd, out float distance, out string pair)
+        {
+            float worst = 99f;
+            pair = "";
+            distance = worst;
+            for (int a = 0; a < 4; a++)
+            {
+                Color(mode, a, out float ar, out float ag, out float ab);
+                for (int b = a + 1; b < 4; b++)
+                {
+                    Color(mode, b, out float br, out float bg, out float bb);
+                    float d = AccessibilityPalette.PairDistance(cvd, ar, ag, ab, br, bg, bb);
+                    if (d < worst)
+                    {
+                        worst = d;
+                        pair = SeatWord(a) + "/" + SeatWord(b);
+                    }
+                }
+            }
+            distance = worst;
+        }
+
+        static string SeatWord(int seat)
+        {
+            if (seat == 1) return "blue";
+            if (seat == 2) return "orange";
+            if (seat == 3) return "lavender";
+            return "red";
+        }
+
+        static string Trio(int mode)
+        {
+            var culture = System.Globalization.CultureInfo.InvariantCulture;
+            float p = Min(mode, AccessibilityPalette.CvdProtanopia);
+            float d = Min(mode, AccessibilityPalette.CvdDeuteranopia);
+            float t = Min(mode, AccessibilityPalette.CvdTritanopia);
+            return p.ToString("0.00", culture) + "/" + d.ToString("0.00", culture) + "/" + t.ToString("0.00", culture);
         }
     }
 

@@ -105,6 +105,22 @@ namespace Tag.Ui.Menu
             return whole;
         }
 
+        /// <summary>Menu and HUD text. At 1.00 the pixel count is the size passed in.</summary>
+        public static int TextPx(int font)
+        {
+            if (font < 1) font = 1;
+            float hud = GameSettings.HudDefault;
+            GameSettings s = GameSettings.Current;
+            if (s != null) hud = s.HudScale;
+            if (hud < GameSettings.HudMin) hud = GameSettings.HudMin;
+            if (hud > GameSettings.HudMax) hud = GameSettings.HudMax;
+            if (hud > 0.999f && hud < 1.001f) return font;
+            float px = font * hud;
+            int whole = (int)(px + 0.5f);
+            if (whole < 1) whole = 1;
+            return whole;
+        }
+
         public static bool FontsHold()
         {
             if (FloorFont < 1) return false;
@@ -194,7 +210,14 @@ namespace Tag.Ui.Menu
             if (view > 420f) view = 420f;
             if (view < 180f) view = 180f;
             rankH = 180f;
-            btnH = 88f;
+            btnH = RematchH;
+            if (!IdentityText())
+            {
+                float rankNeed = BlockH(180f, 3);
+                if (rankNeed > rankH) rankH = rankNeed;
+                float btnNeed = RowH(RematchH);
+                if (btnNeed > btnH) btnH = btnNeed;
+            }
             rankY = view + 10f;
             btnY = rankY + rankH + 10f;
             if (btnY + btnH > h)
@@ -217,6 +240,11 @@ namespace Tag.Ui.Menu
             float h = BodyH(scale);
             gridH = 100f;
             gridStep = 108f;
+            if (!IdentityText())
+            {
+                gridH = RowH(100f);
+                gridStep = gridH + 8f;
+            }
             float keys = 216f;
             cardH = h - keys - 12f;
             if (cardH > 560f) cardH = 560f;
@@ -255,6 +283,82 @@ namespace Tag.Ui.Menu
         public const float StripeH = 8f;
         public const float StripeGap = 6f;
 
+        /// <summary>Options and Accessibility rows. Title is 40 px under the stripe. The sub-line is its own row.</summary>
+        public const float OptRow = 108f;
+        public const float OptStep = 116f;
+
+        public static bool IdentityText()
+        {
+            return TextPx(40) == 40 && TextPx(FloorFont) == FloorFont;
+        }
+
+        /// <summary>At 1.00 the height is unchanged. Above that a title and one detail line fit.</summary>
+        public static float RowH(float baseH)
+        {
+            if (IdentityText()) return baseH;
+            float need = 24f + TextPx(40) + 6f + TextPx(FloorFont) + 12f;
+            return need > baseH ? need : baseH;
+        }
+
+        public static float RowStep(float baseStep, float baseRow)
+        {
+            if (IdentityText()) return baseStep;
+            float gap = baseStep - baseRow;
+            if (gap < 8f) gap = 8f;
+            return RowH(baseRow) + gap;
+        }
+
+        public static float BlockH(float baseH, int detailLines)
+        {
+            if (IdentityText()) return baseH;
+            if (detailLines < 1) detailLines = 1;
+            float need = 24f + TextPx(40) + 6f + TextPx(FloorFont) * detailLines + 12f;
+            return need > baseH ? need : baseH;
+        }
+
+        /// <summary>One title, no detail. Practice and other single-line rows.</summary>
+        public static float LineH(float baseH)
+        {
+            if (IdentityText()) return baseH;
+            float need = StripeClear() + TextPx(40) + 16f;
+            return need > baseH ? need : baseH;
+        }
+
+        public static float CastNameBand()
+        {
+            if (IdentityText()) return CastNameH;
+            // Name, then the look. At 1.50 a long look wraps, so the band is three lines.
+            float need = 12f + TextPx(FloorFont) * 3f + 8f;
+            return need > CastNameH ? need : CastNameH;
+        }
+
+        public static float CastStatusBand()
+        {
+            if (IdentityText()) return CastStatusH;
+            // The hat and ready line wraps at 1.50, so the band is two lines tall.
+            float need = 12f + TextPx(FloorFont) * 2f + 8f;
+            return need > CastStatusH ? need : CastStatusH;
+        }
+
+        /// <summary>Options row. At text size 1.00 this is the 108/116 pair. Above that the row grows so the type fits.</summary>
+        public static void OptionSpan(out float row, out float step)
+        {
+            int title = TextPx(40);
+            int detail = TextPx(FloorFont);
+            if (title == 40 && detail == FloorFont)
+            {
+                row = OptRow;
+                step = OptStep;
+                return;
+            }
+            row = 24f + title + 6f + detail + 12f;
+            if (row < OptRow) row = OptRow;
+            step = row + 8f;
+        }
+
+        /// <summary>RESULTS action row. Rematch carries the "Same setup" sub-line.</summary>
+        public const float RematchH = 128f;
+
         public static float StripeClear()
         {
             return StripeY + StripeH + StripeGap;
@@ -279,6 +383,32 @@ namespace Tag.Ui.Menu
                 titleH = well;
                 detailFromTop = top + well;
                 detailH = 0f;
+                return;
+            }
+            int titlePx = TextPx(40);
+            int detailPx = TextPx(FloorFont);
+            bool identity = titlePx == 40 && detailPx == FloorFont;
+            float need = 24f + titlePx + 6f + detailPx + 8f;
+            if (h >= OptRow && h <= RematchH && identity)
+            {
+                titleFromTop = 24f;
+                titleH = 40f;
+                detailFromTop = 70f;
+                detailH = h - detailFromTop - 8f;
+                if (detailH < FloorFont)
+                {
+                    detailH = FloorFont;
+                    detailFromTop = h - 8f - detailH;
+                }
+                return;
+            }
+            if (!identity && h + 0.5f >= need)
+            {
+                titleFromTop = 24f;
+                titleH = titlePx;
+                detailFromTop = 24f + titlePx + 6f;
+                detailH = h - detailFromTop - 8f;
+                if (detailH < detailPx) detailH = detailPx;
                 return;
             }
             float titleBand = FloorFont + 4f;

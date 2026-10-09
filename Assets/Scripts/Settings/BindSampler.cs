@@ -17,14 +17,32 @@ namespace Tag.Settings
         {
             var binds = CouchPlay.BindsFor(CouchPlay.DeviceKeyboard);
             int i = (int)action;
-            return HeldToken(binds.Keyboard[i], false) || HeldToken(binds.Gamepad[i], true);
+            return KeyboardHit(binds, action, i, false) || HeldToken(binds.Gamepad[i], true);
         }
 
         public static bool Pressed(PlayAction action)
         {
             var binds = CouchPlay.BindsFor(CouchPlay.DeviceKeyboard);
             int i = (int)action;
-            return PressedToken(binds.Keyboard[i], false) || PressedToken(binds.Gamepad[i], true);
+            return KeyboardHit(binds, action, i, true) || PressedToken(binds.Gamepad[i], true);
+        }
+
+        /// <summary>
+        /// The existing grapple verb. Keyboard token, then the first pad's token.
+        /// A second press inside the grapple window releases. This method only reports the hold.
+        /// </summary>
+        public static bool GrappleHeld()
+        {
+            ActionBinds keys = CouchPlay.BindsFor(CouchPlay.DeviceKeyboard);
+            if (keys == null) keys = ActionBinds.Defaults();
+            string key = keys.GrappleKey;
+            if (string.IsNullOrEmpty(key)) key = ActionBinds.GrappleKeyDefault;
+            if (HeldToken(key, false)) return true;
+            ActionBinds pad = CouchPlay.BindsFor(CouchPlay.DevicePad0);
+            if (pad == null) pad = keys;
+            string trigger = pad.GrapplePad;
+            if (string.IsNullOrEmpty(trigger)) trigger = ActionBinds.GrapplePadDefault;
+            return HeldToken(trigger, true);
         }
 
         public static Vector2 MoveVector()
@@ -122,6 +140,8 @@ namespace Tag.Settings
                 if (pad.buttonNorth.wasPressedThisFrame) return "buttonNorth";
                 if (pad.leftShoulder.wasPressedThisFrame) return "leftShoulder";
                 if (pad.rightShoulder.wasPressedThisFrame) return "rightShoulder";
+                if (pad.leftTrigger.wasPressedThisFrame) return "leftTrigger";
+                if (pad.rightTrigger.wasPressedThisFrame) return "rightTrigger";
                 if (pad.leftStickButton.wasPressedThisFrame) return "leftStickPress";
                 if (pad.rightStickButton.wasPressedThisFrame) return "rightStickPress";
                 if (pad.startButton.wasPressedThisFrame) return "start";
@@ -175,7 +195,8 @@ namespace Tag.Settings
             if (string.IsNullOrEmpty(token)) return false;
             return token == "buttonSouth" || token == "buttonEast" || token == "buttonWest"
                 || token == "buttonNorth" || token == "leftShoulder" || token == "rightShoulder"
-                || token == "start" || token == "select" || token.StartsWith("dpad")
+                || token == "start" || token == "select" || token == "leftTrigger" || token == "rightTrigger"
+                || token.StartsWith("dpad")
                 || token.EndsWith("Press");
         }
 
@@ -254,6 +275,8 @@ namespace Tag.Settings
                     case "buttonNorth": return pad.buttonNorth.isPressed;
                     case "leftShoulder": return pad.leftShoulder.isPressed;
                     case "rightShoulder": return pad.rightShoulder.isPressed;
+                    case "leftTrigger": return pad.leftTrigger.isPressed;
+                    case "rightTrigger": return pad.rightTrigger.isPressed;
                     case "start": return pad.startButton.isPressed;
                     case "select": return pad.selectButton.isPressed;
                     case "dpadLeft": return pad.dpad.left.isPressed;
@@ -291,6 +314,8 @@ namespace Tag.Settings
                     case "buttonNorth": return pad.buttonNorth.wasPressedThisFrame;
                     case "leftShoulder": return pad.leftShoulder.wasPressedThisFrame;
                     case "rightShoulder": return pad.rightShoulder.wasPressedThisFrame;
+                    case "leftTrigger": return pad.leftTrigger.wasPressedThisFrame;
+                    case "rightTrigger": return pad.rightTrigger.wasPressedThisFrame;
                     case "start": return pad.startButton.wasPressedThisFrame;
                     case "select": return pad.selectButton.wasPressedThisFrame;
                     case "dpadLeft": return pad.dpad.left.wasPressedThisFrame;
@@ -345,7 +370,7 @@ namespace Tag.Settings
             if (binds == null) return false;
             int i = (int)action;
             if (i < 0 || i >= binds.Keyboard.Length) return false;
-            if (device <= 0) return HeldToken(binds.Keyboard[i], false);
+            if (device <= 0) return KeyboardHit(binds, action, i, false);
             return PadHeldAt(device - 1, binds.Gamepad[i]);
         }
 
@@ -354,8 +379,26 @@ namespace Tag.Settings
             if (binds == null) return false;
             int i = (int)action;
             if (i < 0 || i >= binds.Keyboard.Length) return false;
-            if (device <= 0) return PressedToken(binds.Keyboard[i], false);
+            if (device <= 0) return KeyboardHit(binds, action, i, true);
             return PadPressedAt(device - 1, binds.Gamepad[i]);
+        }
+
+        /// <summary>
+        /// Primary key, then Jump's second key when one is stored.
+        /// The alt string is the one already on the table. This does not build a new one.
+        /// </summary>
+        static bool KeyboardHit(ActionBinds binds, PlayAction action, int i, bool pressed)
+        {
+            string token = binds.Keyboard[i];
+            if (pressed)
+            {
+                if (PressedToken(token, false)) return true;
+            }
+            else if (HeldToken(token, false)) return true;
+            if (action != PlayAction.Jump) return false;
+            string alt = binds.JumpAlt;
+            if (string.IsNullOrEmpty(alt)) return false;
+            return pressed ? PressedToken(alt, false) : HeldToken(alt, false);
         }
 
         public static Vector2 MoveDevice(ActionBinds binds, int device)
@@ -415,6 +458,8 @@ namespace Tag.Settings
                 case "buttonNorth": return pad.buttonNorth.isPressed;
                 case "leftShoulder": return pad.leftShoulder.isPressed;
                 case "rightShoulder": return pad.rightShoulder.isPressed;
+                case "leftTrigger": return pad.leftTrigger.isPressed;
+                case "rightTrigger": return pad.rightTrigger.isPressed;
                 case "start": return pad.startButton.isPressed;
                 case "select": return pad.selectButton.isPressed;
                 case "dpadLeft": return pad.dpad.left.isPressed;
@@ -444,6 +489,8 @@ namespace Tag.Settings
                 case "buttonNorth": return pad.buttonNorth.wasPressedThisFrame;
                 case "leftShoulder": return pad.leftShoulder.wasPressedThisFrame;
                 case "rightShoulder": return pad.rightShoulder.wasPressedThisFrame;
+                case "leftTrigger": return pad.leftTrigger.wasPressedThisFrame;
+                case "rightTrigger": return pad.rightTrigger.wasPressedThisFrame;
                 case "start": return pad.startButton.wasPressedThisFrame;
                 case "select": return pad.selectButton.wasPressedThisFrame;
                 case "dpadLeft": return pad.dpad.left.wasPressedThisFrame;

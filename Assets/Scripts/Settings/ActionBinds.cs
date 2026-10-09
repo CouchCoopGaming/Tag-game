@@ -31,6 +31,21 @@ namespace Tag.Settings
         public readonly string[] Keyboard = new string[(int)PlayAction.Count];
         public readonly string[] Gamepad = new string[(int)PlayAction.Count];
 
+        /// <summary>
+        /// Extra keyboard jump. Space stays the primary token. Empty means no second key.
+        /// The menu writes this. SetKeyboard does not.
+        /// </summary>
+        public string JumpAlt = "";
+
+        /// <summary>Existing grapple verb. RMB pulls. A second press within 0.28 s releases.</summary>
+        public const string GrappleKeyDefault = "mouseRight";
+
+        /// <summary>Pad default for that same verb. LT is not used by another action.</summary>
+        public const string GrapplePadDefault = "leftTrigger";
+
+        public string GrappleKey = GrappleKeyDefault;
+        public string GrapplePad = GrapplePadDefault;
+
         /// <summary>Bumps when a token changes so prompt glyphs can refresh without scanning.</summary>
         public int Revision { get; private set; }
 
@@ -56,6 +71,9 @@ namespace Tag.Settings
                 b.Keyboard[i] = template.Keyboard[i];
                 b.Gamepad[i] = template.Gamepad[i];
             }
+            b.JumpAlt = template.JumpAlt ?? "";
+            b.GrappleKey = string.IsNullOrEmpty(template.GrappleKey) ? GrappleKeyDefault : template.GrappleKey;
+            b.GrapplePad = string.IsNullOrEmpty(template.GrapplePad) ? GrapplePadDefault : template.GrapplePad;
             return b;
         }
 
@@ -74,6 +92,8 @@ namespace Tag.Settings
             Set(b, PlayAction.Arena1, "alpha1", "dpadLeft");
             Set(b, PlayAction.Arena2, "alpha2", "dpadRight");
             Set(b, PlayAction.Arena3, "alpha3", "dpadUp");
+            b.GrappleKey = GrappleKeyDefault;
+            b.GrapplePad = GrapplePadDefault;
         }
 
         public static string Name(PlayAction action)
@@ -153,6 +173,34 @@ namespace Tag.Settings
             }
         }
 
+        /// <summary>
+        /// Xbox face names for the controls list. The token itself does not change.
+        /// </summary>
+        /// <summary>
+        /// Short mark for a loading tip. Cling's keyboard token is the move hold,
+        /// drawn as WASD. The pad hold is the left stick. Face buttons use A B X Y.
+        /// </summary>
+        public static string Chip(string token)
+        {
+            if (token == "holdIntoWall") return "WASD";
+            if (token == "leftStickHold") return "Left stick";
+            return PadWord(token);
+        }
+
+        public static string PadWord(string token)
+        {
+            switch (token)
+            {
+                case "buttonSouth": return "A";
+                case "buttonEast": return "B";
+                case "buttonWest": return "X";
+                case "buttonNorth": return "Y";
+                case "leftTrigger": return "LT";
+                case "rightTrigger": return "RT";
+                default: return Show(token);
+            }
+        }
+
         public bool KeyboardIsDefault(PlayAction action)
         {
             return Keyboard[(int)action] == Template().Keyboard[(int)action];
@@ -196,7 +244,26 @@ namespace Tag.Settings
 
         public bool UsesLegacy(PlayAction action)
         {
+            if (action == PlayAction.Jump && !string.IsNullOrEmpty(JumpAlt)) return false;
             return KeyboardIsDefault(action) && GamepadIsDefault(action);
+        }
+
+        public void SetJumpAlt(string token)
+        {
+            JumpAlt = token ?? "";
+            Revision++;
+        }
+
+        public void SetGrappleKey(string token)
+        {
+            GrappleKey = string.IsNullOrEmpty(token) ? GrappleKeyDefault : token;
+            Revision++;
+        }
+
+        public void SetGrapplePad(string token)
+        {
+            GrapplePad = string.IsNullOrEmpty(token) ? GrapplePadDefault : token;
+            Revision++;
         }
 
         public void SetKeyboard(PlayAction action, string token)
@@ -219,6 +286,9 @@ namespace Tag.Settings
                 Keyboard[i] = d.Keyboard[i];
                 Gamepad[i] = d.Gamepad[i];
             }
+            JumpAlt = d.JumpAlt ?? "";
+            GrappleKey = string.IsNullOrEmpty(d.GrappleKey) ? GrappleKeyDefault : d.GrappleKey;
+            GrapplePad = string.IsNullOrEmpty(d.GrapplePad) ? GrapplePadDefault : d.GrapplePad;
             Revision++;
         }
 
@@ -230,7 +300,64 @@ namespace Tag.Settings
                 copy.Keyboard[i] = Keyboard[i];
                 copy.Gamepad[i] = Gamepad[i];
             }
+            copy.JumpAlt = JumpAlt ?? "";
+            copy.GrappleKey = string.IsNullOrEmpty(GrappleKey) ? GrappleKeyDefault : GrappleKey;
+            copy.GrapplePad = string.IsNullOrEmpty(GrapplePad) ? GrapplePadDefault : GrapplePad;
             return copy;
+        }
+
+        /// <summary>
+        /// How many default pairs share a sampled button.
+        /// Keyboard extras that the pawn still ORs in count. Each of the four pads counts.
+        /// Cling's hold shares Move, so that pair is not a clash. Alt is not on Air dash or Sprint.
+        /// </summary>
+        public static int DefaultConflicts()
+        {
+            ActionBinds shipped = Defaults();
+            int pairs = SamplePairs(shipped, true);
+            pairs += SamplePairs(shipped, false) * 4;
+            return pairs;
+        }
+
+        static int SamplePairs(ActionBinds binds, bool keyboard)
+        {
+            int slots = (int)PlayAction.Count + 1;
+            int n = 0;
+            for (int i = 0; i < slots; i++)
+            {
+                Sample(binds, i, keyboard, out string a, out string extraA);
+                for (int j = i + 1; j < slots; j++)
+                {
+                    Sample(binds, j, keyboard, out string b, out string extraB);
+                    if (SameButton(a, b) || SameButton(a, extraB) || SameButton(extraA, b) || SameButton(extraA, extraB))
+                        n++;
+                }
+            }
+            return n;
+        }
+
+        static void Sample(ActionBinds binds, int slot, bool keyboard, out string primary, out string extra)
+        {
+            extra = "";
+            if (slot >= (int)PlayAction.Count)
+            {
+                primary = keyboard ? binds.GrappleKey : binds.GrapplePad;
+                return;
+            }
+            primary = keyboard ? binds.Keyboard[slot] : binds.Gamepad[slot];
+            if (!keyboard || string.IsNullOrEmpty(primary)) return;
+            var action = (PlayAction)slot;
+            if (action == PlayAction.Slide && primary == "leftCtrl") extra = "c";
+            else if (action == PlayAction.Punch && primary != "e") extra = "e";
+            else if (action == PlayAction.Jump && !string.IsNullOrEmpty(binds.JumpAlt)) extra = binds.JumpAlt;
+        }
+
+        static bool SameButton(string a, string b)
+        {
+            if (string.IsNullOrEmpty(a) || string.IsNullOrEmpty(b)) return false;
+            if (!string.Equals(a, b, StringComparison.Ordinal)) return false;
+            if (SharesMove(a)) return false;
+            return true;
         }
 
         /// <summary>

@@ -1,3 +1,5 @@
+using UnityEngine;
+
 namespace Tag.Ui.Menu
 {
     /// <summary>
@@ -29,8 +31,8 @@ namespace Tag.Ui.Menu
             float bodyH = UiFit.BodyH(scale);
             float bodyW = UiFit.BodyW(scale);
             if (bodyH < 400f || bodyW < 900f) return false;
-            int opt = UiFit.Window(scale, 96f, 8f);
-            if (8f + opt * 96f > bodyH + 0.5f) return false;
+            int opt = UiFit.Window(scale, UiFit.OptStep, 8f);
+            if (8f + opt * UiFit.OptStep > bodyH + 0.5f) return false;
             int rules = UiFit.Window(scale, 84f, 12f);
             if (12f + rules * 84f > bodyH + 0.5f) return false;
             UiFit.Columns(scale, out _, out float leftW, out float rightX, out float rightW);
@@ -55,15 +57,12 @@ namespace Tag.Ui.Menu
 
         static bool SeatText()
         {
-            // MenuMannequin.Swatch: Red, Blue, Orange, Lavender.
-            float[] r = { 0.88f, 0.42f, 0.94f, 0.70f };
-            float[] g = { 0.22f, 0.68f, 0.42f, 0.58f };
-            float[] b = { 0.24f, 0.92f, 0.14f, 0.88f };
             for (int i = 0; i < 4; i++)
             {
-                float pr = Mix(0.04f, r[i]);
-                float pg = Mix(0.07f, g[i]);
-                float pb = Mix(0.16f, b[i]);
+                Color seat = MenuMannequin.SeatColor(i);
+                float pr = Mix(0.04f, seat.r);
+                float pg = Mix(0.07f, seat.g);
+                float pb = Mix(0.16f, seat.b);
                 if (Ratio(1f, 0.98f, 0.92f, pr, pg, pb) < 4.5f) return false;
                 if (Ratio(0.78f, 0.88f, 1f, pr, pg, pb) < 4.5f) return false;
             }

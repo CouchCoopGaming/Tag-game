@@ -14,7 +14,10 @@ namespace Tag.Ui.Menu
         public Text Detail;
         public Image Bar;
         public bool KeepBar;
+        public bool WinnerStroke;
+        public bool LockColors;
         public Color BarColor;
+        static readonly Color ChosenFill = new Color(0.12f, 0.40f, 0.78f, 1f);
         public RectTransform Sweep;
         public float SweepSpan;
         public bool Allow = true;
@@ -99,6 +102,15 @@ namespace Tag.Ui.Menu
 
         void PaintHot()
         {
+            if (LockColors)
+            {
+                if (Plate != null) Plate.color = _base;
+                if (Stroke != null) Stroke.color = MenuTheme.Gold;
+                if (Label != null) Label.color = MenuTheme.Cream;
+                if (Detail != null) Detail.color = MenuTheme.Mute;
+                if (Bar != null) Bar.color = KeepBar ? BarColor : new Color(1f, 1f, 1f, 0.35f);
+                return;
+            }
             if (Plate != null) Plate.color = _hotColor;
             if (Stroke != null) Stroke.color = MenuTheme.Gold;
             if (Label != null) Label.color = MenuTheme.Ink;
@@ -108,8 +120,18 @@ namespace Tag.Ui.Menu
 
         void PaintRest()
         {
+            bool gold = WinnerStroke;
+            if (LockColors)
+            {
+                if (Plate != null) Plate.color = _base;
+                if (Stroke != null) Stroke.color = gold ? MenuTheme.Gold : MenuTheme.Stroke;
+                if (Label != null) Label.color = MenuTheme.Cream;
+                if (Detail != null) Detail.color = MenuTheme.Mute;
+                if (Bar != null) Bar.color = KeepBar ? BarColor : new Color(1f, 1f, 1f, 0.35f);
+                return;
+            }
             if (Plate != null) Plate.color = _chosen ? ChosenFill : _base;
-            if (Stroke != null) Stroke.color = MenuTheme.Stroke;
+            if (Stroke != null) Stroke.color = gold ? MenuTheme.Gold : MenuTheme.Stroke;
             if (Label != null) Label.color = MenuTheme.Cream;
             if (Detail != null) Detail.color = MenuTheme.Mute;
             if (Bar != null) Bar.color = KeepBar ? BarColor : new Color(1f, 1f, 1f, 0.35f);
@@ -156,7 +178,17 @@ namespace Tag.Ui.Menu
             bar.raycastTarget = false;
         }
 
-        static readonly Color ChosenFill = new Color(0.12f, 0.40f, 0.78f, 1f);
+        /// <summary>A thicker gold edge on the focused row, so it reads from the couch.</summary>
+        public void CouchEdge()
+        {
+            if (Stroke == null) return;
+            RectTransform rt = transform as RectTransform;
+            if (rt == null) return;
+            float pad = _hot ? 16f : 5f;
+            RectTransform stroke = Stroke.rectTransform;
+            stroke.anchoredPosition = new Vector2(-pad, pad);
+            stroke.sizeDelta = new Vector2(rt.sizeDelta.x + pad * 2f, rt.sizeDelta.y + pad * 2f);
+        }
 
         public void OnPointerEnter(PointerEventData eventData)
         {

@@ -42,18 +42,20 @@ namespace Tag.Ui.Menu
             rt.offsetMin = new Vector2(18f, 8f);
             rt.offsetMax = new Vector2(-18f, -8f);
             var label = rt.gameObject.AddComponent<Text>();
-            if (size < UiFit.FloorFont) size = UiFit.FloorFont;
+            int drawn = UiFit.TextPx(size < UiFit.FloorFont ? UiFit.FloorFont : size);
+            int minPx = UiFit.TextPx(UiFit.FloorFont);
+            if (minPx > drawn) minPx = drawn;
             label.font = MenuTheme.Font;
             label.text = text ?? "";
-            label.fontSize = size;
+            label.fontSize = drawn;
             label.fontStyle = FontStyle.Bold;
             label.alignment = align;
             label.color = color;
             label.horizontalOverflow = HorizontalWrapMode.Wrap;
             label.verticalOverflow = VerticalWrapMode.Truncate;
             label.resizeTextForBestFit = true;
-            label.resizeTextMinSize = UiFit.FloorFont;
-            label.resizeTextMaxSize = size;
+            label.resizeTextMinSize = minPx;
+            label.resizeTextMaxSize = drawn;
             label.raycastTarget = false;
             var outline = rt.gameObject.AddComponent<Outline>();
             outline.effectColor = new Color(0f, 0f, 0f, 0.85f);
@@ -110,6 +112,37 @@ namespace Tag.Ui.Menu
             var title = Words(rt, label, 40, TextAnchor.MiddleLeft, MenuTheme.Cream, Vector2.zero, Vector2.one);
             title.font = MenuTheme.Display;
             var sub = Words(rt, detail, UiFit.FloorFont, TextAnchor.MiddleLeft, MenuTheme.Mute, Vector2.zero, Vector2.one);
+            int titlePx = UiFit.TextPx(40);
+            int detailPx = UiFit.TextPx(UiFit.FloorFont);
+            bool identityType = titlePx == 40 && detailPx == UiFit.FloorFont;
+            bool typedRow = h >= UiFit.OptRow && h <= UiFit.RematchH && identityType;
+            if (typedRow)
+            {
+                title.resizeTextForBestFit = false;
+                title.fontSize = titlePx;
+                title.resizeTextMaxSize = titlePx;
+                sub.resizeTextForBestFit = false;
+                sub.fontSize = detailPx;
+                sub.resizeTextMaxSize = detailPx;
+                sub.resizeTextMinSize = detailPx;
+            }
+            else if (!identityType)
+            {
+                if (titleH + 1f >= titlePx)
+                {
+                    title.resizeTextForBestFit = false;
+                    title.fontSize = titlePx;
+                    title.resizeTextMaxSize = titlePx;
+                    title.resizeTextMinSize = titlePx;
+                }
+                if (!two || detailH + 1f >= detailPx)
+                {
+                    sub.resizeTextForBestFit = false;
+                    sub.fontSize = detailPx;
+                    sub.resizeTextMaxSize = detailPx;
+                    sub.resizeTextMinSize = detailPx;
+                }
+            }
             Band(title, h, titleFromTop, titleH);
             Band(sub, h, detailFromTop, detailH);
             var tile = rt.gameObject.AddComponent<MenuTile>();
@@ -190,9 +223,10 @@ namespace Tag.Ui.Menu
                 rt.offsetMin = new Vector2(inset, 2f);
                 rt.offsetMax = new Vector2(-16f, -2f);
                 tile.Label.alignment = TextAnchor.MiddleLeft;
-                tile.Label.fontSize = 46;
-                tile.Label.resizeTextMaxSize = 46;
-                tile.Label.resizeTextMinSize = UiFit.FloorFont;
+                int namePx = UiFit.TextPx(46);
+                tile.Label.fontSize = namePx;
+                tile.Label.resizeTextMaxSize = namePx;
+                tile.Label.resizeTextMinSize = UiFit.TextPx(UiFit.FloorFont);
             }
             if (tile.Detail != null)
             {
@@ -202,6 +236,190 @@ namespace Tag.Ui.Menu
                 rt.offsetMin = new Vector2(inset, 2f);
                 rt.offsetMax = new Vector2(-16f, -2f);
             }
+        }
+
+        /// <summary>
+        /// Drop-in card. The plate and the stripe stay the seat tint. Focus is the gold
+        /// stroke only. A joined seat gets a bust in the slot color and a Ready or Joined chip.
+        /// </summary>
+        public static void JoinDress(MenuTile tile, Color seat, bool joined, bool ready, string profile, string deviceLine, int index)
+        {
+            if (tile == null) return;
+            tile.LockColors = true;
+            RectTransform root = tile.transform as RectTransform;
+            float w = root != null ? root.sizeDelta.x : 400f;
+            float h = root != null ? root.sizeDelta.y : 420f;
+            if (tile.Label != null) Band(tile.Label, h, 22f, 36f);
+            if (!joined)
+            {
+                float side = h * 0.42f;
+                if (side > 220f) side = 220f;
+                if (side < 120f) side = 120f;
+                if (side > w * 0.78f) side = w * 0.78f;
+                float bustY = 86f;
+                if (!HierSeat(tile.transform, (w - side) * 0.5f, bustY, side, index))
+                {
+                    Ghost(tile.transform, (w - side * 0.72f) * 0.5f, bustY, side * 0.72f, side, seat);
+                    float mark = 76f;
+                    float mx = (w - mark) * 0.5f;
+                    float my = bustY + side * 0.38f;
+                    var well = Place(tile.transform, "GhostWell", mx, my, mark, mark);
+                    var wellImage = well.gameObject.AddComponent<Image>();
+                    wellImage.color = new Color(0.02f, 0.02f, 0.04f, 0.85f);
+                    wellImage.raycastTarget = false;
+                    SeatShape.StampKind(well, MenuMannequin.Shape(index), 10f, 10f, mark - 20f, MenuTheme.SeatFill(index));
+                }
+                if (tile.Detail != null)
+                {
+                    Band(tile.Detail, h, bustY + side + 10f, 44f);
+                    tile.Detail.alignment = TextAnchor.MiddleCenter;
+                }
+                return;
+            }
+            if (tile.Detail != null) tile.Detail.text = "";
+            float bustH = h * 0.40f;
+            float bustY = 62f;
+            if (bustY + bustH > h - 148f) bustH = h - 148f - bustY;
+            if (bustH < 96f) bustH = 96f;
+            if (bustH > w * 0.78f) bustH = w * 0.78f;
+            if (!HierSeat(tile.transform, (w - bustH) * 0.5f, bustY, bustH, index))
+                Bust(tile.transform, (w - bustH * 0.72f) * 0.5f, bustY, bustH * 0.72f, bustH, seat);
+            string name = string.IsNullOrEmpty(profile) ? "" : "<  " + profile + "  >";
+            var nameRt = Place(tile.transform, "ProfileName", 16f, bustY + bustH + 6f, w - 32f, 36f);
+            Words(nameRt, name, 28, TextAnchor.MiddleCenter, MenuTheme.Cream, Vector2.zero, Vector2.one);
+            float chipH = 40f;
+            float chipY = h - chipH - 14f;
+            var hint = Place(tile.transform, "ReadyHint", 16f, chipY - 68f, w - 32f, 26f);
+            Words(hint, "Y  Ready", 22, TextAnchor.MiddleCenter, MenuTheme.Mute, Vector2.zero, Vector2.one);
+            DeviceLine(tile.transform, w, chipY - 38f, deviceLine);
+            string word = ready ? "Ready" : "Joined";
+            Color plate = ready ? MenuTheme.Gold : MenuTheme.Navy;
+            Color ink = ready ? MenuTheme.Ink : MenuTheme.Cream;
+            var chip = Place(tile.transform, "ReadyChip", (w - 168f) * 0.5f, chipY, 168f, chipH);
+            var chipImage = chip.gameObject.AddComponent<Image>();
+            MenuArt.Plate(chipImage, plate, true);
+            chipImage.raycastTarget = false;
+            Words(chip, word, 28, TextAnchor.MiddleCenter, ink, Vector2.zero, Vector2.one);
+        }
+
+        /// <summary>
+        /// Seat mark on a drop-in card. The kind is <see cref="MenuMannequin.Shape"/>.
+        /// A dark well keeps the fill readable at couch size.
+        /// </summary>
+        public static void JoinShape(MenuTile tile, int seat)
+        {
+            if (tile == null) return;
+            RectTransform root = tile.transform as RectTransform;
+            float w = root != null ? root.sizeDelta.x : 400f;
+            const float size = 88f;
+            var well = Place(tile.transform, "JoinWell", w - size - 16f, 14f, size, size);
+            var back = well.gameObject.AddComponent<Image>();
+            back.color = new Color(0.02f, 0.02f, 0.04f, 1f);
+            back.raycastTarget = false;
+            SeatShape.StampKind(well, MenuMannequin.Shape(seat), 10f, 10f, size - 20f, MenuTheme.SeatFill(seat));
+        }
+
+        /// <summary>
+        /// Head, chest, and legs in the seat color. A joined drop-in card uses this
+        /// instead of a tiny device mark.
+        /// </summary>
+        /// <summary>Seat Hier idle, square so the disc is not stretched. False when the atlas is missing.</summary>
+        public static bool HierSeat(Transform parent, float x, float y, float side, int index)
+        {
+            Texture tex = MenuBackdrop.SeatLoad;
+            if (parent == null || tex == null) return false;
+            if (index < 0) index = 0;
+            if (index > 3) index = 3;
+            RectTransform rt = Place(parent, "HierSeat", x, y, side, side);
+            RawImage raw = rt.gameObject.AddComponent<RawImage>();
+            raw.texture = tex;
+            raw.raycastTarget = false;
+            raw.uvRect = new Rect(index * 0.25f, 0f, 0.25f, 1f);
+            return true;
+        }
+
+        /// <summary>Empty drop-in seat. A faint body with a light outline, not a blank slab.</summary>
+        public static void Ghost(Transform parent, float x, float y, float w, float h, Color seat)
+        {
+            if (parent == null) return;
+            Color line = Color.Lerp(seat, Color.white, 0.45f);
+            line.a = 0.72f;
+            const float o = 4f;
+            Bust(parent, x - o, y, w, h, line);
+            Bust(parent, x + o, y, w, h, line);
+            Bust(parent, x, y - o, w, h, line);
+            Bust(parent, x, y + o, w, h, line);
+            Color fill = seat;
+            fill.a = 0.18f;
+            Bust(parent, x, y, w, h, fill);
+        }
+
+        public static void Bust(Transform parent, float x, float y, float w, float h, Color body)
+        {
+            if (parent == null || w < 8f || h < 8f) return;
+            var rt = Place(parent, "Bust", x, y, w, h);
+            var image = rt.gameObject.AddComponent<Image>();
+            image.sprite = MenuIcons.HierBust;
+            image.color = body;
+            image.preserveAspect = true;
+            image.raycastTarget = false;
+        }
+
+        static void DeviceLine(Transform parent, float w, float y, string word)
+        {
+            if (parent == null || string.IsNullOrEmpty(word)) return;
+            bool keyboard = word == "Keyboard";
+            float icon = 26f;
+            float textW = keyboard ? 132f : 124f;
+            float gap = 8f;
+            float group = icon + gap + textW;
+            float x = (w - group) * 0.5f;
+            if (x < 8f) x = 8f;
+            var iconRt = Place(parent, "DeviceIcon", x, y + 3f, icon, icon);
+            var iconImage = iconRt.gameObject.AddComponent<Image>();
+            iconImage.sprite = keyboard ? MenuIcons.Keys : MenuIcons.Pad;
+            iconImage.color = MenuTheme.Cream;
+            iconImage.preserveAspect = true;
+            iconImage.raycastTarget = false;
+            var text = Place(parent, "DeviceLine", x + icon + gap, y, textW, 32f);
+            Words(text, word, 26, TextAnchor.MiddleLeft, MenuTheme.Cream, Vector2.zero, Vector2.one);
+        }
+
+        /// <summary>Empty records card. A pedestal and a gold cup, not a stack of blank rows.</summary>
+        public static void EmptyMark(Transform parent, float x, float y, float s)
+        {
+            if (parent == null) return;
+            float bowlX = x + s * 0.22f;
+            float bowlY = y + s * 0.08f;
+            float bowlW = s * 0.56f;
+            float bowlH = s * 0.40f;
+            Plate(parent, "CupRim", x + s * 0.16f, y, s * 0.68f, s * 0.14f, MenuTheme.Gold);
+            Plate(parent, "CupBowl", bowlX, bowlY, bowlW, bowlH, MenuTheme.Cream);
+            Handle(parent, "CupLeft", x, bowlY + s * 0.06f, s * 0.20f, bowlH * 0.72f);
+            Handle(parent, "CupRight", x + s * 0.80f, bowlY + s * 0.06f, s * 0.20f, bowlH * 0.72f);
+            Plate(parent, "CupStem", x + s * 0.44f, y + s * 0.50f, s * 0.12f, s * 0.24f, MenuTheme.Gold);
+            Plate(parent, "CupBase", x + s * 0.18f, y + s * 0.74f, s * 0.64f, s * 0.16f, MenuTheme.Gold);
+        }
+
+        static void Plate(Transform parent, string name, float x, float y, float w, float h, Color color)
+        {
+            var rt = Place(parent, name, x, y, w, h);
+            var image = rt.gameObject.AddComponent<Image>();
+            MenuArt.Plate(image, color, true);
+            image.raycastTarget = false;
+        }
+
+        static void Handle(Transform parent, string name, float x, float y, float w, float h)
+        {
+            var outer = Place(parent, name, x, y, w, h);
+            var gold = outer.gameObject.AddComponent<Image>();
+            MenuArt.Plate(gold, MenuTheme.Gold, true);
+            gold.raycastTarget = false;
+            float inset = w * 0.34f;
+            var hole = Place(outer, "Hole", inset, h * 0.18f, w - inset * 2f, h * 0.64f);
+            var navy = hole.gameObject.AddComponent<Image>();
+            MenuArt.Plate(navy, MenuTheme.Navy, true);
+            navy.raycastTarget = false;
         }
 
         public static void Glyph(MenuTile tile, Sprite icon, Color tint)
@@ -276,6 +494,43 @@ namespace Tag.Ui.Menu
             return root;
         }
 
+        /// <summary>
+        /// On/off pill. Gold track and the knob on the right means on.
+        /// </summary>
+        public static void Toggle(MenuTile tile, bool on)
+        {
+            if (tile == null) return;
+            RectTransform root = tile.transform as RectTransform;
+            float w = root != null ? root.sizeDelta.x : 900f;
+            float h = root != null ? root.sizeDelta.y : UiFit.OptRow;
+            float pw = 96f;
+            float ph = 40f;
+            float x = w - pw - 28f;
+            float y = 24f;
+            if (h > ph + 48f) y = (h - ph) * 0.5f;
+            var track = Place(tile.transform, "Switch", x, y, pw, ph);
+            var trackImage = track.gameObject.AddComponent<Image>();
+            MenuArt.Plate(trackImage, on ? MenuTheme.Gold : new Color(0.05f, 0.08f, 0.16f, 1f), true);
+            trackImage.raycastTarget = false;
+            float knob = 32f;
+            float kx = on ? pw - knob - 4f : 4f;
+            var knobRt = Place(track, "Knob", kx, 4f, knob, ph - 8f);
+            var knobImage = knobRt.gameObject.AddComponent<Image>();
+            MenuArt.Plate(knobImage, MenuTheme.Cream, true);
+            knobImage.raycastTarget = false;
+            ClearRight(tile.Label, pw + 40f);
+            ClearRight(tile.Detail, pw + 40f);
+        }
+
+        static void ClearRight(Text label, float right)
+        {
+            if (label == null) return;
+            RectTransform rt = label.rectTransform;
+            Vector2 max = rt.offsetMax;
+            if (max.x > -right) max.x = -right;
+            rt.offsetMax = max;
+        }
+
         public static void Reflow(MenuTile tile)
         {
             if (tile == null || tile.Label == null) return;
@@ -299,6 +554,16 @@ namespace Tag.Ui.Menu
             UiFit.TileText(h, two, out float titleFromTop, out float titleH, out float detailFromTop, out float detailH);
             Band(tile.Label, h, titleFromTop, titleH);
             if (tile.Detail != null) Band(tile.Detail, h, detailFromTop, detailH);
+        }
+
+        public static void SeatLine(Text label, float h, float fromTop, float band, float left)
+        {
+            Band(label, h, fromTop, band);
+            if (label == null) return;
+            RectTransform rt = label.rectTransform;
+            Vector2 min = rt.offsetMin;
+            min.x = left;
+            rt.offsetMin = min;
         }
 
         static void Band(Text label, float h, float fromTop, float band)

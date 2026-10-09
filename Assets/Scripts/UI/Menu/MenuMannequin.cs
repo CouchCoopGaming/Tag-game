@@ -1,16 +1,14 @@
 using Tag.Art;
-using Tag.Profiles;
 using UnityEngine;
 
 namespace Tag.Ui.Menu
 {
     /// <summary>
-    /// Preview body. Every look uses the runner mesh the match ships
-    /// (Tan Hier when the catalog slot is empty) and tints it. The editor
-    /// loads that FBX by path. A player build uses the catalog once the
-    /// editor bake has filled it, then the primitive mannequin.
+    /// Preview body. Prefers the Hier HiPoly mesh for the picked color.
+    /// The editor loads the FBX by path. A player build uses the catalog
+    /// once the editor bake has filled it, then the primitive mannequin.
     /// </summary>
-    public static class MenuMannequin
+    public static partial class MenuMannequin
     {
         public static GameObject Spawn(Transform parent, string bodyKey, string accentKey, bool hat)
         {
@@ -31,14 +29,7 @@ namespace Tag.Ui.Menu
                     inst = null;
                 }
                 else
-                {
                     Dress(inst, body, accent);
-                    // The newer Hier files face Unity -Z. The card camera sits on +Z.
-                    // A parent holds the turn so idle and cheer can still replace the
-                    // root rotation. The older armature already faces the camera.
-                    if (HasNamed(inst.transform, "Panel_Chest"))
-                        Face(inst, 180f);
-                }
             }
             if (inst == null)
                 inst = DummyPrimitiveFactory.Build(parent, false, body, accent);
@@ -50,41 +41,17 @@ namespace Tag.Ui.Menu
             return inst;
         }
 
-        public static string Normalize(string key)
-        {
-            if (string.IsNullOrEmpty(key)) return "Tan";
-            for (int i = 0; i < LocalProfiles.HierNames.Length; i++)
-            {
-                if (LocalProfiles.HierNames[i] == key) return key;
-            }
-            return "Tan";
-        }
-
-        public static string NameOf(int index)
-        {
-            int n = LocalProfiles.HierNames.Length;
-            if (n < 1) return "Tan";
-            if (index < 0) index = 0;
-            if (index >= n) index = n - 1;
-            return LocalProfiles.HierNames[index];
-        }
-
         static GameObject FindPrefab(string key)
         {
-            if (string.IsNullOrEmpty(key)) key = "Tan";
-            // One body for every look. The match tints this same runner.
-            // key is the colour Dress paints, not a second mesh.
             HierMannequinCatalog cat = Resources.Load<HierMannequinCatalog>("Characters/HierMannequinCatalog");
             if (cat != null)
             {
-                GameObject runner = cat.Runner;
-                if (runner != null) return runner;
-                GameObject slotted = cat.ForRunner("Tan");
+                GameObject slotted = cat.ForRunner(key);
                 if (slotted != null) return slotted;
             }
 #if UNITY_EDITOR
             return UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>(
-                "Assets/Art/Characters/HiPoly/Dummy_Mannequin_Tan_Hier_Hi.fbx");
+                "Assets/Art/Characters/HiPoly/Dummy_Mannequin_" + key + "_Hier_Hi.fbx");
 #else
             return null;
 #endif
@@ -102,14 +69,6 @@ namespace Tag.Ui.Menu
 
         static void Dress(GameObject inst, string body, string accent)
         {
-            // The FBX albedo imports dark and metallic, so the look disappears.
-            // Primary is the body swatch, secondary is the accent swatch. Those
-            // are the same keys the runner foam uses. Matte: metallic 0,
-            // smoothness 0.40 (roughness about 0.6).
-            Color primary = Swatch(body);
-            Color secondary = Swatch(accent);
-            const float smooth = 0.40f;
-            const float metal = 0f;
             Renderer[] rends = inst.GetComponentsInChildren<Renderer>(true);
             for (int r = 0; r < rends.Length; r++)
             {
@@ -121,105 +80,121 @@ namespace Tag.Ui.Menu
                 for (int i = 0; i < n; i++)
                 {
                     Material src = shared != null && i < shared.Length ? shared[i] : null;
-                    string matName = src != null ? src.name : "";
-                    // One slot at a time. Orange and Tan join Base, Joint, and Wear
-                    // onto the chest mesh. A joint slot must not paint the shell.
-                    Color color = Shell(matName, rend.gameObject.name, primary, secondary);
-                    next[i] = DummyPrimitiveFactory.MakeMat(color, smooth, metal);
+                    string matName = src != null ? src.name : rend.gameObject.name;
+                    Color color = Authored(src);
+                    if (!Usable(color)) color = RoleColor(matName, body, accent);
+                    else if (IsAccent(matName)) color = Swatch(accent);
+                    next[i] = DummyPrimitiveFactory.MakeMat(color, 0.45f, 0f);
+                    next[i].name = RoleTag(matName);
                 }
                 rend.sharedMaterials = next;
             }
         }
 
-        static bool Has(string name, string token)
+        /// <summary>
+        /// RESULTS only. The body matches the seat slot color. Accent, joints,
+        /// and eyes stay as Dress left them. Character select does not call this.
+        /// </summary>
+        public static void PaintSlot(GameObject inst, Color slot)
         {
-            return name.IndexOf(token, System.StringComparison.OrdinalIgnoreCase) >= 0;
-        }
-
-        static Color Shell(string matName, string objName, Color primary, Color secondary)
-        {
-            if (!string.IsNullOrEmpty(matName))
-                return Paint(matName, primary, secondary);
-            return Paint(objName, primary, secondary);
-        }
-
-        static Color Paint(string name, Color primary, Color secondary)
-        {
-            if (Has(name, "Joint") || Has(name, "Rubber") || Has(name, "Bellow")
-                || Has(name, "Wear") || Has(name, "Sensor") || Has(name, "Eye")
-                || Has(name, "Lip") || Has(name, "Metal"))
-                return new Color(0.10f, 0.10f, 0.12f, 1f);
-            if (Has(name, "Accent") || Has(name, "Panel") || Has(name, "Cal"))
-                return secondary;
-            return primary;
-        }
-
-        static bool HasNamed(Transform root, string name)
-        {
-            Transform[] all = root.GetComponentsInChildren<Transform>(true);
-            for (int i = 0; i < all.Length; i++)
+            if (inst == null) return;
+            slot.a = 1f;
+            Renderer[] rends = inst.GetComponentsInChildren<Renderer>(true);
+            for (int r = 0; r < rends.Length; r++)
             {
-                if (all[i].name == name) return true;
-            }
-            return false;
-        }
-
-        static void Face(GameObject inst, float yaw)
-        {
-            var pivot = new GameObject("FacePivot");
-            Transform parent = inst.transform.parent;
-            pivot.transform.SetParent(parent, false);
-            pivot.transform.localRotation = Quaternion.Euler(0f, yaw, 0f);
-            inst.transform.SetParent(pivot.transform, false);
-            inst.transform.localPosition = Vector3.zero;
-            inst.transform.localRotation = Quaternion.identity;
-        }
-
-        public static Color Swatch(string key)
-        {
-            switch (Normalize(key))
-            {
-                case "Blue": return new Color(0.42f, 0.68f, 0.92f, 1f);
-                case "Mint": return new Color(0.42f, 0.82f, 0.70f, 1f);
-                case "Orange": return new Color(0.94f, 0.42f, 0.14f, 1f);
-                case "Lavender": return new Color(0.70f, 0.58f, 0.88f, 1f);
-                case "Red": return new Color(0.88f, 0.22f, 0.24f, 1f);
-                default: return new Color(0.90f, 0.76f, 0.52f, 1f);
+                Renderer rend = rends[r];
+                if (rend == null) continue;
+                string goName = rend.gameObject.name;
+                if (goName.IndexOf("MenuHat", System.StringComparison.Ordinal) >= 0) continue;
+                Material[] shared = rend.sharedMaterials;
+                int n = shared != null ? shared.Length : 0;
+                if (n < 1)
+                {
+                    if (BodyPart(goName))
+                        rend.sharedMaterial = DummyPrimitiveFactory.MakeMat(slot, 0.45f, 0f);
+                    continue;
+                }
+                var next = new Material[n];
+                for (int i = 0; i < n; i++)
+                {
+                    Material src = shared[i];
+                    string matName = src != null ? src.name : "";
+                    bool tagged = matName.IndexOf("MenuRole_", System.StringComparison.Ordinal) >= 0;
+                    bool body = matName.IndexOf("MenuRole_Base", System.StringComparison.Ordinal) >= 0
+                        || (!tagged && BodyPart(goName));
+                    if (body)
+                        next[i] = DummyPrimitiveFactory.MakeMat(slot, 0.45f, 0f);
+                    else
+                        next[i] = src;
+                }
+                rend.sharedMaterials = next;
             }
         }
 
-        /// <summary>The costume swatch at full strength. The light step of that hue.</summary>
-        public static Color LightStep(string key)
+        static string RoleTag(string matName)
         {
-            return Swatch(key);
+            if (IsAccent(matName)) return "MenuRole_Accent";
+            if (IsTrim(matName)) return "MenuRole_Trim";
+            return "MenuRole_Base";
         }
 
-        /// <summary>
-        /// Seat mark for P1–P4. 0 circle, 1 triangle, 2 square, 3 diamond.
-        /// Arena chips, results tags, and the name plate read this. No second shape table.
-        /// </summary>
-        public static int Shape(int seat)
+        static bool BodyPart(string name)
         {
-            if (seat < 0) return 0;
-            if (seat > 3) return 3;
-            return seat;
+            if (string.IsNullOrEmpty(name)) return false;
+            if (IsAccent(name) || IsTrim(name)) return false;
+            return true;
         }
 
-        /// <summary>
-        /// Same hue as <see cref="Swatch"/>, one step darker. The colour-blind
-        /// scheme pairs this ink with the light step. No second colour table.
-        /// </summary>
-        public static Color DarkStep(string key)
+        static bool IsTrim(string name)
         {
-            Color plate = Swatch(key);
-            Color.RGBToHSV(plate, out float h, out float s, out float v);
-            if (s < 0.62f) s = 0.62f;
-            float inkV = v * 0.28f;
-            if (inkV > 0.32f) inkV = 0.32f;
-            if (inkV < 0.12f) inkV = 0.12f;
-            Color ink = Color.HSVToRGB(h, s, inkV);
-            ink.a = 1f;
-            return ink;
+            if (string.IsNullOrEmpty(name)) return false;
+            return name.IndexOf("Joint", System.StringComparison.OrdinalIgnoreCase) >= 0
+                || name.IndexOf("Eye", System.StringComparison.OrdinalIgnoreCase) >= 0
+                || name.IndexOf("Sensor", System.StringComparison.OrdinalIgnoreCase) >= 0
+                || name.IndexOf("Rubber", System.StringComparison.OrdinalIgnoreCase) >= 0
+                || name.IndexOf("Bellow", System.StringComparison.OrdinalIgnoreCase) >= 0
+                || name.IndexOf("Metal", System.StringComparison.OrdinalIgnoreCase) >= 0
+                || name.IndexOf("Neck", System.StringComparison.OrdinalIgnoreCase) >= 0
+                || name.IndexOf("Shoulder", System.StringComparison.OrdinalIgnoreCase) >= 0
+                || name.IndexOf("Elbow", System.StringComparison.OrdinalIgnoreCase) >= 0
+                || name.IndexOf("Knee", System.StringComparison.OrdinalIgnoreCase) >= 0
+                || name.IndexOf("Hip", System.StringComparison.OrdinalIgnoreCase) >= 0
+                || name.IndexOf("Hand", System.StringComparison.OrdinalIgnoreCase) >= 0
+                || name.IndexOf("Foot", System.StringComparison.OrdinalIgnoreCase) >= 0;
+        }
+
+        static bool IsAccent(string name)
+        {
+            return name.IndexOf("Accent", System.StringComparison.OrdinalIgnoreCase) >= 0
+                || name.IndexOf("Panel", System.StringComparison.OrdinalIgnoreCase) >= 0;
+        }
+
+        static Color Authored(Material src)
+        {
+            if (src == null) return new Color(1f, 0f, 1f, 1f);
+            if (src.HasProperty("_BaseColor")) return src.GetColor("_BaseColor");
+            if (src.HasProperty("_Color")) return src.color;
+            return new Color(1f, 0f, 1f, 1f);
+        }
+
+        static bool Usable(Color c)
+        {
+            if (c.a < 0.2f) return false;
+            bool magenta = c.r > 0.8f && c.b > 0.8f && c.g < 0.35f;
+            return !magenta;
+        }
+
+        static Color RoleColor(string name, string body, string accent)
+        {
+            if (name.IndexOf("Joint", System.StringComparison.OrdinalIgnoreCase) >= 0
+                || name.IndexOf("Rubber", System.StringComparison.OrdinalIgnoreCase) >= 0
+                || name.IndexOf("Bellow", System.StringComparison.OrdinalIgnoreCase) >= 0)
+                return new Color(0.08f, 0.08f, 0.09f, 1f);
+            if (name.IndexOf("Eye", System.StringComparison.OrdinalIgnoreCase) >= 0
+                || name.IndexOf("Sensor", System.StringComparison.OrdinalIgnoreCase) >= 0)
+                return new Color(0.04f, 0.04f, 0.05f, 1f);
+            if (IsAccent(name)) return Swatch(accent);
+            return Swatch(body);
         }
 
         static void AddHat(Transform root)

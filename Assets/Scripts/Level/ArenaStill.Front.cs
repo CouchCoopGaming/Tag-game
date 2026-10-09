@@ -590,6 +590,54 @@ namespace Tag.Level
         /// Character-card portraits. Same pairs as the chase runners. Joints
         /// stay charcoal here so the tint reads on the navy card.
         /// </summary>
+        /// <summary>
+        /// RESULTS runners. Same posed Hier bake and the same body/accent tint
+        /// as the character cards. Body is limbs, torso, and head. Accent is
+        /// the chest panel, the hands, and the feet. The plate behind them is
+        /// the portrait sky, keyed later only where it still matches that sky.
+        /// </summary>
+        public static string WritePlaceFigures(string folder)
+        {
+            if (string.IsNullOrEmpty(folder)) return "place-figures missing folder";
+            Directory.CreateDirectory(folder);
+            string docs = RepoDocs();
+            if (docs == null) return "place-figures missing docs";
+            int n = 0;
+            for (int seat = 0; seat < 4; seat++)
+            {
+                string src = Path.Combine(docs, "UiStills", "hier-idle-" + seat.ToString() + ".tris");
+                if (!LoadHierFile(src)) continue;
+                var tris = new List<Tri>(8);
+                AddBox(tris, 0f, -0.04f, 0f, 1.4f, 0.06f, 1.1f, 0.07f, 0.08f, 0.10f);
+                PlacePair(seat, out float bodyR, out float bodyG, out float bodyB, out float accentR, out float accentG, out float accentB);
+                AddHier(tris, 0f, 0f, 0f, 0f, bodyR, bodyG, bodyB, accentR, accentG, accentB, true);
+                AddContact(tris, 0f, 0f, 0f);
+                var shadow = new float[16 * 16];
+                for (int s = 0; s < shadow.Length; s++) shadow[s] = -1e20f;
+                PortraitPng(tris, Path.Combine(folder, "place_" + seat.ToString() + "-composite.png"), 480, 720,
+                    0f, 1.22f, 3.55f, 0f, 1.08f, 0f, shadow);
+                n++;
+            }
+            return "place-figures " + folder + " n=" + n.ToString();
+        }
+
+        /// <summary>
+        /// RESULTS bodies use the seat palette: red, blue, orange, lavender.
+        /// Accent is the locked sample pairs: Tan, Mint, Tan, Mint.
+        /// </summary>
+        static void PlacePair(int seat, out float bodyR, out float bodyG, out float bodyB, out float accentR, out float accentG, out float accentB)
+        {
+            int i = seat < 0 ? 0 : (seat > 3 ? 3 : seat);
+            UnityEngine.Color body = Tag.Ui.Menu.MenuMannequin.SeatColor(i);
+            bodyR = body.r;
+            bodyG = body.g;
+            bodyB = body.b;
+            float[] ar = { 0.90f, 0.42f, 0.90f, 0.42f };
+            float[] ag = { 0.76f, 0.82f, 0.76f, 0.82f };
+            float[] ab = { 0.52f, 0.70f, 0.52f, 0.70f };
+            accentR = ar[i]; accentG = ag[i]; accentB = ab[i];
+        }
+
         static int WriteIdlePortraits(string folder)
         {
             int n = 0;

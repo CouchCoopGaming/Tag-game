@@ -63,7 +63,12 @@ namespace Tag.Settings
         public static readonly float[] SfxSteps = { 0f, 0.5f, 0.75f, 1f };
         public static readonly float[] UiSteps = { 0f, 0.5f, 0.75f, 1f };
         public static readonly float[] MusicSteps = { 0f, 0.15f, 0.35f, 0.55f, 1f };
-        public static readonly float[] HudSteps = { 0.75f, 1f, 1.25f, 1.5f };
+        /// <summary>Menu steps. 1.00 is the identity size. HudMin stays 0.75 so a saved smaller scale still clamps.</summary>
+        public static readonly float[] HudSteps = { 0.85f, 1f, 1.25f, 1.5f };
+        public const int QualityLow = 0;
+        public const int QualityMedium = 1;
+        public const int QualityHigh = 2;
+        public const int QualityUltra = 3;
         public static readonly float[] RumbleSteps = { 0f, 25f, 50f, 75f, 100f };
         static readonly string[] SeatNames = { "P1", "P2", "P3", "P4" };
 
@@ -84,7 +89,21 @@ namespace Tag.Settings
         public bool Muted;
         public float HudScale = HudDefault;
         public float UiScale = UiScaleDefault;
+        /// <summary>Verb words on the match HUD. Missing from an old blob stays on.</summary>
+        public bool ComicWords = true;
+        public bool ReduceMotion;
+        public int PictureQuality = QualityMedium;
+        public int ResIndex = 2;
+        public bool Fullscreen = true;
+        public bool VSync = true;
         public bool Colorblind;
+        /// <summary>0 off (default seats). 1 Protan/Deutan. 2 Tritan. Missing from an old blob stays off.</summary>
+        public int CvdSeats;
+        /// <summary>
+        /// Air-dash and grapple speed lines. Off until a seat turns them on.
+        /// Not one of the 21 rows. The Options screen lists SpeedLinesLabel.
+        /// </summary>
+        public bool SpeedLines;
         public bool Minimap = true;
         public int Arena;
 
@@ -167,7 +186,15 @@ namespace Tag.Settings
             Muted = other.Muted;
             HudScale = other.HudScale;
             UiScale = other.UiScale;
+            ComicWords = other.ComicWords;
+            SpeedLines = other.SpeedLines;
+            ReduceMotion = other.ReduceMotion;
+            PictureQuality = other.PictureQuality;
+            ResIndex = other.ResIndex;
+            Fullscreen = other.Fullscreen;
+            VSync = other.VSync;
             Colorblind = other.Colorblind;
+            CvdSeats = other.CvdSeats;
             Minimap = other.Minimap;
             Arena = other.Arena;
             AccessSeat = other.AccessSeat;
@@ -190,6 +217,49 @@ namespace Tag.Settings
             CopyFrom(Defaults());
         }
 
+        public void ResetSound()
+        {
+            GameSettings d = Defaults();
+            Master = d.Master;
+            Sfx = d.Sfx;
+            Ui = d.Ui;
+            Music = d.Music;
+            Muted = d.Muted;
+        }
+
+        public void ResetPicture()
+        {
+            GameSettings d = Defaults();
+            ResIndex = d.ResIndex;
+            Fullscreen = d.Fullscreen;
+            VSync = d.VSync;
+            PictureQuality = d.PictureQuality;
+            UiScale = d.UiScale;
+            SpeedLines = d.SpeedLines;
+        }
+
+        public void ResetAccess()
+        {
+            GameSettings d = Defaults();
+            ReduceMotion = d.ReduceMotion;
+            HudScale = d.HudScale;
+            AccessSeat = d.AccessSeat;
+            Colorblind = d.Colorblind;
+            CvdSeats = d.CvdSeats;
+            ComicWords = d.ComicWords;
+            for (int i = 0; i < SeatCount; i++)
+                Palette[i] = 0;
+        }
+
+        public void ResetLook()
+        {
+            GameSettings d = Defaults();
+            MouseSensitivity = d.MouseSensitivity;
+            GamepadLook = d.GamepadLook;
+            InvertY = d.InvertY;
+            Fov = d.Fov;
+        }
+
         public void Clamp()
         {
             MouseSensitivity = ClampFloat(MouseSensitivity, MouseMin, MouseMax);
@@ -207,6 +277,10 @@ namespace Tag.Settings
             Music = ClampFloat(Music, 0f, 1f);
             HudScale = ClampFloat(HudScale, HudMin, HudMax);
             UiScale = ClampFloat(UiScale, UiScaleMin, UiScaleMax);
+            if (ResIndex < 0) ResIndex = 0;
+            if (ResIndex > 3) ResIndex = 3;
+            if (PictureQuality < 0) PictureQuality = 0;
+            if (PictureQuality > 8) PictureQuality = 8;
             int lastArena = Tag.Onboard.ArenaRegistry.Count - 1;
             if (lastArena < 0) lastArena = 0;
             if (Arena < 0) Arena = 0;
@@ -230,6 +304,8 @@ namespace Tag.Settings
             if (WinTarget > RoundsPerMatch) WinTarget = RoundsPerMatch;
             if (AccessSeat < 0) AccessSeat = 0;
             if (AccessSeat >= SeatCount) AccessSeat = SeatCount - 1;
+            if (CvdSeats < SeatCvd.Off) CvdSeats = SeatCvd.Off;
+            if (CvdSeats > SeatCvd.Tritan) CvdSeats = SeatCvd.Tritan;
             for (int i = 0; i < SeatCount; i++)
             {
                 if (Palette[i] < 0) Palette[i] = 0;
@@ -274,6 +350,12 @@ namespace Tag.Settings
                 if (ReduceFlash[i]) return true;
             }
             return false;
+        }
+
+        /// <summary>Label for the Options row. Default is Off.</summary>
+        public string SpeedLinesLabel()
+        {
+            return SpeedLines ? "Speed lines: On" : "Speed lines: Off";
         }
 
         /// <summary>Flattens the tag-back strobe. The immunity window is not touched.</summary>
@@ -447,6 +529,21 @@ namespace Tag.Settings
             if (Math.Abs(br - yr) < 0.2f && Math.Abs(bg - yg) < 0.2f && Math.Abs(bb - yb) < 0.2f)
                 return false;
             return true;
+        }
+
+        public void CycleCvdSeats(int dir)
+        {
+            int next = CvdSeats + (dir < 0 ? -1 : 1);
+            if (next < SeatCvd.Off) next = SeatCvd.Tritan;
+            if (next > SeatCvd.Tritan) next = SeatCvd.Off;
+            CvdSeats = next;
+        }
+
+        public string CvdSeatWord()
+        {
+            if (CvdSeats == SeatCvd.ProtanDeutan) return "Protan/Deutan";
+            if (CvdSeats == SeatCvd.Tritan) return "Tritan";
+            return "Off";
         }
 
         void CyclePalette(int dir)

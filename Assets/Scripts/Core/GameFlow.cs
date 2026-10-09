@@ -36,6 +36,7 @@ namespace Tag.Core
 
         [SerializeField] string bootSceneName = "Boot";
         [SerializeField] string playSceneName = "Play";
+        AsyncOperation _bootLoad;
 
         public TagModeController modeController;
         public TagRoundController round;
@@ -229,12 +230,30 @@ namespace Tag.Core
             LookSensitivity.Apply();
             Time.timeScale = 1f;
             if (SceneManager.GetActiveScene().name != playSceneName)
-                SceneManager.LoadScene(playSceneName);
+                BeginAsyncLoad(playSceneName);
             else
             {
                 EnsurePlayHelpers();
                 EnsureRoundStarted();
             }
+        }
+
+        /// <summary>
+        /// Same hold as the menu boot load. Progress stalls at 0.9 until
+        /// AdvanceBootLoad allows activation, so the bar can reach 1.
+        /// </summary>
+        void BeginAsyncLoad(string sceneName)
+        {
+            _bootLoad = SceneManager.LoadSceneAsync(sceneName);
+            if (_bootLoad == null)
+            {
+                if (sceneName == playSceneName)
+                    SceneManager.LoadScene(playSceneName);
+                else
+                    SceneManager.LoadScene(sceneName);
+                return;
+            }
+            _bootLoad.allowSceneActivation = false;
         }
 
         /// <summary>
@@ -257,7 +276,33 @@ namespace Tag.Core
             LookSensitivity.Load();
             LookSensitivity.Apply();
             Time.timeScale = 1f;
-            SceneManager.LoadScene(playSceneName);
+            BeginAsyncLoad(playSceneName);
+        }
+
+        /// <summary>
+        /// Scene load progress while the menu is still up. -1 before the load
+        /// starts. AsyncOperation stalls at 0.9 until activation, then reaches 1.
+        /// </summary>
+        public float BootLoad
+        {
+            get
+            {
+                if (_bootLoad == null) return -1f;
+                if (_bootLoad.isDone) return 1f;
+                return _bootLoad.progress;
+            }
+        }
+
+        public void ClearBootLoad()
+        {
+            _bootLoad = null;
+        }
+
+        public void AdvanceBootLoad()
+        {
+            if (_bootLoad == null || _bootLoad.allowSceneActivation) return;
+            if (_bootLoad.progress >= 0.9f)
+                _bootLoad.allowSceneActivation = true;
         }
 
         public void OnRoundEnded(string result = "")
@@ -286,7 +331,7 @@ namespace Tag.Core
             ReturnToPlay();
             if (modeController == null) modeController = FindFirstObjectByType<TagModeController>();
             if (modeController != null) modeController.Rematch();
-            else SceneManager.LoadScene(playSceneName);
+            else BeginAsyncLoad(playSceneName);
         }
 
         /// <summary>
@@ -321,7 +366,7 @@ namespace Tag.Core
             State = GameFlowState.Boot;
             _bootFocus = 0;
             if (SceneManager.GetActiveScene().name != bootSceneName)
-                SceneManager.LoadScene(bootSceneName);
+                BeginAsyncLoad(bootSceneName);
         }
 
         public void OpenSetup()
@@ -337,7 +382,7 @@ namespace Tag.Core
             FrontLive.Reset();
             State = GameFlowState.Setup;
             if (SceneManager.GetActiveScene().name != bootSceneName)
-                SceneManager.LoadScene(bootSceneName);
+                BeginAsyncLoad(bootSceneName);
         }
 
         /// <summary>
@@ -464,6 +509,7 @@ namespace Tag.Core
 
         void Update()
         {
+            AdvanceBootLoad();
             PadNav.Poll();
             SettingsRuntime.PollHotkeys();
             // Before panel returns, so Comma / N still work on Controls, Look, Boot, and results.

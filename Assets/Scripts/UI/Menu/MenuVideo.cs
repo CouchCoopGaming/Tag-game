@@ -20,23 +20,43 @@ namespace Tag.Ui.Menu
         public static int Index = 2;
         public static bool Full = true;
         public static bool VSync = true;
-        public static int Quality;
+        public static int Quality = Tag.Settings.GameSettings.QualityMedium;
         public static bool ReduceMotion;
+        /// <summary>The settings blob already pushed picture values. PlayerPrefs must not stomp them.</summary>
+        public static bool Adopted;
 
         public static void Load()
         {
-            ReduceMotion = PlayerPrefs.GetInt(KeyMotion, 0) == 1;
-            if (!PlayerPrefs.HasKey(KeyW)) return;
-            int w = PlayerPrefs.GetInt(KeyW, 1920);
-            Index = 2;
-            for (int i = 0; i < Widths.Length; i++)
+            if (Adopted)
             {
-                if (Widths[i] == w) Index = i;
+                Apply();
+                return;
             }
-            Full = PlayerPrefs.GetInt(KeyFull, 1) == 1;
-            VSync = PlayerPrefs.GetInt(KeyVSync, 1) == 1;
-            Quality = PlayerPrefs.GetInt(KeyQuality, 0);
+            ReduceMotion = PlayerPrefs.GetInt(KeyMotion, 0) == 1;
+            if (PlayerPrefs.HasKey(KeyW))
+            {
+                int w = PlayerPrefs.GetInt(KeyW, 1920);
+                Index = 2;
+                for (int i = 0; i < Widths.Length; i++)
+                {
+                    if (Widths[i] == w) Index = i;
+                }
+                Full = PlayerPrefs.GetInt(KeyFull, 1) == 1;
+                VSync = PlayerPrefs.GetInt(KeyVSync, 1) == 1;
+                Quality = PlayerPrefs.GetInt(KeyQuality, Tag.Settings.GameSettings.QualityMedium);
+            }
+            Push(Tag.Settings.GameSettings.Current);
             Apply();
+        }
+
+        public static void Push(Tag.Settings.GameSettings s)
+        {
+            if (s == null) return;
+            s.ResIndex = Index;
+            s.Fullscreen = Full;
+            s.VSync = VSync;
+            s.PictureQuality = Quality;
+            s.ReduceMotion = ReduceMotion;
         }
 
         public static void Save()

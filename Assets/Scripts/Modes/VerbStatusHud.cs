@@ -130,9 +130,9 @@ namespace Tag.Modes
             float remain = modes != null ? modes.Remaining : 0f;
             GUI.Label(new Rect(tx, ty, tw, th), HudDigits.Tenth0(remain), _label);
 
+            CouchPlay.Tint(seat, out float r, out float g, out float b);
             int swatch = Tag.Profiles.LocalProfiles.SeatColor(seat);
             if (swatch < 0) swatch = seat & 3;
-            AccessibilityPalette.Player(palette, swatch, out float r, out float g, out float b);
             _label.normal.textColor = new Color(r, g, b, 1f);
             GUI.Label(new Rect(nx, ny, 18f, nh), AccessibilityPalette.Glyph(seat), _label);
             string chip = CouchPlay.Name(seat);

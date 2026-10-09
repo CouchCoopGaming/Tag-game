@@ -19,7 +19,10 @@ namespace Tag.Ui.Menu
                 if (child.name == "HowTo") Object.DestroyImmediate(child.gameObject);
             }
             UiFit.Columns(UiFit.Current(), out float leftX, out float leftW, out _, out _);
-            float y = 360f;
+            float modeH = UiFit.BlockH(152f, 4);
+            float modeStep = UiFit.IdentityText() ? 168f : modeH + 16f;
+            float y = 12f + modeStep + modeH + 12f;
+            if (y < 360f) y = 360f;
             float h = 220f;
             float bodyH = UiFit.BodyH(UiFit.Current());
             if (y + h > bodyH - 8f) h = bodyH - y - 8f;

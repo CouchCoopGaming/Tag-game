@@ -8,6 +8,39 @@ static class Program
 {
     static int Main(string[] args)
     {
+        if (args != null && args.Length > 0 && args[0] == "--ui-flow")
+        {
+            Tag.Ui.Menu.UiFlow.Report only = Tag.Ui.Menu.UiFlow.Run();
+            Console.WriteLine(only.Line);
+            if (!string.IsNullOrEmpty(only.ApplyLine))
+                Console.WriteLine(only.ApplyLine);
+            if (!string.IsNullOrEmpty(Tag.Ui.Menu.OptionApply.BusLine))
+                Console.WriteLine(Tag.Ui.Menu.OptionApply.BusLine);
+            if (!string.IsNullOrEmpty(Tag.Ui.Menu.OptionApply.CvdLine))
+                Console.WriteLine(Tag.Ui.Menu.OptionApply.CvdLine);
+            if (!string.IsNullOrEmpty(Tag.Ui.Menu.OptionApply.FillLine))
+                Console.WriteLine(Tag.Ui.Menu.OptionApply.FillLine);
+            if (!string.IsNullOrEmpty(Tag.Ui.Menu.OptionApply.QualityLine))
+                Console.WriteLine(Tag.Ui.Menu.OptionApply.QualityLine);
+            if (!string.IsNullOrEmpty(Tag.Ui.Menu.OptionApply.SeatLine))
+                Console.WriteLine(Tag.Ui.Menu.OptionApply.SeatLine);
+            Console.WriteLine(Tag.Ui.Hud.HudState.Line());
+            if (!only.Ok || !Tag.Ui.Hud.HudState.Holds()) return 1;
+            return 0;
+        }
+
+        if (args != null && args.Length > 0 && args[0] == "--alloc")
+        {
+            Tag.Core.HotPathAlloc.Report alloc = Tag.Core.HotPathAlloc.Run();
+            Console.WriteLine(alloc.Line);
+            return alloc.After == 0 ? 0 : 1;
+        }
+        if (args != null && args.Length > 0 && args[0] == "--place-figures")
+        {
+            string folder = args.Length > 1 ? args[1] : Path.Combine("Docs", "UiStills", "screens2", "pass4", "figures");
+            Console.WriteLine(Tag.Level.ArenaStill.WritePlaceFigures(folder));
+            return 0;
+        }
         if (args != null && args.Length > 0 && args[0] == "--hud-chase")
         {
             string folder = args.Length > 1 ? args[1] : Path.Combine("Docs", "UiStills", "pass17", "figures");
@@ -1049,6 +1082,16 @@ static class Program
 
         Tag.Ui.Menu.UiFlow.Report flow = Tag.Ui.Menu.UiFlow.Run();
         Console.WriteLine(flow.Line);
+        if (!string.IsNullOrEmpty(flow.ApplyLine))
+            Console.WriteLine(flow.ApplyLine);
+        if (!string.IsNullOrEmpty(Tag.Ui.Menu.OptionApply.BusLine))
+            Console.WriteLine(Tag.Ui.Menu.OptionApply.BusLine);
+        if (!string.IsNullOrEmpty(Tag.Ui.Menu.OptionApply.CvdLine))
+            Console.WriteLine(Tag.Ui.Menu.OptionApply.CvdLine);
+        if (!string.IsNullOrEmpty(Tag.Ui.Menu.OptionApply.QualityLine))
+            Console.WriteLine(Tag.Ui.Menu.OptionApply.QualityLine);
+        if (!string.IsNullOrEmpty(Tag.Ui.Menu.OptionApply.SeatLine))
+            Console.WriteLine(Tag.Ui.Menu.OptionApply.SeatLine);
         if (!flow.Ok)
         {
             Console.Error.WriteLine(flow.Failure);

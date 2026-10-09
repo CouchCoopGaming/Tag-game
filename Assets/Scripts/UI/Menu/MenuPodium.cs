@@ -155,8 +155,10 @@ namespace Tag.Ui.Menu
                 row.Wins = i == 0 ? 2 : i == 1 ? 1 : 0;
                 row.Alive = i < 2;
                 row.Winner = i == 0;
-                row.Hier = i;
-                row.Accent = (i + 1) % 4;
+                int[] body = { 5, 0, 2, 3 };
+                int[] accent = { 4, 1, 4, 1 };
+                row.Hier = body[i];
+                row.Accent = accent[i];
                 row.Seat = i;
                 row.Chase = 14.2f;
                 row.ChaseName = i == 0 ? "P2" : "";

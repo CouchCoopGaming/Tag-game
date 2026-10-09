@@ -255,8 +255,10 @@ namespace Tag.Experimental
 
         bool ReadFire()
         {
-            if (useJetHeldAsFire && _input != null)
-                return _input.JetHeld;
+            if (useJetHeldAsFire && _input != null && _input.JetHeld)
+                return true;
+            if (Tag.Settings.BindSampler.GrappleHeld())
+                return true;
             return UnityEngine.Input.GetKey(fireKey) || UnityEngine.Input.GetMouseButton(1);
         }
 

@@ -407,9 +407,239 @@ Controls, while a bind is listening, says Press a key or a button. Esc cancels. 
 
 `Docs/UiStills/pass50/results.png` and `controls.png` are the checks. Each is under 400 KB. pose stays 0 and rigJoint stays 26. The gameplay proof lines are unchanged.
 
+## Pass 51
+
+This lane absorbed draft PR #126 at `31519be7`. Load, join, the main menu, and the title keep that Hier idle. RESULTS uses the same SeatLoad atlas on every card. The body is 1.8 m on each card. First stands on the tallest plinth, then second, third, and fourth. The body does not grow. The seat shape sits on the badge: P1 red circle, P2 blue triangle, P3 orange square, P4 lavender diamond. The costume chip still names the look. Rematch is the only gold button. The header stays RESULTS.
+
+The card art is the idle atlas, so the arms stay in the bind pose. Celebrate, stand, and shrug still run on the off-screen podium bodies. Those poses do not change the card pixels, and they do not lift the root. Soles on the atlas stay at 0.5 cm.
+
+Grapple's pad column is LT. The stored token is `leftTrigger`. RT is shown as free. The stutter double-tap stays behind a flag that defaults off, so the list does not bind it. `Docs/Controls.md` says the same. The loading tip still does not invent a pad glyph.
+
+Picture has a Speed lines row. The label is Speed lines: Off until a seat turns it on. It is not one of the 21 settings rows and not an FX-kit toggle. The saved key is `speedLines`.
+
+`Docs/UiStills/pass51/` holds results, controls, options, and load. Unity is not installed, so results, controls, and options are drawn to match the builders. Load is the pass 32 plate. pose stays 0. rigJoint stays 26.
+
+## Screens 2, pass 1
+
+Secondary screens pick up the park wash and a comic wipe under 0.4 s. Arena select is a three-card grid: Mega Park, Pocket Park, and Stack Yard, then Random and Back. Mode tiles are a 2 by 2. Right from the right-hand mode enters the rules. Left on a rule that cannot go lower returns to the modes. Up and down stay in a column. The rules list has a gold scrollbar.
+
+RESULTS stays the heading. The runners keep the body and accent pair from the color choice. The sample set is Red, Blue, Orange, and Lavender, with Tan or Mint on the accent. Stat cards sit in the same left-to-right order as the figures: 2nd, 1st, 3rd, 4th.
+
+Options says Sound, Picture, and Accessibility. Controls shows a keyboard glyph and a pad glyph on each bind. Jump's keyboard glyph is the space bar. An empty join seat says Press Space or A to join and draws both marks. Loading and credits sit on a navy card. Records drops the repeated name from the card line.
+
+Stills for this pass are layout drawings in `Docs/UiStills/screens2/pass1/`. Unity is not running here, so they are not editor captures. `ui-flow` still passes, with `sheet=ok`.
+
+## Screens 2, pass 2
+
+The RESULTS banner names the winner's body color and accent color, as `Red / Tan` on the sample set. That line sits on a navy plate so the gold type clears the park photo. The heading stays RESULTS. The stat cards are unchanged, so the three stat lines still fit.
+
+Loading lifts the tip off the rule list. It sits on a gold plate above the bar, with TIP in ink and the tip line in ink. The first tip is still "Jump again to leave the wall." The bar still reads Waiting until the match starts.
+
+The layout drawings for this pass are in `Docs/UiStills/screens2/pass2/`. The chest panel on each figure is the accent color. Hands and feet in those drawings stay the body tint, because the bake does not split those meshes. The comic wipe is also shown over loading and over RESULTS. Unity is not running here.
+
+## Screens 2, pass 3
+
+The navy plate behind the banner turns on for every secondary screen that has a banner line, not only RESULTS. Title, the main menu, and character select do not use it. Records can scroll to Back. That last window is in `Docs/UiStills/screens2/pass3/`.
+
+## Screens 2, pass 4
+
+RESULTS runners are rasters of the posed Hier bake, the same path as the character cards: `hier-idle-0` through `hier-idle-3`, body on mat 0, accent on mat 1, soft joints. The sample pairs stay Red/Tan, Blue/Mint, Orange/Tan, and Lavender/Mint. Legs, torso, and head take the body color. The chest panel, the hands, and the feet take the accent. Stat cards are a dark navy with a quiet stroke. The winner's stroke is gold. The slot color sits only on the P badge, and the letter uses whichever of ink or cream clears that badge.
+
+Loading keeps the three real steps (Waiting 0, Starting 50, Ready 100). While it is waiting, a gold dash slides in the track and the caption reads `Waiting  0%`. The tip plate and the bar sit above the card's bottom edge. Each visit of the loading screen advances the tip. The first one is still "Jump again to leave the wall."
+
+Options hub buttons each have a one-line description. The hub banner no longer ends with the comic-words line. Comic words is a switch on Accessibility, `Comic words  On` by default, and the pause banner follows that switch.
+
+The Move marks are the keyboard arrows and the pad stick, the same caps the HUD draws. Stills are in `Docs/UiStills/screens2/pass4/`. Unity Editor 6000.3.24f1 is not installed here, so `MenuScreenCapture` cannot enter play mode. The runners are `ArenaStill.WritePlaceFigures`. The chrome is composited from the menu's colors, copy, and placement.
+
+## Screens 2, pass 5
+
+The stills in `Docs/UiStills/screens2/pass5/` are software-raster composites. Every filename ends in `-composite`. Unity Editor is still not installed, so these are not play-mode captures. The runners are a front view of the Hier bake, facing the camera. The winner is larger and stands on a higher step. The gold frame stays on that card. The loading card keeps every rule row clear, then the tip, then a bar filled from the left. The options buttons show a grey sub-line. The red and blue P badges clear 4.5:1.
+
+## Screens 2, pass 6
+
+Options buttons and the RESULTS rematch row are tall enough for a full-size title under the stripe, then a grey sub-line on its own row. RESULTS bodies use the slot fallback from worker 1 tip `29b3dbdd`: red, blue, yellow, green. That tip's character-select costumes are still Red/Tan, Blue/Mint, Orange/Lavender, Lavender/Mint. The runners here follow the slot colors so the badge and the body match. Feet sit on the steps. The 2nd, 3rd, and 4th steps descend. Accessibility shows the comic-words switch. Stills are composites in `Docs/UiStills/screens2/pass6/`, and every filename ends in `-composite`.
+
+## Screens 2, pass 7
+
+Runtime and the composites use the same numbers. Options and Accessibility rows are 108 px tall on a 116 px step. The stripe stays in the top 16 px, the title is 40 px and starts 24 px down, and the sub-line starts at 70 px in FloorFont 30. RESULTS action buttons, including Rematch, are 128 px. RESULTS bodies are tinted with MenuTheme.Seat (fallback red, blue, yellow, green) after the costume spawn. Accent stays the costume swatch (sample Tan, Mint, Tan, Mint). The loading still is the Waiting gate: caption `Waiting  0%` and a gold dash 28% of the track, which is the frame the screen opens on. Stills are composites in `Docs/UiStills/screens2/pass7/`.
+
+## Screens 2, pass 8
+
+The Default accessibility palette is the seat slot colors: red, blue, yellow, green. Colorblind palettes stay on their own rows, and the swatch row names the palette that is showing. Reduce motion and Comic words draw a 96 by 40 pill; on is gold with the knob on the right. Loading uses `SceneManager.LoadSceneAsync`. The bar follows `AsyncOperation.progress`, and `allowSceneActivation` stays off until progress reaches 0.9 so the load can finish at 100. The loading still is that mid-load, `Loading  60%`, filled from the left. Control rows use the same 108 px height and 116 px step, so the title stays 40 px. At 100% the window shows 7 rows. Stills are composites in `Docs/UiStills/screens2/pass8/`.
+
+## Screens 2, pass 9
+
+Drop-in cards keep the seat tint and the seat stripe when they are selected. The gold stroke is the highlight. A joined seat draws a bust in the slot color and a Ready or Joined chip. An empty seat draws Space and A at 64 px. Y on a seated player toggles Ready. Confirm still opens character select. Records with no profiles is one card, "No records yet. Play a match to set one.", plus Back. The filled picture is sample data and its filename contains `-sample`. GoToPlay, the Rematch scene-load fallback, and QuitToMenu use the same async load as the menu boot. Stills are composites in `Docs/UiStills/screens2/pass9/`.
+
+## Screens 2, pass 10
+
+The drop-in banner reads `Everyone Ready? Press Start`. A keyboard seat's card says `Space / Enter`. A pad seat says `A`. Each joined card shows `Y  Ready`. The bust is 40% of the card and sits under the seat name. The profile name, with left and right arrows, sits under the bust. The device line sits above the Ready or Joined chip. Empty seats still say `Press Space or A to join`. The empty records mark is a cup: a rim, a bowl, two handles, a stem, and a base. The headless walk counts Records as one card plus Back when no profile is saved, and as each saved profile plus Back otherwise. OpenSetup uses the same async scene load as quit. Stills are composites in `Docs/UiStills/screens2/pass10/`.
+
+## Screens 2, pass 11
+
+A joined card labels the device with a keyboard icon and the word Keyboard, or a pad icon and the word Gamepad. The ready banner keeps `Everyone Ready? Press Start` and draws the Space key beside a Start button. The footer shows the keyboard glyph and the pad glyph on each hint: Arrows / Stick move, Space / A confirm, Esc / B back. The bust is the front idle outline of the Hier bake: a round head, a neck gap, a tapered chest, arms off the torso, and two legs, tinted with the seat color. Pause opens on Resume. Options from pause labels Back as Pause. Picture quality reads Medium. The text-size and UI-scale rows draw a meter. Controls opens on Move, and the cling line includes the wall jump. Credits includes the one-shot synthesis line. Stills are composites in `Docs/UiStills/screens2/pass11/`.
+
+## Screens 2, pass 12
+
+Each controls glyph is the sprite for that row's ActionBinds token. Punch's pad mark is the blue X, not the green A. Slide shows the Ctrl and C keycaps with B. Air dash shows Q and Alt with RB. Punch shows LMB and E with X. Cling shows the hold-into-wall mark and the stick. The line uses Xbox names: A, B, X, Y, RB, and LT. There is no footnote row. Xbox, PlayStation, and Switch share one gamepad token per action, and gameplay jump stays the south button. The pause banner is the arena and the mode. Comic words stays on Accessibility. Stills are composites in `Docs/UiStills/screens2/pass12/`.
+
+## Screens 2, pass 13
+
+Sound, Picture, Accessibility, and Look apply when you step a row, and the settings blob keeps the value. Master, mute, and the listener are one group. Sfx, UI, and music are the bus gains. Picture quality calls QualitySettings. Text size scales menu type and the match HUD. UI scale still scales the canvas. Comic words turns the verb words on and off. A second headless line, `ui-apply`, sets each value, reloads, and reads it back. Each options page has Reset to defaults. The first confirm asks, the second resets that page. Loading still names the arena and fills the bar from the scene load. The tip it opens on is the cling and wall-jump line. Stills are composites in `Docs/UiStills/screens2/pass13/`.
+
+## Screens 2, pass 14
+
+Picture quality is Low, Medium, High, and Ultra. Medium stays the level the game boots on, with the same shadows, antialiasing, and LOD bias as before. The Picture row steps through all four. The options hub puts Reset and Back on one bottom row, with the confirm and back glyphs from the default binds. Accessibility shows full P1–P4 tiles and a protan, deutan, and tritan preview of those four colors, with the pair distance beside each row. Text size steps are 0.85, 1.00, 1.25, and 1.50, and 1.00 is still the size the screens already used. The mute path prints `ui-bus` from the headless run. Stills are composites in `Docs/UiStills/screens2/pass14/`.
+
+## Screens 2, pass 15
+
+A settings blob without `qv` still means the old single picture level. Stored quality 0 loads Medium. New saves write `qv=1`, so Low stays Low. The headless run prints `ui-quality`. Accessibility can switch the four seat colours to a Protan/Deutan set or a Tritan set. Both clear the 0.35 pair floor under protan, deutan, and tritan. Off keeps the original colours. Seat chips gain a circle, triangle, square, or diamond only while that option is on. Text size 1.50 grows every menu row and leaves the type at that size. Reset and Back on Accessibility sit on the bottom row, outside the scroll. Stills are composites in `Docs/UiStills/screens2/pass15/`.
+
+## Screens 2, pass 16
+
+Color-blind seat colors is the second Accessibility row, so it sits in the first window at 1080p. The older row is Player color set. That one still cycles Default, Deuteranopia, Protanopia, Tritanopia, and High contrast. The two rows are not the same control. Seat colors stay Off unless the player changes them. Drop-in says where to find them. Text size 1.25 and 1.50 keep the screen title in the top band, and the character cards name Red / Tan, Blue / Mint, Orange / Lavender, and Lavender / Mint. The hat line and the mode blurbs wrap instead of being cut off. Controls can show a conflict, and Jump stays on Space until reset. Stills are composites in `Docs/UiStills/screens2/pass16/`.
+
+## Screens 2, pass 17
+
+Controls lists every action in the input map. Move, Look, Jump, Cling hold, Slide, Air dash, Punch / tag, Sprint, Pause, Minimap, Arena 1, Arena 2, and Arena 3 each have a row. Grapple stays a note: RMB, a click pulls, a second click within 0.28 s releases, left hand, no pad bind. Keyboard and mouse glyphs are one column. Pad glyphs are the other. P1 through P4 choose which pad that column edits. Confirm waits 5 seconds for a button. Esc or B cancels. Space stays Jump, and a second key can sit beside it. The line says Space always jumps, then names the key that was added. When two rows want the same button, both light up, and the choice is Swap or Cancel. Reset and Back stay on the bottom row, outside the scroll. Reset asks once, then clears that pad and the shared keyboard. Stills are composites in `Docs/UiStills/screens2/pass17/`.
+
+## Screens 2, pass 18
+
+Shipped defaults no longer give Alt to both Air dash and Sprint. Air dash is Q and RB. Sprint is Shift and LB. The headless walk appends `defaults-conflict=0` after it counts the keyboard table and all four pads. Grapple is a bind row: RMB on the keyboard, LT on the pad. A press pulls. A second press within 0.28 s releases. Cling hold draws WASD and Left stick, which is the move-into-wall hold the motor already samples. Look draws Mouse and Right stick. Both glyph columns sit inside the row, keyboard on the left and pad on the right, under those headers. Arena 1, Arena 2, and Arena 3 stay in the bind table and show only in a development build. Stills are composites in `Docs/UiStills/screens2/pass18/`.
+
+## Screens 2, pass 19
+
+Each split pane shows who is It: a large IT plate on that player, and a gold arrow with an upright IT chip for everyone else. The chip stays inside the pane. A round timer sits at the top of each pane when the pane is not the full-width top of the screen; that case keeps the shared clock. The name plate carries the mode line and the tag count. After a tag, the previous It keeps the existing one-second immunity: the pane glows and the safe row reads SAFE plus the tenths. Dash shows DASH when it is ready, the cooldown digits while it fills, and GO while it fires. Comic words swaps the display face on those words and on the tag feed. The feed sentence stays, on an ink plate, with the tagger's colour and, when color-blind seat colors are on, that seat's shape. The 3-up score list uses the same cream line, colour chip, and shape. Text size still scales the HUD. Stills are composites in `Docs/UiStills/screens2/pass19/`.
+
+## Screens 2, pass 20
+
+One match state is shared by every pane. The script is P1 tags P2, then P2 tags P3. P3 is It. P2, the previous It, holds the 1.0 s tag-back window and the safe row reads the time left. The feed on every pane is the same two lines, newest first: `P2 tagged P3`, then `P1 tagged P2`. The pane border is that seat's colour. It adds a pulsing yellow inner frame, and only on the It pane. Safe adds a warm wash and the SAFE countdown, and only on the previous It. A runner who can see It gets an IT chip over that head. A runner who cannot gets an arrow on the pane rim, in that direction. The headless line is `hud-state`. Stills are composites in `Docs/UiStills/screens2/pass20/`.
+
+## Screens 2, pass 21
+
+The same scripted match now carries the beats around the chase. Each pane counts 3, 2, 1, GO. Until GO the center card says LOCKED, and the opening It flashes on that player's pane. The last ten seconds turn the clock gold and pulse it. The tick is the existing round chime. ROUND OVER comes first. Standings then list the least It time first, with NEXT ROUND under them. The final round says RESULTS. A new It gets a short gold edge on that pane, and YOU'RE IT when comic words are on. A seat that leaves drops out of the split, and every remaining pane notes `P4 left`. Solo is one human pane against the AI. The headless line is `hud-state`. Stills are composites in `Docs/UiStills/screens2/pass21/`.
+
+## Screens 2, pass 22
+
+The standings card grows with the rows. Each row has a rank, the seat shape, the name, It time, tags made, times tagged, and round wins. The least It time is the winner, and that row is gold. The rows slide in by rank. During 3, 2, 1 a pane shows the name and the seat chip. The stat line comes back at GO. LOCKED is a small plate under the count, inside the pane, and the center card stays clear. YOU'RE IT sits above an empty slot near the tagged player. That slot is open for a comic word. Loading between the menu and the match names the arena over the park, rotates a controls tip on each seat, and fills a bar, from one pane to four. Stills are composites in `Docs/UiStills/screens2/pass22/`.
+
+## Screens 2, pass 23
+
+Seat chrome reads the costume swatches already used by the menu lane: P1 red, P2 blue, P3 orange, P4 lavender. `MenuMannequin.Swatch` is that table. Pane borders, chips, standings squares, and the loading card use it. The measured mark palette stays red, blue, yellow, and green, so the color-blind distances do not move. A color-blind seat set still replaces the chrome when that option is on. Each standings chip sits in a small dark rounded well, so the orange winner chip stays visible on the gold row. The shape stays ink on that row. A row reads rank, chip and shape, then the name, then It time, tags made, times tagged, and round wins. The time header says IT TIME. Loading cards sit in the bottom of the pane so Mega Park shows above them, and the bar stays. The tip names that seat's bound mark. A pad reads Hold [Left stick] against a wall to climb, and Hold [Left stick] + [A] to wall jump. A keyboard seat reads WASD and Space. Stills are composites in `Docs/UiStills/screens2/pass23/`.
+
+## Screens 2, pass 24
+
+The world It marker, the ghost, the results tint, and the in-world name chip read `MenuMannequin.Swatch`. That is the same costume four as the chrome: P1 red, P2 blue, P3 orange, P4 lavender. P3 is no longer yellow in the world. When colour-blind seat colors are on, that CVD set replaces the HUD and the world together. `ui-cvd` and `ui-seat` are measured on the four that ship. They miss the 0.35 floor: `ui-cvd protan=0.08 deutan=0.05 tritan=0.20`, and `ui-seat off=0.08/0.05/0.20`. Orange against red is 0.31 under protan, 0.28 under deutan, and 0.20 under tritan. Blue against lavender is closer still (0.08 protan, 0.05 deutan). The old mark palette is not kept beside these colors. The shapes already on the seats (circle, triangle, square, diamond) plus a lighter and a darker step inside each costume hue would separate those pairs. Loading no longer veils the whole screen. Mega Park stays bright above the card, and the card is the dark plate. Each seat frames a different part of the yard, and P2 also shows the chase runners. A tip names the action from the input map, then the glyph: Sprint [LB], then slide [B]. The load strip is the three captions the plate paints: Waiting 0%, Loading 60%, and Ready 100%. Unity is not installed, so the stills are composites in `Docs/UiStills/screens2/pass24/`. The world marker is not in those stills.
+
+## Screens 2, pass 25
+
+Each costume hue now has a lighter or darker step, and the seat shape is drawn in that colour on a dark well wherever the colour stands alone. P1 is a darker red circle, P2 a deeper blue triangle, P3 a lighter orange square, and P4 a lighter lavender diamond. The hues stay the ones that shipped. `ui-cvd` measured on those four is `protan=0.58 blue/lavender deutan=0.53 red/orange tritan=0.50 red/orange floor=0.35`. `ui-seat off=0.58/0.53/0.50`. Every pair clears 0.35. The worst protan pair is blue against lavender. The worst deutan and tritan pair is red against orange. The HUD chip, the feed chip, the It marker glyph, the RESULTS row, the character card, and the load card all use that dark well and the coloured shape. The 1280×720 four-up draws the shape at 48 px so it reads at couch distance.
+
+Loading plates are a mid exposure. The still grades Mega Park with contrast 1.35 and brightness 0.75. The upper half of that plate is luminance 135, and each pane's upper park sits between 121 and 133. P1 frames the left path, P2 the chase runners above the card, P3 the right arch, and P4 the center landmark. None of those windows is the empty floor. The live texture is still the ungraded plate, because this machine has no Unity to bake a graded material. Waiting 0% leaves the track empty of a fill. A thin dim sliver moves inside the track. Loading 60% and Ready 100% are the gold fill.
+
+Cling's pad token is `leftStickHold`, and `Show` reads "Left stick hold". The short chip "Left stick" is Move, so the tip does not use it. The keyboard token is `holdIntoWall`, and `Show` reads "Hold into wall". The same check covers Jump, Sprint, Slide, Air dash, and Punch. Their chips do not collide with Move or Look: Space, Shift, Ctrl, Q, LMB, and on a pad A, LB, B, RB, X. The opening tips are Jump [Space], Sprint [LB], then slide [B], Cling hold [Left stick hold] against a wall to climb, and Cling hold [Left stick hold] + jump [A] to wall jump. Unity is not installed, so the stills are composites in `Docs/UiStills/screens2/pass25/`. The world marker is not in those stills.
+
+## Screens 2, pass 26
+
+The tip bar and the progress track are separate rows, with a gap between them. The arena size sits under the name: Mega Park, then `160 x 100 m`. A layout check rejects a still when any text rect leaves its row or intersects another text rect. The four-up prints `layout=ok texts=32 rows=16 hits=0`.
+
+Lavender stays lighter than blue, and it keeps its colour. The swatch is `(0.82, 0.70, 0.98)`, about 92% of the chroma of the base lavender `(0.70, 0.58, 0.88)`. Re-measured on the four that ship: `ui-cvd protan=0.41 blue/lavender deutan=0.52 blue/lavender tritan=0.41 orange/lavender floor=0.35`. `ui-seat off=0.41/0.52/0.41`. The floor still holds. Seat shape and body live in one `MenuMannequin` table: P1 circle, P2 triangle, P3 square, P4 diamond. The chip sprite and the glyph both read that mark.
+
+Loading stills pull the golden-hour cast until the concrete is grey (about 134, 137, 141) and the grass that is in the yard reads green. Crops are large enough to downscale onto a four-up pane, then a light sharpen. P1 frames the dock, P2 the chase runners with their heads in frame, P3 the basketball court, and P4 the gazebo. Unity is not installed, so the stills are composites in `Docs/UiStills/screens2/pass26/`. The live texture is still the ungraded plate. The world marker is not in those stills.
+
+## Screens 2, pass 27
+
+The load card is the bottom third of the pane, with a smaller chip and tighter rows. The 1280×720 four-up prints `layout=ok texts=31 rows=16 hits=0`. The dock, the court, and the gazebo sit in the visible upper area. White balance stays neutral: a concrete patch reads about 140, 148, 146. An S-curve and a saturation lift bring the sky back to blue (about 155, 171, 189) and leave green in the grass. The live texture is still the ungraded plate.
+
+The diamond fill is the base lavender `(0.70, 0.58, 0.88)`. The light step `(0.82, 0.70, 0.98)` is the pane band. `ui-cvd` measures that band: `protan=0.41 blue/lavender deutan=0.52 blue/lavender tritan=0.41 orange/lavender floor=0.35`. `ui-seat off=0.41/0.52/0.41`. The floor holds on the band. The fill against blue is protan 0.23 and deutan 0.34, under 0.35. The band is the value step that keeps the measured floor.
+
+A pad cling tip reads `Hold [Left stick] into a wall to climb`, and the wall jump reads `[Left stick] into a wall + [A] to wall jump`. The verb and the input are each said once. Keyboard cling reads `Hold [WASD] into a wall to climb`.
+
+Pause was the weak screen. The pass 16 still left a flat empty band under the buttons, and Resume, Options, and Quit had no second line. The card now sits on the bottom third. Each row has a line. The graded park, including the gazebo, stays visible above the card. P1's circle is in the header. Unity is not installed, so the stills are composites in `Docs/UiStills/screens2/pass27/`.
+
+## Screens 2, pass 28
+
+The live Mega Park plate is the graded yard. `MenuBackdrop.Bright` loads `Assets/Resources/UI/Menu/MegaGrade.png`, baked with the same neutral white balance, S-curve, and saturation lift as the pass 27 stills. Mega Gold stays the ungraded source. Loading already assigns that bright plate, so a Mega Park load uses it. The baked file measures the same as the pass 27 grade: sky about 155, 171, 189, concrete about 140, 148, 146.
+
+Pause no longer leaves the graybox showing through. It puts that graded plate up and darkens it with black at 35%, so the card reads first and the park stays recognizable. The pass 27 card is unchanged: bottom third, a second line on each row, and P1's circle. The pause still measures card fraction 0.33 and park standard deviation 16.7. The sky on that still is about 65% of the raw plate, which is the 35% darken.
+
+The title logo keeps the lockup's shape and is large enough for the couch (860 by 658). The prompt is `Press Space or Start` on a keyboard and `Press Start or Space` on a pad. Space is `ActionBinds.Show` of Jump, and Start is `ActionBinds.Show` of Pause. The main menu uses the same graded plate, and the focused row wears a 16 px gold edge. Drop-in join stamps `MenuMannequin.Shape`: circle, triangle, square, diamond, in the seat fill on a dark well. Arena select, RESULTS, and Options are untouched.
+
+`ui-cvd protan=0.41 blue/lavender deutan=0.52 blue/lavender tritan=0.41 orange/lavender floor=0.35`. `ui-seat off=0.41/0.52/0.41`. The floor holds on the band. The lavender fill against blue is still under it (protan 0.23, deutan 0.34). `hot-path allocs before=101 after=0`. No new pose was animated: `no-clip pose=0`. Unity is not installed, so the frames in `Docs/UiStills/screens2/pass28/` are that live plate with the menu drawn on it.
+
+## Screens 2, pass 29
+
+Title and the main menu scale MegaGrade to cover the 16:9 frame and crop the overflow, so the plate is not sitting in a black letterbox. The edge vignette is off on those two screens. Title darkens the plate with black at 35% so the lockup sits on the graded yard. The sky on that still stays blue (blue channel above red). `MenuBackdrop.Bright` still loads `MegaGrade.png`.
+
+The main menu lights one row. Play is the focus. Records is quiet. `RefreshFocus` drops a second tile that shares the focus index. `ui-flow` fails the walk if `MenuSheet.OneFocus` is false or if `BuildMain` calls `SetHot(true)`. The printed line stays `focus=ok` when that holds.
+
+The main-menu grapple tip is `MenuTips.GrappleLine`. The glyph is `ActionBinds.Show` of the grapple key. Rebinding it to Q prints `[Q]` and drops the old `RMB` word. Loading tips use `Show` for that line too.
+
+An empty drop-in seat draws a faint outlined silhouette, the seat shape on its chest, and `Press Space or A to join` centred under it. The corner shape stays. Arena select, RESULTS, and Options are untouched.
+
+`ui-cvd` floor 0.35 still holds on the band. `hot-path allocs before=101 after=0`. No new pose was animated: `no-clip pose=0`. Unity is not installed, so the frames in `Docs/UiStills/screens2/pass29/` are the live plate with the menu drawn on it.
+
+## Screens 2, pass 30
+
+The drop-in header says `Everyone Ready? Press Start` only when every joined seat is ready and at least two seats are in. P1 ready and P2 only joined now reads `Waiting for 1 player to ready up`. The count is the joined seats that are not ready. One ready seat, with nobody else in, stays on that waiting line, because two seats are required. The old rule (`Humans > 0` prints the start line) still returns `Everyone Ready? Press Start` for the P2 case, and `MenuSheet.JoinBannerHolds` fails when the new line matches that old line. `ui-flow` fails the walk with `ready banner` if the check does. The success line is unchanged.
+
+The main menu label is a short chip. It is not a full-width strip. The chase plate is off that screen. Two seat mannequins stand in the relaxed idle, pose sample 0, with the seat shape on the chest. P1 is the red circle. P2 is the blue triangle. Their feet plant on the discs at an absolute 0.5 cm (`PlantY = 0.005f`). No new pose was animated.
+
+Title keeps the cover-crop and the 35% darken. The plate is `MegaBlur.png`, a slight blur of `MegaGrade.png`, plus a soft vignette. The corners stay the plate (about 69, 76, 84 on the sky side). They are not black. Loading and pause stay on the sharp grade.
+
+The lavender fill is lighter, `(0.80, 0.72, 0.92)`, bytes `(204, 184, 235)`. Blue stays above red, and red stays above green, so P4 is still a lavender diamond. The band that `ui-cvd` measures is unchanged. The fill pairs are `ui-fill protan=0.43 blue/lavender deutan=0.53 red/orange tritan=0.42 orange/lavender floor=0.35`. Every pair is at least 0.35.
+
+`ui-cvd protan=0.41 blue/lavender deutan=0.52 blue/lavender tritan=0.41 orange/lavender floor=0.35`. `ui-seat off=0.41/0.52/0.41`. `hot-path allocs before=101 after=0`. `no-clip pose=0`. Arena select, RESULTS, options, controls, and mode/rules are untouched. Unity is not installed, so the frames in `Docs/UiStills/screens2/pass30/` are the live plate with the menu drawn on it.
+
+## Screens 2, pass 31
+
+The title plate is a wide Gaussian of `MegaGrade.png`, blurred in float, then a smoothstep vignette, then a little blue noise before the 8-bit round. The sky's largest step between adjacent rows is 0.155. The corners stay the plate, about 71, 78, 86 on the sky side. Loading and pause stay on the sharp grade.
+
+The main menu figures are the Hier meshes, Red and Blue, in the relaxed idle. Pose sample 0 bends the knees 4° and levels the soles. The feet sit on the discs at an absolute 0.5 cm. Each one is turned three-quarter toward the menu, tinted with the seat color, with the seat shape on the chest and a contact shadow on the disc. P1 is the red circle. P2 is the blue triangle. No new pose was animated.
+
+Loading and pause use the same short header chip as the menu. Loading says Loading. Pause says Paused by P1, and the place line is its own chip, so the bar is not full width. Resume is the only hot row. The load pane that used to show the chase plate shows the blue Hier idle instead. The card stays on the bottom third, and the park stays visible above it.
+
+`ui-fill protan=0.43 blue/lavender deutan=0.53 red/orange tritan=0.42 orange/lavender floor=0.35`. `ui-cvd protan=0.41 blue/lavender deutan=0.52 blue/lavender tritan=0.41 orange/lavender floor=0.35`. `hot-path allocs before=101 after=0`. `no-clip pose=0`. Arena select, RESULTS, options, controls, and mode/rules are untouched. Unity is not installed, so the frames in `Docs/UiStills/screens2/pass31/` are the live plate with the menu drawn on it. The figures are a Blender render of the repo FBX.
+
+## Screens 2, pass 32
+
+Loading gives every pane the same Hier idle. The figure sits in the lower-right, the same size in each pane, feet on a disc just above the info card, whole body in frame. P1 is the red circle, P2 the blue triangle, P3 the orange square, P4 the lavender diamond. The Orange Hier file is a different skinned mesh, so P3 is the shared rig tinted orange. The waiting track is a full-height bar with a short gold cap at 0%, labeled Waiting 0%. The jump tip is a full sentence, and punctuation stays on that sentence.
+
+Climb is the move wish into the wall. `PlayerMotor.ClingHeld` (`PlayerMotor.cs` 1226–1239) is `dot(wishDir, -wallNormal) > 0.25`. Jump is not cling, and there is no cling button. Keyboard `holdIntoWall` is not sampled: `BindSampler.HeldToken` (`BindSampler.cs` 203–205) returns false for `SharesMove` (`ActionBinds.cs` 415–417). A pad `leftStickHold` is the stick past 0.04 (`BindSampler.cs` 469), and `PlayerInputReader.ReadDriven` (`PlayerInputReader.cs` 390–391) then biases Move forward. Wall jump is `JumpPressed` on the wall or inside cling grace (`PlayerMotor.cs` 474–484, 1020–1025, 1164). Keyboard jump is Space, including the Space OR (`PlayerInputReader.cs` 409–420). Pad jump is South, shown as A. Grapple release is the second press inside 0.28 s (`ExperimentalGrapple.cs` 26, 177–185). Keyboard fire is mouse right (`ExperimentalGrapple.cs` 256–262, `ActionBinds.Show` for `mouseRight`). The pad token is `leftTrigger` (`ActionBinds.cs` 44) but the tip does not print a pad glyph.
+
+No idle clip lowers the Hier arms. `VerbPoseClips.IdleArmPitch` is a constant for the primitive body only (`MenuIdle.cs` sets the Hier hang to 0). There is no `.anim` idle. The arms stay on the bind A-pose. Pose sample 0 is unchanged: knees −4°, soles at 0.5 cm, no root lift. The 30 fps no-clip check was not run, because no new pose was sampled. `no-clip pose=0`.
+
+Drop-in puts that same idle on all four seats, seat color and chest shape, feet on the discs. P1 ready and P2 joined still read Waiting for 1 player to ready up. Empty seats keep Press Space or A to join.
+
+The title plate, the main-menu Red and Blue pair, and the pause card stay as accepted in pass 31, except the main-menu climb sentence and the arms note above. Arena select, RESULTS, options, controls, and mode/rules are untouched.
+
+`ui-flow screens=15 kb=15 pad=15 dead=0 focus=ok back=ok seats=4 drop=ok reclaim=ok min=ok keep=ok cues=9 text=ok hud=ok glyphs=ok feed=ok load=ok board=ok faces=ok rules=ok records=ok contrast=ok style=ok sheet=ok defaults-conflict=0`. `ui-apply master=ok sfx=ok ui=ok music=ok mute=ok res=ok full=ok vsync=ok quality=ok scale=ok motion=ok text=ok player=ok palette=ok comic=ok mouse=ok pad=ok invert=ok fov=ok reset=ok apply=ok persist=ok`. `hot-path allocs before=101 after=0`. Stills: `32-load.png` 383063, `32-main.png` 332883, `32-join.png` 242863. Unity is not installed, so the frames in `Docs/UiStills/screens2/pass32/` are the live plate with the menu drawn on it. The figures are a Blender render of the repo FBX.
+
+## Handoff to #121
+
+PR #126 stays a draft on `cursor/tag-ui-screens2` into `cursor/tag-ui-menu`. Do not mark it ready, merge it, or close it from this lane. #121 is draft PR #121, head `cursor/tag-ui-menu`. After pass 32 that branch owns every screen, including the ones listed here.
+
+Screens this lane last touched, and the live builders in `MenuHost.cs`: title `BuildTitle`, main `BuildMain`, drop-in `BuildJoin`, loading `BuildLoading` / `BuildLoadSeats`, pause `BuildPause`. Character select is `BuildCast`. Credits, records, and practice are `BuildCredits`, `BuildRecords`, `BuildPractice`. Arena (`BuildArena`), RESULTS (`BuildResults`), options (`BuildOptions`), controls (`BuildControls`), and rules (`BuildRules`) were left for #121 and were not edited in pass 32.
+
+Files that carry those screens: `MenuHost.cs`, `MenuWidgets.cs` (`JoinDress`, `HierSeat`), `MenuTips.cs`, `MenuBackdrop.cs` (`SeatIdle`, `SeatLoad`, `MegaGrade`, `MegaBlur`), `MenuIdle.cs`, `MenuPreview.cs`, `MenuSheet.cs`, `MenuMannequin.Colors.cs`, `LoadGate.cs`, `UiFlow.cs`. Art: `Assets/Resources/UI/Menu/SeatIdle.png` (main pair, guid `a91c4e7b2d8f4a0e9c3b6d15f7048e22`), `SeatLoad.png` (four-up atlas, guid `b7e2c91a4f6d4e0a8c5b1d37e90f6a44`), `MegaGrade.png`, `MegaBlur.png`. Seat colors are one table: P1 red circle, P2 blue triangle, P3 orange square, P4 lavender diamond. #121 `SeatMark` still maps P2 square and P3 triangle. Do not import that mapping over this one without a deliberate rebase.
+
+Render, from `/workspace`. Unity is not installed. Blender 4.0.2 is. Main pair: `blender --background --python Tools/UiScreens/render_mannequin.py` writes `SeatIdle.png`. Four loading and join figures: `blender --background --python Tools/UiScreens/render_seatload.py` writes `/tmp/seatload/seat0.png` through `seat3.png` (override with `SEATLOAD_OUT`). Then `python3 Tools/UiScreens/render_pass32.py` packs `SeatLoad.png` and writes `Docs/UiStills/screens2/pass32/32-load.png`, `32-main.png`, and `32-join.png`. Pass 31 title, main, and pause: `python3 Tools/UiScreens/render_pass31.py`. Stills must stay under 400000 bytes. Do not commit `Tools/UiScreens/__pycache__/`.
+
+Proof, from `/workspace`, with `PATH=/tmp/dotnet` and `DOTNET_CLI_TELEMETRY_OPTOUT=1`:
+
+`dotnet run --project Tools/StrafeJumpSim/StrafeJumpSim.csproj -c Release -- --ui-flow`
+
+`dotnet run --project Tools/StrafeJumpSim/StrafeJumpSim.csproj -c Release --no-build -- --alloc`
+
+The success lines must stay byte-identical except ui fields a pass was told to add. Pass 32 left them as: `ui-flow screens=15 kb=15 pad=15 dead=0 focus=ok back=ok seats=4 drop=ok reclaim=ok min=ok keep=ok cues=9 text=ok hud=ok glyphs=ok feed=ok load=ok board=ok faces=ok rules=ok records=ok contrast=ok style=ok sheet=ok defaults-conflict=0` and `hot-path allocs before=101 after=0 flags=dropped`. `MenuTips.Holds` and `MenuSheet.Holds` read source from disk. Keep `PlantY = 0.005f`, `HoldRest()`, `IdlePose.At(0f, 0f)`, `ShowMenuPair`, `MenuSheet.JoinBanner(`, no `MenuBackdrop.Chase` inside `BuildMain`, no `CouchPlay.Humans > 0` inside `BuildJoin`, `At(0)` equal to `Space jumps.`, and the grapple line going through `ActionBinds.Show`. Do not edit `ActionBinds.Show` or `ControlGlyphs.GlyphOf`. Feel locks stay: coyote 0.10, jump buffer 0.16, cling grace 0.08, jumpSpeed 24.7, terminal fall 56.16. `SettingsFile.Version` stays 2. `TagBackImmunity.DefaultSeconds` is 1.0. Grapple is not a new `PlayAction`. `enableGrapple` stays false. `FireButton` stays RMB.
+
+Open flaws: Hier arms are still the bind A-pose, because no idle clip lowers them. The world It marker is still a primitive. Least It wins stay 0. A controls swap can still mark two rows. Pad grapple's stored token is `leftTrigger`. The loading tip does not invent a glyph. The controls row prints LT, and RT stays free. The couch rope is on every human seat. pngquant is what fits the stills under 400 KB, and it crushes figure colors. The Orange Hier FBX is a different skinned mesh, so the orange seat is the shared rig tinted. Title sky step 0.155 was accepted; do not re-blur it. Pause card was accepted.
+
+Next, if the work continues: capture these screens in play mode once Unity is available, and replace the composites. If a real idle clip lowers the arms, sample that clip only, then run a 30 fps check that reports arm euler as rig joint and root translation as pose, with pose staying 0 and the soles at an absolute 0.5 cm, and do not lift the root to fake the plant. The loading tip stays without a pad glyph. The controls row prints the stored LT.
+
 ## Later passes
 
-- A 2D focus grid on rules so Left from a rule row lands on a mode tile.
+- Left from a rule row returns to the modes even when that rule can still decrease. Right from the right-hand mode, and Left at the end of a rule, already move between the columns.
 - Per-player look, only if the settings blob grows a seat field. Do not invent it in the menu.
 - Replace `Docs/UiStills/pass3/` with the captures from a real Unity play session.
 - Online, when it exists. The main menu uses that row for Records until then.

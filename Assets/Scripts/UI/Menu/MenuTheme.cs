@@ -1,12 +1,10 @@
-using Tag.Couch;
-using Tag.Profiles;
 using UnityEngine;
 
 namespace Tag.Ui.Menu
 {
     /// <summary>
-    /// Couch-readable colors. Seat tints come from the live accessibility palette
-    /// once a player has joined. Feel numbers are not stored here.
+    /// Couch-readable colors. Seat tints are the costume bodies: red, blue, orange, lavender.
+    /// Color-blind seat colors still replace them. Feel numbers are not stored here.
     /// </summary>
     public static class MenuTheme
     {
@@ -25,9 +23,6 @@ namespace Tag.Ui.Menu
         public static readonly Color Off = new Color(0.22f, 0.26f, 0.34f, 1f);
         public static readonly Color Stroke = new Color(0.02f, 0.04f, 0.10f, 1f);
         public static readonly Color Shadow = new Color(0f, 0f, 0f, 0.48f);
-
-        // Seat order into MenuMannequin.Swatch. The swatch method owns the RGB.
-        static readonly string[] BandKey = { "Red", "Blue", "Orange", "Lavender" };
 
         static Font _font;
         static Font _display;
@@ -59,36 +54,26 @@ namespace Tag.Ui.Menu
 
         public static Color Seat(int seat)
         {
+            return SeatTint(seat, false);
+        }
+
+        /// <summary>Shape fill. Colour-blind mode still replaces it. Lavender's light step stays on <see cref="Seat"/>.</summary>
+        public static Color SeatFill(int seat)
+        {
+            return SeatTint(seat, true);
+        }
+
+        static Color SeatTint(int seat, bool fill)
+        {
             int i = seat;
             if (i < 0) i = 0;
             if (i > 3) i = 3;
-            if (CouchPlay.HumanAt(i) || LocalProfiles.SeatColor(i) >= 0)
+            if (Tag.Settings.GameSettings.Current != null && Tag.Settings.GameSettings.Current.CvdSeats != Tag.Settings.SeatCvd.Off)
             {
-                CouchPlay.Tint(i, out float r, out float g, out float b);
+                Tag.Settings.SeatCvd.Color(Tag.Settings.GameSettings.Current.CvdSeats, i, out float r, out float g, out float b);
                 return new Color(r, g, b, 1f);
             }
-            return SeatBand(i);
-        }
-
-        /// <summary>
-        /// P1 red, P2 blue, P3 orange, P4 lavender, from MenuMannequin.Swatch.
-        /// A joined player may tint Seat. The band on a results block stays this color.
-        /// </summary>
-        public static Color SeatBand(int seat)
-        {
-            int i = seat;
-            if (i < 0) i = 0;
-            if (i > 3) i = 3;
-            return MenuMannequin.LightStep(BandKey[i]);
-        }
-
-        /// <summary>Dark step of the same swatch, for a numeral or a mark on the band.</summary>
-        public static Color SeatInk(int seat)
-        {
-            int i = seat;
-            if (i < 0) i = 0;
-            if (i > 3) i = 3;
-            return MenuMannequin.DarkStep(BandKey[i]);
+            return fill ? MenuMannequin.SeatFill(i) : MenuMannequin.SeatBand(i);
         }
 
         public static string Place(int rank)

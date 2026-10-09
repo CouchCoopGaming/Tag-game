@@ -51,6 +51,7 @@ namespace Tag.Ui.Menu
         {
             public bool Ok;
             public string Line;
+            public string ApplyLine;
             public string Failure;
         }
 
@@ -81,6 +82,16 @@ namespace Tag.Ui.Menu
             bool records = RecordsHold();
             bool contrast = UiSweep.Holds();
             bool style = MenuPolish.Holds(Root());
+            bool sheet = MenuSheet.Holds(Root());
+            bool one = MenuSheet.OneFocus() && HostFocus(Root());
+            if (!one) Fail(ref report, "two focused");
+            bool readyBanner = MenuSheet.JoinBannerHolds() && HostBanner(Root());
+            if (!readyBanner) Fail(ref report, "ready banner");
+            if (!Tag.Settings.SeatCvd.FillClears()) Fail(ref report, "fill floor");
+            report.ApplyLine = OptionApply.Holds();
+            bool optionsLive = report.ApplyLine.IndexOf("persist=ok", StringComparison.Ordinal) >= 0
+                && report.ApplyLine.IndexOf("=no", StringComparison.Ordinal) < 0;
+            if (!optionsLive) Fail(ref report, "options apply");
             if (!text) Fail(ref report, "text floor");
             if (!hud) Fail(ref report, "hud corner");
             if (!glyphs) Fail(ref report, "glyphs");
@@ -92,10 +103,12 @@ namespace Tag.Ui.Menu
             if (!records) Fail(ref report, "records");
             if (!contrast) Fail(ref report, "contrast");
             if (!style) Fail(ref report, "style");
+            if (!sheet) Fail(ref report, "sheet");
             CouchPlay.Release();
             report.Line = "ui-flow screens=15 kb=" + kb.ToString()
                 + " pad=" + pad.ToString()
-                + " dead=0 focus=ok back=ok seats=4 drop=ok reclaim=ok min=ok keep=ok cues="
+                + " dead=0 focus=" + (one ? "ok" : "no")
+                + " back=ok seats=4 drop=ok reclaim=ok min=ok keep=ok cues="
                 + cues.ToString()
                 + " text=" + (text ? "ok" : "no")
                 + " hud=" + (hud ? "ok" : "no")
@@ -107,7 +120,9 @@ namespace Tag.Ui.Menu
                 + " rules=" + (rules ? "ok" : "no")
                 + " records=" + (records ? "ok" : "no")
                 + " contrast=" + (contrast ? "ok" : "no")
-                + " style=" + (style ? "ok" : "no");
+                + " style=" + (style ? "ok" : "no")
+                + " sheet=" + (sheet ? "ok" : "no")
+                + " defaults-conflict=" + ActionBinds.DefaultConflicts().ToString();
             if (!report.Ok)
                 report.Line += " FAIL " + report.Failure;
             return report;
@@ -132,6 +147,18 @@ namespace Tag.Ui.Menu
                 Fail(ref report, "records missed");
                 return 0;
             }
+            if (s.Count != RecordRows())
+            {
+                Fail(ref report, "records rows");
+                return 0;
+            }
+            Spot recordsBack = Move(s, 1);
+            if (Tag.Profiles.LocalProfiles.Count == 0 && recordsBack.Focus != 1)
+            {
+                Fail(ref report, "records back row");
+                return 0;
+            }
+            s = recordsBack;
             if (!BackTo(ref s, Main, report)) return 0;
             s.Focus = 0;
             if (!Step(ref seen, ref s, Confirm(s), report)) return 0;
@@ -463,7 +490,8 @@ namespace Tag.Ui.Menu
                         if (s.Focus == 3) return ControlsAt(s, Options);
                         if (s.Focus == 4) return OptionsAt(s, 4, s.PauseChild, s.BackTo);
                         if (s.Focus == 5) return Land(s, Credits, 0, Options);
-                        return Back(s);
+                        if (s.Focus == s.Count - 1) return Back(s);
+                        return s;
                     }
                     if (s.Focus == s.Count - 1) return OptionsAt(s, 0, s.PauseChild, s.BackTo);
                     return s;
@@ -471,6 +499,9 @@ namespace Tag.Ui.Menu
                 case Credits:
                 case Practice:
                     if (s.Focus == s.Count - 1) return Back(s);
+                    return s;
+                case Records:
+                    if (s.Focus >= s.Count - 1) return Back(s);
                     return s;
                 default:
                     return s;
@@ -564,6 +595,13 @@ namespace Tag.Ui.Menu
             return s;
         }
 
+        static int RecordRows()
+        {
+            int n = Tag.Profiles.LocalProfiles.Count;
+            if (n < 1) return 2;
+            return n + 1;
+        }
+
         static int CountOf(Spot s)
         {
             switch (s.Screen)
@@ -578,11 +616,12 @@ namespace Tag.Ui.Menu
                 case Credits: return 1;
                 case Practice: return 6;
                 case Controls: return 2;
-                case Records: return 9;
+                case Records: return RecordRows();
                 case Options:
                     if (s.Page == 0) return 7;
-                    if (s.Page == 3) return 5;
-                    return 6;
+                    if (s.Page == 2) return 8;
+                    if (s.Page == 4) return 6;
+                    return 7;
                 default: return 0;
             }
         }
@@ -670,6 +709,48 @@ namespace Tag.Ui.Menu
             if (!Tag.Profiles.LocalProfiles.Spell("ADA")) return false;
             Tag.Profiles.LocalProfiles.Clear();
             return Tag.Profiles.LocalProfiles.Count == 0;
+        }
+
+        static bool HostFocus(string root)
+        {
+            if (string.IsNullOrEmpty(root)) return false;
+            string menu = Path.Combine(root, "Assets", "Scripts", "UI", "Menu");
+            string host = File.ReadAllText(Path.Combine(menu, "MenuHost.cs"));
+            if (host.IndexOf("if (on && shown > 0) on = false;", StringComparison.Ordinal) < 0) return false;
+            if (host.IndexOf("tile.SetHot(on);", StringComparison.Ordinal) < 0) return false;
+            int main = host.IndexOf("void BuildMain()", StringComparison.Ordinal);
+            int join = host.IndexOf("void BuildJoin()", StringComparison.Ordinal);
+            if (main < 0 || join < main) return false;
+            string body = host.Substring(main, join - main);
+            if (body.IndexOf("MenuSheet.MainIndex", StringComparison.Ordinal) < 0) return false;
+            if (body.IndexOf("SetHot(true)", StringComparison.Ordinal) >= 0) return false;
+            int title = host.IndexOf("void BuildTitle()", StringComparison.Ordinal);
+            int titleEnd = host.IndexOf("void BuildVignette(", StringComparison.Ordinal);
+            if (title < 0 || titleEnd < title) return false;
+            string titleBody = host.Substring(title, titleEnd - title);
+            if (titleBody.IndexOf("ShowPark(ParkArena.Mega, 1f);", StringComparison.Ordinal) < 0) return false;
+            if (titleBody.IndexOf("CoverFlyover();", StringComparison.Ordinal) < 0) return false;
+            if (titleBody.IndexOf("new Color(0f, 0f, 0f, 0.35f);", StringComparison.Ordinal) < 0) return false;
+            string backdrop = File.ReadAllText(Path.Combine(menu, "MenuBackdrop.cs"));
+            if (backdrop.IndexOf("UI/Menu/MegaGrade", StringComparison.Ordinal) < 0) return false;
+            return true;
+        }
+
+        static bool HostBanner(string root)
+        {
+            if (string.IsNullOrEmpty(root)) return false;
+            string host = File.ReadAllText(Path.Combine(root, "Assets", "Scripts", "UI", "Menu", "MenuHost.cs"));
+            int join = host.IndexOf("void BuildJoin()", StringComparison.Ordinal);
+            int sync = host.IndexOf("void SyncStartMarks()", StringComparison.Ordinal);
+            if (join < 0 || sync < join) return false;
+            string body = host.Substring(join, sync - join);
+            if (body.IndexOf("MenuSheet.JoinBanner(", StringComparison.Ordinal) < 0) return false;
+            if (body.IndexOf("CouchPlay.Humans > 0", StringComparison.Ordinal) >= 0) return false;
+            string old = MenuSheet.JoinBannerOld(2);
+            string now = MenuSheet.JoinBanner(2, 1);
+            if (old != MenuSheet.ReadyLine) return false;
+            if (now == old) return false;
+            return now == "Waiting for 1 player to ready up";
         }
 
         static string Root()
