@@ -13,6 +13,7 @@ Cling is not a separate button. Holding move into a wall is the cling. Rebinding
 | Slide | Ctrl (C still slides on the default bind) | East (B) |
 | Air dash | Q (Left Alt still dashes on the default bind) | RB |
 | Punch / tag | LMB (E still punches on the default bind) | West (X) |
+| Grapple / rope | RMB | LT |
 | Sprint | Shift | LB |
 | Pause | Esc (Start also pauses) | Start |
 | Minimap | M | Select |
@@ -24,6 +25,8 @@ Cling is not a separate button. Holding move into a wall is the cling. Rebinding
 | Practice restart | T | North (Y) |
 | Practice ghost | G | Left stick press |
 | Practice input display | I | Right stick press |
+
+RT is free. The stutter double-tap on RT stays behind `EvasionMoves.Enabled`, and that flag defaults off. A single press of RT does nothing. LT stays the couch rope.
 
 ## Debug
 
@@ -58,7 +61,7 @@ Pause → Settings. The same card is on the direct-play pause menu. Values save 
 | SFX | 1.00 | 0 – 1 |
 | Mute | Off | Comma toggles it |
 | HUD scale | 1.00 | 0.75 – 1.50 |
-| Colorblind palette | Off | Blue / yellow / white / cyan marks |
+| Colorblind palette | Off | Colour-blind sets stay behind this row |
 | Minimap | On | M or Select |
 | Reset to defaults | — | Restores this table |
 | Back | — | Returns to pause |
