@@ -1,5 +1,6 @@
 using System.IO;
 using Tag.Art;
+using Tag.FX;
 using UnityEditor;
 using UnityEngine;
 
@@ -42,10 +43,29 @@ public static class CompileSmokeTest
             }
         }
 
+        fail += ExpectPng("ComicAtlas", ComicAtlas.Png(), ComicAtlas.Cells * ComicAtlas.CellWidth, ComicAtlas.CellHeight);
+        fail += ExpectPng("ComicDizzy", ComicDizzy.Png(), ComicDizzy.Size, ComicDizzy.Size);
+
         if (fail == 0)
-            Debug.Log("[CompileSmoke] ok compression=qualified rootMotion=0");
+            Debug.Log("[CompileSmoke] ok compression=qualified rootMotion=0 atlas=file dizzy=file");
         else
             Debug.LogError("[CompileSmoke] FAIL " + fail);
         EditorApplication.Exit(fail == 0 ? 0 : 1);
+    }
+
+    static int ExpectPng(string name, byte[] png, int width, int height)
+    {
+        if (png == null || png.Length < 8 || png[0] != 0x89 || png[1] != 0x50)
+        {
+            Debug.LogError("[CompileSmoke] " + name + " did not load a png");
+            return 1;
+        }
+        if (!ComicArt.DecodePng(png, out int w, out int h, out byte[] rgba) || w != width || h != height || rgba == null)
+        {
+            Debug.LogError("[CompileSmoke] " + name + " decoded " + w + "x" + h + " expected " + width + "x" + height);
+            return 1;
+        }
+        Debug.Log("[CompileSmoke] " + name + " " + w + "x" + h + " bytes=" + png.Length);
+        return 0;
     }
 }
