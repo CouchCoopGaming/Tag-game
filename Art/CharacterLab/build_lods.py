@@ -13,8 +13,8 @@ import bpy
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 LOADOUTS = os.path.join(ROOT, "Art", "CharacterLab", "loadouts.json")
 FIT = os.path.join(ROOT, "Docs", "Characters", "pass1", "fit.txt")
-LOD1_RATIO = 0.52
-LOD2_RATIO = 0.24
+LOD1_RATIO = 0.85
+LOD2_RATIO = 0.55
 # Costume ceilings: LOD0 15000, LOD1 8000, LOD2 4000.
 LOD1_CAP = 8000
 LOD2_CAP = 4000
@@ -63,6 +63,9 @@ def make_lod(src, ratio, suffix):
     dup.parent_type = src.parent_type
     dup.parent_bone = src.parent_bone
     dup.matrix_world = src.matrix_world.copy()
+    # Exact copies left by a vent weld into one vertex so collapse can step down.
+    weld = dup.modifiers.new("Weld", "WELD")
+    weld.merge_threshold = 0.00001
     mod = dup.modifiers.new("Decimate", "DECIMATE")
     mod.decimate_type = "COLLAPSE"
     mod.ratio = ratio

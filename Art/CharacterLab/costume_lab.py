@@ -105,6 +105,40 @@ JOINT_ROWS = (
     ("LowerLeg_", "Foot_", 55.0, 1.0, "JogAnkle", "LowerLeg_"),
 )
 
+# Closing side stays open this far from the joint, so a deep fold misses the shell.
+# The opening hemisphere still covers the joint.
+FOLD_OPEN = (
+    (("UpperLeg_", "LowerLeg_"), 0.240),
+)
+
+# Upper sleeve, past this station, drops the local-+X cap. Sprint carries that cap into the chest.
+SLEEVE_VENT = (0.150, 0.35)
+# Upper sleeve span that the roll lays on the thigh. (t0, t1, local X, local Z, dot limit)
+SLEEVE_ROLL = (0.220, 0.400, -0.50, -0.87, 0.40)
+# Lower jog, on this span, drops the local-+Z cap the roll lays across the forearm.
+CALF_VENT = (0.260, 0.430, 0.20)
+# Lower jog, on this span, drops the local -X cap the roll lays across the hand.
+SHIN_VENT = (0.200, 0.450, 0.20)
+# Lower jog, front-outer cap the tucked hand crosses. (t0, t1, local X, local Z, dot limit)
+CALF_HAND = (0.200, 0.420, 0.75, -0.65, 0.40)
+# Cuff on the hand. Local X/Z weights and the dot past which that cap is open.
+# The land pose lays this side of the wristband on the shin. CUFF_X opens the local -X cap.
+CUFF_VENT = (-0.53, -0.85, 0.40)
+CUFF_X = 0.20
+# Proximal cuff ring. The roll peak lays this cap inside the ankle pad.
+CUFF_ANKLE = (0.0, 0.070, 0.54, 0.84, 0.25)
+# Lower sleeve caps the roll lays on the thigh, then further down on the shin.
+FOREARM_VENTS = (
+    (0.0, 0.180, -0.41, -0.91, 0.35),
+    (0.220, 0.380, 0.91, -0.41, 0.45),
+)
+# Upper jog, outer thigh, where the tucked forearm crosses.
+THIGH_VENT = (0.240, 0.400, 0.95, 0.30, 0.40)
+# Hip pad drops its local-+X cap. The roll lays that cap on the upper arm.
+HIP_PAD_X = 0.35
+# Lower hoodie hem. z cut, front Y, side |X| kept as the center panel.
+CHEST_HEM = (1.26, -0.25, 0.20)
+
 OUTFITS = (
     {
         "tag": "",
@@ -153,6 +187,10 @@ BODY_NAMES = (
 
 def log(msg):
     print(msg, flush=True)
+
+
+def _fmt_vec(vector):
+    return "(%.3f,%.3f,%.3f)" % (vector.x, vector.y, vector.z)
 
 
 class Piece:
@@ -1084,11 +1122,12 @@ def build_outfits(pieces, arm, body):
                 return True
             return direction.y < -0.55 and abs(direction.x) < 0.22
 
+        z_cut, front, side = CHEST_HEM
         make_loft(
             pieces, body, outfit["chest_name"], "Chest", "Mesh_Chest", "cloth",
             Vector((0.0, 0.0, 0.0)), z_axis,
             min(chest_z) + 0.012, max(chest_z) - 0.008, "chest", thick,
-            keep_torso,
+            _and_mask(keep_torso, _hem_mask(z_cut, front, side)),
         )
         make_loft(
             pieces, body, outfit["spine_name"], "Spine", "Mesh_Spine", "cloth",
@@ -1122,11 +1161,14 @@ def _opening_mask(keep):
     return mask
 
 
-def _add_pad(pieces, body, name, bone, mesh, origin, axis, t0, t1, offset, keep):
+def _add_pad(pieces, body, name, bone, mesh, origin, axis, t0, t1, offset, keep, extra=None):
+    mask = _opening_mask(keep)
+    if extra is not None:
+        mask = _and_mask(mask, extra)
     piece = make_loft(
         pieces, body, name, bone, mesh, "cloth",
         origin, axis, t0, t1, "pad", offset,
-        _opening_mask(keep), False, 0.0,
+        mask, False, 0.0,
     )
     # Valleys stay near 4 mm so the ribs can sit proud inside the 1 cm band.
     piece.offset = 0.004
@@ -1142,6 +1184,107 @@ def _bone_t(arm, origin, axis, bone):
 def _tail_t(arm, origin, axis, bone):
     point = arm.matrix_world @ arm.data.bones[bone].tail_local
     return (point - origin).dot(axis)
+
+
+def _bone_local_x(arm, bone_name):
+    bone = arm.data.bones[bone_name]
+    return (bone.matrix_local.to_3x3() @ Vector((1.0, 0.0, 0.0))).normalized()
+
+
+def _fold_mask(origin, axis, joint_t, clear, keep):
+    """Full tube away from the joint. Opening side only inside the fold."""
+    def mask(direction, center):
+        if clear <= 0.0:
+            return True
+        station = (center - origin).dot(axis)
+        if abs(station - joint_t) > clear:
+            return True
+        return direction.dot(keep) > 0.05
+    return mask
+
+
+def _vent_mask(origin, axis, bone_x, open_at, limit):
+    """Past open_at, drop the local-+X cap that the sprint swing carries into the chest."""
+    def mask(direction, center):
+        station = (center - origin).dot(axis)
+        if station < open_at:
+            return True
+        return direction.dot(bone_x) < limit
+    return mask
+
+
+def _bone_local_z(arm, bone_name):
+    bone = arm.data.bones[bone_name]
+    return (bone.matrix_local.to_3x3() @ Vector((0.0, 0.0, 1.0))).normalized()
+
+
+def _calf_mask(origin, axis, bone_z, t0, t1, limit):
+    """On this span, drop the local-+Z cap the roll lays across the forearm."""
+    def mask(direction, center):
+        station = (center - origin).dot(axis)
+        if station < t0 or station > t1:
+            return True
+        return direction.dot(bone_z) < limit
+    return mask
+
+
+def _and_mask(left, right):
+    def mask(direction, center):
+        return left(direction, center) and right(direction, center)
+    return mask
+
+
+def _bone_dir(arm, bone_name, x_w, z_w):
+    bone = arm.data.bones[bone_name]
+    direction = bone.matrix_local.to_3x3() @ Vector((x_w, 0.0, z_w))
+    if direction.length < 1e-6:
+        return _bone_local_z(arm, bone_name)
+    return direction.normalized()
+
+
+def _cone_mask(away, limit):
+    """Drop the cap facing `away` once the sample aligns past `limit`."""
+    def mask(direction, _center):
+        return direction.dot(away) < limit
+    return mask
+
+
+def _span_cone_mask(origin, axis, away, t0, t1, limit):
+    """On this span, drop the cap facing `away`."""
+    def mask(direction, center):
+        station = (center - origin).dot(axis)
+        if station < t0 or station > t1:
+            return True
+        return direction.dot(away) < limit
+    return mask
+
+
+def _vent_rows(arm, bone, origin, axis, rows):
+    masks = []
+    for t0, t1, x_w, z_w, limit in rows:
+        away = _bone_dir(arm, bone, x_w, z_w)
+        masks.append(_span_cone_mask(origin, axis, away, t0, t1, limit))
+    return _all_mask(masks)
+
+
+def _all_mask(masks):
+    def mask(direction, center):
+        for one in masks:
+            if not one(direction, center):
+                return False
+        return True
+    return mask
+
+
+def _hem_mask(z_cut, front, side):
+    """Below z_cut, keep the center front panel and drop the front corners."""
+    def mask(direction, center):
+        if center.z > z_cut:
+            return True
+        if direction.y > front:
+            return True
+        return abs(direction.x) < side
+    return mask
 
 
 def _build_side(pieces, arm, body, outfit, insets, side):
@@ -1164,9 +1307,18 @@ def _build_side(pieces, arm, body, outfit, insets, side):
         origin, axis, 0.028, 0.056, "sleeve", thick, None, True, 0.0,
     ))
     elbow_t = _bone_t(arm, origin, axis, "LowerArm_" + side)
+    vent_at, vent_limit = SLEEVE_VENT
+    roll_t0, roll_t1, roll_x, roll_z, roll_limit = SLEEVE_ROLL
     _mark_bevel(make_loft(
         pieces, body, "Lab_SleeveU%s%s" % (tag, side), "UpperArm_" + side, "Mesh_UpperArm_" + side, "cloth",
         origin, axis, 0.080, elbow_t - elbow, "sleeve", cloth,
+        _and_mask(
+            _vent_mask(origin, axis, _bone_local_x(arm, "UpperArm_" + side), vent_at, vent_limit),
+            _span_cone_mask(
+                origin, axis, _bone_dir(arm, "UpperArm_" + side, roll_x, roll_z),
+                roll_t0, roll_t1, roll_limit,
+            ),
+        ),
     ))
     keep = opening_direction(elbow_row["bend"], elbow_row["child_axis"], elbow_row["rot_sign"])
     _add_pad(
@@ -1180,19 +1332,43 @@ def _build_side(pieces, arm, body, outfit, insets, side):
     _mark_bevel(make_loft(
         pieces, body, "Lab_SleeveL%s%s" % (tag, side), "LowerArm_" + side, "Mesh_LowerArm_" + side, "cloth",
         origin, axis, elbow, wrist_t - 0.040, "sleeve", cloth,
+        _vent_rows(arm, "LowerArm_" + side, origin, axis, FOREARM_VENTS),
     ))
+    hand_origin, hand_axis = bone_axis(arm, "Hand_" + side)
+    # Past the wrist. The land pose lays one side of this band on the shin.
+    cuff_x, cuff_z, cuff_limit = CUFF_VENT
+    ank_t0, ank_t1, ank_x, ank_z, ank_limit = CUFF_ANKLE
     _mark_bevel(make_loft(
-        pieces, body, outfit["cuff_name"] + side, "LowerArm_" + side, "Mesh_LowerArm_" + side, "cloth",
-        origin, axis, wrist_t - 0.032, wrist_t - 0.008, "sleeve", thick, None, True, 0.0,
+        pieces, body, outfit["cuff_name"] + side, "Hand_" + side, "Mesh_Hand_" + side, "cloth",
+        hand_origin, hand_axis, 0.055, 0.082, "sleeve", cloth,
+        _all_mask((
+            _cone_mask(_bone_dir(arm, "Hand_" + side, cuff_x, cuff_z), cuff_limit),
+            _cone_mask(_bone_local_x(arm, "Hand_" + side) * -1.0, CUFF_X),
+            _span_cone_mask(
+                hand_origin, hand_axis, _bone_dir(arm, "Hand_" + side, ank_x, ank_z),
+                ank_t0, ank_t1, ank_limit,
+            ),
+        )),
+        True, 0.0,
     ))
 
     origin, axis, _lo, _hi = _span(arm, body, "UpperLeg_" + side, "Mesh_UpperLeg_" + side)
     knee_t = _bone_t(arm, origin, axis, "LowerLeg_" + side)
     # The thigh root sits inside the pelvis. Start the shell below that bury.
     jog_t0 = max(hip, 0.255)
+    fold = dict(FOLD_OPEN)[("UpperLeg_", "LowerLeg_")]
+    keep = opening_direction(knee_row["bend"], knee_row["child_axis"], knee_row["rot_sign"])
+    thigh_t0, thigh_t1, thigh_x, thigh_z, thigh_limit = THIGH_VENT
     _mark_bevel(make_loft(
         pieces, body, "Lab_JogU%s%s" % (tag, side), "UpperLeg_" + side, "Mesh_UpperLeg_" + side, "cloth",
         origin, axis, jog_t0, knee_t - knee, "jog", cloth,
+        _and_mask(
+            _fold_mask(origin, axis, knee_t, fold, keep),
+            _span_cone_mask(
+                origin, axis, _bone_dir(arm, "UpperLeg_" + side, thigh_x, thigh_z),
+                thigh_t0, thigh_t1, thigh_limit,
+            ),
+        ),
     ))
     keep = opening_direction(knee_row["bend"], knee_row["child_axis"], knee_row["rot_sign"])
     _add_pad(
@@ -1205,13 +1381,28 @@ def _build_side(pieces, arm, body, outfit, insets, side):
         pieces, body, "Lab_JogHip%s%s" % (tag, side),
         "UpperLeg_" + side, "Mesh_UpperLeg_" + side,
         origin, axis, 0.205, 0.242, cloth, keep,
+        _cone_mask(_bone_local_x(arm, "UpperLeg_" + side), HIP_PAD_X),
     )
 
     origin, axis, _lo, _hi = _span(arm, body, "LowerLeg_" + side, "Mesh_LowerLeg_" + side)
     ankle_t = _bone_t(arm, origin, axis, "Foot_" + side)
+    keep = opening_direction(knee_row["bend"], knee_row["child_axis"], knee_row["rot_sign"])
+    calf_t0, calf_t1, calf_limit = CALF_VENT
+    shin_t0, shin_t1, shin_limit = SHIN_VENT
+    hand_t0, hand_t1, hand_x, hand_z, hand_limit = CALF_HAND
+    shin_dir = _bone_local_x(arm, "LowerLeg_" + side) * -1.0
     _mark_bevel(make_loft(
         pieces, body, "Lab_JogL%s%s" % (tag, side), "LowerLeg_" + side, "Mesh_LowerLeg_" + side, "cloth",
         origin, axis, knee, ankle_t - ankle - 0.022, "jog", cloth,
+        _all_mask((
+            _fold_mask(origin, axis, 0.0, fold, keep),
+            _calf_mask(origin, axis, _bone_local_z(arm, "LowerLeg_" + side), calf_t0, calf_t1, calf_limit),
+            _calf_mask(origin, axis, shin_dir, shin_t0, shin_t1, shin_limit),
+            _span_cone_mask(
+                origin, axis, _bone_dir(arm, "LowerLeg_" + side, hand_x, hand_z),
+                hand_t0, hand_t1, hand_limit,
+            ),
+        )),
     ))
     keep = opening_direction(ankle_row["bend"], ankle_row["child_axis"], ankle_row["rot_sign"])
     _add_pad(
@@ -1328,7 +1519,7 @@ def catalog(arm, body):
     )
     add_loft(
         "Lab_CollarBram", "Neck", "Mesh_Neck", "cloth",
-        Vector((0.0, 0.0, 0.0)), z_axis, n0 + (n1 - n0) * 0.02, n1 + 0.012,
+        Vector((0.0, 0.0, 0.0)), z_axis, n0 + (n1 - n0) * 0.02, n0 + (n1 - n0) * 0.50,
         "collar", 0.009, None,
     )
 
@@ -1939,6 +2130,11 @@ def measure(arm, body, pieces, sets, clips):
         log("CLIP %s frames %d" % (clip_name, len(times)))
         clip_body = 0.0
         clip_body_name = ""
+        clip_hit = None
+        clip_hit_depth = 0.0
+        clip_piece = {}
+        clip_cross = None
+        clip_cross_depth = 0.0
         for index, age in enumerate(times):
             show(arm, age, ctx)
             bpy.context.view_layer.update()
@@ -1958,6 +2154,12 @@ def measure(arm, body, pieces, sets, clips):
                     if depth > worst:
                         worst = depth
                         where = where_name
+                    if depth > clip_hit_depth:
+                        clip_hit_depth = depth
+                        clip_hit = (piece.name, rest.copy(), where_name, age)
+                    prev_piece = clip_piece.get(piece.name)
+                    if prev_piece is None or depth > prev_piece[0]:
+                        clip_piece[piece.name] = (depth, rest.copy(), where_name, age)
                     # Cut only what is inside past the 0.5 cm limit. Moving a vert
                     # off one bone shoves it into another.
                     if gap < -0.004:
@@ -1990,6 +2192,14 @@ def measure(arm, body, pieces, sets, clips):
                     if depth > 0.0:
                         cross[(a.name, b.name)] = depth
                         record_cross_push(pushes, a, b, posed, mats, segs, clip_name)
+                        if os.environ.get("COSTUME_DEBUG") == "1" and depth > clip_cross_depth:
+                            clip_cross_depth = depth
+                            into_b = _deepest_rest(a, b, posed, mats, segs)
+                            into_a = _deepest_rest(b, a, posed, mats, segs)
+                            sample = into_b
+                            if into_a is not None and (sample is None or into_a[2] > sample[2]):
+                                sample = into_a
+                            clip_cross = (a.name, b.name, age, depth, sample)
             for spec in sets:
                 names = spec["pieces"]
                 present = [name for name in names if name in by_name and by_name[name].vert_count() > 0]
@@ -2014,6 +2224,13 @@ def measure(arm, body, pieces, sets, clips):
                     worst_desc = "%s t=%.3f cm=%.2f" % (clip_name, age, depth_cm(local))
                 if local > clip_world:
                     clip_world = local
+                    if os.environ.get("COSTUME_DEBUG") == "1" and depth_cm(local) > depth_cm(clip_body) + 0.05:
+                        extra = ""
+                        for (a, b), depth in list(rest_pair.items()) + list(cross.items()):
+                            if a in name_set and b in name_set and abs(depth - local) < 1e-6:
+                                extra = "%s %s" % (a, b)
+                                break
+                        log("LOADOUT %s %s cm=%.2f pair=%s" % (clip_name, spec["id"], depth_cm(local), extra))
             if body_depth:
                 top_name, top_depth = max(body_depth.items(), key=lambda item: item[1])
                 if top_depth > clip_body:
@@ -2030,6 +2247,72 @@ def measure(arm, body, pieces, sets, clips):
                     ))
             if index % 20 == 0:
                 log("  %s %d/%d elapsed %.1f worst %s" % (clip_name, index, len(times), time.time() - t0, worst_desc))
+        if clip_hit is not None and os.environ.get("COSTUME_DEBUG") == "1":
+            hit_name, hit_rest, hit_where, hit_age = clip_hit
+            hit_piece = by_name[hit_name]
+            bone = arm.data.bones[hit_piece.bone]
+            head = bone.head_local
+            axis = (bone.tail_local - head).normalized()
+            rel = hit_rest - head
+            along = rel.dot(axis)
+            radial = rel - axis * along
+            unit = radial.normalized() if radial.length > 1e-6 else radial
+            rot = bone.matrix_local.to_3x3()
+            local_x = (rot @ Vector((1.0, 0.0, 0.0))).normalized()
+            local_z = (rot @ Vector((0.0, 0.0, 1.0))).normalized()
+            log(
+                "HIT %s t=%.3f %s->%s bone=%s len=%.3f along=%.3f r=%.3f radial=%s lx=%.2f lz=%.2f"
+                % (
+                    clip_name, hit_age, hit_name, hit_where, hit_piece.bone,
+                    (bone.tail_local - head).length, along, radial.length, _fmt_vec(unit),
+                    unit.dot(local_x), unit.dot(local_z),
+                )
+            )
+            ranked = sorted(clip_piece.items(), key=lambda item: item[1][0], reverse=True)
+            for piece_name, (depth, rest, where_name, age) in ranked:
+                if depth_cm(depth) <= PEN_CM:
+                    break
+                piece = by_name[piece_name]
+                bone = arm.data.bones[piece.bone]
+                head = bone.head_local
+                axis = (bone.tail_local - head).normalized()
+                rel = rest - head
+                along = rel.dot(axis)
+                radial = rel - axis * along
+                unit = radial.normalized() if radial.length > 1e-6 else radial
+                rot = bone.matrix_local.to_3x3()
+                local_x = (rot @ Vector((1.0, 0.0, 0.0))).normalized()
+                local_z = (rot @ Vector((0.0, 0.0, 1.0))).normalized()
+                log(
+                    "PIECE %s t=%.3f %s->%s along=%.3f r=%.3f lx=%.2f lz=%.2f cm=%.2f"
+                    % (
+                        clip_name, age, piece_name, where_name, along, radial.length,
+                        unit.dot(local_x), unit.dot(local_z), depth_cm(depth),
+                    )
+                )
+        if clip_cross is not None and os.environ.get("COSTUME_DEBUG") == "1":
+            a_name, b_name, age, depth, sample = clip_cross
+            extra = ""
+            if sample is not None:
+                src_name, rest, _src_depth = sample
+                piece = by_name[src_name]
+                bone = arm.data.bones[piece.bone]
+                head = bone.head_local
+                axis = (bone.tail_local - head).normalized()
+                rel = rest - head
+                along = rel.dot(axis)
+                radial = rel - axis * along
+                unit = radial.normalized() if radial.length > 1e-6 else radial
+                rot = bone.matrix_local.to_3x3()
+                local_x = (rot @ Vector((1.0, 0.0, 0.0))).normalized()
+                local_z = (rot @ Vector((0.0, 0.0, 1.0))).normalized()
+                extra = " src=%s along=%.3f lx=%.2f lz=%.2f" % (
+                    src_name, along, unit.dot(local_x), unit.dot(local_z),
+                )
+            log(
+                "CROSS %s t=%.3f %s %s cm=%.2f%s"
+                % (clip_name, age, a_name, b_name, depth_cm(depth), extra)
+            )
         log(
             "CLIP-FIT %s worldMax=%.2f frames=%d fails=%d body=%s %.2f"
             % (
@@ -2119,6 +2402,26 @@ def point_in_bounds(point, bounds, pad=0.004):
         and bounds[0][1] - pad <= point.y <= bounds[1][1] + pad
         and bounds[0][2] - pad <= point.z <= bounds[1][2] + pad
     )
+
+
+def _deepest_rest(src, dst, posed, mats, segs):
+    """Rest-space sample of src that sits deepest in dst."""
+    dst_m = mats[dst.bone]
+    worst = 0.0
+    found = None
+    for ci, chain in enumerate(src.chains):
+        for ri, ring in enumerate(chain):
+            for si, rest in enumerate(ring):
+                if rest is None:
+                    continue
+                world_v = posed[src.name][ci][ri][si]
+                depth = piece_volume_depth(world_v, segs[dst.name], dst.boxes, dst_m)
+                if depth > worst:
+                    worst = depth
+                    found = rest.copy()
+    if found is None:
+        return None
+    return src.name, found, worst
 
 
 def cross_depth(a, b, posed, mats, segs, bounds):

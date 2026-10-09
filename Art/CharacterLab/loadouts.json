@@ -60,17 +60,17 @@
         {
           "lod": 0,
           "mesh": "LOD0",
-          "tris": 8668
+          "tris": 7212
         },
         {
           "lod": 1,
           "mesh": "LOD1",
-          "tris": 4946
+          "tris": 3325
         },
         {
           "lod": 2,
           "mesh": "LOD2",
-          "tris": 3151
+          "tris": 2141
         }
       ]
     },
@@ -135,17 +135,17 @@
         {
           "lod": 0,
           "mesh": "LOD0",
-          "tris": 8682
+          "tris": 7226
         },
         {
           "lod": 1,
           "mesh": "LOD1",
-          "tris": 4892
+          "tris": 3593
         },
         {
           "lod": 2,
           "mesh": "LOD2",
-          "tris": 2911
+          "tris": 2315
         }
       ]
     },
@@ -209,17 +209,17 @@
         {
           "lod": 0,
           "mesh": "LOD0",
-          "tris": 8660
+          "tris": 7204
         },
         {
           "lod": 1,
           "mesh": "LOD1",
-          "tris": 4891
+          "tris": 3358
         },
         {
           "lod": 2,
           "mesh": "LOD2",
-          "tris": 3102
+          "tris": 2164
         }
       ]
     },
@@ -280,17 +280,17 @@
         {
           "lod": 0,
           "mesh": "LOD0",
-          "tris": 7968
+          "tris": 6512
         },
         {
           "lod": 1,
           "mesh": "LOD1",
-          "tris": 4562
+          "tris": 2954
         },
         {
           "lod": 2,
           "mesh": "LOD2",
-          "tris": 2883
+          "tris": 1904
         }
       ]
     },
@@ -352,17 +352,17 @@
         {
           "lod": 0,
           "mesh": "LOD0",
-          "tris": 8112
+          "tris": 6656
         },
         {
           "lod": 1,
           "mesh": "LOD1",
-          "tris": 4636
+          "tris": 3076
         },
         {
           "lod": 2,
           "mesh": "LOD2",
-          "tris": 2917
+          "tris": 1982
         }
       ]
     },
@@ -424,17 +424,17 @@
         {
           "lod": 0,
           "mesh": "LOD0",
-          "tris": 8056
+          "tris": 6640
         },
         {
           "lod": 1,
           "mesh": "LOD1",
-          "tris": 4607
+          "tris": 3060
         },
         {
           "lod": 2,
           "mesh": "LOD2",
-          "tris": 2903
+          "tris": 1973
         }
       ]
     },
@@ -489,17 +489,17 @@
         {
           "lod": 0,
           "mesh": "LOD0",
-          "tris": 5458
+          "tris": 5434
         },
         {
           "lod": 1,
           "mesh": "LOD1",
-          "tris": 3220
+          "tris": 2680
         },
         {
           "lod": 2,
           "mesh": "LOD2",
-          "tris": 2143
+          "tris": 1726
         }
       ]
     },
@@ -552,17 +552,17 @@
         {
           "lod": 0,
           "mesh": "LOD0",
-          "tris": 5094
+          "tris": 5070
         },
         {
           "lod": 1,
           "mesh": "LOD1",
-          "tris": 3033
+          "tris": 2391
         },
         {
           "lod": 2,
           "mesh": "LOD2",
-          "tris": 2056
+          "tris": 1539
         }
       ]
     },
@@ -616,17 +616,17 @@
         {
           "lod": 0,
           "mesh": "LOD0",
-          "tris": 5436
+          "tris": 5412
         },
         {
           "lod": 1,
           "mesh": "LOD1",
-          "tris": 3219
+          "tris": 2445
         },
         {
           "lod": 2,
           "mesh": "LOD2",
-          "tris": 2334
+          "tris": 1575
         }
       ]
     },
@@ -691,17 +691,17 @@
         {
           "lod": 0,
           "mesh": "LOD0",
-          "tris": 8650
+          "tris": 7194
         },
         {
           "lod": 1,
           "mesh": "LOD1",
-          "tris": 4876
+          "tris": 3566
         },
         {
           "lod": 2,
           "mesh": "LOD2",
-          "tris": 2903
+          "tris": 2298
         }
       ]
     },
@@ -765,17 +765,17 @@
         {
           "lod": 0,
           "mesh": "LOD0",
-          "tris": 8668
+          "tris": 7212
         },
         {
           "lod": 1,
           "mesh": "LOD1",
-          "tris": 4946
+          "tris": 3325
         },
         {
           "lod": 2,
           "mesh": "LOD2",
-          "tris": 3151
+          "tris": 2141
         }
       ]
     },
@@ -840,71 +840,71 @@
         {
           "lod": 0,
           "mesh": "LOD0",
-          "tris": 8804
+          "tris": 7348
         },
         {
           "lod": 1,
           "mesh": "LOD1",
-          "tris": 4965
+          "tris": 3480
         },
         {
           "lod": 2,
           "mesh": "LOD2",
-          "tris": 3136
+          "tris": 2242
         }
       ]
     }
   ],
   "tris": {
     "pieces": {
-      "Lab_HoodieChest": 1272,
+      "Lab_HoodieChest": 1280,
       "Lab_HoodieSpine": 0,
       "Lab_HoodieHips": 108,
       "Lab_SleeveShL": 236,
       "Lab_SleeveUL": 462,
       "Lab_SleeveElbowL": 22,
       "Lab_SleeveLL": 520,
-      "Lab_SleeveCuffL": 520,
+      "Lab_SleeveCuffL": 200,
       "Lab_JogUL": 572,
       "Lab_JogKneeL": 32,
-      "Lab_JogHipL": 32,
-      "Lab_JogLL": 572,
+      "Lab_JogHipL": 16,
+      "Lab_JogLL": 176,
       "Lab_JogAnkleL": 20,
       "Lab_ShoeL": 108,
       "Lab_SleeveShR": 236,
       "Lab_SleeveUR": 462,
       "Lab_SleeveElbowR": 30,
       "Lab_SleeveLR": 520,
-      "Lab_SleeveCuffR": 520,
+      "Lab_SleeveCuffR": 200,
       "Lab_JogUR": 572,
       "Lab_JogKneeR": 32,
-      "Lab_JogHipR": 32,
-      "Lab_JogLR": 572,
+      "Lab_JogHipR": 16,
+      "Lab_JogLR": 176,
       "Lab_JogAnkleR": 20,
       "Lab_ShoeR": 108,
-      "Lab_HoodieBramChest": 1272,
+      "Lab_HoodieBramChest": 1280,
       "Lab_HoodieBramSpine": 0,
       "Lab_HoodieBramHips": 92,
       "Lab_SleeveBramShL": 236,
       "Lab_SleeveUBramL": 464,
       "Lab_SleeveElbowBramL": 24,
       "Lab_SleeveLBramL": 520,
-      "Lab_SleeveBramCuffL": 520,
+      "Lab_SleeveBramCuffL": 200,
       "Lab_JogUBramL": 572,
       "Lab_JogKneeBramL": 32,
-      "Lab_JogHipBramL": 32,
-      "Lab_JogLBramL": 572,
+      "Lab_JogHipBramL": 16,
+      "Lab_JogLBramL": 176,
       "Lab_JogAnkleBramL": 20,
       "Lab_ShoeBramL": 108,
       "Lab_SleeveBramShR": 236,
       "Lab_SleeveUBramR": 464,
       "Lab_SleeveElbowBramR": 32,
       "Lab_SleeveLBramR": 520,
-      "Lab_SleeveBramCuffR": 520,
+      "Lab_SleeveBramCuffR": 200,
       "Lab_JogUBramR": 572,
       "Lab_JogKneeBramR": 32,
-      "Lab_JogHipBramR": 32,
-      "Lab_JogLBramR": 572,
+      "Lab_JogHipBramR": 16,
+      "Lab_JogLBramR": 176,
       "Lab_JogAnkleBramR": 20,
       "Lab_ShoeBramR": 108,
       "Lab_Hood": 658,
@@ -912,7 +912,7 @@
       "Lab_Cap": 440,
       "Lab_CapBeanie": 396,
       "Lab_Collar": 112,
-      "Lab_CollarBram": 88,
+      "Lab_CollarBram": 128,
       "Lab_Brim": 200,
       "Lab_Visor": 96,
       "Lab_Hair": 420,
@@ -925,154 +925,154 @@
       "Lab_CordR": 12
     },
     "worn": {
-      "Reed_1_Hood": 8668,
-      "Reed_2_Cap": 8682,
-      "Reed_3_Helmet": 8660,
-      "Bram_1_Beanie": 7968,
-      "Bram_2_Jacket": 8112,
-      "Bram_3_Collar": 8056,
-      "Pip_1_Cap": 5458,
-      "Pip_2_Hair": 5094,
-      "Pip_3_Helmet": 5436,
-      "Sol_1_Collar_Cap": 8650,
-      "Sol_2_Hood": 8668,
-      "Sol_3_Helmet_Pack": 8804
+      "Reed_1_Hood": 7212,
+      "Reed_2_Cap": 7226,
+      "Reed_3_Helmet": 7204,
+      "Bram_1_Beanie": 6512,
+      "Bram_2_Jacket": 6656,
+      "Bram_3_Collar": 6640,
+      "Pip_1_Cap": 5434,
+      "Pip_2_Hair": 5070,
+      "Pip_3_Helmet": 5412,
+      "Sol_1_Collar_Cap": 7194,
+      "Sol_2_Hood": 7212,
+      "Sol_3_Helmet_Pack": 7348
     },
     "lod1": {
-      "Lab_Brim": 104,
-      "Lab_Cap": 227,
-      "Lab_CapBeanie": 247,
-      "Lab_Collar": 58,
-      "Lab_CollarBram": 45,
+      "Lab_Brim": 169,
+      "Lab_Cap": 354,
+      "Lab_CapBeanie": 172,
+      "Lab_Collar": 95,
+      "Lab_CollarBram": 106,
       "Lab_CordL": 0,
-      "Lab_CordR": 6,
-      "Lab_Hair": 218,
-      "Lab_Helmet": 355,
-      "Lab_Hood": 401,
-      "Lab_HoodRoll": 58,
-      "Lab_HoodieBramChest": 1036,
-      "Lab_HoodieBramHips": 64,
+      "Lab_CordR": 10,
+      "Lab_Hair": 356,
+      "Lab_Helmet": 330,
+      "Lab_Hood": 282,
+      "Lab_HoodRoll": 95,
+      "Lab_HoodieBramChest": 306,
+      "Lab_HoodieBramHips": 19,
       "Lab_HoodieBramSpine": 0,
-      "Lab_HoodieChest": 1036,
-      "Lab_HoodieHips": 80,
+      "Lab_HoodieChest": 306,
+      "Lab_HoodieHips": 23,
       "Lab_HoodieSpine": 0,
-      "Lab_JogAnkleBramL": 10,
-      "Lab_JogAnkleBramR": 10,
-      "Lab_JogAnkleL": 10,
-      "Lab_JogAnkleR": 10,
-      "Lab_JogHipBramL": 16,
-      "Lab_JogHipBramR": 16,
-      "Lab_JogHipL": 16,
-      "Lab_JogHipR": 16,
-      "Lab_JogKneeBramL": 15,
-      "Lab_JogKneeBramR": 16,
-      "Lab_JogKneeL": 16,
-      "Lab_JogKneeR": 15,
-      "Lab_JogLBramL": 296,
-      "Lab_JogLBramR": 296,
-      "Lab_JogLL": 296,
-      "Lab_JogLR": 296,
-      "Lab_JogUBramL": 296,
-      "Lab_JogUBramR": 296,
-      "Lab_JogUL": 296,
-      "Lab_JogUR": 296,
-      "Lab_Pack": 74,
-      "Lab_PackBram": 74,
-      "Lab_Pocket": 40,
-      "Lab_Seam": 124,
-      "Lab_ShoeBramL": 57,
-      "Lab_ShoeBramR": 57,
-      "Lab_ShoeL": 57,
-      "Lab_ShoeR": 57,
-      "Lab_SleeveBramCuffL": 270,
-      "Lab_SleeveBramCuffR": 270,
-      "Lab_SleeveBramShL": 122,
-      "Lab_SleeveBramShR": 122,
-      "Lab_SleeveCuffL": 270,
-      "Lab_SleeveCuffR": 270,
-      "Lab_SleeveElbowBramL": 12,
-      "Lab_SleeveElbowBramR": 16,
-      "Lab_SleeveElbowL": 10,
-      "Lab_SleeveElbowR": 14,
-      "Lab_SleeveLBramL": 270,
-      "Lab_SleeveLBramR": 270,
-      "Lab_SleeveLL": 270,
-      "Lab_SleeveLR": 270,
-      "Lab_SleeveShL": 122,
-      "Lab_SleeveShR": 122,
-      "Lab_SleeveUBramL": 241,
-      "Lab_SleeveUBramR": 241,
-      "Lab_SleeveUL": 239,
-      "Lab_SleeveUR": 239,
-      "Lab_Visor": 49
+      "Lab_JogAnkleBramL": 16,
+      "Lab_JogAnkleBramR": 16,
+      "Lab_JogAnkleL": 16,
+      "Lab_JogAnkleR": 16,
+      "Lab_JogHipBramL": 13,
+      "Lab_JogHipBramR": 13,
+      "Lab_JogHipL": 13,
+      "Lab_JogHipR": 13,
+      "Lab_JogKneeBramL": 26,
+      "Lab_JogKneeBramR": 27,
+      "Lab_JogKneeL": 26,
+      "Lab_JogKneeR": 27,
+      "Lab_JogLBramL": 68,
+      "Lab_JogLBramR": 68,
+      "Lab_JogLL": 68,
+      "Lab_JogLR": 68,
+      "Lab_JogUBramL": 207,
+      "Lab_JogUBramR": 224,
+      "Lab_JogUL": 207,
+      "Lab_JogUR": 224,
+      "Lab_Pack": 122,
+      "Lab_PackBram": 122,
+      "Lab_Pocket": 66,
+      "Lab_Seam": 102,
+      "Lab_ShoeBramL": 75,
+      "Lab_ShoeBramR": 75,
+      "Lab_ShoeL": 75,
+      "Lab_ShoeR": 75,
+      "Lab_SleeveBramCuffL": 76,
+      "Lab_SleeveBramCuffR": 68,
+      "Lab_SleeveBramShL": 200,
+      "Lab_SleeveBramShR": 199,
+      "Lab_SleeveCuffL": 76,
+      "Lab_SleeveCuffR": 68,
+      "Lab_SleeveElbowBramL": 20,
+      "Lab_SleeveElbowBramR": 26,
+      "Lab_SleeveElbowL": 18,
+      "Lab_SleeveElbowR": 24,
+      "Lab_SleeveLBramL": 322,
+      "Lab_SleeveLBramR": 311,
+      "Lab_SleeveLL": 322,
+      "Lab_SleeveLR": 311,
+      "Lab_SleeveShL": 200,
+      "Lab_SleeveShR": 199,
+      "Lab_SleeveUBramL": 209,
+      "Lab_SleeveUBramR": 198,
+      "Lab_SleeveUL": 207,
+      "Lab_SleeveUR": 198,
+      "Lab_Visor": 80
     },
     "lod2": {
-      "Lab_Brim": 48,
-      "Lab_Cap": 105,
-      "Lab_CapBeanie": 247,
-      "Lab_Collar": 26,
-      "Lab_CollarBram": 20,
+      "Lab_Brim": 110,
+      "Lab_Cap": 229,
+      "Lab_CapBeanie": 112,
+      "Lab_Collar": 61,
+      "Lab_CollarBram": 69,
       "Lab_CordL": 0,
-      "Lab_CordR": 4,
-      "Lab_Hair": 100,
-      "Lab_Helmet": 355,
-      "Lab_Hood": 401,
-      "Lab_HoodRoll": 26,
-      "Lab_HoodieBramChest": 1036,
-      "Lab_HoodieBramHips": 64,
+      "Lab_CordR": 6,
+      "Lab_Hair": 230,
+      "Lab_Helmet": 214,
+      "Lab_Hood": 182,
+      "Lab_HoodRoll": 61,
+      "Lab_HoodieBramChest": 198,
+      "Lab_HoodieBramHips": 13,
       "Lab_HoodieBramSpine": 0,
-      "Lab_HoodieChest": 1036,
-      "Lab_HoodieHips": 80,
+      "Lab_HoodieChest": 198,
+      "Lab_HoodieHips": 15,
       "Lab_HoodieSpine": 0,
-      "Lab_JogAnkleBramL": 4,
-      "Lab_JogAnkleBramR": 4,
-      "Lab_JogAnkleL": 4,
-      "Lab_JogAnkleR": 4,
-      "Lab_JogHipBramL": 7,
-      "Lab_JogHipBramR": 7,
-      "Lab_JogHipL": 7,
-      "Lab_JogHipR": 7,
-      "Lab_JogKneeBramL": 7,
-      "Lab_JogKneeBramR": 7,
-      "Lab_JogKneeL": 7,
-      "Lab_JogKneeR": 7,
-      "Lab_JogLBramL": 136,
-      "Lab_JogLBramR": 136,
-      "Lab_JogLL": 136,
-      "Lab_JogLR": 136,
-      "Lab_JogUBramL": 136,
-      "Lab_JogUBramR": 136,
-      "Lab_JogUL": 136,
-      "Lab_JogUR": 136,
-      "Lab_Pack": 34,
-      "Lab_PackBram": 34,
-      "Lab_Pocket": 18,
-      "Lab_Seam": 57,
-      "Lab_ShoeBramL": 57,
-      "Lab_ShoeBramR": 57,
-      "Lab_ShoeL": 57,
-      "Lab_ShoeR": 57,
-      "Lab_SleeveBramCuffL": 124,
-      "Lab_SleeveBramCuffR": 124,
-      "Lab_SleeveBramShL": 56,
-      "Lab_SleeveBramShR": 56,
-      "Lab_SleeveCuffL": 124,
-      "Lab_SleeveCuffR": 124,
-      "Lab_SleeveElbowBramL": 5,
-      "Lab_SleeveElbowBramR": 7,
-      "Lab_SleeveElbowL": 5,
-      "Lab_SleeveElbowR": 7,
-      "Lab_SleeveLBramL": 124,
-      "Lab_SleeveLBramR": 124,
-      "Lab_SleeveLL": 124,
-      "Lab_SleeveLR": 124,
-      "Lab_SleeveShL": 56,
-      "Lab_SleeveShR": 56,
-      "Lab_SleeveUBramL": 111,
-      "Lab_SleeveUBramR": 111,
-      "Lab_SleeveUL": 109,
-      "Lab_SleeveUR": 110,
-      "Lab_Visor": 23
+      "Lab_JogAnkleBramL": 11,
+      "Lab_JogAnkleBramR": 11,
+      "Lab_JogAnkleL": 11,
+      "Lab_JogAnkleR": 11,
+      "Lab_JogHipBramL": 8,
+      "Lab_JogHipBramR": 8,
+      "Lab_JogHipL": 8,
+      "Lab_JogHipR": 8,
+      "Lab_JogKneeBramL": 17,
+      "Lab_JogKneeBramR": 17,
+      "Lab_JogKneeL": 16,
+      "Lab_JogKneeR": 17,
+      "Lab_JogLBramL": 44,
+      "Lab_JogLBramR": 44,
+      "Lab_JogLL": 44,
+      "Lab_JogLR": 44,
+      "Lab_JogUBramL": 133,
+      "Lab_JogUBramR": 144,
+      "Lab_JogUL": 133,
+      "Lab_JogUR": 144,
+      "Lab_Pack": 78,
+      "Lab_PackBram": 78,
+      "Lab_Pocket": 41,
+      "Lab_Seam": 66,
+      "Lab_ShoeBramL": 48,
+      "Lab_ShoeBramR": 48,
+      "Lab_ShoeL": 48,
+      "Lab_ShoeR": 48,
+      "Lab_SleeveBramCuffL": 48,
+      "Lab_SleeveBramCuffR": 44,
+      "Lab_SleeveBramShL": 128,
+      "Lab_SleeveBramShR": 128,
+      "Lab_SleeveCuffL": 48,
+      "Lab_SleeveCuffR": 44,
+      "Lab_SleeveElbowBramL": 12,
+      "Lab_SleeveElbowBramR": 16,
+      "Lab_SleeveElbowL": 12,
+      "Lab_SleeveElbowR": 16,
+      "Lab_SleeveLBramL": 208,
+      "Lab_SleeveLBramR": 201,
+      "Lab_SleeveLL": 208,
+      "Lab_SleeveLR": 201,
+      "Lab_SleeveShL": 128,
+      "Lab_SleeveShR": 128,
+      "Lab_SleeveUBramL": 135,
+      "Lab_SleeveUBramR": 128,
+      "Lab_SleeveUL": 133,
+      "Lab_SleeveUR": 128,
+      "Lab_Visor": 52
     }
   },
   "colors": {
