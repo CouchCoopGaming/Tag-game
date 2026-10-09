@@ -7,7 +7,7 @@ Re-checked 9 Oct 2026 with the tightened still and LOD rules. Rig worker #128 le
 | #128 | `b804954f` | `pass=0/7` paper 5 / geom 2 | `models-validate assets=7 pass=0 fail=7` / `models-split paperwork=5 geometry=2` |
 | #131 | `e5b34c0e` | `pass=0/18` paper 5 / geom 13 | `models-validate assets=18 pass=0 fail=18` / `models-split paperwork=5 geometry=13` |
 
-#128 moved, and the graded Hier files did not. Colour Hier FBX hashes differ from `Dummy_Mannequin_Tan_Hier_Hi`, so they do not inherit the tan stills. No pass to spot-check.
+#128 moved, and the graded Hier files did not. Colour Hier geometry (positions, indices, UVs) differs from `Dummy_Mannequin_Tan_Hier_Hi`, so they are not `material-variant` of the tan body and do not inherit its stills. No pass to spot-check.
 
 ## Rig (#128)
 

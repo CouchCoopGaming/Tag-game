@@ -107,7 +107,7 @@ Art/CharacterLab/                           (costume prep, not in the player bui
 
 The builder for a library asset is `Tools/Blender/AssetLibrary/<snake>.py` or `vehicles/<snake>.py`. Rebuild from that script. Do not hand-edit the FBX.
 
-Player colour variants share the tan Hier stills only when that FBX is byte-identical to `Dummy_Mannequin_Tan_Hier_Hi`. A different mesh needs its own quartet. A colour, year, or variant sibling (`Sedan_Mid_A_25`, `Sedan_Mid_A_25_White`, `Bus_City40_Blue`, `Container_20_Green`, `FireHydrant_Red`) is its own manifest row and needs its own still quartet. It may use another asset's stills only when the FBX bytes are identical. `street` and `corner` are part of the object name: `Planter` does not match `planter_street`, and `WoodFence_Corner` does not match `woodfence`.
+Player colour variants share the tan Hier stills only when the mesh geometry matches `Dummy_Mannequin_Tan_Hier_Hi`. A different cage needs its own quartet. A colour, year, or variant sibling (`Sedan_Mid_A_25`, `Sedan_Mid_A_25_White`, `Bus_City40_Blue`, `Container_20_Green`, `FireHydrant_Red`) is its own manifest row. It may use the base quartet when vertex positions, indices, and UVs match on every LOD. The line then reads `material-variant of <base>`. A different geometry hash needs its own quartet. `street` and `corner` are part of the object name: `Planter` does not match `planter_street`, and `WoodFence_Corner` does not match `woodfence`.
 
 ## 6. Pivot and orientation
 
@@ -162,7 +162,7 @@ A PNG or JPEG sitting outside a `passN` directory does not count. `before_` / `a
 
 Every asset gets a `stillsCheck`. It is the quartet above: each role present in a `passN` folder, 1280×720 or larger, under 400 KB. The check record is on the validator row. A catalog frame at 960×540 fails it.
 
-The quartet is matched on the full asset name. A shorter still — a family folder, or a frame whose name drops a colour, year, or variant token — is shared only when every asset that name prefixes has the same FBX SHA-256. If any of those meshes differ, only the asset whose tokens equal the still may use it. `street` and `corner` in the file name are significant tokens. They are not folder noise and they are not optional suffixes. Costumes match their own id. They do not share one lineup, and `loadouts.json` is not a mesh hash.
+The quartet is matched on the full asset name. A shorter still — a family folder, or a frame whose name drops a colour, year, or variant token — is shared only when every asset that name prefixes has the same geometry hash: vertex positions, polygon indices, and UVs, per LOD. Material and colour are not in that hash. A paint sibling that matches is accepted on the base quartet and printed as `material-variant of <base>`. If any geometry hash differs, only the asset whose tokens equal the still may use it. `street` and `corner` in the file name are significant tokens. They are not folder noise and they are not optional suffixes. Costumes match their own id. They do not share one lineup, and `loadouts.json` is not a mesh hash.
 
 ## 10. Player rig
 

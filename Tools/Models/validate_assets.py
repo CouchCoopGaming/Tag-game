@@ -732,10 +732,11 @@ def tokens_prefix(tokens, prefix):
 def still_allowed(still_tokens, asset_tokens, asset_hash, population):
     """Exact name always. A shorter still only when every prefixed mesh matches.
 
-    `population` is `(tokens, sha256)` for each mesh asset. A family still such
-    as `sedan_mid_a` is a token prefix of `Sedan_Mid_A_22`. It may be borrowed
-    only when every asset that prefix covers has the same FBX SHA-256. A
-    missing digest denies the borrow. `loadouts.json` is not a mesh digest.
+    `population` is `(tokens, geometry sha256, ...)`. A family still such as
+    `sedan_mid_a` is a token prefix of `Sedan_Mid_A_22`. It may be borrowed
+    only when every asset that prefix covers has the same geometry hash
+    (positions, indices, UVs per LOD). A material or colour change matches.
+    A different cage does not. A missing digest denies the borrow.
     """
     still_tokens = list(still_tokens)
     asset_tokens = list(asset_tokens)
@@ -745,20 +746,179 @@ def still_allowed(still_tokens, asset_tokens, asset_hash, population):
         return False
     if len(still_tokens) >= len(asset_tokens) or asset_hash is None:
         return False
-    group = [digest for tokens, digest in population if tokens_prefix(tokens, still_tokens)]
+    group = [item[1] for item in population if tokens_prefix(item[0], still_tokens)]
     return bool(group) and all(digest is not None and digest == asset_hash for digest in group)
 
 
+def _fbx_nodes(data):
+    """Top-level nodes of a binary FBX. Array properties are ('array', raw)."""
+    if not data or not data.startswith(b"Kaydara FBX Binary") or len(data) < 27:
+        return None
+    version = struct.unpack_from("<I", data, 23)[0]
+    is64 = version >= 7500
+    offset = 27
+
+    def read_array(pos):
+        length, encoding, compressed = struct.unpack_from("<III", data, pos)
+        pos += 12
+        raw = data[pos:pos + compressed]
+        pos += compressed
+        if encoding == 1:
+            raw = zlib.decompress(raw)
+        elif encoding != 0:
+            return pos, None
+        return pos, raw
+
+    def read_node(pos):
+        if is64:
+            end, count, prop_len = struct.unpack_from("<QQQ", data, pos)
+            pos += 24
+            null_size = 25
+        else:
+            end, count, prop_len = struct.unpack_from("<III", data, pos)
+            pos += 12
+            null_size = 13
+        if end == 0 and count == 0 and prop_len == 0:
+            return pos, None
+        name_len = data[pos]
+        pos += 1
+        name = data[pos:pos + name_len].decode("latin1", "replace")
+        pos += name_len
+        props = []
+        for _index in range(count):
+            kind = chr(data[pos])
+            pos += 1
+            if kind == "Y":
+                props.append(struct.unpack_from("<h", data, pos)[0])
+                pos += 2
+            elif kind == "C":
+                props.append(data[pos])
+                pos += 1
+            elif kind == "I":
+                props.append(struct.unpack_from("<i", data, pos)[0])
+                pos += 4
+            elif kind == "F":
+                props.append(struct.unpack_from("<f", data, pos)[0])
+                pos += 4
+            elif kind == "D":
+                props.append(struct.unpack_from("<d", data, pos)[0])
+                pos += 8
+            elif kind == "L":
+                props.append(struct.unpack_from("<q", data, pos)[0])
+                pos += 8
+            elif kind in "fdlib":
+                pos, raw = read_array(pos)
+                props.append(("array", raw if raw is not None else b""))
+            elif kind in "SR":
+                size = struct.unpack_from("<I", data, pos)[0]
+                pos += 4
+                props.append(data[pos:pos + size])
+                pos += size
+            else:
+                raise ValueError("fbx type %s" % kind)
+        children = []
+        while pos < end:
+            if is64:
+                end2, count2, prop2 = struct.unpack_from("<QQQ", data, pos)
+            else:
+                end2, count2, prop2 = struct.unpack_from("<III", data, pos)
+            if end2 == 0 and count2 == 0 and prop2 == 0:
+                pos += null_size
+                break
+            pos, child = read_node(pos)
+            if child:
+                children.append(child)
+        return pos, (name, props, children)
+
+    nodes = []
+    while offset < len(data) - 16:
+        if is64:
+            end2, count2, prop2 = struct.unpack_from("<QQQ", data, offset)
+        else:
+            end2, count2, prop2 = struct.unpack_from("<III", data, offset)
+        if end2 == 0 and count2 == 0 and prop2 == 0:
+            break
+        offset, node = read_node(offset)
+        if node:
+            nodes.append(node)
+    return nodes
+
+
+def geometry_digest(data):
+    """SHA-256 of vertex positions, indices, and UVs for each LOD mesh.
+
+    Material names and colour are not part of the hash. A paint sibling of
+    the same cage matches. A different cage does not. When the file has
+    LOD0 / LOD1 / LOD2 geometries, only those are hashed, in LOD order.
+    """
+    nodes = _fbx_nodes(data)
+    if not nodes:
+        return None
+    found = []
+
+    def take_arrays(node, chunks):
+        name, props, children = node
+        if name in ("Vertices", "PolygonVertexIndex", "UV", "UVIndex"):
+            for prop in props:
+                if isinstance(prop, tuple) and prop[0] == "array" and prop[1]:
+                    chunks.append(name.encode("ascii"))
+                    chunks.append(prop[1])
+        for child in children:
+            take_arrays(child, chunks)
+
+    def walk(node):
+        name, props, children = node
+        if name == "Geometry":
+            label = ""
+            if len(props) > 1 and isinstance(props[1], (bytes, bytearray)):
+                label = props[1].split(b"\x00", 1)[0].decode("latin1", "replace")
+            chunks = []
+            for child in children:
+                take_arrays(child, chunks)
+            if chunks:
+                found.append((label, chunks))
+        for child in children:
+            walk(child)
+
+    for node in nodes:
+        if node[0] == "Objects":
+            walk(node)
+    if not found:
+        return None
+    lods = [item for item in found if re.fullmatch(r"LOD\d+", item[0])]
+    chosen = lods if lods else found
+
+    def sort_key(item):
+        match = re.fullmatch(r"LOD(\d+)", item[0])
+        if match:
+            return (0, int(match.group(1)), item[0])
+        return (1, 0, item[0])
+
+    hasher = hashlib.sha256()
+    for label, chunks in sorted(chosen, key=sort_key):
+        hasher.update(b"mesh\0")
+        hasher.update(label.encode("utf-8", "replace"))
+        hasher.update(b"\0")
+        for chunk in chunks:
+            hasher.update(struct.pack("<I", len(chunk)))
+            hasher.update(chunk)
+    return hasher.hexdigest()
+
+
 def mesh_digest(root, rel):
+    """Geometry hash of an asset file. `loadouts.json` is not a mesh."""
     if not rel:
         return None
-    if os.path.basename(rel).lower() == "loadouts.json":
+    if os.path.basename(str(rel)).lower() == "loadouts.json":
         return None
     path = rel if os.path.isabs(rel) else os.path.join(root, *str(rel).split("/"))
     blob = file_blob(path)
     if not blob:
         return None
-    return hashlib.sha256(blob).hexdigest()
+    try:
+        return geometry_digest(blob)
+    except (ValueError, zlib.error, struct.error, IndexError):
+        return None
 
 
 def still_in_scope(row, scope, category):
@@ -836,30 +996,56 @@ def borrowed_best(index, asset_tokens, asset_hash, population, scope, category):
     return best
 
 
+def variant_base(still_tokens, asset_name, asset_category, population):
+    """The asset whose name the still spells, when this row is a sibling."""
+    matches = []
+    for item in population:
+        tokens, _digest, name = item[0], item[1], item[2]
+        category = item[3] if len(item) > 3 else None
+        if list(tokens) == list(still_tokens) and name != asset_name:
+            matches.append((category, name))
+    if not matches:
+        return None
+    same = [name for category, name in matches if category == asset_category]
+    pool = same or [name for _category, name in matches]
+    pool.sort(key=lambda name: (len(name), name))
+    return pool[0]
+
+
 def fill_borrowed(row, index, population, scope):
     best = borrowed_best(
         index, row.get("_tokens") or [], row.get("_digest"), population, scope, row.get("category"),
     )
     report = row.get("stillsCheck") or empty_stills()
     roles = report.setdefault("roles", {})
+    borrowed_from = None
     for role, still in best.items():
         info = roles.get(role) or {}
         if info.get("ok"):
             continue
         borrowed = role_info_from_still(still)
-        if borrowed.get("ok") or not info.get("path"):
-            roles[role] = borrowed
+        if not (borrowed.get("ok") or not info.get("path")):
+            continue
+        roles[role] = borrowed
+        if list(still.get("tokens") or []) == list(row.get("_tokens") or []):
+            continue
+        base = variant_base(still.get("tokens") or [], row.get("name"), row.get("category"), population)
+        if base:
+            borrowed_from = base
     row["stillsCheck"] = report
     refresh_stills(row)
+    if borrowed_from:
+        row["variantOf"] = borrowed_from
 
 
 def apply_identical_stills(rows, index, root):
-    """Share a shorter still only across byte-identical meshes.
+    """Share a shorter still only when LOD geometry matches.
 
-    Colour, year, and variant siblings keep their own quartet when the FBX
-    bytes differ. Player colour Hiers copy the tan quartet only when their
-    FBX hash equals the tan Hier. Costumes are not hashed: `loadouts.json`
-    is one file for every set, so each costume matches its own id.
+    The hash is vertex positions, indices, and UVs per LOD. A paint or colour
+    sibling with that same cage uses the base quartet and is reported as
+    `material-variant of X`. A different geometry hash needs its own quartet.
+    Player colour Hiers copy the tan quartet only on that same geometry hash.
+    Costumes are not hashed: `loadouts.json` is one file for every set.
     """
     population = []
     for row in rows:
@@ -869,7 +1055,7 @@ def apply_identical_stills(rows, index, root):
             row["_digest"] = mesh_digest(root, row.get("fbx"))
         row["_tokens"] = name_tokens(row.get("name"))
         if row.get("kind") != "costume":
-            population.append((row["_tokens"], row["_digest"]))
+            population.append((row["_tokens"], row["_digest"], row.get("name"), row.get("category")))
     for row in rows:
         if row.get("kind") == "library":
             fill_borrowed(row, index, population, "Docs/AssetStills")
@@ -891,6 +1077,7 @@ def apply_identical_stills(rows, index, root):
             continue
         if tan is not None and row.get("_digest") and row["_digest"] == tan_digest:
             row["stillsCheck"] = copy.deepcopy(tan["stillsCheck"])
+            row["variantOf"] = tan.get("name")
         else:
             _reasons, stills = stills_check(index, snake_keys(name), "Docs")
             row["stillsCheck"] = stills
@@ -1649,6 +1836,10 @@ def split_fails(rows):
 def line_for(row):
     status = "PASS" if row["ok"] else "FAIL"
     reasons = "ok" if row["ok"] else ",".join(row["reasons"])
+    base = row.get("variantOf")
+    if base:
+        note = "material-variant of %s" % base
+        reasons = note if row["ok"] else reasons + "," + note
     return "%s %s/%s slack=%scm lod=%s class=%s reasons=%s" % (
         status, row["category"], row["name"], row["slack"], row["lod"], row["cls"], reasons,
     )
@@ -1775,6 +1966,70 @@ def self_test():
     assert still_allowed(["woodfence"], ["woodfence"], "h0", fences)
     assert not still_allowed(["woodfence"], ["woodfence", "corner"], "h1", fences)
     assert not still_allowed(["planter"], ["planter", "street"], None, [(["planter", "street"], None)])
+    paints = [
+        (["sedan", "mid", "a", "25"], "cage", "Sedan_Mid_A_25"),
+        (["sedan", "mid", "a", "25", "white"], "cage", "Sedan_Mid_A_25_White"),
+        (["sedan", "mid", "a", "22"], "other", "Sedan_Mid_A_22"),
+    ]
+    assert still_allowed(["sedan", "mid", "a", "25"], ["sedan", "mid", "a", "25", "white"], "cage", paints)
+    assert not still_allowed(["sedan", "mid", "a"], ["sedan", "mid", "a", "25", "white"], "cage", paints)
+    assert variant_base(
+        ["sedan", "mid", "a", "25"], "Sedan_Mid_A_25_White", "Vehicles",
+        [item + ("Vehicles",) for item in paints],
+    ) == "Sedan_Mid_A_25"
+
+    def _array_prop(code, raw):
+        width = {"d": 8, "i": 4}[code]
+        return code.encode() + struct.pack("<III", len(raw) // width, 0, len(raw)) + raw
+
+    def _string_prop(text):
+        raw = text if isinstance(text, bytes) else text.encode()
+        return b"S" + struct.pack("<I", len(raw)) + raw
+
+    def _emit(name, props, child_fns, start):
+        name_b = name.encode("ascii")
+        prop_blob = b"".join(props)
+        cursor = start + 13 + len(name_b) + len(prop_blob)
+        child_blob = b""
+        for child_fn in child_fns:
+            piece = child_fn(cursor)
+            child_blob += piece
+            cursor += len(piece)
+        end = cursor + 13
+        header = struct.pack("<III", end, len(props), len(prop_blob))
+        header += bytes([len(name_b)]) + name_b
+        return header + prop_blob + child_blob + (b"\x00" * 13)
+
+    def _leaf(name, props):
+        return lambda start: _emit(name, props, [], start)
+
+    def _fbx(uv_byte):
+        verts = struct.pack("<6d", 0, 0, 0, 1, 0, 0)
+        indices = struct.pack("<3i", 0, 1, -3)
+        uvs = struct.pack("<4d", 0, 0, uv_byte, 0)
+        header = b"Kaydara FBX Binary  \x00\x1a\x00" + struct.pack("<I", 7400)
+
+        def geom(start):
+            return _emit("Geometry", [
+                b"I" + struct.pack("<i", 7),
+                _string_prop(b"LOD0\x00\x01Geometry"),
+                _string_prop(b"Mesh"),
+            ], [
+                _leaf("Vertices", [_array_prop("d", verts)]),
+                _leaf("PolygonVertexIndex", [_array_prop("i", indices)]),
+                _leaf("UV", [_array_prop("d", uvs)]),
+            ], start)
+
+        body = _emit("Objects", [], [geom], len(header))
+        return header + body + (b"\x00" * 13)
+
+    same = geometry_digest(_fbx(1))
+    assert same and same == geometry_digest(_fbx(1))
+    assert same != geometry_digest(_fbx(2))
+    noted = {"ok": True, "reasons": [], "variantOf": "Container_20", "category": "Harbor",
+             "name": "Container_20_Blue", "slack": "0.00", "lod": "1/1/1", "cls": "harbor_large"}
+    assert "material-variant of Container_20" in line_for(noted)
+    assert line_for(noted).startswith("PASS ")
     print("self-test ok")
     return 0
 

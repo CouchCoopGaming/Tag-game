@@ -1,6 +1,6 @@
 # Model ledger
 
-Graded again 9 Oct 2026 from the five current tips, without modifying them. Status in the asset tables is still the lead's earlier call. The validator summary below is the tightened run: a sibling borrows stills only when the FBX is byte-identical, `street` and `corner` are real tokens, and LOD2 is at most 0.6× LOD1.
+Graded again 9 Oct 2026 from the five current tips, without modifying them. Status in the asset tables is still the lead's earlier call. The validator summary below is the tightened run: a sibling borrows stills only when vertex positions, indices, and UVs match on every LOD, `street` and `corner` are real tokens, and LOD2 is at most 0.6× LOD1. A paint that matches prints `material-variant of <base>`.
 
 Nothing is **accepted** in the tables. A pass requires `models-validate` with `fail=0` on that asset: license row, scale, colliders, LODs, still quartet, and, for the player, no-clip and hip-sit. The tightened checker does clear that bar for 10 assets on #122 and 11 on #129. Those rows below were written before this run. Use the summary, not those cells, for the current result.
 
@@ -11,9 +11,9 @@ Nothing is **accepted** in the tables. A pass requires `models-validate` with `f
 
 | Branch | PR | Tip | Summary |
 | --- | --- | --- | --- |
-| `cursor/tag-asset-library` | #122 | `723cc13707d899005491e4816a314a7bd43687df` | `models-validate assets=125 pass=10 fail=115` / `models-split paperwork=93 geometry=22` |
-| `cursor/tag-asset-street-kit` | #125 | `bc02b9c4f650f83a38f6da522094a1bcddf27963` | `models-validate assets=188 pass=0 fail=188` / `models-split paperwork=136 geometry=52` |
-| `cursor/tag-street-objects` | #129 | `a92b5987bf759a7d31e5632cb054b011ed6d3ac4` | `models-validate assets=219 pass=11 fail=208` / `models-split paperwork=177 geometry=31` |
+| `cursor/tag-asset-library` | #122 | `723cc13707d899005491e4816a314a7bd43687df` | `models-validate assets=125 pass=12 fail=113` / `models-split paperwork=91 geometry=22` |
+| `cursor/tag-asset-street-kit` | #125 | `d77f0728ba32501707876db9fab76c79c3db4b32` | `models-validate assets=188 pass=0 fail=188` / `models-split paperwork=136 geometry=52` |
+| `cursor/tag-street-objects` | #129 | `8f7686a52822c94c495ddc1bf9e51e0473cebe3a` | `models-validate assets=220 pass=27 fail=193` / `models-split paperwork=176 geometry=17` |
 | `cursor/tag-loco-smooth` | #128 | `b804954f8e93db977c096d21ef93c8724f92978b` | `models-validate assets=7 pass=0 fail=7` / `models-split paperwork=5 geometry=2` |
 | `cursor/tag-character-costumes` | #131 | `e5b34c0e36343405f07f0d5acd098f28a6bd7797` | `models-validate assets=18 pass=0 fail=18` / `models-split paperwork=5 geometry=13` |
 
@@ -327,15 +327,15 @@ Fit file: `costume-fit sets=12 frames=4128 worldMax=0.38 fails=0`. That number i
 Running count: **6**. Each line is one redo or conflict for the restructure-impact report. Missed copies are not counted.
 
 1. Court, twice. #129 `8effda99` and #125 `c84459a3` both restore #122's 22 m by 15 m court and the 0.375 m face-to-rim gap. `Court`, `CourtFence`, and `Hoop` sizes matched on all three tips at that grade. Same fix, two helpers.
-2. Walk-up, two meshes. #122 passes at 2736/2216/1004. #129 passes at 1832/1300/680. #125 still fails the old landing. Two buildings, one name.
+2. Walk-up, two meshes. #122 passes at 2736/2216/1004. #129's earlier mesh was 1832/1300/680. #125 still fails the old landing. Two buildings, one name. #129 `8f7686a5` later copied #122's cage (geometry hash matches). The event stays counted.
 3. LOD2 shortcut, both tips. #122 and #129 both filed LOD2 equal to LOD1 on GasCanopy (1064), Dock_Straight, and FishingBoat. #129 also did it on Bench_WoodIron, BikeRack_Hoop3, Fountain_Walk, Newsstand_Corner, and Sign_AFrame. The tightened checker fails these as `lod2-ratio`.
 4. Cars deleted on #129 and kept on #125. #129 dropped `Car_Sedan`, `Car_Hatch`, and `Car_Pickup`. #125 removed `Sedan_Midsize` and `Sedan_Mid_A_21`, then renamed the three blockouts to `Car_Sedan_25`, `Car_Hatch_25`, and `Car_Pickup_25`.
 5. #125 `bc02b9c4` deletes those three `*_25` blockouts after the rename. #125 and #129 now both omit them. The rejection was undone, then redone. Counted separately from 4.
-6. #129 `a92b5987` rebuilds `CourtFence` to 3664/2640/144. #122's fence already passes at 3680/2656/620. Second fence mesh. Take #122's.
+6. #129 `a92b5987` rebuilds `CourtFence` to 3664/2640/144. #122's fence already passes at 3680/2656/620. Second fence mesh. #129 `8f7686a5` then copied #122's fence, and the geometry hash matches. The rebuild stays counted.
 
-Not counted: #128 `b804954f` adds `build_hip_ankle.py` and `clear_hip_flex.py` only. The graded Hier hashes are unchanged, and the validator is still `pass=0/7`. Container roofs, the gazebo, the rowboat, and HarborShed closed on #122 and still open on the helpers are missed copies, not a second design.
+Not counted: #128 `b804954f` adds `build_hip_ankle.py` and `clear_hip_flex.py` only. The graded Hier geometry is unchanged, and the validator is still `pass=0/7`. #129 `8f7686a5` also copied Container_20 (and both enamels), Rowboat, HarborShed, Gazebo, and WoodFence_Corner from #122. Those hashes match, so they are copies, not a seventh redo. GasCanopy, Dock_Straight, and FishingBoat on that tip were cut locally and do not match #122. #125 has not taken the #122 copies. #125 `d77f0728` only adds pass 16 stills for the 2022–2024 midsize sedans.
 
 ## Counts
 
-Lead status in the asset tables: accepted 0. Tightened validator, 9 Oct 2026: #122 pass=10/125, #125 pass=0/188, #129 pass=11/219, #128 pass=0/7, #131 pass=0/18. Restructure-impact count: 6.
+Lead status in the asset tables: accepted 0. Geometry-hash re-grade, 9 Oct 2026: #122 pass=12/125, #125 pass=0/188, #129 pass=27/220, #128 pass=0/7, #131 pass=0/18. Restructure-impact count: 6.
 
