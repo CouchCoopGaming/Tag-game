@@ -31,7 +31,7 @@ def spec():
         tire_width=0.235,
         nose_y=0.80,
         paint="Lib_PaintGreen",
-        name="Hatch_Compact",
+        name="Hatch_Compact_25",
         deck_ratio=0.86,
         roof_span=0.30,
         cowl_setback=0.36,
@@ -44,9 +44,9 @@ def spec():
 def create():
     body = spec()
     asset = Asset(
-        "Hatch_Compact",
+        "Hatch_Compact_25",
         "Vehicles",
-        "Compact hatch shell, 4.547 m long, 1.801 m wide, roof 1.415 m. Fastback tail, flush glass.",
+        "2025 compact hatch shell, 4.547 m long, 1.801 m wide, roof 1.415 m. Fastback tail, flush glass.",
     )
     asset.climb_note = "Sheet metal. Not a cling wall."
     asset.vault_note = "Hood and roof are landings, not vault rails."

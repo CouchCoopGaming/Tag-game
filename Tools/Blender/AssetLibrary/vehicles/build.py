@@ -79,6 +79,12 @@ OBSOLETE = {
     "Sedan_Mid_A_21_Black",
     "Sedan_Mid_A_21",
     "Sedan_Midsize",
+    "Car_Sedan",
+    "Car_Hatch",
+    "Car_Pickup",
+    "Sedan_Compact",
+    "Hatch_Compact",
+    "Crossover_Compact",
 }
 
 

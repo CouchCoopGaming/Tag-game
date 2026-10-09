@@ -36357,9 +36357,9 @@
     "fbx": "Assets/Art/Props/Library/StreetFurniture/BusFlag_Stop.fbx"
   },
   {
-    "name": "Sedan_Compact",
+    "name": "Sedan_Compact_25",
     "category": "Vehicles",
-    "blurb": "Compact sedan shell, 4.694 m long, 1.801 m wide, roof 1.415 m. Flush glass, two doors a side, lower grille.",
+    "blurb": "2025 model. Compact sedan shell, 4.694 m long, 1.801 m wide, roof 1.415 m. Flush glass, two doors a side, lower grille.",
     "size": [
       1.998,
       1.412,
@@ -36575,12 +36575,12 @@
       "LOD1"
     ],
     "slackCm": 0.0,
-    "fbx": "Assets/Art/Props/Library/Vehicles/Sedan_Compact.fbx"
+    "fbx": "Assets/Art/Props/Library/Vehicles/Sedan_Compact_25.fbx"
   },
   {
-    "name": "Crossover_Compact",
+    "name": "Crossover_Compact_25",
     "category": "Vehicles",
-    "blurb": "Compact crossover shell, 4.694 m long, 1.867 m wide, roof 1.681 m. High hatch, dark rocker cladding, flush glass.",
+    "blurb": "2025 model. Compact crossover shell, 4.694 m long, 1.867 m wide, roof 1.681 m. High hatch, dark rocker cladding, flush glass.",
     "size": [
       2.065,
       1.68,
@@ -36796,7 +36796,7 @@
       "LOD1"
     ],
     "slackCm": 0.0,
-    "fbx": "Assets/Art/Props/Library/Vehicles/Crossover_Compact.fbx"
+    "fbx": "Assets/Art/Props/Library/Vehicles/Crossover_Compact_25.fbx"
   },
   {
     "name": "Bus_City40",
@@ -39944,9 +39944,9 @@
     "fbx": "Assets/Art/Props/Library/Vehicles/Bus_City40_Red.fbx"
   },
   {
-    "name": "Hatch_Compact",
+    "name": "Hatch_Compact_25",
     "category": "Vehicles",
-    "blurb": "Compact hatch shell, 4.547 m long, 1.801 m wide, roof 1.415 m. Fastback tail, flush glass.",
+    "blurb": "2025 model. Compact hatch shell, 4.547 m long, 1.801 m wide, roof 1.415 m. Fastback tail, flush glass.",
     "size": [
       1.998,
       1.413,
@@ -40162,7 +40162,7 @@
       "LOD1"
     ],
     "slackCm": 0.0,
-    "fbx": "Assets/Art/Props/Library/Vehicles/Hatch_Compact.fbx"
+    "fbx": "Assets/Art/Props/Library/Vehicles/Hatch_Compact_25.fbx"
   },
   {
     "name": "Bus_City60",
@@ -44190,9 +44190,9 @@
     "fbx": "Assets/Art/Props/Library/Vehicles/Sedan_Mid_A_25_Ocean.fbx"
   },
   {
-    "name": "Car_Sedan",
+    "name": "Car_Sedan_25",
     "category": "StreetFurniture",
-    "blurb": "Sedan shell, about 4.56 m long, roof 1.56 m. Taller greenhouse, shorter hood, quarter glass in the C-pillar.",
+    "blurb": "2025 model. Sedan shell, about 4.56 m long, roof 1.56 m. Taller greenhouse, shorter hood, quarter glass in the C-pillar.",
     "size": [
       1.9,
       1.581,
@@ -44410,12 +44410,12 @@
       "LOD1"
     ],
     "slackCm": 0.0,
-    "fbx": "Assets/Art/Props/Library/StreetFurniture/Car_Sedan.fbx"
+    "fbx": "Assets/Art/Props/Library/StreetFurniture/Car_Sedan_25.fbx"
   },
   {
-    "name": "Car_Hatch",
+    "name": "Car_Hatch_25",
     "category": "StreetFurniture",
-    "blurb": "Hatchback shell, about 4.00 m long, roof 1.52 m. Closed body, pillars, glass, and fenders over the tires.",
+    "blurb": "2025 model. Hatchback shell, about 4.00 m long, roof 1.52 m. Closed body, pillars, glass, and fenders over the tires.",
     "size": [
       1.82,
       1.522,
@@ -44633,12 +44633,12 @@
       "LOD1"
     ],
     "slackCm": 0.0,
-    "fbx": "Assets/Art/Props/Library/StreetFurniture/Car_Hatch.fbx"
+    "fbx": "Assets/Art/Props/Library/StreetFurniture/Car_Hatch_25.fbx"
   },
   {
-    "name": "Car_Pickup",
+    "name": "Car_Pickup_25",
     "category": "StreetFurniture",
-    "blurb": "Pickup shell, about 5.06 m long. Cab roof 1.76 m, bed rails 1.12 m. Closed cab and wrapped fenders.",
+    "blurb": "2025 model. Pickup shell, about 5.06 m long. Cab roof 1.76 m, bed rails 1.12 m. Closed cab and wrapped fenders.",
     "size": [
       1.999,
       1.761,
@@ -44894,6 +44894,6 @@
       "LOD1"
     ],
     "slackCm": 0.0,
-    "fbx": "Assets/Art/Props/Library/StreetFurniture/Car_Pickup.fbx"
+    "fbx": "Assets/Art/Props/Library/StreetFurniture/Car_Pickup_25.fbx"
   }
 ]

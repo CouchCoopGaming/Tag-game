@@ -30,7 +30,7 @@ def spec():
         tire_width=0.235,
         nose_y=1.02,
         paint="Lib_PaintCream",
-        name="Crossover_Compact",
+        name="Crossover_Compact_25",
         deck_ratio=0.90,
         roof_span=0.32,
         cowl_setback=0.62,
@@ -45,9 +45,9 @@ def spec():
 def create():
     body = spec()
     asset = Asset(
-        "Crossover_Compact",
+        "Crossover_Compact_25",
         "Vehicles",
-        "Compact crossover shell, 4.694 m long, 1.867 m wide, roof 1.681 m. High hatch, dark rocker cladding, flush glass.",
+        "2025 compact crossover shell, 4.694 m long, 1.867 m wide, roof 1.681 m. High hatch, dark rocker cladding, flush glass.",
     )
     asset.climb_note = "Sheet metal. Not a cling wall."
     asset.vault_note = "Hood and roof are landings, not vault rails."

@@ -29,7 +29,7 @@ def spec():
         tire_width=0.215,
         nose_y=0.74,
         paint="Lib_PaintRed",
-        name="Sedan_Compact",
+        name="Sedan_Compact_25",
     )
 
 
@@ -37,9 +37,9 @@ def spec():
 def create():
     body = spec()
     asset = Asset(
-        "Sedan_Compact",
+        "Sedan_Compact_25",
         "Vehicles",
-        "Compact sedan shell, 4.694 m long, 1.801 m wide, roof 1.415 m. Flush glass, two doors a side, lower grille.",
+        "2025 compact sedan shell, 4.694 m long, 1.801 m wide, roof 1.415 m. Flush glass, two doors a side, lower grille.",
     )
     asset.climb_note = "Sheet metal. Not a cling wall."
     asset.vault_note = "Hood and roof are landings, not vault rails."

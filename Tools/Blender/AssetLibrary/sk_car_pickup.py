@@ -64,9 +64,9 @@ def _wheel_cols(a, axles, tag):
 @register
 def create():
     a = Asset(
-        "Car_Pickup",
+        "Car_Pickup_25",
         "StreetFurniture",
-        "Pickup shell, about 5.06 m long. Cab roof 1.76 m, bed rails 1.12 m. Closed cab and wrapped fenders.",
+        "2025 pickup shell, about 5.06 m long. Cab roof 1.76 m, bed rails 1.12 m. Closed cab and wrapped fenders.",
     )
     a.climb_note = "Sheet metal. Not a cling wall."
     a.vault_note = "Bed sides are about 1.12 m. Not a vault rail."
