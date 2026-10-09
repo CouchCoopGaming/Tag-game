@@ -438,7 +438,7 @@ The fifty-second pass puts a celebrate frame on the first-place card and a relax
 
 The fifty-third pass brings the hanging arms in to about 12 degrees off the torso, with a soft elbow. Load and join use that hang. On results, second pumps a fist, third leans onto one leg, and fourth slumps. First still celebrates. Space still jumps.
 
-The fifty-fourth pass makes the menu compile on Unity 6000.3 and matches the station's play-mode frames. RESULTS no longer covers the cards with the comic wipe, and the preview figures stay off the park camera. The main-menu Hier stands up instead of lying on the disc. Capture the screens with Tag → Menu → Capture Screens. Space still jumps.
+The fifty-fourth pass makes the menu compile on Unity 6000.3 and matches the station's play-mode frames. RESULTS no longer covers the cards with the comic wipe, and the preview figures stay off the park camera. The main-menu Hier stands up instead of lying on the disc. On the results cards, second raises a fist, third stands upright with the weight on one leg, and fourth drops the head and rounds the shoulders. First still celebrates. Capture the screens with Tag → Menu → Capture Screens. Space still jumps.
 
 ## Motion, ninth pass
 

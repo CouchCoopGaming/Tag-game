@@ -449,7 +449,9 @@ RESULTS no longer plays the comic wipe. A leftover wipe is destroyed, and a wipe
 
 The Hier file is Z-up until it is stood up. `Spawn` no longer leaves that mesh on its back: it picks a rotation whose height is Y, yaws the chest toward +Z, and scales a wild import back into 1.15–2.7 m. `MenuCheer` and `MenuStride` keep that rotation and multiply the pose on top. The main-menu pair camera clears navy and frames the stood body, so the hero is not an empty black panel. The Play mark is a simple well, and the label starts to the right of it.
 
-Pose retune for second, third, and fourth is still the rest of this pass. First stays the celebrate. Load stays the hang. Unity is not installed here, so this machine cannot show the play-mode frame. The local gate is `script-compile-check ok`.
+Second raises one fist. The elbow is about 95 degrees, the fist is above the shoulder, and the forearm points up and toward the camera. The other arm keeps the hang. Third no longer leans the whole body. The torso stays vertical, the hip shifts over the straight leg, and the free knee softens. After the plant the soles are 0.005 and 0.006. Fourth drops the head about 25 degrees around the neck (the tracked crown moves 8 cm toward the camera), rounds the chest, and hangs the arms heavier. The root is not bowed. First is the same celebrate frames. Load is untouched.
+
+`Docs/UiStills/pass54/` holds the results before and after. Those stills are composites of the sampled frames. They are not the proof. The proof is a play-mode capture from the station command above. Unity is not installed here, so this machine cannot show that frame. The local gate is `script-compile-check ok`. pose stays 0.
 
 ## Screens 2, pass 1
 
