@@ -2,7 +2,7 @@
 
 This is the catalog of reference poses. It is not gameplay. Nothing here is root motion, and the raw video stays off the repo.
 
-Pull the MediaPipe curves from `Docs/Storror/out/json/<id>.json` (clips 01–20) and `Docs/Movement/pose/<id>.json` (clips 21–31 and the parked emotes). Stick strips are next to those JSON files. Hier keys for the tic-tac live in `Docs/HierStills/v080/pass5/keyed_clips.json`. Hier keys for the CC BY emotes live in `Docs/Movement/emotes/keyed_emotes.json`. The pass 16 video retargets live in `Docs/Movement/emotes/pass16/keyed_emotes.json` and stay reference-only. The four hand-keyed emotes live in `Docs/Movement/emotes/pass17/keyed_emotes.json` and are parked. Hip-rule measurements for the movement lead live in `Docs/Movement/hipref/`.
+Pull the MediaPipe curves from `Docs/Storror/out/json/<id>.json` (clips 01–20) and `Docs/Movement/pose/<id>.json` (clips 21–31 and the parked emotes). Stick strips are next to those JSON files. Hier keys for the tic-tac live in `Docs/HierStills/v080/pass5/keyed_clips.json`. Hier keys for the CC BY emotes live in `Docs/Movement/emotes/keyed_emotes.json`. The pass 16 video retargets live in `Docs/Movement/emotes/pass16/keyed_emotes.json` and stay reference-only. The four hand-keyed emotes live in `Docs/Movement/emotes/pass17/keyed_emotes.json` and are parked. Hip-rule measurements for the movement lead live in `Docs/Movement/hipref/`. Loaded-frame hip pitch, spine, knee, and pelvis-behind numbers live in `Docs/Movement/pose/HIP_TARGETS.md`.
 
 Grades: **A** clean enough to retarget. **B** usable with the note. **C** timing only. **D** do not copy the pose.
 
@@ -95,6 +95,23 @@ No Creative Commons license is stated on either Archive item. The Gaza film is a
 A repeating wall run and a one-foot tic-tac did not show up as a clean track. Windows that looked like them on a coarse pass were a frozen opening frame, a 36% detection rate, or a single stride already in `31_gym_split`. They are not in the catalog.
 
 Stick strips: `Docs/Movement/strips/<id>.png`. Pose: `Docs/Movement/pose/<id>.json`.
+
+## Pass 20 search
+
+The hip-target numbers are in `Docs/Movement/pose/HIP_TARGETS.md`. No new pose was added.
+
+A side-on precision landing and a side-on landing roll were the ask, with CC0, CC BY, or public domain preferred. These were opened and left out:
+
+| Source | License line | Why it stayed out |
+|---|---|---|
+| [Tuto 0001.ogv](https://commons.wikimedia.org/wiki/File:Tuto_0001.ogv), Habeas, own work | `{{PD-self}}` on the Commons page. Public domain dedication by the author. | 768×576 tutorial, 335 s. Instructional frames and on-screen text. No clean side landing or roll. |
+| [treino_parkour_porto](https://archive.org/details/Jpcasainho-treino_parkour_porto_parque_cidade30122006JPCasainho114-3), JPCasainho | `http://creativecommons.org/licenses/by-nc-sa/2.0/` | Group training, 640×480, 222 s. One detected side frame. Not a single-person landing. REFERENCE-ONLY if it were kept. |
+| [Living Dangerously b-roll](https://www.dvidshub.net/video/422137/living-dangerously-georgias-parkour-playground-b-roll), DVIDS video 422137, `DOD_102703834` | The DVIDS page labels it `PUBLIC DOMAIN`. | 1024×576, 202 s. Cuts about once a second, with lower-thirds. No continuous side landing or roll. |
+| Commons `File:WallRun.gif` and `File:CatLeap.gif`, tusfacti0n | CC0 tag on a Photobucket reupload. The uploader is not the rights holder. | Same false-CC0 rejection as the earlier pass. |
+
+Wizzy Gang Archive mirrors carry `https://creativecommons.org/licenses/by/3.0/` and name that channel as creator. They are multi-minute roof-gap and bush-jump films, not a clean side precision or roll, so they were not downloaded.
+
+No side-on one-foot tic-tac showed up in these films. None was added.
 
 ## Emotes
 
