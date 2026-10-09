@@ -7,6 +7,8 @@ Re-checked 9 Oct 2026 with the tightened still and LOD rules. Rig worker #128 le
 | #128 | `44fbff3f` | `pass=0/7` paper 5 / geom 2 at `08a4d6b0` | `models-validate assets=7 pass=0 fail=7` / `models-split paperwork=5 geometry=2` |
 | #131 | `ad1582a8` | `pass=0/18` paper 5 / geom 13 at `331e8e0d` | `models-validate assets=18 pass=0 fail=18` / `models-split paperwork=5 geometry=13` |
 
+The framing check did not run on #128 or #131. The quartet roles are missing, so there is no framing-fail list. The counts above are unchanged.
+
 #128 `44fbff3f` rewrites `Dummy_Mannequin_Tan_Hier_Clearance.fbx` again. The shipped Hier files did not change. Colour Hier geometry (positions, indices, UVs) still differs from `Dummy_Mannequin_Tan_Hier_Hi`, so they are not `material-variant` of the tan body. The checker still reads `Docs/LocoStills`, and the summary is unchanged: `pass=0/7`. No pass to spot-check.
 
 ## Rig (#128)

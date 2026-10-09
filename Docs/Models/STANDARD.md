@@ -162,6 +162,14 @@ A PNG or JPEG sitting outside a `passN` directory does not count. `before_` / `a
 
 Every asset gets a `stillsCheck`. It is the quartet above: each role present in a `passN` folder, 1280×720 or larger, under 400 KB. The check record is on the validator row. A catalog frame at 960×540 fails it.
 
+Hero, side, and scale are whole-object frames. The close-up is the only role allowed to crop. The checker separates the silhouette from the backdrop (the calm corner colours, sky and ground). On hero, side, and scale:
+
+- the silhouette does not touch the frame edge
+- the silhouette's box covers 25–85% of the frame
+- the scale frame also shows the 1.8 m figure fully inside the frame. Vehicle stills use the blue body and white head from `Mannequin`. Library stills use the tan Hier scaled to 1.8 m. Either figure counts
+
+A pass fails `stills-quarter-edge`, `stills-side-edge`, or `stills-scale-edge` when the silhouette meets the edge, `stills-*-coverage` when the box is outside 25–85%, and `stills-scale-figure` when that figure is missing or cut off. `hero` is the quarter role.
+
 The quartet is matched on the full asset name. A shorter still — a family folder, or a frame whose name drops a colour, year, or variant token — is shared only when every asset that name prefixes has the same geometry hash: vertex positions, polygon indices, and UVs, per LOD. Material and colour are not in that hash. A paint sibling that matches is accepted on the base quartet and printed as `material-variant of <base>`. If any geometry hash differs, only the asset whose tokens equal the still may use it. `street` and `corner` in the file name are significant tokens. They are not folder noise and they are not optional suffixes. Costumes match their own id. They do not share one lineup, and `loadouts.json` is not a mesh hash.
 
 ## 10. Player rig

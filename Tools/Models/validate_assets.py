@@ -22,6 +22,7 @@ import json
 import os
 import re
 import struct
+import subprocess
 import sys
 import zlib
 from collections import defaultdict
@@ -34,6 +35,10 @@ BELOW_M = -0.02
 FLOAT_M = 0.03
 STILL_MIN = (1280, 720)
 STILL_MAX_BYTES = 400 * 1024
+# Hero, side, and scale. The silhouette stays off the frame edge and its
+# box covers this fraction of the frame. Close-ups are allowed to crop.
+FRAME_AREA = (0.25, 0.85)
+FRAME_LONG = 160
 FIGURE_H = (1.75, 1.85)
 YEAR_MIN, YEAR_MAX = 2022, 2026
 NOCLIP_CM = 0.5
@@ -241,6 +246,454 @@ def image_size(path):
     if path.lower().endswith((".jpg", ".jpeg")):
         return jpeg_size(head)
     return png_size(head) or jpeg_size(head)
+
+
+def _paeth(left, up, up_left):
+    estimate = left + up - up_left
+    da = abs(estimate - left)
+    db = abs(estimate - up)
+    dc = abs(estimate - up_left)
+    if da <= db and da <= dc:
+        return left
+    if db <= dc:
+        return up
+    return up_left
+
+
+def decode_png(data):
+    """RGB bytes for a non-interlaced PNG. Indexed 4-bit stills are the common case."""
+    if not data.startswith(b"\x89PNG\r\n\x1a\n"):
+        return None
+    pos = 8
+    width = height = None
+    bit_depth = color_type = interlace = None
+    palette = b""
+    idat = []
+    while pos + 8 <= len(data):
+        length = struct.unpack(">I", data[pos:pos + 4])[0]
+        tag = data[pos + 4:pos + 8]
+        chunk = data[pos + 8:pos + 8 + length]
+        pos += 12 + length
+        if tag == b"IHDR":
+            width, height, bit_depth, color_type, _comp, _filt, interlace = struct.unpack(
+                ">IIBBBBB", chunk
+            )
+        elif tag == b"PLTE":
+            palette = chunk
+        elif tag == b"IDAT":
+            idat.append(chunk)
+        elif tag == b"IEND":
+            break
+    if not width or interlace or bit_depth not in (1, 2, 4, 8):
+        return None
+    if color_type == 3:
+        channels = 1
+        if len(palette) < 3 or len(palette) % 3:
+            return None
+    elif color_type in (0, 2, 4, 6) and bit_depth == 8:
+        channels = {0: 1, 2: 3, 4: 2, 6: 4}[color_type]
+    else:
+        return None
+    try:
+        raw = zlib.decompress(b"".join(idat))
+    except zlib.error:
+        return None
+    if color_type == 3:
+        stride = (width * bit_depth + 7) // 8
+    else:
+        stride = width * channels
+    if len(raw) < height * (stride + 1):
+        return None
+    rows = []
+    cursor = 0
+    prev = bytearray(stride)
+    bpp = max(1, channels) if color_type != 3 else max(1, bit_depth // 8)
+    for _y in range(height):
+        filt = raw[cursor]
+        cursor += 1
+        row = bytearray(raw[cursor:cursor + stride])
+        cursor += stride
+        if filt == 1:
+            for x in range(stride):
+                left = row[x - bpp] if x >= bpp else 0
+                row[x] = (row[x] + left) & 255
+        elif filt == 2:
+            for x in range(stride):
+                row[x] = (row[x] + prev[x]) & 255
+        elif filt == 3:
+            for x in range(stride):
+                left = row[x - bpp] if x >= bpp else 0
+                row[x] = (row[x] + ((left + prev[x]) // 2)) & 255
+        elif filt == 4:
+            for x in range(stride):
+                left = row[x - bpp] if x >= bpp else 0
+                up = prev[x]
+                up_left = prev[x - bpp] if x >= bpp else 0
+                row[x] = (row[x] + _paeth(left, up, up_left)) & 255
+        elif filt != 0:
+            return None
+        prev = row
+        rows.append(row)
+    rgb = bytearray(width * height * 3)
+    out = 0
+    for row in rows:
+        if color_type == 3:
+            indices = _palette_indices(row, width, bit_depth)
+            for index in indices:
+                src = index * 3
+                if src + 3 > len(palette):
+                    rgb[out:out + 3] = b"\x00\x00\x00"
+                else:
+                    rgb[out:out + 3] = palette[src:src + 3]
+                out += 3
+            continue
+        if channels == 3:
+            rgb[out:out + stride] = row
+            out += stride
+            continue
+        for x in range(width):
+            if channels == 1:
+                value = row[x]
+                rgb[out:out + 3] = bytes((value, value, value))
+            elif channels == 2:
+                value = row[x * 2]
+                rgb[out:out + 3] = bytes((value, value, value))
+            else:
+                src = x * 4
+                rgb[out:out + 3] = row[src:src + 3]
+            out += 3
+    return width, height, bytes(rgb)
+
+
+def _palette_indices(row, width, bit_depth):
+    indices = []
+    if bit_depth == 8:
+        return list(row[:width])
+    mask = (1 << bit_depth) - 1
+    packed = 0
+    filled = 0
+    for byte in row:
+        packed = (packed << 8) | byte
+        filled += 8
+        while filled >= bit_depth and len(indices) < width:
+            filled -= bit_depth
+            indices.append((packed >> filled) & mask)
+    return indices
+
+
+def decode_jpeg(path):
+    """Downscale a JPEG with ffmpeg. None when ffmpeg cannot read it."""
+    size = image_size(path)
+    if not size or size[0] < 2 or size[1] < 2:
+        return None
+    long_side = max(size)
+    step = max(1, long_side // FRAME_LONG)
+    width = max(2, size[0] // step)
+    height = max(2, size[1] // step)
+    width -= width % 2
+    height -= height % 2
+    if width < 2 or height < 2:
+        return None
+    try:
+        raw = subprocess.check_output(
+            [
+                "ffmpeg", "-v", "error", "-i", path,
+                "-vf", "scale=%d:%d:flags=area" % (width, height),
+                "-f", "rawvideo", "-pix_fmt", "rgb24", "-",
+            ],
+            timeout=30,
+        )
+    except (OSError, subprocess.SubprocessError):
+        return None
+    if len(raw) != width * height * 3:
+        return None
+    return width, height, raw
+
+
+def load_rgb(path):
+    """RGB grid for the framing test. ffmpeg downscales; PNG decode is the fallback."""
+    decoded = decode_jpeg(path)
+    if decoded is not None:
+        return decoded
+    try:
+        with open(path, "rb") as handle:
+            data = handle.read()
+    except OSError:
+        return None
+    if data.startswith(b"\x89PNG\r\n\x1a\n"):
+        decoded = decode_png(data)
+        if decoded is None:
+            return None
+        return _downsample(decoded)
+    return None
+
+
+def _downsample(decoded):
+    width, height, rgb = decoded
+    step = max(1, max(width, height) // FRAME_LONG)
+    if step == 1:
+        return decoded
+    grid_w = width // step
+    grid_h = height // step
+    out = bytearray(grid_w * grid_h * 3)
+    cursor = 0
+    for y in range(grid_h):
+        row = y * step * width
+        for x in range(grid_w):
+            src = (row + x * step) * 3
+            out[cursor:cursor + 3] = rgb[src:src + 3]
+            cursor += 3
+    return grid_w, grid_h, bytes(out)
+
+
+def _pix(rgb, width, x, y):
+    i = (y * width + x) * 3
+    return rgb[i], rgb[i + 1], rgb[i + 2]
+
+
+def _color_dist(a, b):
+    return abs(a[0] - b[0]) + abs(a[1] - b[1]) + abs(a[2] - b[2])
+
+
+def _corner_color(rgb, width, height, x0, y0, size=6):
+    """Mean and luminance variance of a corner block. High variance is not backdrop."""
+    acc = [0, 0, 0]
+    lums = []
+    count = 0
+    for y in range(y0, min(height, y0 + size)):
+        for x in range(x0, min(width, x0 + size)):
+            red, green, blue = _pix(rgb, width, x, y)
+            acc[0] += red
+            acc[1] += green
+            acc[2] += blue
+            lums.append(red + green + blue)
+            count += 1
+    if not count:
+        return None, 1e9
+    mean = (acc[0] // count, acc[1] // count, acc[2] // count)
+    average = sum(lums) / float(count)
+    variance = sum((value - average) ** 2 for value in lums) / float(count)
+    return mean, variance
+
+
+def _backdrop_colors(rgb, width, height):
+    size = 6 if width >= 12 and height >= 12 else 2
+    corners = (
+        (0, 0),
+        (max(0, width - size), 0),
+        (0, max(0, height - size)),
+        (max(0, width - size), max(0, height - size)),
+    )
+    colors = []
+    for x0, y0 in corners:
+        mean, variance = _corner_color(rgb, width, height, x0, y0, size)
+        if mean is not None and variance <= 400:
+            colors.append(mean)
+    return colors
+
+
+def _foreground_mask(rgb, width, height, backdrop):
+    mask = bytearray(width * height)
+    if not backdrop:
+        # The object owns the corners. Treat the frame as filled.
+        for i in range(width * height):
+            mask[i] = 1
+        return mask
+    limit = 80
+    for y in range(height):
+        for x in range(width):
+            color = _pix(rgb, width, x, y)
+            nearest = min(_color_dist(color, bg) for bg in backdrop)
+            if nearest > limit:
+                mask[y * width + x] = 1
+    return mask
+
+
+def _mask_box(mask, width, height):
+    min_x, min_y = width, height
+    max_x, max_y = -1, -1
+    edge = 0
+    count = 0
+    for y in range(height):
+        row = y * width
+        for x in range(width):
+            if not mask[row + x]:
+                continue
+            count += 1
+            if x < min_x:
+                min_x = x
+            if y < min_y:
+                min_y = y
+            if x > max_x:
+                max_x = x
+            if y > max_y:
+                max_y = y
+            if x == 0 or y == 0 or x == width - 1 or y == height - 1:
+                edge += 1
+    if max_x < 0:
+        return None, 0.0, edge
+    area = ((max_x - min_x + 1) * (max_y - min_y + 1)) / float(width * height)
+    box = (min_x, min_y, max_x, max_y)
+    return box, area, edge
+
+
+def _is_figure_blue(red, green, blue):
+    # Lib_PaintBlue torso, lit. A grey sky is not blue-dominant.
+    return blue >= 120 and blue >= red + 40 and blue >= green + 8 and green >= 50
+
+
+def _is_figure_white(red, green, blue):
+    # Lib_PaintWhite head.
+    return red >= 200 and green >= 200 and blue >= 190 and max(red, green, blue) - min(red, green, blue) <= 40
+
+
+def _is_figure_skin(red, green, blue):
+    # The library stills stand the tan Hier next to the prop.
+    return (
+        red >= 130 and green >= 70 and blue >= 50
+        and red >= green + 15 and red >= blue + 15
+        and (green - blue) < 50 and (red - blue) < 100
+    )
+
+
+def _components(points, width, height):
+    if not points:
+        return []
+    parent = list(range(len(points)))
+
+    def find(i):
+        while parent[i] != i:
+            parent[i] = parent[parent[i]]
+            i = parent[i]
+        return i
+
+    index_of = {pix: i for i, pix in enumerate(points)}
+    for i, pix in enumerate(points):
+        x = pix % width
+        y = pix // width
+        for nx, ny in ((x - 1, y), (x + 1, y), (x, y - 1), (x, y + 1)):
+            if nx < 0 or ny < 0 or nx >= width or ny >= height:
+                continue
+            other = index_of.get(ny * width + nx)
+            if other is None:
+                continue
+            left, right = find(i), find(other)
+            if left != right:
+                parent[right] = left
+    groups = defaultdict(list)
+    for i, pix in enumerate(points):
+        groups[find(i)].append(pix)
+    return list(groups.values())
+
+
+def _standing_clear(members, width, height, max_width, min_height, max_height, min_aspect):
+    xs = [pix % width for pix in members]
+    ys = [pix // width for pix in members]
+    min_x, max_x = min(xs), max(xs)
+    min_y, max_y = min(ys), max(ys)
+    box_w = max_x - min_x + 1
+    box_h = max_y - min_y + 1
+    if box_w > width * max_width or box_h < height * min_height or box_h > height * max_height:
+        return False
+    if box_h < box_w * min_aspect:
+        return False
+    if min_x <= 0 or min_y <= 0 or max_x >= width - 1 or max_y >= height - 1:
+        return False
+    return True
+
+
+def _figure_visible(rgb, width, height):
+    """The 1.8 m figure, fully inside the frame.
+
+    Vehicle stills use the blue Mannequin (white head). Library stills use
+    the tan Hier. A rust patch or a red body is not a standing figure.
+    """
+    blues = []
+    whites = []
+    skins = []
+    for y in range(height):
+        for x in range(width):
+            red, green, blue = _pix(rgb, width, x, y)
+            pix = y * width + x
+            if _is_figure_blue(red, green, blue):
+                blues.append(pix)
+            elif _is_figure_white(red, green, blue):
+                whites.append((x, y))
+            elif _is_figure_skin(red, green, blue):
+                skins.append(pix)
+    for members in _components(blues, width, height):
+        if len(members) < 12:
+            continue
+        if not _standing_clear(members, width, height, 0.18, 0.08, 0.55, 1.3):
+            continue
+        xs = [pix % width for pix in members]
+        ys = [pix // width for pix in members]
+        min_x, max_x = min(xs), max(xs)
+        min_y = min(ys)
+        box_h = max(ys) - min_y + 1
+        head_bottom = min_y + max(2, int(box_h * 0.40))
+        head = 0
+        for x, y in whites:
+            if min_y - 2 <= y <= head_bottom and min_x - 2 <= x <= max_x + 2:
+                head += 1
+        if head >= 3:
+            return True
+    for members in _components(skins, width, height):
+        if len(members) < 40:
+            continue
+        if _standing_clear(members, width, height, 0.22, 0.12, 0.62, 1.8):
+            return True
+    return False
+
+
+_FRAME_CACHE = {}
+
+
+def frame_facts(path):
+    """Backdrop-difference silhouette. Cached per file."""
+    cached = _FRAME_CACHE.get(path)
+    if cached is not None:
+        return cached
+    decoded = load_rgb(path) if path and os.path.isfile(path) else None
+    if decoded is None:
+        facts = None
+    else:
+        width, height, rgb = decoded
+        backdrop = _backdrop_colors(rgb, width, height)
+        mask = _foreground_mask(rgb, width, height, backdrop)
+        _box, area, edge = _mask_box(mask, width, height)
+        facts = {
+            "area": area,
+            "edge": edge,
+            "figure": _figure_visible(rgb, width, height),
+            "read": True,
+        }
+    _FRAME_CACHE[path] = facts
+    return facts
+
+
+def frame_reasons(role, info):
+    """Hero, side, and scale must show the whole object. Scale needs the figure.
+
+    Close-ups are not framed this way. `hero` is the quarter role.
+    """
+    if role not in ("quarter", "side", "scale"):
+        return []
+    path = info.get("full") or ""
+    facts = frame_facts(path)
+    if not facts:
+        info["frame"] = None
+        return ["stills-%s-frame" % role]
+    info["frame"] = {"area": round(facts["area"], 3), "edge": facts["edge"], "figure": facts["figure"]}
+    reasons = []
+    if facts["edge"] >= 4:
+        reasons.append("stills-%s-edge" % role)
+    low, high = FRAME_AREA
+    if facts["area"] < low or facts["area"] > high:
+        reasons.append("stills-%s-coverage" % role)
+    if role == "scale" and not facts["figure"]:
+        reasons.append("stills-scale-figure")
+    return reasons
 
 
 def read_text(path):
@@ -688,14 +1141,9 @@ def stills_check(index, keys, scope, extra_readability=False, category=None):
             nbytes = row.get("bytes")
             info["pixels"] = list(size) if size else None
             info["bytes"] = nbytes
-            if not PASS_RE.search((row.get("rel") or "") + "/"):
-                reasons.append("stills-%s-pass" % role)
-            elif size is None or size[0] < STILL_MIN[0] or size[1] < STILL_MIN[1]:
-                reasons.append("stills-%s-res" % role)
-            elif nbytes is not None and nbytes > STILL_MAX_BYTES:
-                reasons.append("stills-%s-bytes" % role)
-            else:
-                info["ok"] = True
+            role_reasons = still_role_reasons(role, info)
+            reasons.extend(role_reasons)
+            info["ok"] = not role_reasons
         roles[role] = info
     if extra_readability:
         found = False
@@ -944,7 +1392,7 @@ def still_role_reasons(role, info):
         return ["stills-%s-res" % role]
     if nbytes is not None and nbytes > STILL_MAX_BYTES:
         return ["stills-%s-bytes" % role]
-    return []
+    return frame_reasons(role, info)
 
 
 def role_info_from_still(still):
@@ -2030,6 +2478,61 @@ def self_test():
              "name": "Container_20_Blue", "slack": "0.00", "lod": "1/1/1", "cls": "harbor_large"}
     assert "material-variant of Container_20" in line_for(noted)
     assert line_for(noted).startswith("PASS ")
+
+    def _png(width, height, paint):
+        raw = bytearray()
+        for y in range(height):
+            raw.append(0)
+            for x in range(width):
+                raw.extend(paint(x, y))
+        comp = zlib.compress(bytes(raw))
+
+        def chunk(tag, payload):
+            body = tag + payload
+            return struct.pack(">I", len(payload)) + body + struct.pack(">I", zlib.crc32(body) & 0xFFFFFFFF)
+
+        ihdr = struct.pack(">IIBBBBB", width, height, 8, 2, 0, 0, 0)
+        return b"\x89PNG\r\n\x1a\n" + chunk(b"IHDR", ihdr) + chunk(b"IDAT", comp) + chunk(b"IEND", b"")
+
+    def _plate(width, height, box, figure=False):
+        def paint(x, y):
+            if figure and 8 <= x <= 12 and 6 <= y <= 20:
+                if y <= 8:
+                    return bytes((240, 240, 230))
+                return bytes((60, 140, 250))
+            x0, y0, x1, y1 = box
+            if x0 <= x <= x1 and y0 <= y <= y1:
+                return bytes((30, 30, 30))
+            return bytes((180, 182, 184))
+        return _png(width, height, paint)
+
+    wide = _plate(80, 48, (18, 12, 58, 36))
+    decoded = decode_png(wide)
+    assert decoded is not None and decoded[0] == 80 and decoded[1] == 48
+    import tempfile
+    tmp = tempfile.mkdtemp(prefix="frame-")
+    good = os.path.join(tmp, "good.png")
+    cropped = os.path.join(tmp, "cropped.png")
+    tiny = os.path.join(tmp, "tiny.png")
+    huge = os.path.join(tmp, "huge.png")
+    scaled = os.path.join(tmp, "scale.png")
+    with open(good, "wb") as handle:
+        handle.write(wide)
+    with open(cropped, "wb") as handle:
+        handle.write(_plate(80, 48, (0, 10, 50, 36)))
+    with open(tiny, "wb") as handle:
+        handle.write(_plate(80, 48, (30, 20, 40, 26)))
+    with open(huge, "wb") as handle:
+        handle.write(_plate(80, 48, (2, 2, 77, 45)))
+    with open(scaled, "wb") as handle:
+        handle.write(_plate(80, 48, (18, 12, 58, 36), figure=True))
+    assert frame_reasons("quarter", {"full": good}) == []
+    assert "stills-quarter-edge" in frame_reasons("quarter", {"full": cropped})
+    assert "stills-side-coverage" in frame_reasons("side", {"full": tiny})
+    assert "stills-quarter-coverage" in frame_reasons("quarter", {"full": huge})
+    assert frame_reasons("close", {"full": cropped}) == []
+    assert frame_reasons("scale", {"full": scaled}) == []
+    assert "stills-scale-figure" in frame_reasons("scale", {"full": good})
     print("self-test ok")
     return 0
 
