@@ -40,6 +40,19 @@ STILL_MAX_BYTES = 400 * 1024
 # box covers this fraction of the frame. Close-ups are allowed to crop.
 FRAME_AREA = (0.25, 0.85)
 FRAME_LONG = 160
+# Showcase figure. Authored albedo is linear. The pixel tests below are the lit values.
+FIGURE_FBX = "Assets/Art/Props/Library/Showcase/Mannequin.fbx"
+FIGURE_BLUE = (0.239, 0.494, 1.0)  # Lib_PaintBlue, 8-bit 61, 126, 255
+FIGURE_WHITE = (0.93, 0.93, 0.90)  # Lib_PaintWhite, 8-bit 237, 237, 230
+FIGURE_HEIGHT_M = 1.80
+FIGURE_NAMES = {
+    "Mannequin",
+    "Mannequin.fbx",
+    FIGURE_FBX,
+    "Dummy_Mannequin_Tan_Hier_Hi",
+    "Dummy_Mannequin_Tan_Hier_Hi.fbx",
+}
+PROVENANCE_LINE = "made in-house, CC0, free to use"
 FIGURE_H = (1.75, 1.85)
 YEAR_MIN, YEAR_MAX = 2022, 2026
 NOCLIP_CM = 0.5
@@ -607,6 +620,62 @@ def _standing_clear(members, width, height, max_width, min_height, max_height, m
     return True
 
 
+def provenance_claimed(text):
+    """The in-house line, on a line by itself. A longer sentence does not count."""
+    return any(line.strip() == PROVENANCE_LINE for line in (text or "").splitlines())
+
+
+def figure_name_tag(path):
+    """PNG tEXt or JPEG comment naming the scale figure. Colour is then irrelevant."""
+    if not path or not os.path.isfile(path):
+        return False
+    try:
+        with open(path, "rb") as handle:
+            data = handle.read(8_000_000)
+    except OSError:
+        return False
+    values = []
+    if data.startswith(b"\x89PNG\r\n\x1a\n"):
+        pos = 8
+        while pos + 8 <= len(data):
+            length, kind = struct.unpack(">I4s", data[pos:pos + 8])
+            pos += 8
+            if pos + length > len(data):
+                break
+            chunk = data[pos:pos + length]
+            pos += length + 4
+            if kind == b"tEXt":
+                key, _, value = chunk.partition(b"\x00")
+                if key.lower() == b"figure":
+                    values.append(value.split(b"\x00", 1)[0].decode("latin1", "replace").strip())
+            elif kind == b"IEND":
+                break
+    else:
+        pos = 2
+        while pos + 4 <= len(data) and data[pos] == 0xFF:
+            mark = data[pos + 1]
+            if mark == 0xD8:
+                pos += 2
+                continue
+            if mark == 0xD9 or mark == 0xDA:
+                break
+            size = struct.unpack(">H", data[pos + 2:pos + 4])[0]
+            if mark == 0xFE:
+                raw = data[pos + 4:pos + 2 + size]
+                text = raw.decode("latin1", "replace")
+                for line in text.splitlines():
+                    if line.lower().startswith("figure="):
+                        values.append(line.split("=", 1)[1].strip())
+                    elif line.lower().startswith("figure:"):
+                        values.append(line.split(":", 1)[1].strip())
+            pos += 2 + size
+    for value in values:
+        norm = value.replace("\\", "/").strip()
+        if norm in FIGURE_NAMES or os.path.basename(norm) in FIGURE_NAMES:
+            return True
+    return False
+
+
 def _figure_visible(rgb, width, height):
     """The 1.8 m figure, fully inside the frame.
 
@@ -698,7 +767,7 @@ def frame_reasons(role, info):
     low, high = FRAME_AREA
     if facts["area"] < low or facts["area"] > high:
         reasons.append("stills-%s-coverage" % role)
-    if role == "scale" and not facts["figure"]:
+    if role == "scale" and not facts["figure"] and not figure_name_tag(path):
         reasons.append("stills-scale-figure")
     return reasons
 
@@ -956,8 +1025,16 @@ def parse_license_table(text):
     return named
 
 
+class LicenseBook(dict):
+    """Asset name to SPDX, plus the lane-wide in-house line."""
+
+    def __init__(self):
+        super().__init__()
+        self.provenance = False
+
+
 def license_names(root):
-    named = {}
+    named = LicenseBook()
     for dirpath, _dirs, files in os.walk(root):
         if ".git" in dirpath.split(os.sep):
             continue
@@ -966,14 +1043,28 @@ def license_names(root):
                 continue
             text = read_text(os.path.join(dirpath, name))
             named.update(parse_license_table(text))
+            if provenance_claimed(text):
+                named.provenance = True
+    manifest = os.path.join(root, "Tools", "Blender", "AssetLibrary", "manifest.json")
+    if os.path.isfile(manifest):
+        try:
+            data = json.loads(read_text(manifest))
+        except json.JSONDecodeError:
+            data = None
+        if isinstance(data, dict) and provenance_claimed(str(data.get("provenance") or "")):
+            named.provenance = True
     return named
 
 
 def entry_licensed(entry, named):
     lic = entry.get("license")
-    if isinstance(lic, dict):
+    provenance = bool(getattr(named, "provenance", False))
+    if isinstance(lic, dict) and lic:
         spdx = str(lic.get("spdx") or "")
-        if spdx in ("CC0-1.0", "OFL-1.1") and lic.get("source"):
+        source = str(lic.get("source") or "")
+        if source == "cc0-download" and not str(lic.get("url") or "").strip():
+            return False, "license-bad"
+        if spdx in ("CC0-1.0", "OFL-1.1") and source:
             if spdx == "OFL-1.1":
                 return False, "license-ofl-on-mesh"
             return True, ""
@@ -983,6 +1074,8 @@ def entry_licensed(entry, named):
         return True, ""
     if spdx == "OFL-1.1":
         return False, "license-ofl-on-mesh"
+    if provenance:
+        return True, ""
     return False, "license"
 
 
@@ -2217,7 +2310,7 @@ def evaluate_hier(root, path, index, licensed, proof, hip_text):
         pass
     elif spdx == "OFL-1.1":
         reasons.append("license-ofl-on-mesh")
-    elif name not in licensed:
+    elif name not in licensed and not getattr(licensed, "provenance", False):
         reasons.append("license")
     stills = empty_stills()
     if is_color:
@@ -2527,7 +2620,7 @@ def evaluate_costume(root, item, index, licensed, fit, fit_lods, fit_text, proof
         pass
     elif spdx == "OFL-1.1":
         reasons.append("license-ofl-on-mesh")
-    elif name not in licensed:
+    elif name not in licensed and not getattr(licensed, "provenance", False):
         reasons.append("license")
     pieces = item.get("pieces") or []
     if not pieces:
@@ -2883,6 +2976,38 @@ def self_test():
     assert frame_reasons("scale", {"full": scaled}) == []
     assert "stills-scale-figure" in frame_reasons("scale", {"full": good})
     assert "stills-frame-edge" in frame_reasons("frame", {"full": cropped})
+    green = os.path.join(tmp, "green-scale.png")
+    with open(green, "wb") as handle:
+        def _green(x, y):
+            if 30 <= x <= 36 and 8 <= y <= 28:
+                if y <= 11:
+                    return bytes((180, 184, 186))
+                return bytes((40, 170, 70))
+            if 18 <= x <= 58 and 12 <= y <= 36:
+                return bytes((30, 30, 30))
+            return bytes((180, 182, 184))
+        handle.write(_png(80, 48, _green))
+    assert "stills-scale-figure" in frame_reasons("scale", {"full": green})
+    raw = open(green, "rb").read()
+    payload = b"Figure\x00Mannequin"
+    body = b"tEXt" + payload
+    chunk = struct.pack(">I", len(payload)) + body + struct.pack(">I", zlib.crc32(body) & 0xFFFFFFFF)
+    end = raw.rfind(b"IEND") - 4
+    tagged = os.path.join(tmp, "tagged-scale.png")
+    with open(tagged, "wb") as handle:
+        handle.write(raw[:end] + chunk + raw[end:])
+    assert figure_name_tag(tagged)
+    assert "stills-scale-figure" not in frame_reasons("scale", {"full": tagged})
+    assert not figure_name_tag(green)
+    assert provenance_claimed(PROVENANCE_LINE + "\n")
+    assert not provenance_claimed("The models were made in-house, CC0, free to use today.")
+    covered = LicenseBook()
+    covered.provenance = True
+    assert entry_licensed({"name": "Cabin"}, covered) == (True, "")
+    bare = LicenseBook()
+    assert entry_licensed({"name": "Cabin"}, bare) == (False, "license")
+    download = {"name": "Bench", "license": {"spdx": "CC0-1.0", "source": "cc0-download", "url": ""}}
+    assert entry_licensed(download, covered) == (False, "license-bad")
     assert named_role("sprint") is None
     assert named_role("hero") == "quarter"
     assert mesh_islands([(0, 1, 2), (2, 1, 3)]) == 1

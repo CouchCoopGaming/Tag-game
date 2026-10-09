@@ -32,10 +32,20 @@ Length runs on **+Z**. If width and length are swapped, the asset fails orientat
 
 Meshes and textures are **CC0 1.0** only. **OFL 1.1** is allowed for a font and never for a mesh. No other license ships.
 
-Every asset has its own license record, in either place:
+One shared file per lane is enough. Do not add a license file per asset.
 
-- `license` on its `Tools/Blender/AssetLibrary/manifest.json` entry, or
-- one row per asset in a `LICENSES.md` table next to the art. The first cell is the exact asset name (`Reed_1_Hood`, not the family). The row carries `CC0-1.0` or, for a font only, `OFL-1.1`. A sentence that mentions a family name is not a row.
+In-house meshes use this exact line, on a line by itself, in one `LICENSES.md` for the lane:
+
+```
+made in-house, CC0, free to use
+```
+
+That line covers every mesh in the checkout. A longer sentence that merely contains those words does not. The same words also work as `"provenance"` on a dict-shaped `Tools/Blender/AssetLibrary/manifest.json`.
+
+A per-asset record is still required for a font and for an outside download. Either of these is that record:
+
+- `license` on the manifest entry, or
+- one row in the same `LICENSES.md`. The first cell is the exact asset name (`Reed_1_Hood`, not the family). The row carries `CC0-1.0` or, for a font only, `OFL-1.1`. A sentence that mentions a family name is not a row.
 
 ```json
 "license": {
@@ -46,7 +56,7 @@ Every asset has its own license record, in either place:
 }
 ```
 
-`source` is `original` or `cc0-download`. A download needs the `url`. A file that only says the library is original, without naming the asset, does not count. Citing a brochure for proportions does not put that brand into the record as a source mesh.
+`source` is `original` or `cc0-download`. A download needs the `url`. Without the url the entry fails `license-bad`, and the in-house line does not cover it. Citing a brochure for proportions does not put that brand into the record as a source mesh.
 
 Original work in this repo is dedicated to the public domain under CC0 1.0 when the record says so. Do not import Kenney, Quaternius, Poly Haven, or any other pack unless that exact file is CC0 and the record points at it. Stretching a CC0 toy car into a 4.9 m sedan is not a modern body. Build the body here instead.
 
@@ -166,13 +176,41 @@ Hero, side, and scale are whole-object frames. The close-up is the only role all
 
 - the silhouette does not touch the frame edge
 - the silhouette's box covers 25–85% of the frame
-- the scale frame also shows the 1.8 m figure fully inside the frame. Vehicle stills use the blue body and white head from `Mannequin`. Library stills use the tan Hier scaled to 1.8 m. Either figure counts
+- the scale frame also shows the 1.8 m figure fully inside the frame. The colours and the name tag are in Stills spec below
 
 A pass fails `stills-quarter-edge`, `stills-side-edge`, or `stills-scale-edge` when the silhouette meets the edge, `stills-*-coverage` when the box is outside 25–85%, and `stills-scale-figure` when that figure is missing or cut off. `hero` is the quarter role.
 
 Every still in a pass folder is framed, not only the quartet the checker binds. A file with no role token takes the same silhouette test and fails `stills-frame-edge` or `stills-frame-coverage`. A close-up may still crop. A 1280×720 clip does not skip the test by leaving the role out of the file name.
 
 The quartet is matched on the full asset name. A shorter still — a family folder, or a frame whose name drops a colour, year, or variant token — is shared only when every asset that name prefixes has the same geometry hash: vertex positions, polygon indices, and UVs, per LOD. Material and colour are not in that hash. A paint sibling that matches is accepted on the base quartet and printed as `material-variant of <base>`. If any geometry hash differs, only the asset whose tokens equal the still may use it. `street` and `corner` in the file name are significant tokens. They are not folder noise and they are not optional suffixes. Costumes match their own id. They do not share one lineup, and `loadouts.json` is not a mesh hash.
+
+## Stills spec
+
+This is the camera contract the checker enforces. `Tools/Models/shoot_quartet.py` renders a quartet that meets it.
+
+The 25–85% test is the silhouette's bounding-box **area** divided by the frame area. It is not the longer side of that box. A pole that runs 80% of the frame height and 10% of the width covers 8% of the area and fails `stills-*-coverage`.
+
+The minimum margin is the frame border, not a 4% inset. The checker downscales until the long side is 160 pixels and counts foreground samples on that outer row and column. Four or more fail `stills-*-edge`. On a 1280×720 frame that outer sample is 8 pixels: **0.625% of the width** and **1.11% of the height**. A lane that instead sizes the longer side to 25–85% and leaves a 4% margin is not aiming at this test.
+
+The scale figure is `Assets/Art/Props/Library/Showcase/Mannequin.fbx`, **1.80 m** tall (1.75–1.85 m). The body is `Lib_PaintBlue` and the head is `Lib_PaintWhite`. Authored linear albedo:
+
+| Part | Material | Linear RGB | 8-bit |
+| --- | --- | --- | --- |
+| Torso and arms | `Lib_PaintBlue` | 0.239, 0.494, 1.0 | 61, 126, 255 |
+| Head | `Lib_PaintWhite` | 0.93, 0.93, 0.90 | 237, 237, 230 |
+
+The detector does not measure a distance from those authored numbers. A lit pixel counts as blue when blue ≥ 120, blue ≥ red + 40, blue ≥ green + 8, and green ≥ 50. A lit pixel counts as the white head when red ≥ 200, green ≥ 200, blue ≥ 190, and the channel spread is at most 40. The blue body has to be one standing island of at least 12 pixels, at most 18% of the frame wide, 8–55% of the frame tall, at least 1.3× as tall as it is wide, and off the border, with at least 3 white-head pixels on it. The library alternative is the tan Hier: red ≥ 130, green ≥ 70, blue ≥ 50, red ≥ green + 15, red ≥ blue + 15, green − blue < 50, red − blue < 100, at least 40 pixels, at most 22% wide, 12–62% tall, at least 1.8× as tall as wide.
+
+A green body does not match either test. `Sedan_Compact_26` pass 21 `scale.png` on #125 keeps the whole car and a green 1.8 m figure inside the frame. The box covers 56.3% of the frame and the edge count is 0. The only failure on that frame is `stills-scale-figure`. The body samples at about 144, 194, 130 and the head at about 179, 183, 186, under the white-head floor. Colour is the reason. The file has no `Figure` tag. The asset also fails `stills-side-edge` on `side.png`.
+
+A scale still may skip the colour test by naming the figure. A PNG `tEXt` keyword `Figure`, or a JPEG comment `Figure=...`, whose value is `Mannequin`, `Assets/Art/Props/Library/Showcase/Mannequin.fbx`, or `Dummy_Mannequin_Tan_Hier_Hi`, counts. The silhouette rules still apply. `shoot_quartet.py` writes that tag when it places the mannequin.
+
+```
+blender --background --python Tools/Models/shoot_quartet.py -- \
+  --mesh Assets/Art/Props/Library/Buildings/Cabin.fbx \
+  --out Docs/AssetStills/passN \
+  --name Cabin
+```
 
 ## 10. Player rig
 

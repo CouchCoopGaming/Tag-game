@@ -56,6 +56,21 @@ CC0 rows on this tip: 165 prop rows and 6 mannequin rows, each `CC0-1.0`. The pr
 
 #129 `6716e242` adds stills only. No FBX changed, so this is not a redo. The old checker had moved StreetFurniture from 43 to 67. That is not a pass. Eleven of those older script-passes are #122's categories and do not count for #129: Cabin, Container_40, Crate, Dock_Corner, Gangway, HarborRail, Piling, Fountain, ParkSign, Seesaw, and Dumpster. `Container_40` still differs from #122. The pass 34 quartet does not replace #122's file. Shells that differ from #122 stay event 12, and #129 drops them: Boathouse 264/120/72, Garage 500/196/108, House_Gable 2000/1724/760, House_Hip 2008/1732/728, Roof_Parapet 112/36/12, ShopFront 292/152/84, Store_Corner 4732/3388/1368, Store_Diner 2604/1932/660, Store_Laundromat 5228/3868/1560, Storefront_Glass 300/144/72, HarborCrane 472/208/124, Tree_Palm 120/60/36, Tree_Pine 2932/816/372, WaterTank 608/228/124. Also new: AC_Roof_Large, AC_Roof_Small, Awning_Door, Barrel_Traffic, Barricade_Type3, Barrier_Jersey, Barrier_Water, Bollard_Fixed, Bollard_Removable, Cabinet_Electrical, Court, Delineator_Post, Fence_Iron, Hoop, Kiosk_ATM, Kiosk_Charge, Rail_Sidewalk, Road_Crosswalk, Sidewalk_Gap, Sidewalk_Joint, Sign_Parking_2H, Sign_Speed_25, Sign_Stop, Sign_Street. The garage and house-gable quarters are those buildings.
 
+## Shoot target
+
+These three items are the stills and license work for #122, #125, and #129. The checker contract is `Docs/Models/STANDARD.md`, section Stills spec. Do not rebuild a mesh to clear a still or a license line.
+
+1. Reshoot hero, side, and scale with `Tools/Models/shoot_quartet.py`. The 25–85% test is the silhouette box **area** divided by the frame area, not the longer side. The margin is the frame border: on a 1280×720 still that is the outer 8 pixels, **0.625% of the width** and **1.11% of the height**. Four foreground samples on that border fail `stills-*-edge`. A 4% inset and a longer-side fill are not the test. The script keeps an 8% margin and aims the box at about half the frame area. The close-up may crop.
+
+```
+blender --background --python Tools/Models/shoot_quartet.py -- \
+  --mesh <asset>.fbx --out Docs/AssetStills/passN --name <Asset_Name>
+```
+
+2. The scale figure is `Assets/Art/Props/Library/Showcase/Mannequin.fbx`, 1.80 m, body `Lib_PaintBlue` (linear 0.239, 0.494, 1.0) and head `Lib_PaintWhite` (linear 0.93, 0.93, 0.90). A lit blue pixel needs blue ≥ 120, blue ≥ red + 40, blue ≥ green + 8, and green ≥ 50. The white head needs red ≥ 200, green ≥ 200, blue ≥ 190. A green body fails `stills-scale-figure` even when the person is fully in frame. `Sedan_Compact_26` pass 21 `scale.png` is that case: area 56.3%, edge count 0, body about 144, 194, 130, head about 179, 183, 186, no `Figure` tag. Colour is the only failure on that frame. The asset also fails `stills-side-edge` on `side.png`. A PNG `tEXt` keyword `Figure`, or a JPEG comment `Figure=Mannequin`, naming `Mannequin` or `Dummy_Mannequin_Tan_Hier_Hi`, counts without the colour test. The script writes that tag.
+
+3. One shared `LICENSES.md` per lane. In-house meshes use this exact line on its own line: `made in-house, CC0, free to use`. That covers every mesh in the checkout. A download is not covered: its row or manifest entry needs `CC0-1.0`, `cc0-download`, and the `url`, or it fails `license-bad`. A font may use `OFL-1.1`. Do not add a license file per asset. The existing per-asset table rows already count.
+
 ## Buildings (#122)
 
 1. Leave the meshes the old checker had passed. The count did not change at `09958348`. That tip puts LOD2 back on the six new pieces, under 0.6×, and leaves LOD0 and LOD1 alone: Alley 260/132/48, Subway_Entrance 300/180/96, Driveway 72/48/24, Bleachers 300/216/108, Restroom 208/144/60, Ferry 340/180/72. RooftopAC stays 488/148 with no LOD2. The required cuts from `7cee8bbf` still stand: Cabin 4972/1364/792, GasCanopy 2272/1064/120, Ranch_House 2604/2340/296, Dock_Straight 3720/672/336, FishingBoat 2932/1148/260, HarborShed 3296/504/120, Tree_Pine 2932/816/384.
@@ -63,6 +78,7 @@ CC0 rows on this tip: 165 prop rows and 6 mannequin rows, each `CC0-1.0`. The pr
 3. `a605f06f` rebuilds `Store_Corner`, `Store_Diner`, and `Store_Laundromat` after they had passed the old checker. The meshes stay: 6004/4732/344, 3516/2784/176, and 4624/4048/268. The pass 34 quartets fail framing. Leave these meshes. Do not rebuild them again.
 4. `a066d987` edits the containers and `Dock_Straight` that the old checker had passed. `c727dc0e` does not edit the meshes. `Container_20` is still 5778/1800/264. Blue and green still match it and bind pass 35. `Dock_Straight` is still 3720/672/336 and binds pass 35. `Container_40` still binds pass 31. Those quartets fail framing. Do not edit these meshes again.
 5. No third cabin. No second road junction. No second walk-up. The player Hiers on this branch are #128's work.
+6. Shoot target, items 1–3. Pass 36 used a 4% margin and the longer side of the box. That is not the checker. Reshoot with `shoot_quartet.py` and the blue mannequin. The shared license file is already a table; the one-line form is the alternative, not a second file per asset.
 
 ## Vehicles (#125)
 
@@ -73,6 +89,7 @@ CC0 rows on this tip: 165 prop rows and 6 mannequin rows, each `CC0-1.0`. The pr
 5. Drop every non-vehicle copy. #125 does not own buildings, harbor, park, roads, street furniture, or the player. Since `72c5a160`, #125 and #122 both changed 24 FBX. `Court` and `Hoop` match #122, so those two are copies. The other 22 do not match. Event 9 already counted Garage, Roof_Parapet, RooftopAC, ShopFront, Storefront_Glass, WaterTank, FishingBoat, HarborCrane, Tree_Palm, and Rowboat. The rest also differ and are event 12: Boathouse, Brick_Wall, CourtFence, Dock_Straight, GasCanopy, HarborShed, House_Gable, House_Hip, Store_Corner, Store_Diner, Store_Laundromat, and Tree_Pine. Since `04920f2a`, #125 and #129 both changed 34 FBX. `Car_Hatch`, `Car_Pickup`, and `Car_Sedan` are already gone (events 4 and 5). Eight street props differ from #129 and #129's file wins: Bench_Wood, Bench_WoodIron, FireHydrant_Red, FireHydrant_Silver, FireHydrant_Yellow, LightPost_Globe, PowerPole_Span, and TrashCan_Lidded. #125 drops its copy of all of these. Do not re-export them.
 6. The six land-gap fails are #122's assets. The landing already clears on #122 `c727dc0e`, and the quartets fail framing: WalkUp 2736/2216/1004, Container_20 and both enamels 5778/1800/264, Container_40 8466/3144/264, Gazebo 1216/872/404. #125's WalkUp is still the old 1832/1300/680 mesh (land-gap 54.0 cm). Its containers match #129 and differ from #122 (land-gap 23.0 cm). Gazebo's mesh matches #122; the 22.2 cm gap is #125's collider record. #125 drops those six and takes #122's files. #122 does not get a landing fix. The tan Hier stays #128's fail. There is still no train or trolley. Do not treat the pass 20 quartets as #125 passes.
 7. `20f0d9fa` adds the missing 2022–2026 shells. The 2025 files the old checker had passed were not rewritten. Each new cage differs from the shipped year and from its siblings. `73fc3a78` replaces those pass 21 frames and does not edit an FBX. The 27 heroes now clear the silhouette test. 22 sides still touch the edge. 26 scales fail `stills-scale-figure`. `Sedan_Mid_A_26` scale is the one the checker accepts, and its side still touches the edge. Do not treat those quartets as passes. `Sedan_Mid_A_26` is 4.900 × 1.816 × 1.440 m, LOD 4684/3556/1968. The year heroes are not byte-identical. `Art/Vehicles/LICENSES.md` is CC0-1.0 for geometry built in this repo. The Camry brochure is a dimension table, not a source mesh. Do not reshape the shipped 2025 bodies.
+8. Shoot target, items 1–3. `Sedan_Compact_26` pass 21 scale is in frame and fails only because the figure is green. Reshoot that scale, and the sides that still touch the border, with the blue mannequin or the `Figure=Mannequin` tag from `shoot_quartet.py`. `Art/Vehicles/LICENSES.md` is already the shared table. Do not split it into one file per car.
 
 ## Street props (#129)
 
@@ -81,5 +98,6 @@ CC0 rows on this tip: 165 prop rows and 6 mannequin rows, each `CC0-1.0`. The pr
 3. Garage and Storefront_Glass do not match #122. #122's copy wins. Drop #129's cages. Tree_Pine's hash also differs from #122; take #122's file. Do not cut a second LOD2 on a cage the owner already replaced.
 4. The other fails are stills. Many quarters are under 1280×720. `FireHydrant_Red` and `Park/Planter` keep their own quartets.
 5. Do not re-import `Car_*`. Do not seal Planter, Tree_Maple, or RooftopAC a second time.
+6. Shoot target, items 1–3. Pass 36 quartets touch the frame and do not show the blue mannequin. Reshoot with `shoot_quartet.py`. `Assets/Art/Props/Library/LICENSES.md` is already the shared table.
 
 Restructure-impact count is 13. `Pickup_FullSize_25` is not a redo. See `Docs/Models/LEDGER.md`.
