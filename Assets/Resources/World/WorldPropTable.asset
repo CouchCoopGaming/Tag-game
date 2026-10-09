@@ -1,0 +1,63 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b7e4c1a09d2f4e6a8c3b5d7e9f1a2b4c, type: 3}
+  m_Name: WorldPropTable
+  m_EditorClassIdentifier: Assembly-CSharp::Tag.Level.WorldPropTable
+  Entries:
+  - Path: Assets/Art/Props/Library/Park/Prefabs/Court.prefab
+    Prefab: {fileID: 100000, guid: a3db69cf3c01db1776c92a24a5a442bd, type: 3}
+  - Path: Assets/Art/Props/Library/Park/Prefabs/CourtFence.prefab
+    Prefab: {fileID: 100000, guid: 4dfbe9c4f5ecd8d14d5cf211985c5fba, type: 3}
+  - Path: Assets/Art/Props/Library/Park/Prefabs/Hoop.prefab
+    Prefab: {fileID: 100000, guid: 4fcac8768f77b9472f0e58f49a8cfaf0, type: 3}
+  - Path: Assets/Art/Props/Library/StreetFurniture/Prefabs/StreetRoad_TwoLane.prefab
+    Prefab: {fileID: 100000, guid: 979d57fa2ebbf0ebfa27eb27b8ee1a3a, type: 3}
+  - Path: Assets/Art/Props/Library/StreetFurniture/Prefabs/StreetMedian_Planted.prefab
+    Prefab: {fileID: 100000, guid: 432fda3fd4e3947a65e2bfa8b1b2cff2, type: 3}
+  - Path: Assets/Art/Props/Library/Roads/Prefabs/Sidewalk.prefab
+    Prefab: {fileID: 100000, guid: b638a45d435c614f0ec846b8e23c3f78, type: 3}
+  - Path: Assets/Art/Props/Library/Buildings/Prefabs/Brick_Door.prefab
+    Prefab: {fileID: 100000, guid: 6e7d821e87fdf80a0908d4389a783191, type: 3}
+  - Path: Assets/Art/Props/Library/Buildings/Prefabs/Brick_Window.prefab
+    Prefab: {fileID: 100000, guid: bdc09c068eeb228c863600d336164660, type: 3}
+  - Path: Assets/Art/Props/Library/Buildings/Prefabs/Brick_Wall.prefab
+    Prefab: {fileID: 100000, guid: d73028293e6838a550f037ec5a2f7b2d, type: 3}
+  - Path: Assets/Art/Props/Library/Buildings/Prefabs/RooftopAC.prefab
+    Prefab: {fileID: 100000, guid: 141193babb6c2107a875d298f21caf8e, type: 3}
+  - Path: Assets/Art/Props/Library/Park/Prefabs/Gazebo.prefab
+    Prefab: {fileID: 100000, guid: 5036a890427512c437f4eb2620cf009f, type: 3}
+  - Path: Assets/Art/Props/Library/StreetFurniture/Prefabs/Car_Sedan_25.prefab
+    Prefab: {fileID: 100000, guid: a738af9bcb8d4d2f7b8f54461c0341a1, type: 3}
+  - Path: Assets/Art/Props/Library/StreetFurniture/Prefabs/Car_Hatch_25.prefab
+    Prefab: {fileID: 100000, guid: 7752622152d1023583c32e86051fdd2a, type: 3}
+  - Path: Assets/Art/Props/Library/StreetFurniture/Prefabs/Car_Pickup_25.prefab
+    Prefab: {fileID: 100000, guid: 27f24a28bdbaa5f7cdeec2369088e6da, type: 3}
+  - Path: Assets/Art/Props/Library/StreetFurniture/Prefabs/LightPost_Single.prefab
+    Prefab: {fileID: 100000, guid: ce261c1deaac98cabf84d7f171a4223c, type: 3}
+  - Path: Assets/Art/Props/Library/StreetFurniture/Prefabs/FireHydrant.prefab
+    Prefab: {fileID: 100000, guid: 185046f8740655ee965e0a2320511983, type: 3}
+  - Path: Assets/Art/Props/Library/StreetFurniture/Prefabs/Bench_Wood.prefab
+    Prefab: {fileID: 100000, guid: 890509544692b2a6a98942550f7b0dc4, type: 3}
+  - Path: Assets/Art/Props/Library/StreetFurniture/Prefabs/TrashCan_Lidded.prefab
+    Prefab: {fileID: 100000, guid: 252bad4feea8d21261c0513209298580, type: 3}
+  - Path: Assets/Art/Props/Library/StreetFurniture/Prefabs/Scaffold_Bay.prefab
+    Prefab: {fileID: 100000, guid: 3fa473efaf7b539dfff6b96f193e5163, type: 3}
+  - Path: Assets/Art/Props/Library/Park/Prefabs/Tree_Maple.prefab
+    Prefab: {fileID: 100000, guid: c3af4f436a5e2354f0706e4855eeed08, type: 3}
+  - Path: Assets/Art/Props/Library/Park/Prefabs/Planter.prefab
+    Prefab: {fileID: 100000, guid: fb18755acac9996698d871cb41ba0668, type: 3}
+  - Path: Assets/Art/Props/Library/Park/Prefabs/PicnicTable.prefab
+    Prefab: {fileID: 100000, guid: 5553ee57db111750ab8b1bbe34947663, type: 3}
+  - Path: Assets/Art/Props/Library/Park/Prefabs/ParkLamp.prefab
+    Prefab: {fileID: 100000, guid: e3b5cb0b3ccddc3b8b5c5244d2eb8bd8, type: 3}
+  - Path: Assets/Art/Props/Library/Park/Prefabs/Shrub.prefab
+    Prefab: {fileID: 100000, guid: 5fd6153c411d016587a44079259c771a, type: 3}
