@@ -680,7 +680,7 @@ def _spin_loop(g, x, z, profile, segs, mat):
 
 
 def _spin_tire(g, x, z, lod):
-    segs = (16, 10, 8)[lod]
+    segs = (16, 10, 6)[lod]
     hw = TIRE_W * 0.5
     bead = RIM_R + 0.010
     crown = TIRE_R
@@ -725,11 +725,12 @@ def _wheel(g, x, z, year, lod):
     _spin_loop(g, x, z, _oval(RIM_R * 1.04, lip, 0.016, 0.012, 8), segs, "Lib_PaintSilver")
     if lod < 2:
         _spin_loop(g, x, z, _oval(RIM_R * 0.88, spoke_face - 0.010, 0.014, 0.028, 8), segs, "Lib_Steel")
-    g.cylinder(
-        (x + sign * disc_at, AXLE_Y, z),
-        0.168, 0.018, HOUSING, segs, axis="X",
-    )
-    spokes = info["spokes"] if lod == 0 else max(5, info["spokes"] - 1)
+        g.cylinder(
+            (x + sign * disc_at, AXLE_Y, z),
+            0.168, 0.018, HOUSING, segs, axis="X",
+        )
+    # LOD2 stays under 0.6x LOD1. Four spokes and no disc.
+    spokes = info["spokes"] if lod == 0 else (4 if lod >= 2 else max(5, info["spokes"] - 1))
     arm = RIM_R * 0.55
     length = RIM_R * 0.78
     thick = 0.026 if lod == 0 else 0.034
@@ -741,10 +742,11 @@ def _wheel(g, x, z, year, lod):
             "Lib_Steel",
             euler=(math.degrees(theta), 0.0, 0.0),
         )
-    g.cylinder(
-        (x + sign * (spoke_face + 0.006), AXLE_Y, z),
-        RIM_R * 0.16, 0.018, "Lib_SteelDark", 8, axis="X",
-    )
+    if lod < 2:
+        g.cylinder(
+            (x + sign * (spoke_face + 0.006), AXLE_Y, z),
+            RIM_R * 0.16, 0.018, "Lib_SteelDark", 8, axis="X",
+        )
 
 
 def _track(g, name, kind, center, size, mount):

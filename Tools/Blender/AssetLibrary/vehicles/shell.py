@@ -874,7 +874,8 @@ def _wells(spec):
 def build_sedan(g, spec, lod):
     spec["_lod"] = lod
     level = 1 if lod == 0 else 0
-    step = 0.08 if lod == 0 else (0.48 if lod >= 2 else 0.16)
+    # LOD2 at most 0.6x LOD1. The cage stays; only the far shell is coarser.
+    step = 0.08 if lod == 0 else (0.64 if lod >= 2 else 0.16)
     extra = [k[0] for k in spec["keys"]]
     extra.extend(spec["axles"])
     for axle in spec["axles"]:

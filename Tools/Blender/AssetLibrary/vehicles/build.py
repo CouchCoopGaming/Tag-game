@@ -59,6 +59,7 @@ MODULES = (
     "sedan_compact",
     "crossover_compact",
     "hatch_compact",
+    "pickup_fullsize",
     "bus_city40",
     "bus_city40_blue",
     "bus_city40_red",
