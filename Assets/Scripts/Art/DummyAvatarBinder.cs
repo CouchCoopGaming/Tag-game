@@ -623,7 +623,7 @@ namespace Tag.Art
                 if (n != "Foot_L" && n != "Foot_R" && n != "Foot.L" && n != "Foot.R")
                     continue;
                 // Ankle sits a few centimeters above the sole.
-                y = Mathf.Min(y, bones[i].position.y - 0.04f);
+                y = Mathf.Min(y, bones[i].position.y - HierBody.SoleBelowAnkle);
             }
             return y < float.PositiveInfinity ? y : float.NaN;
         }

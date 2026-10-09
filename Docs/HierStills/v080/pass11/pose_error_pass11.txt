@@ -1,0 +1,995 @@
+clip frame pelvis_deg hip_deg knee_deg spine_deg height_cm
+03_wall_drop_softland 0 0.000 10.000 10.003 0.005 8.55
+03_wall_drop_softland 1 0.000 10.001 0.003 0.002 4.88
+03_wall_drop_softland 2 0.000 0.003 0.004 0.005 1.93
+03_wall_drop_softland 3 0.000 0.004 4.996 0.003 8.92
+03_wall_drop_softland 4 0.000 10.004 0.004 0.003 8.54
+03_wall_drop_softland 5 0.000 5.001 0.002 0.004 3.63
+03_wall_drop_softland 6 0.000 14.995 0.004 20.000 9.14
+03_wall_drop_softland 7 0.000 20.001 0.004 20.000 -1.19
+03_wall_drop_softland 8 0.000 15.000 0.004 10.000 -8.89
+03_wall_drop_softland 9 0.000 0.003 0.002 0.005 -18.17
+03_wall_drop_softland 10 0.000 10.004 0.004 5.000 -20.48
+03_wall_drop_softland 11 0.000 9.999 0.002 0.001 -24.31
+03_wall_drop_softland 12 0.000 10.002 0.004 0.002 -25.09
+03_wall_drop_softland 13 0.000 5.002 0.000 0.003 -28.20
+03_wall_drop_softland 14 0.000 10.000 0.004 0.004 -32.09
+03_wall_drop_softland 15 0.000 10.000 0.000 10.000 -35.35
+03_wall_drop_softland 16 0.000 10.003 0.004 15.000 -36.23
+03_wall_drop_softland 17 0.000 0.004 0.004 0.004 -36.19
+03_wall_drop_softland 18 0.000 10.000 0.002 10.000 -37.54
+03_wall_drop_softland 19 0.000 5.000 0.004 0.004 -38.18
+03_wall_drop_softland 20 0.000 0.003 0.002 0.002 -37.38
+03_wall_drop_softland 21 0.000 15.000 0.004 5.000 -35.87
+03_wall_drop_softland 22 0.000 20.000 0.002 15.000 -31.17
+03_wall_drop_softland 23 0.000 9.996 0.004 0.001 -23.35
+03_wall_drop_softland 24 0.000 15.000 0.004 10.000 -19.02
+03_wall_drop_softland 25 0.000 14.999 0.004 10.000 -14.42
+03_wall_drop_softland 26 0.000 20.000 0.002 15.000 -8.22
+03_wall_drop_softland 27 0.000 10.001 0.004 0.001 -7.38
+03_wall_drop_softland 28 0.000 9.996 0.004 10.000 -2.99
+03_wall_drop_softland 29 0.000 10.000 0.002 10.000 -0.34
+03_wall_drop_softland 30 0.000 5.000 0.002 10.000 2.08
+03_wall_drop_softland 31 0.000 10.000 0.002 0.004 -0.44
+03_wall_drop_softland 32 0.000 20.001 0.004 0.002 -7.97
+03_wall_drop_softland 33 0.000 5.004 0.004 0.002 -6.50
+03_wall_drop_softland 34 0.000 10.002 0.004 0.005 -10.71
+03_wall_drop_softland 35 0.000 10.000 0.000 0.004 -11.28
+03_wall_drop_softland 36 0.000 10.000 0.002 10.000 -14.27
+03_wall_drop_softland 37 0.000 15.005 0.004 0.002 -18.31
+03_wall_drop_softland 38 0.000 10.000 0.004 0.004 -22.42
+03_wall_drop_softland 39 0.000 5.003 0.004 10.000 -26.48
+03_wall_drop_softland 40 0.000 10.005 0.002 10.000 -30.06
+03_wall_drop_softland 41 0.000 5.002 0.004 5.000 -32.34
+03_wall_drop_softland 42 0.000 19.998 0.004 5.000 -35.22
+03_wall_drop_softland 43 0.000 20.000 0.004 0.003 -34.98
+03_wall_drop_softland 44 0.000 5.002 0.002 0.005 -34.74
+03_wall_drop_softland 45 0.000 5.000 0.002 0.005 -35.22
+03_wall_drop_softland 46 0.000 5.000 0.002 0.004 -35.61
+03_wall_drop_softland 47 0.000 10.000 0.004 0.005 -36.73
+03_wall_drop_softland 48 0.000 10.000 0.004 0.002 -36.19
+03_wall_drop_softland 49 0.000 9.999 0.005 0.004 -36.32
+03_wall_drop_softland 50 0.000 10.005 0.000 0.004 -37.54
+04_window_drop_softland 0 0.000 15.001 0.003 10.000 -24.17
+04_window_drop_softland 1 0.000 10.003 0.003 5.000 -23.39
+04_window_drop_softland 2 0.000 10.005 0.002 5.000 -24.16
+04_window_drop_softland 3 0.000 14.995 0.004 0.004 -26.53
+04_window_drop_softland 4 0.000 10.005 0.002 0.003 -23.78
+04_window_drop_softland 5 0.000 10.003 0.004 0.000 -23.85
+04_window_drop_softland 6 0.000 10.005 0.004 0.004 -23.47
+04_window_drop_softland 7 0.000 10.000 0.004 0.004 -22.14
+04_window_drop_softland 8 0.000 4.995 0.002 0.004 -22.82
+04_window_drop_softland 9 0.000 0.005 0.004 0.005 -23.63
+04_window_drop_softland 10 0.000 0.003 0.002 0.004 -23.99
+04_window_drop_softland 11 0.000 0.003 0.002 0.004 -24.08
+04_window_drop_softland 12 0.000 0.004 0.002 0.004 -21.73
+04_window_drop_softland 13 0.000 0.001 0.002 0.001 -20.99
+04_window_drop_softland 14 0.000 0.003 0.000 0.002 -19.58
+04_window_drop_softland 15 0.000 10.005 0.004 0.003 -19.33
+04_window_drop_softland 16 0.000 10.000 0.004 10.000 -18.96
+04_window_drop_softland 17 0.000 20.000 0.004 10.000 -18.34
+04_window_drop_softland 18 0.000 15.002 0.002 20.000 -18.12
+04_window_drop_softland 19 0.000 4.999 0.004 0.004 -14.39
+04_window_drop_softland 20 0.000 10.004 0.004 20.000 -11.68
+04_window_drop_softland 21 0.000 0.005 3.998 10.000 -21.39
+04_window_drop_softland 22 0.000 5.000 6.000 0.003 -20.55
+04_window_drop_softland 23 0.000 20.000 7.996 0.002 -19.95
+04_window_drop_softland 24 0.000 10.004 8.000 20.000 -19.83
+04_window_drop_softland 25 0.000 20.001 8.004 0.001 -17.70
+04_window_drop_softland 26 0.000 5.000 8.000 0.004 -20.43
+04_window_drop_softland 27 0.000 0.004 6.996 0.003 -20.90
+04_window_drop_softland 28 0.000 4.999 0.002 0.004 -8.81
+04_window_drop_softland 29 0.000 5.004 0.004 15.000 -12.83
+04_window_drop_softland 30 0.000 10.000 0.004 10.000 -17.70
+04_window_drop_softland 31 0.000 0.005 0.004 0.005 -21.94
+04_window_drop_softland 32 0.000 4.999 0.004 10.000 -23.71
+04_window_drop_softland 33 0.000 5.001 0.002 10.000 -24.88
+04_window_drop_softland 34 0.000 0.004 0.004 0.005 -26.57
+04_window_drop_softland 35 0.000 0.004 0.004 0.003 -28.09
+04_window_drop_softland 36 0.000 0.002 0.002 0.003 -29.04
+04_window_drop_softland 37 0.000 0.005 0.004 0.005 -28.71
+04_window_drop_softland 38 0.000 10.000 0.004 0.003 -25.37
+04_window_drop_softland 39 0.000 14.999 0.004 0.004 -23.56
+04_window_drop_softland 40 0.000 20.001 0.004 0.005 -20.21
+04_window_drop_softland 41 0.000 19.997 0.004 5.000 -19.79
+04_window_drop_softland 42 0.000 24.996 0.002 5.000 -18.10
+04_window_drop_softland 43 0.000 24.995 0.002 0.003 -13.26
+04_window_drop_softland 44 0.000 25.002 0.004 0.004 -13.43
+04_window_drop_softland 45 0.000 24.997 0.002 5.000 -15.58
+04_window_drop_softland 46 0.000 25.005 0.004 5.000 -13.47
+04_window_drop_softland 47 0.000 25.002 0.002 5.000 -9.34
+04_window_drop_softland 48 0.000 10.000 0.004 5.000 -7.19
+04_window_drop_softland 49 0.000 14.997 0.004 0.004 -2.64
+04_window_drop_softland 50 0.000 10.000 0.005 0.005 -6.60
+04_window_drop_softland 51 0.000 10.000 0.000 0.004 -10.27
+10_wallrun_slanted 0 0.000 15.000 0.003 20.000 0.00
+10_wallrun_slanted 1 0.000 4.999 0.002 20.000 18.20
+10_wallrun_slanted 2 0.000 20.000 0.004 15.000 22.50
+10_wallrun_slanted 3 0.000 10.000 0.004 10.000 11.57
+10_wallrun_slanted 4 0.000 0.005 0.002 0.004 7.95
+10_wallrun_slanted 5 0.000 0.005 0.004 0.004 11.68
+10_wallrun_slanted 6 0.000 19.997 0.004 0.003 36.08
+10_wallrun_slanted 7 0.000 10.000 0.002 0.005 24.89
+10_wallrun_slanted 8 0.000 9.999 0.004 0.002 16.69
+10_wallrun_slanted 9 0.000 9.996 0.002 5.000 0.00
+10_wallrun_slanted 10 0.000 10.004 0.004 5.000 0.00
+10_wallrun_slanted 11 0.000 9.999 0.004 10.000 -0.00
+10_wallrun_slanted 12 0.000 9.999 0.004 10.000 0.00
+10_wallrun_slanted 13 0.000 10.000 0.004 0.003 -0.00
+10_wallrun_slanted 14 0.000 10.005 0.004 0.004 0.00
+10_wallrun_slanted 15 0.000 9.998 0.004 0.003 -0.00
+10_wallrun_slanted 16 0.000 10.000 0.004 0.003 0.00
+10_wallrun_slanted 17 0.000 10.003 0.002 0.005 0.00
+10_wallrun_slanted 18 0.000 0.002 0.004 0.004 -0.00
+10_wallrun_slanted 19 0.000 10.000 0.004 0.003 0.00
+10_wallrun_slanted 20 0.000 10.000 0.000 0.004 -0.00
+10_wallrun_slanted 21 0.000 15.005 0.002 0.003 -0.00
+10_wallrun_slanted 22 0.000 10.003 0.004 0.001 -0.00
+10_wallrun_slanted 23 0.000 9.997 0.000 0.002 -0.00
+10_wallrun_slanted 24 0.000 0.004 0.002 0.003 0.00
+10_wallrun_slanted 25 0.000 9.996 0.004 0.002 -0.00
+10_wallrun_slanted 26 0.000 9.998 0.004 0.005 -0.00
+10_wallrun_slanted 27 0.000 10.000 0.002 5.000 0.00
+10_wallrun_slanted 28 0.000 15.000 0.004 10.000 0.00
+10_wallrun_slanted 29 0.000 20.000 0.004 10.000 -0.00
+10_wallrun_slanted 30 0.000 20.000 0.004 10.000 0.00
+10_wallrun_slanted 31 0.000 20.000 0.004 10.000 -0.00
+10_wallrun_slanted 32 0.000 10.000 0.004 10.000 -0.00
+10_wallrun_slanted 33 0.000 10.000 0.002 5.000 0.00
+10_wallrun_slanted 34 0.000 10.005 0.004 5.000 -0.00
+10_wallrun_slanted 35 0.000 15.003 0.004 0.003 -0.00
+10_wallrun_slanted 36 0.000 10.000 0.002 5.000 0.00
+10_wallrun_slanted 37 0.000 10.001 0.004 5.000 0.00
+10_wallrun_slanted 38 0.000 10.004 0.002 5.000 0.00
+10_wallrun_slanted 39 0.000 10.000 0.002 5.000 0.00
+10_wallrun_slanted 40 0.000 10.003 0.002 0.002 -0.00
+10_wallrun_slanted 41 0.000 20.001 0.004 0.004 -0.00
+10_wallrun_slanted 42 0.000 0.005 0.004 0.003 0.00
+10_wallrun_slanted 43 0.000 0.001 0.004 0.002 0.00
+10_wallrun_slanted 44 0.000 0.004 0.004 0.003 2.26
+10_wallrun_slanted 45 33.909 0.005 0.000 0.003 -0.00
+10_wallrun_slanted 46 0.000 0.004 0.004 0.003 0.00
+10_wallrun_slanted 47 0.000 0.004 0.002 0.003 -0.00
+10_wallrun_slanted 48 0.000 0.005 0.002 0.004 -0.00
+10_wallrun_slanted 49 0.000 0.004 0.004 0.004 0.00
+10_wallrun_slanted 50 0.000 0.002 0.004 0.005 -0.00
+10_wallrun_slanted 51 0.000 0.004 0.004 0.003 0.00
+10_wallrun_slanted 52 0.000 0.001 0.004 0.001 -0.00
+10_wallrun_slanted 53 0.000 0.004 0.004 0.003 0.00
+10_wallrun_slanted 54 0.000 0.001 0.002 0.005 0.00
+10_wallrun_slanted 55 0.000 0.004 0.002 0.004 -0.00
+10_wallrun_slanted 56 0.000 0.003 0.004 0.004 0.00
+10_wallrun_slanted 57 0.000 0.004 0.004 0.004 -0.00
+10_wallrun_slanted 58 0.000 0.004 0.004 0.004 0.00
+10_wallrun_slanted 59 0.000 0.003 0.002 0.002 -0.00
+10_wallrun_slanted 60 0.000 0.001 0.002 0.001 -0.00
+10_wallrun_slanted 61 0.000 0.003 0.002 10.000 -0.00
+10_wallrun_slanted 62 0.000 0.004 0.004 10.000 -0.00
+10_wallrun_slanted 63 0.000 9.999 0.000 10.000 -0.00
+10_wallrun_slanted 64 0.000 0.003 0.002 0.003 0.00
+10_wallrun_slanted 65 0.000 0.004 0.004 0.004 -0.00
+10_wallrun_slanted 66 0.000 0.001 0.004 0.005 0.00
+10_wallrun_slanted 67 0.000 0.003 0.002 0.003 -0.00
+10_wallrun_slanted 68 0.000 0.003 0.004 0.004 -0.00
+10_wallrun_slanted 69 0.000 0.004 0.002 0.003 -0.00
+10_wallrun_slanted 70 0.000 0.001 0.002 0.001 0.00
+10_wallrun_slanted 71 0.000 0.002 0.004 0.003 -0.00
+10_wallrun_slanted 72 0.000 0.004 0.002 0.003 -0.00
+10_wallrun_slanted 73 0.000 0.005 0.002 0.001 -0.00
+10_wallrun_slanted 74 0.000 0.004 0.002 0.005 -0.00
+10_wallrun_slanted 75 0.000 0.004 0.004 0.004 0.00
+10_wallrun_slanted 76 0.000 0.004 0.004 0.004 0.00
+10_wallrun_slanted 77 0.000 0.004 0.004 0.003 0.00
+10_wallrun_slanted 78 0.000 0.003 0.002 0.005 -0.00
+10_wallrun_slanted 79 0.000 0.003 0.004 0.004 0.00
+10_wallrun_slanted 80 0.000 0.004 0.004 0.002 0.00
+10_wallrun_slanted 81 0.000 0.004 0.004 0.004 0.00
+10_wallrun_slanted 82 0.000 0.005 0.004 0.001 0.00
+10_wallrun_slanted 83 0.000 0.004 0.004 0.005 -0.00
+10_wallrun_slanted 84 0.000 0.003 0.004 0.004 0.00
+10_wallrun_slanted 85 0.000 0.002 0.004 0.003 -0.00
+10_wallrun_slanted 86 0.000 0.004 0.002 0.003 -0.00
+10_wallrun_slanted 87 0.000 0.003 0.000 0.003 0.00
+10_wallrun_slanted 88 0.000 0.004 0.004 0.001 -0.00
+10_wallrun_slanted 89 0.000 0.005 0.000 0.005 0.00
+10_wallrun_slanted 90 0.000 0.002 0.002 0.002 -0.00
+10_wallrun_slanted 91 0.000 4.997 0.004 0.002 -0.00
+10_wallrun_slanted 92 0.000 10.003 0.004 0.003 -0.00
+10_wallrun_slanted 93 0.000 0.004 0.004 0.002 -0.00
+10_wallrun_slanted 94 0.000 0.004 0.004 0.005 0.00
+10_wallrun_slanted 95 0.000 0.005 0.004 0.005 -0.00
+10_wallrun_slanted 96 0.000 0.004 0.004 0.003 -0.00
+10_wallrun_slanted 97 0.000 0.005 0.004 0.003 0.00
+10_wallrun_slanted 98 0.000 0.005 0.004 0.003 -0.00
+10_wallrun_slanted 99 0.000 0.004 0.004 0.003 0.00
+10_wallrun_slanted 100 0.000 0.004 0.002 0.005 0.00
+10_wallrun_slanted 101 0.000 0.005 0.002 0.004 -0.00
+10_wallrun_slanted 102 0.000 0.005 0.004 0.004 -0.00
+10_wallrun_slanted 103 0.000 0.004 0.004 0.004 0.00
+10_wallrun_slanted 104 0.000 0.003 0.004 0.004 -0.00
+10_wallrun_slanted 105 0.000 0.004 0.002 0.001 0.00
+10_wallrun_slanted 106 0.000 0.005 0.004 0.003 0.00
+10_wallrun_slanted 107 0.000 0.004 0.000 0.003 0.00
+10_wallrun_slanted 108 0.000 5.002 0.004 0.003 -0.00
+10_wallrun_slanted 109 0.000 0.005 0.002 0.004 0.00
+10_wallrun_slanted 110 0.000 10.000 0.000 0.004 0.00
+10_wallrun_slanted 111 0.000 5.000 0.002 5.000 0.00
+10_wallrun_slanted 112 0.000 0.005 0.004 0.003 -0.00
+10_wallrun_slanted 113 0.000 0.005 0.004 0.001 0.00
+10_wallrun_slanted 114 0.000 0.005 0.002 0.004 0.00
+10_wallrun_slanted 115 0.000 0.005 0.002 0.005 0.00
+10_wallrun_slanted 116 0.000 0.005 0.002 0.003 -0.00
+10_wallrun_slanted 117 0.000 0.004 0.004 0.003 -0.00
+10_wallrun_slanted 118 0.000 0.005 0.004 0.004 -0.00
+10_wallrun_slanted 119 0.000 0.004 0.004 0.003 -0.00
+10_wallrun_slanted 120 0.000 0.004 0.002 0.004 0.00
+10_wallrun_slanted 121 0.000 0.004 0.002 0.005 0.00
+10_wallrun_slanted 122 0.000 0.004 0.004 0.001 0.00
+10_wallrun_slanted 123 0.000 0.003 0.002 0.005 -0.00
+10_wallrun_slanted 124 0.000 0.004 0.002 0.002 -0.00
+10_wallrun_slanted 125 0.000 0.005 0.005 0.005 0.00
+10_wallrun_slanted 126 0.000 0.005 0.003 0.005 0.00
+12_tictac_slanted_wall 0 0.000 35.002 0.003 0.003 -4.31
+12_tictac_slanted_wall 1 0.000 35.002 0.005 0.003 -3.65
+12_tictac_slanted_wall 2 0.000 35.002 0.002 0.004 -4.74
+12_tictac_slanted_wall 3 0.000 10.001 0.004 5.000 8.01
+12_tictac_slanted_wall 4 0.000 19.999 0.002 5.000 7.15
+12_tictac_slanted_wall 5 0.000 10.000 0.004 5.000 6.00
+12_tictac_slanted_wall 6 0.000 15.005 0.004 5.000 6.47
+12_tictac_slanted_wall 7 0.000 14.999 0.002 5.000 5.02
+12_tictac_slanted_wall 8 0.000 20.000 0.004 0.001 7.52
+12_tictac_slanted_wall 9 0.000 15.000 0.004 0.005 6.57
+12_tictac_slanted_wall 10 0.000 40.002 0.004 20.000 -31.74
+12_tictac_slanted_wall 11 0.000 10.000 0.004 0.005 -7.07
+12_tictac_slanted_wall 12 0.000 24.998 0.004 0.004 -5.46
+12_tictac_slanted_wall 13 0.000 44.998 0.002 0.003 -5.96
+12_tictac_slanted_wall 14 0.000 64.998 0.002 0.004 -5.29
+12_tictac_slanted_wall 15 0.000 74.998 0.004 0.003 -6.79
+12_tictac_slanted_wall 16 0.000 89.998 0.002 0.002 -8.01
+12_tictac_slanted_wall 17 0.000 89.998 0.002 0.004 -16.86
+12_tictac_slanted_wall 18 0.000 89.998 0.002 5.000 -23.39
+12_tictac_slanted_wall 19 0.000 89.998 0.004 20.000 -0.00
+12_tictac_slanted_wall 20 0.000 89.998 0.004 20.000 0.00
+12_tictac_slanted_wall 21 0.000 89.998 0.004 0.005 -18.52
+12_tictac_slanted_wall 22 0.000 89.998 0.004 20.000 -21.89
+12_tictac_slanted_wall 23 0.000 89.998 0.004 0.002 -21.58
+12_tictac_slanted_wall 24 0.000 4.996 0.002 0.003 -0.80
+12_tictac_slanted_wall 25 0.000 4.999 0.004 0.004 3.39
+12_tictac_slanted_wall 26 0.000 20.000 0.004 5.000 5.70
+12_tictac_slanted_wall 27 0.000 20.001 0.002 10.000 2.90
+12_tictac_slanted_wall 28 0.000 10.000 0.004 10.000 0.24
+12_tictac_slanted_wall 29 0.000 4.999 0.002 0.003 -1.33
+12_tictac_slanted_wall 30 0.000 20.001 0.002 15.000 -5.22
+12_tictac_slanted_wall 31 0.000 15.004 0.002 20.000 -10.70
+12_tictac_slanted_wall 32 0.000 15.003 0.002 20.000 -14.95
+12_tictac_slanted_wall 33 0.000 20.000 0.004 20.000 -19.19
+12_tictac_slanted_wall 34 0.000 20.000 0.004 0.004 -0.00
+12_tictac_slanted_wall 35 0.000 15.002 0.002 0.004 0.00
+12_tictac_slanted_wall 36 0.000 4.999 0.004 0.004 -0.00
+12_tictac_slanted_wall 37 0.000 0.004 0.004 0.005 -0.00
+12_tictac_slanted_wall 38 0.000 0.004 0.004 0.003 -0.00
+12_tictac_slanted_wall 39 0.000 0.004 0.004 0.005 6.54
+12_tictac_slanted_wall 40 0.000 5.001 0.004 0.003 7.64
+12_tictac_slanted_wall 41 0.000 24.996 0.004 5.000 4.16
+12_tictac_slanted_wall 42 0.000 39.996 0.002 0.001 -0.97
+12_tictac_slanted_wall 43 0.000 54.996 0.004 0.003 -1.57
+12_tictac_slanted_wall 44 0.000 59.996 0.004 10.000 -5.83
+12_tictac_slanted_wall 45 0.000 64.996 0.002 15.000 -9.65
+12_tictac_slanted_wall 46 0.000 10.002 0.000 5.000 -12.63
+12_tictac_slanted_wall 47 0.000 10.000 0.004 0.005 -13.18
+12_tictac_slanted_wall 48 0.000 20.000 0.004 5.000 -13.86
+12_tictac_slanted_wall 49 0.000 14.998 0.000 0.004 -12.39
+12_tictac_slanted_wall 50 0.000 10.000 0.004 5.000 -9.34
+12_tictac_slanted_wall 51 0.000 4.997 0.002 5.000 -12.14
+12_tictac_slanted_wall 52 0.000 5.005 0.002 0.002 -15.44
+12_tictac_slanted_wall 53 0.000 10.003 0.002 0.002 0.00
+12_tictac_slanted_wall 54 0.000 19.997 0.004 20.000 -1.39
+12_tictac_slanted_wall 55 0.000 10.002 0.004 5.000 -12.23
+12_tictac_slanted_wall 56 0.000 10.004 0.002 5.000 -4.00
+12_tictac_slanted_wall 57 0.000 14.997 0.004 5.000 -7.86
+12_tictac_slanted_wall 58 0.000 10.000 0.004 5.000 -13.35
+12_tictac_slanted_wall 59 0.000 10.000 0.004 0.003 -15.47
+12_tictac_slanted_wall 60 0.000 9.997 0.004 0.004 -16.99
+12_tictac_slanted_wall 61 0.000 10.000 0.004 10.000 -22.34
+12_tictac_slanted_wall 62 0.000 10.000 0.004 10.000 -25.91
+12_tictac_slanted_wall 63 0.000 9.998 0.002 0.004 -31.02
+12_tictac_slanted_wall 64 0.000 9.999 0.004 10.000 -22.78
+12_tictac_slanted_wall 65 0.000 10.004 0.002 10.000 -25.02
+12_tictac_slanted_wall 66 0.000 15.000 0.004 10.000 -20.55
+12_tictac_slanted_wall 67 0.000 19.998 0.004 10.000 -20.31
+12_tictac_slanted_wall 68 0.000 15.001 0.004 0.005 -19.71
+12_tictac_slanted_wall 69 0.000 20.000 0.004 0.004 -18.16
+12_tictac_slanted_wall 70 0.000 20.000 0.004 10.000 -13.55
+12_tictac_slanted_wall 71 0.000 10.000 0.004 10.000 -18.83
+12_tictac_slanted_wall 72 0.000 0.004 0.004 0.005 -12.73
+12_tictac_slanted_wall 73 0.000 0.005 0.004 5.000 -12.25
+12_tictac_slanted_wall 74 0.000 14.997 0.004 0.004 -18.16
+12_tictac_slanted_wall 75 0.000 4.997 0.004 10.000 -16.37
+12_tictac_slanted_wall 76 0.000 5.000 0.004 0.004 -17.17
+12_tictac_slanted_wall 77 0.000 5.004 0.002 0.001 -12.81
+12_tictac_slanted_wall 78 0.000 10.004 0.002 0.003 -11.11
+12_tictac_slanted_wall 79 0.000 14.996 0.004 0.005 -14.81
+12_tictac_slanted_wall 80 0.000 10.004 0.004 0.004 -16.31
+12_tictac_slanted_wall 81 0.000 9.998 0.004 0.002 -13.76
+12_tictac_slanted_wall 82 0.000 10.000 0.002 0.004 -12.17
+12_tictac_slanted_wall 83 0.000 15.000 0.004 0.001 -13.02
+12_tictac_slanted_wall 84 0.000 9.998 0.004 0.003 -12.96
+12_tictac_slanted_wall 85 0.000 4.997 0.004 0.002 -13.53
+12_tictac_slanted_wall 86 0.000 0.004 0.004 0.003 -14.66
+12_tictac_slanted_wall 87 0.000 15.000 0.004 0.003 -17.21
+12_tictac_slanted_wall 88 0.000 15.000 0.002 0.005 -10.45
+12_tictac_slanted_wall 89 0.000 10.000 0.004 20.000 -7.04
+12_tictac_slanted_wall 90 0.000 14.996 0.004 20.000 -2.45
+12_tictac_slanted_wall 91 0.000 0.003 0.004 0.004 -10.95
+12_tictac_slanted_wall 92 0.000 0.004 0.004 0.004 -3.37
+12_tictac_slanted_wall 93 0.000 0.005 0.004 0.004 -8.11
+12_tictac_slanted_wall 94 0.000 0.004 0.002 0.004 -9.82
+12_tictac_slanted_wall 95 0.000 15.001 0.000 10.000 -6.91
+12_tictac_slanted_wall 96 0.000 14.998 0.002 0.002 -6.08
+12_tictac_slanted_wall 97 0.000 19.997 0.004 0.001 -5.53
+12_tictac_slanted_wall 98 0.000 15.000 0.004 20.000 -10.93
+12_tictac_slanted_wall 99 0.000 15.000 0.002 20.000 -4.28
+12_tictac_slanted_wall 100 0.000 20.001 0.004 0.002 -0.00
+12_tictac_slanted_wall 101 0.000 14.997 0.004 0.005 -3.61
+12_tictac_slanted_wall 102 0.000 19.997 0.002 0.003 -0.00
+12_tictac_slanted_wall 103 0.000 15.005 0.000 0.003 -8.81
+12_tictac_slanted_wall 104 0.000 15.002 0.004 0.004 -9.43
+12_tictac_slanted_wall 105 0.000 24.996 0.004 0.005 -8.86
+12_tictac_slanted_wall 106 0.000 20.001 0.004 10.000 -4.03
+12_tictac_slanted_wall 107 0.000 14.998 0.002 0.005 -8.19
+12_tictac_slanted_wall 108 0.000 5.004 0.002 20.000 0.85
+12_tictac_slanted_wall 109 0.000 0.005 7.998 0.003 -0.30
+12_tictac_slanted_wall 110 0.000 4.004 10.000 0.002 6.70
+12_tictac_slanted_wall 111 0.000 20.000 0.004 0.004 2.43
+12_tictac_slanted_wall 112 0.000 20.000 0.004 0.003 -2.44
+12_tictac_slanted_wall 113 0.000 15.000 0.002 0.005 2.57
+12_tictac_slanted_wall 114 0.000 10.000 0.004 0.005 18.40
+12_tictac_slanted_wall 115 0.000 19.996 0.002 0.004 17.90
+12_tictac_slanted_wall 116 0.000 5.000 10.002 0.005 1.58
+12_tictac_slanted_wall 117 0.000 20.004 0.004 0.004 -8.79
+12_tictac_slanted_wall 118 0.000 15.003 0.004 5.000 -5.54
+12_tictac_slanted_wall 119 0.000 25.004 0.004 0.003 0.00
+12_tictac_slanted_wall 120 0.000 29.999 0.004 0.003 -12.60
+12_tictac_slanted_wall 121 0.000 29.998 0.004 0.004 -2.82
+12_tictac_slanted_wall 122 0.000 35.002 0.002 5.000 -6.43
+12_tictac_slanted_wall 123 0.000 44.997 0.004 0.004 -5.49
+12_tictac_slanted_wall 124 0.000 34.998 0.004 0.003 -1.62
+12_tictac_slanted_wall 125 0.000 19.996 0.004 0.003 1.15
+12_tictac_slanted_wall 126 0.000 29.996 0.002 10.000 3.14
+12_tictac_slanted_wall 127 0.000 44.997 0.002 15.000 6.58
+12_tictac_slanted_wall 128 0.000 44.997 0.002 15.000 8.09
+12_tictac_slanted_wall 129 0.000 54.997 0.002 10.000 10.19
+12_tictac_slanted_wall 130 0.000 60.000 0.002 20.000 10.69
+12_tictac_slanted_wall 131 0.000 60.000 0.004 0.001 11.68
+12_tictac_slanted_wall 132 0.000 20.004 0.004 15.000 8.29
+12_tictac_slanted_wall 133 0.000 9.996 0.004 0.004 10.37
+12_tictac_slanted_wall 134 0.000 9.996 0.004 0.003 10.44
+12_tictac_slanted_wall 135 0.000 5.000 0.000 0.003 9.02
+12_tictac_slanted_wall 136 0.000 10.004 0.002 10.000 21.35
+12_tictac_slanted_wall 137 0.000 5.000 0.004 0.002 17.15
+12_tictac_slanted_wall 138 0.000 4.996 0.002 0.005 23.96
+12_tictac_slanted_wall 139 0.000 4.996 0.004 0.003 30.45
+12_tictac_slanted_wall 140 0.000 4.996 0.002 0.004 38.05
+12_tictac_slanted_wall 141 0.000 10.000 0.004 0.004 43.24
+12_tictac_slanted_wall 142 0.000 10.000 0.004 0.003 45.32
+12_tictac_slanted_wall 143 0.000 10.000 0.004 0.004 47.59
+12_tictac_slanted_wall 144 0.000 10.000 0.004 0.005 49.81
+12_tictac_slanted_wall 145 0.000 0.005 0.004 0.005 49.02
+12_tictac_slanted_wall 146 0.000 5.004 0.004 15.000 51.38
+12_tictac_slanted_wall 147 0.000 10.000 0.000 10.000 46.79
+12_tictac_slanted_wall 148 0.000 5.004 0.004 15.000 44.00
+12_tictac_slanted_wall 149 0.000 5.004 0.002 0.004 37.99
+12_tictac_slanted_wall 150 0.000 5.004 0.004 0.002 28.77
+12_tictac_slanted_wall 151 0.000 10.000 0.002 0.005 11.51
+12_tictac_slanted_wall 152 0.000 5.000 0.002 5.000 2.13
+12_tictac_slanted_wall 153 0.000 5.000 0.004 10.000 2.02
+12_tictac_slanted_wall 154 0.000 5.000 0.002 0.004 0.80
+12_tictac_slanted_wall 155 0.000 20.000 0.004 15.000 -4.80
+12_tictac_slanted_wall 156 0.000 20.000 0.004 20.000 -12.87
+12_tictac_slanted_wall 157 0.000 10.000 0.004 10.000 -19.02
+12_tictac_slanted_wall 158 0.000 0.003 0.002 10.000 -20.56
+12_tictac_slanted_wall 159 0.000 19.999 0.000 0.002 -9.67
+12_tictac_slanted_wall 160 0.000 10.003 0.004 0.004 -13.52
+12_tictac_slanted_wall 161 0.000 15.002 0.004 0.005 -11.45
+12_tictac_slanted_wall 162 0.000 19.997 0.004 0.003 -10.02
+12_tictac_slanted_wall 163 0.000 19.999 0.004 0.003 -7.73
+12_tictac_slanted_wall 164 0.000 25.000 0.004 0.000 -3.99
+12_tictac_slanted_wall 165 0.000 15.002 0.004 0.004 -4.24
+12_tictac_slanted_wall 166 0.000 10.005 0.004 0.004 -1.98
+12_tictac_slanted_wall 167 0.000 20.000 0.003 0.005 -3.29
+12_tictac_slanted_wall 168 0.000 15.004 0.003 5.000 -5.26
+15_cat_leap_wall 0 0.000 4.998 0.003 10.000 -16.71
+15_cat_leap_wall 1 0.000 10.004 0.003 10.000 -19.67
+15_cat_leap_wall 2 0.000 10.004 0.002 5.000 -16.97
+15_cat_leap_wall 3 0.000 20.000 0.002 0.003 -18.59
+15_cat_leap_wall 4 0.000 20.004 0.004 0.004 -17.50
+15_cat_leap_wall 5 0.000 20.004 0.002 0.004 -19.05
+15_cat_leap_wall 6 0.000 20.004 0.004 0.003 -19.15
+15_cat_leap_wall 7 0.000 10.004 0.004 5.000 -18.17
+15_cat_leap_wall 8 0.000 5.003 0.004 15.000 -13.56
+15_cat_leap_wall 9 0.000 0.005 0.004 15.000 -12.13
+15_cat_leap_wall 10 0.000 0.004 0.004 15.000 -0.00
+15_cat_leap_wall 11 0.000 14.996 0.002 15.000 -0.00
+15_cat_leap_wall 12 0.000 20.000 0.004 0.003 -0.00
+15_cat_leap_wall 13 0.000 15.000 0.000 5.000 0.00
+15_cat_leap_wall 14 0.000 5.000 0.004 5.000 -11.03
+15_cat_leap_wall 15 0.000 0.004 0.004 10.000 -0.00
+15_cat_leap_wall 16 0.000 10.000 0.004 0.004 -12.65
+15_cat_leap_wall 17 0.000 10.000 0.004 0.003 -12.41
+15_cat_leap_wall 18 0.000 5.000 0.004 0.001 -12.69
+15_cat_leap_wall 19 0.000 0.005 0.002 0.004 -10.38
+15_cat_leap_wall 20 0.000 10.000 0.004 0.002 -7.38
+15_cat_leap_wall 21 0.000 20.000 0.004 0.003 -8.09
+15_cat_leap_wall 22 0.000 20.000 0.004 0.003 -2.85
+15_cat_leap_wall 23 0.000 30.002 0.002 10.000 -1.90
+15_cat_leap_wall 24 0.000 40.003 0.002 0.003 3.83
+15_cat_leap_wall 25 0.000 15.001 0.004 0.005 -3.05
+15_cat_leap_wall 26 0.000 10.000 0.004 0.004 -10.74
+15_cat_leap_wall 27 0.000 39.998 0.004 20.000 0.06
+15_cat_leap_wall 28 0.000 39.997 0.004 0.004 -0.68
+15_cat_leap_wall 29 0.000 4.997 0.002 0.002 -17.68
+15_cat_leap_wall 30 0.000 19.997 0.004 0.003 -8.16
+15_cat_leap_wall 31 0.000 15.001 0.002 0.002 -11.53
+15_cat_leap_wall 32 0.000 15.004 0.002 0.004 -14.35
+15_cat_leap_wall 33 0.000 14.999 0.004 0.004 -12.93
+15_cat_leap_wall 34 0.000 29.998 0.004 10.000 -7.51
+15_cat_leap_wall 35 0.000 10.000 0.004 0.003 -19.65
+15_cat_leap_wall 36 0.000 15.005 0.002 0.005 -19.29
+15_cat_leap_wall 37 0.000 24.996 0.002 15.000 -6.86
+15_cat_leap_wall 38 0.000 9.997 0.004 0.005 -16.22
+15_cat_leap_wall 39 0.000 20.001 0.004 15.000 -8.24
+15_cat_leap_wall 40 0.000 20.002 0.004 5.000 -12.72
+15_cat_leap_wall 41 0.000 5.003 0.002 10.000 -13.10
+15_cat_leap_wall 42 0.000 19.999 0.002 5.000 -10.40
+15_cat_leap_wall 43 0.000 14.997 0.004 15.000 -10.88
+15_cat_leap_wall 44 0.000 15.003 0.004 0.004 -8.92
+15_cat_leap_wall 45 0.000 10.000 0.002 10.000 -17.32
+15_cat_leap_wall 46 0.000 9.996 0.004 0.003 -19.69
+15_cat_leap_wall 47 0.000 10.001 0.004 0.005 -20.20
+15_cat_leap_wall 48 0.000 5.002 0.004 0.003 -15.79
+15_cat_leap_wall 49 0.000 0.004 0.002 0.001 -10.66
+15_cat_leap_wall 50 0.000 0.004 0.004 0.003 -10.60
+15_cat_leap_wall 51 0.000 0.004 0.002 0.005 -13.72
+15_cat_leap_wall 52 0.000 9.999 0.004 0.002 -14.39
+15_cat_leap_wall 53 0.000 5.002 0.004 0.004 -16.21
+15_cat_leap_wall 54 0.000 10.001 0.002 0.005 -15.20
+15_cat_leap_wall 55 0.000 0.005 0.004 0.005 -15.29
+15_cat_leap_wall 56 0.000 0.003 0.004 0.005 -11.26
+15_cat_leap_wall 57 0.000 5.001 0.002 0.003 -5.19
+15_cat_leap_wall 58 0.000 5.002 0.004 0.001 -0.49
+15_cat_leap_wall 59 0.000 4.997 0.004 0.003 3.89
+15_cat_leap_wall 60 0.000 5.005 0.004 5.000 5.92
+15_cat_leap_wall 61 0.000 4.997 0.004 5.000 9.84
+15_cat_leap_wall 62 0.000 5.002 0.004 0.004 9.42
+15_cat_leap_wall 63 0.000 20.000 0.004 5.000 14.16
+15_cat_leap_wall 64 0.000 10.000 0.004 5.000 4.40
+15_cat_leap_wall 65 0.000 9.996 0.002 0.003 4.21
+15_cat_leap_wall 66 0.000 20.000 0.004 0.004 11.84
+15_cat_leap_wall 67 0.000 0.002 0.004 0.005 1.90
+15_cat_leap_wall 68 0.000 10.003 0.004 10.000 1.67
+15_cat_leap_wall 69 0.000 10.000 0.004 10.000 1.29
+15_cat_leap_wall 70 0.000 19.996 0.002 20.000 0.73
+15_cat_leap_wall 71 0.000 20.000 0.002 0.002 0.98
+15_cat_leap_wall 72 0.000 15.000 0.004 0.003 2.34
+15_cat_leap_wall 73 0.000 5.005 0.004 20.000 0.28
+15_cat_leap_wall 74 0.000 10.000 0.004 0.004 -0.78
+15_cat_leap_wall 75 0.000 10.000 0.004 0.005 -9.61
+15_cat_leap_wall 76 0.000 19.995 0.004 20.000 -11.66
+15_cat_leap_wall 77 0.000 20.000 0.004 10.000 -3.28
+15_cat_leap_wall 78 0.000 19.997 0.002 0.004 -7.32
+15_cat_leap_wall 79 0.000 24.998 0.004 0.004 -6.51
+15_cat_leap_wall 80 0.000 20.004 0.004 0.004 -5.67
+15_cat_leap_wall 81 0.000 20.003 0.004 0.004 -6.29
+15_cat_leap_wall 82 0.000 19.998 0.004 0.004 -4.21
+15_cat_leap_wall 83 0.000 34.999 0.002 0.004 -4.31
+15_cat_leap_wall 84 0.000 39.996 0.004 0.003 -5.29
+15_cat_leap_wall 85 0.000 20.004 0.004 0.004 -9.69
+15_cat_leap_wall 86 0.000 15.004 0.004 0.003 -6.47
+15_cat_leap_wall 87 0.000 15.004 0.002 0.004 0.49
+15_cat_leap_wall 88 0.000 9.999 0.002 0.001 -1.59
+15_cat_leap_wall 89 0.000 19.999 0.002 0.002 4.53
+15_cat_leap_wall 90 0.000 9.998 0.004 0.004 2.87
+15_cat_leap_wall 91 0.000 19.998 0.002 0.005 2.85
+15_cat_leap_wall 92 0.000 29.996 0.002 15.000 3.84
+15_cat_leap_wall 93 0.000 24.998 0.004 10.000 4.15
+15_cat_leap_wall 94 0.000 19.998 0.002 20.000 3.83
+15_cat_leap_wall 95 0.000 10.000 0.002 0.002 -0.14
+15_cat_leap_wall 96 0.000 5.003 0.004 20.000 0.40
+15_cat_leap_wall 97 0.000 4.999 0.004 0.003 2.34
+15_cat_leap_wall 98 0.000 14.997 0.004 0.003 7.10
+15_cat_leap_wall 99 0.000 15.000 0.004 0.003 15.18
+15_cat_leap_wall 100 0.000 14.999 0.002 5.000 15.86
+15_cat_leap_wall 101 0.000 10.000 0.004 0.004 19.09
+15_cat_leap_wall 102 0.000 10.004 0.004 0.004 26.47
+15_cat_leap_wall 103 0.000 5.001 0.004 0.003 31.27
+15_cat_leap_wall 104 0.000 20.000 0.002 0.004 33.25
+15_cat_leap_wall 105 0.000 29.995 0.000 0.002 38.61
+15_cat_leap_wall 106 0.000 15.000 0.002 0.001 40.16
+15_cat_leap_wall 107 0.000 10.000 0.004 0.005 37.35
+15_cat_leap_wall 108 0.000 0.005 9.004 0.004 10.08
+15_cat_leap_wall 109 0.000 20.000 0.002 15.000 12.67
+15_cat_leap_wall 110 0.000 10.001 0.004 0.004 9.16
+15_cat_leap_wall 111 0.000 20.002 0.004 0.001 14.16
+15_cat_leap_wall 112 0.000 50.004 0.002 0.003 18.55
+15_cat_leap_wall 113 0.000 50.001 0.004 15.000 15.07
+15_cat_leap_wall 114 0.000 39.998 0.004 15.000 8.92
+15_cat_leap_wall 115 0.000 40.002 0.002 5.000 5.73
+15_cat_leap_wall 116 0.000 25.005 0.002 0.003 0.34
+15_cat_leap_wall 117 0.000 29.998 0.004 15.000 2.18
+15_cat_leap_wall 118 0.000 30.002 0.004 20.000 1.23
+15_cat_leap_wall 119 0.000 45.005 0.004 20.000 1.67
+15_cat_leap_wall 120 0.000 35.003 0.004 20.000 -1.36
+15_cat_leap_wall 121 0.000 15.000 0.002 20.000 -6.15
+15_cat_leap_wall 122 0.000 10.002 0.002 10.000 -6.49
+15_cat_leap_wall 123 0.000 9.997 0.002 10.000 -0.07
+15_cat_leap_wall 124 0.000 5.000 0.004 0.001 3.97
+15_cat_leap_wall 125 0.000 10.002 0.004 10.000 2.23
+15_cat_leap_wall 126 0.000 4.996 0.002 0.002 -1.99
+15_cat_leap_wall 127 0.000 5.001 0.000 0.004 -6.98
+15_cat_leap_wall 128 0.000 4.997 0.004 0.004 -7.44
+15_cat_leap_wall 129 0.000 10.000 0.002 0.004 -7.72
+15_cat_leap_wall 130 0.000 20.000 0.002 5.000 -9.45
+15_cat_leap_wall 131 0.000 20.000 0.004 0.001 -12.39
+15_cat_leap_wall 132 0.000 20.000 0.002 5.000 -11.19
+15_cat_leap_wall 133 0.000 15.005 0.004 0.004 -12.96
+15_cat_leap_wall 134 0.000 20.000 0.002 5.000 -16.79
+15_cat_leap_wall 135 0.000 20.000 0.004 0.004 -16.66
+15_cat_leap_wall 136 0.000 20.000 0.002 0.003 -22.36
+15_cat_leap_wall 137 0.000 20.000 0.002 10.000 -24.75
+15_cat_leap_wall 138 0.000 15.000 0.002 10.000 -27.25
+15_cat_leap_wall 139 0.000 20.002 0.004 5.000 -25.29
+15_cat_leap_wall 140 0.000 9.997 0.004 10.000 -23.19
+15_cat_leap_wall 141 0.000 5.000 0.000 0.003 -20.21
+15_cat_leap_wall 142 0.000 5.001 0.002 10.000 -20.33
+15_cat_leap_wall 143 0.000 10.001 0.004 10.000 -17.01
+15_cat_leap_wall 144 0.000 10.002 0.002 15.000 -9.91
+15_cat_leap_wall 145 0.000 20.000 0.002 20.000 -2.43
+15_cat_leap_wall 146 0.000 10.000 0.002 0.003 -4.72
+15_cat_leap_wall 147 0.000 10.005 0.004 0.000 -2.66
+15_cat_leap_wall 148 0.000 9.998 0.004 0.003 4.79
+15_cat_leap_wall 149 0.000 0.004 0.004 15.000 2.19
+15_cat_leap_wall 150 0.000 10.002 0.004 20.000 3.88
+15_cat_leap_wall 151 0.000 5.002 0.002 0.003 6.44
+15_cat_leap_wall 152 0.000 10.000 0.004 5.000 8.49
+15_cat_leap_wall 153 0.000 10.000 0.004 0.001 4.43
+15_cat_leap_wall 154 0.000 9.995 0.000 5.000 0.76
+15_cat_leap_wall 155 0.000 10.000 0.004 5.000 0.96
+15_cat_leap_wall 156 0.000 5.002 0.004 0.005 3.74
+15_cat_leap_wall 157 0.000 19.998 0.004 0.004 0.56
+15_cat_leap_wall 158 0.000 10.002 0.004 0.004 -0.00
+15_cat_leap_wall 159 0.000 4.997 0.004 0.004 2.94
+15_cat_leap_wall 160 0.000 9.998 0.004 0.002 2.33
+15_cat_leap_wall 161 0.000 4.998 0.004 0.002 -0.00
+15_cat_leap_wall 162 0.000 0.004 0.004 0.002 0.00
+15_cat_leap_wall 163 0.000 10.003 0.004 10.000 0.00
+15_cat_leap_wall 164 0.000 9.998 0.004 0.003 0.00
+15_cat_leap_wall 165 0.000 9.998 0.004 0.001 -0.00
+15_cat_leap_wall 166 0.000 9.998 0.002 0.004 -20.71
+15_cat_leap_wall 167 0.000 10.002 0.002 0.002 -21.53
+15_cat_leap_wall 168 0.000 10.002 0.002 0.002 -22.18
+15_cat_leap_wall 169 0.000 15.000 0.002 5.000 -23.84
+15_cat_leap_wall 170 0.000 20.000 0.002 0.003 -24.04
+15_cat_leap_wall 171 0.000 20.003 0.002 0.005 -25.46
+15_cat_leap_wall 172 0.000 20.001 0.002 0.004 -24.08
+15_cat_leap_wall 173 0.000 20.004 0.004 0.001 -21.99
+15_cat_leap_wall 174 0.000 10.005 0.004 10.000 -19.21
+15_cat_leap_wall 175 0.000 10.004 0.004 5.000 -16.43
+15_cat_leap_wall 176 0.000 10.003 0.004 5.000 -13.31
+15_cat_leap_wall 177 0.000 20.004 0.004 0.004 -11.64
+15_cat_leap_wall 178 0.000 20.000 0.004 0.004 -10.72
+15_cat_leap_wall 179 0.000 20.004 0.004 0.002 -10.03
+15_cat_leap_wall 180 0.000 20.003 0.004 5.000 -9.47
+15_cat_leap_wall 181 0.000 20.002 0.002 5.000 -7.80
+15_cat_leap_wall 182 0.000 15.004 0.004 0.004 -8.01
+15_cat_leap_wall 183 0.000 14.999 0.004 0.005 -6.85
+15_cat_leap_wall 184 0.000 20.000 0.004 5.000 -6.21
+15_cat_leap_wall 185 0.000 14.998 0.002 0.003 -6.10
+15_cat_leap_wall 186 0.000 14.995 0.004 0.003 -3.40
+15_cat_leap_wall 187 0.000 14.999 0.002 0.004 -0.22
+15_cat_leap_wall 188 0.000 14.997 0.004 0.003 1.49
+15_cat_leap_wall 189 0.000 10.003 0.004 0.002 -2.83
+15_cat_leap_wall 190 0.000 10.004 0.004 0.003 -4.51
+15_cat_leap_wall 191 0.000 20.000 0.004 0.005 -3.89
+15_cat_leap_wall 192 0.000 15.000 0.004 0.001 -6.91
+15_cat_leap_wall 193 0.000 20.000 0.004 0.002 -6.02
+15_cat_leap_wall 194 0.000 20.000 0.004 0.003 -7.06
+15_cat_leap_wall 195 0.000 15.004 0.002 0.002 -9.25
+15_cat_leap_wall 196 0.000 20.001 0.004 0.004 -8.54
+15_cat_leap_wall 197 0.000 20.000 0.004 10.000 -14.45
+15_cat_leap_wall 198 0.000 14.997 0.004 15.000 -13.56
+15_cat_leap_wall 199 0.000 5.004 0.004 20.000 -14.77
+15_cat_leap_wall 200 0.000 0.003 0.004 20.000 -16.94
+15_cat_leap_wall 201 0.000 15.000 0.004 20.000 -19.73
+15_cat_leap_wall 202 0.000 10.000 0.004 20.000 -17.93
+15_cat_leap_wall 203 0.000 20.000 0.004 20.000 -16.43
+15_cat_leap_wall 204 0.000 10.003 0.002 10.000 -17.63
+15_cat_leap_wall 205 0.000 10.002 0.004 10.000 -13.56
+15_cat_leap_wall 206 0.000 20.001 0.000 15.000 -12.07
+15_cat_leap_wall 207 0.000 10.002 0.004 20.000 -6.64
+15_cat_leap_wall 208 0.000 10.000 0.002 0.003 -13.44
+15_cat_leap_wall 209 0.000 30.000 0.004 5.000 0.00
+15_cat_leap_wall 210 0.000 20.000 0.004 10.000 4.43
+15_cat_leap_wall 211 0.000 10.000 0.002 5.000 8.31
+15_cat_leap_wall 212 0.000 14.996 0.002 0.005 17.14
+15_cat_leap_wall 213 0.000 29.998 0.004 0.003 13.91
+15_cat_leap_wall 214 0.000 30.001 0.004 5.000 3.73
+15_cat_leap_wall 215 0.000 35.004 0.004 0.005 1.31
+15_cat_leap_wall 216 0.000 20.000 0.004 0.003 -0.00
+15_cat_leap_wall 217 0.000 25.002 0.004 5.000 -6.13
+15_cat_leap_wall 218 0.000 24.996 0.004 0.005 -20.71
+15_cat_leap_wall 219 0.000 20.004 0.004 0.003 -10.03
+15_cat_leap_wall 220 0.000 20.004 0.004 0.004 -15.11
+15_cat_leap_wall 221 0.000 20.004 0.004 0.003 -0.00
+15_cat_leap_wall 222 0.000 20.004 0.004 5.000 -14.25
+15_cat_leap_wall 223 0.000 20.004 0.004 5.000 -18.08
+15_cat_leap_wall 224 0.000 20.004 0.004 5.000 -19.86
+15_cat_leap_wall 225 0.000 20.004 0.004 5.000 -0.00
+15_cat_leap_wall 226 0.000 20.004 0.004 5.000 0.00
+15_cat_leap_wall 227 0.000 14.999 0.004 5.000 -20.31
+15_cat_leap_wall 228 0.000 24.995 0.004 0.004 -5.97
+15_cat_leap_wall 229 0.000 34.998 0.004 5.000 6.33
+15_cat_leap_wall 230 0.000 40.002 0.004 0.003 -2.05
+15_cat_leap_wall 231 0.000 45.002 0.002 0.004 7.77
+15_cat_leap_wall 232 0.000 49.997 0.002 0.004 14.67
+15_cat_leap_wall 233 0.000 54.996 0.002 5.000 26.74
+15_cat_leap_wall 234 0.000 49.996 0.004 5.000 32.13
+15_cat_leap_wall 235 0.000 15.000 0.004 5.000 21.17
+15_cat_leap_wall 236 0.000 10.004 0.004 5.000 20.44
+15_cat_leap_wall 237 0.000 10.004 0.004 5.000 15.21
+15_cat_leap_wall 238 0.000 20.004 0.005 0.001 27.43
+15_cat_leap_wall 239 0.000 20.004 0.003 0.005 34.34
+
+Ground line is the cleaned landmark low (MediaPipe y down). A tip that dives below its own limb is interpolated and is not planted. Shoe-bottom planting is not used. Root motion is off. The rig is unchanged.
+PIN 03_wall_drop_softland f=0 SOLE L dz_cm=2.3 contact_cm=0.2 legL=+5 low=Mesh_Foot_L
+PIN 03_wall_drop_softland f=4 SOLE LR dz_cm=0.3 contact_cm=0.2  low=Mesh_Foot_R
+PIN 03_wall_drop_softland f=7 SOLE L dz_cm=-1.2 contact_cm=1.2 legL=+20 legL_short=6.0cm low=Mesh_Foot_R
+PIN 03_wall_drop_softland f=8 SOLE L dz_cm=-8.9 contact_cm=0.2 legL=+15 legL_short=5.2cm low=Mesh_Foot_L
+PIN 03_wall_drop_softland f=9 SOLE L dz_cm=-18.2 contact_cm=0.2  low=Mesh_Foot_L
+PIN 03_wall_drop_softland f=10 SOLE L dz_cm=-20.5 contact_cm=0.2 legL=+5 legL_short=3.3cm low=Mesh_Foot_L
+PIN 03_wall_drop_softland f=11 SOLE L dz_cm=-24.3 contact_cm=0.2 legL=+5 legL_short=4.8cm low=Mesh_Foot_L
+PIN 03_wall_drop_softland f=12 SOLE L dz_cm=-25.1 contact_cm=0.2 legL=+5 legL_short=4.7cm low=Mesh_Foot_L
+PIN 03_wall_drop_softland f=13 SOLE L dz_cm=-28.2 contact_cm=0.2  low=Mesh_Foot_L
+PIN 03_wall_drop_softland f=18 SOLE L dz_cm=-37.5 contact_cm=0.2  low=Mesh_Foot_L
+PIN 03_wall_drop_softland f=27 SOLE L dz_cm=-7.4 contact_cm=0.2  low=Mesh_Foot_L
+PIN 03_wall_drop_softland f=36 SOLE L dz_cm=-14.3 contact_cm=0.2 legL=-5 low=Mesh_Foot_L
+PIN 03_wall_drop_softland f=37 SOLE L dz_cm=-18.3 contact_cm=0.2 legL=-15 low=Mesh_Foot_L
+PIN 03_wall_drop_softland f=38 SOLE L dz_cm=-22.4 contact_cm=0.2 legL=-10 low=Mesh_Foot_L
+PIN 03_wall_drop_softland f=39 SOLE L dz_cm=-26.5 contact_cm=0.2 legL=-5 low=Mesh_Foot_L
+PIN 03_wall_drop_softland f=40 SOLE L dz_cm=-30.1 contact_cm=0.2 legL=-5 low=Mesh_Foot_L
+PIN 03_wall_drop_softland f=41 SOLE L dz_cm=-32.3 contact_cm=0.2 legL=-5 low=Mesh_Foot_L
+PIN 03_wall_drop_softland f=43 SOLE L dz_cm=-35.0 contact_cm=0.2 legL=-5 low=Mesh_Foot_L
+PIN 03_wall_drop_softland f=44 SOLE L dz_cm=-34.7 contact_cm=0.2 legL=-5 low=Mesh_Foot_L
+PIN 03_wall_drop_softland f=45 SOLE L dz_cm=-35.2 contact_cm=0.2 legL=-5 low=Mesh_Foot_L
+PIN 03_wall_drop_softland f=46 SOLE L dz_cm=-35.6 contact_cm=0.2 legL=-5 low=Mesh_Foot_L
+PIN 04_window_drop_softland f=0 SOLE L dz_cm=-24.2 contact_cm=0.2 legL=-15 legL_short=3.6cm low=Mesh_Foot_L
+PIN 04_window_drop_softland f=1 SOLE L dz_cm=-23.4 contact_cm=0.2 legL=-10 low=Mesh_Foot_L
+PIN 04_window_drop_softland f=2 SOLE L dz_cm=-24.2 contact_cm=0.2 legL=-10 legL_short=3.3cm low=Mesh_Foot_L
+PIN 04_window_drop_softland f=4 SOLE L dz_cm=-23.8 contact_cm=0.2 legL=-10 low=Mesh_Foot_L
+PIN 04_window_drop_softland f=5 SOLE L dz_cm=-23.9 contact_cm=0.2 legL=-10 low=Mesh_Foot_L
+PIN 04_window_drop_softland f=6 SOLE L dz_cm=-23.5 contact_cm=0.2 legL=-10 low=Mesh_Foot_L
+PIN 04_window_drop_softland f=7 SOLE L dz_cm=-22.1 contact_cm=0.2 legL=-10 low=Mesh_Foot_L
+PIN 04_window_drop_softland f=8 SOLE L dz_cm=-22.8 contact_cm=0.2 legL=-5 low=Mesh_Foot_L
+PIN 04_window_drop_softland f=9 SOLE L dz_cm=-23.6 contact_cm=0.2  low=Mesh_Foot_L
+PIN 04_window_drop_softland f=13 SOLE LR dz_cm=-21.0 contact_cm=0.2  low=Mesh_Foot_L
+PIN 04_window_drop_softland f=18 SOLE LR dz_cm=-18.1 contact_cm=0.2  low=Mesh_Foot_L
+PIN 04_window_drop_softland f=25 SOLE L dz_cm=2.1 contact_cm=0.2 legL=-20 legL_short=3.4cm low=Mesh_Foot_L
+PIN 04_window_drop_softland f=32 SOLE L dz_cm=-23.7 contact_cm=0.2  low=Mesh_Foot_L
+PIN 04_window_drop_softland f=38 SOLE L dz_cm=-25.4 contact_cm=0.2 legL=-10 low=Mesh_Foot_L
+PIN 04_window_drop_softland f=39 SOLE L dz_cm=-23.6 contact_cm=0.2 legL=-15 legL_short=3.5cm low=Mesh_Foot_L
+PIN 04_window_drop_softland f=40 SOLE L dz_cm=-20.2 contact_cm=0.2 legL=-20 legL_short=5.2cm low=Mesh_Foot_L
+PIN 04_window_drop_softland f=41 SOLE L dz_cm=-19.8 contact_cm=0.2 legL=-20 legL_short=7.6cm low=Mesh_Foot_L
+PIN 04_window_drop_softland f=42 SOLE L dz_cm=-18.1 contact_cm=0.2 legL=-25 legL_short=3.8cm low=Mesh_Foot_L
+PIN 04_window_drop_softland f=43 SOLE L dz_cm=-13.3 contact_cm=0.2 legL=-25 low=Mesh_Foot_L
+PIN 04_window_drop_softland f=44 SOLE L dz_cm=-13.4 contact_cm=0.2 legL=-25 legL_short=6.5cm low=Mesh_Foot_L
+PIN 04_window_drop_softland f=45 SOLE L dz_cm=-15.6 contact_cm=0.2 legL=-25 legL_short=6.6cm low=Mesh_Foot_L
+PIN 04_window_drop_softland f=46 SOLE L dz_cm=-13.5 contact_cm=0.2 legL=-25 legL_short=7.1cm low=Mesh_Foot_L
+PIN 04_window_drop_softland f=47 SOLE L dz_cm=-9.3 contact_cm=0.2 legL=-25 legL_short=4.8cm low=Mesh_Foot_L
+WALL45 10_wallrun_slanted f=45 hip_d=(+12,-24,+12) sole=R gap_cm=0.30 pen_cm=0.00 chest_cm=0.00  pelvis_deg=33.91
+PIN 12_tictac_slanted_wall f=0 PALM L dz_cm=-19.5 contact_cm=0.2 crouch=-35 arm=-25 low=Mesh_Hand_L
+PIN 12_tictac_slanted_wall f=1 PALM L dz_cm=-18.6 contact_cm=0.2 crouch=-35 arm=-25 low=Mesh_Hand_L
+PIN 12_tictac_slanted_wall f=2 PALM L dz_cm=-16.9 contact_cm=0.2 crouch=-35 arm=-30 low=Mesh_Hand_L
+PIN 12_tictac_slanted_wall f=10 PALM R dz_cm=-33.2 contact_cm=0.5 crouch=-40 arm=+0 low=Mesh_Hips
+PIN 12_tictac_slanted_wall f=12 SOLE L dz_cm=-5.5 contact_cm=0.2 legL=+25 low=Mesh_Foot_L
+PIN 12_tictac_slanted_wall f=13 SOLE L dz_cm=-6.0 contact_cm=0.2 legL=+45 low=Mesh_Foot_L
+PIN 12_tictac_slanted_wall f=14 SOLE L dz_cm=-5.3 contact_cm=0.2 legL=+65 low=Mesh_Foot_L
+PIN 12_tictac_slanted_wall f=15 SOLE L dz_cm=-6.8 contact_cm=0.2 legL=+75 low=Mesh_Foot_L
+PIN 12_tictac_slanted_wall f=16 SOLE L dz_cm=-8.0 contact_cm=0.2 legL=+90 low=Mesh_Foot_L
+PIN 12_tictac_slanted_wall f=17 SOLE L dz_cm=-16.9 contact_cm=0.2 legL=+90 legL_short=5.7cm low=Mesh_Foot_L
+PIN 12_tictac_slanted_wall f=18 SOLE L dz_cm=-23.4 contact_cm=0.7 legL=+90 legL_short=12.6cm low=Mesh_Foot_R
+WALL_HOLD 12_tictac_slanted_wall f=19 sole on the face, height kept
+WALL_HOLD 12_tictac_slanted_wall f=20 sole on the face, height kept
+PIN 12_tictac_slanted_wall f=21 SOLE L dz_cm=-18.5 contact_cm=7.5 legL=+90 legL_short=14.4cm low=Mesh_Foot_R
+PIN 12_tictac_slanted_wall f=22 SOLE L dz_cm=-21.9 contact_cm=6.9 legL=+90 legL_short=16.8cm low=Mesh_Foot_R
+PIN 12_tictac_slanted_wall f=23 SOLE L dz_cm=-21.6 contact_cm=0.2 legL=+90 legL_short=9.0cm low=Mesh_Foot_R
+PIN 12_tictac_slanted_wall f=27 SOLE R dz_cm=-0.0 contact_cm=20.3 legR=+10 legR_short=25.5cm low=Mesh_Foot_L
+PIN 12_tictac_slanted_wall f=28 SOLE R dz_cm=0.2 contact_cm=14.2 legR=+10 legR_short=20.3cm low=Mesh_Foot_L
+PIN 12_tictac_slanted_wall f=29 SOLE R dz_cm=-1.3 contact_cm=13.3 legR=+5 legR_short=31.0cm low=Mesh_Foot_L
+PIN 12_tictac_slanted_wall f=30 SOLE R dz_cm=-5.2 contact_cm=10.3  low=Mesh_Foot_L
+PIN 12_tictac_slanted_wall f=31 SOLE R dz_cm=-10.7 contact_cm=4.3 legR=-10 legR_short=46.2cm low=Mesh_Foot_L
+PIN 12_tictac_slanted_wall f=32 SOLE R dz_cm=-14.9 contact_cm=2.5 legR=-10 legR_short=55.7cm low=Mesh_Foot_L
+PIN 12_tictac_slanted_wall f=33 SOLE R dz_cm=-19.2 contact_cm=0.2 legR=-15 legR_short=57.1cm low=Mesh_Foot_L
+WALL_HOLD 12_tictac_slanted_wall f=34 sole on the face, height kept
+ARM 12_tictac_slanted_wall f=34 UpperArm_L[1]=+5 depth_cm=0.00 was=0.74 
+WALL_HOLD 12_tictac_slanted_wall f=35 sole on the face, height kept
+WALL_HOLD 12_tictac_slanted_wall f=36 sole on the face, height kept
+PIN 12_tictac_slanted_wall f=41 SOLE L dz_cm=4.2 contact_cm=0.2 legL=+25 low=Mesh_Foot_L
+PIN 12_tictac_slanted_wall f=42 SOLE L dz_cm=-1.0 contact_cm=0.2 legL=+40 low=Mesh_Foot_L
+PIN 12_tictac_slanted_wall f=43 SOLE L dz_cm=-1.6 contact_cm=0.2 legL=+55 low=Mesh_Foot_L
+PIN 12_tictac_slanted_wall f=44 SOLE L dz_cm=-5.8 contact_cm=0.2 legL=+60 legL_short=7.7cm low=Mesh_Foot_L
+PIN 12_tictac_slanted_wall f=45 SOLE L dz_cm=-9.6 contact_cm=0.2 legL=+65 legL_short=6.3cm low=Mesh_Foot_L
+PIN 12_tictac_slanted_wall f=49 SOLE L dz_cm=-12.4 contact_cm=0.2 legL=+5 legL_short=12.3cm low=Mesh_Foot_L
+PIN 12_tictac_slanted_wall f=52 SOLE L dz_cm=-15.4 contact_cm=0.2 legL=-5 legL_short=10.8cm low=Mesh_Foot_L
+PIN 12_tictac_slanted_wall f=54 SOLE L dz_cm=-1.4 contact_cm=16.7  low=Mesh_Foot_R
+PIN 12_tictac_slanted_wall f=55 SOLE L dz_cm=-12.2 contact_cm=9.8  low=Mesh_Foot_R
+PIN 12_tictac_slanted_wall f=63 SOLE L dz_cm=-31.0 contact_cm=0.2 legL=-5 legL_short=10.8cm low=Mesh_Foot_L
+PIN 12_tictac_slanted_wall f=64 SOLE L dz_cm=-22.8 contact_cm=0.2 legL=-10 legL_short=3.3cm low=Mesh_Foot_L
+PIN 12_tictac_slanted_wall f=65 SOLE L dz_cm=-25.0 contact_cm=0.2 legL=-10 legL_short=7.1cm low=Mesh_Foot_L
+PIN 12_tictac_slanted_wall f=66 SOLE L dz_cm=-20.5 contact_cm=0.2 legL=-15 legL_short=6.1cm low=Mesh_Foot_L
+PIN 12_tictac_slanted_wall f=67 SOLE L dz_cm=-20.3 contact_cm=0.2 legL=-20 legL_short=5.8cm low=Mesh_Foot_L
+PIN 12_tictac_slanted_wall f=68 SOLE L dz_cm=-19.7 contact_cm=0.2 legL=-15 legL_short=6.3cm low=Mesh_Foot_L
+PIN 12_tictac_slanted_wall f=69 SOLE L dz_cm=-18.2 contact_cm=0.2 legL=-20 legL_short=6.6cm low=Mesh_Foot_L
+PIN 12_tictac_slanted_wall f=70 SOLE L dz_cm=-13.5 contact_cm=0.2 legL=-20 low=Mesh_Foot_L
+PIN 12_tictac_slanted_wall f=74 SOLE L dz_cm=-18.2 contact_cm=0.2 legL=-15 legL_short=4.1cm low=Mesh_Foot_L
+PIN 12_tictac_slanted_wall f=75 SOLE L dz_cm=-16.4 contact_cm=0.2 legL=-5 low=Mesh_Foot_L
+PIN 12_tictac_slanted_wall f=76 SOLE L dz_cm=-17.2 contact_cm=0.2  low=Mesh_Foot_L
+PIN 12_tictac_slanted_wall f=77 SOLE L dz_cm=-12.8 contact_cm=0.2 legL=-5 low=Mesh_Foot_L
+PIN 12_tictac_slanted_wall f=79 SOLE L dz_cm=-14.8 contact_cm=0.2 legL=-15 low=Mesh_Foot_L
+PIN 12_tictac_slanted_wall f=80 SOLE L dz_cm=-16.3 contact_cm=0.2 legL=-10 low=Mesh_Foot_L
+PIN 12_tictac_slanted_wall f=81 SOLE L dz_cm=-13.8 contact_cm=0.2 legL=-10 low=Mesh_Foot_L
+PIN 12_tictac_slanted_wall f=82 SOLE L dz_cm=-12.2 contact_cm=0.2 legL=-10 low=Mesh_Foot_L
+PIN 12_tictac_slanted_wall f=83 SOLE L dz_cm=-13.0 contact_cm=0.2 legL=-15 legL_short=7.5cm low=Mesh_Foot_L
+PIN 12_tictac_slanted_wall f=84 SOLE L dz_cm=-13.0 contact_cm=0.2 legL=-10 legL_short=10.0cm low=Mesh_Foot_L
+PIN 12_tictac_slanted_wall f=85 SOLE L dz_cm=-13.5 contact_cm=0.2 legL=-5 legL_short=13.2cm low=Mesh_Foot_L
+PIN 12_tictac_slanted_wall f=87 SOLE L dz_cm=-17.2 contact_cm=9.4 legL=+10 legL_short=23.9cm low=Mesh_Foot_R
+PIN 12_tictac_slanted_wall f=88 SOLE L dz_cm=-10.5 contact_cm=11.6 legL=+15 legL_short=21.5cm low=Mesh_Foot_R
+PIN 12_tictac_slanted_wall f=95 SOLE R dz_cm=-6.9 contact_cm=0.2 legR=+15 low=Mesh_Foot_R
+PIN 12_tictac_slanted_wall f=96 SOLE R dz_cm=-6.1 contact_cm=0.2 legR=+15 legR_short=14.7cm low=Mesh_Foot_R
+PIN 12_tictac_slanted_wall f=97 SOLE R dz_cm=-5.5 contact_cm=0.2 legR=+20 legR_short=17.8cm low=Mesh_Foot_R
+PIN 12_tictac_slanted_wall f=98 SOLE R dz_cm=-10.9 contact_cm=0.2 legR=+15 legR_short=18.5cm low=Mesh_Foot_R
+PIN 12_tictac_slanted_wall f=99 SOLE R dz_cm=-4.3 contact_cm=0.2 legR=+15 legR_short=10.9cm low=Mesh_Foot_R
+WALL_HOLD 12_tictac_slanted_wall f=100 sole on the face, height kept
+PIN 12_tictac_slanted_wall f=101 SOLE R dz_cm=-3.6 contact_cm=0.2 legR=+15 legR_short=30.3cm low=Mesh_Foot_R
+WALL_HOLD 12_tictac_slanted_wall f=102 sole on the face, height kept
+PIN 12_tictac_slanted_wall f=103 SOLE R dz_cm=-8.8 contact_cm=0.2 legR=+15 legR_short=19.3cm low=Mesh_Foot_R
+PIN 12_tictac_slanted_wall f=104 SOLE R dz_cm=-9.4 contact_cm=0.2 legR=+15 legR_short=21.2cm low=Mesh_Foot_R
+PIN 12_tictac_slanted_wall f=105 SOLE R dz_cm=-8.9 contact_cm=0.2 legR=+25 legR_short=21.2cm low=Mesh_Foot_R
+PIN 12_tictac_slanted_wall f=106 SOLE R dz_cm=-4.0 contact_cm=0.2  low=Mesh_Foot_R
+PIN 12_tictac_slanted_wall f=107 SOLE R dz_cm=-8.2 contact_cm=0.2 legR=+15 legR_short=5.6cm low=Mesh_Foot_R
+PIN 12_tictac_slanted_wall f=108 SOLE R dz_cm=0.8 contact_cm=0.2 legR=+5 low=Mesh_Foot_R
+PIN 12_tictac_slanted_wall f=111 SOLE L dz_cm=0.0 contact_cm=7.8 legL=+20 legL_short=16.1cm low=Mesh_Foot_R
+PIN 12_tictac_slanted_wall f=112 SOLE L dz_cm=-2.4 contact_cm=6.7 legL=+20 legL_short=22.2cm low=Mesh_Foot_R
+PIN 12_tictac_slanted_wall f=113 SOLE L dz_cm=-0.1 contact_cm=0.2 legL=+15 legL_short=5.2cm low=Mesh_Foot_L
+PIN 12_tictac_slanted_wall f=114 SOLE L dz_cm=-0.9 contact_cm=5.5 legL=+5 legL_short=21.6cm low=Mesh_Foot_R
+PIN 12_tictac_slanted_wall f=115 SOLE L dz_cm=0.0 contact_cm=8.1 legL=+10 legL_short=23.8cm low=Mesh_Foot_R
+PIN 12_tictac_slanted_wall f=117 SOLE L dz_cm=-8.8 contact_cm=0.2 legL=-5 legL_short=10.4cm low=Mesh_Foot_L
+PIN 12_tictac_slanted_wall f=118 SOLE L dz_cm=-5.5 contact_cm=11.9 legL=-15 legL_short=27.5cm low=Mesh_Foot_R
+WALL_HOLD 12_tictac_slanted_wall f=119 sole on the face, height kept
+PIN 12_tictac_slanted_wall f=120 SOLE L dz_cm=-12.6 contact_cm=8.1 legL=-30 legL_short=22.3cm low=Mesh_Foot_R
+PIN 12_tictac_slanted_wall f=121 SOLE L dz_cm=-2.8 contact_cm=13.5 legL=-30 legL_short=23.8cm low=Mesh_Foot_R
+PIN 12_tictac_slanted_wall f=122 SOLE L dz_cm=-6.4 contact_cm=7.6 legL=-35 legL_short=17.4cm low=Mesh_Foot_R
+PIN 12_tictac_slanted_wall f=123 SOLE L dz_cm=-5.5 contact_cm=0.2 legL=-45 low=Mesh_Foot_L
+PIN 12_tictac_slanted_wall f=124 SOLE L dz_cm=-1.6 contact_cm=0.2 legL=-35 low=Mesh_Foot_L
+PIN 12_tictac_slanted_wall f=125 SOLE L dz_cm=1.2 contact_cm=0.2 legL=-20 low=Mesh_Foot_L
+PIN 12_tictac_slanted_wall f=126 SOLE L dz_cm=2.6 contact_cm=0.2 legL=-30 low=Mesh_Foot_L
+PIN 12_tictac_slanted_wall f=127 SOLE L dz_cm=3.3 contact_cm=0.2 legL=-45 low=Mesh_Foot_L
+PIN 12_tictac_slanted_wall f=128 SOLE L dz_cm=3.1 contact_cm=0.2 legL=-45 low=Mesh_Foot_L
+PIN 12_tictac_slanted_wall f=129 SOLE L dz_cm=4.2 contact_cm=0.2 legL=-55 legL_short=4.7cm low=Mesh_Foot_L
+PIN 12_tictac_slanted_wall f=130 SOLE L dz_cm=4.1 contact_cm=0.2 legL=-60 legL_short=7.0cm low=Mesh_Foot_L
+PIN 12_tictac_slanted_wall f=131 SOLE L dz_cm=2.1 contact_cm=0.2 legL=-60 legL_short=11.5cm low=Mesh_Foot_L
+PIN 12_tictac_slanted_wall f=132 PALM L dz_cm=0.0 contact_cm=6.7  low=Mesh_Foot_R
+PIN 12_tictac_slanted_wall f=133 PALM L dz_cm=-0.0 contact_cm=19.5  low=Mesh_Foot_R
+PIN 12_tictac_slanted_wall f=134 PALM L dz_cm=-0.0 contact_cm=14.2  low=Mesh_Foot_R
+PIN 12_tictac_slanted_wall f=135 PALM L dz_cm=-2.0 contact_cm=5.7  low=Mesh_Foot_R
+PIN 12_tictac_slanted_wall f=145 PALM LR dz_cm=0.3 contact_cm=0.2  low=Mesh_Hand_L
+WALL_HOLD 12_tictac_slanted_wall f=152 sole on the face, height kept
+PIN 12_tictac_slanted_wall f=154 SOLE L dz_cm=-0.0 contact_cm=2.3  low=Mesh_Foot_R
+PIN 12_tictac_slanted_wall f=155 SOLE L dz_cm=-4.8 contact_cm=3.6 legL=+15 legL_short=17.3cm low=Mesh_Foot_R
+PIN 12_tictac_slanted_wall f=156 SOLE L dz_cm=-12.9 contact_cm=0.2 legL=+10 legL_short=9.6cm low=Mesh_Foot_L
+PIN 12_tictac_slanted_wall f=157 SOLE L dz_cm=-19.0 contact_cm=0.2 legL=+10 legL_short=4.2cm low=Mesh_Foot_L
+PIN 12_tictac_slanted_wall f=159 SOLE L dz_cm=-9.7 contact_cm=0.2 legL=+20 legL_short=3.6cm low=Mesh_Foot_L
+PIN 12_tictac_slanted_wall f=160 SOLE L dz_cm=-13.5 contact_cm=0.2 legL=+10 low=Mesh_Foot_L
+PIN 12_tictac_slanted_wall f=161 SOLE L dz_cm=-11.5 contact_cm=0.2 legL=+15 low=Mesh_Foot_L
+PIN 12_tictac_slanted_wall f=162 SOLE L dz_cm=-10.0 contact_cm=0.2 legL=+20 low=Mesh_Foot_L
+PIN 12_tictac_slanted_wall f=163 SOLE L dz_cm=-7.7 contact_cm=0.2 legL=+20 low=Mesh_Foot_L
+PIN 12_tictac_slanted_wall f=164 SOLE L dz_cm=-4.0 contact_cm=0.2 legL=+25 legL_short=4.6cm low=Mesh_Foot_L
+PIN 12_tictac_slanted_wall f=165 SOLE L dz_cm=-4.2 contact_cm=1.5 legL=+15 legL_short=8.9cm low=Mesh_Foot_R
+PIN 12_tictac_slanted_wall f=166 SOLE L dz_cm=-2.0 contact_cm=4.4 legL=+10 legL_short=13.5cm low=Mesh_Foot_R
+PIN 12_tictac_slanted_wall f=167 SOLE L dz_cm=-3.3 contact_cm=5.7 legL=+10 legL_short=20.5cm low=Mesh_Foot_R
+PIN 12_tictac_slanted_wall f=168 SOLE L dz_cm=-5.3 contact_cm=4.7  low=Mesh_Foot_R
+FLAG 15_cat_leap_wall rindex=72-73
+PIN 15_cat_leap_wall f=0 SOLE R dz_cm=-16.7 contact_cm=0.2  low=Mesh_Foot_R
+PIN 15_cat_leap_wall f=1 SOLE R dz_cm=-19.7 contact_cm=0.2 legR=-10 legR_short=10.3cm low=Mesh_Foot_R
+PIN 15_cat_leap_wall f=2 SOLE R dz_cm=-17.0 contact_cm=0.2 legR=-5 legR_short=8.1cm low=Mesh_Foot_R
+PIN 15_cat_leap_wall f=4 SOLE R dz_cm=-17.5 contact_cm=0.2 legR=-10 legR_short=8.0cm low=Mesh_Foot_R
+PIN 15_cat_leap_wall f=5 SOLE R dz_cm=-19.0 contact_cm=0.2 legR=-5 legR_short=5.7cm low=Mesh_Foot_R
+PIN 15_cat_leap_wall f=21 SOLE LR dz_cm=-8.1 contact_cm=0.2  low=Mesh_Foot_R
+PIN 15_cat_leap_wall f=23 SOLE L dz_cm=-1.9 contact_cm=0.2 legL=+30 low=Mesh_Foot_L
+PIN 15_cat_leap_wall f=24 SOLE L dz_cm=3.8 contact_cm=0.2 legL=+40 legL_short=4.6cm low=Mesh_Foot_L
+PIN 15_cat_leap_wall f=25 SOLE L dz_cm=-3.0 contact_cm=0.2 legL=+15 low=Mesh_Foot_L
+PIN 15_cat_leap_wall f=26 SOLE L dz_cm=-10.7 contact_cm=0.2 legL=+5 low=Mesh_Foot_L
+PIN 15_cat_leap_wall f=27 SOLE L dz_cm=0.1 contact_cm=0.2 legL=+40 legL_short=9.6cm low=Mesh_Foot_L
+PIN 15_cat_leap_wall f=28 SOLE L dz_cm=-0.7 contact_cm=0.2 legL=+40 legL_short=4.1cm low=Mesh_Foot_L
+PIN 15_cat_leap_wall f=29 SOLE L dz_cm=-17.7 contact_cm=0.2 legL=+5 low=Mesh_Foot_L
+PIN 15_cat_leap_wall f=30 SOLE L dz_cm=-8.2 contact_cm=0.2 legL=+20 low=Mesh_Foot_L
+PIN 15_cat_leap_wall f=31 SOLE L dz_cm=-11.5 contact_cm=0.2 legL=+15 low=Mesh_Foot_L
+PIN 15_cat_leap_wall f=32 SOLE L dz_cm=-14.3 contact_cm=0.2 legL=+15 low=Mesh_Foot_L
+PIN 15_cat_leap_wall f=33 SOLE L dz_cm=-12.9 contact_cm=0.2 legL=+15 low=Mesh_Foot_L
+PIN 15_cat_leap_wall f=34 SOLE L dz_cm=-7.5 contact_cm=0.2 legL=+30 legL_short=6.2cm low=Mesh_Foot_L
+PIN 15_cat_leap_wall f=37 SOLE L dz_cm=-6.9 contact_cm=0.2 legL=+25 legL_short=16.3cm low=Mesh_Foot_L
+PIN 15_cat_leap_wall f=39 SOLE L dz_cm=-8.2 contact_cm=0.2 legL=+20 legL_short=7.5cm low=Mesh_Foot_L
+PIN 15_cat_leap_wall f=40 SOLE L dz_cm=-12.7 contact_cm=0.2 legL=+20 legL_short=14.4cm low=Mesh_Foot_L
+PIN 15_cat_leap_wall f=42 SOLE L dz_cm=-10.4 contact_cm=0.2 legL=+15 legL_short=9.1cm low=Mesh_Foot_L
+PIN 15_cat_leap_wall f=43 SOLE L dz_cm=-10.9 contact_cm=0.2  low=Mesh_Foot_L
+PIN 15_cat_leap_wall f=45 SOLE L dz_cm=-17.3 contact_cm=0.2 legL=+5 legL_short=10.0cm low=Mesh_Foot_L
+PIN 15_cat_leap_wall f=52 SOLE L dz_cm=-14.4 contact_cm=0.2 legL=-10 legL_short=9.0cm low=Mesh_Foot_L
+PIN 15_cat_leap_wall f=53 SOLE L dz_cm=-16.2 contact_cm=0.2 legL=-5 legL_short=11.0cm low=Mesh_Foot_L
+PIN 15_cat_leap_wall f=54 SOLE L dz_cm=-15.2 contact_cm=0.2 legL=-10 legL_short=12.1cm low=Mesh_Foot_L
+PIN 15_cat_leap_wall f=57 SOLE L dz_cm=-5.2 contact_cm=4.4 legL=-5 legL_short=15.2cm low=Mesh_Foot_R
+PIN 15_cat_leap_wall f=58 SOLE L dz_cm=-0.5 contact_cm=8.7 legL=-5 legL_short=17.9cm low=Mesh_Foot_R
+PIN 15_cat_leap_wall f=59 SOLE L dz_cm=0.0 contact_cm=11.0 legL=-5 legL_short=19.1cm low=Mesh_Foot_R
+PIN 15_cat_leap_wall f=60 SOLE L dz_cm=-0.0 contact_cm=12.3 legL=-5 legL_short=19.7cm low=Mesh_Foot_R
+PIN 15_cat_leap_wall f=61 SOLE L dz_cm=0.0 contact_cm=16.3 legL=-5 legL_short=23.0cm low=Mesh_Foot_R
+PIN 15_cat_leap_wall f=62 SOLE L dz_cm=-0.0 contact_cm=15.3 legL=-5 legL_short=21.7cm low=Mesh_Foot_R
+PIN 15_cat_leap_wall f=63 SOLE L dz_cm=-0.0 contact_cm=38.1  low=Mesh_Foot_R
+PIN 15_cat_leap_wall f=64 SOLE L dz_cm=-0.0 contact_cm=15.0  low=Mesh_Foot_R
+PIN 15_cat_leap_wall f=65 SOLE L dz_cm=-0.0 contact_cm=15.9 legL=-5 legL_short=21.4cm low=Mesh_Foot_R
+PIN 15_cat_leap_wall f=66 SOLE L dz_cm=-0.0 contact_cm=12.1  low=Mesh_Foot_R
+PIN 15_cat_leap_wall f=67 SOLE L dz_cm=0.0 contact_cm=10.2  low=Mesh_Foot_R
+PIN 15_cat_leap_wall f=68 SOLE L dz_cm=-0.0 contact_cm=12.7 legL=-5 legL_short=17.9cm low=Mesh_Foot_R
+PIN 15_cat_leap_wall f=69 SOLE L dz_cm=-0.0 contact_cm=15.4  low=Mesh_Foot_R
+PIN 15_cat_leap_wall f=70 SOLE L dz_cm=-0.0 contact_cm=7.6 legL=-10 legL_short=12.8cm low=Mesh_Foot_R
+PIN 15_cat_leap_wall f=71 SOLE L dz_cm=0.0 contact_cm=12.1  low=Mesh_Foot_R
+PIN 15_cat_leap_wall f=72 SOLE L dz_cm=0.0 contact_cm=7.1  low=Mesh_Foot_R
+PIN 15_cat_leap_wall f=73 SOLE L dz_cm=0.3 contact_cm=0.3 legL=-5 legL_short=6.8cm low=Mesh_Foot_R
+PIN 15_cat_leap_wall f=74 SOLE L dz_cm=-0.8 contact_cm=9.7 legL=-5 legL_short=17.7cm low=Mesh_Foot_R
+PIN 15_cat_leap_wall f=75 SOLE L dz_cm=-9.6 contact_cm=0.2 legL=-10 legL_short=8.3cm low=Mesh_Foot_L
+PIN 15_cat_leap_wall f=76 SOLE L dz_cm=-11.7 contact_cm=3.8 legL=-20 legL_short=15.9cm low=Mesh_Foot_R
+PIN 15_cat_leap_wall f=77 SOLE L dz_cm=-3.3 contact_cm=14.5 legL=-10 legL_short=25.4cm low=Mesh_Foot_R
+PIN 15_cat_leap_wall f=78 SOLE L dz_cm=-7.3 contact_cm=0.2 legL=-20 legL_short=5.4cm low=Mesh_Foot_L
+PIN 15_cat_leap_wall f=79 SOLE L dz_cm=-6.5 contact_cm=0.2 legL=-25 legL_short=4.3cm low=Mesh_Foot_L
+PIN 15_cat_leap_wall f=80 SOLE L dz_cm=-5.7 contact_cm=0.2 legL=-20 low=Mesh_Foot_L
+PIN 15_cat_leap_wall f=81 SOLE L dz_cm=-6.3 contact_cm=0.2 legL=-20 legL_short=3.9cm low=Mesh_Foot_L
+PIN 15_cat_leap_wall f=82 SOLE L dz_cm=-4.2 contact_cm=0.2 legL=-20 legL_short=3.7cm low=Mesh_Foot_L
+PIN 15_cat_leap_wall f=83 SOLE L dz_cm=-4.3 contact_cm=0.2 legL=-35 legL_short=5.5cm low=Mesh_Foot_L
+PIN 15_cat_leap_wall f=84 SOLE L dz_cm=-5.3 contact_cm=0.2 legL=-40 low=Mesh_Foot_L
+PIN 15_cat_leap_wall f=85 SOLE L dz_cm=-9.7 contact_cm=0.2 legL=-20 low=Mesh_Foot_L
+ARM 15_cat_leap_wall f=85 UpperArm_R[2]=-5 depth_cm=0.90 was=1.23 Mesh_LowerArm_L in Mesh_LowerArm_R
+PIN 15_cat_leap_wall f=86 SOLE L dz_cm=-6.5 contact_cm=0.2 legL=-15 low=Mesh_Foot_L
+LIP 15_cat_leap_wall f=86 gap_cm=(0.72,2.43) slab_cm=0.00 flare Lz=+6 Rz=-6 Hand_Lz=+15 Hand_Rx=-20 Hand_Rz=-20 feet_cm=(0.2,3.4)
+PIN 15_cat_leap_wall f=87 SOLE L dz_cm=0.5 contact_cm=0.2 legL=-15 low=Mesh_Foot_L
+ARM 15_cat_leap_wall f=87 UpperArm_L[2]=-5, UpperArm_R[1]=-5, UpperArm_R[2]=+5 depth_cm=0.57 was=1.34 Mesh_UpperArm_L in Mesh_LowerArm_R
+PIN 15_cat_leap_wall f=88 SOLE L dz_cm=-1.6 contact_cm=0.2 legL=-10 low=Mesh_Foot_L
+PIN 15_cat_leap_wall f=89 SOLE L dz_cm=4.5 contact_cm=0.2 legL=-20 low=Mesh_Foot_L
+PIN 15_cat_leap_wall f=90 SOLE L dz_cm=2.9 contact_cm=0.2 legL=-10 low=Mesh_Foot_L
+PIN 15_cat_leap_wall f=91 SOLE L dz_cm=2.8 contact_cm=0.2 legL=-20 low=Mesh_Foot_L
+PIN 15_cat_leap_wall f=92 SOLE L dz_cm=3.8 contact_cm=0.2 legL=-30 low=Mesh_Foot_L
+PIN 15_cat_leap_wall f=93 SOLE L dz_cm=4.1 contact_cm=0.2 legL=-25 legL_short=4.7cm low=Mesh_Foot_L
+PIN 15_cat_leap_wall f=94 SOLE L dz_cm=3.8 contact_cm=0.2 legL=-20 legL_short=3.1cm low=Mesh_Foot_L
+PIN 15_cat_leap_wall f=95 SOLE L dz_cm=-0.1 contact_cm=0.2 legL=-10 low=Mesh_Foot_L
+PIN 15_cat_leap_wall f=96 SOLE L dz_cm=0.4 contact_cm=0.2 legL=-5 low=Mesh_Foot_L
+PIN 15_cat_leap_wall f=99 SOLE L dz_cm=3.0 contact_cm=0.2 legL=-10 low=Mesh_Foot_L
+PIN 15_cat_leap_wall f=105 SOLE R dz_cm=2.4 contact_cm=0.2 legR=+30 low=Mesh_Foot_R
+PIN 15_cat_leap_wall f=111 SOLE L dz_cm=14.2 contact_cm=0.2 legL=+20 low=Mesh_Foot_L
+PIN 15_cat_leap_wall f=112 SOLE L dz_cm=18.5 contact_cm=0.2 legL=+50 legL_short=6.5cm low=Mesh_Foot_L
+PIN 15_cat_leap_wall f=113 SOLE L dz_cm=15.1 contact_cm=0.2 legL=+50 legL_short=6.1cm low=Mesh_Foot_L
+PIN 15_cat_leap_wall f=114 SOLE L dz_cm=8.9 contact_cm=0.2 legL=+40 legL_short=3.9cm low=Mesh_Foot_L
+PIN 15_cat_leap_wall f=115 SOLE L dz_cm=5.7 contact_cm=0.2 legL=+40 legL_short=6.4cm low=Mesh_Foot_L
+PIN 15_cat_leap_wall f=116 SOLE L dz_cm=0.3 contact_cm=0.2 legL=+25 low=Mesh_Foot_L
+PIN 15_cat_leap_wall f=117 SOLE L dz_cm=2.2 contact_cm=0.2 legL=+30 low=Mesh_Foot_L
+PIN 15_cat_leap_wall f=118 SOLE L dz_cm=1.2 contact_cm=0.2 legL=+30 low=Mesh_Foot_L
+PIN 15_cat_leap_wall f=119 SOLE L dz_cm=1.7 contact_cm=0.2 legL=+45 low=Mesh_Foot_L
+PIN 15_cat_leap_wall f=120 SOLE L dz_cm=-1.4 contact_cm=0.2 legL=+35 legL_short=5.6cm low=Mesh_Foot_L
+PIN 15_cat_leap_wall f=130 SOLE LR dz_cm=-9.4 contact_cm=0.2  low=Mesh_Foot_L
+PIN 15_cat_leap_wall f=131 SOLE R dz_cm=-12.4 contact_cm=0.2 legR=+15 low=Mesh_Foot_R
+PIN 15_cat_leap_wall f=132 SOLE R dz_cm=-11.2 contact_cm=0.2 legR=+10 low=Mesh_Foot_R
+PIN 15_cat_leap_wall f=133 SOLE R dz_cm=-13.0 contact_cm=0.2 legR=+5 low=Mesh_Foot_R
+PIN 15_cat_leap_wall f=135 SOLE R dz_cm=-16.7 contact_cm=0.2 legR=+5 low=Mesh_Foot_R
+PIN 15_cat_leap_wall f=145 SOLE L dz_cm=-2.4 contact_cm=0.2 legL=+5 low=Mesh_Foot_L
+PIN 15_cat_leap_wall f=152 SOLE LR dz_cm=0.3 contact_cm=0.2  low=Mesh_Foot_L
+PIN 15_cat_leap_wall f=167 SOLE L dz_cm=-21.5 contact_cm=0.2 legL=-5 legL_short=28.7cm low=Mesh_Foot_L
+PIN 15_cat_leap_wall f=168 SOLE L dz_cm=-22.2 contact_cm=0.2 legL=-10 legL_short=31.4cm low=Mesh_Foot_L
+PIN 15_cat_leap_wall f=169 SOLE L dz_cm=-23.8 contact_cm=0.2 legL=-5 legL_short=29.0cm low=Mesh_Foot_L
+PIN 15_cat_leap_wall f=171 SOLE L dz_cm=-25.5 contact_cm=0.2 legL=-20 legL_short=37.3cm low=Mesh_Foot_L
+PIN 15_cat_leap_wall f=172 SOLE L dz_cm=-24.1 contact_cm=0.2 legL=-15 legL_short=33.1cm low=Mesh_Foot_L
+PIN 15_cat_leap_wall f=173 SOLE L dz_cm=-22.0 contact_cm=0.2 legL=-10 legL_short=28.5cm low=Mesh_Foot_L
+PIN 15_cat_leap_wall f=174 SOLE L dz_cm=-19.2 contact_cm=0.2 legL=-10 legL_short=10.1cm low=Mesh_Foot_L
+PIN 15_cat_leap_wall f=175 SOLE L dz_cm=-16.4 contact_cm=0.2 legL=-5 legL_short=15.0cm low=Mesh_Foot_L
+PIN 15_cat_leap_wall f=176 SOLE L dz_cm=-13.3 contact_cm=0.2 legL=-5 legL_short=10.5cm low=Mesh_Foot_L
+PIN 15_cat_leap_wall f=177 SOLE L dz_cm=-11.6 contact_cm=0.2 legL=+5 legL_short=13.4cm low=Mesh_Foot_L
+PIN 15_cat_leap_wall f=178 SOLE L dz_cm=-10.7 contact_cm=0.2 legL=+10 legL_short=12.1cm low=Mesh_Foot_L
+PIN 15_cat_leap_wall f=179 SOLE L dz_cm=-10.0 contact_cm=0.2 legL=+10 legL_short=11.3cm low=Mesh_Foot_L
+PIN 15_cat_leap_wall f=180 SOLE L dz_cm=-9.5 contact_cm=0.2 legL=+10 legL_short=11.6cm low=Mesh_Foot_L
+PIN 15_cat_leap_wall f=181 SOLE L dz_cm=-7.8 contact_cm=0.2 legL=+10 legL_short=11.1cm low=Mesh_Foot_L
+PIN 15_cat_leap_wall f=182 SOLE L dz_cm=-8.0 contact_cm=0.2 legL=+10 legL_short=8.5cm low=Mesh_Foot_L
+PIN 15_cat_leap_wall f=183 SOLE L dz_cm=-6.8 contact_cm=0.2 legL=+10 legL_short=7.2cm low=Mesh_Foot_L
+PIN 15_cat_leap_wall f=184 SOLE L dz_cm=-6.2 contact_cm=0.2 legL=+5 legL_short=6.7cm low=Mesh_Foot_L
+PIN 15_cat_leap_wall f=200 SOLE R dz_cm=-16.9 contact_cm=1.4  low=Mesh_Foot_L
+PIN 15_cat_leap_wall f=201 SOLE R dz_cm=-19.7 contact_cm=0.3 legR=-10 legR_short=37.2cm low=Mesh_Foot_L
+PIN 15_cat_leap_wall f=202 SOLE R dz_cm=-17.9 contact_cm=3.7  low=Mesh_Foot_L
+PIN 15_cat_leap_wall f=203 SOLE R dz_cm=-16.4 contact_cm=5.9  low=Mesh_Foot_L
+PIN 15_cat_leap_wall f=204 SOLE R dz_cm=-17.6 contact_cm=4.8  low=Mesh_Foot_L
+PIN 15_cat_leap_wall f=205 SOLE R dz_cm=-13.6 contact_cm=5.9  low=Mesh_Foot_L
+PIN 15_cat_leap_wall f=206 SOLE R dz_cm=-12.1 contact_cm=6.9  low=Mesh_Foot_L
+PIN 15_cat_leap_wall f=207 SOLE R dz_cm=-6.6 contact_cm=2.7  low=Mesh_Foot_L
+PIN 15_cat_leap_wall f=208 SOLE R dz_cm=-13.4 contact_cm=0.2 legR=-5 legR_short=13.3cm low=Mesh_Foot_R
+WALL_HOLD 15_cat_leap_wall f=209 sole on the face, height kept
+PIN 15_cat_leap_wall f=210 SOLE R dz_cm=1.3 contact_cm=0.2 legR=-5 legR_short=4.8cm low=Mesh_Foot_R
+PIN 15_cat_leap_wall f=213 SOLE L dz_cm=0.0 contact_cm=9.1 legL=+30 legL_short=15.9cm low=Mesh_Foot_R
+PIN 15_cat_leap_wall f=214 SOLE L dz_cm=0.0 contact_cm=2.7 legL=+30 legL_short=16.7cm low=Mesh_Foot_R
+PIN 15_cat_leap_wall f=215 SOLE L dz_cm=-0.0 contact_cm=20.3 legL=+35 legL_short=41.8cm low=Mesh_Foot_R
+PIN 15_cat_leap_wall f=217 SOLE L dz_cm=-6.1 contact_cm=9.9 legL=+25 legL_short=42.4cm low=Mesh_Foot_R
+PIN 15_cat_leap_wall f=218 SOLE L dz_cm=-20.7 contact_cm=0.2 legL=+25 legL_short=34.2cm low=Mesh_Foot_L
+PIN 15_cat_leap_wall f=219 SOLE L dz_cm=-10.0 contact_cm=13.3 legL=+20 legL_short=47.5cm low=Mesh_Foot_R
+PIN 15_cat_leap_wall f=220 SOLE L dz_cm=-15.1 contact_cm=13.5 legL=+15 legL_short=48.4cm low=Mesh_Foot_R
+WALL_HOLD 15_cat_leap_wall f=221 sole on the face, height kept
+PIN 15_cat_leap_wall f=222 SOLE L dz_cm=-14.3 contact_cm=18.3 legL=+10 legL_short=52.4cm low=Mesh_Foot_R
+PIN 15_cat_leap_wall f=223 SOLE L dz_cm=-18.1 contact_cm=15.5 legL=+10 legL_short=48.3cm low=Mesh_Foot_R
+PIN 15_cat_leap_wall f=224 SOLE L dz_cm=-19.9 contact_cm=15.9 legL=+15 legL_short=47.1cm low=Mesh_Foot_R
+PIN 15_cat_leap_wall f=227 SOLE L dz_cm=-20.3 contact_cm=10.3 legL=-15 legL_short=35.4cm low=Mesh_Foot_R
+PIN 15_cat_leap_wall f=228 SOLE L dz_cm=-6.0 contact_cm=18.1 legL=-25 legL_short=41.2cm low=Mesh_Foot_R
+PIN 15_cat_leap_wall f=229 SOLE L dz_cm=-0.0 contact_cm=21.9 legL=-35 legL_short=42.8cm low=Mesh_Foot_R
+PIN 15_cat_leap_wall f=230 SOLE L dz_cm=-2.1 contact_cm=6.4 legL=-40 legL_short=26.7cm low=Mesh_Foot_R
+PIN 15_cat_leap_wall f=231 SOLE L dz_cm=0.0 contact_cm=5.2 legL=-45 legL_short=24.1cm low=Mesh_Foot_R
+PIN 15_cat_leap_wall f=232 SOLE L dz_cm=2.7 contact_cm=0.2 legL=-50 legL_short=13.4cm low=Mesh_Foot_L
+PIN 15_cat_leap_wall f=233 SOLE L dz_cm=8.2 contact_cm=0.2 legL=-55 legL_short=5.4cm low=Mesh_Foot_L
+PIN 15_cat_leap_wall f=234 SOLE L dz_cm=10.1 contact_cm=0.2 legL=-50 low=Mesh_Foot_L
+PIN 15_cat_leap_wall f=235 PALM L dz_cm=-0.0 contact_cm=28.1  low=Mesh_Foot_R
+PIN 15_cat_leap_wall f=236 PALM L dz_cm=0.0 contact_cm=14.8  low=Mesh_Foot_R
+
+no-clip clips=8 frames=785 absMax=7.24 worldMax=0.40 rigJoint=9632 poseFails=1216 pose=1216
+Forearm shoulder-rotation and elbow-flare versus the track, within ±20°. Elbow flex was not changed.
+ARMTRACK 12_tictac_slanted_wall f=34 UpperArm_LY=+5
+ARMTRACK 12_tictac_slanted_wall f=35 UpperArm_LY=+15
+ARMTRACK 12_tictac_slanted_wall f=36 UpperArm_LY=+20
+ARMTRACK 12_tictac_slanted_wall f=37 UpperArm_LY=+20, UpperArm_LZ=+10
+ARMTRACK 12_tictac_slanted_wall f=38 UpperArm_LY=+20
+ARMTRACK 12_tictac_slanted_wall f=39 UpperArm_LY=+15
+ARMTRACK 12_tictac_slanted_wall f=56 UpperArm_LY=+5
+ARMTRACK 12_tictac_slanted_wall f=79 UpperArm_LY=+20, UpperArm_LZ=+10
+ARMTRACK 12_tictac_slanted_wall f=80 UpperArm_LY=+15, UpperArm_LZ=+20, UpperArm_RY=-5
+ARMTRACK 12_tictac_slanted_wall f=81 UpperArm_LY=-20, UpperArm_LZ=+15
+ARMTRACK 12_tictac_slanted_wall f=82 UpperArm_LY=+15, UpperArm_LZ=+10, UpperArm_RY=-20
+ARMTRACK 12_tictac_slanted_wall f=83 UpperArm_LY=+15, UpperArm_LZ=+5, UpperArm_RY=-20
+ARMTRACK 12_tictac_slanted_wall f=84 UpperArm_LY=+15, UpperArm_LZ=+5, UpperArm_RY=-10
+ARMTRACK 12_tictac_slanted_wall f=85 UpperArm_LY=+15, UpperArm_LZ=+20, UpperArm_RY=-5
+ARMTRACK 12_tictac_slanted_wall f=86 UpperArm_LY=-5, UpperArm_LZ=-5, UpperArm_RY=-10
+ARMTRACK 12_tictac_slanted_wall f=90 UpperArm_LY=+10
+ARMTRACK 12_tictac_slanted_wall f=91 UpperArm_LY=-15
+ARMTRACK 12_tictac_slanted_wall f=92 UpperArm_LY=+10
+ARMTRACK 12_tictac_slanted_wall f=93 UpperArm_LY=+10
+ARMTRACK 12_tictac_slanted_wall f=94 UpperArm_LY=+5, UpperArm_LZ=-5
+ARMTRACK 12_tictac_slanted_wall f=95 UpperArm_LZ=-20, UpperArm_RY=+10
+ARMTRACK 12_tictac_slanted_wall f=96 UpperArm_LY=-20, UpperArm_LZ=+5
+ARMTRACK 12_tictac_slanted_wall f=97 UpperArm_LY=-20
+ARMTRACK 12_tictac_slanted_wall f=98 UpperArm_LY=-10
+ARMTRACK 12_tictac_slanted_wall f=99 UpperArm_LY=-10
+ARMTRACK 12_tictac_slanted_wall f=100 UpperArm_LY=-5
+ARMTRACK 12_tictac_slanted_wall f=101 UpperArm_LY=-5
+ARMTRACK 12_tictac_slanted_wall f=102 UpperArm_LY=-10
+ARMTRACK 12_tictac_slanted_wall f=103 UpperArm_LY=-10
+ARMTRACK 12_tictac_slanted_wall f=104 UpperArm_LY=-20, UpperArm_LZ=+5
+ARMTRACK 12_tictac_slanted_wall f=105 UpperArm_LY=+5, UpperArm_LZ=-15, UpperArm_RY=+5
+ARMTRACK 15_cat_leap_wall f=24 UpperArm_LY=+20
+ARMTRACK 15_cat_leap_wall f=25 UpperArm_LY=+10
+ARMTRACK 15_cat_leap_wall f=26 UpperArm_LY=-10
+ARMTRACK 15_cat_leap_wall f=28 UpperArm_LY=-5
+ARMTRACK 15_cat_leap_wall f=29 UpperArm_LY=-5
+ARMTRACK 15_cat_leap_wall f=30 UpperArm_LY=-5
+ARMTRACK 15_cat_leap_wall f=31 UpperArm_LY=-5
+ARMTRACK 15_cat_leap_wall f=78 UpperArm_LY=-20, UpperArm_LZ=+5
+ARMTRACK 15_cat_leap_wall f=79 UpperArm_LY=+10
+ARMTRACK 15_cat_leap_wall f=80 UpperArm_LY=+15, UpperArm_LZ=+10, UpperArm_RY=-15
+ARMTRACK 15_cat_leap_wall f=81 UpperArm_LY=+15, UpperArm_LZ=+5, UpperArm_RY=-10
+ARMTRACK 15_cat_leap_wall f=82 UpperArm_LY=+15, UpperArm_LZ=+5
+ARMTRACK 15_cat_leap_wall f=83 UpperArm_LY=+5
+ARMTRACK 15_cat_leap_wall f=84 UpperArm_LY=+5
+ARMTRACK 15_cat_leap_wall f=85 UpperArm_RZ=-5
+ARMTRACK 15_cat_leap_wall f=86 UpperArm_LZ=+6, UpperArm_RZ=-6
+ARMTRACK 15_cat_leap_wall f=87 UpperArm_LZ=-5, UpperArm_RY=-5, UpperArm_RZ=+5
+ARMTRACK 15_cat_leap_wall f=88 UpperArm_LY=+5, UpperArm_RY=-5, UpperArm_RZ=+5
+ARMTRACK 15_cat_leap_wall f=89 UpperArm_LY=+10, UpperArm_LZ=+5, UpperArm_RY=-5, UpperArm_RZ=+5
+ARMTRACK 15_cat_leap_wall f=90 UpperArm_LY=+10, UpperArm_LZ=+5, UpperArm_RY=-10
+ARMTRACK 15_cat_leap_wall f=91 UpperArm_LY=-10
+ARMTRACK 15_cat_leap_wall f=124 UpperArm_LY=-5
+ARMTRACK 15_cat_leap_wall f=161 UpperArm_LY=+10
+ARMTRACK 15_cat_leap_wall f=162 UpperArm_LY=-10

@@ -1,32 +1,31 @@
 # HiPoly Hierarchical Mannequins
 
-DummyLocomotor-bindable curved crash-test dummies (Navy Spade soft foam + polymer panels + matte rubber joints).
+DummyLocomotor-bindable **Hybrid III hard-shell** crash-test dummies (v0.8.0).
+Storror proportions: longer torso, shorter thigh and forearm, narrower shoulders, smaller head.
+Soles rest on z = 0. Resting-fist finger curl and shoulders-in joints are unchanged.
+Bone names and the hierarchy match v0.7.8.
 
 ## Assets
 | File | Paint |
 |------|-------|
-| `Dummy_Mannequin_Tan_Hier_Hi.fbx` | Runner — Base `#E8D9C0`, Accent `#2BB3A3` chest band + limb stripes |
-| `Dummy_Mannequin_Orange_Hier_Hi.fbx` | It — Base `#FF6A00`, Accent black nested downward-V chevrons chest + outer thighs |
+| `Dummy_Mannequin_Tan_Hier_Hi.fbx` | Runner — cream `#E8D9C0`, Accent teal tick. **ZERO nested Vs.** |
+| `Dummy_Mannequin_Blue_Hier_Hi.fbx` | Runner swatch — blue body, blue panel accent |
+| `Dummy_Mannequin_Mint_Hier_Hi.fbx` | Runner swatch — mint body, mint panel accent |
+| `Dummy_Mannequin_Lavender_Hier_Hi.fbx` | Runner swatch — lavender body, lavender panel accent |
+| `Dummy_Mannequin_Red_Hier_Hi.fbx` | Runner swatch — red body, red panel accent |
+| `Dummy_Mannequin_Orange_Hier_Hi.fbx` | It — warm tan body + black nested Vs chest + outer thighs (NOT #FF6A00) |
 
 ## Bind pose
-- **Mild A-pose** — upper arms ~25–30° off torso, elbows soft, wrists neutral.
-- Hands / forearms **clear pelvis / butt** (no V-into-butt).
-- Mitten hands; egg head + black sensor dots only — **no visor**.
+- Mild A-pose ~20–35°; hands clear pelvis.
+- Human head scale + molded face; flat dark eye insets — zero orbs / tip stacks.
+- Flat chest plate (narrower); body-colored abdominal plates flush to the pelvis, short recessed waist bend; hard pelvis w/ mild hip curve.
+- Hybrid III limb shell mass; tiny dark Bionicle joints under SOLID vinyl capsule; hard-shell hands w/ soft resting-fist curl + knuckles/mid joints (no Finger_ bones).
+- Materials: satin vinyl Base / Accent / ItOverride + Joint metal + Rubber + Bellows.
 
 ## Bone hierarchy (DummyLocomotor — names unchanged)
 `Root` → `Hips` → `Spine` → `Chest` → `Neck` → `Head`  
 `Hips` → `UpperLeg_L/R` → `LowerLeg_L/R` → `Foot_L/R`  
 `Chest` → `Shoulder_L/R` → `UpperArm_L/R` → `LowerArm_L/R` → `Hand_L/R`
 
-Required aliases present: `Hips`, `Spine`, `Head`, `UpperArm_*`, `LowerArm_*`, `UpperLeg_*`, `LowerLeg_*`.  
-**LowerLeg is a real bend joint under UpperLeg** (knee hinge readable).
-
-## Mat slots
-`Base`, `Accent`, `ItOverride` (match Dummy_Runner / Dummy_It).
-
 ## Export
-`-Z` forward, `+Y` up. Rebuild: Blender 4.x  
-`blender -b -P /workspace/art-build/scripts/build_mannequin_hier_v2.py`
-
-## Stills
-`/workspace/art-build/previews/hipoly_*.png` — idle front/3-4, run knee, slide crouch, punch, It idle.
+`-Z` forward, `+Y` up. Materials: `Base`, `Accent`, `ItOverride`.

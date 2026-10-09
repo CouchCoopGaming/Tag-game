@@ -1,0 +1,22 @@
+PASS 17 HAND-KEYED EMOTES
+SHIPPABLE (own work, CC0)
+Poses are original. Video-derived clips stay reference-only.
+The armature location stays at the origin.
+emote_vcheer
+hip-sit clips=1 loadedFrames=37 pelvisBackMin=17.0 cm hingeMin=10.23 fails=0
+plants emote_vcheer frames=22 soleMedMax=0.40 cm soleMeshMin=-0.20 cm kneeMin=50 shinMin=9.4 cm drop=10.9-10.9 cm
+handLz=2.04 handLx=0.41 handRz=2.04
+no-clip clips=1 frames=37 absMax=5.01 worldMax=0.20 rigJoint=407 poseFails=0 pose=0
+emote_fistpump
+hip-sit clips=1 loadedFrames=31 pelvisBackMin=17.0 cm hingeMin=10.23 fails=0
+plants emote_fistpump frames=31 soleMedMax=0.40 cm soleMeshMin=-0.20 cm kneeMin=50 shinMin=9.4 cm drop=10.9-10.9 cm
+elbowR=90.3-90.3 tipZ=1.00-1.53
+no-clip clips=1 frames=31 absMax=5.01 worldMax=0.20 rigJoint=372 poseFails=0 pose=0
+emote_groove
+hip-sit clips=1 loadedFrames=61 pelvisBackMin=11.5 cm hingeMin=10.20 fails=0
+plants emote_groove frames=61 soleMedMax=0.47 cm soleMeshMin=-0.20 cm kneeMin=50 shinMin=9.3 cm drop=10.9-12.2 cm
+no-clip clips=1 frames=61 absMax=6.11 worldMax=0.20 rigJoint=667 poseFails=0 pose=0
+emote_shrug
+hip-sit clips=1 loadedFrames=31 pelvisBackMin=17.0 cm hingeMin=10.23 fails=0
+plants emote_shrug frames=31 soleMedMax=0.40 cm soleMeshMin=-0.20 cm kneeMin=50 shinMin=9.4 cm drop=10.9-10.9 cm
+no-clip clips=1 frames=31 absMax=5.01 worldMax=0.20 rigJoint=285 poseFails=0 pose=0

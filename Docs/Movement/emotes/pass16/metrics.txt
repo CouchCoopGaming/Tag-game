@@ -1,0 +1,14 @@
+PASS 16 EMOTE RETARGET
+CC0 standing dances. Hips rotation comes from the tracked pelvis.
+Hips local Y drops the pelvis until the lower sole is on the floor.
+The armature location stays at the origin. not-a-plant / emote.
+Quarter-pane test: neither clip holds a V, one arm straight up with the other out, a star, or a spin. Tizi's picture has both wrists up for about 0.45 s, both to one side. The retarget does not keep that outline. Agbadja does not have it.
+Tightened plant thresholds are reported and are not the target.
+emote_agbadja
+hip-sit clips=1 loadedFrames=118 pelvisBackMin=-51.1 cm hingeMin=-4.68 fails=emote
+tightened emote_agbadja knee=2-27 deg bothKnee=9-42 deg pelvisDrop=0.2-22.0 cm shin=-8.1-29.3 cm sole=0.8-8.6 cm hipsRot=118/118 dropCapped=10 label=not-a-plant / emote
+no-clip clips=1 frames=118 absMax=6.76 worldMax=15.30 rigJoint=1384 poseFails=278 pose=278
+emote_tizi
+hip-sit clips=1 loadedFrames=103 pelvisBackMin=-49.1 cm hingeMin=-21.43 fails=emote
+tightened emote_tizi knee=2-34 deg bothKnee=3-38 deg pelvisDrop=-0.3-13.3 cm shin=-14.7-27.4 cm sole=0.8-0.8 cm hipsRot=103/103 dropCapped=0 label=not-a-plant / emote
+no-clip clips=1 frames=103 absMax=4.85 worldMax=14.47 rigJoint=1228 poseFails=215 pose=215
