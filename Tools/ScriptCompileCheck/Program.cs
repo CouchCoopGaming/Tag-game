@@ -57,6 +57,10 @@ namespace Tag.Tools
 
             var editorFiles = new List<string>();
             AddCs(editorFiles, Path.Combine(root, "Assets", "Editor"));
+            // Unity compiles every script under Assets, not just these folders: a script
+            // under any "Editor" folder goes to the editor assembly, the rest to the player.
+            // (e.g. Assets/Art/Props/Library/Scripts/LibraryPropMeta.cs)
+            AddLoose(root, playerFiles, editorFiles);
             var smokeFiles = editorFiles.Where(IsSmokeCheck).ToList();
             editorFiles.RemoveAll(IsSmokeCheck);
 
@@ -210,6 +214,21 @@ namespace ProbeUse {
         {
             return path.IndexOf(Path.DirectorySeparatorChar + "SmokeCheck" + Path.DirectorySeparatorChar, StringComparison.Ordinal) >= 0
                 || path.IndexOf("/SmokeCheck/", StringComparison.Ordinal) >= 0;
+        }
+
+        static void AddLoose(string root, List<string> player, List<string> editor)
+        {
+            string assets = Path.Combine(root, "Assets");
+            var known = new HashSet<string>(player.Concat(editor));
+            string[] skip = { "Scripts", "Editor", "Tests" };
+            foreach (string file in Directory.GetFiles(assets, "*.cs", SearchOption.AllDirectories))
+            {
+                string rel = file.Substring(assets.Length).TrimStart('/', '\\').Replace('\\', '/');
+                string top = rel.Split('/')[0];
+                if (Array.IndexOf(skip, top) >= 0 || rel.StartsWith("TagArenaMovement/Scripts/", StringComparison.Ordinal)) continue;
+                if (known.Contains(file) || rel.Contains("/obj/")) continue;
+                if (("/" + rel).Contains("/Editor/")) editor.Add(file); else player.Add(file);
+            }
         }
 
         static void AddCs(List<string> files, string dir)
