@@ -43,10 +43,13 @@ HIP_RAIL_X = 0.46
 # of the slab (that x is inside the brick if the thigh dips under the top).
 KNEE_LIP_X = -0.10
 ROOF_STAND_X = -0.55
-# One world camera for every wall cell. Ortho height in metres. The face is
-# at the same pixel x in all 8 cells.
-WALL_CAM_FOCUS = (-0.40, 0.0, 3.05)
-WALL_SIDE_SCALE = 6.60
+# One world camera for every wall cell. Ortho height is the vertical span.
+# About 1.5–5.5 m of the wall, and 1.5 m either side of the face: scale 3.80
+# over a portrait cell is 1.50 m of half-width when the face is centred.
+# The climb figure lands near 30% of the cell. The take-off below 1.8 m is
+# outside this crop on purpose.
+WALL_CAM_FOCUS = (0.0, 0.0, 3.70)
+WALL_SIDE_SCALE = 3.80
 # 35° off the side axis, from behind the runner (+X) on the same side as the
 # side camera (-Y). A camera on -X sits behind the brick and looks at the
 # chest through the wall. This one stays on the body's side of the face.
@@ -84,6 +87,9 @@ NEIGHBORS = (
 WINDOWS = {
     "17_slide_slope_crouch": (0.40, 1.40),
     "18_vertical_wallrun_back": (0.60, 2.00),
+    # Side-on through the climb. Labels flip near 1.6 s; the solver swaps
+    # L/R after that instead of trusting the flipped names.
+    "19_vertical_wallrun_side": (0.15, 2.25),
     "20_wallpop_180": (0.15, 1.75),
 }
 
@@ -101,6 +107,13 @@ SPECS = (
         "swap_lr": True,
         "strip": "18_vertical_wallrun_back.png",
         "label": "18 wall run up",
+    },
+    {
+        "id": "19_vertical_wallrun_side",
+        "verb": "wallrun_warp",
+        "swap_lr": False,
+        "strip": "19_vertical_wallrun_side.png",
+        "label": "19 warped wall",
     },
     {
         "id": "20_wallpop_180",
@@ -170,6 +183,7 @@ def load_window(spec):
         ch["trunk_lean_from_cam_vertical"] = _lookup_angle(data, t, "trunk_lean_from_cam_vertical")
         ch["root_height_m"] = _lookup_series(data, t, "root_height_above_feet_m")
         ch["side_height_m"] = _side_pelvis_m(data, t)
+        ch["pelvis_back_ref_m"] = _pelvis_back_ref(data, t)
         samples.append(ch)
         times.append(t)
     return samples, times, data
@@ -192,6 +206,58 @@ def _lookup_series(data, t_rel, key):
             a = vals[i] if vals[i] is not None else 0.0
             b = vals[i + 1] if vals[i + 1] is not None else a
             return float(a) * (1.0 - w) + float(b) * w
+    return 0.0
+
+
+def _pelvis_back_ref(data, t_rel):
+    """Tracked pelvis-behind-foot, metres, along the support foot's toe direction.
+
+    The world origin is the hip, so this is how far the support foot sits in
+    front of the pelvis in the camera's horizontal plane. Negative means the
+    track does not show the pelvis behind that foot (a behind-camera view, or
+    a foot pointed across the shot).
+    """
+    times = data["times_s"]
+    worlds = data["world_xyz_m"]
+    t0 = float(times[0])
+    target = t0 + t_rel
+
+    def one(i):
+        W = worlds[i]
+        if not W or W[23] is None or W[31] is None or W[32] is None:
+            return 0.0
+        hip = (
+            (W[23][0] + W[24][0]) * 0.5,
+            (W[23][2] + W[24][2]) * 0.5,
+        )
+
+        def foot(heel, toe):
+            mid = (
+                (W[heel][0] + W[toe][0]) * 0.5,
+                (W[heel][2] + W[toe][2]) * 0.5,
+            )
+            direc = (W[toe][0] - W[heel][0], W[toe][2] - W[heel][2])
+            low = (W[heel][1] + W[toe][1]) * 0.5
+            return mid, direc, low
+
+        lf, ld, ly = foot(29, 31)
+        rf, rd, ry = foot(30, 32)
+        mid, direc = (lf, ld) if ly >= ry else (rf, rd)
+        nlen = math.hypot(direc[0], direc[1])
+        if nlen < 1.0e-4:
+            return 0.0
+        fx, fz = direc[0] / nlen, direc[1] / nlen
+        return (mid[0] - hip[0]) * fx + (mid[1] - hip[1]) * fz
+
+    if target <= times[0]:
+        return one(0)
+    if target >= times[-1]:
+        return one(len(times) - 1)
+    for i in range(len(times) - 1):
+        if times[i] <= target <= times[i + 1]:
+            span = max(1.0e-6, times[i + 1] - times[i])
+            w = (target - times[i]) / span
+            return one(i) * (1.0 - w) + one(i + 1) * w
     return 0.0
 
 
@@ -572,6 +638,23 @@ SLOPE_DEG = 36.0
 LOW_WALL_TOP = 1.10
 LOW_WALL_HALF = (0.75, 0.65, 0.55)
 LOW_WALL_CX = 0.40
+# Quarter-circle warped wall. Horizontal at the floor (x = WARP_R, z = 0)
+# and vertical at z = WARP_R (face x = 0), then a short vertical top.
+# The runner stands on +X. Solid thickness is along the inward normal.
+WARP_R = 2.55
+WARP_LIP_Z = 3.30
+WARP_THICK = 0.36
+WARP_Y_HALF = 1.80
+# Fixed cameras for the slope and the 180, framed on the prop, not the body.
+SLIDE_CAM_FOCUS = (0.0, 0.70, 1.10)
+SLIDE_SIDE_SCALE = 4.00
+SLIDE_34_DIR = (0.45, -0.80, 0.28)
+TURN_CAM_FOCUS = (0.30, 1.50, 1.40)
+TURN_SIDE_SCALE = 4.60
+TURN_34_DIR = (0.70, -0.65, 0.25)
+WARP_CAM_FOCUS = (1.90, 0.0, 1.90)
+WARP_SIDE_SCALE = 5.40
+WARP_34_DIR = (0.55, -0.82, 0.10)
 
 
 def _slope_frame():
@@ -698,7 +781,7 @@ def show_slide_world(_y_center):
         ob.data.materials.append(mat)
     ob.hide_render = False
     ob.hide_set(False)
-    _hide_named(("ActionWall", "LandingWall", "WallTopLip", "GroundLine", "HipGhost"))
+    _hide_named(("ActionWall", "LandingWall", "WallTopLip", "GroundLine", "HipGhost", "WarpWall"))
     _set_wall_ticks(0.0, False)
     _set_wall_labels(False)
     ground = bpy.data.objects.get("Ground")
@@ -820,11 +903,118 @@ def show_wall_world(face_x, center_z, length_z=4.2, hide_ground=False, ticks=Fal
     else:
         _hide_named(("WallTopLip", "GroundLine"))
         _set_brick_courses(face_x, False)
-    _hide_named(("ActionSlope", "LandingWall"))
+    _hide_named(("ActionSlope", "LandingWall", "WarpWall"))
     ground = bpy.data.objects.get("Ground")
     if ground is not None:
         ground.hide_render = hide_ground
         ground.hide_set(hide_ground)
+
+
+def _warp_face_x(z):
+    """Runner-side face of the warped wall. Vertical face is x = 0."""
+    if z >= WARP_R:
+        return 0.0
+    z = max(0.0, z)
+    under = max(0.0, 2.0 * WARP_R * z - z * z)
+    return WARP_R - math.sqrt(under)
+
+
+def _warp_normal(z):
+    """Outward normal, toward the runner."""
+    from mathutils import Vector
+    if z >= WARP_R - 0.02:
+        return Vector((1.0, 0.0, 0.0))
+    z = max(0.02, z)
+    under = max(1.0e-6, 2.0 * WARP_R * z - z * z)
+    dxdz = -(WARP_R - z) / math.sqrt(under)
+    n = Vector((1.0, 0.0, -dxdz))
+    if n.length < 1.0e-6:
+        return Vector((1.0, 0.0, 0.0))
+    return n.normalized()
+
+
+def _warp_tangent(z):
+    """Up the face, in the XZ plane."""
+    from mathutils import Vector
+    n = _warp_normal(z)
+    up = Vector((0.0, 0.0, 1.0))
+    t = up - n * up.dot(n)
+    if t.length < 1.0e-4:
+        t = Vector((0.0, 0.0, 1.0))
+    return t.normalized()
+
+
+def _warp_depth(v):
+    """Metres inside the warped-wall solid. Above the lip, or past the back, is out."""
+    from mathutils import Vector
+    if v.z <= 0.0 or v.z >= WARP_LIP_Z:
+        return 0.0
+    if abs(v.y) > WARP_Y_HALF:
+        return 0.0
+    n = _warp_normal(v.z)
+    surf = Vector((_warp_face_x(v.z), v.y, v.z))
+    dist = n.dot(Vector((v.x, v.y, v.z)) - surf)
+    if dist >= 0.0 or -dist > WARP_THICK:
+        return 0.0
+    return min(-dist, WARP_THICK + dist)
+
+
+def show_warp_world():
+    """Curved wall plus the ground the run-in stands on."""
+    import bpy
+    from mathutils import Vector
+    name = "WarpWall"
+    ob = bpy.data.objects.get(name)
+    if ob is None:
+        steps = 28
+        verts = []
+        faces = []
+        y0, y1 = -WARP_Y_HALF, WARP_Y_HALF
+        for i in range(steps + 1):
+            z = WARP_LIP_Z * i / steps
+            fx = _warp_face_x(z)
+            n = _warp_normal(z)
+            front0 = Vector((fx, y0, z))
+            front1 = Vector((fx, y1, z))
+            back0 = front0 - n * WARP_THICK
+            back1 = front1 - n * WARP_THICK
+            verts.extend((tuple(front0), tuple(front1), tuple(back1), tuple(back0)))
+        for i in range(steps):
+            a = i * 4
+            b = (i + 1) * 4
+            faces.append((a, b, b + 1, a + 1))
+            faces.append((a + 3, a + 2, b + 2, b + 3))
+            faces.append((a, a + 3, b + 3, b))
+            faces.append((a + 1, b + 1, b + 2, a + 2))
+        a = 0
+        b = steps * 4
+        faces.append((a, a + 1, a + 2, a + 3))
+        faces.append((b + 3, b + 2, b + 1, b))
+        mesh = bpy.data.meshes.new(name + "Mesh")
+        mesh.from_pydata(verts, [], faces)
+        mesh.update()
+        ob = bpy.data.objects.new(name, mesh)
+        bpy.context.scene.collection.objects.link(ob)
+        mat = bpy.data.materials.new(name + "Mat")
+        mat.use_nodes = True
+        mat.diffuse_color = (0.45, 0.32, 0.28, 1)
+        bsdf = mat.node_tree.nodes.get("Principled BSDF")
+        if bsdf:
+            bsdf.inputs["Base Color"].default_value = (0.45, 0.32, 0.28, 1)
+            bsdf.inputs["Roughness"].default_value = 0.92
+        ob.data.materials.append(mat)
+    ob.hide_render = False
+    ob.hide_set(False)
+    _hide_named((
+        "ActionWall", "ActionSlope", "LandingWall", "WallTopLip", "GroundLine",
+    ))
+    _set_wall_ticks(0.0, False)
+    _set_wall_labels(False)
+    _set_brick_courses(0.0, False)
+    ground = bpy.data.objects.get("Ground")
+    if ground is not None:
+        ground.hide_render = False
+        ground.hide_set(False)
 
 
 def show_turn_world(face_x, landing_top, landing_y):
@@ -955,7 +1145,7 @@ def _bone_world_axis(arm, name, local=(0.0, 0.0, 1.0)):
     return (mw.to_3x3() @ Vector(local)).normalized()
 
 
-def _aim_bone_axis(arm, name, local, target):
+def _aim_bone_axis(arm, name, local, target, min_dot=0.995):
     """Point a bone's local axis along a world direction. Other joints stay."""
     import bpy
     from mathutils import Vector
@@ -964,7 +1154,7 @@ def _aim_bone_axis(arm, name, local, target):
     mw = arm.matrix_world @ pb.matrix
     axis = (mw.to_3x3() @ Vector(local)).normalized()
     tgt = Vector(target).normalized()
-    if axis.dot(tgt) > 0.995:
+    if axis.dot(tgt) > min_dot:
         return
     rot = axis.rotation_difference(tgt).to_matrix().to_4x4()
     new_mw = rot @ mw
@@ -1100,6 +1290,8 @@ def _angle_row(ch, body):
         "pelvis_src": "side" if collapsed else "camera",
         "pelvis_cam_cm": cam_h * 100.0,
         "pelvis_side_cm": side_h * 100.0,
+        "pelvis_back_ref_cm": max(0.0, float(ch.get("pelvis_back_ref_m") or 0.0)) * 100.0,
+        "knee_both_ref": min(g("knee_flex_L"), g("knee_flex_R")),
     }
     return row
 
@@ -1206,6 +1398,7 @@ def solve_slide(arm, samples, times):
         body["pelvis"] = nrm.dot(Vector(hip) - plane_o)
         row = _angle_row(ch, body)
         row["t"] = times[i]
+        row["phase"] = "crouch"
         row["world_pen_cm"] = max(0.0, -gap) * 100.0
         hand_gaps = []
         for s in ("L", "R"):
@@ -1227,6 +1420,7 @@ def solve_slide(arm, samples, times):
         row["sole_L_cm"] = _sole_gap(arm, "L", plane_o, nrm) * 100.0
         row["sole_R_cm"] = _sole_gap(arm, "R", plane_o, nrm) * 100.0
         row["low_cm"] = _min_plane(plane_o, nrm) * 100.0
+        _ensure_hip_sit(arm, ch, "crouch", "slide", None)
         rows.append(row)
         keys.append(_save_pose(arm))
         caps.append((arm.location.x, arm.location.y, arm.location.z))
@@ -1890,7 +2084,7 @@ def _place_hip_at(arm, x, y, z):
     bpy_update()
 
 
-def _ik_ankle_to(arm, side, tx, ty, tz):
+def _ik_ankle_to(arm, side, tx, ty, tz, pole=None):
     """Two-bone leg reach. The hip stays. The knee prefers to stay out of the brick."""
     from mathutils import Vector
     hip = Vector(p5._head_w(arm, f"UpperLeg_{side}"))
@@ -1910,7 +2104,10 @@ def _ik_ankle_to(arm, side, tx, ty, tz):
         toward = delta.normalized()
     # Bend the knee out of the wall (+X) and a little to the side.
     sign = 1.0 if side == "L" else -1.0
-    pole = Vector((0.45, 0.35 * sign, 0.25))
+    if pole is None:
+        pole = Vector((0.45, 0.35 * sign, 0.25))
+    else:
+        pole = Vector(pole)
     perp = toward.cross(pole)
     if perp.length < 1.0e-5:
         perp = Vector((0.0, sign, 0.0))
@@ -2762,6 +2959,12 @@ def solve_wallrun(arm, samples, times):
         prev_hip = body["hip_z"]
         hip_now = p5._head_w(arm, "Hips")
         hip_path.append((float(hip_now.x), float(hip_now.y), float(hip_now.z)))
+        _ensure_hip_sit(
+            arm, ch, phase, "wallrun_vertical",
+            side if phase in ("plant", "push", "takeoff") else None,
+        )
+        hip_now = p5._head_w(arm, "Hips")
+        hip_path[-1] = (float(hip_now.x), float(hip_now.y), float(hip_now.z))
         rows.append(row)
         keys.append(_save_pose(arm))
         caps.append((arm.location.x, arm.location.y, arm.location.z))
@@ -2998,6 +3201,9 @@ def solve_wallrun(arm, samples, times):
             dipped = body["hip_z"] < prev_hip - 1.0e-4
             prev_hip = body["hip_z"]
             hip_path.append((float(hip_now.x), float(hip_now.y), float(hip_now.z)))
+            _ensure_hip_sit(arm, last_ch, phase, "wallrun_vertical", side if phase in ("knee",) else None)
+            hip_now = p5._head_w(arm, "Hips")
+            hip_path[-1] = (float(hip_now.x), float(hip_now.y), float(hip_now.z))
             rows.append(row)
             keys.append(_save_pose(arm))
             caps.append((arm.location.x, arm.location.y, arm.location.z))
@@ -3086,7 +3292,7 @@ def solve_wallrun(arm, samples, times):
             "on the slab through the press, the other leg hangs bent below the "
             "lip, then one knee lands and the clip ends standing on the roof. "
             "No new verb. No side-on view of this vertical plant is in the "
-            "downloaded set. Clip 19 is not posed. The slide was not re-posed."
+            "downloaded set. The slide and the 180 were not re-posed."
         ),
     }
 
@@ -3359,6 +3565,7 @@ def solve_turn(arm, samples, times):
         if phase == "land":
             row["land_hip_deg"] = float(arm.get("land_hip_deg", 0.0))
             row["land_knee_deg"] = float(arm.get("land_knee_deg", 0.0))
+        _ensure_hip_sit(arm, ch, phase, "turn180", "R" if phase == "plant" else None)
         rows.append(row)
         keys.append(_save_pose(arm))
         caps.append((arm.location.x, arm.location.y, arm.location.z))
@@ -3387,9 +3594,496 @@ def solve_turn(arm, samples, times):
     }
 
 
+def _warp_leg_dir(z, into, up_amt, lat):
+    """A world direction in the wall's sagittal frame. lat is metres of Y."""
+    from mathutils import Vector
+    n = _warp_normal(z)
+    t = _warp_tangent(z)
+    return (-into) * n + Vector((0.0, lat, 0.0)) + up_amt * t
+
+
+def _warp_worst():
+    """Deepest body vertex in the warped wall or the floor, and the bone that owns it."""
+    import bpy
+    worst = 0.0
+    bone = ""
+    point = None
+    deps = bpy.context.evaluated_depsgraph_get()
+    for ob in _body_objects():
+        ev = ob.evaluated_get(deps)
+        mw = ev.matrix_world
+        owner = ob.parent_bone or ob.name
+        for v in ev.data.vertices:
+            w = mw @ v.co
+            depth = max(0.0, -w.z, _warp_depth(w))
+            if depth > worst:
+                worst = depth
+                bone = owner
+                point = w
+    return worst, bone, point
+
+
+def _warp_side_of(bone):
+    if bone.endswith("_L"):
+        return "L"
+    if bone.endswith("_R"):
+        return "R"
+    return ""
+
+
+def _push_bone_out(arm, name, normal, gain):
+    """Rotate one bone toward the outward normal. The bend stays; the limb leaves the solid."""
+    from mathutils import Vector
+    if arm.pose.bones.get(name) is None:
+        return
+    direction = Vector(_bone_world_axis(arm, name, (0.0, 1.0, 0.0)))
+    _aim_bone_axis(arm, name, (0.0, 1.0, 0.0), direction + Vector(normal) * gain)
+
+
+def _ik_warp_ankle(arm, side, foot_z, lift=0.035):
+    """Plant this ankle on the curved face. The hip is not translated."""
+    from mathutils import Vector
+    n = _warp_normal(foot_z)
+    face = _warp_face_x(foot_z)
+    sign = 1.0 if side == "L" else -1.0
+    target = Vector((face, 0.0, foot_z)) + n * lift
+    # Knee out along the normal. A little Y keeps the calf off the chest
+    # without kicking the leg out of the camera plane.
+    pole = n * 0.55 + Vector((0.0, 0.18 * sign, 0.10))
+    _ik_ankle_to(arm, side, target.x, target.y, target.z, pole)
+    _orient_sole(arm, side, tuple(_warp_tangent(foot_z)), tuple(-n))
+
+
+def _warp_sole_gap(arm, side):
+    """Metres from the planted sole patch to the curved face. Positive is outside."""
+    from mathutils import Vector
+    _n, patch = _sole_patch(arm, side)
+    if not patch:
+        return 1.0
+    sole = sum(patch, Vector()) / len(patch)
+    n = _warp_normal(sole.z)
+    surf = Vector((_warp_face_x(sole.z), sole.y, sole.z))
+    return n.dot(sole - surf)
+
+
+def _warp_clear(arm, plant_side, foot_z, lift):
+    """Move the limb that is inside the curve, in the wall plane. The spine stays.
+
+    The planted shoe is left to the caller. Pushing it back off the face would
+    undo the 0.5 cm plant.
+    """
+    from mathutils import Vector
+    for _step in range(10):
+        depth, bone, pt = _warp_worst()
+        if depth <= 0.004:
+            return depth
+        z = float(pt.z) if pt is not None else foot_z
+        n = _warp_normal(z)
+        side = _warp_side_of(bone)
+        if side == plant_side and any(tok in bone for tok in ("Leg", "Foot")):
+            return depth
+        if side and any(tok in bone for tok in ("Arm", "Hand", "Shoulder")):
+            _push_bone_out(arm, f"UpperArm_{side}", n, 0.45)
+            _push_bone_out(arm, f"LowerArm_{side}", n, 0.55)
+        elif side and any(tok in bone for tok in ("Leg", "Foot")):
+            _push_bone_out(arm, f"UpperLeg_{side}", n, 0.40)
+            _push_bone_out(arm, f"LowerLeg_{side}", n, 0.50)
+        else:
+            # Chest or hips are inside. Slide the hip out along the normal and
+            # put the same ankle back on the face. That is the plant, not a new offset.
+            arm.location = arm.location + n * (depth + 0.008)
+            bpy_update()
+            _ik_warp_ankle(arm, plant_side, foot_z, lift=lift)
+        bpy_update()
+    depth, _bone, _pt = _warp_worst()
+    return depth
+
+
+def _restore_keys(arm, keys, loc, rot):
+    rh._apply_eulers(arm, keys)
+    _clear_pose_channels(arm)
+    rh._apply_eulers(arm, keys)
+    arm.location = loc.copy()
+    arm.rotation_euler = rot.copy()
+    bpy_update()
+
+
+def _pose_worst(arm):
+    """Deepest non-rig crossing. Hip/thigh nesting is not a pose to unwind."""
+    best = 0.0
+    pair = ""
+    for depth, name in _pair_depths(arm):
+        if _is_rig_pair(name):
+            continue
+        if depth > best:
+            best = depth
+            pair = name
+    return best, pair
+
+
+def _warp_clear_self(arm, plant_side):
+    """Separate a non-adjacent shell crossing without straightening the leg.
+
+    A candidate is kept only when the crossing shrinks and the body stays
+    out of the curve. The spine is not touched. Rig joints are left alone.
+    """
+    from mathutils import Vector
+    for _step in range(6):
+        depth, pair = _pose_worst(arm)
+        if depth <= DEPTH_LIMIT_M or "/" not in pair:
+            return
+        keys = _save_pose(arm)
+        loc = arm.location.copy()
+        rot = arm.rotation_euler.copy()
+        hip_z = float(p5._head_w(arm, "Hips").z)
+        n = _warp_normal(hip_z)
+        moved = False
+        for bone in pair.split("/"):
+            side = _warp_side_of(bone)
+            if not side:
+                continue
+            sign = 1.0 if side == "L" else -1.0
+            if any(tok in bone for tok in ("Arm", "Hand", "Shoulder")):
+                _push_bone_out(arm, f"UpperArm_{side}", n, 0.30)
+                _push_bone_out(arm, f"LowerArm_{side}", n, 0.40)
+                upper = f"UpperArm_{side}"
+                if arm.pose.bones.get(upper) is not None:
+                    direction = Vector(_bone_world_axis(arm, upper, (0.0, 1.0, 0.0)))
+                    _aim_bone_axis(
+                        arm, upper, (0.0, 1.0, 0.0),
+                        direction + Vector((0.0, 0.16 * sign, 0.0)),
+                    )
+                moved = True
+            elif any(tok in bone for tok in ("Leg", "Foot")) and side != plant_side:
+                # Trail only. Moving the plant leg lifts the sole off the face.
+                _push_bone_out(arm, f"UpperLeg_{side}", n, 0.28)
+                _push_bone_out(arm, f"LowerLeg_{side}", n, 0.32)
+                moved = True
+        if not moved:
+            return
+        bpy_update()
+        new_depth, _new_pair = _pose_worst(arm)
+        if new_depth >= depth - 1.0e-4 or _warp_body_pen() > 0.0049:
+            _restore_keys(arm, keys, loc, rot)
+            return
+
+
+def _seat_on_warp(arm, side, clearance=0.005):
+    """Slide the body along the local normal until this sole is clearance off the face."""
+    from mathutils import Vector
+    for _step in range(8):
+        _n, patch = _sole_patch(arm, side)
+        if not patch:
+            return 1.0
+        sole = sum(patch, Vector()) / len(patch)
+        n = _warp_normal(sole.z)
+        surf = Vector((_warp_face_x(sole.z), sole.y, sole.z))
+        gap = n.dot(sole - surf)
+        if 0.003 <= gap <= 0.008:
+            return gap
+        arm.location = arm.location + n * (clearance - gap)
+        bpy_update()
+    _n, patch = _sole_patch(arm, side)
+    if not patch:
+        return 1.0
+    sole = sum(patch, Vector()) / len(patch)
+    n = _warp_normal(sole.z)
+    surf = Vector((_warp_face_x(sole.z), sole.y, sole.z))
+    return n.dot(sole - surf)
+
+
+def solve_warp(arm, samples, times):
+    """Clip 19: run the floor, then the curved wall. Spine stays on the reference.
+
+    The armature translation seats the sole. It is the same preview path as the
+    locked vertical wall run, not a root-motion key and not a visual offset.
+    """
+    from mathutils import Vector, Euler
+    keys, caps, facings, rows = [], [], [], []
+    hip_path = []
+    pen = 0.0
+    prev_hip = None
+    n = len(samples)
+    for i, ch in enumerate(samples):
+        t = times[i]
+        show_warp_world()
+        # Labels flip near 1.6 s. Keep the climb's alternation by swapping.
+        posed = _swap_lr(ch) if t >= 1.60 else ch
+        kl = float(posed.get("knee_flex_L", 0.0))
+        kr = float(posed.get("knee_flex_R", 0.0))
+        if t < 0.48:
+            phase = "run"
+            side = "L" if kl <= kr else "R"
+        elif abs(kl - kr) < 14.0:
+            phase = "swing"
+            side = "L" if kl <= kr else "R"
+        else:
+            phase = "plant"
+            # The straighter knee is the foot on the face. The bent one trails.
+            side = "L" if kl <= kr else "R"
+        other = "R" if side == "L" else "L"
+        trunk = float(posed.get("trunk_lean_from_cam_vertical") or 0.0)
+        lean = _clamp(trunk, 4.0, 16.0)
+        u = _clamp((t - 0.48) / 1.70, 0.0, 1.0)
+        hz = 0.92 + u * 2.20
+        if prev_hip is not None and phase != "run":
+            hz = max(hz, prev_hip + 0.008)
+        nrm = _warp_normal(hz)
+        face = _warp_face_x(hz)
+        if phase == "run":
+            origin = Vector((WARP_R + 0.85, 0.0, 0.90))
+        else:
+            origin = Vector((face, 0.0, hz)) + nrm * 0.46
+        # Faithful spine, neck and head. Do not zero them back to rest.
+        facing = Euler((math.radians(lean), 0.0, math.radians(-90.0)), "XYZ")
+        _apply_faithful(arm, posed, origin, facing)
+        if phase == "run":
+            _place_hip_at(arm, origin.x, 0.0, origin.z)
+            for s in ("L", "R"):
+                _orient_sole(arm, s, (-1.0, 0.0, 0.12), (0.0, 0.0, -1.0))
+            low = "L"
+            best_z = 1.0e9
+            for s in ("L", "R"):
+                _nn, patch = _sole_patch(arm, s)
+                if patch:
+                    z = min(v.z for v in patch)
+                    if z < best_z:
+                        best_z = z
+                        low = s
+            _seat_sole(arm, low, (0.0, 0.0, 0.0), (0.0, 0.0, 1.0), clearance=0.005)
+            # Keep the shoes in front of the curve.
+            for _step in range(4):
+                if _warp_body_pen() <= 0.004:
+                    break
+                arm.location.x += 0.03
+                bpy_update()
+                _seat_sole(arm, low, (0.0, 0.0, 0.0), (0.0, 0.0, 1.0), clearance=0.005)
+        else:
+            sign = 1.0 if side == "L" else -1.0
+            oth = -sign
+            foot_z = max(0.20, hz - 0.18)
+            _place_hip_at(arm, origin.x, 0.0, origin.z)
+            # Trail knee up, foot tucked in the camera plane, not kicked out behind.
+            trail_th = _warp_leg_dir(hz, -0.10, 0.97, 0.06 * oth)
+            trail_sh = _warp_leg_dir(max(0.15, hz - 0.35), 0.15, -0.85, 0.04 * oth)
+            _aim_bone_axis(arm, f"UpperLeg_{other}", (0.0, 1.0, 0.0), trail_th)
+            _aim_bone_axis(arm, f"LowerLeg_{other}", (0.0, 1.0, 0.0), trail_sh)
+            # Fresh IK flips the foot in a narrow band, so search from the
+            # trail pose, then nudge the shin on any plant that is still off.
+            base_keys = _save_pose(arm)
+            base_loc = arm.location.copy()
+            base_rot = arm.rotation_euler.copy()
+            lo, hi = 0.0, 0.045
+            best = None
+            for _try in range(7):
+                lift = (lo + hi) * 0.5
+                _restore_keys(arm, base_keys, base_loc, base_rot)
+                _ik_warp_ankle(arm, side, foot_z, lift=lift)
+                depth = _warp_clear(arm, side, foot_z, lift)
+                gap = _warp_sole_gap(arm, side)
+                feasible = depth <= 0.0049 and gap >= 0.0
+                if feasible and (best is None or abs(gap - 0.0045) < abs(best[0] - 0.0045)):
+                    best = (gap, _save_pose(arm), arm.location.copy(), arm.rotation_euler.copy())
+                if not feasible or gap < 0.0035:
+                    lo = lift
+                else:
+                    hi = lift
+            if best is None:
+                _restore_keys(arm, base_keys, base_loc, base_rot)
+                _ik_warp_ankle(arm, side, foot_z, lift=0.034)
+                _warp_clear(arm, side, foot_z, 0.034)
+            else:
+                _restore_keys(arm, best[1], best[2], best[3])
+            # Shin nudge stays in the same knee bend, so it does not flip the foot.
+            n_face = _warp_normal(foot_z)
+            # Which way the shin must turn is frame-dependent. Pick the side
+            # that brings the sole closer, then take small steps. The aim
+            # helper ignores a turn under about 6°, so this path allows a
+            # finer one.
+            shin_sign = -1.0
+            shin_name = f"LowerLeg_{side}"
+            gap0 = _warp_sole_gap(arm, side)
+            if gap0 > 0.005:
+                held0 = (_save_pose(arm), arm.location.copy(), arm.rotation_euler.copy())
+                shin = Vector(_bone_world_axis(arm, shin_name, (0.0, 1.0, 0.0)))
+                _aim_bone_axis(
+                    arm, shin_name, (0.0, 1.0, 0.0), shin - n_face * 0.04,
+                    min_dot=0.99999,
+                )
+                _orient_sole(arm, side, tuple(_warp_tangent(foot_z)), tuple(-n_face))
+                bpy_update()
+                closer = _warp_sole_gap(arm, side)
+                _restore_keys(arm, held0[0], held0[1], held0[2])
+                if closer > gap0:
+                    shin_sign = 1.0
+            for _try in range(14):
+                gap = _warp_sole_gap(arm, side)
+                if gap <= 0.005:
+                    break
+                held = (_save_pose(arm), arm.location.copy(), arm.rotation_euler.copy())
+                # Scale the turn to the gap that is left, so the last bit
+                # does not step the sole through the face.
+                gain = min(0.020, max(0.006, (gap - 0.0045) * 1.6))
+                shin = Vector(_bone_world_axis(arm, shin_name, (0.0, 1.0, 0.0)))
+                _aim_bone_axis(
+                    arm, shin_name, (0.0, 1.0, 0.0),
+                    shin + n_face * (shin_sign * gain),
+                    min_dot=0.99999,
+                )
+                _orient_sole(arm, side, tuple(_warp_tangent(foot_z)), tuple(-n_face))
+                bpy_update()
+                gap2 = _warp_sole_gap(arm, side)
+                if gap2 < 0.002 or gap2 > gap - 0.0004 or _warp_body_pen() > 0.0049:
+                    _restore_keys(arm, held[0], held[1], held[2])
+                    break
+            _warp_clear_self(arm, side)
+            # Use whatever clearance is left to bring a floating sole to 0.45 cm.
+            # The move is along the face normal, the same preview translation as
+            # the locked wall plant. It stops before the body reaches 0.5 cm.
+            _n_seat, seat_patch = _sole_patch(arm, side)
+            z_seat = foot_z
+            if seat_patch:
+                z_seat = sum(v.z for v in seat_patch) / len(seat_patch)
+            n_seat = _warp_normal(z_seat)
+            for _try in range(3):
+                gap = _warp_sole_gap(arm, side)
+                spare = 0.0048 - _warp_body_pen()
+                need = gap - 0.0045
+                if need <= 0.0004 or spare <= 0.0006:
+                    break
+                step = min(need, spare)
+                arm.location = arm.location - n_seat * step
+                bpy_update()
+                if _warp_sole_gap(arm, side) > gap - step * 0.5:
+                    arm.location = arm.location + n_seat * step
+                    bpy_update()
+                    break
+        used = max(_warp_body_pen(), max(0.0, -_min_plane((0.0, 0.0, 0.0), (0.0, 0.0, 1.0))))
+        pen = max(pen, used)
+        body = _measure_body(arm)
+        row = _angle_row(posed, body)
+        row["t"] = t
+        row["phase"] = phase
+        row["plant"] = side
+        hip_now = p5._head_w(arm, "Hips")
+        row["hip_z"] = float(hip_now.z)
+        row["hip_x"] = float(hip_now.x)
+        row["hip_y"] = float(hip_now.y)
+        row["lean"] = _signed_trunk_deg(arm)
+        face_z = _bone_world_axis(arm, "Head", (0.0, 0.0, 1.0))
+        row["face_x"] = float(face_z.x)
+        row["face_y"] = float(face_z.y)
+        row["knee_y_L"] = float(p5._head_w(arm, "LowerLeg_L").y)
+        row["knee_y_R"] = float(p5._head_w(arm, "LowerLeg_R").y)
+        if phase == "run":
+            gnd = Vector((0.0, 0.0, 1.0))
+            row["sole_L_cm"] = _sole_gap(arm, "L", Vector((0, 0, 0)), gnd) * 100.0
+            row["sole_R_cm"] = _sole_gap(arm, "R", Vector((0, 0, 0)), gnd) * 100.0
+        else:
+            _nn, patch = _sole_patch(arm, side)
+            if patch:
+                sole = sum(patch, Vector()) / len(patch)
+                nn = _warp_normal(sole.z)
+                surf = Vector((_warp_face_x(sole.z), sole.y, sole.z))
+                lead = nn.dot(sole - surf) * 100.0
+            else:
+                lead = 999.0
+            if side == "L":
+                row["sole_L_cm"] = lead
+                row["sole_R_cm"] = 99.0
+            else:
+                row["sole_R_cm"] = lead
+                row["sole_L_cm"] = 99.0
+        row["clear_cm"] = used * 100.0
+        dipped = prev_hip is not None and hip_now.z < prev_hip - 1.0e-4 and phase != "run"
+        prev_hip = float(hip_now.z) if phase != "run" else prev_hip
+        hip_path.append((float(hip_now.x), float(hip_now.y), float(hip_now.z)))
+        _ensure_hip_sit(
+            arm, posed, phase, "wallrun_warp",
+            side if phase in ("plant", "run") else None,
+        )
+        hip_now = p5._head_w(arm, "Hips")
+        hip_path[-1] = (float(hip_now.x), float(hip_now.y), float(hip_now.z))
+        rows.append(row)
+        keys.append(_save_pose(arm))
+        caps.append((arm.location.x, arm.location.y, arm.location.z))
+        facings.append((facing.x, facing.y, facing.z))
+        if phase == "plant" or i % 6 == 0 or i == n - 1 or used > 0.004:
+            lead_cm = row["sole_L_cm"] if side == "L" else row["sole_R_cm"]
+            spine = arm.pose.bones["Spine"].rotation_euler
+            worst_b = ""
+            if used > 0.004:
+                _d, worst_b, _p = _warp_worst()
+            print(
+                f"  warp f={i} t={t:.2f} {phase} plant={side} "
+                f"sole={lead_cm:.2f} hip=({hip_now.x:.2f},{hip_now.y:.2f},{hip_now.z:.2f}) "
+                f"nose=({face_z.x:.2f},{face_z.y:.2f}) "
+                f"kneeY={row['knee_y_L']:.2f}/{row['knee_y_R']:.2f} "
+                f"lean={row['lean']:+.1f} pen={used*100:.2f} "
+                f"spine=({math.degrees(spine.x):.1f},{math.degrees(spine.y):.1f},{math.degrees(spine.z):.1f})"
+                f"{' bone=' + worst_b if worst_b else ''}"
+                f"{' DIP' if dipped else ''}",
+                flush=True,
+            )
+    def _first(pred):
+        for idx, r in enumerate(rows):
+            if pred(r):
+                return idx
+        return 0
+
+    def _last(pred):
+        found = 0
+        for idx, r in enumerate(rows):
+            if pred(r):
+                found = idx
+        return found
+
+    sheet = [
+        0,
+        _first(lambda r: r["phase"] == "plant"),
+        _first(lambda r: r["phase"] == "plant" and r["t"] > 0.9),
+        _first(lambda r: r["phase"] == "plant" and r["t"] > 1.3),
+        _first(lambda r: r["hip_z"] > 2.2),
+        _first(lambda r: r["hip_z"] > 2.6),
+        _last(lambda r: r["phase"] == "plant"),
+        len(rows) - 1,
+    ]
+    # Unique, ordered, 8 cells.
+    picked = []
+    for idx in sheet:
+        if idx not in picked:
+            picked.append(idx)
+    while len(picked) < 8:
+        picked.append(len(rows) - 1)
+    sheet = picked[:8]
+    return {
+        "keys": keys, "capsule": caps, "facing": facings, "times": times,
+        "skate": 0.0, "pen": pen, "errors": rows,
+        "hip_path": hip_path, "sheet_frames": sheet,
+        "side_scale": WARP_SIDE_SCALE,
+        "world": {"kind": "warp"},
+        "note": (
+            "Clip 19, the curved wall. The face is a quarter circle from the "
+            "floor to vertical, then a short vertical top. Spine, neck and head "
+            "stay on the reference; they are not reset to rest. Plants sit 0.5 cm "
+            "off the face. The trail foot stays in the side-camera plane. "
+            "L/R is swapped after 1.6 s, where the source labels flip. "
+            "Yaw -90 is the profile. The side camera is fixed."
+        ),
+    }
+
+
+def _warp_body_pen():
+    worst = 0.0
+    for v in _all_body_verts():
+        worst = max(worst, max(0.0, -v.z), _warp_depth(v))
+    return worst
+
+
 SOLVERS = {
     "slide": solve_slide,
     "wallrun_vertical": solve_wallrun,
+    "wallrun_warp": solve_warp,
     "turn180": solve_turn,
 }
 
@@ -3552,6 +4246,10 @@ def _analytical_world(verts, spec, world):
         # counted a palm resting on the top as inside the brick.
         for v in verts:
             pen = max(pen, max(0.0, -v.z), _slab_depth(v))
+        return pen
+    if spec["verb"] == "wallrun_warp":
+        for v in verts:
+            pen = max(pen, max(0.0, -v.z), _warp_depth(v))
         return pen
     landing_top = float(world.get("landing_top", 0.42))
     landing_y = float(world.get("landing_y", 1.55))
@@ -3982,7 +4680,7 @@ def _moving_average(path, window=3):
     return out
 
 
-def _set_hip_ghost(path, show):
+def _set_hip_ghost(path, show, ortho_scale=None):
     """Thin hip line behind the figure. The stored path stays raw.
 
     The line is a 3-frame average so the climb reads. It is about 2 px at
@@ -4019,8 +4717,8 @@ def _set_hip_ghost(path, show):
                 bsdf.inputs["Emission Strength"].default_value = 4.0
         ob.data.materials.append(mat)
     smooth = _moving_average(path, 3)
-    # 2 px full width at the locked side camera (ortho height / 500 px).
-    half = WALL_SIDE_SCALE / 500.0
+    # 2 px full width at this clip's locked side camera (ortho height / 500 px).
+    half = float(ortho_scale or WALL_SIDE_SCALE) / 500.0
     y = 0.85
     bm = bmesh.new()
     verts = []
@@ -4047,10 +4745,348 @@ def _show_for(spec, arm, solved=None):
             0.0, WALL_TOP_Z * 0.5, WALL_TOP_Z,
             hide_ground=False, ticks=True, half_thick=WALL_HALF_THICK,
         )
-        _set_hip_ghost((solved or {}).get("hip_path"), True)
+        _set_hip_ghost(
+            (solved or {}).get("hip_path"), True,
+            (solved or {}).get("side_scale"),
+        )
+    elif spec["verb"] == "wallrun_warp":
+        show_warp_world()
+        _set_hip_ghost(
+            (solved or {}).get("hip_path"), True,
+            (solved or {}).get("side_scale") or WARP_SIDE_SCALE,
+        )
     else:
         _set_hip_ghost(None, False)
         show_turn_world(0.0, world.get("landing_top", 0.42), world.get("landing_y", 1.55))
+
+
+def _body_facing(arm):
+    """Horizontal facing. Head +Z when it has a direction, otherwise the yaw key.
+
+    Rest nose is world -Y. Yaw is the armature's Z rotation.
+    """
+    from mathutils import Vector
+    nose = Vector(_bone_world_axis(arm, "Head", (0.0, 0.0, 1.0)))
+    flat = Vector((nose.x, nose.y, 0.0))
+    if flat.length >= 0.35:
+        return flat.normalized()
+    yaw = float(arm.rotation_euler.z)
+    return Vector((math.sin(yaw), -math.cos(yaw), 0.0))
+
+
+def _sole_on_surface(mid):
+    """True when this sole is on the ground, a wall, the ramp, or a landing."""
+    from mathutils import Vector
+    if -0.02 <= mid.z <= 0.10:
+        return True
+    # Flat brick face: the wall run and the 180's wall.
+    if -0.08 <= mid.x <= 0.08 and 0.0 < mid.z < WALL_TOP_Z + 0.15:
+        return True
+    # Roof of the 4 m slab.
+    if WALL_BACK_X - 0.05 <= mid.x <= 0.08 and abs(mid.z - WALL_TOP_Z) <= 0.06:
+        return True
+    # Warped wall: within 3 cm of the curved face, on the runner's side.
+    if 0.0 <= mid.z <= WARP_LIP_Z + 0.05:
+        gap = mid.x - _warp_face_x(mid.z)
+        if -0.02 <= gap <= 0.04:
+            return True
+    # Slide ramp. The sole sits on the plane, not on z = 0.
+    if -1.7 <= mid.x <= 1.7 and -0.9 <= mid.y <= 2.3:
+        _ang, y0, normal, _down = _slope_frame()
+        dist = normal.dot(Vector(mid) - Vector((0.0, y0, 0.0)))
+        if abs(dist) <= 0.04:
+            return True
+    # 180 landing on the low wall.
+    if abs(mid.z - LOW_WALL_TOP) <= 0.05 and _over_landing_xy(mid.x, mid.y, 2.40):
+        return True
+    return False
+
+
+def _support_mid(arm, plant_side=None):
+    """Midpoint of the support sole. Feet on a surface beat a dangling trail.
+
+    A named plant is that one foot. Otherwise every sole on a surface is the
+    stance, and the midpoint is the average of those feet. In the air, the
+    support is the foot furthest along the facing.
+    """
+    from mathutils import Vector
+    found = []
+    for side in ("L", "R"):
+        _n, patch = _sole_patch(arm, side)
+        if not patch:
+            continue
+        mid = sum(patch, Vector()) / len(patch)
+        found.append((side, mid))
+    if not found:
+        return None, []
+    if plant_side in ("L", "R"):
+        picked = [s for s in found if s[0] == plant_side]
+        if picked:
+            return picked[0][1], [plant_side]
+    planted = [s for s in found if _sole_on_surface(s[1])]
+    if planted:
+        mid = sum((s[1] for s in planted), Vector()) / len(planted)
+        return mid, [s[0] for s in planted]
+    facing = _body_facing(arm)
+    hip = Vector(p5._head_w(arm, "Hips"))
+    scored = [(float(facing.dot(mid - hip)), side, mid) for side, mid in found]
+    front = max(scored, key=lambda s: s[0])
+    return front[2], [front[1]]
+
+
+def _hip_flexion_deg(arm, side):
+    """Thigh forward of the torso. 0 is hanging in line with the spine."""
+    from mathutils import Vector
+    hips = Vector(p5._head_w(arm, "Hips"))
+    chest = Vector(p5._head_w(arm, "Chest"))
+    torso = chest - hips
+    if torso.length < 1.0e-6:
+        return 0.0
+    torso = torso.normalized()
+    hip = Vector(p5._head_w(arm, f"UpperLeg_{side}"))
+    knee = Vector(p5._head_w(arm, f"LowerLeg_{side}"))
+    thigh = knee - hip
+    if thigh.length < 1.0e-6:
+        return 0.0
+    thigh = thigh.normalized()
+    cos = max(-1.0, min(1.0, thigh.dot(-torso)))
+    return math.degrees(math.acos(cos))
+
+
+def _spine_flex_deg(arm):
+    """Lumbar plus chest pitch, local, so an armature lean is not counted as a waist bend."""
+    lumbar = abs(math.degrees(arm.pose.bones["Spine"].rotation_euler.x))
+    chest = abs(math.degrees(arm.pose.bones["Chest"].rotation_euler.x))
+    return lumbar + chest
+
+
+def _hip_sit_target_m(verb, phase, ref_m, knee_both):
+    """8 cm on a plant or landing, 12 cm in a crouch, or the track when it sits further back."""
+    crouch = verb == "slide" or phase in ("crouch",)
+    if phase in ("plant", "land") and knee_both is not None and knee_both >= 80.0:
+        crouch = True
+    base = 0.12 if crouch else 0.08
+    ref = max(0.0, float(ref_m or 0.0))
+    return max(base, ref)
+
+
+def _hip_sit_now(arm, verb, phase, ref_m, knee_both, plant_side=None):
+    """pelvisBack in metres (positive = pelvis behind the support foot) and hinge ratio."""
+    from mathutils import Vector
+    facing = _body_facing(arm)
+    mid, sides = _support_mid(arm, plant_side)
+    hip = Vector(p5._head_w(arm, "Hips"))
+    if mid is None:
+        back = 0.0
+        side = "L"
+    else:
+        back = float(facing.dot(mid - hip))
+        side = sides[0] if sides else "L"
+    flex = max(_hip_flexion_deg(arm, s) for s in ("L", "R"))
+    # The support leg is the hinge that has to beat the spine.
+    if sides:
+        flex = max(_hip_flexion_deg(arm, s) for s in sides)
+    spine = _spine_flex_deg(arm)
+    # A neutral spine (no lumbar or chest pitch) is the hinge we want.
+    # Report a real ratio. Degrees must not leak into hingeMin.
+    if spine < 0.25:
+        hinge = 99.0 if flex >= 0.5 else 0.0
+    else:
+        hinge = flex / spine
+    target = _hip_sit_target_m(verb, phase, ref_m, knee_both)
+    return {
+        "back_m": back,
+        "hinge": hinge,
+        "flex": flex,
+        "spine": spine,
+        "target_m": target,
+        # 3 mm under the target is the same contact. A displayed 8.0/8.0 must not fail.
+        "fail": back + 0.003 < target or hinge + 1.0e-4 < 1.5,
+    }
+
+
+def _clip_world_pen(verb):
+    """Same solids as the no-clip pass, so a hip sit cannot buy offset with a sink."""
+    spec = {"verb": verb}
+    world = None
+    if verb == "turn180":
+        world = {"landing_top": LOW_WALL_TOP, "landing_y": 2.40}
+    return _analytical_world(_all_body_verts(), spec, world)
+
+
+def _knee_on_lip(arm, side):
+    """True when this knee is the one hooked on the slab edge."""
+    kz, kx = _knee_on_slab(arm, side)
+    if kz is None:
+        return False
+    return 4.002 <= kz <= 4.020 and -0.22 <= kx <= -0.004
+
+
+def _palms_on_top(arm):
+    """True when both palm bands are within 1.2 cm of the wall top."""
+    for side in ("L", "R"):
+        z, _x, _mn = _palm_band(side)
+        if abs(z - WALL_TOP_Z) > 0.012:
+            return False
+    return True
+
+
+def _ensure_hip_sit(arm, ch, phase, verb, plant_side=None):
+    """Put the pelvis behind the support foot by flexing the hip.
+
+    The pelvis shifts back along the facing and the support ankle is solved
+    back onto the point it already occupied, so the foot stays and the hip
+    flexion creates the offset. A last shift only restores the sole's
+    into-surface coordinate. On a palm plant the feet slide instead, so the
+    hands stay on the top. The spine is not touched. HIP_SIT=0 skips the move.
+    """
+    from mathutils import Vector
+    knees = min(float(ch.get("knee_flex_L", 0.0)), float(ch.get("knee_flex_R", 0.0)))
+    ref = ch.get("pelvis_back_ref_m")
+    sit0 = _hip_sit_now(arm, verb, phase, ref, knees, plant_side)
+    if os.environ.get("HIP_SIT", "1") == "0" or not sit0["fail"]:
+        return sit0
+    why = "pose or world"
+    for _step in range(3):
+        sit = _hip_sit_now(arm, verb, phase, ref, knees, plant_side)
+        if not sit["fail"]:
+            return sit
+        _mid, sides = _support_mid(arm, plant_side)
+        if not sides:
+            why = "no support foot"
+            break
+        move_sides = [plant_side] if plant_side in ("L", "R") else list(sides)
+        facing = _body_facing(arm)
+        short = sit["target_m"] - sit["back_m"]
+        if short < 0.02 and sit["hinge"] < 1.5:
+            need = 0.06
+            dists = (need, need * 0.55)
+        elif short < 0.02:
+            # A centimetre left. Ask for that, not a 2 cm step that gets rejected.
+            need = max(short, 0.004)
+            dists = (need,)
+        else:
+            need = min(max(short, 0.02), 0.28)
+            dists = (need, need * 0.55, need * 0.30)
+        hold_knee = phase == "knee" and any(_knee_on_lip(arm, s) for s in move_sides)
+        hold_palms = phase in ("palms", "press") and _palms_on_top(arm)
+
+        def _seat(contacts):
+            side0, into0, _ankle, old_out = contacts[0]
+            _n2, patch2 = _sole_patch(arm, side0)
+            if not patch2:
+                return
+            new = sum(patch2, Vector()) / len(patch2)
+            arm.location = arm.location + into0 * (old_out - into0.dot(new))
+            bpy_update()
+
+        def _anchors():
+            contacts = []
+            for side in move_sides:
+                sole_into = Vector(_bone_world_axis(arm, f"Foot_{side}", (0.0, 0.0, 1.0)))
+                _n, patch = _sole_patch(arm, side)
+                if not patch:
+                    return None
+                old = sum(patch, Vector()) / len(patch)
+                ankle = Vector(p5._head_w(arm, f"Foot_{side}"))
+                contacts.append((side, sole_into, ankle, sole_into.dot(old)))
+            return contacts
+
+        def _orient_contacts(contacts):
+            for side, sole_into, _ankle, _old_out in contacts:
+                toe = facing - sole_into * facing.dot(sole_into)
+                if toe.length < 1.0e-4:
+                    toe = facing
+                _orient_sole(arm, side, tuple(toe.normalized()), tuple(sole_into))
+
+        def _apply_hip_back(distance):
+            """Pelvis back, support ankle returned to its world point."""
+            contacts = _anchors()
+            if not contacts:
+                return False
+            arm.location = arm.location - facing * distance
+            bpy_update()
+            for side, sole_into, ankle, _old_out in contacts:
+                sign = 1.0 if side == "L" else -1.0
+                lat = Vector((-facing.y, facing.x, 0.0))
+                pole = facing * 0.5 + Vector((0.0, 0.0, 0.22)) + lat * (0.12 * sign)
+                _ik_ankle_to(arm, side, ankle.x, ankle.y, ankle.z, pole)
+                _orient_contacts([(side, sole_into, ankle, _old_out)])
+            _seat(contacts)
+            return True
+
+        def _apply_foot_forward(distance):
+            """Slide the support feet along the facing and reseat the sole.
+
+            Used when the hands are on the top: the chest stays, the feet move.
+            """
+            contacts = _anchors()
+            if not contacts:
+                return False
+            for side, sole_into, ankle, _old_out in contacts:
+                sign = 1.0 if side == "L" else -1.0
+                lat = Vector((-facing.y, facing.x, 0.0))
+                pole = facing * 0.5 + Vector((0.0, 0.0, 0.22)) + lat * (0.12 * sign)
+                goal = ankle + facing * distance
+                _ik_ankle_to(arm, side, goal.x, goal.y, goal.z, pole)
+                _orient_contacts([(side, sole_into, ankle, _old_out)])
+            _seat(contacts)
+            return True
+
+        methods = (_apply_foot_forward,) if phase in ("palms", "press") else (_apply_hip_back, _apply_foot_forward)
+        world0 = _clip_world_pen(verb)
+        snap_k = _save_pose(arm)
+        snap_l = arm.location.copy()
+        snap_r = arm.rotation_euler.copy()
+        chosen = None
+        why = "pose or world"
+        for method in methods:
+            for distance in dists:
+                _restore_keys(arm, snap_k, snap_l, snap_r)
+                if not method(distance):
+                    why = "no sole"
+                    continue
+                depth, _pair = _pose_worst(arm)
+                world1 = _clip_world_pen(verb)
+                sit2 = _hip_sit_now(arm, verb, phase, ref, knees, plant_side)
+                gain = sit2["back_m"] - sit["back_m"]
+                if depth > DEPTH_LIMIT_M:
+                    why = "pose"
+                    continue
+                if world1 > max(DEPTH_LIMIT_M, world0 + 1.0e-4):
+                    why = "world"
+                    continue
+                if hold_knee and not any(_knee_on_lip(arm, s) for s in move_sides):
+                    why = "knee lip"
+                    continue
+                if hold_palms and not _palms_on_top(arm):
+                    why = "palms"
+                    continue
+                if gain < 0.015 and sit2["fail"]:
+                    why = "no gain"
+                    continue
+                chosen = sit2
+                break
+            if chosen is not None:
+                break
+        if chosen is None:
+            _restore_keys(arm, snap_k, snap_l, snap_r)
+            break
+        print(
+            f"  hipsit {verb} {phase} back {sit['back_m']*100:.1f}"
+            f"->{chosen['back_m']*100:.1f}/{sit['target_m']*100:.1f}",
+            flush=True,
+        )
+        if not chosen["fail"]:
+            return chosen
+    sit = _hip_sit_now(arm, verb, phase, ref, knees, plant_side)
+    if sit["fail"]:
+        print(
+            f"  hipsit-keep {verb} {phase} back={sit['back_m']*100:.1f}"
+            f"/{sit['target_m']*100:.1f} hinge={sit['hinge']:.1f} ({why})",
+            flush=True,
+        )
+    return sit
 
 
 def measure_noclip(arm, solved_all):
@@ -4060,6 +5096,10 @@ def measure_noclip(arm, solved_all):
     world_max = 0.0
     rig_max = 0.0
     pose_max = 0.0
+    hip_rows = []
+    hip_fail = 0
+    hip_back_min = None
+    hip_hinge_min = None
     for spec in SPECS:
         solved = solved_all[spec["id"]]
         rig_frames = []
@@ -4067,8 +5107,30 @@ def measure_noclip(arm, solved_all):
         worst_i = 0
         worst_depth = -1.0
         worst_pair = ""
+        clip_fail = []
         for i in range(len(solved["keys"])):
             pose_from_key(arm, solved, i, spec)
+            errs = solved.get("errors") or []
+            row = errs[i] if i < len(errs) else {}
+            sit = _hip_sit_now(
+                arm, spec["verb"], row.get("phase") or "",
+                (row.get("pelvis_back_ref_cm") or 0.0) / 100.0,
+                row.get("knee_both_ref"),
+                row.get("plant") if row.get("phase") in ("plant", "push", "takeoff", "run", "knee") else None,
+            )
+            if hip_back_min is None or sit["back_m"] < hip_back_min:
+                hip_back_min = sit["back_m"]
+            if hip_hinge_min is None or sit["hinge"] < hip_hinge_min:
+                hip_hinge_min = sit["hinge"]
+            if sit["fail"]:
+                hip_fail += 1
+                if len(clip_fail) < 12:
+                    clip_fail.append(
+                        f"f={i} t={row.get('t', solved['times'][i]):.2f} "
+                        f"{row.get('phase') or '-'} "
+                        f"back={sit['back_m']*100:.1f}/{sit['target_m']*100:.1f} "
+                        f"hinge={sit['hinge']:.2f} flex={sit['flex']:.0f} spine={sit['spine']:.0f}"
+                    )
             world, _self_pen, _pair = noclip_frame(arm, spec, solved.get("world"))
             pairs = _pair_depths(arm)
             rig_d, rig_p = 0.0, ""
@@ -4121,6 +5183,21 @@ def measure_noclip(arm, solved_all):
             f"worst_f={worst_i} pair={solved['worst_pair']}",
             flush=True,
         )
+        if clip_fail:
+            hip_rows.append(spec["id"] + " " + "; ".join(clip_fail))
+    hip_line = (
+        f"hip-sit clips={len(SPECS)} loadedFrames={frames} "
+        f"pelvisBackMin={(hip_back_min or 0.0)*100:.1f} cm "
+        f"hingeMin={(hip_hinge_min or 0.0):.2f} fails={hip_fail}"
+    )
+    print(hip_line, flush=True)
+    for extra in hip_rows:
+        print("  " + extra, flush=True)
+    os.makedirs(OUT, exist_ok=True)
+    with open(os.path.join(OUT, "hip_sit.txt"), "w") as f:
+        f.write(hip_line + "\n")
+        for extra in hip_rows:
+            f.write(extra + "\n")
     line = (
         f"no-clip clips={len(SPECS)} frames={frames} "
         f"worldMax={world_max*100:.2f} rigMax={rig_max*100:.2f} poseMax={pose_max*100:.2f} "
@@ -4230,7 +5307,26 @@ def _shot_for(spec, arm):
     # 48 mm on a portrait frame. Stay back so nothing clips the cell edge.
     dist = rad / math.sin(math.radians(18.0))
     if spec["verb"] == "slide":
-        direction = Vector((0.45, -0.8, 0.28)).normalized()
+        focus = SLIDE_CAM_FOCUS
+        direction = Vector(SLIDE_34_DIR).normalized()
+        dist = SLIDE_SIDE_SCALE * 2.05
+        loc = Vector(focus) + direction * dist
+        print(f"  cam3/4 slide locked dist={dist:.2f} focus={focus}", flush=True)
+        return (loc.x, loc.y, loc.z), focus
+    if spec["verb"] == "wallrun_warp":
+        focus = WARP_CAM_FOCUS
+        direction = Vector(WARP_34_DIR).normalized()
+        dist = WARP_SIDE_SCALE * 2.05
+        loc = Vector(focus) + direction * dist
+        print(f"  cam3/4 warp locked dist={dist:.2f} focus={focus}", flush=True)
+        return (loc.x, loc.y, loc.z), focus
+    if spec["verb"] == "turn180":
+        focus = TURN_CAM_FOCUS
+        direction = Vector(TURN_34_DIR).normalized()
+        dist = TURN_SIDE_SCALE * 2.05
+        loc = Vector(focus) + direction * dist
+        print(f"  cam3/4 turn locked dist={dist:.2f} focus={focus}", flush=True)
+        return (loc.x, loc.y, loc.z), focus
     elif spec["verb"] == "wallrun_vertical":
         # One locked three-quarter for every cell, from behind-side so the
         # wall is in front of the chest. It does not track the body, and it
@@ -4257,12 +5353,21 @@ def _side_shot(spec, arm):
     pelvis = p5._head_w(arm, "Hips")
     mn, mx = _body_bounds()
     if spec["verb"] == "slide":
-        span_y = (mx.y - mn.y) + 0.9
-        span_z = (mx.z - mn.z) + 0.7
-        scale = max(span_y, span_z, 2.2)
-        focus = ((mn.x + mx.x) * 0.5, (mn.y + mx.y) * 0.5, pelvis.z)
-        loc = (focus[0] + 6.0, focus[1], focus[2])
+        focus = SLIDE_CAM_FOCUS
+        scale = SLIDE_SIDE_SCALE
+        loc = (focus[0] + 8.0, focus[1], focus[2])
+        print(f"  camSide slide locked scale={scale:.2f} focus={focus}", flush=True)
         return loc, focus, scale, "Y"
+    if spec["verb"] == "wallrun_warp":
+        focus = WARP_CAM_FOCUS
+        scale = WARP_SIDE_SCALE
+        loc = (focus[0], -8.0, focus[2])
+        fig = (mx.z - mn.z) / scale if scale else 0.0
+        print(
+            f"  camSide warp locked scale={scale:.2f} fig={fig:.2f} focus=({focus[0]:.2f},{focus[2]:.2f})",
+            flush=True,
+        )
+        return loc, focus, scale, "Z"
     if spec["verb"] == "wallrun_vertical":
         # Look exactly along +Y. One scale and one focus for all 8 cells,
         # so the face and the 4 m marks do not move. Do not orbit this
@@ -4270,16 +5375,16 @@ def _side_shot(spec, arm):
         focus = WALL_CAM_FOCUS
         scale = WALL_SIDE_SCALE
         loc = (focus[0], -8.0, focus[2])
+        fig = (mx.z - mn.z) / scale if scale else 0.0
         print(
-            f"  camSide locked scale={scale:.2f} focus=({focus[0]:.2f},{focus[2]:.2f})",
+            f"  camSide locked scale={scale:.2f} fig={fig:.2f} focus=({focus[0]:.2f},{focus[2]:.2f})",
             flush=True,
         )
         return loc, focus, scale, "Z"
-    span_y = (mx.y - mn.y) + 1.4
-    span_z = (mx.z - mn.z) + 0.8
-    scale = max(span_y, span_z, 2.6)
-    focus = ((mn.x + mx.x) * 0.5, (mn.y + mx.y) * 0.5, pelvis.z)
-    loc = (focus[0] + 6.5, focus[1], focus[2])
+    focus = TURN_CAM_FOCUS
+    scale = TURN_SIDE_SCALE
+    loc = (focus[0] + 8.0, focus[1], focus[2])
+    print(f"  camSide turn locked scale={scale:.2f} focus={focus}", flush=True)
     return loc, focus, scale, "Y"
 
 
@@ -4371,11 +5476,117 @@ def _beat_index(solved, s):
     return int(round(s * (n - 1) / 7.0))
 
 
+def _hip_markers(arm, show, plant_side=None, view="+Y"):
+    """Vertical line through the support foot and a dot on the pelvis.
+
+    Both are shifted toward the camera so the mesh does not hide them.
+    The shift is along the view axis, so the orthographic image still
+    marks the foot and the pelvis.
+    """
+    if not show:
+        _hide_named(("HipSitLine", "HipSitDot"))
+        return
+    from mathutils import Vector
+    mid, _sides = _support_mid(arm, plant_side)
+    hip = Vector(p5._head_w(arm, "Hips"))
+    if mid is None:
+        mid = hip
+    if view == "+X":
+        mid = Vector((mid.x + 0.55, mid.y, mid.z))
+        hip = Vector((hip.x + 0.55, hip.y, hip.z))
+    else:
+        mid = Vector((mid.x, mid.y - 0.55, mid.z))
+        hip = Vector((hip.x, hip.y - 0.55, hip.z))
+    # Workbench tone-maps yellow into the brick. Green and magenta stay readable.
+    yellow = (0.05, 1.0, 0.15, 1.0)
+    orange = (1.0, 0.02, 0.75, 1.0)
+    # World Z is image-up on these side cameras. A tall line reads as vertical
+    # through the sole even when the pelvis sits well behind it.
+    _make_box("HipSitLine", (mid.x, mid.y, 3.3), (0.02, 0.02, 3.6), yellow)
+    _make_box("HipSitDot", (hip.x, hip.y, hip.z), (0.09, 0.09, 0.09), orange)
+    import bpy
+    for name, color in (("HipSitLine", yellow), ("HipSitDot", orange)):
+        ob = bpy.data.objects.get(name)
+        if ob is None or not ob.data.materials:
+            continue
+        mat = ob.data.materials[0]
+        mat.diffuse_color = color
+        bsdf = mat.node_tree.nodes.get("Principled BSDF") if mat.node_tree else None
+        if bsdf is not None:
+            bsdf.inputs["Base Color"].default_value = color
+            if "Emission Color" in bsdf.inputs:
+                bsdf.inputs["Emission Color"].default_value = color
+            if "Emission Strength" in bsdf.inputs:
+                bsdf.inputs["Emission Strength"].default_value = 8.0
+        ob.hide_render = False
+        ob.hide_set(False)
+
+
+def _hip_still_index(solved, spec):
+    """A loaded frame where the support foot and the pelvis are both in the side camera."""
+    rows = solved.get("errors") or []
+    z0 = z1 = None
+    if spec["verb"] == "wallrun_vertical":
+        # The locked crop starts at 1.80 m. The first plant is below that.
+        z0 = WALL_CAM_FOCUS[2] - WALL_SIDE_SCALE * 0.5 + 0.30
+        z1 = WALL_CAM_FOCUS[2] + WALL_SIDE_SCALE * 0.5 - 0.15
+    for phase in ("plant", "crouch", "land", "takeoff"):
+        for i, row in enumerate(rows):
+            if row.get("phase") != phase:
+                continue
+            hz = row.get("hip_z")
+            if z0 is not None and hz is not None and not (z0 <= float(hz) <= z1):
+                continue
+            return i
+    return max(0, len(solved["keys"]) // 2)
+
+
+def render_hip_stills(arm, solved_all, dest):
+    """One full-size side still per clip, with the foot line and the pelvis dot."""
+    import bpy
+    os.makedirs(dest, exist_ok=True)
+    rh._prepare_scene()
+    _fix_right_thigh_tan()
+    bpy.context.scene.render.resolution_x = 788
+    bpy.context.scene.render.resolution_y = 1000
+    for spec in SPECS:
+        if spec["id"] not in solved_all:
+            continue
+        solved = solved_all[spec["id"]]
+        i = _hip_still_index(solved, spec)
+        pose_from_key(arm, solved, i, spec)
+        row_m = (solved.get("errors") or [])
+        row_m = row_m[i] if i < len(row_m) else {}
+        plant_m = row_m.get("plant") if row_m.get("phase") in ("plant", "push", "takeoff", "run", "knee") else None
+        view = "+Y" if spec["verb"] in ("wallrun_vertical", "wallrun_warp") else "+X"
+        _hip_markers(arm, True, plant_m, view)
+        sloc, slook, scale, up = _side_shot(spec, arm)
+        path = os.path.join(dest, f"{spec['verb']}_side.png")
+        rh._shot(path, sloc, slook, ortho=scale, up=up, sensor_fit="VERTICAL")
+        rows = solved.get("errors") or []
+        row = rows[i] if i < len(rows) else {}
+        sit = _hip_sit_now(
+            arm, spec["verb"], row.get("phase") or "",
+            (row.get("pelvis_back_ref_cm") or 0.0) / 100.0,
+            row.get("knee_both_ref"),
+            row.get("plant") if row.get("phase") in ("plant", "push", "takeoff", "run", "knee") else None,
+        )
+        print(
+            f"HIPSTILL {spec['id']} f={i} back={sit['back_m']*100:.1f} "
+            f"target={sit['target_m']*100:.1f} hinge={sit['hinge']:.2f} {path}",
+            flush=True,
+        )
+        _hip_markers(arm, False)
+    bpy.context.scene.render.resolution_x = 394
+    bpy.context.scene.render.resolution_y = 500
+
+
 def render_beats(arm, solved_all):
     import bpy
     os.makedirs(PREV, exist_ok=True)
     rh._prepare_scene()
     _fix_right_thigh_tan()
+    _hip_markers(arm, False)
     if hasattr(bpy.context.scene, "eevee"):
         bpy.context.scene.eevee.taa_render_samples = 8
     # 4 columns + 3 gaps of 8 px land on a 1600 px sheet.
@@ -4430,6 +5641,17 @@ def render_beats(arm, solved_all):
         )
         _unmark_overlap(marked)
         print(f"overlap {spec['id']} frame={wi} pair={solved.get('worst_pair')}", flush=True)
+
+
+def _quantize_png(path, limit=400_000):
+    """Keep the pixel size. Drop colors only when the file is over the sheet cap."""
+    if not os.path.isfile(path) or os.path.getsize(path) <= limit:
+        return
+    import site
+    site.addsitedir(site.getusersitepackages())
+    from PIL import Image
+    image = Image.open(path).convert("RGB")
+    image.quantize(colors=64, method=2).convert("RGB").save(path, optimize=True)
 
 
 def _save_sheet(path, image, limit=400_000):
@@ -4746,9 +5968,10 @@ def _write_reports(solved_all, noclip_line):
         if spec["id"].startswith("18_"):
             lines.append(
                 "Side or 3/4 vertical wall run: none in the downloaded set. "
-                "Clip 19 is the same warped wall and is side-on only for the "
-                "run-in (about 0.6 s, trunk about 1-10 deg); the camera is behind "
-                "the runner once the knees drive up, and L/R flips near 1.6 s. "
+                "Clip 19 is the curved warped wall. It is side-on for the "
+                "run-in, then the source camera swings behind, and L/R flips "
+                "near 1.6 s. Pass 14 poses that clip on the curve; the spine "
+                "stays on the reference and is not reset to rest. "
                 "Clips 10 and 11 are 3/4 views of Brighton's slanted sea wall, "
                 "not a vertical face. Clip 10's high step peaks near knee 115 deg "
                 "and trunk 14 deg. Clip 12 is a slanted tic-tac. No ground slide "
@@ -4764,6 +5987,12 @@ def _write_reports(solved_all, noclip_line):
                     "Sheet cells, measured trunk lean (positive = chest toward the wall):"
                 )
                 lines.append(note)
+        if spec["id"].startswith("19_"):
+            lines.append(
+                "Clip 19 is posed on the warped wall and the floor. Spine, "
+                "neck and head stay on the reference. Plants are seated 0.5 cm "
+                "off the face. L/R is swapped after 1.6 s."
+            )
         lines.extend(over)
         collapsed = [
             f"f={i} t={r['t']:.3f} cam={r['pelvis_cam_cm']:.1f} side={r['pelvis_side_cm']:.1f}"
@@ -4778,6 +6007,38 @@ def _write_reports(solved_all, noclip_line):
     print(text, flush=True)
 
 
+def _render_hip_from_keys(arm, dest):
+    """Side stills from the keys just written, without solving again."""
+    import json
+    with open(os.path.join(OUT, "keyed_clips.json")) as f:
+        doc = json.load(f)
+    solved_all = {}
+    scales = {
+        "slide": SLIDE_SIDE_SCALE,
+        "wallrun_vertical": WALL_SIDE_SCALE,
+        "wallrun_warp": WARP_SIDE_SCALE,
+        "turn180": TURN_SIDE_SCALE,
+    }
+    for spec in SPECS:
+        clip = doc["clips"][spec["id"]]
+        solved_all[spec["id"]] = {
+            "keys": [{n: tuple(v) for n, v in k["bones"].items()} for k in clip["keys"]],
+            "times": [k["t"] for k in clip["keys"]],
+            "capsule": [tuple(p) for p in clip["capsule_preview_m"]],
+            "facing": [tuple(p) for p in clip["facing_preview_rad"]],
+            "errors": clip.get("angle_error") or [],
+            "hip_path": None,
+            "side_scale": scales.get(spec["verb"]),
+            "world": {
+                "kind": "turn" if spec["verb"] == "turn180" else spec["verb"],
+                "landing_top": LOW_WALL_TOP,
+                "landing_y": 2.40,
+                "face": 0.0,
+            },
+        }
+    render_hip_stills(arm, solved_all, dest)
+
+
 def main():
     import bpy
     args = _args()
@@ -4786,6 +6047,13 @@ def main():
         PASS = int(args[args.index("--pass") + 1])
         OUT = f"/workspace/Docs/HierStills/v080/clips/pass{PASS}"
         PREV = f"/tmp/hier_v080_clips_pass{PASS}"
+    if "--hip-from-keys" in args:
+        arm = bpy.data.objects.get("DummyArmature")
+        if arm is None:
+            raise SystemExit("Tan blend has no DummyArmature")
+        dest = args[args.index("--hip-from-keys") + 1]
+        _render_hip_from_keys(arm, dest)
+        return
     only = None
     if "--only" in args:
         only = args[args.index("--only") + 1]
@@ -4814,7 +6082,10 @@ def main():
         return
     line, _fails, _w, _s = measure_noclip(arm, solved_all)
     write_keys(solved_all, line)
-    if "--metrics" in args:
+    if "--hip-preview" in args:
+        dest = args[args.index("--hip-preview") + 1]
+        render_hip_stills(arm, solved_all, dest)
+    if "--metrics" in args and "--also-render" not in args:
         print(line, flush=True)
         return
     render_beats(arm, solved_all)
