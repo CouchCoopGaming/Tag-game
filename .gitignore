@@ -1,5 +1,8 @@
 # Unity
 [Ll]ibrary/
+# Prop kit. Unity's generated Library/ at the repo root stays ignored.
+!/[Aa]ssets/[Aa]rt/[Pp]rops/[Ll]ibrary/
+!/[Aa]ssets/[Aa]rt/[Pp]rops/[Ll]ibrary/**
 [Tt]emp/
 [Oo]bj/
 [Bb]uild/
