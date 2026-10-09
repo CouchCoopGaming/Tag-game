@@ -156,8 +156,8 @@ namespace Tag.FX
         public static void PlayerColor(int seat, out float r, out float g, out float b)
         {
             if (seat == 1) { r = 0.25f; g = 0.55f; b = 1f; return; }
-            if (seat == 2) { r = 1f; g = 0.82f; b = 0.15f; return; }
-            if (seat == 3) { r = 0.25f; g = 0.90f; b = 0.45f; return; }
+            if (seat == 2) { r = 1f; g = 0.58f; b = 0.15f; return; }
+            if (seat == 3) { r = 0.78f; g = 0.66f; b = 1f; return; }
             r = 0.95f;
             g = 0.28f;
             b = 0.32f;

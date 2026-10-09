@@ -6,6 +6,7 @@ Shader "Tag/FxMark"
         _Mode ("Mode", Float) = 0
         _Rim ("Rim", Float) = 0.82
         _Front ("Front", Float) = 0
+        _Vtx ("Vertex color", Float) = 0
     }
     SubShader
     {
@@ -34,18 +35,21 @@ Shader "Tag/FxMark"
                 float _Mode;
                 float _Rim;
                 float _Front;
+                float _Vtx;
             CBUFFER_END
 
             struct Attributes
             {
                 float3 positionOS : POSITION;
                 float2 uv : TEXCOORD0;
+                float4 color : COLOR;
             };
 
             struct Varyings
             {
                 float4 positionCS : SV_POSITION;
                 float2 uv : TEXCOORD0;
+                float4 color : COLOR;
             };
 
             Varyings vert(Attributes input)
@@ -72,6 +76,7 @@ Shader "Tag/FxMark"
                 }
                 output.positionCS = TransformWorldToHClip(pos);
                 output.uv = input.uv;
+                output.color = input.color;
                 return output;
             }
 
@@ -84,7 +89,12 @@ Shader "Tag/FxMark"
                     clip(0.98 - box);
                     half rim = box > _Rim ? 1.0 : 0.0;
                     half3 ink = rim > 0.5 ? half3(0.82, 0.86, 0.90) : half3(0.02, 0.02, 0.02);
-                    return half4(ink, 1);
+                    return half4(ink, _BaseColor.a);
+                }
+                if (_Vtx > 0.5)
+                {
+                    if (input.color.a < 0.01) discard;
+                    return input.color;
                 }
                 return _BaseColor;
             }

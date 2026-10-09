@@ -6157,32 +6157,142 @@ def pass29_cam_axes(cam, dist):
     return origin, right, up, half_w, half_h
 
 
+def pass29_quad(center, right, up, sx, sy, color, alpha, z=0.0):
+    """Camera-facing quad. alpha is the still's opacity, 1 for a hard card."""
+    c = Vector(center) + Vector((0.0, 0.0, 0.0))
+    # z pushes toward the camera when the caller already put the quad on the view plane.
+    right = Vector(right)
+    up = Vector(up)
+    hx = sx * 0.5
+    hy = sy * 0.5
+    verts = [
+        c - right * hx - up * hy,
+        c + right * hx - up * hy,
+        c + right * hx + up * hy,
+        c - right * hx + up * hy,
+    ]
+    mesh = bpy.data.meshes.new(p11_name("Fx"))
+    mesh.from_pydata([tuple(v) for v in verts], [], [(0, 1, 2, 3)])
+    mesh.update()
+    obj = bpy.data.objects.new(p11_name("Fx"), mesh)
+    bpy.context.collection.objects.link(obj)
+    obj.visible_shadow = False
+    mat = bpy.data.materials.new(p11_name("Mat"))
+    mat.use_nodes = True
+    mat.blend_method = "BLEND"
+    nt = mat.node_tree
+    nt.nodes.clear()
+    out = nt.nodes.new("ShaderNodeOutputMaterial")
+    emit = nt.nodes.new("ShaderNodeEmission")
+    emit.inputs["Color"].default_value = (color[0], color[1], color[2], 1.0)
+    emit.inputs["Strength"].default_value = 1.0
+    trans = nt.nodes.new("ShaderNodeBsdfTransparent")
+    mix = nt.nodes.new("ShaderNodeMixShader")
+    mix.inputs["Fac"].default_value = alpha
+    nt.links.new(trans.outputs["BSDF"], mix.inputs[1])
+    nt.links.new(emit.outputs["Emission"], mix.inputs[2])
+    nt.links.new(mix.outputs["Shader"], out.inputs["Surface"])
+    obj.data.materials.append(mat)
+    return obj
+
+
 def pass29_edges(cam, tint):
-    origin, right, up, half_w, half_h = pass29_cam_axes(cam, 2.4)
-    x = half_w * 0.94
-    y = half_h * 0.94
-    specs = (
-        (-x, half_h * 0.35, 0.045, 0.42),
-        (-x, -half_h * 0.25, 0.045, 0.34),
-        (x, half_h * 0.15, 0.045, 0.40),
-        (x, -half_h * 0.40, 0.045, 0.30),
-        (half_w * 0.30, y, 0.46, 0.045),
-        (-half_w * 0.22, y, 0.36, 0.045),
-        (half_w * 0.18, -y, 0.40, 0.045),
-        (-half_w * 0.36, -y, 0.32, 0.045),
+    """Six streaks, 48×4 px at 640×360, 1 px outline, inside the outer 12%."""
+    dist = 2.4
+    origin, right, up, half_w, half_h = pass29_cam_axes(cam, dist)
+    ppm_x = 640.0 / (2.0 * half_w)
+    ppm_y = 360.0 / (2.0 * half_h)
+    length = 48.0 / ppm_x
+    thick = 4.0 / ppm_y
+    rim = 1.0 / ppm_y
+    x = half_w * (1.0 - 0.06)
+    y = half_h * (1.0 - 0.06)
+    seats = (
+        (0.95, 0.28, 0.32),
+        (0.25, 0.55, 1.0),
+        (1.0, 0.58, 0.15),
+        (0.78, 0.66, 1.0),
+        (0.95, 0.28, 0.32),
+        (0.25, 0.55, 1.0),
     )
-    for ox, oy, sx, sy in specs:
+    specs = (
+        (-x, half_h * 0.42, thick, length),
+        (-x, -half_h * 0.42, thick, length),
+        (x, half_h * 0.42, thick, length),
+        (x, -half_h * 0.42, thick, length),
+        (half_w * 0.28, y, length, thick),
+        (-half_w * 0.22, -y, length, thick),
+    )
+    outline = (0.08, 0.07, 0.06)
+    for i, (ox, oy, sx, sy) in enumerate(specs):
         center = origin + right * ox + up * oy
-        pass28_card(
-            [
-                center + right * (-sx * 0.5) + up * (-sy * 0.5),
-                center + right * (sx * 0.5) + up * (-sy * 0.5),
-                center + right * (sx * 0.5) + up * (sy * 0.5),
-                center + right * (-sx * 0.5) + up * (sy * 0.5),
-            ],
-            tint,
-        )
-    print("EDGE", "streaks", len(specs))
+        color = seats[i] if tint is None else tint
+        pass29_quad(center, right, up, sx, sy, outline, 0.90)
+        core_x = max(sx - rim * 2.0, rim)
+        core_y = max(sy - rim * 2.0, rim)
+        # A hair toward the camera so the core sits on the outline.
+        fwd = (cam.location - origin)
+        if fwd.length > 0.001:
+            fwd = fwd.normalized()
+        pass29_quad(center + fwd * 0.004, right, up, core_x, core_y, color, 0.55)
+    print("EDGE", "streaks", len(specs), "len_m", round(length, 4), "thick_m", round(thick, 4))
+
+
+def pass29_boxes(before, after, tag):
+    """Print each changed blob's pixel size, and how much sits in the inner 76%."""
+    from PIL import Image
+
+    ia = Image.open(before).convert("RGB")
+    ib = Image.open(after).convert("RGB")
+    pa, pb = ia.load(), ib.load()
+    w, h = ia.size
+    seen = [[False] * w for _ in range(h)]
+    mx = int(w * 0.12)
+    my = int(h * 0.12)
+    blobs = []
+    for y in range(h):
+        for x in range(w):
+            if seen[y][x]:
+                continue
+            ar, ag, ab = pa[x, y]
+            br, bg, bb = pb[x, y]
+            if abs(ar - br) + abs(ag - bg) + abs(ab - bb) <= 28:
+                continue
+            stack = [(x, y)]
+            seen[y][x] = True
+            minx = maxx = x
+            miny = maxy = y
+            n = 0
+            inner = 0
+            while stack:
+                cx, cy = stack.pop()
+                n += 1
+                if mx <= cx < w - mx and my <= cy < h - my:
+                    inner += 1
+                if cx < minx:
+                    minx = cx
+                if cx > maxx:
+                    maxx = cx
+                if cy < miny:
+                    miny = cy
+                if cy > maxy:
+                    maxy = cy
+                for nx, ny in ((cx - 1, cy), (cx + 1, cy), (cx, cy - 1), (cx, cy + 1)):
+                    if nx < 0 or ny < 0 or nx >= w or ny >= h or seen[ny][nx]:
+                        continue
+                    ar, ag, ab = pa[nx, ny]
+                    br, bg, bb = pb[nx, ny]
+                    if abs(ar - br) + abs(ag - bg) + abs(ab - bb) <= 28:
+                        continue
+                    seen[ny][nx] = True
+                    stack.append((nx, ny))
+            if n < 8:
+                continue
+            blobs.append((n, maxx - minx + 1, maxy - miny + 1, inner, minx, miny))
+    blobs.sort(key=lambda b: -b[0])
+    print("BLOBS", tag, len(blobs))
+    for blob in blobs[:8]:
+        print(" BLOB", tag, "n", blob[0], "wh", blob[1], blob[2], "inner", blob[3], "at", blob[4], blob[5])
 
 
 def pass29_margin(path):
@@ -6336,12 +6446,13 @@ def render_pass29(arm, cam):
         p14_aim(cam, foot, yaw)
         bpy.context.view_layer.update()
         if on:
-            pass29_edges(cam, seat)
+            pass29_edges(cam, None)
         else:
             print("EDGE", "off")
         shoot(label, cells, titles)
         pass29_margin(os.path.join(out_dir, label + ".jpg"))
-    p14_grid(cells, titles, "Owner pane streaks   chase camera   quarter pane   off / on", os.path.join(out_dir, "edge-compare.jpg"), 2)
+    pass29_boxes(os.path.join(out_dir, "edge-before.jpg"), os.path.join(out_dir, "edge-after.jpg"), "edge")
+    p14_grid(cells, titles, "Owner pane streaks   chase camera   quarter pane   off / six", os.path.join(out_dir, "edge-compare.jpg"), 2)
 
     cells = []
     titles = []
@@ -6352,35 +6463,20 @@ def render_pass29(arm, cam):
         foot = p11_foot(arm)
         p14_aim(cam, foot, yaw)
         bpy.context.view_layer.update()
-        origin, right, up, _hw, _hh = pass29_cam_axes(cam, 4.6)
-        burst = origin + up * 0.55
-        pass30_shape(burst, right, up, "cloud", (1.0, 0.55, 0.12), 0.22)
+        origin, right, up, half_w, half_h = pass29_cam_axes(cam, 4.6)
+        wide = half_w * 2.0 * 0.42
+        tall = half_h * 2.0 * 0.28
+        toward = cam.location - origin
+        if toward.length > 0.001:
+            toward = toward.normalized()
         if card:
-            toward = (cam.location - origin)
-            if toward.length > 0.001:
-                toward = toward.normalized()
-            rim_c = origin
-            ink_c = origin + toward * 0.04
-            pass28_card(
-                [
-                    rim_c - right * 0.92 - up * 1.02,
-                    rim_c + right * 0.92 - up * 1.02,
-                    rim_c + right * 0.92 + up * 1.02,
-                    rim_c - right * 0.92 + up * 1.02,
-                ],
-                (0.82, 0.86, 0.90),
-            )
-            pass28_card(
-                [
-                    ink_c - right * 0.78 - up * 0.88,
-                    ink_c + right * 0.78 - up * 0.88,
-                    ink_c + right * 0.78 + up * 0.88,
-                    ink_c - right * 0.78 + up * 0.88,
-                ],
-                (0.02, 0.02, 0.02),
-            )
+            pass29_quad(origin, right, up, wide, tall, (0.02, 0.02, 0.02), 0.72)
+            pass29_quad(origin + toward * 0.03, right, up, wide * 0.16, tall * 0.42, (1.0, 0.55, 0.12), 1.0)
+        else:
+            pass29_quad(origin, right, up, wide * 0.16, tall * 0.42, (1.0, 0.55, 0.12), 1.0)
         shoot(label, cells, titles)
-    p14_grid(cells, titles, "Contact ink   chase camera   quarter pane   word burst / card", os.path.join(out_dir, "ink-compare.jpg"), 2)
+    pass29_boxes(os.path.join(out_dir, "ink-before.jpg"), os.path.join(out_dir, "ink-after.jpg"), "ink")
+    p14_grid(cells, titles, "Contact ink   chase camera   quarter pane   burst / card", os.path.join(out_dir, "ink-compare.jpg"), 2)
 
     cells = []
     titles = []

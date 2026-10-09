@@ -17711,11 +17711,11 @@ namespace Tag.Art
             float reach = _punch != null ? _punch.Reach : PunchTagPose.ReachMeters;
             float speed = _motor != null ? _motor.HorizontalSpeed : 0f;
             if (claimRise)
-                ComicBurst.RaiseEvent(origin, forward, reach, ComicWords.EvTransfer, 0);
+                ComicRaise(origin, forward, reach, ComicWords.EvTransfer, 0);
             else if (catchRise)
-                ComicBurst.RaiseEvent(origin, forward, reach, ComicWords.EvTag, ComicWords.TagHit);
+                ComicRaise(origin, forward, reach, ComicWords.EvTag, ComicWords.TagHit);
             else if (punchRise)
-                ComicBurst.RaiseEvent(origin, forward, reach, ComicWords.EvPunch, ComicWords.Strength(false, speed));
+                ComicRaise(origin, forward, reach, ComicWords.EvPunch, ComicWords.Strength(false, speed));
             if (tagRise)
                 Pass5Burst.Raise(origin, forward, reach);
             _comicCatchWas = catchOn;
@@ -17735,6 +17735,11 @@ namespace Tag.Art
             HitConfirmTell.Step(ref _hitConfirmAge, dt, solo);
         }
 
+        void ComicRaise(Vector3 origin, Vector3 forward, float reach, int ev, int strength)
+        {
+            ComicBurst.RaiseEvent(origin, forward, reach, ev, strength, transform.GetInstanceID());
+        }
+
         void TickComicEvents()
         {
             if (_motor == null) return;
@@ -17743,7 +17748,7 @@ namespace Tag.Art
             PunchPhase phase = _punch != null ? _punch.Phase : PunchPhase.Idle;
             bool miss = phase == PunchPhase.MissRecover;
             if (miss && !_comicMissWas)
-                ComicBurst.RaiseEvent(origin, forward, 0.9f, ComicWords.EvWhiff, 0);
+                ComicRaise(origin, forward, 0.9f, ComicWords.EvWhiff, 0);
             _comicMissWas = miss;
 
             bool grounded = _motor.Ground.grounded;
@@ -17751,7 +17756,7 @@ namespace Tag.Art
             // 65% of terminal. A light plant stays quiet.
             if (grounded && !_comicGroundWas && LandingRollPose.Triggered(_motor.LastLandImpactSpeed))
             {
-                ComicBurst.RaiseEvent(origin, forward, 0f, ComicWords.EvLand, 0);
+                ComicRaise(origin, forward, 0f, ComicWords.EvLand, 0);
                 int surf = DustContact.Read(_motor.Ground.collider, ref _impactGroundId, ref _impactGroundSurf);
                 ImpactFx.Land(origin, _motor.LastLandImpactSpeed, surf);
             }
@@ -17760,17 +17765,17 @@ namespace Tag.Art
 
             bool launch = _motor.LaunchArc;
             if (launch && !_comicLaunchWas)
-                ComicBurst.RaiseEvent(origin, forward, 0f, ComicWords.EvLaunch, 0);
+                ComicRaise(origin, forward, 0f, ComicWords.EvLaunch, 0);
             _comicLaunchWas = launch;
 
             bool zip = _motor.ZipRiding;
             if (zip && !_comicZipWas)
-                ComicBurst.RaiseEvent(origin, forward, 0f, ComicWords.EvZip, 0);
+                ComicRaise(origin, forward, 0f, ComicWords.EvZip, 0);
             _comicZipWas = zip;
 
             bool pull = _grapple != null && _grapple.IsPulling;
             if (pull && !_comicPullWas)
-                ComicBurst.RaiseEvent(origin, forward, 0f, ComicWords.EvGrapple, 0);
+                ComicRaise(origin, forward, 0f, ComicWords.EvGrapple, 0);
             _comicPullWas = pull;
         }
 
@@ -17959,7 +17964,7 @@ namespace Tag.Art
             _hitFlinchAge = 0f;
             Vector3 origin = _motor != null ? _motor.transform.position : transform.position;
             Vector3 forward = _motor != null ? _motor.transform.forward : transform.forward;
-            ComicBurst.RaiseEvent(origin, forward, 0f, ComicWords.EvStagger, 0);
+            ComicRaise(origin, forward, 0f, ComicWords.EvStagger, 0);
         }
 
         /// <summary>
@@ -18128,7 +18133,7 @@ namespace Tag.Art
             // The speed is the motor's planar speed from the frame before the bounce.
             if (_motor != null && _comicPlanar >= Tag.FX.DustLook.Sprint)
             {
-                ComicBurst.RaiseEvent(_motor.transform.position, _motor.transform.forward, 0f, ComicWords.EvWall, 0);
+                ComicRaise(_motor.transform.position, _motor.transform.forward, 0f, ComicWords.EvWall, 0);
                 Vector3 hit = _motor.WallPoint;
                 if (hit.sqrMagnitude < 0.0001f)
                     hit = _motor.transform.position + Vector3.up * 0.9f;

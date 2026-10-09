@@ -212,8 +212,11 @@ namespace Tag.FX
             TickAir(dt, settings);
             WallRibbon.Tick(dt);
             bool calm = settings != null && settings.AnyReduceFlash();
-            bool streaks = settings != null && settings.SpeedLines && !calm;
+            int streaks = 0;
+            if (!calm && FxKitLook.Master(settings))
+                streaks = settings != null && settings.Effects == FxAmount.Low ? PaneStreaks.Low : PaneStreaks.Full;
             PaneStreaks.Tick(_cam, Motor.HorizSpeed, _cr, _cg, _cb, streaks, dt);
+            InkCard.Fit(_root.GetInstanceID(), _cam);
             InkCard.Allow(settings != null && settings.InkCard && !calm);
             InkCard.Tick(dt);
             bool isIt = It != null && It.IsIt && It.IsAlive;
