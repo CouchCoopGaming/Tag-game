@@ -12,14 +12,14 @@ namespace Tag.Level
     /// </summary>
     public static partial class MegaParkP1Layout
     {
-        // Brightened for the murky station stills: +24% sun, lifted trilight
-        // ambient at 1.45. Warmth, shadow strength and fill ratios still pass.
+        // Brightened for the murky station stills: sun 2.0, lifted trilight
+        // ambient at 1.8 (written straight into the ambient probe). Warmth, shadow strength and fill ratios still pass.
         public const float SunPitch = 29f;
         public const float SunYaw = -48f;
         public const float SunR = 1f;
         public const float SunG = 0.58f;
         public const float SunB = 0.28f;
-        public const float SunIntensity = 1.55f;
+        public const float SunIntensity = 2.0f;
         public const float ShadowStrength = 0.40f;
         public const float AmbSkyR = 0.62f;
         public const float AmbSkyG = 0.70f;
@@ -30,7 +30,7 @@ namespace Tag.Level
         public const float AmbGndR = 0.36f;
         public const float AmbGndG = 0.27f;
         public const float AmbGndB = 0.19f;
-        public const float AmbIntensity = 1.45f;
+        public const float AmbIntensity = 1.8f;
         public const int DrawCap = 120;
         /// <summary>One corner texture. Counted in the draw cap with the park.</summary>
         public const int MinimapDraws = 1;

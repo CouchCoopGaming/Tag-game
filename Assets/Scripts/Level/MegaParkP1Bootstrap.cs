@@ -984,6 +984,19 @@ namespace Tag.Level
             WorldSign.AddTwoSided(go.transform, text, 48, 0.45f, new Color(1f, 0.95f, 0.75f, 1f));
         }
 
+        static UnityEngine.Rendering.SphericalHarmonicsL2 TrilightProbe(Color sky, Color equator, Color ground)
+        {
+            var sh = new UnityEngine.Rendering.SphericalHarmonicsL2();
+            Color mid = (sky + ground) * 0.5f;
+            Color baseline = Color.Lerp(equator, mid, 0.5f);
+            sh.AddAmbientLight(baseline);
+            Color up = sky - baseline;
+            Color down = ground - baseline;
+            sh.AddDirectionalLight(Vector3.up, up, 0.9f);
+            sh.AddDirectionalLight(Vector3.down, down, 0.9f);
+            return sh;
+        }
+
         void ApplyLook()
         {
             Light sun = null;
@@ -1047,6 +1060,11 @@ namespace Tag.Level
             // Set from script, the ambient probe keeps the scene's old values until
             // the environment is recomputed (edit mode, batch captures, builds).
             DynamicGI.UpdateEnvironment();
+            // URP lights objects from RenderSettings.ambientProbe. Outside play mode
+            // (batch captures, editor rebuilds) UpdateEnvironment does not refresh it,
+            // which is why lifting the trilight colours barely moved the frame.
+            // Write the trilight gradient into the probe directly.
+            RenderSettings.ambientProbe = TrilightProbe(RenderSettings.ambientSkyColor, RenderSettings.ambientEquatorColor, RenderSettings.ambientGroundColor);
         }
 
         Transform BuildDressing()
