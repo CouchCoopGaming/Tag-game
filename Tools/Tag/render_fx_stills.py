@@ -4878,7 +4878,7 @@ def impact22_bit(i, state, salt):
     ang = (i + h * 0.35) / float(max(state["bits"], 1)) * math.tau
     if chunky:
         # Start outside the body. A full spread*age plants them in the torso.
-        dist = (0.62 + h * 0.22) + spread * age * 0.35
+        dist = (1.15 + h * 0.35) + spread * age * 0.20
     else:
         dist = (0.04 + h * 0.05) + spread * age
     z = 0.04 + vy * age - 0.5 * 48.0 * age * age
@@ -5156,6 +5156,17 @@ def impact22_draw(origin, normal, state, cam_loc):
             pos = origin + radial * dist
             pos.z = z
         chunky = bool(state.get("chunky")) and pace >= 0.75
+        if chunky and abs(n.z) >= 0.75:
+            # Foreground arc. Far enough forward that the body does not cover them.
+            to = Vector(cam_loc) - Vector(origin)
+            to.z = 0.0
+            if to.length < 0.001:
+                to = Vector((0.0, -1.0, 0.0))
+            to.normalize()
+            side = Vector((-to.y, to.x, 0.0))
+            mid = (max(state["bits"], 1) - 1) * 0.5
+            pos = Vector(origin) + to * 1.25 + side * ((i - mid) * 0.62)
+            pos.z = 0.50 + (i % 2) * 0.18
         accent = (not chunky) and pace >= 0.85 and i < 4
         if chunky:
             size = 0.36 + h2 * 0.08
@@ -5164,14 +5175,14 @@ def impact22_draw(origin, normal, state, cam_loc):
         else:
             size = impact24_size(h2)
         if chunky or accent:
-            print("CHUNK", "age", round(state["age"], 3), "i", i, "z", round(z, 2), "cm", round(size * 100.0, 1))
+            print("CHUNK", "age", round(state["age"], 3), "i", i, "z", round(float(pos.z), 2), "cm", round(size * 100.0, 1))
         dirt_clod = (not accent) and kind == "grass" and (i % 4) == 0
         if chunky:
             if (i % 2) == 0:
-                col = (0.16, 0.13, 0.11)
+                col = (0.05, 0.04, 0.04)
             else:
-                col = (0.96, 0.93, 0.88)
-            impact25_accent(pos, size, col, i + 1)
+                col = (1.0, 0.98, 0.94)
+            pass27_solid(pos, size, col, i + 1)
         elif accent:
             col = impact24_shade(bit_col, h)
             impact25_accent(pos, size, col, i + 1)
@@ -5861,6 +5872,27 @@ def pass26_scuff_mat(name, color, alpha):
     return mat
 
 
+def pass27_solid(pos, size, color, spin):
+    """Unlit chunk. Scene lights cannot lift a black piece into the ground tone."""
+    bpy.ops.mesh.primitive_cube_add(size=1.0, location=pos)
+    obj = bpy.context.active_object
+    obj.name = p11_name("Fx")
+    obj.visible_shadow = False
+    obj.scale = (size * 0.92, size * 0.72, size * 0.58)
+    obj.rotation_euler = (0.35 + spin * 0.11, spin * 0.4, spin * 0.2)
+    mat = bpy.data.materials.new(p11_name("Mat"))
+    mat.use_nodes = True
+    nt = mat.node_tree
+    nt.nodes.clear()
+    out = nt.nodes.new("ShaderNodeOutputMaterial")
+    emit = nt.nodes.new("ShaderNodeEmission")
+    emit.inputs["Color"].default_value = (color[0], color[1], color[2], 1.0)
+    emit.inputs["Strength"].default_value = 1.0
+    nt.links.new(emit.outputs["Emission"], out.inputs["Surface"])
+    obj.data.materials.append(mat)
+    return obj
+
+
 def pass27_span(start, end, cam):
     from bpy_extras.object_utils import world_to_camera_view
 
@@ -6042,10 +6074,10 @@ def render_pass27(arm, cam):
         for i in range(5):
             h = p11_rand(i, 3)
             pos = Vector((foot.x, foot.y, 0.0))
-            pos += to_cam * (0.55 + h * 0.35)
-            pos += side * ((i - 2) * 0.28)
-            pos.z = 0.18 + h * 0.28
-            impact24_puff(pos, 0.48, color, 0.92, cam.location)
+            pos += to_cam * (0.85 + (i % 2) * 0.28)
+            pos += side * ((i - 2) * 0.48)
+            pos.z = 0.55 + (i % 3) * 0.16
+            impact25_accent(pos, 0.38, color, i + 4)
         shoot(label, brick_cells, brick_titles)
     p14_grid(brick_cells, brick_titles, "Brick dust   chase camera   quarter pane   concrete tint / brick tint", os.path.join(out_dir, "brick-compare.jpg"), 2)
 
@@ -6087,15 +6119,15 @@ def render_pass27(arm, cam):
                 state = impact22_state("concrete", 13.8, age_u=0.10 / 0.25, radius_override=radius, bits_override=0)
                 state["bits"] = 0
                 state["plumes"] = 0
-                state["ring_inner"] = 0.42
-                state["opacity"] = 0.88 if slow else 0.94
-                state["dust"] = (0.16, 0.15, 0.14)
+                state["ring_inner"] = 0.38
+                state["opacity"] = 0.96
+                state["dust"] = (0.96, 0.94, 0.90)
                 impact22_draw(hit, normal, state, cam.location)
                 nrm = Vector(normal).normalized()
                 for i in range(puffs):
                     h = p11_rand(i, 9)
-                    pos = Vector(hit) + nrm * (0.42 + h * 0.12) + along * ((i - 1) * 0.16)
-                    pos.z = hit.z + 0.10 + h * 0.18
+                    pos = Vector(hit) + nrm * (0.36 + h * 0.10) + along * ((i - 1) * 0.18)
+                    pos.z = hit.z + 0.62 + h * 0.12
                     impact24_puff(pos, puff_size, (0.90, 0.88, 0.84), 0.78, cam.location)
                 print("WALLRUN", label_speed, "radius", round(radius, 2), "puffs", puffs, "puff", puff_size)
             name = "wallrun-%s-%s" % (label_speed, "after" if after else "before")
@@ -6134,7 +6166,7 @@ def render_pass27(arm, cam):
         foot = p11_foot(arm)
         p14_aim(cam, foot, yaw)
         bpy.context.view_layer.update()
-        pass27_land(arm, cam, foot, yaw, 0.14, 0.80, chunky, bits)
+        pass27_land(arm, cam, foot, yaw, 0.09, 0.80, chunky, bits)
         shoot(label, chunk_cells, chunk_titles)
     p14_grid(chunk_cells, chunk_titles, "Hard-land chunks   chase camera   quarter pane   grit / five chunks", os.path.join(out_dir, "chunks-compare.jpg"), 2)
 

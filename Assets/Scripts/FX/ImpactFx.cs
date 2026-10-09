@@ -565,9 +565,15 @@ namespace Tag.FX
             _normal[slot] = normal;
             _wide[slot] = spec.Wide;
             _puff[slot] = spec.Puff;
-            // Land ring is the dust colour. The wall-run ring is a dark stroke.
+            // Land ring is the dust colour. The wall-run ring is a pale stroke on the wall.
             if (spec.Wide > 0)
-                _color[slot] = new Color(spec.R * 0.35f, spec.G * 0.35f, spec.B * 0.35f, 1f);
+            {
+                _color[slot] = new Color(
+                    spec.DustR + 0.2f > 1f ? 1f : spec.DustR + 0.2f,
+                    spec.DustG + 0.2f > 1f ? 1f : spec.DustG + 0.2f,
+                    spec.DustB + 0.2f > 1f ? 1f : spec.DustB + 0.2f,
+                    1f);
+            }
             else
                 _color[slot] = new Color(spec.DustR, spec.DustG, spec.DustB, 1f);
             _opacity[slot] = spec.Opacity;
@@ -627,7 +633,7 @@ namespace Tag.FX
                         piece.Size = 0.02f + span * 0.06f;
                         if (piece.Size > 0.08f) piece.Size = 0.08f;
                     }
-                    float shade = chunky ? ((b & 1) == 0 ? 0.28f : 1.55f) : (0.82f + h * 0.28f);
+                    float shade = chunky ? ((b & 1) == 0 ? 0.12f : 2.4f) : (0.82f + h * 0.28f);
                     piece.R = spec.R * shade;
                     piece.G = spec.G * shade;
                     piece.B = spec.B * shade;
@@ -668,8 +674,29 @@ namespace Tag.FX
                         piece.Aspect = 0.7f + h * 0.5f;
                     }
                     piece.On = 1;
-                    float outR = chunky ? 0.62f + h * 0.22f : 0.08f + h * 0.16f;
-                    _bit[k].localPosition = normal * start + radial * outR;
+                    if (chunky && floor && n > 0)
+                    {
+                        // In front of the body, where the chase camera can see them.
+                        Vector3 toCam = Vector3.forward;
+                        Camera view = Camera.main;
+                        if (view != null)
+                        {
+                            toCam = view.transform.position - origin;
+                            toCam.y = 0f;
+                        }
+                        if (toCam.sqrMagnitude < 0.0001f) toCam = Vector3.forward;
+                        toCam.Normalize();
+                        Vector3 side = Vector3.Cross(Vector3.up, toCam);
+                        float mid = (n - 1) * 0.5f;
+                        Vector3 place = toCam * 1.25f + side * ((b - mid) * 0.62f);
+                        place.y = 0.50f + (b % 2) * 0.18f;
+                        _bit[k].localPosition = place;
+                    }
+                    else
+                    {
+                        float outR = chunky ? 1.15f + h * 0.35f : 0.08f + h * 0.16f;
+                        _bit[k].localPosition = normal * start + radial * outR;
+                    }
                     _bitMat[k].SetFloat("_Shape", piece.Shape);
                 }
                 else if (b < n + spec.Plumes)
@@ -744,9 +771,9 @@ namespace Tag.FX
             Vector3 bitangent = Vector3.Cross(n, tangent).normalized;
             float ang = h * 6.2831855f;
             Vector3 radial = tangent * Mathf.Cos(ang) + bitangent * Mathf.Sin(ang);
-            // Off the wall and a little upward, so the puff clears the torso.
-            Vector3 pos = radial * (0.10f + h * 0.18f) + n * (0.42f + h2 * 0.12f);
-            pos.y += 0.10f + h * 0.20f;
+            // Above the ring, off the wall, so the stroke stays visible.
+            Vector3 pos = radial * (0.06f + h * 0.10f) + n * (0.36f + h2 * 0.10f);
+            pos.y += 0.58f + h * 0.14f;
             _bit[k].localPosition = pos;
             _bit[k].localScale = new Vector3(size * 1.15f, size, 1f);
             float a = PlumeAlpha(age, 0.78f);
