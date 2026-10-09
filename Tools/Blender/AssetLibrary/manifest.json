@@ -36894,20 +36894,18 @@
       },
       {
         "lod": 2,
-        "tris": 1280,
+        "tris": 900,
         "materials": [
           "Lib_SteelDark",
           "Lib_PaintCream",
           "Lib_SignalAmber",
           "Lib_Taillamp",
           "Lib_PaintBlue",
-          "Lib_Black",
           "Lib_TintGlass",
-          "Lib_Interior",
+          "Lib_Black",
           "Lib_WindowLit",
           "Lib_Headlamp",
-          "Lib_Rubber",
-          "Lib_Steel"
+          "Lib_Rubber"
         ],
         "mesh": "LOD2",
         "fileID": 736115405485880582
@@ -37942,20 +37940,18 @@
       },
       {
         "lod": 2,
-        "tris": 1280,
+        "tris": 900,
         "materials": [
           "Lib_SteelDark",
           "Lib_PaintBlue",
           "Lib_SignalAmber",
           "Lib_Taillamp",
           "Lib_PaintWhite",
-          "Lib_Black",
           "Lib_TintGlass",
-          "Lib_Interior",
+          "Lib_Black",
           "Lib_WindowLit",
           "Lib_Headlamp",
-          "Lib_Rubber",
-          "Lib_Steel"
+          "Lib_Rubber"
         ],
         "mesh": "LOD2",
         "fileID": 736115405485880582
@@ -38991,20 +38987,18 @@
       },
       {
         "lod": 2,
-        "tris": 1280,
+        "tris": 900,
         "materials": [
           "Lib_SteelDark",
           "Lib_PaintWhite",
           "Lib_SignalAmber",
           "Lib_Taillamp",
           "Lib_PaintRed",
-          "Lib_Black",
           "Lib_TintGlass",
-          "Lib_Interior",
+          "Lib_Black",
           "Lib_WindowLit",
           "Lib_Headlamp",
-          "Lib_Rubber",
-          "Lib_Steel"
+          "Lib_Rubber"
         ],
         "mesh": "LOD2",
         "fileID": 736115405485880582
@@ -40277,20 +40271,18 @@
       },
       {
         "lod": 2,
-        "tris": 1708,
+        "tris": 1192,
         "materials": [
           "Lib_SteelDark",
           "Lib_PaintCream",
           "Lib_SignalAmber",
           "Lib_Taillamp",
           "Lib_PaintBlue",
-          "Lib_Black",
           "Lib_TintGlass",
-          "Lib_Interior",
+          "Lib_Black",
           "Lib_WindowLit",
           "Lib_Headlamp",
-          "Lib_Rubber",
-          "Lib_Steel"
+          "Lib_Rubber"
         ],
         "mesh": "LOD2",
         "fileID": 736115405485880582
