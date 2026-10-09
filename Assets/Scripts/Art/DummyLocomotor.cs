@@ -1220,6 +1220,15 @@ namespace Tag.Art
         bool _stanceSole;
         float _solePitchL, _solePitchR;
 
+        /// <summary>Stride phase the dust and exit riders read. Does not write the motor.</summary>
+        public float GaitCycle => _cycle;
+
+        /// <summary>Wall and climb surf phase. Presentation only.</summary>
+        public float SurfPhase => _surfPhase;
+
+        /// <summary>Smoothed hard-turn plant the dust kick reads. Presentation only.</summary>
+        public float HardTurnVis => _hardTurnVis;
+
         public void Bind(Transform visualRoot, PlayerMotor motor, PunchHitbox punch, CharacterController ccIgnored = null)
         {
             _motor = motor;

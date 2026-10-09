@@ -105,7 +105,7 @@ namespace Tag.FX
             _hookMat = new Material[4];
             for (int i = 0; i < 4; i++)
             {
-                _hookAge[i] = -1f;
+                _chipAge[i] = -1f;
                 _hooks[i] = Make(transform, "HookChip", quad, billboard, dust, out _hookMat[i]);
             }
         }

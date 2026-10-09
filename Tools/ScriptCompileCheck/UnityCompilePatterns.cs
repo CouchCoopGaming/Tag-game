@@ -441,6 +441,8 @@ namespace Tag.Tools
         {
             string[] roots =
             {
+                Environment.GetEnvironmentVariable("UNITY_REF_DIR"),
+                "/tmp/unity-6000",
                 "/opt/unity",
                 "/usr/lib/unity",
                 "/opt/Unity",
@@ -448,11 +450,14 @@ namespace Tag.Tools
             };
             foreach (string dir in roots)
             {
-                if (!Directory.Exists(dir)) continue;
-                foreach (string file in Directory.GetFiles(dir, "UnityEngine.dll", SearchOption.AllDirectories))
+                if (string.IsNullOrEmpty(dir) || !Directory.Exists(dir)) continue;
+                foreach (string name in new[] { "UnityEngine.CoreModule.dll", "UnityEngine.dll" })
                 {
-                    if (file.IndexOf("InputSystem", StringComparison.Ordinal) >= 0) continue;
-                    return true;
+                    foreach (string file in Directory.GetFiles(dir, name, SearchOption.AllDirectories))
+                    {
+                        if (file.IndexOf("InputSystem", StringComparison.Ordinal) >= 0) continue;
+                        return true;
+                    }
                 }
             }
             return false;
