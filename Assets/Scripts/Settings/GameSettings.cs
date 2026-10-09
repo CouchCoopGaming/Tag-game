@@ -105,6 +105,12 @@ namespace Tag.Settings
         /// Not one of the 21 rows, and not one of the seven FX-kit toggles.
         /// </summary>
         public bool WallRibbon;
+        /// <summary>Body-sized black card on a hit. Off until a seat turns it on. Not one of the 21 rows.</summary>
+        public bool InkCard;
+        /// <summary>Off-screen crown wedge. Off until a seat turns it on. Not one of the 21 rows.</summary>
+        public bool ItWedge;
+        /// <summary>Crown plate above the hat. Off until a seat turns it on. Not one of the 21 rows.</summary>
+        public bool CrownPlate;
         /// <summary>0 off, 1 low, 2 full. Visual density only.</summary>
         public int Effects = 2;
 
@@ -169,6 +175,9 @@ namespace Tag.Settings
             ComicWords = other.ComicWords;
             SpeedLines = other.SpeedLines;
             WallRibbon = other.WallRibbon;
+            InkCard = other.InkCard;
+            ItWedge = other.ItWedge;
+            CrownPlate = other.CrownPlate;
             Effects = other.Effects;
         }
 
@@ -373,6 +382,21 @@ namespace Tag.Settings
         public string WallRibbonLabel()
         {
             return WallRibbon ? "Wall ribbon: On" : "Wall ribbon: Off";
+        }
+
+        public string InkCardLabel()
+        {
+            return InkCard ? "Ink card: On" : "Ink card: Off";
+        }
+
+        public string ItWedgeLabel()
+        {
+            return ItWedge ? "It wedge: On" : "It wedge: Off";
+        }
+
+        public string CrownPlateLabel()
+        {
+            return CrownPlate ? "Crown plate: On" : "Crown plate: Off";
         }
 
         public static string ArenaName(int arena)

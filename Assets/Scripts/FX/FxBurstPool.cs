@@ -18,9 +18,23 @@ namespace Tag.FX
     /// </summary>
     public sealed class FxBurstPool : MonoBehaviour
     {
+        const int ShapeSlots = 16;
+        const int MarkSlots = 4;
+        const float MarkLife = 0.42f;
+
         ParticleSystem _ps;
         ParticleSystem.MainModule _main;
         bool _ready;
+        Transform[] _shapeT;
+        Renderer[] _shapeR;
+        Material[] _shapeM;
+        float[] _shapeAge;
+        float[] _shapeLife;
+        Vector3[] _shapeV;
+        Transform[] _markT;
+        Renderer[] _markR;
+        Material[] _markM;
+        float[] _markAge;
 
         public static FxBurstPool Ensure(Transform host)
         {
@@ -67,7 +81,13 @@ namespace Tag.FX
             rend.receiveShadows = false;
             rend.material = DustMaterial();
             _ps.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+            BuildShapes();
             _ready = true;
+        }
+
+        void LateUpdate()
+        {
+            AdvanceShapes();
         }
 
         /// <summary>
@@ -143,7 +163,15 @@ namespace Tag.FX
         {
             if (!_ready || _ps == null) return;
             if (Calmed()) return;
+            // The mark is the contact. A metal plant still emits nothing.
+            if (kind == FxBurstKind.Run && puff.Stamp != 0)
+                PlaceMark(worldPos, puff);
             if (puff.Count <= 0) return;
+            if (puff.Shape > 0.5f && (kind == FxBurstKind.Run || kind == FxBurstKind.WallScuff))
+            {
+                EmitShaped(worldPos, puff);
+                return;
+            }
             Apply(kind);
             _main.startSize = puff.Size;
             _main.startLifetime = puff.Life > 0.05f ? puff.Life : 0.05f;
@@ -413,6 +441,246 @@ namespace Tag.FX
             if (kind == FxBurstKind.Land) return 7;
             if (kind == FxBurstKind.WallScuff) return 4;
             return 5;
+        }
+
+        void BuildShapes()
+        {
+            Shader shader = Shader.Find("Tag/FxKitSprite");
+            if (shader == null) shader = Shader.Find("Universal Render Pipeline/Unlit");
+            Mesh quad = ShapeQuad();
+            _shapeT = new Transform[ShapeSlots];
+            _shapeR = new Renderer[ShapeSlots];
+            _shapeM = new Material[ShapeSlots];
+            _shapeAge = new float[ShapeSlots];
+            _shapeLife = new float[ShapeSlots];
+            _shapeV = new Vector3[ShapeSlots];
+            for (int i = 0; i < ShapeSlots; i++)
+            {
+                _shapeAge[i] = -1f;
+                _shapeM[i] = ShapeMat(shader);
+                _shapeT[i] = ShapeObj("DustShape", quad, _shapeM[i], out _shapeR[i]);
+            }
+            _markT = new Transform[MarkSlots];
+            _markR = new Renderer[MarkSlots];
+            _markM = new Material[MarkSlots];
+            _markAge = new float[MarkSlots];
+            for (int i = 0; i < MarkSlots; i++)
+            {
+                _markAge[i] = -1f;
+                _markM[i] = ShapeMat(shader);
+                _markM[i].SetFloat("_Billboard", 0f);
+                _markT[i] = ShapeObj("DustMark", quad, _markM[i], out _markR[i]);
+            }
+        }
+
+        static Material ShapeMat(Shader shader)
+        {
+            var mat = new Material(shader);
+            mat.SetFloat("_Shape", 0f);
+            mat.SetFloat("_Billboard", 1f);
+            mat.SetFloat("_Guard", 0f);
+            mat.SetFloat("_Edge", -1f);
+            return mat;
+        }
+
+        Transform ShapeObj(string name, Mesh mesh, Material mat, out Renderer rend)
+        {
+            var go = new GameObject(name);
+            go.transform.SetParent(transform, false);
+            var filter = go.AddComponent<MeshFilter>();
+            filter.sharedMesh = mesh;
+            rend = go.AddComponent<MeshRenderer>();
+            rend.sharedMaterial = mat;
+            rend.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            rend.receiveShadows = false;
+            rend.enabled = false;
+            return go.transform;
+        }
+
+        static Mesh ShapeQuad()
+        {
+            var mesh = new Mesh();
+            mesh.name = "DustShape";
+            mesh.vertices = new[]
+            {
+                new Vector3(-0.5f, -0.5f, 0f),
+                new Vector3(0.5f, -0.5f, 0f),
+                new Vector3(0.5f, 0.5f, 0f),
+                new Vector3(-0.5f, 0.5f, 0f)
+            };
+            mesh.uv = new[]
+            {
+                new Vector2(0f, 0f), new Vector2(1f, 0f), new Vector2(1f, 1f), new Vector2(0f, 1f)
+            };
+            mesh.triangles = new[] { 0, 2, 1, 0, 3, 2 };
+            return mesh;
+        }
+
+        void EmitShaped(Vector3 worldPos, DustLook.Puff puff)
+        {
+            if (_shapeT == null) return;
+            int n = puff.Count;
+            if (n > ShapeSlots) n = ShapeSlots;
+            if (n < 1) return;
+            Transform root = transform.parent;
+            Vector3 fwd = root != null ? root.forward : Vector3.forward;
+            fwd.y = 0f;
+            if (fwd.sqrMagnitude < 0.0001f) fwd = Vector3.forward;
+            else fwd.Normalize();
+            Vector3 side = Vector3.Cross(Vector3.up, fwd);
+            if (side.sqrMagnitude < 0.0001f) side = Vector3.right;
+            else side.Normalize();
+            float life = puff.Life > 0.05f ? puff.Life : 0.05f;
+            for (int i = 0; i < n; i++)
+            {
+                int slot = FreeShape();
+                float u = n == 1 ? 0.5f : i / (float)(n - 1);
+                float along = (u - 0.5f) * (puff.Span > 0.05f ? puff.Span : puff.Size * 2f);
+                float lift = 0.04f + (i & 1) * 0.03f;
+                Vector3 v = Vector3.up * 0.15f;
+                if (puff.Splash != 0) v = Vector3.up * -1.4f;
+                else if (puff.Spark != 0) v = side * ((i & 1) == 0 ? 0.8f : -0.8f) + Vector3.up * 0.35f;
+                else v = -fwd * 0.4f + Vector3.up * 0.2f;
+                ScaleOf(puff.Shape, puff.Size, out float sx, out float sy);
+                _shapeAge[slot] = 0.0001f;
+                _shapeLife[slot] = life;
+                _shapeV[slot] = v;
+                _shapeT[slot].position = worldPos - fwd * along + Vector3.up * lift;
+                _shapeT[slot].localScale = new Vector3(sx, sy, 1f);
+                _shapeM[slot].SetFloat("_Shape", puff.Shape);
+                _shapeM[slot].SetFloat("_Billboard", 1f);
+                _shapeM[slot].color = new Color(puff.R, puff.G, puff.B, puff.Opacity);
+                _shapeR[slot].enabled = true;
+            }
+        }
+
+        void PlaceMark(Vector3 worldPos, DustLook.Puff puff)
+        {
+            if (_markT == null) return;
+            int slot = 0;
+            float oldest = -1f;
+            for (int i = 0; i < MarkSlots; i++)
+            {
+                if (_markAge[i] < 0f)
+                {
+                    slot = i;
+                    oldest = -1f;
+                    break;
+                }
+                if (_markAge[i] > oldest)
+                {
+                    oldest = _markAge[i];
+                    slot = i;
+                }
+            }
+            float shape = puff.Shape;
+            if (shape < 0.5f) shape = 6f;
+            if (shape > 6.5f && shape < 7.5f) shape = 6f;
+            ScaleOf(shape, 0.22f, out float sx, out float sy);
+            if (shape > 5.5f && shape < 6.5f)
+            {
+                sx = 0.55f;
+                sy = 0.10f;
+            }
+            _markAge[slot] = 0.0001f;
+            _markT[slot].position = worldPos + Vector3.up * 0.02f;
+            _markT[slot].rotation = Quaternion.Euler(90f, 0f, 0f);
+            _markT[slot].localScale = new Vector3(sx, sy, 1f);
+            _markM[slot].SetFloat("_Shape", shape);
+            _markM[slot].SetFloat("_Billboard", 0f);
+            float dark = shape > 2.5f && shape < 3.5f ? 1f : 0.72f;
+            _markM[slot].color = new Color(puff.R * dark, puff.G * dark, puff.B * dark, 0.9f);
+            _markR[slot].enabled = true;
+        }
+
+        static void ScaleOf(float shape, float size, out float sx, out float sy)
+        {
+            sx = size;
+            sy = size;
+            if (size < 0.04f) size = 0.04f;
+            if (shape > 4.5f && shape < 5.5f)
+            {
+                sx = size * 2.6f;
+                sy = size * 0.35f;
+            }
+            else if (shape > 5.5f && shape < 6.5f)
+            {
+                sx = size * 1.8f;
+                sy = size * 0.42f;
+            }
+            else if (shape > 3.5f && shape < 4.5f)
+            {
+                sx = size * 0.28f;
+                sy = size * 1.7f;
+            }
+            else if (shape > 6.5f && shape < 7.5f)
+            {
+                sx = size * 0.22f;
+                sy = size * 0.9f;
+            }
+            else if (shape > 2.5f && shape < 3.5f)
+            {
+                sx = size * 0.7f;
+                sy = size * 0.55f;
+            }
+        }
+
+        int FreeShape()
+        {
+            int slot = 0;
+            float oldest = -1f;
+            for (int i = 0; i < ShapeSlots; i++)
+            {
+                if (_shapeAge[i] < 0f) return i;
+                if (_shapeAge[i] > oldest)
+                {
+                    oldest = _shapeAge[i];
+                    slot = i;
+                }
+            }
+            return slot;
+        }
+
+        void AdvanceShapes()
+        {
+            float dt = Time.deltaTime;
+            if (dt < 0f) dt = 0f;
+            if (dt > 0.05f) dt = 0.05f;
+            if (_shapeAge != null)
+            {
+                for (int i = 0; i < ShapeSlots; i++)
+                {
+                    if (_shapeAge[i] < 0f) continue;
+                    _shapeAge[i] += dt;
+                    if (_shapeAge[i] >= _shapeLife[i])
+                    {
+                        _shapeAge[i] = -1f;
+                        _shapeR[i].enabled = false;
+                        continue;
+                    }
+                    _shapeT[i].position += _shapeV[i] * dt;
+                    float a = 1f - _shapeAge[i] / _shapeLife[i];
+                    Color c = _shapeM[i].color;
+                    c.a = a;
+                    _shapeM[i].color = c;
+                }
+            }
+            if (_markAge == null) return;
+            for (int i = 0; i < MarkSlots; i++)
+            {
+                if (_markAge[i] < 0f) continue;
+                _markAge[i] += dt;
+                if (_markAge[i] >= MarkLife)
+                {
+                    _markAge[i] = -1f;
+                    _markR[i].enabled = false;
+                    continue;
+                }
+                float a = 1f - _markAge[i] / MarkLife;
+                Color c = _markM[i].color;
+                c.a = a > 0.85f ? 0.9f : a;
+                _markM[i].color = c;
+            }
         }
     }
 }

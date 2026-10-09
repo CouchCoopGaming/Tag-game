@@ -125,6 +125,23 @@ Shader "Tag/FxKitSprite"
                     mask = ChunkMask(p);
                 else if (_Shape < 4.5)
                     mask = SplinterMask(p);
+                else if (_Shape < 5.5)
+                {
+                    float beam = saturate(1.0 - smoothstep(0.08, 0.22, abs(p.y)));
+                    float cap = saturate(1.0 - smoothstep(0.72, 0.98, abs(p.x)));
+                    mask = beam * cap;
+                }
+                else if (_Shape < 6.5)
+                {
+                    float2 q = float2(p.x * 0.55, p.y * 1.55);
+                    mask = saturate(1.0 - smoothstep(0.12, 0.92, length(q)));
+                }
+                else if (_Shape < 7.5)
+                {
+                    float beam = saturate(1.0 - smoothstep(0.12, 0.30, abs(p.x)));
+                    float cap = saturate(1.0 - smoothstep(0.28, 0.82, abs(p.y)));
+                    mask = beam * cap;
+                }
 
                 float edge = 1.0;
                 if (_Edge >= 0.0 && _Edge < 0.5) edge = 1.0 - i.uv.x;

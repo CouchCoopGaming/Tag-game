@@ -6115,6 +6115,423 @@ def pass28_delta(before_path, after_path):
     return n
 
 
+def pass29_star(center, right, up, size, color):
+    verts = [Vector(center)]
+    faces = []
+    for i in range(10):
+        ang = math.radians(i * 36.0 - 90.0)
+        rad = size * (0.50 if (i % 2) == 0 else 0.20)
+        verts.append(Vector(center) + Vector(right) * math.cos(ang) * rad + Vector(up) * math.sin(ang) * rad)
+    for i in range(10):
+        faces.append((0, 1 + i, 1 + ((i + 1) % 10)))
+    mesh = bpy.data.meshes.new(p11_name("Fx"))
+    mesh.from_pydata([tuple(v) for v in verts], [], faces)
+    mesh.update()
+    obj = bpy.data.objects.new(p11_name("Fx"), mesh)
+    bpy.context.collection.objects.link(obj)
+    obj.visible_shadow = False
+    mat = bpy.data.materials.new(p11_name("Mat"))
+    mat.use_nodes = True
+    nt = mat.node_tree
+    nt.nodes.clear()
+    out = nt.nodes.new("ShaderNodeOutputMaterial")
+    emit = nt.nodes.new("ShaderNodeEmission")
+    emit.inputs["Color"].default_value = (color[0], color[1], color[2], 1.0)
+    emit.inputs["Strength"].default_value = 1.0
+    nt.links.new(emit.outputs["Emission"], out.inputs["Surface"])
+    obj.data.materials.append(mat)
+    return obj
+
+
+def pass29_cam_axes(cam, dist):
+    basis = cam.matrix_world.to_3x3()
+    right = basis @ Vector((1.0, 0.0, 0.0))
+    up = basis @ Vector((0.0, 1.0, 0.0))
+    fwd = basis @ Vector((0.0, 0.0, -1.0))
+    right.normalize()
+    up.normalize()
+    fwd.normalize()
+    half_h = dist * math.tan(math.radians(39.0))
+    half_w = half_h * (640.0 / 360.0)
+    origin = cam.location + fwd * dist
+    return origin, right, up, half_w, half_h
+
+
+def pass29_edges(cam, tint):
+    origin, right, up, half_w, half_h = pass29_cam_axes(cam, 2.4)
+    x = half_w * 0.94
+    y = half_h * 0.94
+    specs = (
+        (-x, half_h * 0.35, 0.045, 0.42),
+        (-x, -half_h * 0.25, 0.045, 0.34),
+        (x, half_h * 0.15, 0.045, 0.40),
+        (x, -half_h * 0.40, 0.045, 0.30),
+        (half_w * 0.30, y, 0.46, 0.045),
+        (-half_w * 0.22, y, 0.36, 0.045),
+        (half_w * 0.18, -y, 0.40, 0.045),
+        (-half_w * 0.36, -y, 0.32, 0.045),
+    )
+    for ox, oy, sx, sy in specs:
+        center = origin + right * ox + up * oy
+        pass28_card(
+            [
+                center + right * (-sx * 0.5) + up * (-sy * 0.5),
+                center + right * (sx * 0.5) + up * (-sy * 0.5),
+                center + right * (sx * 0.5) + up * (sy * 0.5),
+                center + right * (-sx * 0.5) + up * (sy * 0.5),
+            ],
+            tint,
+        )
+    print("EDGE", "streaks", len(specs))
+
+
+def pass29_margin(path):
+    from PIL import Image
+
+    image = Image.open(path).convert("RGB")
+    w, h = image.size
+    px = image.load()
+    mx = int(w * 0.12)
+    my = int(h * 0.12)
+    edge = 0
+    center = 0
+    for y in range(h):
+        for x in range(w):
+            r, g, b = px[x, y]
+            if r < 150 or g > 80 or b > 80:
+                continue
+            if x < mx or x >= w - mx or y < my or y >= h - my:
+                edge += 1
+            else:
+                center += 1
+    print("MARGIN", os.path.basename(path), "edge", edge, "center", center)
+
+
+def pass30_shape(center, right, up, kind, color, size):
+    """kind: puff, cloud, sheet, splinter, streak, tick, chip."""
+    if kind in ("puff", "cloud"):
+        n = 8
+        verts = [Vector(center)]
+        for i in range(n):
+            ang = math.radians(i * 360.0 / n)
+            rad = size * (1.15 if kind == "cloud" else 0.55)
+            verts.append(Vector(center) + Vector(right) * math.cos(ang) * rad + Vector(up) * math.sin(ang) * rad * 0.72)
+        faces = [(0, 1 + i, 1 + ((i + 1) % n)) for i in range(n)]
+        mesh = bpy.data.meshes.new(p11_name("Fx"))
+        mesh.from_pydata([tuple(v) for v in verts], [], faces)
+        mesh.update()
+        obj = bpy.data.objects.new(p11_name("Fx"), mesh)
+        bpy.context.collection.objects.link(obj)
+        obj.visible_shadow = False
+        mat = bpy.data.materials.new(p11_name("Mat"))
+        mat.use_nodes = True
+        nt = mat.node_tree
+        nt.nodes.clear()
+        out = nt.nodes.new("ShaderNodeOutputMaterial")
+        emit = nt.nodes.new("ShaderNodeEmission")
+        emit.inputs["Color"].default_value = (color[0], color[1], color[2], 1.0)
+        emit.inputs["Strength"].default_value = 1.0
+        nt.links.new(emit.outputs["Emission"], out.inputs["Surface"])
+        obj.data.materials.append(mat)
+        return
+    if kind == "sheet":
+        sx, sy = size * 1.7, size * 0.38
+    elif kind == "splinter":
+        sx, sy = size * 0.16, size * 1.5
+    elif kind == "streak":
+        sx, sy = size * 1.8, size * 0.16
+    elif kind == "tick":
+        sx, sy = size * 0.14, size * 0.7
+    else:
+        sx, sy = size * 0.55, size * 0.42
+    c = Vector(center)
+    rr = Vector(right)
+    uu = Vector(up)
+    pass28_card(
+        [c - rr * sx + uu * sy, c + rr * sx + uu * sy, c + rr * sx - uu * sy, c - rr * sx - uu * sy],
+        color,
+    )
+
+
+def render_pass29(arm, cam):
+    """Quarter-pane chase stills for margin streaks, the ink card, and who is It."""
+    from PIL import Image
+
+    scene = bpy.context.scene
+    for obj in bpy.data.objects:
+        if obj.type == "LIGHT" and obj.data.type == "SUN":
+            obj.data.energy = 1.4
+        elif obj.type == "LIGHT" and obj.data.type == "AREA":
+            obj.data.energy = 28
+    scene.render.resolution_x = 640
+    scene.render.resolution_y = 360
+    scene.eevee.taa_render_samples = 8
+    scene.view_settings.view_transform = "Standard"
+    scene.view_settings.look = "None"
+    scene.view_settings.exposure = 0.0
+    scene.view_settings.gamma = 1.0
+    out_dir = os.path.join(ROOT, "Docs", "FxStills", "pass29")
+    os.makedirs(out_dir, exist_ok=True)
+    tmp = "/tmp/pass29"
+    os.makedirs(tmp, exist_ok=True)
+    yaw = 24.0
+    seat = (0.95, 0.28, 0.32)
+    crown = (0.15, 0.82, 1.0)
+
+    def shoot(name, cells, titles):
+        png = os.path.join(tmp, name + ".png")
+        scene.render.filepath = png
+        bpy.ops.render.render(write_still=True)
+        image = Image.open(png).convert("RGB")
+        p14_jpeg(os.path.join(out_dir, name + ".jpg"), image)
+        cells.append(image.copy())
+        titles.append(name.replace("-", " "))
+
+    cells = []
+    titles = []
+    for label, on in (("edge-before", False), ("edge-after", True)):
+        p11_clear("P11Fx")
+        p11_ground("concrete", asphalt=True)
+        apply_pose(arm, pose_run, 0.8, yaw)
+        foot = p11_foot(arm)
+        p14_aim(cam, foot, yaw)
+        bpy.context.view_layer.update()
+        if on:
+            pass29_edges(cam, seat)
+        else:
+            print("EDGE", "off")
+        shoot(label, cells, titles)
+        pass29_margin(os.path.join(out_dir, label + ".jpg"))
+    p14_grid(cells, titles, "Owner pane streaks   chase camera   quarter pane   off / on", os.path.join(out_dir, "edge-compare.jpg"), 2)
+
+    cells = []
+    titles = []
+    for label, card in (("ink-before", False), ("ink-after", True)):
+        p11_clear("P11Fx")
+        p11_ground("concrete", asphalt=True)
+        apply_pose(arm, pose_punch, 0.0, yaw)
+        foot = p11_foot(arm)
+        p14_aim(cam, foot, yaw)
+        bpy.context.view_layer.update()
+        origin, right, up, _hw, _hh = pass29_cam_axes(cam, 4.6)
+        burst = origin + up * 0.55
+        pass30_shape(burst, right, up, "cloud", (1.0, 0.55, 0.12), 0.22)
+        if card:
+            toward = (cam.location - origin)
+            if toward.length > 0.001:
+                toward = toward.normalized()
+            rim_c = origin
+            ink_c = origin + toward * 0.04
+            pass28_card(
+                [
+                    rim_c - right * 0.92 - up * 1.02,
+                    rim_c + right * 0.92 - up * 1.02,
+                    rim_c + right * 0.92 + up * 1.02,
+                    rim_c - right * 0.92 + up * 1.02,
+                ],
+                (0.82, 0.86, 0.90),
+            )
+            pass28_card(
+                [
+                    ink_c - right * 0.78 - up * 0.88,
+                    ink_c + right * 0.78 - up * 0.88,
+                    ink_c + right * 0.78 + up * 0.88,
+                    ink_c - right * 0.78 + up * 0.88,
+                ],
+                (0.02, 0.02, 0.02),
+            )
+        shoot(label, cells, titles)
+    p14_grid(cells, titles, "Contact ink   chase camera   quarter pane   word burst / card", os.path.join(out_dir, "ink-compare.jpg"), 2)
+
+    cells = []
+    titles = []
+    for label, wedge in (("wedge-before", False), ("wedge-after", True)):
+        p11_clear("P11Fx")
+        p11_ground("concrete", asphalt=True)
+        apply_pose(arm, pose_run, 0.4, yaw)
+        foot = p11_foot(arm)
+        p14_aim(cam, foot, yaw)
+        bpy.context.view_layer.update()
+        if wedge:
+            origin, right, up, half_w, half_h = pass29_cam_axes(cam, 2.2)
+            at = origin + right * (half_w * 0.92) + up * (half_h * 0.05)
+            pass29_star(at, right, up, 0.22, crown)
+            pass30_shape(at + right * 0.16, right, up, "chip", seat, 0.08)
+        shoot(label, cells, titles)
+    p14_grid(cells, titles, "Off-screen It   chase camera   quarter pane   hidden / wedge", os.path.join(out_dir, "wedge-compare.jpg"), 2)
+
+    cells = []
+    titles = []
+    for label, plate in (("plate-before", False), ("plate-after", True)):
+        p11_clear("P11Fx")
+        p11_ground("concrete", asphalt=True)
+        apply_pose(arm, pose_run, 0.2, yaw)
+        foot = p11_foot(arm)
+        p14_aim(cam, foot, yaw)
+        bpy.context.view_layer.update()
+        head = bone_pos(arm, "Head")
+        hat = head + Vector((0.0, 0.0, 0.22))
+        pass30_shape(hat, Vector((1.0, 0.0, 0.0)), Vector((0.0, 0.0, 1.0)), "chip", (1.0, 0.82, 0.15), 0.16)
+        if plate:
+            origin, right, up, _hw, _hh = pass29_cam_axes(cam, (cam.location - hat).length)
+            at = hat + Vector((0.0, 0.0, 0.28))
+            pass28_card(
+                [at - right * 0.16 - up * 0.16, at + right * 0.16 - up * 0.16, at + right * 0.16 + up * 0.16, at - right * 0.16 + up * 0.16],
+                (0.06, 0.05, 0.04),
+            )
+            pass29_star(at, right, up, 0.22, crown)
+        shoot(label, cells, titles)
+    p14_grid(cells, titles, "Crown plate   chase camera   quarter pane   hat / plate", os.path.join(out_dir, "plate-compare.jpg"), 2)
+
+    cells = []
+    titles = []
+    for label, moved in (("handoff-before", False), ("handoff-after", True)):
+        p11_clear("P11Fx")
+        p11_ground("concrete", asphalt=True)
+        apply_pose(arm, pose_run, 0.2, yaw)
+        foot = p11_foot(arm)
+        p14_aim(cam, foot, yaw)
+        bpy.context.view_layer.update()
+        fwd, left = p11_heading(yaw)
+        other = foot + left * 1.35
+        def body_at(pos, shirt):
+            chest = Vector((pos.x, pos.y, 1.05))
+            pass30_shape(chest, left, Vector((0.0, 0.0, 1.0)), "chip", shirt, 0.34)
+            pass30_shape(chest + Vector((0.0, 0.0, 0.42)), left, Vector((0.0, 0.0, 1.0)), "puff", shirt, 0.16)
+        body_at(foot, seat)
+        body_at(other, (0.25, 0.55, 1.0))
+        receiver = foot + Vector((0.0, 0.0, 1.7))
+        tagger = other + Vector((0.0, 0.0, 1.7))
+        origin, right, up, _hw, _hh = pass29_cam_axes(cam, 5.0)
+        plate_at = receiver if moved else tagger
+        pass29_star(plate_at, right, up, 0.18, crown)
+        pass30_shape(receiver + Vector((0.0, 0.0, -1.55)), left, fwd, "sheet", seat if moved else (0.2, 0.2, 0.2), 0.22)
+        pass30_shape(tagger + Vector((0.0, 0.0, -1.55)), left, fwd, "sheet", (0.85, 0.95, 1.0) if moved else seat, 0.22)
+        shoot(label, cells, titles)
+    p14_grid(cells, titles, "Handoff   chase camera   quarter pane   plate moves, no freeze", os.path.join(out_dir, "handoff-compare.jpg"), 2)
+
+
+def render_pass30(arm, cam):
+    """Quarter-pane chase stills. Shape carries the surface. Counts stay."""
+    from PIL import Image
+
+    scene = bpy.context.scene
+    for obj in bpy.data.objects:
+        if obj.type == "LIGHT" and obj.data.type == "SUN":
+            obj.data.energy = 1.4
+        elif obj.type == "LIGHT" and obj.data.type == "AREA":
+            obj.data.energy = 28
+    scene.render.resolution_x = 640
+    scene.render.resolution_y = 360
+    scene.eevee.taa_render_samples = 8
+    scene.view_settings.view_transform = "Standard"
+    scene.view_settings.look = "None"
+    scene.view_settings.exposure = 0.0
+    scene.view_settings.gamma = 1.0
+    out_dir = os.path.join(ROOT, "Docs", "FxStills", "pass30")
+    os.makedirs(out_dir, exist_ok=True)
+    tmp = "/tmp/pass30"
+    os.makedirs(tmp, exist_ok=True)
+    yaw = 24.0
+    row = (
+        ("grass", (0.76, 0.77, 0.70), "puff", 0.13),
+        ("dirt", (0.68, 0.46, 0.24), "cloud", 0.34),
+        ("concrete", (0.78, 0.78, 0.76), "sheet", 0.20),
+        ("wood", (0.90, 0.76, 0.56), "splinter", 0.16),
+        ("metal", (1.0, 0.90, 0.45), "streak", 0.12),
+        ("wet", (0.12, 0.22, 0.40), "tick", 0.14),
+        ("brick", (0.62, 0.28, 0.16), "chip", 0.18),
+    )
+
+    def shoot(name, cells, titles):
+        png = os.path.join(tmp, name + ".png")
+        scene.render.filepath = png
+        bpy.ops.render.render(write_still=True)
+        image = Image.open(png).convert("RGB")
+        p14_jpeg(os.path.join(out_dir, name + ".jpg"), image)
+        cells.append(image.copy())
+        titles.append(name.replace("-", " "))
+
+    cells = []
+    titles = []
+    for label, shaped in (("shape-before", False), ("shape-after", True)):
+        p11_clear("P11Fx")
+        p11_ground("concrete", asphalt=True)
+        apply_pose(arm, pose_run, 0.5, yaw)
+        foot = p11_foot(arm)
+        p14_aim(cam, foot, yaw)
+        bpy.context.view_layer.update()
+        fwd, left = p11_heading(yaw)
+        origin, right, up, _hw, _hh = pass29_cam_axes(cam, 5.2)
+        for i, (_name, color, kind, size) in enumerate(row):
+            at = foot + left * ((i - 3) * 0.42) + fwd * 0.85 + Vector((0.0, 0.0, 0.35))
+            use = kind if shaped else ("cloud" if kind == "cloud" else "puff")
+            pass30_shape(at, right, up, use, color, size)
+        shoot(label, cells, titles)
+    p14_grid(cells, titles, "Surface shape   chase camera   quarter pane   tint / shape", os.path.join(out_dir, "shape-compare.jpg"), 2)
+
+    cells = []
+    titles = []
+    for label, mark in (("mark-before", False), ("mark-after", True)):
+        p11_clear("P11Fx")
+        p11_ground("concrete", asphalt=True)
+        apply_pose(arm, pose_run, 0.6, yaw)
+        foot = p11_foot(arm)
+        p14_aim(cam, foot, yaw)
+        bpy.context.view_layer.update()
+        fwd, left = p11_heading(yaw)
+        origin, right, up, _hw, _hh = pass29_cam_axes(cam, 5.0)
+        if mark:
+            at = foot + fwd * 0.15 + Vector((0.0, 0.0, 0.04))
+            pass30_shape(at, left, fwd, "sheet", (0.42, 0.42, 0.40), 0.28)
+        else:
+            for i in range(6):
+                at = foot + left * ((i - 2.5) * 0.08) + fwd * (0.05 + i * 0.04) + Vector((0.0, 0.0, 0.12))
+                pass30_shape(at, right, up, "puff", (0.78, 0.78, 0.76), 0.16)
+        shoot(label, cells, titles)
+    p14_grid(cells, titles, "Contact mark   chase camera   quarter pane   puff / stain", os.path.join(out_dir, "mark-compare.jpg"), 2)
+
+    cells = []
+    titles = []
+    for label, shaped in (("wall-before", False), ("wall-after", True)):
+        p11_clear("P11Fx")
+        p11_clear("P11Geo")
+        p11_ground("concrete", asphalt=True)
+        apply_pose(arm, pose_wall, 0.0, 0.0)
+        foot = p11_foot(arm)
+        p14_aim(cam, foot, 0.0)
+        bpy.context.view_layer.update()
+        fwd, _left = p11_heading(0.0)
+        normal = -fwd
+        center = foot + fwd * 0.55
+        center.z = 1.15
+        bpy.ops.mesh.primitive_cube_add(size=1.0, location=(center.x + fwd.x * 0.08, center.y + fwd.y * 0.08, 1.6))
+        wall = bpy.context.active_object
+        wall.name = p11_name("Geo")
+        wall.scale = (2.6, 0.12, 3.2)
+        wall.data.materials.append(make_mat(p11_name("Mat"), (0.55, 0.56, 0.58, 1.0), 0.9))
+        along = Vector((-normal.y, normal.x, 0.0))
+        if along.length < 0.001:
+            along = Vector((1.0, 0.0, 0.0))
+        along.normalize()
+        metal_at = center + along * 0.55
+        metal_at.z = 1.15
+        nick_at = center - along * 0.55
+        nick_at.z = 1.05
+        foot_at = foot + Vector((0.0, 0.0, 0.2))
+        up = Vector((0.0, 0.0, 1.0))
+        if shaped:
+            pass30_shape(metal_at, along, up, "streak", (1.0, 0.90, 0.45), 0.22)
+            pass30_shape(foot_at, along, up, "streak", (1.0, 0.90, 0.45), 0.16)
+            pass30_shape(nick_at, along, up, "sheet", (0.78, 0.78, 0.76), 0.18)
+        else:
+            pass30_shape(metal_at, along, up, "puff", (0.75, 0.72, 0.66), 0.18)
+            pass30_shape(foot_at, along, up, "puff", (0.75, 0.72, 0.66), 0.14)
+            pass30_shape(nick_at, along, up, "puff", (0.75, 0.72, 0.66), 0.16)
+        shoot(label, cells, titles)
+    p14_grid(cells, titles, "Wall matches foot   chase camera   quarter pane   gray puff / streak and nick", os.path.join(out_dir, "wall-compare.jpg"), 2)
+
+
 def render_pass28(arm, cam):
     """Quarter-pane chase stills for flares, the wall ring, the land stroke, and the wall ribbon."""
     from PIL import Image
@@ -6519,6 +6936,12 @@ def main():
     bpy.ops.import_scene.fbx(filepath=FBX)
     arm = next(obj for obj in bpy.data.objects if obj.type == "ARMATURE")
     cam = setup_world(arm)
+    if os.environ.get("FX_PASS30") == "1":
+        render_pass30(arm, cam)
+        return
+    if os.environ.get("FX_PASS29") == "1":
+        render_pass29(arm, cam)
+        return
     if os.environ.get("FX_PASS28") == "1":
         render_pass28(arm, cam)
         return

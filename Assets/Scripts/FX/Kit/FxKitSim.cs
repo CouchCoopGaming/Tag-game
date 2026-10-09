@@ -191,6 +191,9 @@ namespace Tag.FX
             {
                 WallRibbon.End(_seat);
                 WallRibbon.Tick(dt);
+                PaneStreaks.Hide(_cam);
+                InkCard.Allow(false);
+                WhoIsItFx.Hide(_cam);
                 HideActive();
                 Remember();
                 return;
@@ -208,6 +211,17 @@ namespace Tag.FX
             TickFlash(dt, settings);
             TickAir(dt, settings);
             WallRibbon.Tick(dt);
+            bool calm = settings != null && settings.AnyReduceFlash();
+            bool streaks = settings != null && settings.SpeedLines && !calm;
+            PaneStreaks.Tick(_cam, Motor.HorizSpeed, _cr, _cg, _cb, streaks, dt);
+            InkCard.Allow(settings != null && settings.InkCard && !calm);
+            InkCard.Tick(dt);
+            bool isIt = It != null && It.IsIt && It.IsAlive;
+            int pal = settings != null ? settings.PaletteOf(_seat) : 0;
+            AccessibilityPalette.ItAgainst(pal, _seat, out float ir, out float ig, out float ib);
+            WhoIsItFx.Note(_root, isIt, ir, ig, ib, _cr, _cg, _cb);
+            WhoIsItFx.TickPlate(_root, isIt, settings != null && settings.CrownPlate && !calm);
+            WhoIsItFx.TickWedge(_cam, _root, isIt, settings != null && settings.ItWedge);
             Remember();
         }
 

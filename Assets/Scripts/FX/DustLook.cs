@@ -62,6 +62,10 @@ namespace Tag.FX
             public float Back;
             /// <summary>0 hides the grit. 1 draws a darker core inside the plume.</summary>
             public float Core;
+            /// <summary>Quad mask. 0 puff, 3 chip, 4 splinter, 5 streak, 6 sheet, 7 tick. Counts stay on the fields above.</summary>
+            public float Shape;
+            /// <summary>1 leaves one scuff-slot mark. Grass stays 0.</summary>
+            public int Stamp;
         }
 
         public static bool CloudsOn(Tag.Settings.GameSettings settings)
@@ -179,6 +183,8 @@ namespace Tag.FX
                     puff.Count = 3;
                     puff.Opacity = 0.85f;
                 }
+                puff.Shape = Sprite(Surface.Metal);
+                puff.Stamp = 1;
                 return puff;
             }
 
@@ -296,7 +302,23 @@ namespace Tag.FX
             if (n > 12) n = 12;
             if (n < 0) n = 0;
             puff.Count = n;
+            puff.Shape = Sprite(surface);
+            puff.Stamp = surface == Surface.Grass ? 0 : 1;
             return puff;
+        }
+
+        /// <summary>
+        /// The quad for this surface. Grass and dirt stay the soft puff.
+        /// Metal is a streak, wet is a tick, brick is a chip, wood is a splinter, concrete is a sheet.
+        /// </summary>
+        public static float Sprite(Surface surface)
+        {
+            if (surface == Surface.Wood) return 4f;
+            if (surface == Surface.Brick) return 3f;
+            if (surface == Surface.Metal) return 5f;
+            if (surface == Surface.Concrete) return 6f;
+            if (surface == Surface.Wet) return 7f;
+            return 0f;
         }
 
         /// <summary>

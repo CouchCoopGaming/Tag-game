@@ -294,6 +294,7 @@ namespace Tag.FX
         float[] _scuffAge;
         float[] _scuffWidth;
         float[] _scuffHeight;
+        float[] _scuffShape;
         int[] _scuffCount;
         Vector3[] _scuffNormal;
         Vector3[] _scuffAlong;
@@ -828,6 +829,7 @@ namespace Tag.FX
             _scuffAge = new float[ScuffSlots];
             _scuffWidth = new float[ScuffSlots];
             _scuffHeight = new float[ScuffSlots];
+            _scuffShape = new float[ScuffSlots];
             _scuffCount = new int[ScuffSlots];
             _scuffNormal = new Vector3[ScuffSlots];
             _scuffAlong = new Vector3[ScuffSlots];
@@ -879,6 +881,34 @@ namespace Tag.FX
             int puffs = k < 0.25f ? 3 : 5 + (int)(k * 2f);
             if (puffs > ScuffPuffs) puffs = ScuffPuffs;
             ScuffTint(surface, material, out float r, out float g, out float b, out float dr, out float dg, out float db);
+            DustLook.Surface surf = DustLook.FromTag(surface);
+            float sprite = DustLook.Sprite(surf);
+            bool grass = surf == DustLook.Surface.Grass;
+            if (sprite > 4.5f && sprite < 5.5f)
+            {
+                width = 0.46f;
+                height = 0.07f;
+            }
+            else if (sprite > 5.5f && sprite < 6.5f)
+            {
+                width = 0.38f;
+                height = 0.09f;
+            }
+            else if (sprite > 3.5f && sprite < 4.5f)
+            {
+                width = 0.07f;
+                height = 0.36f;
+            }
+            else if (sprite > 6.5f)
+            {
+                width = 0.24f;
+                height = 0.09f;
+            }
+            else if (sprite > 2.5f && sprite < 3.5f)
+            {
+                width = 0.16f;
+                height = 0.12f;
+            }
             Vector3 along = Vector3.Cross(normal, Vector3.up);
             if (along.sqrMagnitude < 0.0001f) along = Vector3.Cross(normal, Vector3.right);
             along.Normalize();
@@ -891,6 +921,10 @@ namespace Tag.FX
             _scuffAlong[slot] = along;
             _scuffInk[slot] = new Color(r, g, b, 1f);
             _scuffDust[slot] = new Color(dr, dg, db, 1f);
+            _scuffShape[slot] = grass ? -1f : sprite;
+            _scuffMarkMat[slot].SetFloat("_Shape", grass ? 0f : sprite);
+            for (int p = 0; p < ScuffPuffs; p++)
+                _scuffPuffMat[slot * ScuffPuffs + p].SetFloat("_Shape", grass ? 0f : sprite);
             _scuffRoot[slot].position = origin + normal * 0.02f;
             _scuffRoot[slot].rotation = Quaternion.LookRotation(normal, up);
             _scuffRoot[slot].gameObject.SetActive(true);
@@ -930,7 +964,7 @@ namespace Tag.FX
                 Color ink = _scuffInk[i];
                 ink.a = markA;
                 _scuffMarkMat[i].color = ink;
-                _scuffMarkRend[i].enabled = markA > 0.03f;
+                _scuffMarkRend[i].enabled = _scuffShape[i] >= 0f && markA > 0.03f;
                 Vector3 n = _scuffNormal[i];
                 Vector3 along = _scuffAlong[i];
                 for (int p = 0; p < ScuffPuffs; p++)
@@ -951,7 +985,35 @@ namespace Tag.FX
                     float rise = _scuffHeight[i] * 0.45f + (Hash(240 + p) - 0.2f) * _scuffHeight[i] * 0.35f;
                     _scuffPuff[k].position = _scuffRoot[i].position + n * outD + along * slide + Vector3.up * rise;
                     float size = (0.16f + h * 0.14f) * (0.75f + 0.35f * puffU);
-                    _scuffPuff[k].localScale = new Vector3(size, size * 0.85f, 1f);
+                    float shape = _scuffShape[i];
+                    float sx = size;
+                    float sy = size * 0.85f;
+                    if (shape > 4.5f && shape < 5.5f)
+                    {
+                        sx = size * 2.4f;
+                        sy = size * 0.32f;
+                    }
+                    else if (shape > 5.5f && shape < 6.5f)
+                    {
+                        sx = size * 1.6f;
+                        sy = size * 0.40f;
+                    }
+                    else if (shape > 3.5f && shape < 4.5f)
+                    {
+                        sx = size * 0.28f;
+                        sy = size * 1.5f;
+                    }
+                    else if (shape > 6.5f)
+                    {
+                        sx = size * 0.22f;
+                        sy = size * 0.9f;
+                    }
+                    else if (shape > 2.5f && shape < 3.5f)
+                    {
+                        sx = size * 0.65f;
+                        sy = size * 0.5f;
+                    }
+                    _scuffPuff[k].localScale = new Vector3(sx, sy, 1f);
                     Color dust = _scuffDust[i];
                     dust.a = 0.72f * fade;
                     _scuffPuffMat[k].color = dust;

@@ -64,6 +64,8 @@ namespace Tag.FX
 
         public static void RaiseEvent(Vector3 origin, Vector3 forward, float reach, int ev, int strength)
         {
+            if (ev == ComicWords.EvPunch || ev == ComicWords.EvTag)
+                InkCard.Pop(origin);
             if (!ComicWords.Visible(GameSettings.Current)) return;
             if (ev < 0 || ev >= ComicWords.EvCount) ev = ComicWords.EvPunch;
             Ensure();
