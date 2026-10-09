@@ -142,6 +142,20 @@ namespace Tag.Settings
         /// Off until a seat turns it on. Not one of the 21 rows. Word count stays 36.
         /// </summary>
         public bool OneWord;
+        /// <summary>
+        /// Wall ribbons step seat × 0.08 m up the face, and the tag frame ducks only that pawn's strip.
+        /// Off until a seat turns it on. Not one of the 21 rows.
+        /// </summary>
+        public bool RibbonLane;
+        /// <summary>
+        /// Covered-body stroke hides while that body's immunity shell is up.
+        /// Off until a seat turns it on. Not one of the 21 rows.
+        /// </summary>
+        public bool StrokeYield;
+        /// <summary>
+        /// One concrete stain after a hard land. Off until a seat turns it on. Not one of the 21 rows.
+        /// </summary>
+        public bool LandStain;
         /// <summary>0 off, 1 low, 2 full. Visual density only.</summary>
         public int Effects = 2;
 
@@ -215,6 +229,9 @@ namespace Tag.Settings
             BodyStroke = other.BodyStroke;
             SeatInk = other.SeatInk;
             OneWord = other.OneWord;
+            RibbonLane = other.RibbonLane;
+            StrokeYield = other.StrokeYield;
+            LandStain = other.LandStain;
             Effects = other.Effects;
         }
 
@@ -464,6 +481,21 @@ namespace Tag.Settings
         public string OneWordLabel()
         {
             return OneWord ? "One word: On" : "One word: Off";
+        }
+
+        public string RibbonLaneLabel()
+        {
+            return RibbonLane ? "Ribbon lane: On" : "Ribbon lane: Off";
+        }
+
+        public string StrokeYieldLabel()
+        {
+            return StrokeYield ? "Stroke yield: On" : "Stroke yield: Off";
+        }
+
+        public string LandStainLabel()
+        {
+            return LandStain ? "Land stain: On" : "Land stain: Off";
         }
 
         public static string ArenaName(int arena)

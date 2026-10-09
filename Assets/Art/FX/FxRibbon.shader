@@ -4,6 +4,7 @@ Shader "Tag/FxRibbon"
     {
         _Color ("Color", Color) = (1, 0.3, 0.3, 1)
         _Fade ("Fade", Float) = 0
+        _Duck ("Duck", Float) = 1
     }
     SubShader
     {
@@ -18,6 +19,7 @@ Shader "Tag/FxRibbon"
         {
             Name "Forward"
             Tags { "LightMode" = "UniversalForward" }
+            Blend SrcAlpha OneMinusSrcAlpha
             ZWrite Off
             Cull Off
 
@@ -29,6 +31,7 @@ Shader "Tag/FxRibbon"
             CBUFFER_START(UnityPerMaterial)
                 float4 _Color;
                 float _Fade;
+                float _Duck;
             CBUFFER_END
 
             struct Attributes
@@ -60,7 +63,7 @@ Shader "Tag/FxRibbon"
                 // Seat ink in the middle. A dark edge keeps it readable on brick.
                 float core = limit * 0.62;
                 half3 ink = band > core ? half3(0.08, 0.05, 0.04) : _Color.rgb;
-                return half4(ink, 1);
+                return half4(ink, saturate(_Duck));
             }
             ENDHLSL
         }

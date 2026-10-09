@@ -21,6 +21,15 @@ namespace Tag.FX
         public const float ScuffLife = 0.34f;
         public const float FootLife = 0.28f;
         public const float FlashSeconds = 0.18f;
+        public const float RibbonLaneStep = 0.08f;
+        public const float RibbonFlashDuck = 0.45f;
+        public const float StainDim = 0.22f;
+        public const float StainHold = 0.56f;
+        public const float StainSolid = 0.55f;
+        public const float StainEnd = 1.10f;
+        public const float StainWidth = 0.12f;
+        public const float StainRollLength = 0.70f;
+        public const float StainPlantLength = 0.45f;
         public const float ShimmerAmp = 0.028f;
         public const float ImmunitySeconds = TagBackImmunity.DefaultSeconds;
         public const float StaggerSeconds = PunchStagger.Duration;
@@ -109,6 +118,23 @@ namespace Tag.FX
             float u = age / FlashSeconds;
             float env = u < 0.18f ? u / 0.18f : (1f - u) / 0.82f;
             return env * 0.62f;
+        }
+
+        public static float RibbonLane(int seat)
+        {
+            if (seat < 0) return 0f;
+            return seat * RibbonLaneStep;
+        }
+
+        /// <summary>
+        /// Hard-land stain. Dim until 0.56 s, then solid until 1.10 s.
+        /// Independent of LandLife, RollLife, and the dust puff.
+        /// </summary>
+        public static float StainOpacity(float age)
+        {
+            if (age < 0f || age >= StainEnd) return 0f;
+            if (age < StainHold) return StainDim;
+            return StainSolid;
         }
 
         public static float RimAlpha(float remaining, float duration, float time, bool steady)
@@ -280,6 +306,14 @@ namespace Tag.FX
             FxKitOptions.Reset();
             if (!kept) return false;
             if (FxKitOptions.Label(FxKitOptions.TagFlash).IndexOf("On", StringComparison.Ordinal) < 0) return false;
+            if (Math.Abs(RibbonLane(1) - 0.08f) > 0.0001f) return false;
+            if (Math.Abs(RibbonLane(3) - 0.24f) > 0.0001f) return false;
+            if (Math.Abs(RibbonFlashDuck - 0.45f) > 0.0001f) return false;
+            if (Math.Abs(StainOpacity(0.10f) - StainDim) > 0.0001f) return false;
+            if (Math.Abs(StainOpacity(StainHold) - StainSolid) > 0.0001f) return false;
+            if (StainOpacity(StainEnd) != 0f) return false;
+            if (Math.Abs(LandLife - 0.42f) > 0.0001f) return false;
+            if (Math.Abs(RollLife - LandingRollPose.Seconds) > 0.0001f) return false;
             return true;
         }
     }

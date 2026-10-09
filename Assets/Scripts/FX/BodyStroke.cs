@@ -9,7 +9,9 @@ namespace Tag.FX
     /// in this camera only. 2 px on a 360-tall pane, 3 px on a 540-tall pane.
     /// The dark outline is alpha 0.90. Off until bodyStroke is on.
     /// Not one of the 21 rows, and not one of the seven FX-kit toggles.
+    /// Runs after the kit so a shell that hides this frame yields the stroke the same frame.
     /// </summary>
+    [DefaultExecutionOrder(160)]
     public sealed class BodyStroke : MonoBehaviour
     {
         public const int Bodies = 8;
@@ -22,7 +24,14 @@ namespace Tag.FX
         public static readonly Camera[] Cam = new Camera[Bodies];
         public static readonly Transform[] Body = new Transform[Bodies];
         public static readonly int[] Seat = new int[Bodies];
+        public static readonly bool[] Shell = new bool[Bodies];
         public static int Count;
+
+        public static void NoteShell(int seat, bool up)
+        {
+            if (seat < 0 || seat >= Bodies) return;
+            Shell[seat] = up;
+        }
 
         const int Quads = 8;
         const int Verts = Strokes * Quads * 4;
@@ -130,6 +139,9 @@ namespace Tag.FX
                 {
                     if (o == c || Body[o] == null) continue;
                     if (!Covered(cam, owner, Body[o], out float x0, out float y0, out float x1, out float y1))
+                        continue;
+                    int otherSeat = Seat[o];
+                    if (settings.StrokeYield && otherSeat >= 0 && otherSeat < Bodies && Shell[otherSeat])
                         continue;
                     if (n >= Strokes) break;
                     Paint(_pane[pane], n, cam, x0, y0, x1, y1, Seat[o]);

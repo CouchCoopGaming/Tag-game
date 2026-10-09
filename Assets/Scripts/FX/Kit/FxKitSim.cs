@@ -56,6 +56,11 @@ namespace Tag.FX
         int _landSurf;
         Vector3 _landPos;
 
+        float _stainAge = -1f;
+        bool _stainRoll;
+        Vector3 _stainPos;
+        Vector3 _stainDir;
+
         float _sparkAge = -1f;
         float _launchAge = -1f;
         float _starAge = -1f;
@@ -98,6 +103,8 @@ namespace Tag.FX
         LineRenderer[] _air;
         Renderer _disc;
         Transform _discT;
+        Renderer _stain;
+        Transform _stainT;
 
         Camera _cam;
         Renderer[] _bars;
@@ -155,6 +162,9 @@ namespace Tag.FX
             _discT = MakeQuad(root, "FxDisc", _sprite, out _disc);
             _discT.localRotation = Quaternion.Euler(90f, 0f, 0f);
             _disc.enabled = false;
+            _stainT = MakeQuad(root, "FxLandStain", _sprite, out _stain);
+            _stainT.localRotation = Quaternion.Euler(90f, 0f, 0f);
+            _stain.enabled = false;
             if (It != null) _prevTags = It.TagsLanded;
         }
 
@@ -191,6 +201,7 @@ namespace Tag.FX
             if (!FxKitLook.Master(settings))
             {
                 WallRibbon.End(_seat);
+                WallRibbon.Duck(_seat, 1f);
                 WallRibbon.Tick(dt);
                 PaneStreaks.Hide(_cam);
                 InkCard.Allow(false);
@@ -210,6 +221,7 @@ namespace Tag.FX
             TickLaunch(dt, settings, density);
             TickWall(dt, settings, density);
             TickFlash(dt, settings);
+            ApplyRibbonDuck(settings);
             TickAir(dt, settings);
             WallRibbon.Tick(dt);
             bool calm = settings != null && settings.AnyReduceFlash();
@@ -236,10 +248,14 @@ namespace Tag.FX
 
         void TickLand(float dt, GameSettings settings, float density, bool grounded)
         {
-            if (grounded && !_prevGround && FxKitLook.Bursts(settings, FxKitOptions.Land))
+            if (grounded && !_prevGround)
             {
                 float impact = Motor.LastLandImpactSpeed;
-                if (FxKitLook.Hard(impact))
+                if (settings != null && settings.LandStain
+                    && FxKitLook.Hard(impact)
+                    && _groundSurf == (int)DustLook.Surface.Concrete)
+                    BeginStain(impact);
+                if (FxKitLook.Bursts(settings, FxKitOptions.Land) && FxKitLook.Hard(impact))
                 {
                     _landAge = 0.0001f;
                     _landRoll = FxKitLook.IsRoll(impact, Motor.HorizSpeed);
@@ -251,6 +267,7 @@ namespace Tag.FX
                     SpawnDust(n, _landPos, _landScale, _landRoll ? 1.6f : 1.1f);
                 }
             }
+            StepStain(dt, settings);
             if (_landAge < 0f)
             {
                 if (_shock != null) _shock.enabled = false;
@@ -372,6 +389,8 @@ namespace Tag.FX
             float a = 0f;
             if (show)
                 a = FxKitLook.RimAlpha(left, FxKitLook.ImmunitySeconds, Time.time, FxKitLook.SteadyGlow(settings));
+            bool shellUp = show && a >= 0.02f && _shell != null;
+            BodyStroke.NoteShell(_seat, shellUp);
             if (_shell == null) return;
             for (int i = 0; i < _shell.Length; i++)
             {
@@ -583,6 +602,53 @@ namespace Tag.FX
             PlaceBar(1, new Vector3(halfW - thickW * 0.5f, 0f, near), new Vector3(thickW, halfH * 2f, 1f), 1f, a);
             PlaceBar(2, new Vector3(0f, -halfH + thickH * 0.5f, near), new Vector3(halfW * 2f, thickH, 1f), 2f, a);
             PlaceBar(3, new Vector3(0f, halfH - thickH * 0.5f, near), new Vector3(halfW * 2f, thickH, 1f), 3f, a);
+        }
+
+        void ApplyRibbonDuck(GameSettings settings)
+        {
+            bool live = settings != null && settings.RibbonLane
+                && _bars != null
+                && _flashAge >= 0f
+                && _flashAge < FxKitLook.FlashSeconds;
+            WallRibbon.Duck(_seat, live ? WallRibbon.FlashDuck : 1f);
+        }
+
+        void BeginStain(float impact)
+        {
+            _stainAge = 0.0001f;
+            _stainRoll = FxKitLook.IsRoll(impact, Motor.HorizSpeed);
+            _stainPos = _root.position;
+            Vector3 along = Motor.Velocity;
+            along.y = 0f;
+            if (along.sqrMagnitude < 0.0001f) along = _root.forward;
+            if (along.sqrMagnitude < 0.0001f) along = Vector3.forward;
+            _stainDir = along.normalized;
+        }
+
+        void StepStain(float dt, GameSettings settings)
+        {
+            if (_stain == null) return;
+            if (_stainAge < 0f || settings == null || !settings.LandStain)
+            {
+                _stainAge = -1f;
+                _stain.enabled = false;
+                return;
+            }
+            _stainAge += dt;
+            float op = FxKitLook.StainOpacity(_stainAge);
+            if (op <= 0f)
+            {
+                _stainAge = -1f;
+                _stain.enabled = false;
+                return;
+            }
+            _stain.enabled = true;
+            float yaw = Mathf.Atan2(_stainDir.x, _stainDir.z) * Mathf.Rad2Deg;
+            _stainT.position = _stainPos + Vector3.up * 0.02f;
+            _stainT.rotation = Quaternion.Euler(90f, yaw, 0f);
+            float len = _stainRoll ? FxKitLook.StainRollLength : FxKitLook.StainPlantLength;
+            _stainT.localScale = new Vector3(FxKitLook.StainWidth, len, 1f);
+            Paint(_stain, 0.45f, 0.44f, 0.42f, op, 0f, 0f, -1f);
         }
 
         void PlaceBar(int i, Vector3 local, Vector3 scale, float edge, float a)
@@ -1006,6 +1072,10 @@ namespace Tag.FX
         void HideActive()
         {
             _landAge = -1f;
+            _stainAge = -1f;
+            if (_stain != null) _stain.enabled = false;
+            BodyStroke.NoteShell(_seat, false);
+            WallRibbon.Duck(_seat, 1f);
             _sparkAge = -1f;
             _launchAge = -1f;
             _starAge = -1f;

@@ -63,6 +63,9 @@ namespace Tag.Settings
             Line(text, "bodyStroke", s.BodyStroke ? 1f : 0f);
             Line(text, "seatInk", s.SeatInk ? 1f : 0f);
             Line(text, "oneWord", s.OneWord ? 1f : 0f);
+            Line(text, "ribbonLane", s.RibbonLane ? 1f : 0f);
+            Line(text, "strokeYield", s.StrokeYield ? 1f : 0f);
+            Line(text, "landStain", s.LandStain ? 1f : 0f);
             Line(text, "effects", s.Effects);
             for (int i = 0; i < (int)PlayAction.Count; i++)
             {
@@ -250,6 +253,9 @@ namespace Tag.Settings
             else if (key == "bodyStroke") settings.BodyStroke = Flag(value);
             else if (key == "seatInk") settings.SeatInk = Flag(value);
             else if (key == "oneWord") settings.OneWord = Flag(value);
+            else if (key == "ribbonLane") settings.RibbonLane = Flag(value);
+            else if (key == "strokeYield") settings.StrokeYield = Flag(value);
+            else if (key == "landStain") settings.LandStain = Flag(value);
             else if (key == "effects") settings.Effects = (int)Num(value, settings.Effects);
             else if (key.StartsWith("kb.", StringComparison.Ordinal))
                 Assign(binds, key.Substring(3), value, true);

@@ -19,6 +19,10 @@ namespace Tag.FX
         public const float Width = 0.40f;
         public const float Life = 0.40f;
         public const float MinStep = 0.22f;
+        /// <summary>Seat 0 stays on the contact. Each next seat steps 0.08 m up the wall.</summary>
+        public const float LaneStep = FxKitLook.RibbonLaneStep;
+        /// <summary>Tag-frame duck. The other seats on the face keep their own fade.</summary>
+        public const float FlashDuck = FxKitLook.RibbonFlashDuck;
 
         struct Strip
         {
@@ -40,6 +44,7 @@ namespace Tag.FX
         Renderer[] _rend;
         Vector3[][] _verts;
         Vector2[] _uv;
+        float[] _duck;
 
         public static void Ensure()
         {
@@ -74,6 +79,15 @@ namespace Tag.FX
             _host.Advance(dt);
         }
 
+        public static void Duck(int seat, float mul)
+        {
+            if (_host == null || _host._duck == null) return;
+            if (seat < 0 || seat >= Players) return;
+            if (mul < 0f) mul = 0f;
+            if (mul > 1f) mul = 1f;
+            _host._duck[seat] = mul;
+        }
+
         void Awake()
         {
             _host = this;
@@ -83,6 +97,7 @@ namespace Tag.FX
             _rend = new Renderer[Players];
             _verts = new Vector3[Players][];
             _uv = new Vector2[Segments * 4];
+            _duck = new float[Players];
             Shader shader = Shader.Find("Tag/FxRibbon");
             if (shader == null) shader = Shader.Find("Universal Render Pipeline/Unlit");
             int[] tris = new int[Segments * 6];
@@ -105,6 +120,7 @@ namespace Tag.FX
             {
                 _strip[i].Points = new Vector3[Segments + 1];
                 _strip[i].Age = -1f;
+                _duck[i] = 1f;
                 _verts[i] = new Vector3[Segments * 4];
                 var mesh = new Mesh();
                 mesh.name = "WallRibbon";
@@ -185,6 +201,8 @@ namespace Tag.FX
             if (dt > 0.05f) dt = 0.05f;
             for (int i = 0; i < Players; i++)
             {
+                if (_mat[i] != null && _mat[i].HasProperty("_Duck"))
+                    _mat[i].SetFloat("_Duck", _duck[i]);
                 Strip strip = _strip[i];
                 if (strip.Live || strip.Age < 0f) continue;
                 strip.Age += dt;
@@ -227,12 +245,19 @@ namespace Tag.FX
                 if (up.sqrMagnitude < 0.0001f) up = Vector3.up;
                 else up.Normalize();
                 Vector3 lift = n * 0.04f;
+                Vector3 lane = Vector3.zero;
+                if (Tag.Settings.GameSettings.Current != null && Tag.Settings.GameSettings.Current.RibbonLane)
+                {
+                    Vector3 wallUp = Vector3.up - n * Vector3.Dot(Vector3.up, n);
+                    if (wallUp.sqrMagnitude > 0.0001f)
+                        lane = wallUp.normalized * (seat * LaneStep);
+                }
                 float half = Width * 0.5f;
                 int v = q * 4;
-                verts[v] = a + up * half + lift;
-                verts[v + 1] = a - up * half + lift;
-                verts[v + 2] = b - up * half + lift;
-                verts[v + 3] = b + up * half + lift;
+                verts[v] = a + up * half + lift + lane;
+                verts[v + 1] = a - up * half + lift + lane;
+                verts[v + 2] = b - up * half + lift + lane;
+                verts[v + 3] = b + up * half + lift + lane;
                 q++;
             }
             for (int s = q; s < Segments; s++)
