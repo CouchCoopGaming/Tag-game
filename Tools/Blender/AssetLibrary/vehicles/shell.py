@@ -908,15 +908,21 @@ def build_sedan(g, spec, lod):
 
 
 def add_sedan_colliders(asset, spec):
-    z0, z1 = spec["z0"], spec["z1"]
     r = spec["tire_r"]
-    x = spec["tire_x"] + spec["tire_half_w"] * 0.12
+    # The contact patch is y = 0. A box centered on the axle leaves its bottom
+    # about 0.17 m above the rubber. This slab sits in the carcass, 1 cm above
+    # the patch, inside the 3 cm slack limit.
+    bottom = 0.01
+    height = 0.036
+    depth = round(min(0.09, r * 0.26), 5)
+    y = round(bottom + height * 0.5, 5)
     for i, z in enumerate(spec["axles"]):
         for j, sign in enumerate((-1.0, 1.0)):
-            # Tread cars keep the slab deeper inside the carcass. The corner of a
-            # 0.96 box still fits, but a smaller one survives a ray that grazes the bead.
-            yz = r * (0.80 if spec.get("tread") else 0.96)
-            asset.box("Col_Wheel_%d%d" % (i, j), (sign * x, spec["axle_y"], z), (0.016, yz, yz))
+            asset.box(
+                "Col_Wheel_%d%d" % (i, j),
+                (sign * spec["tire_x"], y, z),
+                (spec["tire_half_w"] * 0.50, height, depth),
+            )
     cabin_z = (spec["doors"][0][1] + spec["doors"][1][0]) * 0.5
     asset.box("Col_Cabin", (0.0, 0.55, cabin_z), (spec["width"] * 0.62, 0.46, spec["wheelbase"] * 0.42))
     asset.box("Col_Roof", (0.0, spec["height"] - 0.09, spec["roof_z"]), (spec["width"] * 0.36, 0.036, spec["roof_len"]))

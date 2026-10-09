@@ -1,15 +1,16 @@
 """Midsize sedan, hard panel body.
 
-The shell is a closed panel cage. Spans are straight between the rocker,
-shoulder, belt, glass, and crown. There is no subdivision pass. The body
+The shell is a three-box sedan. The hood is a flat panel with one shoulder
+break. The windshield is a single glass sheet. A, B, and C pillars break
+the side glass into front and rear door windows. The roof ends in a
+backlight and a flat trunk deck. There is no subdivision pass. The body
 stays inside a 1.76 m shoulder so the door mirrors finish under the 1.90 m
-cap. The hood leading edge sits near 0.75 m and rises to about 1.00 m at
-the cowl. The deck is a short fastback above the hood, and the sail behind
-the rear door is dark glass.
+cap. The roof is 1.44 m, about chest height on the 1.8 m figure.
 
 Proportions follow a published midsize exterior table, in metres: length
 4.90, height 1.44, wheelbase 2.82, track 1.60, ground clearance 0.14.
-No badges. Daylight lamps are clear lenses over a dark housing, emission 0.
+No badges. Daylight lamps are flat clear lenses over a dark housing,
+emission 0.
 """
 
 import math
@@ -106,22 +107,26 @@ def _smooth01(t):
 
 
 def _top_y(z):
-    """Centerline. Leading edge 0.75, cowl 1.00, roof 1.44, short deck above the hood."""
+    """Centerline. Knots sit on the loft stations so the mesh chord matches."""
     return _lerp((
-        (-2.45, 1.02),
-        (-2.15, 1.05),
-        (-1.70, 1.08),
-        (-1.25, 1.12),
-        (-0.90, 1.20),
-        (-0.55, 1.34),
-        (-0.20, 1.43),
-        (0.16, 1.44),
-        (0.45, 1.30),
-        (1.05, 1.00),
-        (1.35, 0.97),
-        (1.75, 0.90),
-        (2.10, 0.82),
-        (2.45, 0.75),
+        (-2.450, 1.080),
+        (-2.180, 1.085),
+        (-1.860, 1.090),
+        (-1.500, 1.100),
+        (-1.180, 1.100),
+        (-0.960, 1.260),
+        (-0.720, 1.420),
+        (-0.500, 1.440),
+        (0.300, 1.440),
+        (0.440, 1.340),
+        (0.640, 1.180),
+        (0.860, 1.050),
+        (1.060, 1.000),
+        (1.260, 0.970),
+        (1.490, 0.920),
+        (1.820, 0.860),
+        (2.180, 0.780),
+        (2.450, 0.760),
     ), z)
 
 
@@ -140,54 +145,57 @@ def _plan_x(z):
 
 
 def _shoulder_y(z):
+    """Character line. On the hood it sits just under the crown so the panel is flat."""
     return _lerp((
-        (-2.45, 0.58),
-        (-1.70, 0.72),
-        (-0.80, 0.84),
-        (0.20, 0.82),
-        (1.10, 0.74),
-        (1.70, 0.62),
-        (2.45, 0.50),
+        (-2.45, 0.70),
+        (-1.70, 0.78),
+        (-1.15, 0.84),
+        (-0.40, 0.90),
+        (0.50, 0.90),
+        (1.05, 0.86),
+        (1.45, 0.82),
+        (1.90, 0.76),
+        (2.45, 0.70),
     ), z)
 
 
 def _belt_y(z):
-    """Drops through the quarter so the sail behind the rear door is a window."""
+    """Window sill. Holds through both doors, then drops onto the deck."""
     return _lerp((
-        (-2.20, 0.98),
-        (-1.45, 0.90),
-        (-0.90, 0.94),
-        (-0.40, 1.00),
-        (0.30, 0.98),
-        (0.90, 0.97),
-        (1.40, 0.92),
-        (2.45, 0.72),
+        (-2.30, 0.82),
+        (-1.40, 0.96),
+        (-0.90, 1.02),
+        (0.60, 1.02),
+        (1.00, 0.98),
+        (1.40, 0.90),
+        (2.45, 0.74),
     ), z)
 
 
 def _rail_y(z):
     return _lerp((
-        (-2.00, 1.02),
-        (-1.40, 1.10),
-        (-0.90, 1.20),
-        (-0.55, 1.30),
-        (0.00, 1.36),
-        (0.55, 1.26),
+        (-2.10, 0.92),
+        (-1.35, 1.08),
+        (-1.05, 1.24),
+        (-0.78, 1.38),
+        (0.30, 1.40),
+        (0.50, 1.32),
+        (0.75, 1.16),
         (1.05, 1.02),
-        (2.45, 0.74),
+        (2.45, 0.76),
     ), z)
 
 
 def _rail_x(z):
-    """Roof rail half-width. Cabin keys near 0.58 so the subdivided roof is about 1.25 m."""
+    """Roof rail half-width. Cabin keys near 0.64 so the roof is about 1.28 m."""
     return _lerp((
-        (-2.20, 0.50),
-        (-1.15, 0.54),
-        (-0.20, 0.58),
-        (0.45, 0.58),
-        (0.95, 0.46),
-        (1.50, 0.38),
-        (2.45, 0.42),
+        (-2.20, 0.55),
+        (-1.20, 0.58),
+        (-0.40, 0.64),
+        (0.35, 0.64),
+        (0.70, 0.52),
+        (1.10, 0.42),
+        (2.45, 0.46),
     ), z)
 
 
@@ -231,8 +239,8 @@ def _blend_out(z, z_body, z_end):
 
 
 def _hood_blend(z):
-    """0 on the greenhouse, including the quarter, 1 on the hood and the deck."""
-    return max(_blend_out(z, 1.00, 1.55), _blend_out(z, -1.48, -1.92))
+    """1 on the hood and the trunk deck. 0 on the windshield, roof, and backlight."""
+    return max(_blend_out(z, 1.15, 1.42), _blend_out(z, -1.20, -1.46))
 
 
 def _sagitta(x, pull, at_x=0.90):
@@ -246,7 +254,10 @@ def _end_pull(z, x, y):
     """Plan sweep plus fascia rake. Centerline belly stays on the length tips."""
     if z >= 1.55:
         t = _smooth01((z - 1.55) / (Z_NOSE - 1.55))
-        sag = _sagitta(x, NOSE_PULL)
+        # The bumper keeps the plan sweep. The lamp band and hood nose go flat.
+        high = _smooth01((y - 0.58) / 0.08)
+        pull = max(0.04, NOSE_PULL * (1.0 - 0.86 * high))
+        sag = _sagitta(x, pull)
         rake = math.tan(FASCIA_RAKE) * max(0.0, y - 0.20)
         return z - (sag + rake) * t
     if z <= -1.70:
@@ -288,20 +299,24 @@ def _features(z):
     plan = _plan_x(z)
     top = _top_y(z)
     hood = _hood_blend(z)
-    sy = min(_shoulder_y(z), top - 0.08)
+    sy = _shoulder_y(z)
     by = _belt_y(z)
     ry = _rail_y(z)
-    if hood > 0.55:
-        by = top - 0.040
-        ry = top - 0.014
-        sy = min(sy, by - 0.06)
+    rx = _rail_x(z)
+    if hood > 0.45:
+        # Flat panel. The shoulder is the one break, a few centimetres under the crown.
+        sy = min(max(sy, top - 0.055), top - 0.030)
+        by = top - 0.012
+        ry = top - 0.006
+        rx = min(plan - 0.04, max(rx, plan * 0.55))
     else:
-        by = min(max(by, sy + 0.05), top - 0.08)
-        ry = min(max(ry, by + 0.06), top - 0.016)
+        by = min(max(by, sy + 0.06), top - 0.10)
+        ry = min(max(ry, by + 0.10), top - 0.012)
+        sy = min(sy, by - 0.04)
     sy = min(sy, by - 0.012)
-    by = min(by, ry - 0.008)
-    ry = min(ry, top - 0.008)
-    rx = min(_rail_x(z), plan - 0.05)
+    by = min(by, ry - 0.006)
+    ry = min(ry, top - 0.004)
+    rx = min(rx, plan - 0.05)
     return plan, top, sy, by, ry, rx, _arch_t(z), hood
 
 
@@ -332,36 +347,52 @@ def _poly(points, segments):
 
 def _section(z):
     """Closed ring. Same count, same start, same winding, even within each span."""
-    plan, top, sy, by, ry, rx, t_arch, _hood = _features(z)
+    plan, top, sy, by, ry, rx, t_arch, hood = _features(z)
     rocker_x = plan - 0.018
     if t_arch > 0.02:
         rocker_x = (plan - 0.018) * (1.0 - t_arch) + 0.66 * t_arch
     rocker = (rocker_x, min(0.24, sy - 0.08))
     shoulder = (plan, sy)
-    belt_x = min(plan - 0.012, max(rx + 0.04, plan - 0.03))
-    rail = (min(rx, belt_x - 0.02), ry)
-    keys = [
-        (0.0, BELLY),
-        (rocker_x * 0.72, BELLY + 0.010),
-        rocker,
-        ((rocker_x + plan) * 0.5, (rocker[1] + sy) * 0.5),
-        shoulder,
-        (belt_x, by),
-        rail,
-        (rail[0] * 0.45, (ry + top) * 0.5),
-        (0.0, top),
-    ]
+    if hood > 0.55:
+        # Straight side, one shoulder corner, then a level hood.
+        keys = [
+            (0.0, BELLY),
+            (rocker_x * 0.62, BELLY + 0.008),
+            rocker,
+            (plan - 0.004, rocker[1] * 0.45 + sy * 0.55),
+            shoulder,
+            (plan - 0.020, top - 0.008),
+            (plan * 0.55, top - 0.002),
+            (plan * 0.22, top - 0.001),
+            (0.0, top),
+        ]
+        eps_y = 0.0015
+    else:
+        belt_x = min(plan - 0.008, max(rx + 0.08, plan - 0.02))
+        rail = (min(rx, belt_x - 0.04), ry)
+        keys = [
+            (0.0, BELLY),
+            (rocker_x * 0.62, BELLY + 0.008),
+            rocker,
+            (plan - 0.006, rocker[1] * 0.35 + sy * 0.65),
+            shoulder,
+            (belt_x, by),
+            rail,
+            (rail[0] * 0.55, min(top - 0.012, ry + 0.015)),
+            (0.0, top),
+        ]
+        eps_y = 0.006
     fixed = [keys[0]]
     for x, y in keys[1:]:
         px, py = fixed[-1]
-        y = max(y, py + 0.006)
+        y = max(y, py + eps_y)
         # Lower body x only increases. Upper body x only decreases.
         if len(fixed) < 5:
             x = max(x, px + 0.004)
         else:
             x = min(x, px - 0.004)
         fixed.append((max(0.0, x), y))
-    fixed[-1] = (0.0, max(top, fixed[-2][1] + 0.006))
+    fixed[-1] = (0.0, max(top, fixed[-2][1] + eps_y))
     parts = (
         _poly(fixed[0:3], RING_FLARE),
         _poly(fixed[2:5], RING_SIDE),
@@ -386,27 +417,28 @@ def _section(z):
 
 
 def _station_zs():
-    """Measured stations. Arch samples are few so level-2 LOD0 stays under 15k."""
+    """Hood, windshield, two doors, backlight, and deck. One extra station on the glass."""
     zs = [
         2.450,
-        2.160,
-        1.800,
+        2.180,
+        1.820,
         1.490,
-        1.310,
-        1.080,
-        0.990,
-        0.450,
-        0.160,
-        -0.180,
-        0.100,
-        0.020,
-        -0.420,
-        -0.730,
-        -0.810,
-        -1.100,
-        -1.330,
-        -1.700,
-        -2.160,
+        1.260,
+        1.060,
+        0.860,
+        0.640,
+        0.440,
+        0.300,
+        0.060,
+        -0.100,
+        -0.280,
+        -0.500,
+        -0.720,
+        -0.960,
+        -1.180,
+        -1.500,
+        -1.860,
+        -2.180,
         -2.450,
     ]
     ordered = []
@@ -418,39 +450,41 @@ def _station_zs():
 
 
 def _shut_station(z):
-    for shut in (2.160, 1.080, 0.990, 0.100, 0.020, -0.730, -0.810, -1.700, -2.160):
+    for shut in (2.180, 1.060, 0.300, -0.100, -0.280, -0.720, -1.180, -2.180):
         if abs(z - shut) < 0.012:
             return True
     return False
 
 
 def _paint_at(x, y, z):
-    """Glass by where the face sits. The sail behind the rear door is dark glass."""
+    """One-piece windshield and backlight. Side glass sits between the pillars."""
     ax = abs(x)
     hood = _hood_blend(z)
-    _plan, top, _sy, belt, rail, _rx, _arch, _hood_b = _features(z)
-    # Quarter: C-pillar back to where the fastback meets the deck.
-    if -1.58 <= z <= -0.78 and 0.22 < ax and hood < 0.50 and top > belt + 0.06:
-        hi = min(rail + 0.02, top - 0.01)
-        if belt - 0.02 <= y <= hi:
-            if -0.810 <= z <= -0.748:
-                return MAT_BLACK
+    _plan, top, _sy, belt, rail, rx, _arch, _hood_b = _features(z)
+    # Windshield, centerline included. The outer band is the A-pillar.
+    if 0.40 <= z <= 1.02 and y >= 0.96 and hood < 0.25:
+        if ax <= max(0.50, rx + 0.02):
             return MAT_GLASS
-    if hood < 0.35 and ax > 0.36 and -1.50 <= z <= 1.02 and (rail - belt) > 0.045:
-        if belt + 0.008 <= y <= rail - 0.004:
-            if 0.020 <= z <= 0.100:
-                return MAT_BLACK
-            if -0.810 <= z <= -0.730:
-                return MAT_BLACK
-            if 0.990 <= z <= 1.080:
-                return MAT_BLACK
+        return MAT_PAINT
+    # Backlight. Outboard of the glass is the C-pillar and the deck sail.
+    if -1.18 <= z <= -0.72 and y >= 1.06 and hood < 0.35:
+        if ax <= max(0.46, rx - 0.02):
             return MAT_GLASS
-        if abs(y - belt) <= 0.012 and -1.15 <= z <= 1.05:
+        return MAT_PAINT
+    # Door glass between the belt and the rail.
+    if hood < 0.20 and ax > 0.40 and -0.95 <= z <= 0.92 and (rail - belt) > 0.08:
+        hi = min(rail - 0.008, top - 0.03)
+        if belt + 0.01 <= y <= hi:
+            # B-pillar is body color so it reads between the two door windows.
+            if -0.26 <= z <= -0.08:
+                return MAT_PAINT
+            if z >= 0.50:
+                return MAT_PAINT
+            if z <= -0.68:
+                return MAT_PAINT
+            return MAT_GLASS
+        if abs(y - belt) <= 0.012 and -0.70 <= z <= 0.30:
             return MAT_BLACK
-    if hood < 0.25 and ax < 0.55 and 0.35 < z < 1.12 and y >= rail - 0.04 and y <= top - 0.008 and top > 1.02:
-        return MAT_GLASS
-    if hood < 0.40 and ax < 0.62 and -1.55 < z < -0.50 and y >= belt - 0.01 and y <= top - 0.004 and top > 1.02:
-        return MAT_GLASS
     return MAT_PAINT
 
 
@@ -922,67 +956,53 @@ def _ribbon(g, seats, heights, gap, thick, mat, name):
     _track(g, name, "lamp", center, size, tuple(mounts[::step]))
 
 
-def _headlamp_paths(kind):
-    """Inner (x, y, height) to outer. Outer end is higher and wraps the fender."""
+def _rect_rows(x0, x1, y0, y1, rows, cols):
+    out = []
+    for r in range(rows):
+        v = 0.5 if rows <= 1 else r / (rows - 1)
+        y = y0 + (y1 - y0) * v
+        row = []
+        for c in range(cols):
+            u = 0.5 if cols <= 1 else c / (cols - 1)
+            row.append((x0 + (x1 - x0) * u, y))
+        out.append(row)
+    return out
+
+
+def _headlamp_rects(kind):
+    """Flat plates under the hood line. Inner edge stays clear of the grille."""
     if kind == "thin":
-        return [((0.36, 0.58, 0.12), (0.74, 0.64, 0.11), 0.35)]
+        return [(0.34, 0.78, 0.62, 0.72)]
     if kind == "tier":
-        return [
-            ((0.34, 0.64, 0.11), (0.78, 0.72, 0.10), 0.55),
-            ((0.36, 0.48, 0.10), (0.74, 0.54, 0.10), 0.40),
-        ]
+        return [(0.32, 0.76, 0.66, 0.74), (0.36, 0.74, 0.54, 0.62)]
     if kind == "swept":
-        # Stay on the fascia. A hard corner folds the ribbon if it wraps past it.
-        return [((0.30, 0.52, 0.14), (0.68, 0.62, 0.12), 0.20)]
-    return [((0.32, 0.56, 0.14), (0.78, 0.64, 0.13), 0.55)]
+        return [(0.30, 0.80, 0.58, 0.74)]
+    return [(0.32, 0.76, 0.58, 0.72)]
 
 
-def _sample_path(path, count):
-    (x0, y0, h0), (x1, y1, h1), wrap = path
-    pts = []
-    for i in range(count):
-        t = i / (count - 1)
-        s = _smooth01(t)
-        pts.append((
-            x0 + (x1 - x0) * s,
-            y0 + (y1 - y0) * s,
-            h0 + (h1 - h0) * s,
-            wrap * s,
-        ))
-    return pts
+def _stacked_plate(g, bvh, hit_fn, rows, back, front, name, kind):
+    _grid_shell(g, bvh, rows, 0.003, back, name + "_housing", kind, hit_fn=hit_fn, gap=0.0015)
+    _grid_shell(g, bvh, rows, 0.003, front, name, kind, hit_fn=hit_fn, gap=0.0050)
 
 
 def _lamps_front(g, info, bvh, lod):
-    count = 7 if lod == 0 else (5 if lod == 1 else 3)
-    for path in _headlamp_paths(info["lamps"]):
-        samples = _sample_path(path, count)
+    del lod
+    for x0, x1, y0, y1 in _headlamp_rects(info["lamps"]):
         for sign in (-1.0, 1.0):
-            seats = []
-            height = samples[0][2]
-            for x, y, h, wrap in samples:
-                seat = _lamp_seat(bvh, sign * x, y, wrap)
-                if seat is None:
-                    print("LAMP_MISS", "head", round(sign * x, 3), round(y, 3))
-                    seats = []
-                    break
-                seats.append(seat)
-                height = h
-            if not seats:
-                continue
-            heights = [h for _x, _y, h, _wrap in samples]
-            _ribbon(g, seats, [h + 0.012 for h in heights], 0.0015, 0.003, HOUSING, "head_housing")
-            _ribbon(g, seats, heights, 0.0042, 0.003, LENS, "headlamp")
+            rows = _rect_rows(sign * x0, sign * x1, y0, y1, 2, 2)
+            _stacked_plate(g, bvh, _hit_front, rows, HOUSING, LENS, "headlamp", "lamp")
 
 
-def _grid_shell(g, bvh, samples, thick, mat, name, kind):
-    """samples[row][col] = (x, y) design points. One closed shell on the fascia."""
+def _grid_shell(g, bvh, samples, thick, mat, name, kind, hit_fn=None, gap=0.0015):
+    """samples[row][col] = (x, y) design points. One closed shell on the skin."""
+    hit_fn = hit_fn or _hit_front
     grid = []
     normals = []
     for row in samples:
         grow = []
         nrow = []
         for x, y in row:
-            hit = _hit_front(bvh, x, y)
+            hit = hit_fn(bvh, x, y)
             if hit is None:
                 print("LAMP_MISS", name, round(x, 3), round(y, 3))
                 return
@@ -1001,8 +1021,8 @@ def _grid_shell(g, bvh, samples, thick, mat, name, kind):
         for c in range(cols):
             p = Vector(grid[r][c])
             n = Vector(normals[r][c]).normalized()
-            bk.append(bm.verts.new(unity_to_blender(*(p + n * 0.0015))))
-            fr.append(bm.verts.new(unity_to_blender(*(p + n * (0.0015 + thick)))))
+            bk.append(bm.verts.new(unity_to_blender(*(p + n * gap))))
+            fr.append(bm.verts.new(unity_to_blender(*(p + n * (gap + thick)))))
         front.append(fr)
         back.append(bk)
 
@@ -1045,13 +1065,13 @@ def _trap_rows(y0, y1, x0, x1, rows, cols):
 
 
 def _grille(g, info, bvh, lod):
-    cols = 6 if lod == 0 else 4
+    # Between the lamps, on the flat part of the fascia.
     _grid_shell(
-        g, bvh, _trap_rows(0.44, 0.30, 0.26, 0.50, 3, cols),
+        g, bvh, _trap_rows(0.74, 0.56, 0.16, 0.26, 2, 2),
         0.004, BLACK, "grille_mouth", "grille",
     )
     count = max(3, info["bars"]) if lod < 2 else 2
-    y0, y1 = 0.32, 0.42
+    y0, y1 = 0.58, 0.72
     span = (y1 - y0)
     step = span / count
     bar = min(info["bar_h"], step * 0.45)
@@ -1059,8 +1079,8 @@ def _grille(g, info, bvh, lod):
         cy = y0 + step * (i + 0.5)
         _grid_shell(
             g, bvh,
-            [[(-0.22, cy - bar * 0.5), (0.0, cy - bar * 0.5), (0.22, cy - bar * 0.5)],
-             [(-0.22, cy + bar * 0.5), (0.0, cy + bar * 0.5), (0.22, cy + bar * 0.5)]],
+            [[(-0.18, cy - bar * 0.5), (0.0, cy - bar * 0.5), (0.18, cy - bar * 0.5)],
+             [(-0.18, cy + bar * 0.5), (0.0, cy + bar * 0.5), (0.18, cy + bar * 0.5)]],
             0.003, "Lib_Steel", "bar%d" % i, "grille",
         )
 
@@ -1093,48 +1113,21 @@ def _intake(g, info, bvh, lod):
             _ribbon(g, seats, [0.045, 0.045, 0.045], 0.004, 0.003, LENS, "fog")
 
 
+def _tail_rects(kind):
+    """Flat lenses on the deck face, under the trunk lid."""
+    if kind == "thin":
+        return [(0.20, 0.78, 0.82, 0.92)]
+    if kind == "wrap":
+        return [(0.16, 0.82, 0.74, 0.98)]
+    return [(0.22, 0.74, 0.76, 0.94)]
+
+
 def _lamps_rear(g, info, bvh, lod):
-    count = 6 if lod == 0 else (4 if lod == 1 else 3)
-    if info["tails"] == "thin":
-        path = ((0.24, 0.78, 0.09), (0.62, 0.84, 0.08), 0.25)
-    elif info["tails"] == "wrap":
-        path = ((0.22, 0.74, 0.12), (0.80, 0.86, 0.10), 0.70)
-    else:
-        path = ((0.24, 0.76, 0.11), (0.70, 0.84, 0.10), 0.35)
-    if lod == 2:
-        path = (path[0], path[1], 0.0)
-    samples = _sample_path(path, count)
-    for sign in (-1.0, 1.0):
-        seats = []
-        height = samples[0][2]
-        for x, y, h, wrap in samples:
-            rear = _hit_rear(bvh, sign * x, y)
-            side = None
-            if wrap > 0.2 and rear is not None:
-                side = _hit_side(bvh, sign * x, y, rear[0][2])
-                if side is not None and side[0][2] > -1.40:
-                    side = None
-                if side is not None and (Vector(rear[0]) - Vector(side[0])).length > 0.16:
-                    side = None
-            if rear is None and side is None:
-                print("LAMP_MISS", "tail", round(sign * x, 3), round(y, 3))
-                seats = []
-                break
-            if rear is None:
-                seats.append(side)
-            elif side is None:
-                seats.append(rear)
-            else:
-                t = wrap
-                pos = tuple(rear[0][i] * (1.0 - t) + side[0][i] * t for i in range(3))
-                nrm = (rear[1] * (1.0 - t) + side[1] * t).normalized()
-                seats.append((pos, _aim_out(pos, nrm)))
-            height = h
-        if not seats:
-            continue
-        heights = [h for _x, _y, h, _wrap in samples]
-        _ribbon(g, seats, [h + 0.01 for h in heights], 0.0015, 0.003, HOUSING, "tail_housing")
-        _ribbon(g, seats, heights, 0.0042, 0.003, TAIL_LENS, "tail")
+    del lod
+    for x0, x1, y0, y1 in _tail_rects(info["tails"]):
+        for sign in (-1.0, 1.0):
+            rows = _rect_rows(sign * x0, sign * x1, y0, y1, 2, 2)
+            _stacked_plate(g, bvh, _hit_rear, rows, HOUSING, TAIL_LENS, "tail", "lamp")
 
 
 def _skin_x(bvh, sign, y, z):
@@ -1173,7 +1166,7 @@ def _mirrors(g, info, bvh):
 
 
 def _handles(g, bvh):
-    for z in (0.42, -0.28):
+    for z in (0.18, -0.42):
         y = _belt_y(z) - 0.09
         for sign in (-1.0, 1.0):
             skin = _skin_x(bvh, sign, y, z)
@@ -1244,11 +1237,10 @@ def add_colliders(asset):
                 (0.014, 0.010, 0.010),
             )
     asset.box("Col_Cabin", (0.0, 0.78, -0.05), (0.42, 0.32, 0.62))
-    # Crown is a thin hard surface. A wide box at 1.40 m left the cabin through
-    # the sloping roof. This one stays inside and its top is 2 cm under 1.44 m.
+    # Flat roof. The box top stays 2 cm under 1.44 m and inside the rail.
     asset.box("Col_Roof", (0.0, 1.26, 0.05), (0.28, 0.32, 0.24))
-    asset.box("Col_Hood", (0.0, 0.84, 1.48), (0.40, 0.12, 0.36))
-    asset.box("Col_Deck", (0.0, 0.98, -1.55), (0.36, 0.10, 0.28))
+    asset.box("Col_Hood", (0.0, 0.78, 1.55), (0.36, 0.10, 0.40))
+    asset.box("Col_Deck", (0.0, 0.98, -1.72), (0.40, 0.08, 0.36))
     asset.box("Col_Nose", (0.0, 0.36, 1.55), (0.22, 0.12, 0.36))
 
 

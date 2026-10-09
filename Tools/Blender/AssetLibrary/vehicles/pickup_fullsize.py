@@ -80,6 +80,16 @@ def create():
     a.box("Col_Bed", (0, 0.55, -1.20), (1.20, 0.02, 1.60))
     a.box("Col_SideL", (-0.845, 0.98, -1.30), (0.02, 0.12, 1.70))
     a.box("Col_SideR", (0.845, 0.98, -1.30), (0.02, 0.12, 1.70))
+    # Cab ends at z = 1.28 and the front tires at z = 1.625. The nose sheet
+    # continues to about z = 2.50. These stay inside that skin, clear of the
+    # wheel wells (inner face x = 0.58, well ends near z = 1.97).
+    a.box("Col_Hood", (0, 0.66, 1.62), (0.84, 0.32, 0.84))
+    a.box("Col_Nose", (0, 0.43, 1.81), (0.84, 0.18, 1.22))
+    a.box("Col_FenderL", (-0.64, 0.46, 2.18), (0.28, 0.12, 0.36))
+    a.box("Col_FenderR", (0.64, 0.46, 2.18), (0.28, 0.12, 0.36))
+    # Bumper face is a separate skin past the loft cap. This slab sits in that
+    # cap only, so it does not share volume with the shell.
+    a.box("Col_Bumper", (0, 0.40, 2.488), (1.20, 0.08, 0.010))
     # The panel runs down to the bed. The old box stopped at y=0.73, leaving
     # 0.17 m of open air above the bed collider (top 0.56). Bottom is now 0.585,
     # a 2.5 cm gap, inside the sheet.
