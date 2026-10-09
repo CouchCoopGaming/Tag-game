@@ -26,8 +26,17 @@ def create():
     a.climbable = True
     a.climb_note = "The long walls are cling faces. Doors face +Z."
     a.vault_note = "No rail. The roof edge is at about 2.7 m."
-    for lod in (0, 1):
+    for lod in (0, 1, 2):
         g = a.begin(lod)
+        if lod == 2:
+            # Four walls and the roof. 60 tris, under 0.6× the 144-triangle LOD1.
+            _wall_box(g, -W * 0.5 + T * 0.5, 0.0, T, D)
+            _wall_box(g, W * 0.5 - T * 0.5, 0.0, T, D)
+            _wall_box(g, 0.0, -D * 0.5 + T * 0.5, W - 2.0 * T - 0.016, T)
+            _wall_box(g, 0.0, D * 0.5 - T * 0.5, W - 2.0 * T - 0.016, T)
+            g.box((0.0, WALL_H + 0.066, 0.0), (W + 0.24, 0.12, D + 0.24), "Lib_Concrete", uv_scale=0.4)
+            a.end()
+            continue
         _shell(g, lod)
         if lod < 2:
             _doors(g, lod)

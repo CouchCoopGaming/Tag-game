@@ -28,8 +28,19 @@ def create():
     a.climbable = True
     a.climb_note = "The concrete side walls are the cling faces. The steps are the way down."
     a.vault_note = "The parapet is about 1.08 m above the sidewalk."
-    for lod in (0, 1):
+    for lod in (0, 1, 2):
         g = a.begin(lod)
+        if lod == 2:
+            # Walls, four treads, and the canopy roof. 96 tris, under 0.6× the 180-triangle LOD1.
+            _walls(g)
+            for i in range(4):
+                src = int(round(i * 7 / 3.0))
+                y_top = -0.04 - src * 0.17
+                z_front = 1.85 - src * 0.36
+                g.box((0.0, y_top - 0.075, z_front - 0.16), (2.48, 0.14, 0.30), "Lib_Concrete", uv_scale=0.6)
+            g.box((0.0, 2.42, 2.35), (2.90, 0.10, 1.50), "Lib_Steel", uv_scale=0.4)
+            a.end()
+            continue
         _walls(g)
         _steps(g, lod)
         _canopy(g, lod)

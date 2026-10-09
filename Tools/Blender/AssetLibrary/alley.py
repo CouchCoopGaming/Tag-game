@@ -29,8 +29,16 @@ def create():
     a.climbable = True
     a.climb_note = "Both side walls and the back piers are cling faces. The floor is the ground."
     a.vault_note = "No rail. The coping is at 3.4 m."
-    for lod in (0, 1):
+    for lod in (0, 1, 2):
         g = a.begin(lod)
+        if lod == 2:
+            # Four boxes. 48 tris is under 0.6× the 132-triangle LOD1.
+            g.box((-WALL_X, WALL_H * 0.5, SIDE_Z), (WALL_T, WALL_H, SIDE_L), "Lib_Brick", uv_scale=0.8)
+            g.box((WALL_X, WALL_H * 0.5, SIDE_Z), (WALL_T, WALL_H, SIDE_L), "Lib_Brick", uv_scale=0.8)
+            g.box((0.0, WALL_H * 0.5, BACK_Z), (BACK_W, WALL_H, BACK_T), "Lib_Brick", uv_scale=0.8)
+            g.box((0.0, 0.025, 0.24), (2.24, 0.05, 7.04), "Lib_Asphalt", uv_scale=0.45)
+            a.end()
+            continue
         bev = lod_pick(lod, 0.004, 0.0, 0.0)
         _shell(g, bev)
         if lod < 2:

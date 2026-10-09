@@ -28,8 +28,14 @@ def create():
     )
     a.climb_note = "Flat concrete. The curb return on each wing is 0.15 m above the asphalt."
     a.vault_note = "Curb is 0.15 m above the road. Not a vault."
-    for lod in (0, 1):
+    for lod in (0, 1, 2):
         g = a.begin(lod)
+        if lod == 2:
+            # Apron wedge and pad. 24 tris, under 0.6× the 48-triangle LOD1.
+            _apron(g)
+            _pad(g)
+            a.end()
+            continue
         _wings(g, lod)
         _apron(g)
         _pad(g)

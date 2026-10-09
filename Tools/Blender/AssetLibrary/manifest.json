@@ -33127,6 +33127,16 @@
         ],
         "mesh": "LOD1",
         "fileID": -179393741545503174
+      },
+      {
+        "lod": 2,
+        "tris": 48,
+        "materials": [
+          "Lib_Brick",
+          "Lib_Asphalt"
+        ],
+        "mesh": "LOD2",
+        "fileID": 736115405485880582
       }
     ],
     "colliders": [
@@ -33273,7 +33283,8 @@
     "fbxNames": [
       "LODBoxS",
       "LOD0",
-      "LOD1"
+      "LOD1",
+      "LOD2"
     ],
     "slackCm": 0.0,
     "license": {
@@ -33326,6 +33337,16 @@
         ],
         "mesh": "LOD1",
         "fileID": -179393741545503174
+      },
+      {
+        "lod": 2,
+        "tris": 96,
+        "materials": [
+          "Lib_Concrete",
+          "Lib_Steel"
+        ],
+        "mesh": "LOD2",
+        "fileID": 736115405485880582
       }
     ],
     "colliders": [
@@ -33567,7 +33588,8 @@
     "fbxNames": [
       "LODBoxS",
       "LOD0",
-      "LOD1"
+      "LOD1",
+      "LOD2"
     ],
     "slackCm": 0.0,
     "license": {
@@ -33812,6 +33834,15 @@
         ],
         "mesh": "LOD1",
         "fileID": -179393741545503174
+      },
+      {
+        "lod": 2,
+        "tris": 24,
+        "materials": [
+          "Lib_Concrete"
+        ],
+        "mesh": "LOD2",
+        "fileID": 736115405485880582
       }
     ],
     "colliders": [
@@ -33958,7 +33989,8 @@
     "fbxNames": [
       "LODBoxS",
       "LOD0",
-      "LOD1"
+      "LOD1",
+      "LOD2"
     ],
     "slackCm": 0.0,
     "license": {
@@ -34010,6 +34042,15 @@
         ],
         "mesh": "LOD1",
         "fileID": -179393741545503174
+      },
+      {
+        "lod": 2,
+        "tris": 60,
+        "materials": [
+          "Lib_Concrete"
+        ],
+        "mesh": "LOD2",
+        "fileID": 736115405485880582
       }
     ],
     "colliders": [
@@ -34156,7 +34197,8 @@
     "fbxNames": [
       "LODBoxS",
       "LOD0",
-      "LOD1"
+      "LOD1",
+      "LOD2"
     ],
     "slackCm": 0.0,
     "license": {
@@ -34208,6 +34250,16 @@
         ],
         "mesh": "LOD1",
         "fileID": -179393741545503174
+      },
+      {
+        "lod": 2,
+        "tris": 108,
+        "materials": [
+          "Lib_Steel",
+          "Lib_SteelDark"
+        ],
+        "mesh": "LOD2",
+        "fileID": 736115405485880582
       }
     ],
     "colliders": [
@@ -34393,7 +34445,8 @@
     "fbxNames": [
       "LODBoxS",
       "LOD0",
-      "LOD1"
+      "LOD1",
+      "LOD2"
     ],
     "slackCm": 0.0,
     "license": {
@@ -34455,6 +34508,17 @@
         ],
         "mesh": "LOD1",
         "fileID": -179393741545503174
+      },
+      {
+        "lod": 2,
+        "tris": 72,
+        "materials": [
+          "Lib_PaintWhite",
+          "Lib_Concrete",
+          "Lib_PaintBlue"
+        ],
+        "mesh": "LOD2",
+        "fileID": 736115405485880582
       }
     ],
     "colliders": [
@@ -34622,7 +34686,8 @@
     "fbxNames": [
       "LODBoxS",
       "LOD0",
-      "LOD1"
+      "LOD1",
+      "LOD2"
     ],
     "slackCm": 0.0,
     "license": {

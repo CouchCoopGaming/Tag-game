@@ -19,8 +19,18 @@ def create():
     a.allow_below = True
     a.climb_note = "The hull side and the wheelhouse wall are cling faces. The foredeck is the standing surface."
     a.vault_note = "Rail is about 1.05 m above the deck."
-    for lod in (0, 1):
+    for lod in (0, 1, 2):
         g = a.begin(lod)
+        if lod == 2:
+            # Hull, bow, deck, and the wheelhouse. 72 tris, under 0.6× the 180-triangle LOD1.
+            g.box((0.0, -0.08, 0.40), (3.60, 1.26, 9.80), "Lib_PaintWhite", uv_scale=0.35)
+            _bow(g)
+            _deck(g)
+            g.box((0.0, 1.15, 3.55), (2.50, 0.90, 2.40), "Lib_PaintWhite", uv_scale=0.5)
+            g.box((0.0, 2.15, 3.55), (2.40, 1.00, 2.30), "Lib_PaintBlue", uv_scale=0.5)
+            g.box((0.0, 2.78, 3.55), (2.70, 0.10, 2.60), "Lib_PaintWhite", uv_scale=0.45)
+            a.end()
+            continue
         _hull(g)
         _deck(g)
         _cabin(g, lod)

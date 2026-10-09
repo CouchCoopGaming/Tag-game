@@ -24,11 +24,11 @@ When that branch next takes roads, copy `Road_Junction` from #122 or #125. Do no
 
 Pass 31 rendered a still quartet for every geometry-clean library mesh and added `Alley`, `Subway_Entrance`, `Overpass`, `Driveway`, `Restroom`, `Bleachers`, and `Ferry`. `Ranch_House` stays. Do not author a third cabin, and do not draw a second road junction.
 
-LOD2 is at most 0.6× LOD1. `GasCanopy` LOD2 is 120 against LOD1 1064. `Dock_Straight` LOD2 is 336 against LOD1 672. `FishingBoat` LOD2 is 260 against LOD1 1148. `Cabin` LOD2 is 792 against LOD1 1364. `HarborShed` LOD2 is 120 against LOD1 504. Houses, the ranch, and the three stores use a solid shell at LOD2. Meshes whose LOD0 is at or under 2000 no longer ship a copied LOD2. LOD0 and LOD1 of the closed container, gazebo, rowboat, HarborShed, and CourtFence are unchanged.
+LOD2 is at most 0.6× LOD1. LOD0 and LOD1 of these nine are unchanged: `Alley` 260/132/48, `Subway_Entrance` 300/180/96, `Driveway` 72/48/24, `Bleachers` 300/216/108, `Restroom` 208/144/60, `Ferry` 340/180/72, `GasCanopy` 2272/1064/120, `Dock_Straight` 3720/672/336, `FishingBoat` 2932/1148/260. `Cabin` LOD2 is 792 against LOD1 1364. `HarborShed` LOD2 is 120 against LOD1 504. Houses, the ranch, and the three stores use a solid shell at LOD2. LOD0 and LOD1 of the closed container, gazebo, rowboat, HarborShed, and CourtFence are unchanged.
 
 `Brick_Door` and `Brick_Window` keep their pass 31 pictures. The quartet also lives in `Docs/AssetStills/pass32/brick_door/` and `pass32/brick_window/` so the names `door` and `window` stay in the folder and are not read as a close-up role. Do not rename those two meshes. `Container_20_Blue` and `Container_20_Green` match the red cage and pass as a material variant of `Container_20`.
 
-Lead validator at `7ddb4ed`, after this pass:
+Lead validator at `5f5c4f4`. `1eec03a` was `models-validate assets=132 pass=97 fail=35` / `models-split paperwork=7 geometry=28`. After this cut:
 
 `models-validate assets=132 pass=126 fail=6`
 
@@ -40,7 +40,7 @@ Every library mesh passes. The six fails are the player Hiers, assigned below.
 
 ## Player rig (A2 #128)
 
-`Dummy_Mannequin_Tan_Hier_Hi` fails the player checks. Leave the fix to A2 #128. Do not patch the rig on this branch. On the lead validator at `7ddb4ed` the failing checks are:
+`Dummy_Mannequin_Tan_Hier_Hi` fails the player checks. Leave the fix to A2 #128. Do not patch the rig on this branch. On the lead validator at `5f5c4f4` the failing checks are:
 
 - `sample-rate`
 - `noclip-missing`

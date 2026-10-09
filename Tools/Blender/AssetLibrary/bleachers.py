@@ -22,8 +22,19 @@ def create():
     )
     a.climb_note = "Seats and footboards are the surfaces. The frame is not a cling wall."
     a.vault_note = "The front footboard is under 0.40 m. Not a vault rail."
-    for lod in (0, 1):
+    for lod in (0, 1, 2):
         g = a.begin(lod)
+        if lod == 2:
+            # Three rows, two posts, one rail. 108 tris, under 0.6× the 216-triangle LOD1.
+            for i in range(3):
+                seat_y, seat_z, foot_y, foot_z = _row(i)
+                g.box((0.0, seat_y, seat_z), (LENGTH - 0.70, 0.04, 0.28), "Lib_Steel", uv_scale=0.5)
+                g.box((0.0, foot_y, foot_z), (LENGTH - 0.70, 0.04, 0.36), "Lib_SteelDark", uv_scale=0.5)
+            for x in (-2.85, 2.85):
+                g.box((x, 0.96, -1.20), (0.08, 1.60, 0.08), "Lib_SteelDark")
+            g.box((0.0, 1.85, -2.55), (LENGTH - 0.10, 0.08, 0.06), "Lib_Steel")
+            a.end()
+            continue
         _rows(g, lod)
         _frame(g, lod)
         a.end()
