@@ -56,7 +56,6 @@ from _sk_build import _merge, _prefabs  # noqa: E402
 
 MODULES = (
     "sedan_mid_a",
-    "sedan_midsize",
     "sedan_compact",
     "crossover_compact",
     "hatch_compact",
@@ -78,6 +77,11 @@ OBSOLETE = {
     "Sedan_Mid_A_Ocean",
     "Sedan_Mid_A_21_White",
     "Sedan_Mid_A_21_Black",
+    "Sedan_Mid_A_21",
+    "Sedan_Midsize",
+    "Car_Sedan",
+    "Car_Hatch",
+    "Car_Pickup",
 }
 
 

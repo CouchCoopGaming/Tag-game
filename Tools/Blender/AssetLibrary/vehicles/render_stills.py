@@ -24,7 +24,6 @@ LIMIT = 400 * 1024
 
 MODULES = (
     "sedan_mid_a",
-    "sedan_midsize",
     "sedan_compact",
     "crossover_compact",
     "hatch_compact",
@@ -100,6 +99,23 @@ def _shot(fn, path, fill=0.84):
     _fit(path)
 
 
+def _fascia(fn, path):
+    """Fascia close-up, 1280x720. The nose fills the frame."""
+    r._reset_scene()
+    scene = bpy.context.scene
+    r._engine(scene, wide=True)
+    scene.cycles.samples = 28
+    r._ensure_materials()
+    r._world(scene, night=False)
+    obj = r._spawn(fn(), (0, 0, 0))
+    import body_a
+    body_a.shade_object(obj)
+    r._ground("asphalt", 40.0)
+    _look(scene, (0.15, 0.62, 4.6), (0.0, 0.55, 1.9), 55.0)
+    r._render(scene, path)
+    _fit(path)
+
+
 def _close(fn, path, eye, aim, lens):
     r._reset_scene()
     scene = bpy.context.scene
@@ -135,13 +151,20 @@ def _with_figure(found, prop, path, prop_pos, prop_yaw, fig_pos, fill=0.78, wide
 
 
 def _transit_set(found, name, folder, length, height, door_z):
-    out = os.path.join(STILL_ROOT, folder)
+    out = os.path.join(STILL_ROOT, folder, "pass1")
     os.makedirs(out, exist_ok=True)
-    _shot(found[name], os.path.join(out, "hero.png"), fill=0.86)
+    _shot_az(found[name], os.path.join(out, "hero.png"), 42.0, elevation=10.0, fill=0.88, wide=True)
     dist = max(18.0, length * 1.55)
-    _close(
-        found[name], os.path.join(out, "side.png"),
+    _side_dims(
+        found[name], None, os.path.join(out, "side.png"),
         (dist, height * 0.46, length * 0.04), (0.0, height * 0.40, 0.0), 46.0,
+        wide=True,
+    )
+    # Nose and the destination glass. This is the close-up.
+    _side_dims(
+        found[name], None, os.path.join(out, "nose.png"),
+        (1.8, 1.7, length * 0.5 + 4.2), (0.0, 1.55, length * 0.38), 36.0,
+        wide=True,
     )
     # Figure at the curb door so the 1.8 m body reads against the step and the glass.
     _close_pair(
@@ -149,13 +172,14 @@ def _transit_set(found, name, folder, length, height, door_z):
         (0.0, 0.0, 0.0), 0.0,
         (1.85, 0.0, door_z), 90.0,
         (6.2, 1.55, door_z + 2.4), (1.15, 1.15, door_z), 32.0,
+        wide=True,
     )
 
 
-def _close_pair(found, prop, path, prop_pos, prop_yaw, fig_pos, fig_yaw, eye, aim, lens):
+def _close_pair(found, prop, path, prop_pos, prop_yaw, fig_pos, fig_yaw, eye, aim, lens, wide=False):
     r._reset_scene()
     scene = bpy.context.scene
-    r._engine(scene, wide=False)
+    r._engine(scene, wide=wide)
     scene.cycles.samples = 24
     r._ensure_materials()
     r._world(scene, night=False)
@@ -329,7 +353,7 @@ def main():
     found = _load(only)
     if only is not None and "sedan_mid_a" in only:
         print("SHOT", "sedan_mid_a", shot or "all")
-        out = os.path.join(STILL_ROOT, "sedan_mid_a", "pass14")
+        out = os.path.join(STILL_ROOT, "sedan_mid_a", "pass15")
         os.makedirs(out, exist_ok=True)
         if shot in (None, "hero"):
             _shot_az(found["Sedan_Mid_A_25"], os.path.join(out, "hero.png"), 48.0, elevation=11.0, fill=0.90, wide=True, shade=True)
@@ -344,6 +368,8 @@ def main():
             )
         if shot in (None, "front"):
             _shot_az(found["Sedan_Mid_A_25"], os.path.join(out, "front.png"), 0.0, elevation=2.0, fill=0.86, wide=True, shade=True)
+        if shot in (None, "nose"):
+            _fascia(found["Sedan_Mid_A_25"], os.path.join(out, "nose.png"))
         if shot in (None, "rear"):
             _shot_az(found["Sedan_Mid_A_25"], os.path.join(out, "rear.png"), 180.0, elevation=4.0, fill=0.86, wide=True, shade=True)
         if shot in (None, "top"):
@@ -370,9 +396,6 @@ def main():
                 wide=True, shade=True,
             )
         return
-    if only is None or "midsize" in only or "sedan_midsize" in only:
-        print("SHOT", "sedan_midsize")
-        _sedan_set(found, "Sedan_Midsize", "sedan_midsize")
     if only is None or "sedan_compact" in only or only == "compact":
         print("SHOT", "sedan_compact")
         _sedan_set(found, "Sedan_Compact", "sedan_compact")

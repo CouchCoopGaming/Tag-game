@@ -98,7 +98,7 @@ def _wheel(g, x, z, spec, lod, detailed):
     collider ray traveling across the bus does not stack extra shells."""
     r = spec["tire_r"]
     y = spec["axle_y"]
-    seg = 16 if lod == 0 else 8
+    seg = 16 if lod == 0 else (6 if lod >= 2 else 8)
     g.cylinder((x, y, z), r, spec["tire_w"], "Lib_Rubber", seg, axis="X")
     if not detailed:
         return
@@ -150,7 +150,7 @@ def _side(g, asset, spec, sign, lod, bev, segs):
     win_y, win_h = 1.82, 1.00
     holes = list(doors) + bellows
     panes = _pieces(z0 + 0.06, z1 - 0.06, holes)
-    step = 1.28 if lod == 0 else 2.40
+    step = 1.28 if lod == 0 else (4.80 if lod >= 2 else 2.40)
     pillar = 0.090
     pi = 0
     for a, b in panes:
@@ -225,8 +225,10 @@ def _caps(g, asset, spec, lod, bev, segs):
     for sign in (-1.0, 1.0):
         g.box((sign * half * 0.62, 0.48, spec["length"] * 0.5 - 0.012), (0.34, 0.12, 0.018), "Lib_Black")
         g.box((sign * half * 0.62, 0.48, spec["length"] * 0.5 - 0.002), (0.26, 0.07, 0.010), "Lib_Headlamp")
-        g.box((sign * (half + 0.02), 2.00, zf - 0.20), (0.22, 0.32, 0.10), "Lib_Black")
-        g.box((sign * (half + 0.10), 2.00, zf - 0.20), (0.012, 0.04, 0.28), "Lib_SteelDark")
+        # Body is 2.59 m. The full asset must stay inside 2.65 m, so the head
+        # projects about 2.5 cm past the skin.
+        g.box((sign * (half - 0.005), 2.00, zf - 0.20), (0.06, 0.22, 0.12), "Lib_Black")
+        g.box((sign * (half - 0.04), 2.00, zf - 0.16), (0.02, 0.04, 0.10), "Lib_SteelDark")
     # Tail frame. The rear window and the engine door are openings, not a solid slab.
     tail_bits = (
         ("Col_TailL", (-half + 0.18, 1.60, zt + 0.025), (0.32, 2.40, 0.050), spec["body"]),
@@ -336,7 +338,7 @@ def _bellows(g, asset, spec, lod):
     z = (a + b) * 0.5
     length = b - a
     g.box((0.0, 1.55, z), (spec["width"] - 0.28, 2.35, length * 0.72), "Lib_Black")
-    ribs = 4 if lod == 0 else 2
+    ribs = 4 if lod == 0 else (1 if lod >= 2 else 2)
     for i in range(ribs):
         # Keep the middle open so the collider sits in the core only.
         rz = a + (0.16 + 0.68 * i / max(1, ribs - 1)) * length
@@ -385,7 +387,7 @@ def create_city60(name, body, skirt, blurb):
     asset.climbable = True
     asset.climb_note = "Roof, roof unit, and the turntable cover. Not a cling wall."
     asset.vault_note = "The skirt is a step. The roof is the landing."
-    for lod in (0, 1):
+    for lod in (0, 1, 2):
         geo = asset.begin(lod)
         build_city_bus(geo, asset, spec, lod)
         asset.end()
@@ -399,7 +401,7 @@ def create_city40(name, body, skirt, blurb):
     asset.climbable = True
     asset.climb_note = "Roof and roof unit. Sheet metal, not a cling wall."
     asset.vault_note = "The skirt is a step. The roof is the landing."
-    for lod in (0, 1):
+    for lod in (0, 1, 2):
         geo = asset.begin(lod)
         build_city_bus(geo, asset, spec, lod)
         asset.end()

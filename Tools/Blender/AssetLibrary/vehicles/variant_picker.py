@@ -7,10 +7,9 @@ can call pick(seed) and instance the named prefab.
 import random
 
 
-# Five model years on one shell. 2025 is the fascia change.
+# 2022-2025 on one panel shell. 2021 is outside the model-year window.
 # Extra colors are the 2025 body only. Names stay generic.
 VARIANTS = (
-    {"name": "Sedan_Mid_A_21", "year": 2021, "color": "crimson", "fascia": "separate", "wheel": "five_spoke_18"},
     {"name": "Sedan_Mid_A_22", "year": 2022, "color": "crimson", "fascia": "separate", "wheel": "six_spoke_18"},
     {"name": "Sedan_Mid_A_23", "year": 2023, "color": "crimson", "fascia": "tier", "wheel": "five_spoke_18"},
     {"name": "Sedan_Mid_A_24", "year": 2024, "color": "crimson", "fascia": "thin", "wheel": "six_spoke_18"},

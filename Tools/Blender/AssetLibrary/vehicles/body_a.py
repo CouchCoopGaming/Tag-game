@@ -1,17 +1,14 @@
-"""Midsize sedan, lofted shell.
+"""Midsize sedan, hard panel body.
 
-Pass 14 keeps the loft. Every station is resampled to the same vertex count,
-arc-length even inside each feature span, starting at the belly and winding
-toward +X, so the fascia cannot scallop. The nose corners sweep back about
-0.28 m and the tail corners about 0.15 m. The hood leading edge sits near
-0.75 m and rises to about 1.00 m at the cowl, with the fascia raked about
-17 degrees. The deck is a short fastback above the hood, and the sail
-behind the rear door is dark glass. Subdivision is
-level 2 / 1 / 0, on a cage coarse enough that the dressed 2025 LOD0 lands
-near 12–15k triangles.
+The shell is a closed panel cage. Spans are straight between the rocker,
+shoulder, belt, glass, and crown. There is no subdivision pass. The body
+stays inside a 1.76 m shoulder so the door mirrors finish under the 1.90 m
+cap. The hood leading edge sits near 0.75 m and rises to about 1.00 m at
+the cowl. The deck is a short fastback above the hood, and the sail behind
+the rear door is dark glass.
 
-Proportions follow a 2025 Camry-class table, in metres: length 4.90, width
-1.84, height 1.44, wheelbase 2.82, track 1.60, ground clearance 0.14.
+Proportions follow a published midsize exterior table, in metres: length
+4.90, height 1.44, wheelbase 2.82, track 1.60, ground clearance 0.14.
 No badges. Daylight lamps are clear lenses over a dark housing, emission 0.
 """
 
@@ -29,7 +26,7 @@ from _common import REPO, blender_to_unity, unity_to_blender
 INCH = 0.0254
 LENGTH = 4.90
 HALF_L = LENGTH * 0.5
-WIDTH = 1.84
+WIDTH = 1.76
 HALF_W = WIDTH * 0.5
 HEIGHT = 1.44
 WHEELBASE = 2.82
@@ -42,12 +39,12 @@ Z_TAIL = -HALF_L
 Z_HEADER = 0.45
 Z_COWL = 1.05
 ROOF_HALF = 0.58
-# Piecewise ring. Right half, then the mirror. 2+2+1+2+1 segments → 16 verts.
-RING_FLARE = 2
-RING_SIDE = 2
+# Hard panels. Right half, then the mirror. 3+3+1+2+2 segments → 20 verts.
+RING_FLARE = 3
+RING_SIDE = 3
 RING_BELT = 1
 RING_GLASS = 2
-RING_CROWN = 1
+RING_CROWN = 2
 I_BELLY = 0
 I_ROCKER = RING_FLARE
 I_SHOULDER = RING_FLARE + RING_SIDE
@@ -80,7 +77,6 @@ MAT_GLASS = 1
 MAT_BLACK = 2
 
 YEARS = {
-    2021: {"spokes": 5, "lamps": "separate", "tails": "separate", "intake": False, "mirror": PAINT, "bars": 4, "bar_h": 0.014},
     2022: {"spokes": 6, "lamps": "separate", "tails": "separate", "intake": False, "mirror": PAINT, "bars": 5, "bar_h": 0.012},
     2023: {"spokes": 5, "lamps": "tier", "tails": "separate", "intake": False, "mirror": PAINT, "bars": 5, "bar_h": 0.012},
     2024: {"spokes": 6, "lamps": "thin", "tails": "thin", "intake": False, "mirror": BLACK, "bars": 6, "bar_h": 0.008},
@@ -130,16 +126,16 @@ def _top_y(z):
 
 
 def _plan_x(z):
-    """Half-width of the shoulder. Arches are the widest, bumper stays full."""
+    """Half-width of the shoulder. Arches are widest. Mirrors must finish under 0.95."""
     return _lerp((
-        (-2.45, 0.900),
-        (-1.90, 0.915),
-        (-1.33, 0.920),
-        (-0.40, 0.900),
-        (0.70, 0.900),
-        (1.49, 0.920),
-        (2.00, 0.915),
-        (2.45, 0.900),
+        (-2.45, 0.840),
+        (-1.90, 0.860),
+        (-1.33, 0.880),
+        (-0.40, 0.860),
+        (0.70, 0.860),
+        (1.49, 0.880),
+        (2.00, 0.860),
+        (2.45, 0.840),
     ), z)
 
 
@@ -310,14 +306,28 @@ def _features(z):
 
 
 def _poly(points, segments):
-    dense = []
-    for a, b in zip(points, points[1:]):
-        for i in range(8):
-            t = i / 8.0
-            s = _smooth01(t)
-            dense.append((a[0] + (b[0] - a[0]) * s, a[1] + (b[1] - a[1]) * s))
-    dense.append(points[-1])
-    return _resample_open(dense, segments)
+    """Straight panel span. Equal steps on each control edge. No arc-length resample."""
+    if segments < 1 or len(points) < 2:
+        return list(points)
+    edges = len(points) - 1
+    counts = [max(1, segments // edges)] * edges
+    extra = segments - sum(counts)
+    i = 0
+    while extra > 0:
+        counts[i % edges] += 1
+        extra -= 1
+        i += 1
+    while sum(counts) > segments and any(count > 1 for count in counts):
+        for j, count in enumerate(counts):
+            if count > 1 and sum(counts) > segments:
+                counts[j] -= 1
+    out = [points[0]]
+    for edge, count in enumerate(counts):
+        a, b = points[edge], points[edge + 1]
+        for step in range(1, count + 1):
+            t = step / float(count)
+            out.append((a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t))
+    return out
 
 
 def _section(z):
@@ -378,7 +388,7 @@ def _section(z):
 def _station_zs():
     """Measured stations. Arch samples are few so level-2 LOD0 stays under 15k."""
     zs = [
-        2.460,
+        2.450,
         2.160,
         1.800,
         1.490,
@@ -397,7 +407,7 @@ def _station_zs():
         -1.330,
         -1.700,
         -2.160,
-        -2.460,
+        -2.450,
     ]
     ordered = []
     for z in sorted(set(round(z, 3) for z in zs), reverse=True):
@@ -490,7 +500,8 @@ def _apply_subsurf(bm, level):
 
 
 def _build_cage(lod):
-    level = (2, 1, 0)[lod]
+    # Hard panels. Subdivision rounded the fascia into a soft loft.
+    level = 0
     stations = _station_zs()
     bm = bmesh.new()
     crease = bm.edges.layers.float.new("crease_edge")
@@ -513,7 +524,7 @@ def _build_cage(lod):
                 face = bm.faces.new((rings[i][j], rings[i][j2], rings[i + 1][j2], rings[i + 1][j]))
             except ValueError:
                 continue
-            face.smooth = True
+            face.smooth = False
     try:
         nose = bm.faces.new(list(reversed(rings[0])))
         nose.material_index = MAT_PAINT
@@ -829,7 +840,7 @@ def _lamp_seat(bvh, x, y, wrap):
         return side
     if side is None:
         return front
-    if (Vector(front[0]) - Vector(side[0])).length > 0.36:
+    if (Vector(front[0]) - Vector(side[0])).length > 0.16:
         return front
     t = max(0.0, min(1.0, wrap))
     pos = tuple(front[0][i] * (1.0 - t) + side[0][i] * t for i in range(3))
@@ -919,7 +930,8 @@ def _headlamp_paths(kind):
             ((0.36, 0.48, 0.10), (0.74, 0.54, 0.10), 0.40),
         ]
     if kind == "swept":
-        return [((0.32, 0.54, 0.15), (0.84, 0.68, 0.12), 0.85)]
+        # Stay on the fascia. A hard corner folds the ribbon if it wraps past it.
+        return [((0.30, 0.52, 0.14), (0.68, 0.62, 0.12), 0.20)]
     return [((0.32, 0.56, 0.14), (0.78, 0.64, 0.13), 0.55)]
 
 
@@ -1100,6 +1112,8 @@ def _lamps_rear(g, info, bvh, lod):
                 side = _hit_side(bvh, sign * x, y, rear[0][2])
                 if side is not None and side[0][2] > -1.40:
                     side = None
+                if side is not None and (Vector(rear[0]) - Vector(side[0])).length > 0.16:
+                    side = None
             if rear is None and side is None:
                 print("LAMP_MISS", "tail", round(sign * x, 3), round(y, 3))
                 seats = []
@@ -1136,7 +1150,7 @@ def _mirrors(g, info, bvh):
     y = _belt_y(z) - 0.045
     for sign in (-1.0, 1.0):
         skin = _skin_x(bvh, sign, y, z)
-        sail_s = (0.014, 0.09, 0.12)
+        sail_s = (0.010, 0.08, 0.10)
         inner = skin + sign * 0.001
         sail_c = (inner + sign * sail_s[0] * 0.5, y, z)
         g.box(sail_c, sail_s, BLACK)
@@ -1146,7 +1160,7 @@ def _mirrors(g, info, bvh):
             (inner, y, z),
         )
         _track(g, "sail", "mirror", sail_c, sail_s, mount)
-        head_s = (0.095, 0.075, 0.14)
+        head_s = (0.034, 0.068, 0.12)
         head_c = (
             sail_c[0] + sign * (sail_s[0] * 0.5 + head_s[0] * 0.5 - 0.002),
             y + 0.012,
@@ -1228,9 +1242,11 @@ def add_colliders(asset):
                 (0.014, 0.010, 0.010),
             )
     asset.box("Col_Cabin", (0.0, 0.78, -0.05), (0.42, 0.32, 0.62))
-    asset.box("Col_Roof", (0.0, 1.28, -0.10), (0.32, 0.06, 0.55))
-    asset.box("Col_Hood", (0.0, 0.52, 1.50), (0.34, 0.14, 0.36))
-    asset.box("Col_Deck", (0.0, 0.86, -1.60), (0.34, 0.08, 0.28))
+    # Crown is a thin hard surface. A wide box at 1.40 m left the cabin through
+    # the sloping roof. This one stays inside and its top is 2 cm under 1.44 m.
+    asset.box("Col_Roof", (0.0, 1.26, 0.05), (0.28, 0.32, 0.24))
+    asset.box("Col_Hood", (0.0, 0.84, 1.48), (0.40, 0.12, 0.36))
+    asset.box("Col_Deck", (0.0, 0.98, -1.55), (0.36, 0.10, 0.28))
     asset.box("Col_Nose", (0.0, 0.36, 1.55), (0.22, 0.12, 0.36))
 
 

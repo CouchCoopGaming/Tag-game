@@ -53,8 +53,8 @@ LODGroup:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 100000}
   serializedVersion: 2
-  m_LocalReferencePoint: {x: 0, y: 0.717, z: -0.001}
-  m_Size: 4.894
+  m_LocalReferencePoint: {x: 0, y: 0.72, z: 0}
+  m_Size: 4.9
   m_FadeMode: 0
   m_AnimateCrossFading: 0
   m_LastLODIsBillboard: 0
@@ -85,7 +85,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Tag.Art.Library.LibraryPropMeta
   category: "Vehicles"
-  summary: "Midsize sedan, 2025 fascia, 4.90 m long, 1.84 m wide, roof 1.44 m. Lofted shell, 1.25 m roof, 18 inch alloys. Color white."
+  summary: "Midsize sedan, 2025 fascia, 4.90 m long, shoulder 1.76 m, roof 1.44 m. Hard panel body, 18 inch alloys. Hood and roof are landings. Color white."
   climbable: 1
   vaultable: 0
   vaultHeightMeters: 0
@@ -676,7 +676,7 @@ Transform:
   m_GameObject: {fileID: 300050}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 1.28, z: -0.1}
+  m_LocalPosition: {x: 0, y: 1.26, z: 0.05}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -701,7 +701,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.32, y: 0.06, z: 0.55}
+  m_Size: {x: 0.28, y: 0.32, z: 0.24}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300060
 GameObject:
@@ -729,7 +729,7 @@ Transform:
   m_GameObject: {fileID: 300060}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.52, z: 1.5}
+  m_LocalPosition: {x: 0, y: 0.84, z: 1.48}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -754,7 +754,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.34, y: 0.14, z: 0.36}
+  m_Size: {x: 0.4, y: 0.12, z: 0.36}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300070
 GameObject:
@@ -782,7 +782,7 @@ Transform:
   m_GameObject: {fileID: 300070}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.86, z: -1.6}
+  m_LocalPosition: {x: 0, y: 0.98, z: -1.55}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -807,7 +807,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.34, y: 0.08, z: 0.28}
+  m_Size: {x: 0.36, y: 0.1, z: 0.28}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300080
 GameObject:

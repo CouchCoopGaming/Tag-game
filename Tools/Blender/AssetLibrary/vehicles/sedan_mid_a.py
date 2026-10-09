@@ -1,13 +1,12 @@
-"""Midsize sedan line A, model years 2021 through 2025.
+"""Midsize sedan line A, model years 2022 through 2025.
 
-One lofted shell. 2025 changes the lamp shape, grille, intake, and wheel.
-2021-2024 keep that shell. Every year is the crimson base. Extra colors
+One hard panel shell. 2025 changes the lamp shape, grille, intake, and wheel.
+Earlier years keep that shell. Every year is the crimson base. Extra colors
 are clones of 2025. No badges.
 
-Published 2025 Camry-class inches (exterior page): height 56.9, width 72.4,
-length 193.5, wheelbase 111.2, ground clearance 5.4, track 63.0.
-This shell uses the pass 14 metre table: 4.90 x 1.84 x 1.44, wheelbase
-2.82, track 1.60, clearance 0.14. Front overhang is 0.96 m.
+The shell uses the midsize metre table: 4.90 long, 1.76 at the shoulder,
+1.44 tall, wheelbase 2.82, track 1.60, clearance 0.14. Front overhang is 0.96 m.
+Door mirrors stay inside the 1.90 m width cap.
 """
 
 import os
@@ -35,8 +34,8 @@ _BUILT = {}
 
 def _blurb(year, color):
     return (
-        "Midsize sedan, %d fascia, 4.90 m long, 1.84 m wide, roof 1.44 m. "
-        "Lofted shell, 1.25 m roof, 18 inch alloys. Color %s."
+        "Midsize sedan, %d fascia, 4.90 m long, shoulder 1.76 m, roof 1.44 m. "
+        "Hard panel body, 18 inch alloys. Hood and roof are landings. Color %s."
         % (year, color)
     )
 
