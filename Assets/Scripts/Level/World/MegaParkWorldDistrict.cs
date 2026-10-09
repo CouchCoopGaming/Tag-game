@@ -7,7 +7,8 @@ namespace Tag.Level
     /// cameras share. Z1 dresses around the soft-play decks. Z2 dresses the
     /// east lawn of the cling lanes. Z3 dresses the merry lawns outside
     /// Crossing B. Z4 dresses the north lawn of the slide mountain. Z5 dresses
-    /// the north lawn of the swing grove. Placements
+    /// the north lawn of the swing grove. Z6 dresses the twin forts with a
+    /// harbor yard, west of the empty spine. Placements
     /// are real meters, yaw degrees, scale 1. The headless layout audit still
     /// counts the gray solids; play mode hides only the Z7 infield lumps.
     /// Feel locks are not stored here.
@@ -48,6 +49,8 @@ namespace Tag.Level
         const string R = "Assets/Art/Props/Library/Roads/Prefabs/";
         const string P = "Assets/Art/Props/Library/Park/Prefabs/";
         const string V = "Assets/Art/Props/Library/Vehicles/Prefabs/";
+        const string H = "Assets/Art/Props/Library/Harbor/Prefabs/";
+        const string U = "Assets/Art/Props/Library/Utility/Prefabs/";
 
         // Court pivot (88.6, 53.2). The merged slab collider measures about 15 x 22.
         // Street is the east-west two-lane at z=34, south of that slab.
@@ -234,9 +237,40 @@ namespace Tag.Level
             new Place("Sw_Light", S + "LightPost_Single.prefab", 88.5f, 0f, 85.6f, 180f),
         };
 
+        /// <summary>
+        /// Z6 twin forts. Gray crawls, spirals, decks, rims, hooks, and the
+        /// yellow chutes stay. East spine x[130, 138] and gap z[46, 54] stay
+        /// empty. The climb is a container, the landing is a dock 3.60 m west
+        /// of that face, and the rope crosses the empty gap. Not the gazebo row.
+        /// Play batches the group.
+        /// </summary>
+        public static readonly Place[] Forts =
+        {
+            // Long side faces east-west. The west face is the climb.
+            new Place("Ft_Climb", H + "Container_20.prefab", 126.63f, 0f, 19f, 0f),
+            // Plank deck is the landing. Piles are a water seat; see the ledger.
+            new Place("Ft_Dock", H + "Dock_Straight.prefab", 120.85f, 0f, 19f, 0f),
+            // Runs north-south. Vault band is 1.05 m. Open to the west.
+            new Place("Ft_Rail", H + "HarborRail.prefab", 119.15f, 0f, 19f, 90f),
+            new Place("Ft_ShelterA", S + "BusShelter.prefab", 121.30f, 0f, 81.2f, 0f),
+            new Place("Ft_ShelterB", S + "BusShelter.prefab", 125.80f, 0f, 81.2f, 0f),
+            // North of the empty gap. The rope from the south lip ends on this cornice.
+            new Place("Ft_Anchor", H + "Container_20_Blue.prefab", 126.70f, 0f, 58f, 0f),
+            new Place("Ft_Pine", P + "Tree_Pine.prefab", 126.4f, 0f, 42.5f, 0f),
+            new Place("Ft_Dumpster", U + "Dumpster.prefab", 126.15f, 0f, 24.2f, 0f),
+            new Place("Ft_Seesaw", P + "Seesaw.prefab", 122.2f, 0f, 77f, 0f),
+            new Place("Ft_Fountain", P + "Fountain.prefab", 124.6f, 0f, 77.6f, 0f),
+            new Place("Ft_Crate", H + "Crate.prefab", 126.6f, 0f, 77.2f, 0f),
+            new Place("Ft_Recycle", S + "RecyclingBin.prefab", 120.4f, 0f, 78.4f, 0f),
+            new Place("Ft_Sign", P + "ParkSign.prefab", 123f, 0f, 84.6f, 0f),
+            new Place("Ft_Bollard", S + "Bollard.prefab", 127.5f, 0f, 64.8f, 0f),
+            new Place("Ft_Barrel", S + "Barrel_Traffic.prefab", 126.2f, 0f, 67.2f, 0f),
+            new Place("Ft_Light", S + "LightPost_Double.prefab", 127f, 0f, 73f, 0f),
+        };
+
         public static Place[] AllPlaces()
         {
-            var all = new Place[Places.Length + SoftPlay.Length + Cling.Length + Merry.Length + Slide.Length + Swing.Length];
+            var all = new Place[Places.Length + SoftPlay.Length + Cling.Length + Merry.Length + Slide.Length + Swing.Length + Forts.Length];
             int n = 0;
             for (int i = 0; i < Places.Length; i++)
                 all[n++] = Places[i];
@@ -250,6 +284,8 @@ namespace Tag.Level
                 all[n++] = Slide[i];
             for (int i = 0; i < Swing.Length; i++)
                 all[n++] = Swing[i];
+            for (int i = 0; i < Forts.Length; i++)
+                all[n++] = Forts[i];
             return all;
         }
 

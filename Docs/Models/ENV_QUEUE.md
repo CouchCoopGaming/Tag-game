@@ -31,3 +31,9 @@ Rebuild the baked shop words. `Store_Corner` reads MARKET, `Store_Diner` reads D
 Done on `abeaee4`: a CC0 row on every library asset, `Lib_Roof` squared to 512, the WalkUp, Cabin, Gazebo, container, and ranch landings closed, the rowboat under the harbor ceiling, and the missing LOD2s. `Ranch_House` stays. The lead validator on this tip is `models-validate assets=125 pass=24 fail=101`.
 
 Next, now that those counts moved: a city alley, a subway stair entrance, an overpass span, a driveway apron that meets the existing curb, a park restroom, bleachers, and a harbor ferry. Each one gets a still quartet in the same pass. Do not author a third cabin, and do not draw a second road junction.
+
+## World pass 7
+
+`Container_20` and `Container_20_Blue` share one cage. `Climb_Body` starts at y = 0.22, so on park ground the shell floats 0.22 m above the pivot. `Dock_Straight` piles run to y = −1.165. That is a water seat. On park ground the piles clip the floor. The world lane placed both in Z6 and did not edit the meshes.
+
+The lettering request and the compact-wheel / pickup-nose requests above are still open. Library `09958348` cuts LOD2 and does not rebuild MARKET, DINER, or WASH. Street-kit `a5e0e40d` reshapes the midsize sedan. Compact wheel boxes still start at y = 0.167, 0.168, and 0.192. Pickup boxes still stop at local z = 1.625.

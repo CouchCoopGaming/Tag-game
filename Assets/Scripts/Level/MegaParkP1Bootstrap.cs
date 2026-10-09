@@ -470,6 +470,7 @@ namespace Tag.Level
             BuildDistrict("WorldZ3", MegaParkWorldDistrict.Merry, table, true);
             BuildDistrict("WorldZ4", MegaParkWorldDistrict.Slide, table, true);
             BuildDistrict("WorldZ5", MegaParkWorldDistrict.Swing, table, true);
+            BuildDistrict("WorldZ6", MegaParkWorldDistrict.Forts, table, true);
         }
 
         void BuildDistrict(string group, MegaParkWorldDistrict.Place[] places, WorldPropTable table, bool batch)

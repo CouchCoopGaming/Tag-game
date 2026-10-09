@@ -67,3 +67,33 @@ MonoBehaviour:
     Prefab: {fileID: 100000, guid: e3b5cb0b3ccddc3b8b5c5244d2eb8bd8, type: 3}
   - Path: Assets/Art/Props/Library/Park/Prefabs/Shrub.prefab
     Prefab: {fileID: 100000, guid: 5fd6153c411d016587a44079259c771a, type: 3}
+  - Path: Assets/Art/Props/Library/Harbor/Prefabs/Container_20.prefab
+    Prefab: {fileID: 100000, guid: bd7efd619c6396ac9b7ef91503e75405, type: 3}
+  - Path: Assets/Art/Props/Library/Harbor/Prefabs/Container_20_Blue.prefab
+    Prefab: {fileID: 100000, guid: b66c5274d2288d06890757ff414905c5, type: 3}
+  - Path: Assets/Art/Props/Library/Harbor/Prefabs/Dock_Straight.prefab
+    Prefab: {fileID: 100000, guid: 59fd97de7796fddaf17168833d8e126e, type: 3}
+  - Path: Assets/Art/Props/Library/Harbor/Prefabs/HarborRail.prefab
+    Prefab: {fileID: 100000, guid: d700910a0357c7c1e0bd6a0f5d6a28f9, type: 3}
+  - Path: Assets/Art/Props/Library/Harbor/Prefabs/Crate.prefab
+    Prefab: {fileID: 100000, guid: aae940e2ad6ad7b7ebfb2d27033e5dc2, type: 3}
+  - Path: Assets/Art/Props/Library/Utility/Prefabs/Dumpster.prefab
+    Prefab: {fileID: 100000, guid: 9bcc602fb8c8308f9eef36b51bfe75a4, type: 3}
+  - Path: Assets/Art/Props/Library/StreetFurniture/Prefabs/BusShelter.prefab
+    Prefab: {fileID: 100000, guid: 4b5fe6b0a695ea503d560ee74e5ccd2f, type: 3}
+  - Path: Assets/Art/Props/Library/Park/Prefabs/Tree_Pine.prefab
+    Prefab: {fileID: 100000, guid: 427d541b0cca6a3353250a324c061f3a, type: 3}
+  - Path: Assets/Art/Props/Library/Park/Prefabs/Seesaw.prefab
+    Prefab: {fileID: 100000, guid: 3969738349ba90d74b0966b25142f456, type: 3}
+  - Path: Assets/Art/Props/Library/Park/Prefabs/Fountain.prefab
+    Prefab: {fileID: 100000, guid: 6bfb97fb632412b4e0bb6b3de1212d6b, type: 3}
+  - Path: Assets/Art/Props/Library/StreetFurniture/Prefabs/RecyclingBin.prefab
+    Prefab: {fileID: 100000, guid: 7ea3a43428c3d789086f8e55f314d1d0, type: 3}
+  - Path: Assets/Art/Props/Library/Park/Prefabs/ParkSign.prefab
+    Prefab: {fileID: 100000, guid: a3568a0e09a7497fdd8f892218b4d320, type: 3}
+  - Path: Assets/Art/Props/Library/StreetFurniture/Prefabs/Bollard.prefab
+    Prefab: {fileID: 100000, guid: b33b3967854499a7fd4b9e461a46ec14, type: 3}
+  - Path: Assets/Art/Props/Library/StreetFurniture/Prefabs/Barrel_Traffic.prefab
+    Prefab: {fileID: 100000, guid: f974023b91269795bfc355b097864f0b, type: 3}
+  - Path: Assets/Art/Props/Library/StreetFurniture/Prefabs/LightPost_Double.prefab
+    Prefab: {fileID: 100000, guid: 5cf2c5e5717677a61ea9b9337ba8a572, type: 3}

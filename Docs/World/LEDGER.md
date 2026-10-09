@@ -1,6 +1,6 @@
 # World ledger
 
-Status of each map area after pass 6. Gray means the live solids are still the Mega Park cubes from `MegaParkP1Layout.BuildSolids`. Polished means library prefabs are placed on top. Z7 hides its infield lumps in play. Z1, Z2, Z3, Z4, and Z5 leave their gray toys in place. This head includes the `cursor/tag-street-objects` merge (`7dc3e222`), the street-kit merges (`bc02b9c4`, then `3040d2e5`), and the asset-library merge (`723cc137`). GateLeaf, the fixed bench and trash colliders, and the StrafeJumpSim proof line stayed. Street-kit is still `3040d2e5`, so the compact wheel boxes and the pickup nose were not merged. Asset-library `1eec03a1` adds seven buildings and stills, and it does not rebuild the store letters, so that branch was not merged.
+Status of each map area after pass 7. Gray means the live solids are still the Mega Park cubes from `MegaParkP1Layout.BuildSolids`. Polished means library prefabs are placed on top. Z7 hides its infield lumps in play. Z1, Z2, Z3, Z4, Z5, and Z6 leave their gray toys in place. This head includes the `cursor/tag-street-objects` merge (`7dc3e222`), the street-kit merges (`bc02b9c4`, then `3040d2e5`), and the asset-library merge (`723cc137`). GateLeaf, the fixed bench and trash colliders, and the StrafeJumpSim proof line stayed. Street-kit tip `a5e0e40d` reshapes the midsize sedan and does not seat the compact wheels or add the pickup nose, so it was not merged. Asset-library tip `09958348` cuts LOD2 and does not rebuild the store letters, so that branch was not merged.
 
 The headless audit still counts every solid. Hiding a lump in `MegaParkP1Bootstrap` does not change `BuildSolids`, so the Mega Park proof line stays the same.
 
@@ -15,7 +15,7 @@ Zone boxes are `MegaParkP1Layout.Pass6.ZoneBoxes`.
 | Z3 Merry | x[22, 46] z[34, 60] | Polished pass 3. Crossing B, x[22, 46] × z[44, 52], stays empty. 13 props on the south lawn and the north strip, static-batched. |
 | Z4 Slide mountain | x[22, 56] z[72, 98] | Polished pass 5. Gray towers, yellow chutes, rims, and the landmark stay. 13 props on the north lawn, static-batched. |
 | Z5 Swings | x[58, 100] z[78, 98] | Polished pass 6. Gray swing frames, vault line, rims, and the landmark stay. 13 props on the north lawn, static-batched. |
-| Z6 Twin forts | x[118, 158] z[10, 90] | Gray. East spine x[130, 138] and gap z[46, 54] stay empty. |
+| Z6 Twin forts | x[118, 158] z[10, 90] | Polished pass 7. Gray forts, yellow chutes, rims, and both landmarks stay. East spine x[130, 138] and gap z[46, 54] stay empty. 16 props, static-batched. |
 | Z7 Kickball | x[64, 114] z[28, 68] | Polished. Pass 5 replaces the east door wall with the closed cabin and parks `Pickup_FullSize_25`. 46 instances, 26 unique, static-batched. |
 | Z8 Crash bowl | x[46, 78] z[34, 66] | Gray. Open rect x[52, 72] z[40, 58] has no new props. |
 | Z9 Bars | x[38, 118] z[12, 20] | Gray. South spine. Bar under-clear 1.05 m stays empty. |
@@ -175,7 +175,9 @@ Still open. Relayed to the models lane. Not edited here:
 | `Pickup_FullSize_25` | Placed. Wheels meet y = 0.012. The mesh is about 5.06 m and the boxes stop at local z = 1.625, so the nose past the front wheels has no collider. Reported to #125. |
 | `WalkUp` | Climb faces start at y = 0.40, 0.25 m above the stoop. The body is enclosed. Not edited here. |
 | `Cabin` | Placed. Door is closed. An internal gap of 0.20 m sits under a collider at y = 2.38. Not edited here. |
-| `Store_Corner`, `Store_Diner`, `Store_Laundromat` | Baked MARKET, DINER, and WASH letters mirror from the back. Reported to buildings #122 in `Docs/Models/ENV_QUEUE.md`. Not edited here. |
+| `Store_Corner`, `Store_Diner`, `Store_Laundromat` | Baked MARKET, DINER, and WASH letters mirror from the back. Reported to buildings #122 in `Docs/Models/ENV_QUEUE.md`. Not edited here. Library `09958348` rebuilds LOD2, not those letters. |
+| `Container_20`, `Container_20_Blue` | Placed in Z6. `Climb_Body` starts at y = 0.22, so the shell sits 0.22 m above the pivot. Reported in `Docs/Models/ENV_QUEUE.md`. Not edited here. |
+| `Dock_Straight` | Placed in Z6. Piles run down to y = −1.165, a water seat, so on park ground they clip the floor. Reported in `Docs/Models/ENV_QUEUE.md`. Not edited here. |
 
 `Gangway` is dropped from Mega Park. The prefab field is `vaultHeightMeters: 0.88`, and the rail boxes top at y = 1.758 over a plate whose top is y = 0.892, so the rail is 0.87 m above the plate. The catalog band is 0.90–1.05 m. The plate itself starts at y = 0.728, which is a harbor ramp seat, not a park ground contact. Raising the rail would edit the harbor mesh. It stays in the harbor library and is not a Mega Park route.
 
@@ -221,6 +223,26 @@ Check line:
 
 Stills: `Docs/WorldStills/pass6/z5_*.png`. Collider rasters. Pass 1 through 5 images were left in place.
 
+## Z6 this pass
+
+Placements: `Forts` in `Assets/Scripts/Level/World/MegaParkWorldDistrict.cs`. 16 instances, 15 unique prefabs. Z7 is 46 instances and 26 unique, so this set is smaller. Play static-batches the group the same way as Z7.
+
+The gray crawls, spirals, decks, rims, hooks, yellow chutes, and both `Landmark_Z6` masts stay. Nothing new sits in the east spine x[130, 138] or the gap z[46, 54]. Hopscotch, `Bar_EndDeck`, the bowl, the open rect, and Crossing B stay clear. This is not the Z4/Z5 lawn: no brick wall, gazebo, rooftop AC, scaffold, maple, planter, bench, trash can, shrub, picnic table, or single light post. The climb faces west, onto a dock, with a 3.60 m deck gap.
+
+Check line:
+
+`world-check routes=5 reachable=5/5 floatingProps=0 missingColliders=0 scaleFails=0`
+
+| Route | Measured |
+|---|---|
+| YardClimb | West jump off `Container_20`. Wall 2.32 m on a 5.54 m face. Deck gap 3.60 m onto `Dock_Straight` planks. At 30° off the wall the capsule leaves with feet at 0.05 m and lands at (121.20, 17.49). At 60° it lands at (120.66, 16.96). |
+| GapGrapple | 12.39 m from (128.5, 1.6, 43.0), south of the empty gap, to the blue container's south cornice. The rope crosses z[46, 54]. No prop sits in that band. |
+| RailVault | `HarborRail` at 1.05 m, the top of the vault band. West walk-up is open. |
+| ShelterDash | Two `BusShelter` roofs, underside 2.44 m. The dash gap between them is 0.90 m. |
+| FortChase | 167.5 m around the forts. South leg under the hopscotch, east leg through the empty gap, north leg past the shelters, west leg clear of the rims. Worst clearance 0.83 m against `Ft_Anchor`. |
+
+Stills: `Docs/WorldStills/pass7/z6_*.png`. Collider rasters. Pass 1 through 6 images were left in place.
+
 ## Next district
 
-The next gray row is Z6 twin forts, x[118, 158] z[10, 90]. East spine x[130, 138] and gap z[46, 54] stay empty. Do not recolor the yellow chutes. Do not fill the bowl, the kickball sightline, Crossing B, the soft-play decks, or the cling lanes. Keep the next set batched, and keep loading it from `WorldPropTable`.
+Z1 through Z7 are dressed. Z8's open rect x[52, 72] z[40, 58] stays empty. The remaining gray toys are the Z9 bar highway and the Z10 hopscotch. Do not recolor the yellow chutes. Do not fill the bowl, the kickball sightline, Crossing B, the fort spine, or the fort gap. Keep the next set batched, and keep loading it from `WorldPropTable`.

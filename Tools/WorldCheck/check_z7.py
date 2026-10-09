@@ -132,9 +132,11 @@ def parse_places(text, array_name="Places"):
         "R": "Assets/Art/Props/Library/Roads/Prefabs/",
         "P": "Assets/Art/Props/Library/Park/Prefabs/",
         "V": "Assets/Art/Props/Library/Vehicles/Prefabs/",
+        "H": "Assets/Art/Props/Library/Harbor/Prefabs/",
+        "U": "Assets/Art/Props/Library/Utility/Prefabs/",
     }
     pat2 = re.compile(
-        r'new Place\("([^"]+)",\s*([BSRPV]) \+ "([^"]+)",\s*([-0-9.]+)f,\s*([-0-9.]+)f,\s*([-0-9.]+)f,\s*([-0-9.]+)f\)'
+        r'new Place\("([^"]+)",\s*([BSRPVHU]) \+ "([^"]+)",\s*([-0-9.]+)f,\s*([-0-9.]+)f,\s*([-0-9.]+)f,\s*([-0-9.]+)f\)'
     )
     places = []
     for m in pat2.finditer(body):
@@ -820,7 +822,7 @@ def player_path_gaps(src):
     if "WorldPropTable.Load" not in bootstrap:
         gaps.append("bootstrap does not load the Resources table")
     seen = set()
-    for array in ("Places", "SoftPlay", "Cling", "Merry", "Slide", "Swing"):
+    for array in ("Places", "SoftPlay", "Cling", "Merry", "Slide", "Swing", "Forts"):
         for p in parse_places(src, array):
             if p["path"] in seen:
                 continue
