@@ -245,14 +245,22 @@ namespace Tag.Level
             return Make(new Color(r, g, b, 1f), "MEGA_" + name, smooth, metal, name);
         }
 
+        const float AlbedoLift = 1.2f;
+
         static Material Make(Color c, string name, float smooth, float metal, string kind)
         {
             Shader shader = Shader.Find("Universal Render Pipeline/Lit")
                             ?? Shader.Find("Standard")
                             ?? Shader.Find("Diffuse");
-            var m = new Material(shader) { color = c, name = name };
+            // The base map below is built from the same swatch, and Lit multiplies
+            // map by colour, so every surface drew at swatch^2: a 0x3A mulch came out
+            // near 2% linear. That, not the lights, kept the park murky. Lift the
+            // tint so map x tint lands about 1.5x brighter in linear (~+15 mean
+            // points at the current sun), hue and warmth unchanged.
+            Color tint = new Color(Mathf.Min(1f, c.r * AlbedoLift), Mathf.Min(1f, c.g * AlbedoLift), Mathf.Min(1f, c.b * AlbedoLift), c.a);
+            var m = new Material(shader) { color = tint, name = name };
             if (m.HasProperty("_BaseColor"))
-                m.SetColor("_BaseColor", c);
+                m.SetColor("_BaseColor", tint);
             if (m.HasProperty("_Smoothness"))
                 m.SetFloat("_Smoothness", smooth);
             if (m.HasProperty("_Glossiness"))
