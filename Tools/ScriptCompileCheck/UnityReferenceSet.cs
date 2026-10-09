@@ -56,7 +56,8 @@ namespace Tag.Tools
             if (Directory.Exists(packages))
             {
                 foreach (string dll in Directory.GetFiles(packages, "*.dll"))
-                    Assemblies.Add(dll);
+                    if (!Path.GetFileName(dll).StartsWith("Assembly-CSharp", StringComparison.Ordinal))
+                        Assemblies.Add(dll);
             }
 
             string flat = Environment.GetEnvironmentVariable("UNITY_REF_DIR");
