@@ -18,10 +18,10 @@ Cut these under the prop ceiling, once for the whole hydrant family: `FireHydran
 
 Add the missing LOD2, with the missing still roles in that same pass: `GasCanopy`, `Dock_Straight`, `FishingBoat`, `Bench_WoodIron`, `BikeRack_Hoop3`, `Fountain_Walk`, `LightPost_Globe`, `Newsstand_Corner`.
 
-When that branch next takes roads, copy `Road_Junction` from #122 or #125. Do not draw a second junction. Do not author a third cabin. The WalkUp landing on #129 is the worse gap; the buildings tip is closing WalkUp, Cabin, Gazebo, and the container roofs.
+When that branch next takes roads, copy `Road_Junction` from #122 or #125. Do not draw a second junction. Do not author a third cabin. The WalkUp, Cabin, Gazebo, and container landings are closed on #122. The WalkUp gap on #129 is still the worse one; copy the #122 mesh rather than authoring another.
 
 ## Buildings (#122)
 
-This tip, in order: a license row on every asset, then square `Lib_Roof`, close the WalkUp, Cabin, Gazebo, and container-roof landings, cut the rowboat under the harbor ceiling, and add the missing LOD2s. Keep `Ranch_House`. Side and close-up stills go in the same `passN` as each mesh that is repaired.
+Done on `abeaee4`: a CC0 row on every library asset, `Lib_Roof` squared to 512, the WalkUp, Cabin, Gazebo, container, and ranch landings closed, the rowboat under the harbor ceiling, and the missing LOD2s. `Ranch_House` stays. The lead validator on this tip is `models-validate assets=125 pass=24 fail=101`.
 
-Alley, subway entrance, overpass, driveway, restroom, bleachers, and ferry wait until the validator counts move.
+Next, now that those counts moved: a city alley, a subway stair entrance, an overpass span, a driveway apron that meets the existing curb, a park restroom, bleachers, and a harbor ferry. Each one gets a still quartet in the same pass. Do not author a third cabin, and do not draw a second road junction.
