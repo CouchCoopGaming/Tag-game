@@ -31,6 +31,8 @@ namespace Tag.Art
         public const float PivotRate = 140f;
         public const float SlideSeconds = 0.22f;
         public const float SoleWindow = 0.05f;
+        /// <summary>Thigh yaw once the gait is in. Keeps the swinging leg out of the spine.</summary>
+        public const float ThighSpread = 6f;
 
         public struct Shot
         {
