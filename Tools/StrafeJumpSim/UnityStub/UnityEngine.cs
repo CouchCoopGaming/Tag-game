@@ -186,4 +186,16 @@ namespace UnityEngine
     {
         public TooltipAttribute(string tooltip) { }
     }
+
+    /// <summary>
+    /// Unity 6000.3 added this next to System.IO.Compression.CompressionLevel.
+    /// The stub keeps the name so an unqualified use is CS0104, the same error the editor reports.
+    /// </summary>
+    public enum CompressionLevel
+    {
+        None = 0,
+        Fastest = 1,
+        Optimal = 2,
+        SmallestSize = 3
+    }
 }

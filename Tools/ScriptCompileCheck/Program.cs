@@ -17,7 +17,7 @@ namespace Tag.Tools
     /// </summary>
     static class Program
     {
-        static readonly string[] Watch = { "CS0102", "CS0128", "CS0136", "CS0103", "CS0246" };
+        static readonly string[] Watch = { "CS0102", "CS0128", "CS0136", "CS0103", "CS0104", "CS0246" };
 
         static readonly string[] ExternalPrefixes =
         {
@@ -94,14 +94,14 @@ namespace Tag.Tools
                 Console.Error.WriteLine(patternReport);
             if (!compileOk || !smokeOk || !patternsOk)
                 return 1;
-            Console.WriteLine("script-compile-check ok CS0102 CS0128 CS0136 CS0103 CS0246-in-our-code");
+            Console.WriteLine("script-compile-check ok CS0102 CS0128 CS0136 CS0103 CS0104 CS0246-in-our-code");
             return 0;
         }
 
         static bool Want(Diagnostic d, HashSet<string> ours)
         {
             string id = d.Id;
-            if (id == "CS0102" || id == "CS0128" || id == "CS0136")
+            if (id == "CS0102" || id == "CS0128" || id == "CS0136" || id == "CS0104")
                 return true;
             if (id != "CS0103" && id != "CS0246")
                 return false;
