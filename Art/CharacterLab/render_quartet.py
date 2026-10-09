@@ -12,7 +12,7 @@ from mathutils import Vector
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import render_pass1 as rp
 
-RAW = os.environ.get("COSTUME_RAW", "/tmp/charlab/pass3")
+RAW = os.environ.get("COSTUME_RAW", "/tmp/charlab/pass5")
 
 
 def log(msg):
@@ -110,6 +110,8 @@ def shot_scale(cam, clones, z_lift, props):
     rp.set_group(clones, False)
     rp.set_group(chosen, True)
     rp.place(chosen, "front", 1.2, z_lift)
+    props[0].location = (0.62, 0.12, 0.0)
+    props[1].location = (0.62, 0.12, 0.0)
     for obj in props:
         obj.hide_render = False
         obj.hide_set(False)
@@ -161,17 +163,27 @@ def main():
     # 1.8 m staff and a plain bench. Solids only, no texture, no mark.
     wood = solid("ScaleBench", (0.45, 0.32, 0.22), 0.8)
     metal = solid("ScaleStaff", (0.25, 0.27, 0.30), 0.45)
-    staff = cylinder("ScaleStaff", (0.85, 0.15, 0.0), 0.025, 1.80, metal)
-    ring = cylinder("ScaleMark", (0.85, 0.15, 1.80), 0.055, 0.012, metal)
+    staff = cylinder("ScaleStaff", (0.0, 0.0, 0.0), 0.025, 1.80, metal)
+    ring = cylinder("ScaleMark", (0.0, 0.0, 1.80), 0.055, 0.012, metal)
     bench = box("ScaleBench", (-1.15, 0.05, 0.225), (1.15, 0.42, 0.45), wood)
     props = [staff, ring, bench]
     for obj in props:
         obj.hide_render = True
         obj.hide_set(True)
+    # Beside the row, level with Reed, so the staff does not stand in front of Bram.
+    staff.location = (-3.90, -0.21, 0.0)
+    ring.location = (-3.90, -0.21, 0.0)
+    for obj in (staff, ring):
+        obj.hide_render = False
+        obj.hide_set(False)
     rp.shot_lineup(
         cam, clones, z_lift, "three",
         os.path.join(RAW, "lineup-three-quarter.png"), 1280, 720, 1.75,
+        extras=[staff, ring],
     )
+    for obj in (staff, ring):
+        obj.hide_render = True
+        obj.hide_set(True)
     rp.shot_lineup(
         cam, clones, z_lift, "side",
         os.path.join(RAW, "lineup-side.png"), 1280, 720, 1.75,

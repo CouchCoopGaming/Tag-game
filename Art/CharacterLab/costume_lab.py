@@ -10,7 +10,7 @@ import sys
 import time
 
 import bpy
-from mathutils import Vector
+from mathutils import Quaternion, Vector
 from mathutils.bvhtree import BVHTree
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
@@ -33,7 +33,7 @@ PEN_CM = 0.50
 # stations, sides. Tuned so one long outfit lands near 8–15k triangles.
 DENSITY = {
     "chest": (22, 32),
-    "spine": (5, 24),
+    "spine": (8, 28),
     "shoulder": (8, 20),
     "sleeve": (14, 20),
     "jog": (14, 22),
@@ -42,7 +42,95 @@ DENSITY = {
     "helmet": (14, 26),
     "cap": (10, 22),
     "collar": (5, 20),
+    "pad": (5, 12),
 }
+
+# Candidate insets, metres. The joint search picks the first one that clears.
+INSET_STEPS = [i / 100.0 for i in range(2, 16)]
+JOINT_CLEAR = 0.008
+BEVEL_M = 0.0025
+
+# Street kit, then Bram's own jacket kit. Same bones, different meshes.
+# Shortest split at each joint, metres. The flex search can only go longer.
+JOINT_FLOOR = {
+    ("UpperArm_", "LowerArm_"): 0.060,
+    ("UpperLeg_", "LowerLeg_"): 0.090,
+    ("LowerLeg_", "Foot_"): 0.055,
+    ("Hips", "UpperLeg_"): 0.060,
+}
+
+# Shells that must stay this far (metres) off a neighbouring plate at rest,
+# so a small idle swing does not bury them.
+CLEAR_ROWS = (
+    ("Lab_HoodieChest", ("Mesh_Shoulder_L", "Mesh_Shoulder_R", "Mesh_UpperArm_L", "Mesh_UpperArm_R"), 0.040),
+    ("Lab_HoodieBramChest", ("Mesh_Shoulder_L", "Mesh_Shoulder_R", "Mesh_UpperArm_L", "Mesh_UpperArm_R"), 0.040),
+    ("Lab_HoodieHips", ("Mesh_UpperLeg_L", "Mesh_UpperLeg_R"), 0.015),
+    ("Lab_HoodieBramHips", ("Mesh_UpperLeg_L", "Mesh_UpperLeg_R"), 0.015),
+    ("Lab_HoodieSpine", ("Mesh_UpperLeg_L", "Mesh_UpperLeg_R"), 0.045),
+    ("Lab_HoodieBramSpine", ("Mesh_UpperLeg_L", "Mesh_UpperLeg_R"), 0.045),
+    ("Lab_SleeveShL", ("Mesh_Chest",), 0.055),
+    ("Lab_SleeveShR", ("Mesh_Chest",), 0.055),
+    ("Lab_SleeveBramShL", ("Mesh_Chest",), 0.055),
+    ("Lab_SleeveBramShR", ("Mesh_Chest",), 0.055),
+    ("Lab_SleeveShL", ("Mesh_Shoulder_L",), 0.022),
+    ("Lab_SleeveShR", ("Mesh_Shoulder_R",), 0.022),
+    ("Lab_SleeveBramShL", ("Mesh_Shoulder_L",), 0.022),
+    ("Lab_SleeveBramShR", ("Mesh_Shoulder_R",), 0.022),
+    ("Lab_JogUL", ("Mesh_Hips",), 0.030),
+    ("Lab_JogUR", ("Mesh_Hips",), 0.030),
+    ("Lab_JogUBramL", ("Mesh_Hips",), 0.030),
+    ("Lab_JogUBramR", ("Mesh_Hips",), 0.030),
+    ("Lab_JogHipL", ("Mesh_Hips",), 0.012),
+    ("Lab_JogHipR", ("Mesh_Hips",), 0.012),
+    ("Lab_JogHipBramL", ("Mesh_Hips",), 0.012),
+    ("Lab_JogHipBramR", ("Mesh_Hips",), 0.012),
+    ("Lab_JogAnkleL", ("Mesh_Foot_L",), 0.032),
+    ("Lab_JogAnkleR", ("Mesh_Foot_R",), 0.032),
+    ("Lab_JogAnkleBramL", ("Mesh_Foot_L",), 0.032),
+    ("Lab_JogAnkleBramR", ("Mesh_Foot_R",), 0.032),
+    ("Lab_ShoeL", ("Mesh_LowerLeg_L",), 0.014),
+    ("Lab_ShoeR", ("Mesh_LowerLeg_R",), 0.014),
+    ("Lab_ShoeBramL", ("Mesh_LowerLeg_L",), 0.014),
+    ("Lab_ShoeBramR", ("Mesh_LowerLeg_R",), 0.014),
+    ("Lab_SleeveUL", ("Mesh_Chest", "Mesh_Shoulder_L"), 0.030),
+    ("Lab_SleeveUR", ("Mesh_Chest", "Mesh_Shoulder_R"), 0.030),
+    ("Lab_SleeveUBramL", ("Mesh_Chest", "Mesh_Shoulder_L"), 0.030),
+    ("Lab_SleeveUBramR", ("Mesh_Chest", "Mesh_Shoulder_R"), 0.030),
+)
+
+# parent bone, child bone, flexion degrees, local-X sign, pad token, pad bone
+JOINT_ROWS = (
+    ("UpperArm_", "LowerArm_", 50.0, -1.0, "SleeveElbow", "UpperArm_"),
+    ("UpperLeg_", "LowerLeg_", 150.0, 1.0, "JogKnee", "UpperLeg_"),
+    ("LowerLeg_", "Foot_", 55.0, 1.0, "JogAnkle", "LowerLeg_"),
+)
+
+OUTFITS = (
+    {
+        "tag": "",
+        "cloth": 0.006,
+        "thick": 0.009,
+        "hem": 0.002,
+        "chest_name": "Lab_HoodieChest",
+        "spine_name": "Lab_HoodieSpine",
+        "hip_name": "Lab_HoodieHips",
+        "shoe_name": "Lab_Shoe",
+        "cuff_name": "Lab_SleeveCuff",
+        "shoulder_name": "Lab_SleeveSh",
+    },
+    {
+        "tag": "Bram",
+        "cloth": 0.008,
+        "thick": 0.009,
+        "hem": 0.045,
+        "chest_name": "Lab_HoodieBramChest",
+        "spine_name": "Lab_HoodieBramSpine",
+        "hip_name": "Lab_HoodieBramHips",
+        "shoe_name": "Lab_ShoeBram",
+        "cuff_name": "Lab_SleeveBramCuff",
+        "shoulder_name": "Lab_SleeveBramSh",
+    },
+)
 
 PLAYER = {
     "Reed": (0.886, 0.235, 0.227),
@@ -380,7 +468,7 @@ def visual_penetration(body, point, ignore=None):
     return worst, where, normal
 
 
-def loft_piece(piece, points, origin, axis, t0, t1, n_stations, n_sides, offset, body, mask=None):
+def loft_piece(piece, points, origin, axis, t0, t1, n_stations, n_sides, offset, body, mask=None, fill_ring=True):
     """Shell stations by casting onto the faces. Limb shafts have verts only at the lips."""
     _ = points
     axis, bx, by = basis_from(axis)
@@ -409,7 +497,8 @@ def loft_piece(piece, points, origin, axis, t0, t1, n_stations, n_sides, offset,
             ring[s] = placed
             hits += 1
         if hits >= 3:
-            _fill_ring(ring)
+            if fill_ring:
+                _fill_ring(ring)
             chain.append(ring)
     if len(chain) >= 2:
         _fill_stations(chain)
@@ -647,14 +736,26 @@ def enforce_band(piece, body):
                 neighbour = gap_to_body(body, placed, ignore=piece.own, margin=0.04)
                 if neighbour is not None and neighbour[0] < 0.003:
                     depth = 0.003 - neighbour[0]
-                    # A deep overlap is the mannequin's own plates crossing.
-                    # Launching the sample out of that punches a hole in the shell.
-                    if depth <= 0.015:
-                        placed = placed + neighbour[1] * depth
+                    placed = placed + neighbour[1] * depth
+                    check = gap_to_one(own, placed)
+                    still = gap_to_body(body, placed, ignore=piece.own, margin=0.05)
+                    # Own-bone offset only. A sample that stays inside another
+                    # plate is cut, not shoved out into the next shell.
+                    if (
+                        check is None
+                        or check[0] < BAND_MIN - 1e-4
+                        or check[0] > hi
+                        or (still is not None and still[0] < 0.003)
+                    ):
+                        ring[s] = None
+                        cut += 1
+                        continue
                 check = gap_to_one(own, placed)
-                # A neighbour shove that buries the sample back into its own plate
-                # is how the waist and the armpits turned into holes. Keep the seat.
-                if check is None or check[0] < target - 1e-4:
+                # Restoring the own-bone seat is fine only when that seat is
+                # outside every other plate. Otherwise the sample is buried.
+                seated_foreign = gap_to_body(body, seated, ignore=piece.own, margin=0.05)
+                seated_ok = seated_foreign is None or seated_foreign[0] >= 0.003
+                if (check is None or check[0] < target - 1e-4) and seated_ok:
                     placed = seated
                     check = gap_to_one(own, placed)
                 if check is None or check[0] < BAND_MIN - 1e-4:
@@ -761,6 +862,407 @@ def tube(piece, points_fn):
     piece.chains.append(chain)
 
 
+def bone_bend_axis(arm, bone_name):
+    bone = arm.data.bones[bone_name]
+    rot = arm.matrix_world.to_3x3() @ bone.matrix_local.to_3x3()
+    return (rot @ Vector((1.0, 0.0, 0.0))).normalized()
+
+
+def rotate_point(point, pivot, axis, degrees):
+    spun = Quaternion(axis, math.radians(degrees)) @ (point - pivot)
+    return pivot + spun
+
+
+def ring_samples(center, normal, radius, count=8):
+    _axis, bx, by = basis_from(normal)
+    found = []
+    for index in range(count):
+        ang = math.tau * index / count
+        found.append(center + (bx * math.cos(ang) + by * math.sin(ang)) * radius)
+    return found
+
+
+def rings_clear(left, right, margin):
+    for a in left:
+        for b in right:
+            if (a - b).length < margin:
+                return False
+    return True
+
+
+def end_radius(points, origin, axis, joint_t, offset):
+    near = []
+    for point in points:
+        rel = point - origin
+        t = rel.dot(axis)
+        if abs(t - joint_t) > 0.08:
+            continue
+        near.append((rel - axis * t).length)
+    if not near:
+        for point in points:
+            rel = point - origin
+            t = rel.dot(axis)
+            near.append((rel - axis * t).length)
+    near.sort()
+    return near[len(near) // 2] + offset
+
+
+def inset_for_flex(joint, axis_from, axis_to, bend, radius_from, radius_to, degrees):
+    """First inset where the two end rings stay apart after the child bends."""
+    for dist in INSET_STEPS:
+        parent_center = joint - axis_from * dist
+        child_center = joint + axis_to * dist
+        parent_ring = ring_samples(parent_center, axis_from, radius_from)
+        child_ring = [
+            rotate_point(point, joint, bend, degrees)
+            for point in ring_samples(child_center, axis_to, radius_to)
+        ]
+        if rings_clear(parent_ring, child_ring, JOINT_CLEAR):
+            return dist
+    return INSET_STEPS[-1]
+
+
+def opening_direction(bend, bone_axis, rot_sign):
+    swing = bend.cross(bone_axis)
+    if swing.length < 1e-6:
+        return Vector((0.0, -1.0, 0.0))
+    swing.normalize()
+    if rot_sign < 0.0:
+        swing = -swing
+    return -swing
+
+
+def bevel_cuffs(piece, body, amount=BEVEL_M, stations=2):
+    """Pull the rim toward the bone. Leave at least 3 mm of own-bone cloth."""
+    guide = getattr(piece, "guide", None)
+    if guide is None:
+        return
+    origin, axis = guide
+    own = body[piece.own]
+    for chain in piece.chains:
+        count = len(chain)
+        if count < 3:
+            continue
+        for ri, ring in enumerate(chain):
+            edge = min(ri, count - 1 - ri)
+            if edge >= stations:
+                continue
+            pull = amount * float(stations - edge) / float(stations)
+            live = [point for point in ring if point is not None]
+            if len(live) < 3:
+                continue
+            center = sum(live, Vector()) / len(live)
+            t = (center - origin).dot(axis)
+            axial = origin + axis * t
+            for si, point in enumerate(ring):
+                if point is None:
+                    continue
+                radial = point - axial
+                length = radial.length
+                if length < pull + 0.004:
+                    continue
+                moved = point - radial / length * pull
+                hit = gap_to_one(own, moved)
+                if hit is None or hit[0] < BAND_MIN:
+                    continue
+                if hit[0] > BAND_MAX:
+                    continue
+                ring[si] = moved
+
+
+def rib_pad(piece, extra=0.0025):
+    """Alternate stations sit a little proud so the pad reads as a soft sleeve."""
+    guide = getattr(piece, "guide", None)
+    if guide is None:
+        return
+    origin, axis = guide
+    for chain in piece.chains:
+        for ri, ring in enumerate(chain):
+            if ri % 2 == 0:
+                continue
+            live = [point for point in ring if point is not None]
+            if len(live) < 3:
+                continue
+            center = sum(live, Vector()) / len(live)
+            t = (center - origin).dot(axis)
+            axial = origin + axis * t
+            for si, point in enumerate(ring):
+                if point is None:
+                    continue
+                radial = point - axial
+                length = radial.length
+                if length < 1e-5:
+                    continue
+                ring[si] = point + radial / length * extra
+
+
+def make_loft(pieces, body, name, bone, own, kind, origin, axis, t0, t1, key, offset, mask=None, fill_ring=True, expand=0.04):
+    if t1 < t0:
+        t0, t1 = t1, t0
+    if expand and t1 - t0 < expand:
+        mid = (t0 + t1) * 0.5
+        t0 = mid - expand * 0.5
+        t1 = mid + expand * 0.5
+    n_st, n_side = DENSITY[key]
+    piece = Piece(name, bone, own, kind)
+    piece.loop = bool(fill_ring)
+    piece.offset = offset
+    axis = axis.normalized()
+    piece.guide = (origin.copy(), axis.copy())
+    loft_piece(piece, body[own]["world"], origin, axis, t0, t1, n_st, n_side, offset, body, mask, fill_ring)
+    pieces.append(piece)
+    return piece
+
+
+def span_limits(points, origin, axis):
+    return project_span(points, origin, axis)
+
+
+def _bone_pair(parent_bone, child_bone, side):
+    parent = parent_bone + side if parent_bone.endswith("_") else parent_bone
+    child = child_bone + side if child_bone.endswith("_") else child_bone
+    return parent, child
+
+
+def _collect_insets(arm, body, cloth):
+    found = {}
+    rows = JOINT_ROWS + (("Hips", "UpperLeg_", 50.0, 1.0, "JogHip", "UpperLeg_"),)
+    for parent_bone, child_bone, flex, rot_sign, _pad, _pad_bone in rows:
+        for side in ("L", "R"):
+            parent, child = _bone_pair(parent_bone, child_bone, side)
+            parent_head, parent_axis = bone_axis(arm, parent)
+            child_head, child_axis = bone_axis(arm, child)
+            joint = child_head
+            bend = bone_bend_axis(arm, child)
+            parent_t = (joint - parent_head).dot(parent_axis)
+            r_parent = end_radius(body["Mesh_" + parent]["world"], parent_head, parent_axis, parent_t, cloth)
+            r_child = end_radius(body["Mesh_" + child]["world"], child_head, child_axis, 0.0, cloth)
+            dist = inset_for_flex(
+                joint, parent_axis, child_axis, bend,
+                r_parent, r_child, rot_sign * flex,
+            )
+            dist = max(dist, JOINT_FLOOR[(parent_bone, child_bone)])
+            found[(parent, child)] = {
+                "dist": dist,
+                "flex": rot_sign * flex,
+                "bend": bend,
+                "child_axis": child_axis,
+                "rot_sign": rot_sign,
+            }
+            log(
+                "INSET %s -> %s %.1fcm r=%.1f/%.1f"
+                % (parent, child, dist * 100.0, r_parent * 100.0, r_child * 100.0)
+            )
+    return found
+
+
+def _mark_bevel(piece):
+    piece.bevel = True
+    return piece
+
+
+def build_outfits(pieces, arm, body):
+    """Street kit and Bram's jacket kit. Each shell is one bone."""
+    z_axis = Vector((0.0, 0.0, 1.0))
+    for outfit in OUTFITS:
+        cloth = outfit["cloth"]
+        thick = outfit["thick"]
+        tag = outfit["tag"]
+        chest_z = [point.z for point in body["Mesh_Chest"]["world"]]
+        spine_z = [point.z for point in body["Mesh_Spine"]["world"]]
+        hip_z = [point.z for point in body["Mesh_Hips"]["world"]]
+        def keep_torso(direction, _center):
+            return abs(direction.x) < 0.50
+
+        def keep_back(direction, _center):
+            # Face is -Y. The lower-back panel stays behind the lifted thigh.
+            return direction.y > 0.20
+
+        def keep_waist(direction, _center):
+            # Rear seat, plus a narrow belly the thighs do not cross.
+            if direction.y > 0.20:
+                return True
+            return direction.y < -0.55 and abs(direction.x) < 0.22
+
+        make_loft(
+            pieces, body, outfit["chest_name"], "Chest", "Mesh_Chest", "cloth",
+            Vector((0.0, 0.0, 0.0)), z_axis,
+            min(chest_z) + 0.012, max(chest_z) - 0.008, "chest", thick,
+            keep_torso,
+        )
+        make_loft(
+            pieces, body, outfit["spine_name"], "Spine", "Mesh_Spine", "cloth",
+            Vector((0.0, 0.0, 0.0)), z_axis,
+            min(spine_z) + 0.024, max(spine_z) - 0.006, "spine", thick,
+            keep_back,
+        )
+        # Waistband on the iliac crest. The thigh sweep owns the pelvis below it.
+        hip_hi = max(hip_z) - 0.016
+        band = 0.028 if outfit["hem"] > 0.02 else 0.036
+        make_loft(
+            pieces, body, outfit["hip_name"], "Hips", "Mesh_Hips", "cloth",
+            Vector((0.0, 0.0, 0.0)), z_axis,
+            hip_hi - band, hip_hi, "spine", thick, keep_waist,
+        )
+        insets = _collect_insets(arm, body, cloth)
+        for side in ("L", "R"):
+            _build_side(pieces, arm, body, outfit, insets, side)
+        log("OUTFIT %s" % (tag or "street"))
+
+
+def _span(arm, body, bone, mesh):
+    origin, axis = bone_axis(arm, bone)
+    lo, hi = project_span(body[mesh]["world"], origin, axis)
+    return origin, axis, lo, hi
+
+
+def _opening_mask(keep):
+    def mask(direction, _center):
+        return direction.dot(keep) > 0.05
+    return mask
+
+
+def _add_pad(pieces, body, name, bone, mesh, origin, axis, t0, t1, offset, keep):
+    piece = make_loft(
+        pieces, body, name, bone, mesh, "cloth",
+        origin, axis, t0, t1, "pad", offset,
+        _opening_mask(keep), False, 0.0,
+    )
+    # Valleys stay near 4 mm so the ribs can sit proud inside the 1 cm band.
+    piece.offset = 0.004
+    rib_pad(piece)
+    return _mark_bevel(piece)
+
+
+def _bone_t(arm, origin, axis, bone):
+    point = arm.matrix_world @ arm.data.bones[bone].head_local
+    return (point - origin).dot(axis)
+
+
+def _tail_t(arm, origin, axis, bone):
+    point = arm.matrix_world @ arm.data.bones[bone].tail_local
+    return (point - origin).dot(axis)
+
+
+def _build_side(pieces, arm, body, outfit, insets, side):
+    """Spans are measured from the joint, not from the mesh bounds."""
+    tag = outfit["tag"]
+    cloth = outfit["cloth"]
+    thick = outfit["thick"]
+    elbow = insets[("UpperArm_" + side, "LowerArm_" + side)]["dist"]
+    knee = insets[("UpperLeg_" + side, "LowerLeg_" + side)]["dist"]
+    ankle = insets[("LowerLeg_" + side, "Foot_" + side)]["dist"]
+    hip = insets[("Hips", "UpperLeg_" + side)]["dist"]
+    elbow_row = insets[("UpperArm_" + side, "LowerArm_" + side)]
+    knee_row = insets[("UpperLeg_" + side, "LowerLeg_" + side)]
+    ankle_row = insets[("LowerLeg_" + side, "Foot_" + side)]
+    hip_row = insets[("Hips", "UpperLeg_" + side)]
+
+    origin, axis, _lo, _hi = _span(arm, body, "UpperArm_" + side, "Mesh_UpperArm_" + side)
+    _mark_bevel(make_loft(
+        pieces, body, outfit["shoulder_name"] + side, "UpperArm_" + side, "Mesh_UpperArm_" + side, "cloth",
+        origin, axis, 0.028, 0.056, "sleeve", thick, None, True, 0.0,
+    ))
+    elbow_t = _bone_t(arm, origin, axis, "LowerArm_" + side)
+    _mark_bevel(make_loft(
+        pieces, body, "Lab_SleeveU%s%s" % (tag, side), "UpperArm_" + side, "Mesh_UpperArm_" + side, "cloth",
+        origin, axis, 0.080, elbow_t - elbow, "sleeve", cloth,
+    ))
+    keep = opening_direction(elbow_row["bend"], elbow_row["child_axis"], elbow_row["rot_sign"])
+    _add_pad(
+        pieces, body, "Lab_SleeveElbow%s%s" % (tag, side),
+        "UpperArm_" + side, "Mesh_UpperArm_" + side,
+        origin, axis, elbow_t - elbow + 0.010, elbow_t - 0.016, cloth, keep,
+    )
+
+    origin, axis, _lo, _hi = _span(arm, body, "LowerArm_" + side, "Mesh_LowerArm_" + side)
+    wrist_t = _tail_t(arm, origin, axis, "LowerArm_" + side)
+    _mark_bevel(make_loft(
+        pieces, body, "Lab_SleeveL%s%s" % (tag, side), "LowerArm_" + side, "Mesh_LowerArm_" + side, "cloth",
+        origin, axis, elbow, wrist_t - 0.040, "sleeve", cloth,
+    ))
+    _mark_bevel(make_loft(
+        pieces, body, outfit["cuff_name"] + side, "LowerArm_" + side, "Mesh_LowerArm_" + side, "cloth",
+        origin, axis, wrist_t - 0.032, wrist_t - 0.008, "sleeve", thick, None, True, 0.0,
+    ))
+
+    origin, axis, _lo, _hi = _span(arm, body, "UpperLeg_" + side, "Mesh_UpperLeg_" + side)
+    knee_t = _bone_t(arm, origin, axis, "LowerLeg_" + side)
+    # The thigh root sits inside the pelvis. Start the shell below that bury.
+    jog_t0 = max(hip, 0.255)
+    _mark_bevel(make_loft(
+        pieces, body, "Lab_JogU%s%s" % (tag, side), "UpperLeg_" + side, "Mesh_UpperLeg_" + side, "cloth",
+        origin, axis, jog_t0, knee_t - knee, "jog", cloth,
+    ))
+    keep = opening_direction(knee_row["bend"], knee_row["child_axis"], knee_row["rot_sign"])
+    _add_pad(
+        pieces, body, "Lab_JogKnee%s%s" % (tag, side),
+        "UpperLeg_" + side, "Mesh_UpperLeg_" + side,
+        origin, axis, knee_t - knee + 0.012, knee_t - 0.018, cloth, keep,
+    )
+    keep = opening_direction(hip_row["bend"], hip_row["child_axis"], hip_row["rot_sign"])
+    _add_pad(
+        pieces, body, "Lab_JogHip%s%s" % (tag, side),
+        "UpperLeg_" + side, "Mesh_UpperLeg_" + side,
+        origin, axis, 0.205, 0.242, cloth, keep,
+    )
+
+    origin, axis, _lo, _hi = _span(arm, body, "LowerLeg_" + side, "Mesh_LowerLeg_" + side)
+    ankle_t = _bone_t(arm, origin, axis, "Foot_" + side)
+    _mark_bevel(make_loft(
+        pieces, body, "Lab_JogL%s%s" % (tag, side), "LowerLeg_" + side, "Mesh_LowerLeg_" + side, "cloth",
+        origin, axis, knee, ankle_t - ankle - 0.022, "jog", cloth,
+    ))
+    keep = opening_direction(ankle_row["bend"], ankle_row["child_axis"], ankle_row["rot_sign"])
+    _add_pad(
+        pieces, body, "Lab_JogAnkle%s%s" % (tag, side),
+        "LowerLeg_" + side, "Mesh_LowerLeg_" + side,
+        origin, axis, ankle_t - ankle - 0.008, ankle_t - 0.036, cloth, keep,
+    )
+
+    origin, axis, _lo, _hi = _span(arm, body, "Foot_" + side, "Mesh_Foot_" + side)
+    toe_t = _tail_t(arm, origin, axis, "Foot_" + side)
+    shoe = make_loft(
+        pieces, body, outfit["shoe_name"] + side, "Foot_" + side, "Mesh_Foot_" + side, "cloth",
+        origin, axis, ankle + 0.015, toe_t - 0.006, "shoe", SHOE_OFFSET,
+    )
+    close_top(shoe, origin + axis * (toe_t + 0.006))
+
+
+def clear_neighbours(pieces, body):
+    """Drop samples that sit too close to a plate on another bone."""
+    by_name = {piece.name: piece for piece in pieces}
+    for name, meshes, margin in CLEAR_ROWS:
+        piece = by_name.get(name)
+        if piece is None:
+            continue
+        cut = 0
+        nearest = None
+        for chain in piece.chains:
+            for ring in chain:
+                for si, point in enumerate(ring):
+                    if point is None:
+                        continue
+                    gap = None
+                    for mesh in meshes:
+                        hit = gap_to_one(body[mesh], point)
+                        if hit is None:
+                            continue
+                        if gap is None or hit[0] < gap:
+                            gap = hit[0]
+                    if gap is None:
+                        continue
+                    if nearest is None or gap < nearest:
+                        nearest = gap
+                    if gap < margin:
+                        ring[si] = None
+                        cut += 1
+        log(
+            "CLEAR %s cut=%d nearest-cm=%s"
+            % (name, cut, "none" if nearest is None else "%.2f" % (nearest * 100.0))
+        )
+
+
 def catalog(arm, body):
     pieces = []
     x_axis = Vector((1.0, 0.0, 0.0))
@@ -777,144 +1279,8 @@ def catalog(arm, body):
         pieces.append(piece)
         return piece
 
-    # Torso shells wrap the whole plate, flanks included, thicker than the sleeves.
-    chest = body["Mesh_Chest"]["world"]
-    chest_z = [p.z for p in chest]
-    add_loft(
-        "Lab_HoodieChest", "Chest", "Mesh_Chest", "cloth",
-        Vector((0.0, 0.0, 0.0)), z_axis, min(chest_z) + 0.004, max(chest_z) - 0.004,
-        "chest", HOODIE_OFFSET,
-    )
-    # The spine plate is a short connector. A loft along Z lands in the chest
-    # and hip overlap and comes back under 3 mm, so the waist reads as a hole.
-    # A padded box stays outside that plate.
-    spine_pts = body["Mesh_Spine"]["world"]
-    spine = Piece("Lab_HoodieSpine", "Spine", "Mesh_Spine", "cloth")
-    spine.offset = HOODIE_OFFSET
-    sb0 = Vector((min(p.x for p in spine_pts), min(p.y for p in spine_pts), min(p.z for p in spine_pts)))
-    sb1 = Vector((max(p.x for p in spine_pts), max(p.y for p in spine_pts), max(p.z for p in spine_pts)))
-    spad = 0.008
-    add_box(
-        spine, (sb0 + sb1) * 0.5, x_axis, y_axis, z_axis,
-        (sb1.x - sb0.x) * 0.5 + spad,
-        (sb1.y - sb0.y) * 0.5 + spad,
-        (sb1.z - sb0.z) * 0.5 + spad,
-        4, 3,
-    )
-    spine.boxes.clear()
-    pieces.append(spine)
-    hip_pts = body["Mesh_Hips"]["world"]
-    hip_z = [p.z for p in hip_pts]
-    add_loft(
-        "Lab_HoodieHips", "Hips", "Mesh_Hips", "cloth",
-        Vector((0.0, 0.0, 0.0)), z_axis, min(hip_z) + 0.012, max(hip_z) - 0.002,
-        "spine", HOODIE_OFFSET,
-    )
-
-    # Arms. Elbow flexion in these clips peaks near 50 degrees (the slide).
-    # Shoulder covers stay bare: on this mannequin they sit inside the chest and the sleeve.
-    for side in ("L", "R"):
-        uo, ua = bone_axis(arm, "UpperArm_" + side)
-        lo, la = bone_axis(arm, "LowerArm_" + side)
-        upts = body["Mesh_UpperArm_" + side]["world"]
-        lpts = body["Mesh_LowerArm_" + side]["world"]
-        us = project_span(upts, uo, ua)
-        ls = project_span(lpts, lo, la)
-        u_span = us[1] - us[0]
-        l_span = ls[1] - ls[0]
-        # Cover the shaft. A short gap at the elbow keeps the two tubes from sharing a volume.
-        u_keep0 = us[0] + u_span * 0.02
-        u_keep1 = us[0] + u_span * 0.96
-        l_keep0 = ls[0] + l_span * 0.04
-        l_keep1 = ls[0] + l_span * 0.78
-        spts = body["Mesh_Shoulder_" + side]["world"]
-        shoulder = Piece("Lab_SleeveSh" + side, "Shoulder_" + side, "Mesh_Shoulder_" + side, "cloth")
-        shoulder.offset = HOODIE_OFFSET
-        sh0 = Vector((min(p.x for p in spts), min(p.y for p in spts), min(p.z for p in spts)))
-        sh1 = Vector((max(p.x for p in spts), max(p.y for p in spts), max(p.z for p in spts)))
-        shpad = 0.007
-        add_box(
-            shoulder, (sh0 + sh1) * 0.5, x_axis, y_axis, z_axis,
-            (sh1.x - sh0.x) * 0.5 + shpad,
-            (sh1.y - sh0.y) * 0.5 + shpad,
-            (sh1.z - sh0.z) * 0.5 + shpad,
-            3, 3,
-        )
-        shoulder.boxes.clear()
-        pieces.append(shoulder)
-        add_loft(
-            "Lab_SleeveU" + side, "UpperArm_" + side, "Mesh_UpperArm_" + side, "cloth",
-            uo, ua, u_keep0, u_keep1, "sleeve", CLOTH_OFFSET,
-        )
-        add_loft(
-            "Lab_SleeveL" + side, "LowerArm_" + side, "Mesh_LowerArm_" + side, "cloth",
-            lo, la, l_keep0, l_keep1, "sleeve", CLOTH_OFFSET,
-        )
-        # Dark wrist band. The name carries "sleeve" so the clothing check accepts it.
-        add_loft(
-            "Lab_SleeveCuff" + side, "LowerArm_" + side, "Mesh_LowerArm_" + side, "cloth",
-            lo, la, ls[0] + l_span * 0.80, ls[0] + l_span * 0.98, "sleeve", 0.009,
-        )
-
-    # Legs. The slide folds one knee to 150 degrees, so the tubes stop short of the joint.
-    for side in ("L", "R"):
-        uo, ua = bone_axis(arm, "UpperLeg_" + side)
-        lo, la = bone_axis(arm, "LowerLeg_" + side)
-        upts = body["Mesh_UpperLeg_" + side]["world"]
-        lpts = body["Mesh_LowerLeg_" + side]["world"]
-        us = project_span(upts, uo, ua)
-        ls = project_span(lpts, lo, la)
-        u_span = us[1] - us[0]
-        l_span = ls[1] - ls[0]
-        u_keep0 = us[0] + u_span * 0.02
-        # Stop before the knee cap. A station on the cap misses and opens a hole.
-        u_keep1 = us[0] + u_span * 0.97
-        l_keep0 = ls[0] + l_span * 0.03
-        l_keep1 = ls[0] + l_span * 0.96
-        jog = add_loft(
-            "Lab_JogU" + side, "UpperLeg_" + side, "Mesh_UpperLeg_" + side, "cloth",
-            uo, ua, u_keep0, u_keep1, "jog", CLOTH_OFFSET,
-        )
-        # The knee cap faces along the bone, so the tube stops short of it.
-        # The cap is part of the same jog so the two shells are not a pair.
-        knee_pts = [p for p in upts if (p - uo).dot(ua) > us[1] - 0.012]
-        if len(knee_pts) >= 4:
-            knee = Piece("Lab_JogKnee" + side, "UpperLeg_" + side, "Mesh_UpperLeg_" + side, "cloth")
-            knee.offset = CLOTH_OFFSET
-            k0 = Vector((min(p.x for p in knee_pts), min(p.y for p in knee_pts), min(p.z for p in knee_pts)))
-            k1 = Vector((max(p.x for p in knee_pts), max(p.y for p in knee_pts), max(p.z for p in knee_pts)))
-            kpad = 0.004
-            add_box(
-                knee, (k0 + k1) * 0.5, x_axis, y_axis, z_axis,
-                (k1.x - k0.x) * 0.5 + kpad,
-                (k1.y - k0.y) * 0.5 + kpad,
-                (k1.z - k0.z) * 0.5 + kpad,
-                3, 3,
-            )
-            knee.boxes.clear()
-            jog.chains.extend(knee.chains)
-        add_loft(
-            "Lab_JogL" + side, "LowerLeg_" + side, "Mesh_LowerLeg_" + side, "cloth",
-            lo, la, l_keep0, l_keep1, "jog", CLOTH_OFFSET,
-        )
-
-        # Closed shoe. A loft along the foot left an open, mottled blob.
-        fpts = body["Mesh_Foot_" + side]["world"]
-        shoe = Piece("Lab_Shoe" + side, "Foot_" + side, "Mesh_Foot_" + side, "cloth")
-        shoe.offset = SHOE_OFFSET
-        bmin = Vector((min(p.x for p in fpts), min(p.y for p in fpts), min(p.z for p in fpts)))
-        bmax = Vector((max(p.x for p in fpts), max(p.y for p in fpts), max(p.z for p in fpts)))
-        pad = 0.008
-        center = (bmin + bmax) * 0.5 + Vector((0.0, -0.006, 0.002))
-        add_box(
-            shoe, center, x_axis, y_axis, z_axis,
-            (bmax.x - bmin.x) * 0.5 + pad,
-            (bmax.y - bmin.y) * 0.5 + pad + 0.012,
-            (bmax.z - bmin.z) * 0.5 + pad,
-            5, 4,
-        )
-        shoe.boxes.clear()
-        pieces.append(shoe)
+    # Street shells and Bram's own jacket shells. Data lives in OUTFITS.
+    build_outfits(pieces, arm, body)
 
     # Head wear. Face is -Y. A wide opening reads as a hood, a narrow one as a helmet.
     hpts = body["Mesh_Head"]["world"]
@@ -944,6 +1310,13 @@ def catalog(arm, body):
         "cap", 0.007, None,
     )
     close_top(cap, Vector((h_center.x, h_center.y, hz1 + 0.008)))
+    # Bram's beanie. A tighter crown than the cap, no brim, so the outline is his.
+    beanie = add_loft(
+        "Lab_CapBeanie", "Head", "Mesh_Head", "cloth",
+        Vector((0.0, 0.0, 0.0)), z_axis, hz0 + (hz1 - hz0) * 0.42, hz1 + 0.005,
+        "cap", 0.008, face_mask(0.02),
+    )
+    close_top(beanie, Vector((h_center.x, h_center.y, hz1 + 0.010)))
 
     # Hood-down collar, on the neck, clear of the jaw and the hoodie hem.
     npts = body["Mesh_Neck"]["world"]
@@ -952,6 +1325,11 @@ def catalog(arm, body):
         "Lab_Collar", "Neck", "Mesh_Neck", "cloth",
         Vector((0.0, 0.0, 0.0)), z_axis, n0 + (n1 - n0) * 0.04, n0 + (n1 - n0) * 0.96,
         "collar", 0.008, None,
+    )
+    add_loft(
+        "Lab_CollarBram", "Neck", "Mesh_Neck", "cloth",
+        Vector((0.0, 0.0, 0.0)), z_axis, n0 + (n1 - n0) * 0.02, n1 + 0.012,
+        "collar", 0.009, None,
     )
 
     # Brim: a thin plate in front of the brow, outside the nose.
@@ -1064,6 +1442,7 @@ def catalog(arm, body):
     pieces.append(hair)
 
     # Backpack, inner face just off the hoodie, outer face a few centimetres out.
+    chest = body["Mesh_Chest"]["world"]
     back_y = max(p.y for p in chest)
     inner = back_y + 0.012
     depth = 0.045
@@ -1072,6 +1451,11 @@ def catalog(arm, body):
     center = Vector((0.0, inner + depth * 0.5, 1.27))
     add_box(pack, center, x_axis, y_axis, z_axis, 0.070, depth * 0.5, 0.085, 5, 4)
     pieces.append(pack)
+    bram_pack = Piece("Lab_PackBram", "Chest", "Mesh_Chest", "accessory")
+    bram_pack.loop = False
+    bram_center = Vector((0.0, inner + 0.055, 1.22))
+    add_box(bram_pack, bram_center, x_axis, y_axis, z_axis, 0.090, 0.028, 0.070, 5, 4)
+    pieces.append(bram_pack)
 
     # Kangaroo pocket just outside the hoodie shell, still inside the 1 cm band.
     front_y = min(p.y for p in chest)
@@ -1150,6 +1534,10 @@ def catalog(arm, body):
         moved, cut = enforce_band(piece, body)
         log("BUILT %s verts=%d moved=%d cut=%d" % (piece.name, piece.vert_count(), moved, cut))
     trim_overlaps(arm, pieces, body)
+    for piece in pieces:
+        if getattr(piece, "bevel", False):
+            bevel_cuffs(piece, body)
+    clear_neighbours(pieces, body)
     return pieces
 
 
@@ -1217,14 +1605,14 @@ def id_for(who, index, label):
 
 
 COVER_LONG = [
-    "Mesh_Chest", "Mesh_Spine", "Mesh_Hips",
+    "Mesh_Chest",
     "Mesh_Shoulder_L", "Mesh_Shoulder_R",
     "Mesh_UpperArm_L", "Mesh_UpperArm_R", "Mesh_LowerArm_L", "Mesh_LowerArm_R",
     "Mesh_UpperLeg_L", "Mesh_UpperLeg_R", "Mesh_LowerLeg_L", "Mesh_LowerLeg_R",
     "Mesh_Foot_L", "Mesh_Foot_R",
 ]
 COVER_CROP = [
-    "Mesh_Chest", "Mesh_Spine",
+    "Mesh_Chest",
     "Mesh_Shoulder_L", "Mesh_Shoulder_R",
     "Mesh_UpperArm_L", "Mesh_UpperArm_R",
     "Mesh_UpperLeg_L", "Mesh_UpperLeg_R",
@@ -1232,7 +1620,16 @@ COVER_CROP = [
 ]
 
 
+def _pad_names(tag):
+    names = []
+    for token in ("SleeveElbow", "JogKnee", "JogHip", "JogAnkle"):
+        for side in ("L", "R"):
+            names.append("Lab_%s%s%s" % (token, tag, side))
+    return names
+
+
 def loadout_map():
+    pads = _pad_names("")
     long_core = [
         "Lab_HoodieChest", "Lab_HoodieSpine", "Lab_HoodieHips", "Lab_Seam", "Lab_Pocket",
         "Lab_SleeveShL", "Lab_SleeveShR",
@@ -1240,21 +1637,30 @@ def loadout_map():
         "Lab_SleeveCuffL", "Lab_SleeveCuffR",
         "Lab_JogUL", "Lab_JogUR", "Lab_JogLL", "Lab_JogLR",
         "Lab_ShoeL", "Lab_ShoeR",
-    ]
+    ] + pads
     crop_core = [
         "Lab_HoodieChest", "Lab_HoodieSpine", "Lab_HoodieHips", "Lab_Seam", "Lab_Pocket",
         "Lab_SleeveShL", "Lab_SleeveShR",
         "Lab_SleeveUL", "Lab_SleeveUR",
         "Lab_JogUL", "Lab_JogUR",
         "Lab_ShoeL", "Lab_ShoeR",
-    ]
+    ] + pads
+    bram_core = [
+        "Lab_HoodieBramChest", "Lab_HoodieBramSpine", "Lab_HoodieBramHips",
+        "Lab_SleeveBramShL", "Lab_SleeveBramShR",
+        "Lab_SleeveUBramL", "Lab_SleeveUBramR", "Lab_SleeveLBramL", "Lab_SleeveLBramR",
+        "Lab_SleeveBramCuffL", "Lab_SleeveBramCuffR",
+        "Lab_JogUBramL", "Lab_JogUBramR", "Lab_JogLBramL", "Lab_JogLBramR",
+        "Lab_ShoeBramL", "Lab_ShoeBramR",
+        "Lab_CapBeanie",
+    ] + _pad_names("Bram")
     specs = [
         ("Reed", 1, "hood", long_core + ["Lab_Hood", "Lab_HoodRoll"]),
         ("Reed", 2, "cap", long_core + ["Lab_Cap", "Lab_Brim", "Lab_Pack"]),
         ("Reed", 3, "helmet", long_core + ["Lab_Helmet", "Lab_Visor"]),
-        ("Bram", 1, "helmet", long_core + ["Lab_Helmet", "Lab_Visor"]),
-        ("Bram", 2, "cap", long_core + ["Lab_Cap", "Lab_Brim", "Lab_Pack"]),
-        ("Bram", 3, "hood", long_core + ["Lab_Hood", "Lab_HoodRoll"]),
+        ("Bram", 1, "beanie", bram_core),
+        ("Bram", 2, "jacket", bram_core + ["Lab_PackBram"]),
+        ("Bram", 3, "collar", bram_core + ["Lab_CollarBram"]),
         ("Pip", 1, "cap", crop_core + ["Lab_Cap", "Lab_Brim", "Lab_Pack"]),
         ("Pip", 2, "hair", crop_core + ["Lab_Hair"]),
         ("Pip", 3, "helmet", crop_core + ["Lab_Helmet", "Lab_Visor"]),
@@ -1266,10 +1672,7 @@ def loadout_map():
     for who, index, label, names in specs:
         # Pip's crop is bare forearms and shins. The waist still wears the hip shell.
         # Pip's crop is bare forearms and shins. The waist still wears the hip shell.
-        # The collar sits on the neck; the neck itself stays visible.
         hide = list(COVER_CROP if who == "Pip" else COVER_LONG)
-        if who == "Pip":
-            hide.append("Mesh_Hips")
         sets.append({
             "id": id_for(who, index, label),
             "character": who,
@@ -1507,8 +1910,8 @@ def measure(arm, body, pieces, sets, clips):
             if a.bone != b.bone:
                 continue
             rest_pair[(a.name, b.name)] = pair_depth(a, b, bone_matrix(arm, a.bone))
-    for pair, depth in sorted(rest_pair.items(), key=lambda item: -item[1])[:8]:
-        if depth_cm(depth) > 0.0:
+    for pair, depth in sorted(rest_pair.items(), key=lambda item: -item[1]):
+        if depth_cm(depth) >= 0.40:
             log("REST-PAIR %s %s %.2f" % (pair[0], pair[1], depth_cm(depth)))
     log("REST-PAIRS %d worst-cm %.2f" % (
         len(rest_pair),
@@ -1527,9 +1930,15 @@ def measure(arm, body, pieces, sets, clips):
     fails = 0
     band_close = 0
     worst_desc = ""
+    by_clip = []
     t0 = time.time()
     for clip_name, show, ctx, times in clips:
+        clip_world = 0.0
+        clip_fails = 0
+        clip_frames = 0
         log("CLIP %s frames %d" % (clip_name, len(times)))
+        clip_body = 0.0
+        clip_body_name = ""
         for index, age in enumerate(times):
             show(arm, age, ctx)
             bpy.context.view_layer.update()
@@ -1596,11 +2005,21 @@ def measure(arm, body, pieces, sets, clips):
                     if a in name_set and b in name_set and depth > local:
                         local = depth
                 frames += 1
+                clip_frames += 1
                 if depth_cm(local) > PEN_CM:
                     fails += 1
+                    clip_fails += 1
                 if local > world:
                     world = local
                     worst_desc = "%s t=%.3f cm=%.2f" % (clip_name, age, depth_cm(local))
+                if local > clip_world:
+                    clip_world = local
+            if body_depth:
+                top_name, top_depth = max(body_depth.items(), key=lambda item: item[1])
+                if top_depth > clip_body:
+                    clip_body = top_depth
+                    where = by_name[top_name]._hit_where if top_name in by_name else ""
+                    clip_body_name = "%s->%s" % (top_name, where)
             if os.environ.get("COSTUME_DEBUG") == "1" and depth_cm(max([0.0] + list(body_depth.values()) + list(cross.values()))) > PEN_CM:
                 top_c = max(cross.items(), key=lambda item: item[1]) if cross else (("none", "none"), 0.0)
                 top_b = max(body_depth.items(), key=lambda item: item[1]) if body_depth else ("none", 0.0)
@@ -1611,6 +2030,14 @@ def measure(arm, body, pieces, sets, clips):
                     ))
             if index % 20 == 0:
                 log("  %s %d/%d elapsed %.1f worst %s" % (clip_name, index, len(times), time.time() - t0, worst_desc))
+        log(
+            "CLIP-FIT %s worldMax=%.2f frames=%d fails=%d body=%s %.2f"
+            % (
+                clip_name, depth_cm(clip_world), clip_frames, clip_fails,
+                clip_body_name, depth_cm(clip_body),
+            )
+        )
+        by_clip.append((clip_name, clip_world, clip_frames, clip_fails))
     return {
         "frames": frames,
         "fails": fails,
@@ -1619,6 +2046,7 @@ def measure(arm, body, pieces, sets, clips):
         "worst": worst_desc,
         "band_close": band_close,
         "rest_pair": max(rest_pair.values()) if rest_pair else 0.0,
+        "by_clip": by_clip,
     }
 
 
@@ -1896,11 +2324,12 @@ def make_clips(arm):
         "roll": p.SLIDE_YAW,
         "wall": 140.0,
         "idle": p.SLIDE_YAW,
+        "walk": p.SLIDE_YAW,
         "run": p.SLIDE_YAW,
         "sprint": p.SLIDE_YAW,
     }
-    wanted = os.environ.get("COSTUME_CLIPS", "idle,run,sprint,wall,slide,roll")
-    order = [name for name in ("idle", "run", "sprint", "wall", "slide", "roll") if name in wanted.split(",")]
+    wanted = os.environ.get("COSTUME_CLIPS", "idle,walk,run,sprint,wall,slide,roll")
+    order = [name for name in ("idle", "walk", "run", "sprint", "wall", "slide", "roll") if name in wanted.split(",")]
     built = []
     for name in order:
         p.clear_props()
@@ -1913,6 +2342,12 @@ def make_clips(arm):
             if name == "wall":
                 show = r.show_wall
             times = r.ages_30(r.DUR[name])
+        elif name == "walk":
+            ctx = clips.build_extra(arm, "loco", yaws[name])
+            ctx["speed"] = 1.6
+            ctx["rate"] = clips.cadence_at(1.6)
+            show = clips.show_loco
+            times = r.ages_30(math.tau / ctx["rate"])
         else:
             kind = {"run": "loco", "sprint": "sprint", "idle": "idle"}[name]
             ctx = clips.build_extra(arm, kind, yaws[name])
@@ -1993,6 +2428,11 @@ def fit_main():
         )
         handle.write("accessory-max=%.2f piece=%s\n" % (acc * 100.0, acc_name))
         handle.write("worst %s\n" % stats["worst"])
+        for clip_name, clip_world, clip_frames, clip_fails in stats.get("by_clip", []):
+            handle.write(
+                "clip-fit %s worldMax=%.2f frames=%d fails=%d\n"
+                % (clip_name, depth_cm(clip_world), clip_frames, clip_fails)
+            )
         for spec in sets:
             handle.write("worn %s tris=%d\n" % (spec["id"], worn[spec["id"]]))
     log(line)

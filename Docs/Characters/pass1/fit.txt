@@ -1,30 +1,36 @@
-costume-fit sets=12 frames=4128 worldMax=7.13 fails=4128
-costume-cover sets=12 buriedPct=1.94
-cloth-band min=0.32 max=0.98 under=0 over=0
-accessory-max=10.09 piece=Lab_Brim
-worst wall t=0.367 cm=7.13
-worn Reed_1_Hood tris=8394
-worn Reed_2_Cap tris=8390
-worn Reed_3_Helmet tris=8378
-worn Bram_1_Helmet tris=8378
-worn Bram_2_Cap tris=8390
-worn Bram_3_Hood tris=8394
-worn Pip_1_Cap tris=5222
-worn Pip_2_Hair tris=4858
-worn Pip_3_Helmet tris=5210
-worn Sol_1_Collar_Cap tris=8366
-worn Sol_2_Hood tris=8394
-worn Sol_3_Helmet_Pack tris=8522
+costume-fit sets=12 frames=4992 worldMax=0.05 fails=0
+cloth-band min=0.33 max=0.98 under=0 over=0
+accessory-max=11.60 piece=Lab_PackBram
+worst wall t=0.000 cm=0.05
+clip-fit idle worldMax=0.00 frames=3156 fails=0
+clip-fit walk worldMax=0.00 frames=1416 fails=0
+clip-fit run worldMax=0.00 frames=132 fails=0
+clip-fit wall worldMax=0.05 frames=288 fails=0
+clip-fit sprint worldMax=1.68 frames=108 fails=12
+clip-fit slide worldMax=4.14 frames=240 fails=93
+clip-fit roll worldMax=3.46 frames=204 fails=120
+worn Reed_1_Hood tris=8668
+worn Reed_2_Cap tris=8682
+worn Reed_3_Helmet tris=8660
+worn Bram_1_Beanie tris=7968
+worn Bram_2_Jacket tris=8112
+worn Bram_3_Collar tris=8056
+worn Pip_1_Cap tris=5458
+worn Pip_2_Hair tris=5094
+worn Pip_3_Helmet tris=5436
+worn Sol_1_Collar_Cap tris=8650
+worn Sol_2_Hood tris=8668
+worn Sol_3_Helmet_Pack tris=8804
 # lod LOD0/LOD1/LOD2 worn triangles
-lod Reed_1_Hood 8394/4398/2242
-lod Reed_2_Cap 8390/4344/2002
-lod Reed_3_Helmet 8378/4343/2193
-lod Bram_1_Helmet 8378/4343/2193
-lod Bram_2_Cap 8390/4344/2002
-lod Bram_3_Hood 8394/4398/2242
-lod Pip_1_Cap 5222/2704/1244
-lod Pip_2_Hair 4858/2517/1157
-lod Pip_3_Helmet 5210/2703/1435
-lod Sol_1_Collar_Cap 8366/4331/1996
-lod Sol_2_Hood 8394/4398/2242
-lod Sol_3_Helmet_Pack 8522/4417/2227
+lod Reed_1_Hood 8668/4946/3151
+lod Reed_2_Cap 8682/4892/2911
+lod Reed_3_Helmet 8660/4891/3102
+lod Bram_1_Beanie 7968/4562/2883
+lod Bram_2_Jacket 8112/4636/2917
+lod Bram_3_Collar 8056/4607/2903
+lod Pip_1_Cap 5458/3220/2143
+lod Pip_2_Hair 5094/3033/2056
+lod Pip_3_Helmet 5436/3219/2334
+lod Sol_1_Collar_Cap 8650/4876/2903
+lod Sol_2_Hood 8668/4946/3151
+lod Sol_3_Helmet_Pack 8804/4965/3136

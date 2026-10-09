@@ -15,7 +15,10 @@ import render_pass1 as rp
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 RAW = "/tmp/charlab/cover"
-OUT = os.path.join(ROOT, "Docs", "Characters", "pass4", "cover.txt")
+OUT = os.environ.get(
+    "COSTUME_COVER",
+    os.path.join(ROOT, "Docs", "Characters", "pass4", "cover.txt"),
+)
 RES_X, RES_Y = 160, 280
 
 

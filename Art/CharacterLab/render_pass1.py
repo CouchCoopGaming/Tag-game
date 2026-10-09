@@ -17,7 +17,7 @@ LOADOUTS = os.path.join(BLEND_DIR, "loadouts.json")
 RAW = "/tmp/charlab/pass1"
 DOCS = os.path.join(ROOT, "Docs", "Characters", "pass1")
 
-LINEUP = ("Reed_1_Hood", "Bram_1_Helmet", "Pip_1_Cap", "Sol_1_Collar_Cap")
+LINEUP = ("Reed_1_Hood", "Bram_1_Beanie", "Pip_1_Cap", "Sol_1_Collar_Cap")
 
 
 def log(msg):
@@ -318,13 +318,16 @@ def lineup_entries(clones):
     return [by_id[name] for name in LINEUP]
 
 
-def shot_lineup(cam, clones, z_lift, view, path, res_x, res_y, gap):
+def shot_lineup(cam, clones, z_lift, view, path, res_x, res_y, gap, extras=None):
     chosen = lineup_entries(clones)
     others = [entry for entry in clones if entry[0]["id"] not in LINEUP]
     set_group(others, False)
     set_group(chosen, True)
     place(chosen, view, gap, z_lift)
-    mins, maxs = world_bounds(shown_meshes(chosen))
+    objs = shown_meshes(chosen)
+    if extras:
+        objs = objs + list(extras)
+    mins, maxs = world_bounds(objs)
     names = sorted({obj.get("piece") for obj in shown_meshes(chosen) if obj.get("piece")})
     log("SHOW %s pieces=%d %s" % (view, len(names), ",".join(names)))
     frame_ortho(cam, mins, maxs, res_x, res_y, view)

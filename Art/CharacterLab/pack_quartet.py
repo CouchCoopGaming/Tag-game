@@ -3,10 +3,10 @@ import os
 
 from PIL import Image
 
-RAW = os.environ.get("COSTUME_RAW", "/tmp/charlab/pass4")
+RAW = os.environ.get("COSTUME_RAW", "/tmp/charlab/pass5")
 DOCS = os.environ.get(
     "COSTUME_DOCS",
-    os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "Docs", "Characters", "pass4")),
+    os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "Docs", "Characters", "pass5")),
 )
 LIMIT = 400 * 1024
 MIN_SIZE = (1280, 720)
@@ -15,8 +15,6 @@ NAMES = (
     "lineup-side.png",
     "joint-close.png",
     "scale-figure.png",
-    "after-reed.png",
-    "before-reed.png",
 )
 
 
