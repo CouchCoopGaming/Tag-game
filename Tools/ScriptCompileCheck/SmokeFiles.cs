@@ -513,6 +513,22 @@ namespace Tag.Tools
             return true;
         }
 
+        // A renderer switched off while its collider stays on is the invisible-wall bug.
+        // Turning both off (a hidden district lump) is fine.
+        static bool HidesRendererOnly(string boot)
+        {
+            int at = 0;
+            while ((at = boot.IndexOf("r.enabled = false", at, StringComparison.Ordinal)) >= 0)
+            {
+                int end = Math.Min(boot.Length, at + 400);
+                if (boot.IndexOf(".enabled = false", at + 17, end - at - 17, StringComparison.Ordinal) < 0
+                    || boot.IndexOf("GetComponent<Collider>()", at, end - at, StringComparison.Ordinal) < 0)
+                    return true;
+                at += 17;
+            }
+            return false;
+        }
+
         static bool CheckKill(string root, StringBuilder log)
         {
             string mega = ReadLayout(root, "MegaParkP1Layout.cs", log);
@@ -546,7 +562,7 @@ namespace Tag.Tools
             }
             if (boot.IndexOf("s.Kind == \"fence\"", StringComparison.Ordinal) < 0
                 || boot.IndexOf("Visible rail collider", StringComparison.Ordinal) < 0
-                || boot.IndexOf("r.enabled = false", StringComparison.Ordinal) >= 0
+                || HidesRendererOnly(boot)
                 || boot.IndexOf("MegaParkP1Layout.FenceRail", StringComparison.Ordinal) < 0
                 || boot.IndexOf("StripCollider(cube)", StringComparison.Ordinal) < 0
                 || mega.IndexOf("FenceRail, 0.08f", StringComparison.Ordinal) < 0)

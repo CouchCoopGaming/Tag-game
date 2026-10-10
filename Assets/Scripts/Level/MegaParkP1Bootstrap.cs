@@ -26,7 +26,7 @@ namespace Tag.Level
 
         Transform _p1;
         Material _mulch, _grass, _sand, _rubber, _blue, _yellow, _steel, _concrete, _cedar, _bark, _rim, _field;
-        Material _soft, _pad, _merry, _amber, _swing, _army, _knight, _kick, _hop, _cover, _plate;
+        Material _soft, _pad, _merry, _amber, _swing, _army, _knight, _kick, _hop, _cover, _plate, _asphalt;
         Material _fence, _rail, _horizon, _leaf, _wood, _lamp, _trash, _skyline;
         Material _zbrick, _zwine, _zindigo, _zolive, _zslate, _ztrim;
         Material _abrick, _aclay, _aindigo, _aolive, _aslate;
@@ -140,6 +140,7 @@ namespace Tag.Level
             BatchStatic(spawns);
             BatchStatic(dress);
             BatchStatic(zones);
+            BuildWorldDistrict();
 
             MegaParkP1Layout.Audit audit = MegaParkP1Layout.Run();
             LayoutOk = audit.Ok;
@@ -189,6 +190,7 @@ namespace Tag.Level
             _yellow = Face("slide");
             _steel = Face("steel");
             _concrete = Face("concrete");
+            _asphalt = Face("asphalt");
             _cedar = Face("cedar");
             _bark = Face("bark");
             _rim = Face("rim");
@@ -265,6 +267,12 @@ namespace Tag.Level
                     m.SetTexture("_BaseMap", tex);
                 if (m.HasProperty("_MainTex"))
                     m.SetTexture("_MainTex", tex);
+                // The map already carries the swatch (built sRGB: new Texture2D
+                // defaults to linear=false). Lit multiplies map x _BaseColor, so a
+                // swatch tint drew every surface at swatch^2. Tint white: swatch once.
+                m.color = Color.white;
+                if (m.HasProperty("_BaseColor"))
+                    m.SetColor("_BaseColor", Color.white);
             }
             if (kind == "fence")
             {
@@ -317,7 +325,7 @@ namespace Tag.Level
                         float grain = 0.96f + 0.08f * Mathf.Abs(Mathf.Sin(y * 0.55f + Hash(x / 8, 0) * 3f));
                         p = c * Mathf.Min(1.04f, grain);
                     }
-                    else if (kind == "concrete" || kind == "skyline")
+                    else if (kind == "concrete" || kind == "skyline" || kind == "asphalt")
                     {
                         float seam = (x % 16 == 0 || y % 16 == 0) ? 0.96f : 1.02f;
                         p = c * seam;
@@ -363,6 +371,7 @@ namespace Tag.Level
                 case "yellow": return _yellow;
                 case "steel": return _steel;
                 case "concrete": return _concrete;
+                case "asphalt": return _asphalt;
                 case "cedar": return _cedar;
                 case "bark": return _bark;
                 case "rim": return _rim;
@@ -436,8 +445,136 @@ namespace Tag.Level
                     r.sharedMaterial = Pick(s.Mat);
                 string dust = s.Kind == "fence" ? "steel" : s.Mat;
                 SurfaceTag.Apply(go, dust, go.name);
+                if (MegaParkWorldDistrict.Hides(s.Name))
+                {
+                    // The court replaces these infield lumps. Both go off so the
+                    // hidden-collider note does not see a box with no mesh.
+                    if (r != null)
+                        r.enabled = false;
+                    Collider box = go.GetComponent<Collider>();
+                    if (box != null)
+                        box.enabled = false;
+                }
             }
             return g;
+        }
+
+        /// <summary>
+        /// Dressed districts. Prefabs come from <see cref="WorldPropTable"/> in
+        /// Resources, which a player build includes. A miss is an error. Nothing
+        /// is spawned from the editor asset database, and a miss does not invent
+        /// a gray cube.
+        /// </summary>
+        void BuildWorldDistrict()
+        {
+            WorldPropTable table = WorldPropTable.Load();
+            if (table == null)
+            {
+                Debug.LogError("[MegaPark] world prop table missing at Resources/"
+                    + WorldPropTable.ResourcePath
+                    + ". Player builds do not use the editor asset database.");
+                return;
+            }
+            BuildDistrict("WorldZ7", MegaParkWorldDistrict.Places, table, true);
+            BuildDistrict("WorldZ1", MegaParkWorldDistrict.SoftPlay, table, true);
+            BuildDistrict("WorldZ2", MegaParkWorldDistrict.Cling, table, true);
+            BuildDistrict("WorldZ3", MegaParkWorldDistrict.Merry, table, true);
+            BuildDistrict("WorldZ4", MegaParkWorldDistrict.Slide, table, true);
+            BuildDistrict("WorldZ5", MegaParkWorldDistrict.Swing, table, true);
+            BuildDistrict("WorldZ6", MegaParkWorldDistrict.Forts, table, true);
+            BuildDistrict("WorldZ8", MegaParkWorldDistrict.Bowl, table, true);
+            BuildDistrict("WorldZ9", MegaParkWorldDistrict.Bars, table, true);
+            BuildDistrict("WorldZ10", MegaParkWorldDistrict.Hops, table, true);
+            BuildDistrict("WorldEdge", MegaParkWorldDistrict.Edge, table, true);
+        }
+
+        void BuildDistrict(string group, MegaParkWorldDistrict.Place[] places, WorldPropTable table, bool batch)
+        {
+            Transform g = Group(group);
+            int placed = 0;
+            for (int i = 0; i < places.Length; i++)
+            {
+                MegaParkWorldDistrict.Place p = places[i];
+                GameObject prefab = table.Find(p.Prefab);
+                if (prefab == null)
+                {
+                    Debug.LogError("[MegaPark] world prefab missing " + p.Name + " " + p.Prefab);
+                    continue;
+                }
+                GameObject go = Instantiate(prefab, g);
+                go.name = p.Name;
+                go.transform.localPosition = new Vector3(p.X, p.Y, p.Z);
+                go.transform.localRotation = Quaternion.Euler(0f, p.Yaw, 0f);
+                go.transform.localScale = Vector3.one;
+                if (p.Name == "CourtFence")
+                    OpenCourtGate(go);
+                Transform[] nodes = go.GetComponentsInChildren<Transform>(true);
+                for (int n = 0; n < nodes.Length; n++)
+                    nodes[n].gameObject.isStatic = true;
+                placed++;
+            }
+            if (batch && placed > 0)
+            {
+                BatchDistrictMeshes(g);
+                Debug.Log("[MegaPark] world " + group + " static-batched");
+            }
+            if (placed != places.Length)
+                Debug.LogError("[MegaPark] world " + group + " placed " + placed.ToString() + "/" + places.Length.ToString());
+            else
+                Debug.Log("[MegaPark] world " + group + " placed " + placed.ToString() + "/" + places.Length.ToString());
+        }
+
+        /// <summary>
+        /// The gate is the child mesh GateLeaf plus Col_Gate. Both go off so the
+        /// fabric gap is an open entrance. The prefab is not edited here.
+        /// </summary>
+        static void OpenCourtGate(GameObject root)
+        {
+            bool gate = false;
+            bool leaf = false;
+            Transform[] nodes = root.GetComponentsInChildren<Transform>(true);
+            for (int i = 0; i < nodes.Length; i++)
+            {
+                string name = nodes[i].name;
+                if (name != "Col_Gate" && name != "GateLeaf")
+                    continue;
+                nodes[i].gameObject.SetActive(false);
+                if (name == "Col_Gate")
+                    gate = true;
+                else
+                    leaf = true;
+            }
+            if (!gate)
+                Debug.LogError("[MegaPark] CourtFence has no Col_Gate to open");
+            if (!leaf)
+                Debug.LogError("[MegaPark] CourtFence has no GateLeaf to hide");
+            if (gate && leaf)
+                Debug.Log("[MegaPark] CourtFence gate open");
+        }
+
+        /// <summary>
+        /// Dressed districts. Drop the extra LOD renderers and static-batch what remains.
+        /// </summary>
+        static void BatchDistrictMeshes(Transform root)
+        {
+            LODGroup[] groups = root.GetComponentsInChildren<LODGroup>(true);
+            for (int i = 0; i < groups.Length; i++)
+            {
+                LOD[] lods = groups[i].GetLODs();
+                for (int l = 1; l < lods.Length; l++)
+                {
+                    Renderer[] renderers = lods[l].renderers;
+                    if (renderers == null)
+                        continue;
+                    for (int r = 0; r < renderers.Length; r++)
+                    {
+                        if (renderers[r] != null)
+                            renderers[r].enabled = false;
+                    }
+                }
+                groups[i].enabled = false;
+            }
+            StaticBatchingUtility.Combine(root.gameObject);
         }
 
         void BuildRailFence(Transform parent, MegaParkP1Layout.Solid s)
@@ -829,24 +966,46 @@ namespace Tag.Level
             Label(g, "SWING", 78f, 86f);
             Label(g, "FORTS", 140f, 48f);
             Label(g, "KICKBALL", 96f, 52f);
+            // Court-end sign for the eye-height view down the court (looking east).
+            // One face toward the west, low on the east fence and north of the main
+            // label, smaller, so it does not stack on the main sign from above.
+            CourtSign(g, "KICKBALL", 96.9f, 2.3f, 60f, 90f);
             Label(g, "CRASH", 62f, 50f);
             Label(g, "BARS", 78f, 16f);
             Label(g, "HOPSCOTCH", 136f, 18f);
         }
 
-        void Label(Transform parent, string text, float x, float z)
+        void CourtSign(Transform parent, string text, float x, float y, float z, float yaw)
         {
-            var go = new GameObject("Label_" + text);
+            var go = new GameObject("Label_" + text + "_Court");
+            go.transform.SetParent(parent, false);
+            go.transform.localPosition = new Vector3(x, y, z);
+            go.transform.localRotation = Quaternion.Euler(0f, yaw, 0f);
+            go.transform.localScale = Vector3.one;
+            WorldSign.AddOneSided(go.transform, text, 48, 0.22f, new Color(1f, 0.95f, 0.75f, 1f));
+        }
+
+        void Label(Transform parent, string text, float x, float z, float yaw = 0f, string name = null)
+        {
+            var go = new GameObject(name ?? ("Label_" + text));
             go.transform.SetParent(parent, false);
             go.transform.localPosition = new Vector3(x, 4.5f, z);
-            TextMesh tm = go.AddComponent<TextMesh>();
-            tm.text = text;
-            tm.anchor = TextAnchor.MiddleCenter;
-            tm.alignment = TextAlignment.Center;
-            tm.fontSize = 48;
-            tm.characterSize = 0.45f;
-            tm.color = new Color(1f, 0.95f, 0.75f, 1f);
-            tm.fontStyle = FontStyle.Bold;
+            go.transform.localRotation = Quaternion.Euler(0f, yaw, 0f);
+            go.transform.localScale = Vector3.one;
+            WorldSign.AddTwoSided(go.transform, text, 48, 0.45f, new Color(1f, 0.95f, 0.75f, 1f));
+        }
+
+        static UnityEngine.Rendering.SphericalHarmonicsL2 TrilightProbe(Color sky, Color equator, Color ground)
+        {
+            var sh = new UnityEngine.Rendering.SphericalHarmonicsL2();
+            Color mid = (sky + ground) * 0.5f;
+            Color baseline = Color.Lerp(equator, mid, 0.5f);
+            sh.AddAmbientLight(baseline);
+            Color up = sky - baseline;
+            Color down = ground - baseline;
+            sh.AddDirectionalLight(Vector3.up, up, 0.9f);
+            sh.AddDirectionalLight(Vector3.down, down, 0.9f);
+            return sh;
         }
 
         void ApplyLook()
@@ -878,9 +1037,13 @@ namespace Tag.Level
             RenderSettings.sun = sun;
 
             RenderSettings.ambientMode = UnityEngine.Rendering.AmbientMode.Trilight;
-            RenderSettings.ambientSkyColor = new Color(MegaParkP1Layout.AmbSkyR, MegaParkP1Layout.AmbSkyG, MegaParkP1Layout.AmbSkyB, 1f);
-            RenderSettings.ambientEquatorColor = new Color(MegaParkP1Layout.AmbEqR, MegaParkP1Layout.AmbEqG, MegaParkP1Layout.AmbEqB, 1f);
-            RenderSettings.ambientGroundColor = new Color(MegaParkP1Layout.AmbGndR, MegaParkP1Layout.AmbGndG, MegaParkP1Layout.AmbGndB, 1f);
+            // Trilight ignores ambientIntensity (it only scales the skybox source),
+            // so the brightening never reached the frame. Fold the intensity into
+            // the three colours, which is what the look checks already assume.
+            float amb = MegaParkP1Layout.AmbIntensity;
+            RenderSettings.ambientSkyColor = new Color(MegaParkP1Layout.AmbSkyR * amb, MegaParkP1Layout.AmbSkyG * amb, MegaParkP1Layout.AmbSkyB * amb, 1f);
+            RenderSettings.ambientEquatorColor = new Color(MegaParkP1Layout.AmbEqR * amb, MegaParkP1Layout.AmbEqG * amb, MegaParkP1Layout.AmbEqB * amb, 1f);
+            RenderSettings.ambientGroundColor = new Color(MegaParkP1Layout.AmbGndR * amb, MegaParkP1Layout.AmbGndG * amb, MegaParkP1Layout.AmbGndB * amb, 1f);
             RenderSettings.ambientIntensity = MegaParkP1Layout.AmbIntensity;
 
             Shader skyShader = Shader.Find("Skybox/Procedural");
@@ -896,7 +1059,7 @@ namespace Tag.Level
                 if (sky.HasProperty("_GroundColor"))
                     sky.SetColor("_GroundColor", new Color(0.45f, 0.32f, 0.22f, 1f));
                 if (sky.HasProperty("_Exposure"))
-                    sky.SetFloat("_Exposure", 1.25f);
+                    sky.SetFloat("_Exposure", 1.4f);
                 if (sky.HasProperty("_AtmosphereThickness"))
                     sky.SetFloat("_AtmosphereThickness", 0.85f);
                 if (sky.HasProperty("_SunSize"))
@@ -905,6 +1068,14 @@ namespace Tag.Level
                     sky.SetFloat("_SunSizeConvergence", 5f);
                 RenderSettings.skybox = sky;
             }
+            // Set from script, the ambient probe keeps the scene's old values until
+            // the environment is recomputed (edit mode, batch captures, builds).
+            DynamicGI.UpdateEnvironment();
+            // URP lights objects from RenderSettings.ambientProbe. Outside play mode
+            // (batch captures, editor rebuilds) UpdateEnvironment does not refresh it,
+            // which is why lifting the trilight colours barely moved the frame.
+            // Write the trilight gradient into the probe directly.
+            RenderSettings.ambientProbe = TrilightProbe(RenderSettings.ambientSkyColor, RenderSettings.ambientEquatorColor, RenderSettings.ambientGroundColor);
         }
 
         Transform BuildDressing()

@@ -1,5 +1,8 @@
 # Unity
 [Ll]ibrary/
+# Prop kit. Unity's generated Library/ at the repo root stays ignored.
+!/[Aa]ssets/[Aa]rt/[Pp]rops/[Ll]ibrary/
+!/[Aa]ssets/[Aa]rt/[Pp]rops/[Ll]ibrary/**
 [Tt]emp/
 [Oo]bj/
 [Bb]uild/
@@ -55,6 +58,8 @@ Tools/AudioSynth/bin/
 !Tools/NoClipDump/NoClipDump.csproj
 Tools/NoClipDump/bin/
 Tools/NoClipDump/obj/
+!Tools/WorldPropTableTestRun/WorldPropTableTestRun.csproj
+Tools/WorldPropTableTestRun/bin/
 .consulo/
 *.apk
 *.aab

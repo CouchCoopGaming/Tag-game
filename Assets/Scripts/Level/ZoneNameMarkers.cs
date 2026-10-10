@@ -3,7 +3,7 @@
 namespace Tag.Level
 {
     /// <summary>
-    /// Cheap floating zone name markers (TextMesh + yaw billboard) for mega-park orientation.
+    /// Cheap floating zone name markers. Two culled faces, north and south, scale 1.
     /// Centers match CutArenaBootstrap pads / PgkLandmarkPlacer landmark slots (graybox m).
     /// </summary>
     [DefaultExecutionOrder(70)]
@@ -29,9 +29,6 @@ namespace Tag.Level
         };
 
         static Transform _parkCached;
-
-        Transform[] _labels;
-        Camera _cam;
 
         void Start() => Place();
 
@@ -59,7 +56,7 @@ namespace Tag.Level
             folder.localRotation = Quaternion.identity;
             folder.localScale = Vector3.one;
 
-            _labels = new Transform[ZoneCenters.Length];
+            int placed = 0;
             for (int i = 0; i < ZoneCenters.Length; i++)
             {
                 var z = ZoneCenters[i];
@@ -68,21 +65,11 @@ namespace Tag.Level
                 go.transform.localPosition = new Vector3(z.cx, LabelHeight, z.cz);
                 go.transform.localRotation = Quaternion.identity;
                 go.transform.localScale = Vector3.one;
-
-                var tm = go.AddComponent<TextMesh>();
-                tm.text = z.label;
-                tm.anchor = TextAnchor.MiddleCenter;
-                tm.alignment = TextAlignment.Center;
-                tm.fontSize = 64;
-                // Under PARK WorldScale (~10): ~3 world-unit glyphs, readable from afar
-                tm.characterSize = 0.3f;
-                tm.color = new Color(1f, 0.95f, 0.75f, 1f);
-                tm.fontStyle = FontStyle.Bold;
-
-                _labels[i] = go.transform;
+                WorldSign.AddTwoSided(go.transform, z.label, 64, 0.3f, new Color(1f, 0.95f, 0.75f, 1f));
+                placed++;
             }
 
-            Debug.Log($"[ZoneNameMarkers] placed {_labels.Length} zone labels");
+            Debug.Log($"[ZoneNameMarkers] placed {placed} zone labels");
         }
 
         /// <summary>
@@ -138,25 +125,5 @@ namespace Tag.Level
             return _parkCached;
         }
 
-        void LateUpdate()
-        {
-            if (_labels == null || _labels.Length == 0) return;
-            if (_cam == null)
-            {
-                _cam = Camera.main;
-                if (_cam == null) return;
-            }
-
-            var camPos = _cam.transform.position;
-            for (int i = 0; i < _labels.Length; i++)
-            {
-                var t = _labels[i];
-                if (t == null) continue;
-                var toCam = camPos - t.position;
-                toCam.y = 0f;
-                if (toCam.sqrMagnitude < 0.0001f) continue;
-                t.rotation = Quaternion.LookRotation(-toCam.normalized, Vector3.up);
-            }
-        }
     }
 }

@@ -1,0 +1,228 @@
+"""Export the street-kit assets and merge them into manifest.json.
+
+  blender --background --python Tools/Blender/AssetLibrary/_sk_build.py
+
+Does not rebuild the rest of the library. Prefabs are written for the new names only.
+"""
+
+import importlib
+import json
+import os
+import sys
+import traceback
+
+import bpy  # noqa: F401
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from _common import (  # noqa: E402
+    ROOT,
+    check_pivot,
+    export_fbx,
+    fbx_model_names,
+    manifest_entry,
+    validate_colliders,
+)
+import write_unity  # noqa: E402
+
+MODULES = (
+    "sk_light_globe",
+    "sk_light_mast",
+    "sk_hydrant_yellow",
+    "sk_hydrant_silver",
+    "sk_bench_metal",
+    "sk_bench_woodiron",
+    "sk_trash_drum",
+    "sk_recycling_dual",
+    "sk_dumpster_rear",
+    "sk_bus_shelter",
+    "sk_newspaper_rack",
+    "sk_meter_twin",
+    "sk_bike_wave",
+    "sk_bike_hoop1",
+    "sk_bollard_lit",
+    "sk_bollard_chain",
+    "sk_cone_tall",
+    "sk_barrier_water",
+    "sk_barrier_sawhorse",
+    "sk_barricade_type3",
+    "sk_delineator",
+    "sk_rail_sidewalk",
+    "sk_power_pole",
+    "sk_wood_pole",
+    "sk_sign_yield",
+    "sk_sign_oneway",
+    "sk_sign_blades",
+    "sk_planter_street",
+    "sk_manhole_ring",
+    "sk_storm_curb",
+    "sk_roof_vent",
+    "sk_tank_saddle",
+    "sk_ladder_fixed",
+    "sk_satellite",
+    "sk_hydrant_red",
+    "fire_hydrant",
+    "sk_ac_split",
+    "walkup",
+    "gas_canopy",
+    "dock_straight",
+    "fishing_boat",
+    "sk_traffic_signal",
+    "sk_bus_curbside",
+    "sk_meter_single",
+    "sk_mail_drop",
+    "sk_wheel_stop",
+    "sk_guardrail",
+    "sk_pay_kiosk",
+    "sk_bike_locker",
+    "sk_call_box",
+    "sk_fire_alarm",
+    "sk_pay_station",
+    "sk_newsstand",
+    "sk_fountain",
+    "sk_speed_cushion",
+    "sk_street_clock",
+    "sk_bike_pump",
+    "sk_menu_board",
+    "sk_curb_ramp",
+    "sk_fire_siamese",
+    "sk_wayfinding",
+    "sk_tree_guard",
+    "sk_dog_bag",
+    "sk_bus_flag",
+    "sk_trash_cart",
+    "sk_recycling_cart",
+    "sk_cabinet_electrical",
+    "sk_barrier_jersey",
+    "sk_barrel_traffic",
+    "sk_bollard_fixed",
+    "sk_bollard_removable",
+    "sign_stop",
+    "sk_sign_speed",
+    "sk_ac_condenser",
+    "sk_ac_condenser_large",
+    "sk_ac_roof",
+    "sk_ac_roof_large",
+    "sk_picnic_table",
+    "sk_road_two",
+    "sk_road_four",
+    "sk_road_intersection",
+    "sk_road_crosswalk",
+    "sk_road_stop",
+    "sk_road_arrows",
+    "sk_curb_straight",
+    "sk_median_planted",
+    "sk_sidewalk_joint",
+    "sk_kiosk_atm",
+    "sk_kiosk_charge",
+    "sk_cafe_set",
+    "sk_awning_door",
+    "sk_fence_chain",
+    "sk_fence_iron",
+    "sk_scaffold_bay",
+    "bench_wood",
+    "picnic_table",
+    "shrub",
+    "trash_can_lidded",
+    "court_fence",
+    "sk_sign_street",
+    "sk_fence_weave",
+    "sk_curb_return",
+    "sk_litter_can",
+    "sk_sidewalk_gap",
+    "sk_road_bike",
+    "sk_ped_button",
+    "sk_ped_signal",
+    "sk_sign_parking",
+    "sk_valve_box",
+    "sk_sign_aframe",
+)
+
+
+def _merge(entries):
+    path = os.path.join(ROOT, "manifest.json")
+    data = json.load(open(path, encoding="utf-8"))
+    fresh = {entry["name"]: entry for entry in entries}
+    seen = set()
+    merged = []
+    for entry in data:
+        if entry["name"] in fresh:
+            merged.append(fresh[entry["name"]])
+            seen.add(entry["name"])
+        else:
+            merged.append(entry)
+    for entry in entries:
+        if entry["name"] not in seen:
+            merged.append(entry)
+    with open(path, "w", encoding="utf-8") as handle:
+        json.dump(merged, handle, indent=2)
+        handle.write("\n")
+    return path
+
+
+def _cutout_assets():
+    """Write the alpha-cutout material and its texture importer. Other materials stay put."""
+    png = os.path.join(ROOT, "..", "..", "..", "Assets", "Art", "Props", "Library", "Textures", "Lib_ChainMesh.png")
+    png = os.path.normpath(png)
+    names = {"Lib_HonorGlass", "Lib_SignalWhite", "Lib_LensRed", "Lib_LensAmber", "Lib_LensGreen"}
+    if os.path.isfile(png):
+        write_unity.texture_meta(png, "Lib_ChainMesh", size=512, cutout=True)
+        names.update(("Lib_ChainMesh", "Lib_SignGreen"))
+    palette, textured, normals, ao_names, emissive = write_unity.load_palette()
+    write_unity.write_materials(palette, textured, normals, ao_names, emissive, only=names)
+
+
+def _prefabs(entries):
+    palette, _textured, _normals, _ao, _emissive = write_unity.load_palette()
+    mat_guids = {name: write_unity.guid("mat", name) for name in palette}
+    script_guid = write_unity.guid("script", "LibraryPropMeta")
+    for entry in entries:
+        fbx_guid = write_unity.write_fbx_meta(entry)
+        write_unity.write_prefab(entry, fbx_guid, mat_guids, script_guid)
+
+
+def main():
+    only = None
+    if "--only" in sys.argv:
+        only = [part for part in sys.argv[sys.argv.index("--only") + 1].split(",") if part]
+    entries = []
+    failures = []
+    worst = (0.0, "")
+    for stem in MODULES:
+        if only and not any(part in stem for part in only):
+            continue
+        try:
+            module = importlib.import_module(stem)
+            asset = module.create()
+            check_pivot(asset)
+            validate_colliders(asset)
+            path = export_fbx(asset)
+            names = fbx_model_names(path)
+            entry = manifest_entry(asset, names)
+            entry["fbx"] = os.path.relpath(path, os.path.join(ROOT, "..", "..", "..")).replace("\\", "/")
+            entries.append(entry)
+            slack = entry["slackCm"]
+            if slack > worst[0]:
+                worst = (slack, asset.name)
+            flag = "WARN" if asset.warnings else "OK"
+            tris = ",".join(str(item["tris"]) for item in entry["lods"])
+            print("%s %s size=%s tris=%s slack=%s(%s) %s" % (
+                flag, asset.name, entry["size"], tris, slack,
+                getattr(asset, "collider_slack_name", ""),
+                "; ".join(asset.warnings),
+            ))
+        except Exception as exc:
+            traceback.print_exc()
+            failures.append("%s: %s" % (stem, exc))
+    if failures:
+        for line in failures:
+            print("FAIL", line)
+        sys.exit(1)
+    _merge(entries)
+    _prefabs(entries)
+    _cutout_assets()
+    print("STREET_KIT_WORST_SLACK_CM", worst[0], worst[1])
+    print("STREET_KIT_COUNT", len(entries))
+
+
+if __name__ == "__main__":
+    main()

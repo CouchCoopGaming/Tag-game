@@ -1,0 +1,125 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b7e4c1a09d2f4e6a8c3b5d7e9f1a2b4c, type: 3}
+  m_Name: WorldPropTable
+  m_EditorClassIdentifier: Tag.World::Tag.Level.WorldPropTable
+  Entries:
+  - Path: Assets/Art/Props/Library/Park/Prefabs/Court.prefab
+    Prefab: {fileID: 100000, guid: a3db69cf3c01db1776c92a24a5a442bd, type: 3}
+  - Path: Assets/Art/Props/Library/Park/Prefabs/CourtFence.prefab
+    Prefab: {fileID: 100000, guid: 4dfbe9c4f5ecd8d14d5cf211985c5fba, type: 3}
+  - Path: Assets/Art/Props/Library/Park/Prefabs/Hoop.prefab
+    Prefab: {fileID: 100000, guid: 4fcac8768f77b9472f0e58f49a8cfaf0, type: 3}
+  - Path: Assets/Art/Props/Library/StreetFurniture/Prefabs/StreetRoad_TwoLane.prefab
+    Prefab: {fileID: 100000, guid: 979d57fa2ebbf0ebfa27eb27b8ee1a3a, type: 3}
+  - Path: Assets/Art/Props/Library/StreetFurniture/Prefabs/StreetMedian_Planted.prefab
+    Prefab: {fileID: 100000, guid: 432fda3fd4e3947a65e2bfa8b1b2cff2, type: 3}
+  - Path: Assets/Art/Props/Library/Roads/Prefabs/Sidewalk.prefab
+    Prefab: {fileID: 100000, guid: b638a45d435c614f0ec846b8e23c3f78, type: 3}
+  - Path: Assets/Art/Props/Library/Buildings/Prefabs/Brick_Door.prefab
+    Prefab: {fileID: 100000, guid: 6e7d821e87fdf80a0908d4389a783191, type: 3}
+  - Path: Assets/Art/Props/Library/Buildings/Prefabs/Brick_Window.prefab
+    Prefab: {fileID: 100000, guid: bdc09c068eeb228c863600d336164660, type: 3}
+  - Path: Assets/Art/Props/Library/Buildings/Prefabs/Brick_Wall.prefab
+    Prefab: {fileID: 100000, guid: d73028293e6838a550f037ec5a2f7b2d, type: 3}
+  - Path: Assets/Art/Props/Library/Buildings/Prefabs/RooftopAC.prefab
+    Prefab: {fileID: 100000, guid: 141193babb6c2107a875d298f21caf8e, type: 3}
+  - Path: Assets/Art/Props/Library/Park/Prefabs/Gazebo.prefab
+    Prefab: {fileID: 100000, guid: 5036a890427512c437f4eb2620cf009f, type: 3}
+  - Path: Assets/Art/Props/Library/Buildings/Prefabs/WalkUp.prefab
+    Prefab: {fileID: 100000, guid: 71a943ae63818d0083887c9a6de77566, type: 3}
+  - Path: Assets/Art/Props/Library/Buildings/Prefabs/Cabin.prefab
+    Prefab: {fileID: 100000, guid: 0b76c92955160626f233e7df50be4e87, type: 3}
+  - Path: Assets/Art/Props/Library/Vehicles/Prefabs/Sedan_Compact_25.prefab
+    Prefab: {fileID: 100000, guid: 3ad36c2095d2720c2b9cf1858316157d, type: 3}
+  - Path: Assets/Art/Props/Library/Vehicles/Prefabs/Hatch_Compact_25.prefab
+    Prefab: {fileID: 100000, guid: faf40082cad6f697a36db0c6ace19161, type: 3}
+  - Path: Assets/Art/Props/Library/Vehicles/Prefabs/Crossover_Compact_25.prefab
+    Prefab: {fileID: 100000, guid: abeeafca8ac587d1fbf7b9f8f38fc8b0, type: 3}
+  - Path: Assets/Art/Props/Library/Vehicles/Prefabs/Pickup_FullSize_25.prefab
+    Prefab: {fileID: 100000, guid: 4c98e90ab456f6d26eeba4ebdd36b72d, type: 3}
+  - Path: Assets/Art/Props/Library/StreetFurniture/Prefabs/LightPost_Single.prefab
+    Prefab: {fileID: 100000, guid: ce261c1deaac98cabf84d7f171a4223c, type: 3}
+  - Path: Assets/Art/Props/Library/StreetFurniture/Prefabs/FireHydrant.prefab
+    Prefab: {fileID: 100000, guid: 185046f8740655ee965e0a2320511983, type: 3}
+  - Path: Assets/Art/Props/Library/StreetFurniture/Prefabs/Bench_Wood.prefab
+    Prefab: {fileID: 100000, guid: 890509544692b2a6a98942550f7b0dc4, type: 3}
+  - Path: Assets/Art/Props/Library/StreetFurniture/Prefabs/TrashCan_Lidded.prefab
+    Prefab: {fileID: 100000, guid: 252bad4feea8d21261c0513209298580, type: 3}
+  - Path: Assets/Art/Props/Library/StreetFurniture/Prefabs/Scaffold_Bay.prefab
+    Prefab: {fileID: 100000, guid: 3fa473efaf7b539dfff6b96f193e5163, type: 3}
+  - Path: Assets/Art/Props/Library/Park/Prefabs/Tree_Maple.prefab
+    Prefab: {fileID: 100000, guid: c3af4f436a5e2354f0706e4855eeed08, type: 3}
+  - Path: Assets/Art/Props/Library/Park/Prefabs/Planter.prefab
+    Prefab: {fileID: 100000, guid: fb18755acac9996698d871cb41ba0668, type: 3}
+  - Path: Assets/Art/Props/Library/Park/Prefabs/PicnicTable.prefab
+    Prefab: {fileID: 100000, guid: 5553ee57db111750ab8b1bbe34947663, type: 3}
+  - Path: Assets/Art/Props/Library/Park/Prefabs/ParkLamp.prefab
+    Prefab: {fileID: 100000, guid: e3b5cb0b3ccddc3b8b5c5244d2eb8bd8, type: 3}
+  - Path: Assets/Art/Props/Library/Park/Prefabs/Shrub.prefab
+    Prefab: {fileID: 100000, guid: 5fd6153c411d016587a44079259c771a, type: 3}
+  - Path: Assets/Art/Props/Library/Harbor/Prefabs/Container_20.prefab
+    Prefab: {fileID: 100000, guid: bd7efd619c6396ac9b7ef91503e75405, type: 3}
+  - Path: Assets/Art/Props/Library/Harbor/Prefabs/Container_20_Blue.prefab
+    Prefab: {fileID: 100000, guid: b66c5274d2288d06890757ff414905c5, type: 3}
+  - Path: Assets/Art/Props/Library/Harbor/Prefabs/Dock_Straight.prefab
+    Prefab: {fileID: 100000, guid: 59fd97de7796fddaf17168833d8e126e, type: 3}
+  - Path: Assets/Art/Props/Library/Harbor/Prefabs/HarborRail.prefab
+    Prefab: {fileID: 100000, guid: d700910a0357c7c1e0bd6a0f5d6a28f9, type: 3}
+  - Path: Assets/Art/Props/Library/Harbor/Prefabs/Crate.prefab
+    Prefab: {fileID: 100000, guid: aae940e2ad6ad7b7ebfb2d27033e5dc2, type: 3}
+  - Path: Assets/Art/Props/Library/Utility/Prefabs/Dumpster.prefab
+    Prefab: {fileID: 100000, guid: 9bcc602fb8c8308f9eef36b51bfe75a4, type: 3}
+  - Path: Assets/Art/Props/Library/StreetFurniture/Prefabs/BusShelter.prefab
+    Prefab: {fileID: 100000, guid: 4b5fe6b0a695ea503d560ee74e5ccd2f, type: 3}
+  - Path: Assets/Art/Props/Library/Park/Prefabs/Tree_Pine.prefab
+    Prefab: {fileID: 100000, guid: 427d541b0cca6a3353250a324c061f3a, type: 3}
+  - Path: Assets/Art/Props/Library/Park/Prefabs/Seesaw.prefab
+    Prefab: {fileID: 100000, guid: 3969738349ba90d74b0966b25142f456, type: 3}
+  - Path: Assets/Art/Props/Library/Park/Prefabs/Fountain.prefab
+    Prefab: {fileID: 100000, guid: 6bfb97fb632412b4e0bb6b3de1212d6b, type: 3}
+  - Path: Assets/Art/Props/Library/StreetFurniture/Prefabs/RecyclingBin.prefab
+    Prefab: {fileID: 100000, guid: 7ea3a43428c3d789086f8e55f314d1d0, type: 3}
+  - Path: Assets/Art/Props/Library/Park/Prefabs/ParkSign.prefab
+    Prefab: {fileID: 100000, guid: a3568a0e09a7497fdd8f892218b4d320, type: 3}
+  - Path: Assets/Art/Props/Library/StreetFurniture/Prefabs/Bollard.prefab
+    Prefab: {fileID: 100000, guid: b33b3967854499a7fd4b9e461a46ec14, type: 3}
+  - Path: Assets/Art/Props/Library/StreetFurniture/Prefabs/Barrel_Traffic.prefab
+    Prefab: {fileID: 100000, guid: f974023b91269795bfc355b097864f0b, type: 3}
+  - Path: Assets/Art/Props/Library/StreetFurniture/Prefabs/LightPost_Double.prefab
+    Prefab: {fileID: 100000, guid: 5cf2c5e5717677a61ea9b9337ba8a572, type: 3}
+  - Path: Assets/Art/Props/Library/Park/Prefabs/Playground.prefab
+    Prefab: {fileID: 100000, guid: 0f7c42825df98697c5880152dfb24531, type: 3}
+  - Path: Assets/Art/Props/Library/Park/Prefabs/Restroom.prefab
+    Prefab: {fileID: 100000, guid: 3056d1a74307bce5ae9b505744f31007, type: 3}
+  - Path: Assets/Art/Props/Library/Buildings/Prefabs/FireEscape.prefab
+    Prefab: {fileID: 100000, guid: 5c6e842bb4d4af7a172ff307408b8c8d, type: 3}
+  - Path: Assets/Art/Props/Library/StreetFurniture/Prefabs/Newsstand_Corner.prefab
+    Prefab: {fileID: 100000, guid: 07dc41726ea2b82bf7983f6ac1915d3c, type: 3}
+  - Path: Assets/Art/Props/Library/StreetFurniture/Prefabs/Mailbox.prefab
+    Prefab: {fileID: 100000, guid: 41726c0e6c328adfa32a6e7bc45f2b00, type: 3}
+  - Path: Assets/Art/Props/Library/StreetFurniture/Prefabs/BikeRack_Hoop3.prefab
+    Prefab: {fileID: 100000, guid: 9ebde1651defe674db515136b496cbaf, type: 3}
+  - Path: Assets/Art/Props/Library/StreetFurniture/Prefabs/Fountain_Walk.prefab
+    Prefab: {fileID: 100000, guid: 4547df41bf14f4edfe877fe6468325f4, type: 3}
+  - Path: Assets/Art/Props/Library/StreetFurniture/Prefabs/ParkingMeter_Single.prefab
+    Prefab: {fileID: 100000, guid: 967dd1a79315b0ae658eee1fb82149e9, type: 3}
+  - Path: Assets/Art/Props/Library/Utility/Prefabs/ElectricalBox.prefab
+    Prefab: {fileID: 100000, guid: 5452eb3da27ae0fd902e2e3eacc9dff8, type: 3}
+  - Path: Assets/Art/Props/Library/StreetFurniture/Prefabs/Delineator_Post.prefab
+    Prefab: {fileID: 100000, guid: 24f14e5d37138dbaf68e1a422084543a, type: 3}
+  - Path: Assets/Art/Props/Library/Buildings/Prefabs/Subway_Entrance.prefab
+    Prefab: {fileID: 100000, guid: 3d98bf94ca1577cfe0a448491c05ff1e, type: 3}
+  - Path: Assets/Art/Props/Library/Buildings/Prefabs/Alley.prefab
+    Prefab: {fileID: 100000, guid: da10f155ad4609b8c1989fc0caacdc47, type: 3}
+  - Path: Assets/Art/Props/Library/StreetFurniture/Prefabs/Barricade_Type3.prefab
+    Prefab: {fileID: 100000, guid: 4d9bde8339b6934d6a623b63d791f9ad, type: 3}
