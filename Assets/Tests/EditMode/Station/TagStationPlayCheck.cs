@@ -170,9 +170,9 @@ namespace Tag.Tests.Station
             var cc = it.GetComponent<CharacterController>();
             if (cc) cc.enabled = false;
             it.transform.position = me.transform.position + me.transform.forward * meters;
-            // Placed in range like a bot that ran up: facing the runner. Turning after that is the bot's own.
+            // Placed in range but turned 90 deg away: squaring up to the runner is the bot's own job.
             Vector3 face = me.transform.position - it.transform.position; face.y = 0f;
-            if (face.sqrMagnitude > 0.0001f) it.transform.rotation = Quaternion.LookRotation(face);
+            if (face.sqrMagnitude > 0.0001f) it.transform.rotation = Quaternion.LookRotation(Vector3.Cross(Vector3.up, face));
             if (cc) cc.enabled = true;
         }
 
@@ -214,6 +214,17 @@ namespace Tag.Tests.Station
             if (raw < _kneeRawWorst - 0.5f && raw < -5f)
                 Debug.Log("[StationCheck] knee raw " + raw.ToString("F1") + " state=" + MotorState(pawn) + " grounded legs L=" + ((float)t.GetProperty("KneeRawL").GetValue(loco)).ToString("F1") + " R=" + ((float)t.GetProperty("KneeRawR").GetValue(loco)).ToString("F1"));
             _kneeRawWorst = Mathf.Min(_kneeRawWorst, raw);
+        }
+
+        static Vector2 StickToward(GameObject me, Vector3 goal)
+        {
+            Camera cam = null;
+            foreach (Camera c in me.GetComponentsInChildren<Camera>()) if (c.enabled) { cam = c; break; }
+            Vector3 f = cam != null ? cam.transform.forward : me.transform.forward;
+            f.y = 0f; f.Normalize();
+            Vector3 r = Vector3.Cross(Vector3.up, f);
+            Vector3 d = goal - me.transform.position; d.y = 0f; d.Normalize();
+            return new Vector2(Vector3.Dot(d, r), Vector3.Dot(d, f)).normalized;
         }
 
         static string MotorState(GameObject pawn)
@@ -292,10 +303,15 @@ namespace Tag.Tests.Station
                 Quaternion restL = ul.localRotation, restR = ur.localRotation;
                 float worstArm = 0f, entry = 0f;
                 // Unsampled waits sit between phases; start the step check from where the pawn is now.
+                // Sprint on clear ground toward the open middle (a spawn pad lane), not into the prop
+                // the camera happened to face after the look check; the slide below needs the speed.
+                Component pm = me.GetComponent(T("TagArena.Movement.PlayerMotor"));
+                pm.GetType().GetMethod("Place", new[] { typeof(Vector3), typeof(string) }).Invoke(pm, new object[] { new Vector3(8f, 0.2f, 8f), "station-check" });
+                yield return null;
                 _last = me.transform.position;
                 for (t = 0f; t < 1.5f; t += Time.deltaTime)
                 {
-                    Pad(new Vector2(0f, 1f), Vector2.zero, 0, true);
+                    Pad(StickToward(me, new Vector3(42f, 0f, 92f)), Vector2.zero, 0, true);
                     worstArm = Mathf.Max(worstArm, Quaternion.Angle(restL, ul.localRotation), Quaternion.Angle(restR, ur.localRotation));
                     Step(me);
                     yield return null;
@@ -310,7 +326,7 @@ namespace Tag.Tests.Station
                 _last = me.transform.position;
                 for (t = 0f; t < 0.8f; t += Time.deltaTime)
                 {
-                    Pad(new Vector2(0f, 1f), Vector2.zero, GamepadButton.East, true);
+                    Pad(StickToward(me, new Vector3(42f, 0f, 92f)), Vector2.zero, GamepadButton.East, true);
                     // Score only frames the motor is really in Slide. A blocked sprint (entry 4 m/s
                     // against a prop) that never slid then read walk speed 6.9 as a "boost".
                     bool inSlide = MotorState(me) == "Slide";

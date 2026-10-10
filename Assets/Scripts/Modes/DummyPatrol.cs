@@ -529,7 +529,11 @@ namespace Tag.Modes
             return pos + vel * Mathf.Min(lead, 0.18f);
         }
 
-        void FaceAndSteer(Vector3 desired, float dt, out Vector3 moveDir)
+        const float CloseTurnDegPerSec = 540f;
+
+        void FaceAndSteer(Vector3 desired, float dt, out Vector3 moveDir) => FaceAndSteer(desired, dt, out moveDir, 0f);
+
+        void FaceAndSteer(Vector3 desired, float dt, out Vector3 moveDir, float rateOverride)
         {
             if (desired.sqrMagnitude < 0.001f)
             {
@@ -540,7 +544,8 @@ namespace Tag.Modes
             // Always turn. The old 16 deg snap made a juke useless once they were lined up.
             Quaternion look = Quaternion.LookRotation(desired, Vector3.up);
             float rate = Mathf.Min(turnSpeed, OpponentChaseSteer.MaxYawDegPerSec);
-            if (Vector3.Angle(transform.forward, desired) <= faceAlignDeg)
+            if (rateOverride > 0f) rate = rateOverride;
+            else if (Vector3.Angle(transform.forward, desired) <= faceAlignDeg)
                 rate *= 0.65f;
             transform.rotation = Quaternion.RotateTowards(transform.rotation, look, rate * dt);
             moveDir = transform.forward;
@@ -832,7 +837,11 @@ namespace Tag.Modes
 
             OpponentChaseWish wish = OpponentChaseSteer.Decide(chase);
             Vector3 face = wish.Face.sqrMagnitude > 0.001f ? wish.Face : aim;
-            FaceAndSteer(face, dt, out moveDir);
+            // Inside a step of reach the It bot squares up to the body and turns fast, so a runner
+            // standing beside it gets punched instead of the bot strafing past at 74 deg.
+            bool squareUp = dist <= reach * 1.4f && toBody.sqrMagnitude > 0.001f;
+            if (squareUp) face = new Vector3(toBody.x, 0f, toBody.z);
+            FaceAndSteer(face, dt, out moveDir, squareUp ? CloseTurnDegPerSec : 0f);
             _ = moveDir;
 
             float ang = Vector3.Angle(transform.forward, toBody.sqrMagnitude > 0.001f ? toBody.normalized : transform.forward);
