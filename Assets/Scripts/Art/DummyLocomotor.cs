@@ -1335,11 +1335,6 @@ namespace Tag.Art
             return child != null && parent != null && child != parent && child.IsChildOf(parent);
         }
 
-        void LateUpdate()
-        {
-            LatePose();
-            if (_bound) GuardKnees();
-        }
 
         /// <summary>Signed knee bend before the guard this frame (deg, + = flex forward, - = hyperextended).</summary>
         public float KneeRawL { get; private set; }
@@ -1348,8 +1343,16 @@ namespace Tag.Art
         public float KneeOutL { get; private set; }
         public float KneeOutR { get; private set; }
         public const float KneeMaxFlex = 150f;
+        KneeGuard _kneeGuard;
 
-        void GuardKnees()
+        /// <summary>Run by KneeGuard after every LateUpdate pose write (execution order 32000).</summary>
+        internal void GuardKnees()
+        {
+            if (!_bound) return;
+            GuardKneesNow();
+        }
+
+        void GuardKneesNow()
         {
             Vector3 right = transform.right;
             KneeRawL = Knee(_upperLegL, _lowerLegL, _footL, right, out float l);
@@ -1383,8 +1386,9 @@ namespace Tag.Art
             return raw;
         }
 
-        void LatePose()
+        void LateUpdate()
         {
+            if (_kneeGuard == null) _kneeGuard = KneeGuard.On(this);
             Tag.Core.FrameMeter.AddPose(Tag.Core.FrameMeter.PoseOps);
             float dt = Time.deltaTime;
             _stanceSole = false;
