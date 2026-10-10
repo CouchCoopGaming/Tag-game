@@ -315,5 +315,67 @@ namespace Tag.Tests.Station
             }
             yield return new ExitPlayMode();
         }
+
+        [UnityTest]
+        public IEnumerator TwoPads_TwoPanes()
+        {
+            EditorSceneManager.OpenScene("Assets/Scenes/Play.unity");
+            yield return new EnterPlayMode();
+            Gamepad a = null, b = null;
+            try
+            {
+                yield return new WaitForSecondsRealtime(2f);
+                Call("Tag.Couch.CouchPlay", "Release");
+                a = InputSystem.AddDevice<Gamepad>("StationPadA");
+                b = InputSystem.AddDevice<Gamepad>("StationPadB");
+                Call("Tag.Couch.CouchPlay", "Join", PadDevice(a));
+                Call("Tag.Couch.CouchPlay", "Join", PadDevice(b));
+                Call("Tag.Ui.Menu.MenuMatch", "StartMatch");
+                float wait = 0f;
+                while (!RoundPlay() && wait < 15f) { wait += Time.unscaledDeltaTime; yield return null; }
+                Assert.IsTrue(RoundPlay(), "split match never started");
+                yield return null;
+                var rects = new List<Rect>();
+                foreach (Camera c in UnityEngine.Object.FindObjectsByType<Camera>(FindObjectsSortMode.None))
+                    if (c.enabled && c.targetTexture == null && c.GetComponentInParent(T("Tag.Gameplay.ItController")) != null) rects.Add(c.rect);
+                Assert.AreEqual(2, rects.Count, "two pads should give two pawn cameras");
+                Assert.AreNotEqual(rects[0], rects[1], "the two panes share one viewport");
+                Assert.Less(rects[0].width * rects[0].height, 0.75f, "pane is still full screen");
+            }
+            finally
+            {
+                if (a != null) InputSystem.RemoveDevice(a);
+                if (b != null) InputSystem.RemoveDevice(b);
+            }
+            yield return new ExitPlayMode();
+        }
+
+        [UnityTest]
+        public IEnumerator Practice_ReachesPlaying_AndMoves()
+        {
+            EditorSceneManager.OpenScene("Assets/Scenes/Play.unity");
+            yield return new EnterPlayMode();
+            try
+            {
+                yield return new WaitForSecondsRealtime(2f);
+                Call("Tag.Couch.CouchPlay", "Release");
+                _pad = InputSystem.AddDevice<Gamepad>("StationPad");
+                Call("Tag.Couch.CouchPlay", "Join", PadDevice(_pad));
+                Call("Tag.Ui.Menu.MenuMatch", "StartPractice");
+                float wait = 0f;
+                while (!RoundPlay() && wait < 15f) { wait += Time.unscaledDeltaTime; yield return null; }
+                Assert.IsTrue(RoundPlay(), "Practice never reached Playing");
+                GameObject me = Pawns()[0];
+                Vector3 from = me.transform.position;
+                for (float t = 0f; t < 2f; t += Time.deltaTime) { Pad(new Vector2(0f, 1f), Vector2.zero); yield return null; }
+                Assert.Greater(Vector3.Distance(from, me.transform.position), 3f, "Practice pawn did not move");
+            }
+            finally
+            {
+                if (_pad != null) InputSystem.RemoveDevice(_pad);
+                _pad = null;
+            }
+            yield return new ExitPlayMode();
+        }
     }
 }

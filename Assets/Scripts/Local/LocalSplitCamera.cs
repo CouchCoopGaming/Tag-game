@@ -57,8 +57,13 @@ namespace Tag.Local
                     ItController it = its[i];
                     if (it == null || !it.gameObject.activeInHierarchy) continue;
                     if (CouchPlay.Humans >= 2 && it.PlayerId != name) continue;
-                    Camera cam = it.GetComponentInChildren<Camera>();
-                    if (cam == null || !cam.enabled) continue;
+                    // The Play scene's Player keeps a disabled CameraPivot camera, and clones copy it.
+                    // GetComponentInChildren returned that one first, so no seat matched, no rect was
+                    // set, and every pane stayed full screen with P1's on top.
+                    Camera cam = null;
+                    foreach (Camera c in it.GetComponentsInChildren<Camera>())
+                        if (c.enabled) { cam = c; break; }
+                    if (cam == null) continue;
                     _cams[_count] = cam;
                     _bodies[_count] = it.transform;
                     _count++;
