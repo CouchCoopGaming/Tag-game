@@ -1006,7 +1006,12 @@ static class Program
                 "UpperBody.AimTwist",
                 "HangMotion.LegTrail",
                 "HangMotion.SwayExtra",
-                "HangMotion.RopeSpine",
+                // 9219d017 replaced the RopeSpine/LineFix fold with a rope-elevation pitch,
+                // the HangLean hip roll and the HangShoulder lift on the played hang.
+                "ApplyBodyLine(_ropeElev",
+                "float pitch = elev * weight",
+                "GrapplePose.HangLean",
+                "GrapplePose.HangShoulder",
                 "HangMotion.Windmill"))
         {
             Console.Error.WriteLine("smooth motion is not on the locomotor");
@@ -1137,8 +1142,12 @@ static class Program
         }
         if (!AssetHas("Assets/Scripts/Art/DummyLocomotor.cs",
                 "BodyLine.WallArc",
-                "BodyLine.LineFix",
-                "HangMotion.RopeSpine",
+                // 9219d017 replaced the RopeSpine/LineFix fold with a rope-elevation pitch,
+                // the HangLean hip roll and the HangShoulder lift on the played hang.
+                "ApplyBodyLine(_ropeElev",
+                "float pitch = elev * weight",
+                "GrapplePose.HangLean",
+                "GrapplePose.HangShoulder",
                 "Handoff2Feel.ZipGrab",
                 "Handoff2Feel.ZipDrop",
                 "Handoff2Feel.PadOpen",
@@ -1171,10 +1180,12 @@ static class Program
                 "AirFeel.BalanceArms",
                 "AirFeel.HeadPitch",
                 "HandoffFeel.Release",
-                "HandoffFeel.RollWeight",
+                // f71bbe2a: the 65% roll plays the seated land instead of the RollWeight blend.
+                "LandPose.Sample sit = LandPose.Soft()",
                 "HandoffFeel.Rolls",
                 "Handoff2Feel.ClimbOpen",
-                "Handoff2Feel.VaultShown",
+                // ac5ea8a3: the re-keyed vault reads the motor mantle progress directly.
+                "MantlePose.Cleared(mantleU",
                 "Handoff2Feel.VaultOutOpen",
                 "Handoff2Feel.LatchOpen",
                 "Handoff2Feel.ReleaseShown",
