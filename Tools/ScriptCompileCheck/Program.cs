@@ -117,7 +117,11 @@ namespace Tag.Tools
             Console.WriteLine(patternLine);
             if (!patternsOk)
                 Console.Error.WriteLine(patternReport);
-            if (!compileOk || !smokeOk || !patternsOk)
+            bool layoutOk = AssetLayout.Run(root, out string layoutLine, out string layoutReport);
+            Console.WriteLine(layoutLine);
+            if (!layoutOk)
+                Console.Error.WriteLine(layoutReport);
+            if (!compileOk || !smokeOk || !patternsOk || !layoutOk)
                 return 1;
             Console.WriteLine("script-compile-check ok csc CS1061 CS0117 CS0103 CS0104 unity=" + UnityReferenceSet.EditorVersion
                 + " parsed=" + parsed);
