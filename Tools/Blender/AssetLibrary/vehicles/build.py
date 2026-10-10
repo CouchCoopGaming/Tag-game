@@ -64,6 +64,7 @@ MODULES = (
     "bus_city40_blue",
     "bus_city40_red",
     "bus_city60",
+    "year_line",
 )
 
 

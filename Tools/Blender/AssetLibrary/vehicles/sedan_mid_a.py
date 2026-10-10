@@ -1,4 +1,4 @@
-"""Midsize sedan line A, model years 2022 through 2025.
+"""Midsize sedan line A, model years 2022 through 2026.
 
 One hard panel shell. 2025 changes the lamp shape, grille, intake, and wheel.
 Earlier years keep that shell. Every year is the crimson base. Extra colors

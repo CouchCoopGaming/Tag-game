@@ -82,6 +82,7 @@ YEARS = {
     2023: {"spokes": 5, "lamps": "tier", "tails": "separate", "intake": False, "mirror": PAINT, "bars": 5, "bar_h": 0.012},
     2024: {"spokes": 6, "lamps": "thin", "tails": "thin", "intake": False, "mirror": BLACK, "bars": 6, "bar_h": 0.008},
     2025: {"spokes": 5, "lamps": "swept", "tails": "wrap", "intake": True, "mirror": PAINT, "bars": 4, "bar_h": 0.014},
+    2026: {"spokes": 7, "lamps": "thin", "tails": "thin", "intake": True, "mirror": BLACK, "bars": 3, "bar_h": 0.010},
 }
 
 _TEMPLATE = {}

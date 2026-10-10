@@ -560,7 +560,11 @@ def _fascia(g, spec, lod):
         g.box((sign * spec["lamp_x"], spec["tail_y"], z0 + 0.012), (0.32, 0.110, 0.016), "Lib_Black", bevel=bev, segs=segs)
         g.box((sign * spec["lamp_x"], spec["tail_y"], z0 + 0.006), (0.24, 0.070, 0.008), "Lib_Taillamp")
     g.box((0.0, spec["grille_y"], z1 - 0.016), (spec["grille_w"], 0.16, 0.024), "Lib_Black")
-    slats = 4 if lod == 0 else (2 if lod == 1 else 0)
+    if spec.get("slats") is None:
+        slats = 4 if lod == 0 else (2 if lod == 1 else 0)
+    else:
+        raw = int(spec["slats"])
+        slats = raw if lod == 0 else (max(0, raw // 2) if lod == 1 else 0)
     for i in range(slats):
         g.box((0.0, spec["grille_y"] - 0.055 + i * 0.032, z1 - 0.008), (spec["grille_w"] - 0.08, 0.008, 0.006), "Lib_SteelDark")
     g.box((0.0, spec["bumper_y"], z1 - 0.040), (half * 1.70, 0.12, 0.060), "Lib_Black", bevel=bev, segs=segs)
@@ -588,8 +592,9 @@ def _wheels(g, spec, lod):
             if lod < 2:
                 g.cylinder((face + sign * 0.008, spec["axle_y"], z), r * 0.20, 0.010, "Lib_SteelDark", max(8, seg // 2), axis="X")
             if lod == 0:
-                for k in range(5):
-                    theta = math.radians(k * 72.0 + 8.0)
+                count = int(spec.get("spokes", 5))
+                for k in range(count):
+                    theta = math.radians(k * (360.0 / count) + 8.0)
                     g.box(
                         (
                             face,
@@ -690,7 +695,11 @@ def _fascia_bar(g, spec, lod):
     _bumper_shell(g, spec, "tail", 0.20, 0.16, 0.36, lod)
     gy, gh, gw = 0.45, 0.18, half * 1.28
     g.box((0.0, gy, zf - 0.032), (gw, gh, 0.040), "Lib_Black")
-    slats = 4 if lod == 0 else (2 if lod == 1 else 0)
+    if spec.get("slats") is None:
+        slats = 4 if lod == 0 else (2 if lod == 1 else 0)
+    else:
+        raw = int(spec["slats"])
+        slats = raw if lod == 0 else (max(0, raw // 2) if lod == 1 else 0)
     for i in range(slats):
         g.box((0.0, gy - gh * 0.32 + i * (gh * 0.20), zf - 0.020), (gw - 0.10, 0.007, 0.006), "Lib_SteelDark")
     ly = spec["lamp_y"] + 0.08
