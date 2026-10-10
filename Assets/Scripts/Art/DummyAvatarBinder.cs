@@ -86,6 +86,14 @@ namespace Tag.Art
             if (hierIt == null)
                 hierIt = LoadHiPoly("Dummy_Mannequin_Orange_Hier_Hi.fbx");
 #endif
+#if UNITY_EDITOR
+            GameObject riggedRunner = LoadHiPoly("Dummy_Mannequin_Tan_Hier_Hi.fbx");
+#else
+            GameObject riggedRunner = null;
+#endif
+            var cat = Resources.Load<HierMannequinCatalog>("Characters/HierMannequinCatalog");
+            if (cat != null && cat.Runner != null) riggedRunner = cat.Runner;
+            hierRunner = PosableLook(hierRunner, riggedRunner);
             if (preferMannequinOverRunnerIt && hierRunner != null)
                 runnerVisualPrefab = hierRunner;
             else
@@ -123,6 +131,46 @@ namespace Tag.Art
             if (itBaseMat == null) itBaseMat = Resources.Load<Material>("Characters/Mat_It_Base");
             if (itAccentMat == null) itAccentMat = Resources.Load<Material>("Characters/Mat_It_Accent");
             if (itOverrideMat == null) itOverrideMat = Resources.Load<Material>("Characters/Mat_It_ItOverride");
+        }
+
+        // Shell colours taken from a colour Hier whose mesh cannot be posed (see ChainedBody).
+        readonly System.Collections.Generic.Dictionary<VinylRole, Color> _lookTint =
+            new System.Collections.Generic.Dictionary<VinylRole, Color>();
+
+        /// <summary>
+        /// True when Head hangs under Hips. The Blue/Mint/Red/Lavender *_Hier_Hi exports
+        /// have Hips, Spine and Head as flat siblings under DummyRoot, so the hips pose turns the
+        /// legs and leaves the torso behind and the body runs on its side. Tan and Orange are rigged.
+        /// </summary>
+        public static bool ChainedBody(GameObject body)
+        {
+            if (body == null) return false;
+            Transform hips = null, head = null;
+            foreach (Transform t in body.GetComponentsInChildren<Transform>(true))
+            {
+                if (hips == null && (t.name == "Hips" || t.name == "Pelvis")) hips = t;
+                if (head == null && t.name == "Head") head = t;
+            }
+            return hips != null && head != null && head != hips && head.IsChildOf(hips);
+        }
+
+        /// <summary>Keep a colour look when its own mesh is unrigged: rigged Tan body, that look's shell colours.</summary>
+        GameObject PosableLook(GameObject picked, GameObject rigged)
+        {
+            _lookTint.Clear();
+            if (picked == null || ChainedBody(picked) || rigged == null || !ChainedBody(rigged)) return picked;
+            foreach (var r in picked.GetComponentsInChildren<Renderer>(true))
+            {
+                foreach (Material m in r.sharedMaterials)
+                {
+                    if (m == null) continue;
+                    VinylRole role = RoleOf(m);
+                    if (role != VinylRole.Base && role != VinylRole.Accent) continue;
+                    Color c = ReadAlbedo(m);
+                    if (UsableAlbedo(c) && !_lookTint.ContainsKey(role)) _lookTint[role] = c;
+                }
+            }
+            return rigged;
         }
 
         static GameObject HierPrefab(bool asIt, string color)
@@ -408,6 +456,8 @@ namespace Tag.Art
                 Color authored = ReadAlbedo(src);
                 if (UsableAlbedo(authored))
                     albedo = authored;
+                if (!asIt && _lookTint.TryGetValue(role, out Color look))
+                    albedo = look;
             }
             float smooth;
             float metal;

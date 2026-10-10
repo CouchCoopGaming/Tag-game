@@ -21,7 +21,7 @@ namespace Tag.Tests.Station
     {
         const float MoveSeconds = 2f;
         const float MinPlanarMetres = 3f;
-        const float MaxHipsHeadDeg = 10f;
+        const float MaxHipsHeadDeg = 5f;
 
         Gamepad _pad;
 
