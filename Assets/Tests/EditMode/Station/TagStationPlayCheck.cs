@@ -170,6 +170,9 @@ namespace Tag.Tests.Station
             var cc = it.GetComponent<CharacterController>();
             if (cc) cc.enabled = false;
             it.transform.position = me.transform.position + me.transform.forward * meters;
+            // Placed in range like a bot that ran up: facing the runner. Turning after that is the bot's own.
+            Vector3 face = me.transform.position - it.transform.position; face.y = 0f;
+            if (face.sqrMagnitude > 0.0001f) it.transform.rotation = Quaternion.LookRotation(face);
             if (cc) cc.enabled = true;
         }
 
@@ -194,7 +197,11 @@ namespace Tag.Tests.Station
         {
             Vector3 p = pawn.transform.position;
             float d = Vector3.Distance(p, _last);
-            if (d > _maxStep) _maxStep = d;
+            if (d > 0.5f) Debug.Log("[StationCheck] step " + d.ToString("F2") + " from " + _last + " to " + p + " state=" + MotorState(pawn) + " t=" + Time.time.ToString("F2") + " frame=" + Time.frameCount);
+            // A snap, not a hitch: a long batch frame at 24.7 m/s takeoff legally covers 0.7 m.
+            // Count the step only past what the fastest legal motion (terminal 56.16) could cover.
+            float legal = Mathf.Max(0.5f, 60f * Time.deltaTime);
+            if (d > legal && d - legal + 0.5f > _maxStep) _maxStep = d - legal + 0.5f;
             _last = p;
             Component loco = pawn.GetComponentInChildren(T("Tag.Art.DummyLocomotor"));
             if (loco == null) return;
@@ -204,6 +211,8 @@ namespace Tag.Tests.Station
             float l = (float)t.GetProperty("KneeOutL").GetValue(loco), r = (float)t.GetProperty("KneeOutR").GetValue(loco);
             _kneeWorst = Mathf.Min(_kneeWorst, Mathf.Min(l, r));
             float raw = Mathf.Min((float)t.GetProperty("KneeRawL").GetValue(loco), (float)t.GetProperty("KneeRawR").GetValue(loco));
+            if (raw < _kneeRawWorst - 0.5f && raw < -5f)
+                Debug.Log("[StationCheck] knee raw " + raw.ToString("F1") + " state=" + MotorState(pawn) + " grounded legs L=" + ((float)t.GetProperty("KneeRawL").GetValue(loco)).ToString("F1") + " R=" + ((float)t.GetProperty("KneeRawR").GetValue(loco)).ToString("F1"));
             _kneeRawWorst = Mathf.Min(_kneeRawWorst, raw);
         }
 
@@ -282,6 +291,8 @@ namespace Tag.Tests.Station
                 Assert.IsNotNull(ul, "UpperArm_L");
                 Quaternion restL = ul.localRotation, restR = ur.localRotation;
                 float worstArm = 0f, entry = 0f;
+                // Unsampled waits sit between phases; start the step check from where the pawn is now.
+                _last = me.transform.position;
                 for (t = 0f; t < 1.5f; t += Time.deltaTime)
                 {
                     Pad(new Vector2(0f, 1f), Vector2.zero, 0, true);
@@ -295,6 +306,8 @@ namespace Tag.Tests.Station
                 // Slide: speed never rises above the entry speed.
                 float slideMax = 0f;
                 bool slid = false;
+                // Unsampled waits sit between phases; start the step check from where the pawn is now.
+                _last = me.transform.position;
                 for (t = 0f; t < 0.8f; t += Time.deltaTime)
                 {
                     Pad(new Vector2(0f, 1f), Vector2.zero, GamepadButton.East, true);
@@ -311,10 +324,13 @@ namespace Tag.Tests.Station
                 Debug.Log("[StationCheck] slide entry=" + entry.ToString("F2") + " max=" + slideMax.ToString("F2") + " at " + me.transform.position);
                 if (slid) Assert.LessOrEqual(slideMax, entry + 0.1f, "slide raised speed above the entry speed");
                 else Debug.LogWarning("[StationCheck] no slide entered (sprint blocked); slide speed not scored");
-                Assert.Less(_maxStep, 0.5f, "a frame moved the pawn more than 0.5 m");
+                Assert.Less(_maxStep, 0.5f, "a frame snapped the pawn (beyond 0.5 m and beyond 60 m/s * dt)");
 
                 // Tag: the It bot within 1 m transfers It.
                 Pad(Vector2.zero, Vector2.zero);
+                // The slide sprint ends wedged on a prop (y 2.73); bring the runner back to open spawn ground.
+                Component motor = me.GetComponent(T("TagArena.Movement.PlayerMotor"));
+                motor.GetType().GetMethod("Place", new[] { typeof(Vector3), typeof(string) }).Invoke(motor, new object[] { new Vector3(8f, 0.2f, 8f), "station-check" });
                 yield return new WaitForSeconds(0.5f);
                 GameObject it = null;
                 foreach (UnityEngine.Object o in UnityEngine.Object.FindObjectsByType(T("Tag.Gameplay.ItController"), FindObjectsSortMode.None))
@@ -327,7 +343,11 @@ namespace Tag.Tests.Station
                 // Contact alone never tags: the It bot's fist is off, it stands on the player 3 s.
                 Component fist = it.GetComponent(T("Tag.Gameplay.PunchHitbox"));
                 Assert.IsNotNull(fist, "It bot has no PunchHitbox");
-                ((Behaviour)fist).enabled = false;
+                // Switch the bot's brain off, not just its fist: with the fist off the brain still
+                // cocked and swung into a dead hitbox, and that swing was still pending afterwards.
+                Behaviour brain = (Behaviour)it.GetComponent(T("Tag.Modes.DummyPatrol"));
+                Assert.IsNotNull(brain, "It bot has no DummyPatrol");
+                brain.enabled = false;
                 for (t = 0f; t < 3f; t += Time.deltaTime)
                 {
                     Hold(it, me, 0.6f);
@@ -335,13 +355,20 @@ namespace Tag.Tests.Station
                     yield return null;
                 }
                 // With the fist back, a bot punch in range tags within about 2 s.
-                ((Behaviour)fist).enabled = true;
+                brain.enabled = true;
                 bool tagged = false;
                 for (t = 0f; t < 2.2f && !tagged; t += Time.deltaTime)
                 {
                     Hold(it, me, 0.8f);
                     tagged = IsIt(me);
                     yield return null;
+                }
+                if (!tagged)
+                {
+                    var bt = brain.GetType();
+                    string F(string n) { var f = bt.GetField(n, BindingFlags.NonPublic | BindingFlags.Instance); object v = f?.GetValue(brain); return n + "=" + (v is Component c ? c.name : v); }
+                    Debug.Log("[StationCheck] bot " + F("_target") + " " + F("_punchTell") + " " + F("_cooldown") + " " + F("_itGraceTimer") + " " + F("_lungeTellT") + " " + F("_lungeArm")
+                        + " ang=" + Vector3.Angle(it.transform.forward, me.transform.position - it.transform.position).ToString("F0") + " dist=" + Vector3.Distance(it.transform.position, me.transform.position).ToString("F2"));
                 }
                 Assert.IsTrue(tagged, "the It bot's punch in range did not tag within 2 s");
             }
