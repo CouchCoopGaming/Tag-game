@@ -341,6 +341,12 @@ namespace Tag.Ui.Menu
             MenuReveal.Clear();
             if (_canvas != null) _canvas.enabled = false;
             if (_preview != null) _preview.Hide();
+            // Open() unlocked the cursor for the menu. Hand play its lock back, or the
+            // keyboard reader sees an unlocked cursor and zeroes every input.
+            GameFlow flow = GameFlow.Instance;
+            if (Application.isPlaying && flow != null && flow.State == GameFlowState.Play
+                && SceneManager.GetActiveScene().name == "Play")
+                TagArena.Movement.ResumeInputGate.LockPlayCursor();
         }
 
         void Open(MenuScreenId id)

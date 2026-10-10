@@ -362,7 +362,10 @@ namespace TagArena.Movement
 
         void ReadDriven()
         {
-            bool live = Time.timeScale > 0f && Cursor.lockState == CursorLockMode.Locked;
+            // A pad seat never touches the mouse. The cursor lock is a mouse-look guard,
+            // and the editor drops it on Esc or a focus change; a pad player cannot click it back.
+            // Pause still stops every seat through timeScale.
+            bool live = Time.timeScale > 0f && (DriveDevice > 0 || Cursor.lockState == CursorLockMode.Locked);
             if (!live || CouchPlay.InputBlockedDevice(DriveDevice))
             {
                 Move = Vector2.zero;
