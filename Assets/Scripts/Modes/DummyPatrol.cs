@@ -843,6 +843,8 @@ namespace Tag.Modes
             // Slightly wider decision cone when dumping a low fuse.
             float cone = EffectivePunchConeHalfDeg() * (1f + 0.2f * urgency);
             bool inCone = dist <= range && ang <= cone;
+            // Tagging is a punch only. Inside clear reach the It bot always cocks (0.22-0.36 s tell);
+            // the aggression roll only gates the long-range attempts.
             // A hard strafe past the fist should whiff - not a guaranteed tag.
             Vector3 juke = TargetPlanarVelocity();
             float lateral = Mathf.Abs(Vector3.Dot(juke, transform.right));
@@ -876,7 +878,8 @@ namespace Tag.Modes
                     }
                 }
             }
-            else if (_lungeTellT <= 0f && _lungeArm <= 0f && inCone && !juked && _itGraceTimer <= 0f && _cooldown <= 0f && Random.value <= EffectiveAggression())
+            else if (_lungeTellT <= 0f && _lungeArm <= 0f && inCone && !juked && _itGraceTimer <= 0f && _cooldown <= 0f
+                && (dist <= range * 0.85f || Random.value <= EffectiveAggression()))
             {
                 _punchTell = Mathf.Lerp(0.36f, 0.22f, urgency); // urgent cock still long enough to read in TP
                 HoldPunchTelegraph();

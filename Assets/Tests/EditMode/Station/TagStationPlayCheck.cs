@@ -164,6 +164,15 @@ namespace Tag.Tests.Station
             return null;
         }
 
+        static void Hold(GameObject it, GameObject me, float meters)
+        {
+            if (Vector3.Distance(it.transform.position, me.transform.position) <= meters + 0.3f) return;
+            var cc = it.GetComponent<CharacterController>();
+            if (cc) cc.enabled = false;
+            it.transform.position = me.transform.position + me.transform.forward * meters;
+            if (cc) cc.enabled = true;
+        }
+
         static bool IsIt(GameObject g)
         {
             Component it = g.GetComponent(T("Tag.Gameplay.ItController"));
@@ -278,20 +287,26 @@ namespace Tag.Tests.Station
                 }
                 if (it == null && IsIt(me)) Assert.Pass("human started It; transfer covered by the bot path elsewhere");
                 Assert.IsNotNull(it, "no It bot");
-                bool tagged = false;
-                for (t = 0f; t < 6f && !tagged; t += Time.deltaTime)
+                // Contact alone never tags: the It bot's fist is off, it stands on the player 3 s.
+                Component fist = it.GetComponent(T("Tag.Gameplay.PunchHitbox"));
+                Assert.IsNotNull(fist, "It bot has no PunchHitbox");
+                ((Behaviour)fist).enabled = false;
+                for (t = 0f; t < 3f; t += Time.deltaTime)
                 {
-                    if (Vector3.Distance(it.transform.position, me.transform.position) > 1f)
-                    {
-                        var cc = it.GetComponent<CharacterController>();
-                        if (cc) cc.enabled = false;
-                        it.transform.position = me.transform.position + me.transform.forward * 0.8f;
-                        if (cc) cc.enabled = true;
-                    }
+                    Hold(it, me, 0.6f);
+                    Assert.IsFalse(IsIt(me), "touching the It bot tagged the player without a punch");
+                    yield return null;
+                }
+                // With the fist back, a bot punch in range tags within about 2 s.
+                ((Behaviour)fist).enabled = true;
+                bool tagged = false;
+                for (t = 0f; t < 2.2f && !tagged; t += Time.deltaTime)
+                {
+                    Hold(it, me, 0.8f);
                     tagged = IsIt(me);
                     yield return null;
                 }
-                Assert.IsTrue(tagged, "the It bot within 1 m never tagged the player");
+                Assert.IsTrue(tagged, "the It bot's punch in range did not tag within 2 s");
             }
             finally
             {

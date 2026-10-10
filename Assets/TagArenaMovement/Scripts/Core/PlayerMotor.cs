@@ -437,8 +437,7 @@ namespace TagArena.Movement
                 ClearWallBan();
             }
 
-            if (tagRole != null && tagRole.IsIt)
-                TryTag();
+            // No contact tags. It moves only on a landed punch (PunchHitbox -> OnSuccessfulPunch).
 
             DriveAnimator();
             PawnAudio.Step(this, dt);
