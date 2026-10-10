@@ -260,15 +260,34 @@ namespace TagArena.Movement
             float safeHeight = height > radius + 0.05f ? height : cfg.standingHeight;
             Vector3 center = body.position + Vector3.up * (safeHeight - radius);
             float reach = radius + KinematicStep.OpenCeiling;
-            if (Physics.Raycast(center, Vector3.up, out RaycastHit hit, reach, cfg.groundMask, QueryTriggerInteraction.Ignore)
-                && hit.normal.y < -0.5f)
+            // The pawn's own CharacterController encloses this point. CheckSphere counted it as a
+            // buried ceiling every frame, so CeilingKissRise ate every jump. Skip our own colliders.
+            int n = Physics.RaycastNonAlloc(center, Vector3.up, _ceilHits, reach, cfg.groundMask, QueryTriggerInteraction.Ignore);
+            float best = float.MaxValue;
+            for (int i = 0; i < n; i++)
             {
-                CeilingGap = hit.distance - radius;
+                RaycastHit h = _ceilHits[i];
+                if (h.collider == null || Own(h.collider) || h.normal.y >= -0.5f) continue;
+                if (h.distance < best) best = h.distance;
+            }
+            if (best < float.MaxValue)
+            {
+                CeilingGap = best - radius;
                 return;
             }
-            if (Physics.CheckSphere(center, radius * 0.45f, cfg.groundMask, QueryTriggerInteraction.Ignore))
+            int m = Physics.OverlapSphereNonAlloc(center, radius * 0.45f, _ceilOverlap, cfg.groundMask, QueryTriggerInteraction.Ignore);
+            for (int i = 0; i < m; i++)
+            {
+                if (_ceilOverlap[i] == null || Own(_ceilOverlap[i])) continue;
                 CeilingGap = -Mathf.Max(0.02f, cfg.skin);
+                return;
+            }
         }
+
+        readonly RaycastHit[] _ceilHits = new RaycastHit[8];
+        readonly Collider[] _ceilOverlap = new Collider[8];
+
+        bool Own(Collider c) => body != null && c.transform.IsChildOf(body);
 
         public static Vector3 ProjectOnPlanePreserveMag(Vector3 vel, Vector3 normal)
         {

@@ -254,7 +254,9 @@ namespace TagArena.Movement
             if (!cursorLocked)
             {
                 // A free cursor belongs to the OS: no mouse yaw, no mouse-button verbs.
-                if (!LookFromGamepad) Look = Vector2.zero;
+                // The editor drops the lock on Esc and focus changes, and Landon could barely turn.
+                // In the editor a focused Game view still mouse-looks while the cursor is inside it.
+                if (!LookFromGamepad && !EditorFreeLook()) Look = Vector2.zero;
                 if (Input.GetMouseButton(0) || Input.GetMouseButtonUp(0)) PunchPressed = false;
                 if (Input.GetMouseButton(1)) { JetHeld = false; JetPressed = false; }
                 if (Input.GetMouseButtonDown(2)) LungePressed = false;
@@ -375,6 +377,13 @@ namespace TagArena.Movement
                 return true;
 #endif
             return false;
+        }
+
+        static bool EditorFreeLook()
+        {
+            if (!Application.isEditor || !Application.isFocused) return false;
+            Vector3 m = Input.mousePosition;
+            return m.x >= 0f && m.y >= 0f && m.x <= Screen.width && m.y <= Screen.height;
         }
 
         void ReadDriven()

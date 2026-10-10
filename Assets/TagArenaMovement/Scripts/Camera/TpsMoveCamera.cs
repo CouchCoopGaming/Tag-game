@@ -19,7 +19,8 @@ namespace TagArena.Movement
         public Camera cam;
 
         public float sensitivity = 1.8f;
-        public float minPitch = -25f;
+        // Up limit. -25 only let the camera tip 25 deg above level, too little to aim the grapple at a high anchor.
+        public float minPitch = -65f;
         public float maxPitch = 55f;
         // Slightly above-shoulder, ~5.2m back — readable third-person framing
         public Vector3 boomOffset = new Vector3(0.4f, 0.45f, -5.2f);

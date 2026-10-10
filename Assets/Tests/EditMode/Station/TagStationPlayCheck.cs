@@ -140,5 +140,165 @@ namespace Tag.Tests.Station
             }
             yield return new ExitPlayMode();
         }
+
+        static float PrivF(object o, string n)
+        {
+            FieldInfo f = o.GetType().GetField(n, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+            return f != null ? (float)f.GetValue(o) : float.NaN;
+        }
+
+        static float HorizSpeed(GameObject pawn)
+        {
+            Type motor = T("TagArena.Movement.PlayerMotor");
+            return (float)motor.GetProperty("HorizSpeed").GetValue(pawn.GetComponent(motor));
+        }
+
+        static Component Rig(GameObject pawn)
+        {
+            Type cam = T("TagArena.Movement.TpsMoveCamera");
+            foreach (UnityEngine.Object o in UnityEngine.Object.FindObjectsByType(cam, FindObjectsSortMode.None))
+            {
+                var c = (Component)o;
+                if (c.transform.IsChildOf(pawn.transform)) return c;
+            }
+            return null;
+        }
+
+        static bool IsIt(GameObject g)
+        {
+            Component it = g.GetComponent(T("Tag.Gameplay.ItController"));
+            return it != null && (bool)it.GetType().GetProperty("IsIt").GetValue(it);
+        }
+
+        void Pad(Vector2 left, Vector2 right, GamepadButton button = 0, bool sprint = false)
+        {
+            var st = new GamepadState { leftStick = left, rightStick = right };
+            if (button != 0) st = st.WithButton(button);
+            if (sprint) st = st.WithButton(GamepadButton.LeftShoulder);
+            InputSystem.QueueStateEvent(_pad, st);
+        }
+
+        // Frame step guard: no visible teleport (vault/mantle snaps included).
+        float _maxStep;
+        Vector3 _last;
+        void Step(GameObject pawn)
+        {
+            Vector3 p = pawn.transform.position;
+            float d = Vector3.Distance(p, _last);
+            if (d > _maxStep) _maxStep = d;
+            _last = p;
+        }
+
+        [UnityTest]
+        public IEnumerator MatchVsBot_Jump_Look_Arms_Slide_Tag()
+        {
+            EditorSceneManager.OpenScene("Assets/Scenes/Play.unity");
+            yield return new EnterPlayMode();
+            try
+            {
+                Application.targetFrameRate = 60;
+                yield return new WaitForSecondsRealtime(2f);
+                _pad = InputSystem.AddDevice<Gamepad>("StationPad");
+                Call("Tag.Couch.CouchPlay", "Release");
+                Call("Tag.Couch.CouchPlay", "Join", PadDevice(_pad));
+                object settings = T("Tag.Settings.GameSettings").GetField("Current", BindingFlags.Public | BindingFlags.Static).GetValue(null);
+                if (settings != null) settings.GetType().GetField("AiOpponents").SetValue(settings, 1);
+                Type session = T("Tag.Ui.Menu.MenuSession");
+                session.GetField("Mode").SetValue(null, Enum.Parse(T("Tag.Modes.TagModeId"), "FreePlay"));
+                Call("Tag.Ui.Menu.MenuMatch", "StartMatch");
+                float wait = 0f;
+                while (!RoundPlay() && wait < 15f) { wait += Time.unscaledDeltaTime; yield return null; }
+                Assert.IsTrue(RoundPlay(), "RoundPlay never went true after StartMatch");
+                List<GameObject> pawns = Pawns();
+                Assert.AreEqual(1, pawns.Count, "one human pawn");
+                GameObject me = pawns[0];
+                _last = me.transform.position;
+                _maxStep = 0f;
+
+                // Jump: a South press raises the pawn.
+                float baseY = me.transform.position.y, topY = baseY, t = 0f;
+                while (t < 1.2f)
+                {
+                    Pad(Vector2.zero, Vector2.zero, t < 0.15f ? GamepadButton.South : 0);
+                    topY = Mathf.Max(topY, me.transform.position.y);
+                    Step(me);
+                    t += Time.deltaTime;
+                    yield return null;
+                }
+                Assert.Greater(topY - baseY, 1f, "jump did not raise the pawn");
+                yield return new WaitForSeconds(1.5f);
+
+                // Look: pad right stick turns yaw, then pitch.
+                Component rig = Rig(me);
+                Assert.IsNotNull(rig, "camera rig");
+                float yaw0 = PrivF(rig, "_yaw"), pitch0 = PrivF(rig, "_pitch");
+                for (t = 0f; t < 0.4f; t += Time.deltaTime) { Pad(Vector2.zero, new Vector2(1f, 0f)); yield return null; }
+                float yaw1 = PrivF(rig, "_yaw");
+                for (t = 0f; t < 0.4f; t += Time.deltaTime) { Pad(Vector2.zero, new Vector2(0f, 1f)); yield return null; }
+                float pitch1 = PrivF(rig, "_pitch");
+                Assert.Greater(Mathf.Abs(yaw1 - yaw0), 20f, "pad look did not turn yaw");
+                Assert.Greater(Mathf.Abs(pitch1 - pitch0), 5f, "pad look did not change pitch");
+                Assert.LessOrEqual(PrivF(rig, "minPitch"), -45f, "camera cannot look up far enough to aim the grapple");
+
+                // Arms: sprint and watch the upper arms against their bind pose.
+                Transform ul = Bone(me.transform, "UpperArm_L"), ur = Bone(me.transform, "UpperArm_R");
+                Assert.IsNotNull(ul, "UpperArm_L");
+                Quaternion restL = ul.localRotation, restR = ur.localRotation;
+                float worstArm = 0f, entry = 0f;
+                for (t = 0f; t < 1.5f; t += Time.deltaTime)
+                {
+                    Pad(new Vector2(0f, 1f), Vector2.zero, 0, true);
+                    worstArm = Mathf.Max(worstArm, Quaternion.Angle(restL, ul.localRotation), Quaternion.Angle(restR, ur.localRotation));
+                    Step(me);
+                    yield return null;
+                }
+                entry = HorizSpeed(me);
+                Assert.Less(worstArm, 150f, "upper arm left its sane range while sprinting");
+
+                // Slide: speed never rises above the entry speed.
+                float slideMax = 0f;
+                for (t = 0f; t < 0.8f; t += Time.deltaTime)
+                {
+                    Pad(new Vector2(0f, 1f), Vector2.zero, GamepadButton.East, true);
+                    slideMax = Mathf.Max(slideMax, HorizSpeed(me));
+                    Step(me);
+                    yield return null;
+                }
+                Assert.LessOrEqual(slideMax, entry + 0.1f, "slide raised speed above the entry speed");
+                Assert.Less(_maxStep, 0.5f, "a frame moved the pawn more than 0.5 m");
+
+                // Tag: the It bot within 1 m transfers It.
+                Pad(Vector2.zero, Vector2.zero);
+                yield return new WaitForSeconds(0.5f);
+                GameObject it = null;
+                foreach (UnityEngine.Object o in UnityEngine.Object.FindObjectsByType(T("Tag.Gameplay.ItController"), FindObjectsSortMode.None))
+                {
+                    var c = (Component)o;
+                    if (c.gameObject != me && IsIt(c.gameObject)) it = c.gameObject;
+                }
+                if (it == null && IsIt(me)) Assert.Pass("human started It; transfer covered by the bot path elsewhere");
+                Assert.IsNotNull(it, "no It bot");
+                bool tagged = false;
+                for (t = 0f; t < 6f && !tagged; t += Time.deltaTime)
+                {
+                    if (Vector3.Distance(it.transform.position, me.transform.position) > 1f)
+                    {
+                        var cc = it.GetComponent<CharacterController>();
+                        if (cc) cc.enabled = false;
+                        it.transform.position = me.transform.position + me.transform.forward * 0.8f;
+                        if (cc) cc.enabled = true;
+                    }
+                    tagged = IsIt(me);
+                    yield return null;
+                }
+                Assert.IsTrue(tagged, "the It bot within 1 m never tagged the player");
+            }
+            finally
+            {
+                if (_pad != null) InputSystem.RemoveDevice(_pad);
+                _pad = null;
+            }
+            yield return new ExitPlayMode();
+        }
     }
 }

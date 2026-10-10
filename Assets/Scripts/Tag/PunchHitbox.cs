@@ -86,7 +86,10 @@ namespace Tag.Gameplay
         {
             // Pause freezes the clock. Results stay at timeScale 1 with the cursor unlocked.
             // Either way a swing that started on the menu click must not finish into gameplay.
-            if (Time.timeScale <= 0f || Cursor.lockState != CursorLockMode.Locked || ResumeInputGate.Blocking)
+            // Only a mouse seat needs the lock (a free cursor's click is a UI click). AI and pad
+            // seats were dropped here too, so with the editor cursor free nobody could swing or tag.
+            bool mouseSeat = _input != null && !_input.ExternalControl && _input.DriveDevice <= 0;
+            if (Time.timeScale <= 0f || (mouseSeat && Cursor.lockState != CursorLockMode.Locked) || ResumeInputGate.Blocking)
             {
                 DropSwing();
                 return;

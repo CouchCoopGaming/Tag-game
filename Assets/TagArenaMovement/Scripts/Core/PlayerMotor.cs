@@ -318,7 +318,10 @@ namespace TagArena.Movement
 
             _probe.Refresh(_height, _velocity);
             // Raw contact refreshes coyote. One missed sample does not flap locomotion into air.
-            bool rawFeet = _probe.Ground.grounded;
+            // Rising off a jump the probe still reaches the floor for a frame or two. Counting that
+            // as ground ran GroundMove, which projects v onto the floor and threw the 24.7 away.
+            bool rising = Time.time - _jumpLeftAt < JumpLiftSeconds && _velocity.y > KinematicStep.LaunchVy;
+            bool rawFeet = _probe.Ground.grounded && !rising;
             bool feet = KinematicStep.StableGround(rawFeet, _rawFeetPrev, _velocity.y);
             _rawFeetPrev = rawFeet;
             _stableFeet = feet;
@@ -552,7 +555,7 @@ namespace TagArena.Movement
                 v = ApplyJet(dt, v, wish);
 
             TryJump(ref v, grounded);
-            UpdateLocomotionState(grounded, v);
+            UpdateLocomotionState(grounded && _jumpLeftAt != Time.time, v);
             return v;
         }
 
@@ -904,10 +907,15 @@ namespace TagArena.Movement
             _coyote = 0f;
             _jumpFatigued = true;
             _lastLanded = Time.time;
+            _jumpLeftAt = Time.time;
             SetState(MoveState.Air);
             SetHeight(cfg.standingHeight);
             OnJumped?.Invoke();
         }
+
+        // The probe reaches the floor for the first frames of a jump. Ground does not count then.
+        const float JumpLiftSeconds = 0.12f;
+        float _jumpLeftAt = -1f;
 
         float JumpHeightNow()
         {
