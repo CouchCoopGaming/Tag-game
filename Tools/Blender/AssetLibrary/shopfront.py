@@ -26,7 +26,8 @@ def create():
         g.box((-0.45, 1.35, 0.0), (1.35, 2.15, 0.015), "Lib_Window")
         g.box((-1.15, 1.35, 0.06), (0.05, 2.25, 0.05), "Lib_SteelDark")
         g.box((0.25, 1.35, 0.06), (0.05, 2.25, 0.05), "Lib_SteelDark")
-        g.box((-0.45, 2.45, 0.06), (1.5, 0.05, 0.05), "Lib_SteelDark")
+        if lod < 2:
+            g.box((-0.45, 2.45, 0.06), (1.5, 0.05, 0.05), "Lib_SteelDark")
         g.box((0.95, 1.10, 0.03), (0.78, 2.05, 0.04), "Lib_WoodDark")
         if lod < 2:
             g.box((0, 2.62, 0.55), (3.4, 0.05, 1.15), "Lib_Awning", bevel=bev, segs=1, euler=(-8, 0, 0))

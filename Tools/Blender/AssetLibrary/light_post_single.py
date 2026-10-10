@@ -47,8 +47,10 @@ def create():
             g.box((0.09, 0.55, 0), (0.01, 0.18, 0.10), "Lib_SteelDark", bevel=0.002, segs=1)
         _head(g, lod, 1, bev, bs, seg)
         a.end()
-    a.box("Col_Base", (0, 0.16, 0), (0.12, 0.16, 0.12))
-    a.capsule("Col_Pole", (0, 2.85, 0), 0.042, 4.50, 1)
+    # Base top 0.22, pole from 0.24 to 5.178, arm AABB from about 5.198.
+    # Each step is 2 cm. A collider that runs through the next one does not count.
+    a.box("Col_Base", (0, 0.12, 0), (0.12, 0.20, 0.12))
+    a.capsule("Col_Pole", (0, 2.709, 0), 0.042, 4.938, 1)
     a.box("Col_Arm", (0, 5.25, 0.60), (0.05, 0.05, 0.95), euler=(-3.2, 0, 0))
-    a.box("Col_Head", (0, 5.36, 1.15), (0.58, 0.18, 0.34))
+    a.box("Col_Head", (0, 5.37, 1.15), (0.50, 0.10, 0.26))
     return a

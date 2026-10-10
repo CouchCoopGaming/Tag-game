@@ -75,8 +75,9 @@ def pine_tree(g, lod):
         (2.95, 0.72, 0.30, "Lib_Needle"),
         (3.55, 0.48, 0.24, "Lib_FoliageDark"),
     )
-    for y, reach, cr, mat in whorls:
-        n = 5 if lod == 0 else (2 if lod >= 2 else 3)
+    rows = whorls if lod < 2 else whorls[:3]
+    for y, reach, cr, mat in rows:
+        n = 5 if lod == 0 else 3
         for i in range(n):
             ang = (i / float(n)) * math.tau + y
             tip = (math.cos(ang) * reach, y + 0.15, math.sin(ang) * reach)
@@ -85,8 +86,9 @@ def pine_tree(g, lod):
                 g, (tip[0], tip[1] - 0.02, tip[2]), cr * 0.85, mat, cseg,
                 lod_pick(lod, 4, 2, 1), droop=0.06 + cr * 0.08,
             )
-    # Small dark tip. Not a pale cap.
-    _cluster(g, (0, 4.15, 0), 0.22, "Lib_FoliageDark", cseg, 2)
+    # Small dark tip. Not a pale cap. LOD2 stops at the upper whorl.
+    if lod < 2:
+        _cluster(g, (0, 4.15, 0), 0.22, "Lib_FoliageDark", cseg, 2)
 
 
 def palm_tree(g, lod):
@@ -101,8 +103,8 @@ def palm_tree(g, lod):
     crown_base = (0.18, 2.45, 0.04)
     crown = (0.48, 4.2, 0.1)
     g.pipe(crown_base, crown, 0.065, "Lib_Bark", seg)
-    fronds = lod_pick(lod, 8, 5, 4)
-    blades = lod_pick(lod, 4, 2, 2)
+    fronds = lod_pick(lod, 8, 5, 2)
+    blades = lod_pick(lod, 4, 2, 1)
     for i in range(fronds):
         ang = math.tau * i / fronds
         mat = "Lib_PalmDry" if i % 4 == 0 else "Lib_Palm"

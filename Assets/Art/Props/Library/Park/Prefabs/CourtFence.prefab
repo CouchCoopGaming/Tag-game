@@ -34,7 +34,6 @@ Transform:
   - {fileID: 200001}
   - {fileID: 200011}
   - {fileID: 200021}
-  - {fileID: 210001}
   - {fileID: 300001}
   - {fileID: 300011}
   - {fileID: 300021}
@@ -87,11 +86,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Tag.Art.Library.LibraryPropMeta
   category: "Park"
-  summary: "Perimeter for the 22 x 15 m court. Same pivot as Court. Posts 0.45 m outside the slab. Baselines 3.05 m, sidelines 1.80 m. The closed gate leaf is the child mesh GateLeaf on +X. Hide GateLeaf to open the entrance. Col_Gate is that leaf."
+  summary: "Perimeter for the 22 x 15 m court. Same pivot as Court. Posts 0.45 m outside the slab. Baselines 3.05 m, sidelines 1.80 m, closed gate on +X."
   climbable: 1
   vaultable: 0
   vaultHeightMeters: 0
-  climbNote: "Posts, rails, and a wire-thick fabric slab. The diamonds are not a passage. The closed leaf is the child mesh GateLeaf."
+  climbNote: "Posts, rails, and a wire-thick fabric slab. The diamonds are not a passage. The gate is closed."
   vaultNote: "Sideline top is 1.80 m and the baselines are 3.05 m. Too high to vault from the court."
 --- !u!1 &200000
 GameObject:
@@ -345,97 +344,6 @@ MeshRenderer:
   m_Materials:
   - {fileID: 2100000, guid: beb173626a35c30c1ff350a8ec04f0d1, type: 2}
   - {fileID: 2100000, guid: 3378749727762f35ade0a2e55dedd4ed, type: 2}
-  - {fileID: 2100000, guid: d3c80c08498f6d09e5fc4bd175e6f068, type: 2}
-  m_StaticBatchInfo:
-    firstSubMesh: 0
-    subMeshCount: 0
-  m_StaticBatchRoot: {fileID: 0}
-  m_ProbeAnchor: {fileID: 0}
-  m_LightProbeVolumeOverride: {fileID: 0}
-  m_ScaleInLightmap: 1
-  m_ReceiveGI: 1
-  m_PreserveUVs: 0
-  m_IgnoreNormalsForChartDetection: 0
-  m_ImportantGI: 0
-  m_StitchLightmapSeams: 1
-  m_SelectedEditorRenderState: 3
-  m_MinimumChartSize: 4
-  m_AutoUVMaxDistance: 0.5
-  m_AutoUVMaxAngle: 89
-  m_LightmapParameters: {fileID: 0}
-  m_GlobalIlluminationMeshLod: 0
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
-  m_SortingOrder: 0
-  m_MaskInteraction: 0
-  m_AdditionalVertexStreams: {fileID: 0}
---- !u!1 &210000
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 210001}
-  - component: {fileID: 210002}
-  - component: {fileID: 210003}
-  m_Layer: 0
-  m_Name: GateLeaf
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &210001
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 210000}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children:
-  m_Father: {fileID: 100001}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!33 &210002
-MeshFilter:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 210000}
-  m_Mesh: {fileID: 5932213591190598829, guid: 863c917fcaf80696655314b8249c372f, type: 3}
---- !u!23 &210003
-MeshRenderer:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 210000}
-  m_Enabled: 1
-  m_CastShadows: 1
-  m_ReceiveShadows: 1
-  m_DynamicOccludee: 1
-  m_StaticShadowCaster: 0
-  m_MotionVectors: 1
-  m_LightProbeUsage: 1
-  m_ReflectionProbeUsage: 1
-  m_RayTracingMode: 2
-  m_RayTraceProcedural: 0
-  m_RayTracingAccelStructBuildFlagsOverride: 0
-  m_RayTracingAccelStructBuildFlags: 1
-  m_SmallMeshCulling: 1
-  m_ForceMeshLod: -1
-  m_MeshLodSelectionBias: 0
-  m_RenderingLayerMask: 1
-  m_RendererPriority: 0
-  m_Materials:
-  - {fileID: 2100000, guid: beb173626a35c30c1ff350a8ec04f0d1, type: 2}
   - {fileID: 2100000, guid: d3c80c08498f6d09e5fc4bd175e6f068, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0

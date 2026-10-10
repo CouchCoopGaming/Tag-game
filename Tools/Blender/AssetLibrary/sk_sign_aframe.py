@@ -48,6 +48,15 @@ def create():
     a.vault_note = "Too short to vault."
     for lod in (0, 1, 2):
         g = a.begin(lod)
+        if lod >= 2:
+            # Four legs and the two boards. Caps, chains, and the menu stay on LOD0.
+            for x in (-0.26, 0.26):
+                g.box(_front(0.0, 0.0, x), (0.040, 0.90, 0.036), "Lib_Wood", euler=(-ANG, 0, 0))
+                g.box(_back(0.0, 0.0, x), (0.040, 0.90, 0.036), "Lib_Wood", euler=(ANG, 0, 0))
+            g.box(_front(0.04, 0.020), (0.48, 0.70, 0.016), "Lib_Black", euler=(-ANG, 0, 0))
+            g.box(_back(0.04, 0.020), (0.48, 0.70, 0.016), "Lib_Black", euler=(ANG, 0, 0))
+            a.end()
+            continue
         bev = lod_pick(lod, 0.002, 0.0)
         bs = 1 if lod == 0 else 0
         for x in (-0.26, 0.26):

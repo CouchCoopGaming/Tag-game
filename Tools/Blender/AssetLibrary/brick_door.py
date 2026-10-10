@@ -45,8 +45,9 @@ def create():
     a.box("Climb_PierR", (1.25, 1.60, 0), (1.50, 3.04, T))
     a.box("Climb_Header", (0, 2.68, 0), (1.00, 0.88, T))
     a.box("Col_Door", (0, 1.12, -0.02), (0.86, 2.00, 0.036))
-    a.box("Col_FrameL", (-0.50, 1.12, 0.17), (0.05, 2.10, 0.06))
-    a.box("Col_FrameR", (0.50, 1.12, 0.17), (0.05, 2.10, 0.06))
+    # Frame tops stop 2 cm under the header. The wood stops at 2.20; the lintel starts at 2.22.
+    a.box("Col_FrameL", (-0.50, 1.145, 0.17), (0.05, 2.15, 0.06))
+    a.box("Col_FrameR", (0.50, 1.145, 0.17), (0.05, 2.15, 0.06))
     a.box("Col_Step", (0, 0.06, 0.22), (1.4, 0.12, 0.36))
     a.box("Col_Cornice", (0, 3.16, 0), (W, 0.08, T + 0.08))
     return a

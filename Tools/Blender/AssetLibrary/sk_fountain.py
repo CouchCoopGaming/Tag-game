@@ -134,6 +134,12 @@ def _face_ring(g, y, z, major, minor, seg, mat):
 
 
 def _body(g, lod):
+    if lod >= 2:
+        # Plate, plain pedestal, and the bowl. Flutes, bubbler, and the push-plate stay on LOD1.
+        g.box((0, 0.012, 0), (0.36, 0.024, 0.36), "Lib_SteelDark")
+        _lathe(g, PED, 8, "Lib_PaintGreen")
+        _lathe(g, BOWL, 8, "Lib_PaintGreen")
+        return
     seg = lod_pick(lod, 32, 16)
     bev = lod_pick(lod, 0.0015, 0.0)
     bs = 1 if lod == 0 else 0

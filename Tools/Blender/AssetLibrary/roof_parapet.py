@@ -20,9 +20,13 @@ def create():
     for lod in (0, 1):
         g = a.begin(lod)
         bev = lod_pick(lod, 0.005, 0.0, 0.0)
-        g.box((0, 0.28, 0), (4.0, 0.52, 0.30), "Lib_Brick", bevel=bev, segs=lod_pick(lod, 1, 1, 0))
-        g.box((0, 0.52, 0.04), (4.08, 0.08, 0.40), "Lib_Brick")
-        g.box((0, 0.66, 0.06), (4.14, 0.08, 0.48), "Lib_Concrete", bevel=bev, segs=1)
+        if lod >= 2:
+            # One block for the wall, corbel, and coping. LOD0 and LOD1 keep the three courses.
+            g.box((0, 0.36, 0.075), (4.14, 0.68, 0.45), "Lib_Brick")
+        else:
+            g.box((0, 0.28, 0), (4.0, 0.52, 0.30), "Lib_Brick", bevel=bev, segs=lod_pick(lod, 1, 1, 0))
+            g.box((0, 0.52, 0.04), (4.08, 0.08, 0.40), "Lib_Brick")
+            g.box((0, 0.66, 0.06), (4.14, 0.08, 0.48), "Lib_Concrete", bevel=bev, segs=1)
         if lod == 0:
             g.box((0, 0.18, 0.16), (3.9, 0.06, 0.04), "Lib_Concrete")
         a.end()

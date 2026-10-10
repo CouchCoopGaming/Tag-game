@@ -32,8 +32,8 @@ def _hoop_pts(x, steps):
 
 
 def _hoop(g, x, lod):
-    seg = lod_pick(lod, 16, 8)
-    steps = lod_pick(lod, 40, 14)
+    seg = lod_pick(lod, 16, 8, 6)
+    steps = lod_pick(lod, 40, 14, 6)
     sweep_tube(g, _hoop_pts(x, steps), TUBE, "Lib_Steel", seg)
     bev = lod_pick(lod, 0.0015, 0.0)
     for z in (-RADIUS, RADIUS):

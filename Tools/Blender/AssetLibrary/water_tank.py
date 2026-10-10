@@ -14,10 +14,11 @@ def create():
     a.vault_note = "No rail at vault height."
     for lod in (0, 1):
         g = a.begin(lod)
-        seg = lod_pick(lod, 16, 10, 6)
+        seg = lod_pick(lod, 16, 10, 4)
+        leg = max(6, seg // 2) if lod < 2 else seg
         for x in (-0.55, 0.55):
             for z in (-0.55, 0.55):
-                g.cylinder((x, 1.20, z), 0.04, 2.40, "Lib_SteelDark", max(6, seg // 2))
+                g.cylinder((x, 1.20, z), 0.04, 2.40, "Lib_SteelDark", leg)
         g.pipe((-0.55, 0.80, -0.55), (0.55, 0.80, 0.55), 0.025, "Lib_Steel", 6)
         g.pipe((-0.55, 0.80, 0.55), (0.55, 0.80, -0.55), 0.025, "Lib_Steel", 6)
         g.cylinder((0, 2.45, 0), 0.78, 0.08, "Lib_Steel", seg)

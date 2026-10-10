@@ -36,13 +36,14 @@ def create():
         g.box((0, 3.16, 0), (W, 0.08, T + 0.08), "Lib_Concrete")
         face = 0.04
         g.box((-0.35, 1.45, 0.0), (1.55, 2.35, 0.015), "Lib_Window")
-        g.box((-1.15, 1.45, face), (0.06, 2.45, 0.06), "Lib_SteelDark")
-        g.box((0.45, 1.45, face), (0.06, 2.45, 0.06), "Lib_SteelDark")
-        g.box((-0.35, 2.64, face), (1.7, 0.06, 0.05), "Lib_SteelDark")
-        g.box((-0.35, 0.22, face), (1.7, 0.08, 0.06), "Lib_Concrete")
         g.box((1.05, 1.10, 0.02), (0.78, 2.05, 0.04), "Lib_WoodDark")
-        g.box((0.62, 1.10, face), (0.05, 2.15, 0.06), "Lib_Wood")
-        g.box((1.48, 1.10, face), (0.05, 2.15, 0.06), "Lib_Wood")
+        if lod < 2:
+            g.box((-1.15, 1.45, face), (0.06, 2.45, 0.06), "Lib_SteelDark")
+            g.box((0.45, 1.45, face), (0.06, 2.45, 0.06), "Lib_SteelDark")
+            g.box((-0.35, 2.64, face), (1.7, 0.06, 0.05), "Lib_SteelDark")
+            g.box((-0.35, 0.22, face), (1.7, 0.08, 0.06), "Lib_Concrete")
+            g.box((0.62, 1.10, face), (0.05, 2.15, 0.06), "Lib_Wood")
+            g.box((1.48, 1.10, face), (0.05, 2.15, 0.06), "Lib_Wood")
         if lod == 0:
             _mullions(g, face + 0.02)
             g.cylinder((1.38, 1.05, face + 0.04), 0.015, 0.05, "Lib_Brass", 6, axis="Z")

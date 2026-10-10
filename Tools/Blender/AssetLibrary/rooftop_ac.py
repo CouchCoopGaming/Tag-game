@@ -19,6 +19,10 @@ def create():
         g.box((-0.45, 0.04, 0), (0.08, 0.08, 0.90), "Lib_SteelDark")
         g.box((0.45, 0.04, 0), (0.08, 0.08, 0.90), "Lib_SteelDark")
         g.box((0, 0.48, 0), (1.30, 0.72, 0.90), "Lib_Steel", bevel=bev, segs=lod_pick(lod, 1, 1, 0))
+        # LOD2 is the rails and the cabinet. Fans stay on LOD0 and LOD1.
+        if lod >= 2:
+            a.end()
+            continue
         for x in (-0.32, 0.32):
             g.cylinder((x, 0.86, 0), 0.22, 0.04, "Lib_SteelDark", seg)
             g.cylinder((x, 0.88, 0), 0.08, 0.03, "Lib_Black", 8)
@@ -30,7 +34,8 @@ def create():
                 g.box((0, 0.48, z), (1.32, 0.04, 0.02), "Lib_SteelDark")
             g.box((0.66, 0.48, 0), (0.02, 0.50, 0.7), "Lib_Black")
         a.end()
-    a.box("Col_Unit", (0, 0.48, 0), (1.26, 0.68, 0.86))
+    # Cabinet sits 2 cm above the rail tops. The mesh starts 2 cm higher.
+    a.box("Col_Unit", (0, 0.46, 0), (1.26, 0.72, 0.86))
     a.box("Col_RailL", (-0.45, 0.04, 0), (0.08, 0.08, 0.90))
     a.box("Col_RailR", (0.45, 0.04, 0), (0.08, 0.08, 0.90))
     return a

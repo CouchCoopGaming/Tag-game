@@ -50,10 +50,12 @@ def create():
         a.end()
     a.box("Climb_PierL", (-1.29, 1.65, 0), (1.42, 2.94, T))
     a.box("Climb_PierR", (1.29, 1.65, 0), (1.42, 2.94, T))
-    a.box("Climb_Sill", (0, 0.56, 0), (1.16, 0.76, T))
+    # Sill brick stops 2 cm under the frame. Glass, frame, and header kiss at 2 cm.
+    a.box("Climb_Sill", (0, 0.545, 0), (1.16, 0.73, T))
     a.box("Climb_Header", (0, 2.78, 0), (1.16, 0.68, T))
     a.box("Col_Plinth", (0, 0.09, 0), (W, 0.18, T + 0.06))
     a.box("Col_Cornice", (0, 3.16, 0), (W, 0.08, T + 0.08))
-    a.box("Col_Glass", (0, 1.68, 0.11), (0.98, 1.22, 0.012))
-    a.box("Col_FrameSill", (0, 0.96, T * 0.5 + 0.02), (1.28, 0.06, 0.06))
+    a.box("Col_Glass", (0, 1.68, 0.11), (0.98, 1.26, 0.012))
+    a.box("Col_FrameSill", (0, 0.98, T * 0.5 + 0.02), (1.28, 0.10, 0.06))
+    a.box("Col_HeadFrame", (0, 2.375, T * 0.5 + 0.02), (1.20, 0.09, 0.08))
     return a
