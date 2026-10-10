@@ -112,10 +112,14 @@
     <Compile Include="../../Assets/Scripts/FX/ComicArt.cs" />
     <Compile Include="../../Assets/Scripts/FX/ComicPng.cs" />
     <Compile Include="../../Assets/Scripts/FX/ComicAtlas.cs" />
+    <Compile Include="../../Assets/Scripts/FX/ComicBurstAtlas.cs" />
     <Compile Include="../../Assets/Scripts/FX/VerbFxLook.cs" />
+    <Compile Include="../../Assets/Scripts/Art/BodyFoam.cs" />
     <Compile Include="../../Assets/Scripts/FX/VerbFxStills.cs" />
     <Compile Include="../../Assets/Scripts/FX/Pass5Look.cs" />
     <Compile Include="../../Assets/Scripts/FX/Pass5Stills.cs" />
+    <Compile Include="../../Assets/Scripts/FX/Kit/FxKitOptions.cs" />
+    <Compile Include="../../Assets/Scripts/FX/Kit/FxKitLook.cs" />
     <Compile Include="../../Assets/Scripts/FX/FxStills.cs" />
     <Compile Include="../../Assets/Scripts/Art/MechPoseProof.cs" />
     <Compile Include="../../Assets/Scripts/Art/CrouchPose.cs" />

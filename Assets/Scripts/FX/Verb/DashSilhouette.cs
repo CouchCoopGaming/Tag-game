@@ -1,4 +1,5 @@
 using Tag.Art;
+using Tag.Settings;
 using UnityEngine;
 
 namespace Tag.FX
@@ -108,6 +109,8 @@ namespace Tag.FX
             if (!_ready || slot < 0 || slot >= Slots) return;
             _slotRoot[slot].gameObject.SetActive(true);
             _mats[slot].SetFloat("_Fade", alpha);
+            bool ink = GameSettings.Current != null && GameSettings.Current.SeatInk;
+            _mats[slot].SetFloat("_Ink", ink ? 1f : 0f);
         }
 
         public void Hide(int slot)

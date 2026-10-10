@@ -60,6 +60,7 @@ namespace Tag.FX
         LineRenderer _ring;
         LineRenderer _snap;
         LineRenderer[] _rims;
+        LineRenderer[] _rimInk;
         Transform _dizzy;
         Transform[] _stars;
         Material[] _starMat;
@@ -93,8 +94,13 @@ namespace Tag.FX
             _ring = MakeLine("LandRing", new Color(0.85f, 0.72f, 0.48f, 0.85f));
             _snap = MakeLine("RopeSnap", new Color(1f, 0.9f, 0.4f, 0.9f));
             _rims = new LineRenderer[2];
+            _rimInk = new LineRenderer[2];
             _rims[0] = MakeLine("TagRimLow", new Color(_colorR, _colorG, _colorB, 0.7f));
             _rims[1] = MakeLine("TagRimHigh", new Color(_colorR, _colorG, _colorB, 0.7f));
+            _rimInk[0] = MakeLine("TagRimLowInk", new Color(VerbFxLook.InkR, VerbFxLook.InkG, VerbFxLook.InkB, VerbFxLook.InkA));
+            _rimInk[1] = MakeLine("TagRimHighInk", new Color(VerbFxLook.InkR, VerbFxLook.InkG, VerbFxLook.InkB, VerbFxLook.InkA));
+            _rimInk[0].positionCount = RingSeg;
+            _rimInk[1].positionCount = RingSeg;
             Shader shader = Shader.Find("Tag/ComicBillboard");
             if (shader == null) shader = Shader.Find("Universal Render Pipeline/Unlit");
             if (shader == null) shader = Shader.Find("Sprites/Default");
@@ -164,9 +170,10 @@ namespace Tag.FX
                     DustLook.Puff puff = DustLook.At(_groundSurf, speed, (int)DustLook.Kick.None);
                     puff.Count = VerbFxLook.Debris(impact, 1f);
                     puff.Size *= 0.75f + 0.5f * tier;
-                    _fx.PlayShaped(FxBurstKind.Land, pos, puff);
                     if (_cards != null)
                         _cards.Burst(pos, puff.Count, puff.Size * 2.4f, puff.R, puff.G, puff.B, 0.28f + tier * 0.35f);
+                    DustLook.Puff ring = DustLook.LandDust(_groundSurf, impact);
+                    EmitRing(pos, _ringR, ring);
                     if (VerbFxLook.RollSwirl(impact, speed))
                     {
                         _swirlAge = 0f;
@@ -195,6 +202,27 @@ namespace Tag.FX
                     if (_cards != null)
                         _cards.SpawnSwirl(p, swirl.R, swirl.G, swirl.B);
                 }
+            }
+        }
+
+        void EmitRing(Vector3 center, float radius, DustLook.Puff ring)
+        {
+            if (_fx == null || radius < 0.05f) return;
+            int n = ring.Count;
+            if (n < 6) n = 6;
+            if (n > 16) n = 16;
+            DustLook.Puff one = ring;
+            one.Count = 1;
+            one.Back = 0f;
+            float step = 6.2831855f / n;
+            float outSp = 0.35f + one.Lift;
+            float upSp = 0.20f + one.Lift;
+            for (int i = 0; i < n; i++)
+            {
+                float ang = i * step;
+                Vector3 radial = new Vector3(Mathf.Cos(ang), 0f, Mathf.Sin(ang));
+                Vector3 p = center + radial * radius + Vector3.up * 0.04f;
+                _fx.PlayRadial(p, radial * outSp + Vector3.up * upSp, one);
             }
         }
 
@@ -296,13 +324,26 @@ namespace Tag.FX
             if (follow > 1f) follow = 1f;
             _rimVis += (pulse - _rimVis) * follow;
             bool on = _rimVis > 0.02f;
+            bool inkOn = GameSettings.Current != null && GameSettings.Current.SeatInk;
             _rims[0].enabled = on;
             _rims[1].enabled = on;
+            if (_rimInk != null)
+            {
+                _rimInk[0].enabled = on && inkOn;
+                _rimInk[1].enabled = on && inkOn;
+            }
             if (!on) return;
             float radius = 0.46f + 0.06f * _rimVis;
             Color c = new Color(_colorR, _colorG, _colorB, 0.25f + 0.55f * _rimVis);
-            PlaceRing(_rims[0], _motor.transform.position + Vector3.up * (0.7f + 0.04f * _rimVis), radius, c);
-            PlaceRing(_rims[1], _motor.transform.position + Vector3.up * (1.25f + 0.04f * _rimVis), radius * 0.92f, c);
+            Vector3 low = _motor.transform.position + Vector3.up * (0.7f + 0.04f * _rimVis);
+            Vector3 high = _motor.transform.position + Vector3.up * (1.25f + 0.04f * _rimVis);
+            PlaceRing(_rims[0], low, radius, c);
+            PlaceRing(_rims[1], high, radius * 0.92f, c);
+            if (inkOn)
+            {
+                PlaceInk(_rimInk[0], low, radius, c.a);
+                PlaceInk(_rimInk[1], high, radius * 0.92f, c.a);
+            }
         }
 
         void TickDrip()
@@ -423,6 +464,15 @@ namespace Tag.FX
             _snap.endColor = c;
         }
 
+        void PlaceInk(LineRenderer line, Vector3 center, float radius, float alpha)
+        {
+            if (line == null) return;
+            Color dark = new Color(VerbFxLook.InkR, VerbFxLook.InkG, VerbFxLook.InkB, VerbFxLook.InkA * alpha);
+            PlaceRing(line, center, radius + 0.0225f + VerbFxLook.InkWorld * 0.5f, dark);
+            line.startWidth = VerbFxLook.InkWorld;
+            line.endWidth = VerbFxLook.InkWorld;
+        }
+
         void PlaceRing(LineRenderer line, Vector3 center, float radius, Color color)
         {
             line.enabled = true;
@@ -454,6 +504,11 @@ namespace Tag.FX
             {
                 _rims[0].enabled = false;
                 _rims[1].enabled = false;
+            }
+            if (_rimInk != null)
+            {
+                _rimInk[0].enabled = false;
+                _rimInk[1].enabled = false;
             }
             for (int i = 0; i < Ghosts; i++)
                 _ghostAge[i] = -1f;

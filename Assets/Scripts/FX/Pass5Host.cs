@@ -44,10 +44,13 @@ namespace Tag.FX
 
         LineRenderer[] _lines;
         LineRenderer _flashRing;
+        LineRenderer _flashInk;
         LineRenderer _padLine;
         LineRenderer _zipLine;
         Transform _flashQuad;
+        Transform _flashInkQuad;
         Material _flashMat;
+        Material _flashInkMat;
 
         public static void Ensure(GameObject host)
         {
@@ -73,6 +76,8 @@ namespace Tag.FX
             for (int i = 0; i < Lines; i++)
                 _lines[i] = MakeLine("SpeedLine", new Color(0.92f, 0.94f, 1f, 0.8f));
             _flashRing = MakeLine("ItHandoff", new Color(_lineR, _lineG, _lineB, 0.9f));
+            _flashInk = MakeLine("ItHandoffInk", new Color(VerbFxLook.InkR, VerbFxLook.InkG, VerbFxLook.InkB, VerbFxLook.InkA));
+            _flashInk.positionCount = 16;
             _padLine = MakeLine("PadTrail", new Color(0.45f, 0.9f, 1f, 0.85f));
             _zipLine = MakeLine("ZipTrail", new Color(0.82f, 0.45f, 1f, 0.85f));
             _padLine.positionCount = Points;
@@ -93,6 +98,18 @@ namespace Tag.FX
             rend.receiveShadows = false;
             _flashQuad = quad.transform;
             _flashQuad.gameObject.SetActive(false);
+            var inkQuad = new GameObject("ItHandoffInkQuad");
+            inkQuad.transform.SetParent(transform, false);
+            var inkFilter = inkQuad.AddComponent<MeshFilter>();
+            inkFilter.sharedMesh = filter.sharedMesh;
+            var inkRend = inkQuad.AddComponent<MeshRenderer>();
+            _flashInkMat = new Material(shader);
+            _flashInkMat.color = new Color(VerbFxLook.InkR, VerbFxLook.InkG, VerbFxLook.InkB, 0f);
+            inkRend.sharedMaterial = _flashInkMat;
+            inkRend.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            inkRend.receiveShadows = false;
+            _flashInkQuad = inkQuad.transform;
+            _flashInkQuad.gameObject.SetActive(false);
         }
 
         static Mesh QuadMesh()
@@ -211,7 +228,9 @@ namespace Tag.FX
             if (_flashAge < 0f)
             {
                 _flashRing.enabled = false;
+                if (_flashInk != null) _flashInk.enabled = false;
                 if (_flashQuad != null) _flashQuad.gameObject.SetActive(false);
+                if (_flashInkQuad != null) _flashInkQuad.gameObject.SetActive(false);
                 return;
             }
             _flashAge += dt;
@@ -220,7 +239,9 @@ namespace Tag.FX
             {
                 _flashAge = -1f;
                 _flashRing.enabled = false;
+                if (_flashInk != null) _flashInk.enabled = false;
                 if (_flashQuad != null) _flashQuad.gameObject.SetActive(false);
+                if (_flashInkQuad != null) _flashInkQuad.gameObject.SetActive(false);
                 return;
             }
             float span = Pass5Look.FlashSpan(density);
@@ -238,7 +259,34 @@ namespace Tag.FX
             Color ring = _gained
                 ? new Color(_lineR, _lineG, _lineB, a)
                 : new Color(0.85f, 0.95f, 1f, a);
-            PlaceRing(_flashRing, chest, 0.55f + 0.35f * (_flashAge / Pass5Look.FlashSeconds), ring);
+            float rad = 0.55f + 0.35f * (_flashAge / Pass5Look.FlashSeconds);
+            PlaceRing(_flashRing, chest, rad, ring);
+            bool inkOn = GameSettings.Current != null && GameSettings.Current.SeatInk;
+            if (_flashInk != null)
+            {
+                if (inkOn)
+                {
+                    Color dark = new Color(VerbFxLook.InkR, VerbFxLook.InkG, VerbFxLook.InkB, VerbFxLook.InkA * a);
+                    PlaceRing(_flashInk, chest, rad + 0.03f + VerbFxLook.InkWorld * 0.5f, dark);
+                    _flashInk.startWidth = VerbFxLook.InkWorld;
+                    _flashInk.endWidth = VerbFxLook.InkWorld;
+                }
+                else
+                    _flashInk.enabled = false;
+            }
+            if (_flashInkQuad != null)
+            {
+                if (inkOn)
+                {
+                    _flashInkQuad.gameObject.SetActive(true);
+                    _flashInkQuad.position = chest;
+                    float pad = span + VerbFxLook.InkWorld * 2f;
+                    _flashInkQuad.localScale = new Vector3(pad, pad, 1f);
+                    _flashInkMat.color = new Color(VerbFxLook.InkR, VerbFxLook.InkG, VerbFxLook.InkB, VerbFxLook.InkA * a);
+                }
+                else
+                    _flashInkQuad.gameObject.SetActive(false);
+            }
         }
 
         void TickTrail(
@@ -317,6 +365,8 @@ namespace Tag.FX
                     _lines[i].enabled = false;
             }
             if (_flashRing != null) _flashRing.enabled = false;
+            if (_flashInk != null) _flashInk.enabled = false;
+            if (_flashInkQuad != null) _flashInkQuad.gameObject.SetActive(false);
             if (_padLine != null) _padLine.enabled = false;
             if (_zipLine != null) _zipLine.enabled = false;
             if (_flashQuad != null) _flashQuad.gameObject.SetActive(false);

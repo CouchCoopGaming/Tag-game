@@ -95,6 +95,67 @@ namespace Tag.Settings
         public readonly bool[] ReduceFlash = new bool[SeatCount];
         /// <summary>Comic contact words. On until a seat turns them off. Reduced flashing also hides them.</summary>
         public bool ComicWords = true;
+        /// <summary>
+        /// Air-dash and grapple speed lines. Off until a seat turns them on.
+        /// Not one of the 21 rows. The Options screen lists <see cref="SpeedLinesLabel"/>.
+        /// </summary>
+        public bool SpeedLines;
+        /// <summary>
+        /// Seat-colored strip left on a wall run. Off until a seat turns it on.
+        /// Not one of the 21 rows, and not one of the seven FX-kit toggles.
+        /// </summary>
+        public bool WallRibbon;
+        /// <summary>Body-sized black card on a hit. Off until a seat turns it on. Not one of the 21 rows.</summary>
+        public bool InkCard;
+        /// <summary>Off-screen crown wedge. Off until a seat turns it on. Not one of the 21 rows.</summary>
+        public bool ItWedge;
+        /// <summary>Crown plate above the hat. Off until a seat turns it on. Not one of the 21 rows.</summary>
+        public bool CrownPlate;
+        /// <summary>
+        /// Owner-pane margin streaks. Off until a seat turns them on.
+        /// When on, full effects draws 6, low draws 3, and off or reduced flashing draws 0.
+        /// Not one of the 21 rows, and not one of the seven FX-kit toggles. Speed lines stay off.
+        /// </summary>
+        public bool EdgeStreaks;
+        /// <summary>
+        /// Foot contact mark in the surface's shape. Off until a seat turns it on.
+        /// Not one of the 21 rows, and not one of the seven FX-kit toggles.
+        /// </summary>
+        public bool ContactMarks;
+        /// <summary>
+        /// Wall contact mark in the foot's shape. Off until a seat turns it on.
+        /// Not one of the 21 rows, and not one of the seven FX-kit toggles.
+        /// </summary>
+        public bool WallMarks;
+        /// <summary>
+        /// Foam stroke on another runner when that body covers the owner in this pane.
+        /// Off until a seat turns it on. Not one of the 21 rows.
+        /// </summary>
+        public bool BodyStroke;
+        /// <summary>
+        /// Dark outline on the immunity shell, tag-back rings, handoff flash, and dash ghost.
+        /// Off until a seat turns it on. Not one of the 21 rows.
+        /// </summary>
+        public bool SeatInk;
+        /// <summary>
+        /// When two comic words overlap in one pane, keep the newer and retire the older.
+        /// Off until a seat turns it on. Not one of the 21 rows. Word count stays 36.
+        /// </summary>
+        public bool OneWord;
+        /// <summary>
+        /// Wall ribbons step seat × 0.08 m up the face, and the tag frame ducks only that pawn's strip.
+        /// Off until a seat turns it on. Not one of the 21 rows.
+        /// </summary>
+        public bool RibbonLane;
+        /// <summary>
+        /// Covered-body stroke hides while that body's immunity shell is up.
+        /// Off until a seat turns it on. Not one of the 21 rows.
+        /// </summary>
+        public bool StrokeYield;
+        /// <summary>
+        /// One concrete stain after a hard land. Off until a seat turns it on. Not one of the 21 rows.
+        /// </summary>
+        public bool LandStain;
         /// <summary>0 off, 1 low, 2 full. Visual density only.</summary>
         public int Effects = 2;
 
@@ -157,6 +218,20 @@ namespace Tag.Settings
             SplitAxis = other.SplitAxis;
             Listener = other.Listener;
             ComicWords = other.ComicWords;
+            SpeedLines = other.SpeedLines;
+            WallRibbon = other.WallRibbon;
+            InkCard = other.InkCard;
+            ItWedge = other.ItWedge;
+            CrownPlate = other.CrownPlate;
+            EdgeStreaks = other.EdgeStreaks;
+            ContactMarks = other.ContactMarks;
+            WallMarks = other.WallMarks;
+            BodyStroke = other.BodyStroke;
+            SeatInk = other.SeatInk;
+            OneWord = other.OneWord;
+            RibbonLane = other.RibbonLane;
+            StrokeYield = other.StrokeYield;
+            LandStain = other.LandStain;
             Effects = other.Effects;
         }
 
@@ -349,6 +424,78 @@ namespace Tag.Settings
                 case RowReplay: return "Replay tips";
                 default: return "Back";
             }
+        }
+
+        /// <summary>Label for the Options row. Default is Off.</summary>
+        public string SpeedLinesLabel()
+        {
+            return SpeedLines ? "Speed lines: On" : "Speed lines: Off";
+        }
+
+        /// <summary>Label for the Options row. Default is Off.</summary>
+        public string WallRibbonLabel()
+        {
+            return WallRibbon ? "Wall ribbon: On" : "Wall ribbon: Off";
+        }
+
+        public string InkCardLabel()
+        {
+            return InkCard ? "Ink card: On" : "Ink card: Off";
+        }
+
+        public string ItWedgeLabel()
+        {
+            return ItWedge ? "It wedge: On" : "It wedge: Off";
+        }
+
+        public string CrownPlateLabel()
+        {
+            return CrownPlate ? "Crown plate: On" : "Crown plate: Off";
+        }
+
+        public string EdgeStreaksLabel()
+        {
+            return EdgeStreaks ? "Edge streaks: On" : "Edge streaks: Off";
+        }
+
+        public string ContactMarksLabel()
+        {
+            return ContactMarks ? "Contact marks: On" : "Contact marks: Off";
+        }
+
+        public string WallMarksLabel()
+        {
+            return WallMarks ? "Wall marks: On" : "Wall marks: Off";
+        }
+
+        public string BodyStrokeLabel()
+        {
+            return BodyStroke ? "Body stroke: On" : "Body stroke: Off";
+        }
+
+        public string SeatInkLabel()
+        {
+            return SeatInk ? "Seat ink: On" : "Seat ink: Off";
+        }
+
+        public string OneWordLabel()
+        {
+            return OneWord ? "One word: On" : "One word: Off";
+        }
+
+        public string RibbonLaneLabel()
+        {
+            return RibbonLane ? "Ribbon lane: On" : "Ribbon lane: Off";
+        }
+
+        public string StrokeYieldLabel()
+        {
+            return StrokeYield ? "Stroke yield: On" : "Stroke yield: Off";
+        }
+
+        public string LandStainLabel()
+        {
+            return LandStain ? "Land stain: On" : "Land stain: Off";
         }
 
         public static string ArenaName(int arena)

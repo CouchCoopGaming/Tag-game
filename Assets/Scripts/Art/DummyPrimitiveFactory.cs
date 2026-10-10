@@ -11,16 +11,21 @@ namespace Tag.Art
     /// </summary>
     public static class DummyPrimitiveFactory
     {
-        // Soft body foam — same keys as DummyAvatarBinder.MannequinColors / Hier COLORS.
+        // Soft body foam. The numbers live on BodyFoam so the FX tints cannot drift.
         static readonly Dictionary<string, Color> BodyColors = new Dictionary<string, Color>
         {
-            ["Blue"] = new Color(0.42f, 0.68f, 0.92f),
-            ["Mint"] = new Color(0.42f, 0.82f, 0.70f),
-            ["Orange"] = new Color(0.94f, 0.42f, 0.14f),
-            ["Lavender"] = new Color(0.70f, 0.58f, 0.88f),
-            ["Tan"] = new Color(0.90f, 0.76f, 0.52f),
-            ["Red"] = new Color(0.88f, 0.22f, 0.24f),
+            ["Blue"] = Foam(BodyFoam.Blue),
+            ["Mint"] = Foam(BodyFoam.Mint),
+            ["Orange"] = Foam(BodyFoam.Orange),
+            ["Lavender"] = Foam(BodyFoam.Lavender),
+            ["Tan"] = Foam(BodyFoam.Tan),
+            ["Red"] = Foam(BodyFoam.Red),
         };
+
+        static Color Foam(BodyFoam.Rgb c)
+        {
+            return new Color(c.R, c.G, c.B);
+        }
 
         // Saturated polymer accent panels — Hier PANELS.
         static readonly Dictionary<string, Color> PanelColors = new Dictionary<string, Color>

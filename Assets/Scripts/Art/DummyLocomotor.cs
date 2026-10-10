@@ -1,4 +1,5 @@
 using Tag.Experimental;
+using Tag.FX;
 using Tag.Gameplay;
 using Tag.Local;
 using TagArena.Movement;
@@ -1162,6 +1163,18 @@ namespace Tag.Art
         float _hitConfirmAge = -1f;
         bool _hitConfirmPunchWas;
         bool _hitConfirmTagWas;
+        bool _comicCatchWas;
+        bool _comicClaimWas;
+        bool _comicMissWas;
+        bool _comicGroundWas;
+        float _comicPlanar;
+        int _impactGroundId;
+        int _impactGroundSurf = (int)DustLook.Surface.Concrete;
+        int _impactWallId;
+        int _impactWallSurf = (int)DustLook.Surface.Concrete;
+        bool _comicLaunchWas;
+        bool _comicZipWas;
+        bool _comicPullWas;
         Transform _hitConfirmRoot;
         LineRenderer _hitConfirmInner;
         LineRenderer _hitConfirmOuter;
@@ -1340,6 +1353,7 @@ namespace Tag.Art
             // Contact rings when a punch hits or a tag lands. Solo pawn only.
             // A whiff stays quiet. Reach and the clips stay as they are.
             TickHitConfirm(dt);
+            TickComicEvents();
             // Ground scrape keys off MoveState.Slide, the same state that selects SlideBody.
             // It still runs if the limb rig failed to bind. Speed and slideBoost stay put.
             TickSlideScrape();
@@ -17774,6 +17788,26 @@ namespace Tag.Art
             PunchPhase phase = _punch != null ? _punch.Phase : PunchPhase.Idle;
             bool punchHit = phase == PunchPhase.HitRecover;
             bool tag = HitConfirmTell.TagConnect(_tagFlinch, _itClaim);
+            Vector3 origin = _motor != null ? _motor.transform.position : transform.position;
+            Vector3 forward = _motor != null ? _motor.transform.forward : transform.forward;
+            bool catchOn = HitConfirmTell.TagCatch(_tagFlinch);
+            bool claimOn = HitConfirmTell.BecomeIt(_itClaim);
+            bool punchRise = punchHit && !_hitConfirmPunchWas;
+            bool tagRise = tag && !_hitConfirmTagWas;
+            bool claimRise = claimOn && !_comicClaimWas;
+            bool catchRise = catchOn && !_comicCatchWas;
+            float reach = _punch != null ? _punch.Reach : PunchTagPose.ReachMeters;
+            float speed = _motor != null ? _motor.HorizontalSpeed : 0f;
+            if (claimRise)
+                ComicRaise(origin, forward, reach, ComicWords.EvTransfer, 0);
+            else if (catchRise)
+                ComicRaise(origin, forward, reach, ComicWords.EvTag, ComicWords.TagHit);
+            else if (punchRise)
+                ComicRaise(origin, forward, reach, ComicWords.EvPunch, ComicWords.Strength(false, speed));
+            if (tagRise)
+                Pass5Burst.Raise(origin, forward, reach);
+            _comicCatchWas = catchOn;
+            _comicClaimWas = claimOn;
             HitConfirmTell.Note(ref _hitConfirmAge, solo, punchHit, tag, _hitConfirmPunchWas, _hitConfirmTagWas);
             _hitConfirmPunchWas = punchHit;
             _hitConfirmTagWas = tag;
@@ -17785,10 +17819,52 @@ namespace Tag.Art
             }
 
             EnsureHitConfirm();
-            Vector3 origin = _motor != null ? _motor.transform.position : transform.position;
-            Vector3 forward = _motor != null ? _motor.transform.forward : transform.forward;
             PlaceHitConfirm(origin, forward, HitConfirmTell.Alpha(_hitConfirmAge));
             HitConfirmTell.Step(ref _hitConfirmAge, dt, solo);
+        }
+
+        void ComicRaise(Vector3 origin, Vector3 forward, float reach, int ev, int strength)
+        {
+            ComicBurst.RaiseEvent(origin, forward, reach, ev, strength, transform.GetInstanceID());
+        }
+
+        void TickComicEvents()
+        {
+            if (_motor == null) return;
+            Vector3 origin = _motor.transform.position;
+            Vector3 forward = _motor.transform.forward;
+            PunchPhase phase = _punch != null ? _punch.Phase : PunchPhase.Idle;
+            bool miss = phase == PunchPhase.MissRecover;
+            if (miss && !_comicMissWas)
+                ComicRaise(origin, forward, 0.9f, ComicWords.EvWhiff, 0);
+            _comicMissWas = miss;
+
+            bool grounded = _motor.Ground.grounded;
+            // Hard land and roll only. The gate is the existing roll threshold,
+            // 65% of terminal. A light plant stays quiet.
+            if (grounded && !_comicGroundWas && LandingRollPose.Triggered(_motor.LastLandImpactSpeed))
+            {
+                ComicRaise(origin, forward, 0f, ComicWords.EvLand, 0);
+                int surf = DustContact.Read(_motor.Ground.collider, ref _impactGroundId, ref _impactGroundSurf);
+                ImpactFx.Land(origin, _motor.LastLandImpactSpeed, surf);
+            }
+            _comicGroundWas = grounded;
+            _comicPlanar = _motor.HorizSpeed;
+
+            bool launch = _motor.LaunchArc;
+            if (launch && !_comicLaunchWas)
+                ComicRaise(origin, forward, 0f, ComicWords.EvLaunch, 0);
+            _comicLaunchWas = launch;
+
+            bool zip = _motor.ZipRiding;
+            if (zip && !_comicZipWas)
+                ComicRaise(origin, forward, 0f, ComicWords.EvZip, 0);
+            _comicZipWas = zip;
+
+            bool pull = _grapple != null && _grapple.IsPulling;
+            if (pull && !_comicPullWas)
+                ComicRaise(origin, forward, 0f, ComicWords.EvGrapple, 0);
+            _comicPullWas = pull;
         }
 
         bool HitConfirmSolo()
@@ -17974,6 +18050,9 @@ namespace Tag.Art
             if (!PoseAllowed(DummyPosePaths.Stagger)) return;
             _staggerAge = 0f;
             _hitFlinchAge = 0f;
+            Vector3 origin = _motor != null ? _motor.transform.position : transform.position;
+            Vector3 forward = _motor != null ? _motor.transform.forward : transform.forward;
+            ComicRaise(origin, forward, 0f, ComicWords.EvStagger, 0);
         }
 
         /// <summary>
@@ -18123,6 +18202,16 @@ namespace Tag.Art
             BeginAirDashTell();
         }
 
+        string WallMaterialName()
+        {
+            // Name only. DustLook's surface list is unchanged, so a brick wall can still tint the scuff.
+            if (_motor == null || _motor.WallCollider == null) return null;
+            Collider col = _motor.WallCollider;
+            MeshRenderer rend = col.GetComponent<MeshRenderer>();
+            if (rend != null && rend.sharedMaterial != null) return rend.sharedMaterial.name;
+            return col.name;
+        }
+
         void HandleWallBounced()
         {
             _wallJumpEdge = true;
@@ -18134,6 +18223,17 @@ namespace Tag.Art
             // Cling plus Jump, including cling grace. The shove holds, then eases
             // into the jump rise and fall. Impulse and cling grace stay put.
             _wallJumpPoseAge = 0f;
+            // A wall or object hit only shouts when the body was already at sprint.
+            // The speed is the motor's planar speed from the frame before the bounce.
+            if (_motor != null && _comicPlanar >= Tag.FX.DustLook.Sprint)
+            {
+                ComicRaise(_motor.transform.position, _motor.transform.forward, 0f, ComicWords.EvWall, 0);
+                Vector3 hit = _motor.WallPoint;
+                if (hit.sqrMagnitude < 0.0001f)
+                    hit = _motor.transform.position + Vector3.up * 0.9f;
+                int surf = DustContact.Read(_motor.WallCollider, ref _impactWallId, ref _impactWallSurf);
+                ImpactFx.Wall(hit, _motor.WallNormal, _comicPlanar, surf, WallMaterialName());
+            }
             _wallJumpPosePlant = _wallExit > 0.5f ? !_exitLeadLeft : (_motor != null && _motor.WallLeft);
             _wallJumpHandoff = false;
             // The climb eases into the push. A wall run eases into its own push.

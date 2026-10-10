@@ -160,8 +160,12 @@ namespace Tag.FX
                 if (r > max) max = r;
             }
             if (max - min < 0.25f) return false;
+            if (ComicAtlas.Cells != 36 || ComicBurstAtlas.Cells != 10) return false;
             if (!DecodePng(ComicAtlas.Png(), out int w, out int h, out byte[] rgba)) return false;
-            if (w != ComicAtlas.Cells * ComicAtlas.CellWidth || h != ComicAtlas.CellHeight) return false;
+            if (w != ComicAtlas.Columns * ComicAtlas.CellWidth || h != ComicAtlas.Rows * ComicAtlas.CellHeight) return false;
+            if (!DecodePng(ComicBurstAtlas.Png(), out int bw, out int bh, out byte[] burst)) return false;
+            if (bw != ComicBurstAtlas.Columns * ComicBurstAtlas.CellWidth || bh != ComicBurstAtlas.Rows * ComicBurstAtlas.CellHeight) return false;
+            if (burst == null || burst.Length < 64) return false;
             int ink = 0;
             for (int i = 3; i < rgba.Length; i += 16)
             {

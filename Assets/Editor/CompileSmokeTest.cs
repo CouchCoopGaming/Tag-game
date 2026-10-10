@@ -13,6 +13,17 @@ using UnityEngine;
 /// </summary>
 public static class CompileSmokeTest
 {
+    static readonly string[] DeflateFiles =
+    {
+        "Assets/Scripts/Art/SmoothMotion.cs",
+        "Assets/Scripts/Art/Exits/VerbExitStills.cs",
+        "Assets/Scripts/FX/FxStills.cs",
+        "Assets/Scripts/FX/Pass5Stills.cs",
+        "Assets/Scripts/FX/VerbFxStills.cs",
+        "Assets/Scripts/Level/ArenaStill.cs",
+        "Assets/Scripts/Level/MegaParkP1Layout.Pass9.cs",
+    };
+
     public static void Run()
     {
         int fail = 0;
@@ -22,28 +33,11 @@ public static class CompileSmokeTest
             fail++;
         }
 
-        string path = "Assets/Scripts/Art/SmoothMotion.cs";
-        if (!File.Exists(path))
-        {
-            Debug.LogError("[CompileSmoke] MISSING " + path);
-            fail++;
-        }
-        else
-        {
-            string src = File.ReadAllText(path);
-            if (src.Contains("DeflateStream(ms, CompressionLevel."))
-            {
-                Debug.LogError("[CompileSmoke] CompressionLevel is not fully qualified in " + path);
-                fail++;
-            }
-            if (!src.Contains("System.IO.Compression.CompressionLevel.Fastest"))
-            {
-                Debug.LogError("[CompileSmoke] expected System.IO.Compression.CompressionLevel.Fastest");
-                fail++;
-            }
-        }
+        for (int i = 0; i < DeflateFiles.Length; i++)
+            fail += ExpectQualified(DeflateFiles[i]);
 
-        fail += ExpectPng("ComicAtlas", ComicAtlas.Png(), ComicAtlas.Cells * ComicAtlas.CellWidth, ComicAtlas.CellHeight);
+        fail += ExpectPng("ComicAtlas", ComicAtlas.Png(), ComicAtlas.Columns * ComicAtlas.CellWidth, ComicAtlas.Rows * ComicAtlas.CellHeight);
+        fail += ExpectPng("ComicBurstAtlas", ComicBurstAtlas.Png(), ComicBurstAtlas.Columns * ComicBurstAtlas.CellWidth, ComicBurstAtlas.Rows * ComicBurstAtlas.CellHeight);
         fail += ExpectPng("ComicDizzy", ComicDizzy.Png(), ComicDizzy.Size, ComicDizzy.Size);
 
         if (fail == 0)
@@ -51,6 +45,27 @@ public static class CompileSmokeTest
         else
             Debug.LogError("[CompileSmoke] FAIL " + fail);
         EditorApplication.Exit(fail == 0 ? 0 : 1);
+    }
+
+    static int ExpectQualified(string path)
+    {
+        if (!File.Exists(path))
+        {
+            Debug.LogError("[CompileSmoke] MISSING " + path);
+            return 1;
+        }
+        string src = File.ReadAllText(path);
+        if (src.Contains("DeflateStream(ms, CompressionLevel."))
+        {
+            Debug.LogError("[CompileSmoke] CompressionLevel is not fully qualified in " + path);
+            return 1;
+        }
+        if (!src.Contains("System.IO.Compression.CompressionLevel.Fastest"))
+        {
+            Debug.LogError("[CompileSmoke] expected System.IO.Compression.CompressionLevel.Fastest in " + path);
+            return 1;
+        }
+        return 0;
     }
 
     static int ExpectPng(string name, byte[] png, int width, int height)

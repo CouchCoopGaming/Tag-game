@@ -153,14 +153,20 @@ namespace Tag.FX
             return env * wave;
         }
 
+        public const float InkR = 0.08f;
+        public const float InkG = 0.07f;
+        public const float InkB = 0.06f;
+        public const float InkA = 0.90f;
+        /// <summary>About 1 px of dark edge at the pass-28 chase.</summary>
+        public const float InkWorld = 0.028f;
+
+        /// <summary>Seat 0 red, 1 blue, 2 orange, 3 lavender. Same RGB as BodyFoam.</summary>
         public static void PlayerColor(int seat, out float r, out float g, out float b)
         {
-            if (seat == 1) { r = 0.25f; g = 0.55f; b = 1f; return; }
-            if (seat == 2) { r = 1f; g = 0.82f; b = 0.15f; return; }
-            if (seat == 3) { r = 0.25f; g = 0.90f; b = 0.45f; return; }
-            r = 0.95f;
-            g = 0.28f;
-            b = 0.32f;
+            BodyFoam.Rgb c = BodyFoam.ForSeat(seat);
+            r = c.R;
+            g = c.G;
+            b = c.B;
         }
 
         public static string ProofLine()
@@ -256,6 +262,14 @@ namespace Tag.FX
             loaded.Nudge(GameSettings.RowEffects, 1);
             if (loaded.Effects != FxAmount.Full) return false;
             if (GameSettings.RowCount != 21) return false;
+            PlayerColor(0, out float sr, out float sg, out float sb);
+            if (sr != BodyFoam.Red.R || sg != BodyFoam.Red.G || sb != BodyFoam.Red.B) return false;
+            PlayerColor(1, out sr, out sg, out sb);
+            if (sr != BodyFoam.Blue.R || sg != BodyFoam.Blue.G || sb != BodyFoam.Blue.B) return false;
+            PlayerColor(2, out sr, out sg, out sb);
+            if (sr != BodyFoam.Orange.R || sg != BodyFoam.Orange.G || sb != BodyFoam.Orange.B) return false;
+            PlayerColor(3, out sr, out sg, out sb);
+            if (sr != BodyFoam.Lavender.R || sg != BodyFoam.Lavender.G || sb != BodyFoam.Lavender.B) return false;
             return true;
         }
     }

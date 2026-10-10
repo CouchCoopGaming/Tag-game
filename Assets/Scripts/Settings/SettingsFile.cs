@@ -52,6 +52,20 @@ namespace Tag.Settings
             Line(text, "split", s.SplitAxis);
             Line(text, "listen", s.Listener);
             Line(text, "comic", s.ComicWords ? 1f : 0f);
+            Line(text, "speedLines", s.SpeedLines ? 1f : 0f);
+            Line(text, "wallRibbon", s.WallRibbon ? 1f : 0f);
+            Line(text, "inkCard", s.InkCard ? 1f : 0f);
+            Line(text, "itWedge", s.ItWedge ? 1f : 0f);
+            Line(text, "crownPlate", s.CrownPlate ? 1f : 0f);
+            Line(text, "edgeStreaks", s.EdgeStreaks ? 1f : 0f);
+            Line(text, "contactMarks", s.ContactMarks ? 1f : 0f);
+            Line(text, "wallMarks", s.WallMarks ? 1f : 0f);
+            Line(text, "bodyStroke", s.BodyStroke ? 1f : 0f);
+            Line(text, "seatInk", s.SeatInk ? 1f : 0f);
+            Line(text, "oneWord", s.OneWord ? 1f : 0f);
+            Line(text, "ribbonLane", s.RibbonLane ? 1f : 0f);
+            Line(text, "strokeYield", s.StrokeYield ? 1f : 0f);
+            Line(text, "landStain", s.LandStain ? 1f : 0f);
             Line(text, "effects", s.Effects);
             for (int i = 0; i < (int)PlayAction.Count; i++)
             {
@@ -182,7 +196,7 @@ namespace Tag.Settings
             if (key == "master" || key == "sfx" || key == "ui" || key == "music" || key == "mute") return true;
             if (key == "hud" || key == "colorblind" || key == "minimap" || key == "accessSeat") return true;
             if (key == "arena" || key == "ai" || key == "diff" || key == "roundLen" || key == "rounds") return true;
-            if (key == "split" || key == "listen" || key == "comic" || key == "effects") return true;
+            if (key == "split" || key == "listen" || key == "comic" || key == "speedLines" || key == "effects") return true;
             if (key.StartsWith("kb.", StringComparison.Ordinal) || key.StartsWith("pad.", StringComparison.Ordinal))
                 return true;
             if (key.StartsWith("pb.", StringComparison.Ordinal) || key.StartsWith("sp.", StringComparison.Ordinal))
@@ -228,6 +242,20 @@ namespace Tag.Settings
             else if (key == "split") settings.SplitAxis = (int)Num(value, settings.SplitAxis);
             else if (key == "listen") settings.Listener = (int)Num(value, settings.Listener);
             else if (key == "comic") settings.ComicWords = Flag(value);
+            else if (key == "speedLines") settings.SpeedLines = Flag(value);
+            else if (key == "wallRibbon") settings.WallRibbon = Flag(value);
+            else if (key == "inkCard") settings.InkCard = Flag(value);
+            else if (key == "itWedge") settings.ItWedge = Flag(value);
+            else if (key == "crownPlate") settings.CrownPlate = Flag(value);
+            else if (key == "edgeStreaks") settings.EdgeStreaks = Flag(value);
+            else if (key == "contactMarks") settings.ContactMarks = Flag(value);
+            else if (key == "wallMarks") settings.WallMarks = Flag(value);
+            else if (key == "bodyStroke") settings.BodyStroke = Flag(value);
+            else if (key == "seatInk") settings.SeatInk = Flag(value);
+            else if (key == "oneWord") settings.OneWord = Flag(value);
+            else if (key == "ribbonLane") settings.RibbonLane = Flag(value);
+            else if (key == "strokeYield") settings.StrokeYield = Flag(value);
+            else if (key == "landStain") settings.LandStain = Flag(value);
             else if (key == "effects") settings.Effects = (int)Num(value, settings.Effects);
             else if (key.StartsWith("kb.", StringComparison.Ordinal))
                 Assign(binds, key.Substring(3), value, true);

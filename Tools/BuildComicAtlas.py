@@ -5,6 +5,7 @@ Each cell is a 1024 square drawn at 2x and downsampled. The burst, the inner
 burst, the Ben-Day screen, and the letters are all in the texture so the game
 can show one bilinear quad.
 """
+import base64
 import math
 import os
 import sys
@@ -538,8 +539,16 @@ def write_stills(cells):
     park.convert("RGB").save(os.path.join(STILL_DIR, "comic-park.png"), "PNG")
 
 
+def copy_streaming(name, src):
+    dest_dir = os.path.join(ROOT, "Assets", "StreamingAssets", "FX")
+    os.makedirs(dest_dir, exist_ok=True)
+    dest = os.path.join(dest_dir, name)
+    with open(dest, "wb") as f:
+        f.write(open(src, "rb").read())
+
+
 def write_cs(png_bytes):
-    # The PNG stays a file. A chained base64 literal of this size overflows csc
+    # The PNG stays a file. A chained base64 literal overflows csc
     # inside BinaryExpressionSyntax (0xC00000FD on Unity 6000.3).
     del png_bytes
     copy_streaming("ComicAtlas.png", PNG_PATH)
@@ -667,15 +676,6 @@ def compose_dizzy():
         (255, 196, 0, 255), (255, 64, 16, 255),
         26, 10, 16, None)
     return canvas.resize((DIZZY_SIZE, DIZZY_SIZE), Image.Resampling.LANCZOS)
-
-
-def copy_streaming(name, src):
-    dest_dir = os.path.join(ROOT, "Assets", "StreamingAssets", "FX")
-    os.makedirs(dest_dir, exist_ok=True)
-    dest = os.path.join(dest_dir, name)
-    data = open(src, "rb").read()
-    with open(dest, "wb") as f:
-        f.write(data)
 
 
 def write_dizzy(im):
