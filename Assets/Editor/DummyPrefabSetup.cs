@@ -162,25 +162,9 @@ namespace Tag.EditorTools
             AssetDatabase.CreateFolder(parent, name);
         }
 
-        [InitializeOnLoadMethod]
-        static void AutoPrompt()
-        {
-            if (SessionState.GetBool("Tag.HubVisualsSetupDone", false)) return;
-            EditorApplication.delayCall += () =>
-            {
-                if (SessionState.GetBool("Tag.HubVisualsSetupDone", false)) return;
-                if (!File.Exists("Assets/Art/Characters/Dummy_Runner.fbx")
-                    && !File.Exists("Assets/Art/Characters/HiPoly/Dummy_Runner_Hi.fbx"))
-                    return;
-                if (EditorUtility.DisplayDialog("Tag Hub Visuals",
-                    "Dummy + PARK prop meshes are in the project. Run setup so Play uses Dummy_* / Toy_* (prefers HiPoly/*_Hi.fbx when present) instead of graybox capsules?\n\nAlso assigns the URP pipeline (fixes magenta materials).",
-                    "Setup now", "Later"))
-                {
-                    SetupAll();
-                    SessionState.SetBool("Tag.HubVisualsSetupDone", true);
-                }
-            };
-        }
+        // No [InitializeOnLoadMethod] prompt. "Setup now" rebuilt Dummy_Runner/Dummy_It
+        // from the raw FBX, re-copied Resources with new GUIDs and re-saved Play.unity and the
+        // URP asset on whatever branch was open. The menu items above stay for deliberate use.
     }
 }
 #endif
