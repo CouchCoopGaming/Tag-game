@@ -1,3 +1,4 @@
+using Tag.Core;
 using Tag.Couch;
 using Tag.Gameplay;
 using Tag.Settings;
@@ -118,7 +119,15 @@ namespace TagArena.Movement
             // and unlock the cursor, so a Rematch click (Mouse0) would also punch.
             // Look is not scaled by deltaTime, so an unlocked cursor must not yaw either.
             bool cursorLocked = Cursor.lockState == CursorLockMode.Locked;
-            bool playLive = Time.timeScale > 0f && cursorLocked;
+            // Pause (timeScale 0) is the gate. An unlocked cursor no longer zeroes the keyboard
+            // move: the editor drops the lock on Esc or focus, and only mouse look/buttons need it.
+            bool playLive = Time.timeScale > 0f;
+            bool clickRelock = !cursorLocked && Input.GetMouseButtonDown(0) && SessionRules.RoundPlay;
+            if (clickRelock)
+            {
+                ResumeInputGate.LockPlayCursor();
+                cursorLocked = true;
+            }
             bool clingPhys = Input.GetKey(KeyCode.W) || Input.GetAxisRaw("Vertical") > 0.25f;
             bool sprintPhys = Input.GetKey(KeyCode.LeftShift);
             bool jumpPhys = JumpHeldNow();
@@ -169,12 +178,12 @@ namespace TagArena.Movement
             }
 
             // Rising edge: menu/results just released play. Same-frame lock + Read would yaw/punch.
-            if (!_wasCursorLocked)
+            if (cursorLocked && !_wasCursorLocked)
             {
                 _lookPunchGateFrames = Mathf.Max(_lookPunchGateFrames, 2);
                 ResumeInputGate.Arm();
             }
-            _wasCursorLocked = true;
+            _wasCursorLocked = cursorLocked;
             // Drop leftover menu focus before sampling Space. Jump owns that key in play.
             if (GUIUtility.keyboardControl != 0)
                 GUIUtility.keyboardControl = 0;
@@ -242,6 +251,14 @@ namespace TagArena.Movement
                 _clearClingOnResume = false;
             }
 
+            if (!cursorLocked)
+            {
+                // A free cursor belongs to the OS: no mouse yaw, no mouse-button verbs.
+                if (!LookFromGamepad) Look = Vector2.zero;
+                if (Input.GetMouseButton(0) || Input.GetMouseButtonUp(0)) PunchPressed = false;
+                if (Input.GetMouseButton(1)) { JetHeld = false; JetPressed = false; }
+                if (Input.GetMouseButtonDown(2)) LungePressed = false;
+            }
             ShapeHumanMove();
             SampleSoloStick();
 

@@ -292,7 +292,9 @@ namespace TagArena.Movement
                 _launchQueued = false;
                 return;
             }
-            if (Cursor.lockState != CursorLockMode.Locked || ResumeInputGate.Blocking)
+            // Pause and results are gated above (timeScale, RoundPlay). The cursor lock is
+            // a mouse matter: a pad seat, or a keyboard seat after the editor drops the lock, still moves.
+            if (ResumeInputGate.Blocking)
             {
                 _jumpSlot = 0f;
                 _wallJumpSlot = 0f;

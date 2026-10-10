@@ -182,6 +182,12 @@ namespace Tag.Modes
             TagArena.Movement.LookSensitivity.Load();
             Tag.Audio.AudioMaster.Load();
             SettingsRuntime.Load();
+            if (Instance != null && Instance != this)
+            {
+                // One controller. A Playing one keeps the seat; an Idle leftover yields.
+                if (Instance._phase != MatchPhase.Idle) { Destroy(this); return; }
+                Destroy(Instance);
+            }
             Instance = this;
             if (GetComponent<FrameBudgetOverlay>() == null)
                 gameObject.AddComponent<FrameBudgetOverlay>();
@@ -569,6 +575,7 @@ namespace Tag.Modes
         {
             FrameMeter.AddRound(FrameMeter.RoundOps);
             FrameMeter.AddAudio(FrameMeter.AudioOps);
+            if (Instance != this) return;
             SessionRules.RoundPlay = _phase == MatchPhase.Playing;
             PadNav.Poll();
             SettingsRuntime.PollHotkeys();

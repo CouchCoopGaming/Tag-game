@@ -146,7 +146,7 @@ namespace Tag.Art
             if (want == _appliedColor && _visualInstance != null) return;
             _appliedColor = want;
             _resolved = false;
-            if (_visualInstance != null) Destroy(_visualInstance);
+            if (_visualInstance != null) { _visualInstance.SetActive(false); Destroy(_visualInstance); }
             _visualInstance = null;
             ApplyVisual(_it != null && _it.IsIt);
         }
@@ -241,7 +241,7 @@ namespace Tag.Art
                 : (runnerVisualPrefab != null ? runnerVisualPrefab : itVisualPrefab);
 
             if (_visualInstance != null)
-                Destroy(_visualInstance);
+                { _visualInstance.SetActive(false); Destroy(_visualInstance); }
             _visualInstance = null;
 
             bool usedPrimitive = false;

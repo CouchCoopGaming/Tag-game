@@ -303,6 +303,16 @@ namespace Tag.Local
             return _sharedCfg;
         }
 
+        static void DropClonedBodies(GameObject go)
+        {
+            foreach (Transform child in go.transform)
+            {
+                if (!child.name.StartsWith("DummyVisual_", System.StringComparison.Ordinal)) continue;
+                child.gameObject.SetActive(false);
+                Destroy(child.gameObject);
+            }
+        }
+
         void SpawnSeats(GameObject dummy)
         {
             GameObject template = GameObject.Find(SoloPawnName) ?? playerTemplate;
@@ -327,6 +337,10 @@ namespace Tag.Local
                 {
                     GameObject src = ai && dummy != null ? dummy : template;
                     go = Instantiate(src);
+                    // The template's binder already built its body. A clone carries that
+                    // DummyVisual_* child with no binder owning it, so P2 showed a second,
+                    // upright tan mannequin over its own. Drop it; the clone's binder builds one.
+                    DropClonedBodies(go);
                     go.SetActive(true);
                 }
                 if (i > 0) go.name = "Player_" + CouchPlay.Name(i);

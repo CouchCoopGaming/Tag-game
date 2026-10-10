@@ -63,6 +63,17 @@ namespace Tag.Core
         void Awake()
         {
             if (Instance != null && Instance != this) { Destroy(this); return; }
+            if (Application.isPlaying && SharesSceneObject())
+            {
+                // Play.unity's "Systems" also carries the round controller. Keeping that
+                // whole object across loads left an Idle TagModeController behind that
+                // overwrote SessionRules.RoundPlay. Move the flow onto its own object.
+                var own = new GameObject("GameFlow");
+                GameFlow moved = own.AddComponent<GameFlow>();
+                JsonUtility.FromJsonOverwrite(JsonUtility.ToJson(this), moved);
+                Destroy(this);
+                return;
+            }
             Instance = this;
             if (Application.isPlaying) DontDestroyOnLoad(gameObject);
             SceneManager.sceneLoaded += OnSceneLoaded;
@@ -86,6 +97,16 @@ namespace Tag.Core
                 PlayerPrefs.HasKey(ParkArena.PrefsKey),
                 PlayerPrefs.GetInt(ParkArena.PrefsKey, ParkArena.Mega),
                 ParkArena.Mega);
+        }
+
+        bool SharesSceneObject()
+        {
+            foreach (Component c in GetComponents<Component>())
+            {
+                if (c == null || c == this || c is Transform) continue;
+                return true;
+            }
+            return false;
         }
 
         void OnDestroy()
@@ -485,6 +506,11 @@ namespace Tag.Core
 
         void EnsureRoundStarted()
         {
+            if (modeController != null && modeController.gameObject.scene != SceneManager.GetActiveScene())
+                modeController = null;
+            if (modeController == null && TagModeController.Instance != null
+                && TagModeController.Instance.gameObject.scene == SceneManager.GetActiveScene())
+                modeController = TagModeController.Instance;
             if (modeController == null)
                 modeController = FindFirstObjectByType<TagModeController>();
             if (modeController == null)
