@@ -1,0 +1,278 @@
+# Tag model standard
+
+Every model worker follows this document. The check is `Tools/Models/validate_assets.py`. It is pure Python and, when Blender is on the machine, the same script recomputes collider slack inside `bpy`. A pass is a process that prints `models-validate assets=N pass=P fail=F` with `fail=0`.
+
+The library is Unity 6000.3.24f1, four-player couch tag. Coordinates in the asset scripts are meters: **+X right, +Y up, +Z forward**. Blender stays Z-up internally. FBX export bakes the Unity axis and centimeter scale. Unity's importer (`useFileScale`) brings it back to meters. Do not author in centimeters.
+
+This standard is the bar the five lanes are already aiming at: the procedural library under `Tools/Blender/AssetLibrary/`, the street-kit and street-object stacks, the Hier clearance rebuild, and the costume lab. Numbers below are the ones those scripts already use, written down so a later pass cannot drift.
+
+## 1. Real-world scale
+
+A standing player is **1.8 m**. The showcase `Mannequin` and the Hier body are that height (accept 1.75–1.85 m). Vault rails in the park kit sit at **0.90–1.05 m** above the deck you take off from. Road asphalt top is 0.12 m. Sidewalk top is 0.27 m (15 cm curb). A brick bay is 4.0 m wide and 3.2 m tall.
+
+Every scale still includes that 1.8 m figure, standing on the ground the prop uses, not sunk into it and not floating. Harbor and street stills use the Hier body at the same height. The showcase mannequin is a scale prop, not a gameplay character.
+
+Cars are badge-free modern US bodies from model years **2022 through 2026** (the last five model years as of 8 Oct 2026). The mesh name carries the year (`_22` … `_26`). Size is the published exterior, in meters, within this envelope:
+
+| Class | Length (Z) | Width (X) | Height (Y) |
+| --- | --- | --- | --- |
+| Midsize sedan | 4.70–5.05 | 1.75–1.90 | 1.38–1.50 |
+| Compact sedan | 4.20–4.70 | 1.70–1.82 | 1.38–1.52 |
+| Compact hatch | 3.90–4.50 | 1.70–1.85 | 1.40–1.56 |
+| Compact crossover | 4.20–4.70 | 1.75–1.90 | 1.55–1.72 |
+| Pickup | 5.00–5.90 | 1.85–2.10 | 1.65–1.95 |
+| 40 ft city bus | 11.80–13.00 | 2.40–2.65 | 3.00–3.40 |
+| 60 ft articulated bus | 17.80–19.00 | 2.40–2.65 | 3.00–3.40 |
+
+A 2025 Camry-class table (length 193.5 in, width 72.4 in, height 56.9 in, wheelbase 111.2 in) is a legal **dimension** reference. It is not a license to use the name, the badge, or a Toyota mesh. ISO containers stay 20 ft = 6.06 × 2.44 × 2.59 m and 40 ft = 12.19 × 2.44 × 2.59 m.
+
+Length runs on **+Z**. If width and length are swapped, the asset fails orientation.
+
+## 2. Sources and the license manifest
+
+Meshes and textures are **CC0 1.0** only. **OFL 1.1** is allowed for a font and never for a mesh. No other license ships.
+
+One shared file per lane is enough. Do not add a license file per asset.
+
+In-house meshes use this exact line, on a line by itself, in one `LICENSES.md` for the lane:
+
+```
+made in-house, CC0, free to use
+```
+
+That line covers every mesh in the checkout. A longer sentence that merely contains those words does not. The same words also work as `"provenance"` on a dict-shaped `Tools/Blender/AssetLibrary/manifest.json`.
+
+A per-asset record is still required for a font and for an outside download. Either of these is that record:
+
+- `license` on the manifest entry, or
+- one row in the same `LICENSES.md`. The first cell is the exact asset name (`Reed_1_Hood`, not the family). The row carries `CC0-1.0` or, for a font only, `OFL-1.1`. A sentence that mentions a family name is not a row.
+
+```json
+"license": {
+  "spdx": "CC0-1.0",
+  "source": "original",
+  "url": "",
+  "notes": "Procedural mesh built in this repo."
+}
+```
+
+`source` is `original` or `cc0-download`. A download needs the `url`. Without the url the entry fails `license-bad`, and the in-house line does not cover it. Citing a brochure for proportions does not put that brand into the record as a source mesh.
+
+Original work in this repo is dedicated to the public domain under CC0 1.0 when the record says so. Do not import Kenney, Quaternius, Poly Haven, or any other pack unless that exact file is CC0 and the record points at it. Stretching a CC0 toy car into a 4.9 m sedan is not a modern body. Build the body here instead.
+
+## 3. Colliders
+
+Colliders hug the visible mesh. The builder samples the collider surface (`Tools/Blender/AssetLibrary/_common.py`, `validate_colliders`, tolerance **0.03 m**) and records the worst gap as `slackCm`. The limit is **3.0 cm**. Report the worst slack in centimeters on every asset, including a pass.
+
+Names:
+
+- `Col_*` is one solid piece.
+- `Climb_*` is the cling face and is the wall, not a shell around it.
+- `Vault_*` is the rail. `vaultHeight` is the rail height above the takeoff deck, in the 0.90–1.05 m band when it is a ground vault.
+
+A thin `approx` slab across chain-link, a grate, or crate slats is allowed. The holes are not a passage. Road paint, the asphalt patch, `HarborWater`, and a rope (`MooringLine`) have no collider. Everything else has at least one.
+
+**Landable tops.** If the blurb or the vault note calls the roof, deck, hood, lid, or gunwale a landing or a walk surface, a collider top sits within **8 cm** of the mesh top. Parkour lands on that collider, not on a visual-only lid. Round poles, thin tubes, and pickets are not cling walls. Say so in the note.
+
+Pieces that are supposed to extend below the ground pivot (piles, quay foundations, boat hulls in the water, dock piles) set `allow_below` and say so in the blurb. Anything else that drops more than 2 cm below Y=0 fails. A mesh that floats more than 3 cm above the pivot fails, except a decal on the 0.12 m road, a wall sleeve (`WallAC`), and a dock-mounted piece whose pivot is the water (`Gangway`, `MooringLine`).
+
+## 4. Triangle budgets
+
+LOD meshes are named `LOD0`, `LOD1`, `LOD2`. LOD1 is required when LOD0 is over 400 triangles. LOD2 is required when LOD0 is over 2000, and always for cars and buses. A coarser LOD never has more triangles than the finer one. LOD2 is at most **0.6×** the LOD1 triangle count. A copy of the LOD1 mesh filed as LOD2 fails `lod2-ratio`. Ceilings:
+
+| Class | LOD0 | LOD1 | LOD2 | What goes here |
+| --- | --- | --- | --- | --- |
+| Prop | 2500 | 1400 | 700 | Street furniture, utility, small park pieces |
+| Dense prop | 6000 | 2800 | 1400 | Bike racks, newsstands, fountains, fences, playground |
+| Road | 4000 | 4000 | 2000 | Tiles, curbs, junctions |
+| Building bay | 3000 | 1600 | 900 | Walls, doors, windows, fences, parapets |
+| Building shell | 8000 | 5000 | 3400 | Houses, stores, walk-ups, cabin, garage, gas canopy |
+| Harbor | 4000 | 2200 | 1200 | Small harbor props |
+| Harbor large | 9000 | 4500 | 1800 | Containers, warehouse, quay, work boat |
+| Park | 4000 | 2800 | 1500 | Court, hoop, shelters |
+| Tree | 3500 | 1600 | 900 | Trunk and canopy |
+| Car | 15000 | 7000 | 2800 | Sedan, hatch, crossover, pickup |
+| Bus | 8000 | 4000 | 2000 | 40 ft and 60 ft |
+| Scale figure | 2000 | 1000 | 500 | Showcase mannequin only |
+| Mannequin | 40000 | 20000 | 10000 | Hier body |
+| Costume, worn | 15000 | 8000 | 4000 | One loadout on the body |
+
+The car LOD0 band the sedan loft is aiming at is 12–15k after subdivision. A sidewalk A-frame does not get the dense-prop budget.
+
+The validator reads the LOD meshes, not a single worn total. Library, street, and vehicle meshes are the `LOD0` / `LOD1` / `LOD2` objects in the FBX. Costume LOD0 is the piece. Costume LOD1 and LOD2 are that piece named `*_LOD1` and `*_LOD2` in `Art/CharacterLab/CostumeLab.blend`, with the triangle counts on the loadout `lods` list and the `lod` lines in `Docs/Characters/pass1/fit.txt`. A level whose mesh is not in the file is missing.
+
+## 5. Names and folders
+
+```
+Assets/Art/Props/Library/<Category>/<Name>.fbx
+Assets/Art/Props/Library/<Category>/Prefabs/<Name>.prefab
+Assets/Art/Props/Library/Textures/Lib_<Material>.png
+Assets/Art/Props/Library/Vehicles/          (cars, buses; trains and trolleys go here too)
+Assets/Art/Characters/HiPoly/Dummy_Mannequin_Tan_Hier_Hi.fbx
+Assets/Art/Characters/HiPoly/Candidate/     (clearance candidate, unbound)
+Art/CharacterLab/                           (costume prep, not in the player build)
+```
+
+`Name` is PascalCase segments with underscores (`Brick_Wall`, `Sedan_Mid_A_25`, `Bus_City40`). Category is one of `Buildings`, `Harbor`, `Park`, `Roads`, `StreetFurniture`, `Utility`, `Vehicles`, `Showcase`. The manifest `category` matches the folder. Mesh objects inside the FBX are `LOD0`, `LOD1`, `LOD2` only.
+
+The builder for a library asset is `Tools/Blender/AssetLibrary/<snake>.py` or `vehicles/<snake>.py`. Rebuild from that script. Do not hand-edit the FBX.
+
+Player colour variants share the tan Hier stills only when the mesh geometry matches `Dummy_Mannequin_Tan_Hier_Hi`. A different cage needs its own quartet. A colour, year, or variant sibling (`Sedan_Mid_A_25`, `Sedan_Mid_A_25_White`, `Bus_City40_Blue`, `Container_20_Green`, `FireHydrant_Red`) is its own manifest row. It may use the base quartet when vertex positions, indices, and UVs match on every LOD. The line then reads `material-variant of <base>`. A different geometry hash needs its own quartet. `street` and `corner` are part of the object name: `Planter` does not match `planter_street`, and `WoodFence_Corner` does not match `woodfence`.
+
+## 6. Pivot and orientation
+
+Pivot is the ground contact, centered on the footprint within **5 cm**, unless the module notes a different origin (`Dock_Corner` is the center of its 4 m square). +Y is up. +Z is the street-facing or nose direction.
+
+- Building modules: exterior on **+Z**. Brick bays stack at Y = 3.2.
+- Cars and buses: nose on **+Z**, wheels on the ground, ground clearance about 0.14 m for a sedan.
+- Boats: bow on **−Z**, so the slip and the quay agree. That is the one forward exception. Gunwales and decks still get colliders.
+- Container doors on **+Z**.
+
+## 7. Materials and texel density
+
+Library materials are `Lib_*` from the shared palette in `_common.py`. No third-party textures. Brick, concrete, wood, bark, asphalt, and the worn metals are Blender node trees baked to albedo, roughness, normal, and occlusion.
+
+UV is meters. One tile is one meter (`uv_scale` 1.0). Bakes are **512×512**, which is **512 texels per meter**. 256 and 1024 are allowed (256–1024 px/m). A non-square bake fails. The court paint is one decal measured in place, not rescaled by the importer, and is the exception to the 1 m tile. Window glass and street-light lenses may emit. Shop glass is dark and transmissive, not a light panel. Flat enamel (`Lib_BoxRed`, `Lib_Board`, `Lib_Varnish`) stays untextured on purpose so a curved hull does not pick up a brick tile.
+
+Player costumes use a procedural noise bump and one RGB node named `PlayerColor`. No image textures on costumes.
+
+## 8. No logos or brand badges
+
+No badges, wordmarks, nameplates, or licensed liveries on the mesh, the material, or the texture. A mailbox is a generic box. A hydrant is a generic hydrant. Shop signs use invented words already in the library (`MARKET`, `DINER`, `WASH`), not a real chain.
+
+Vehicles are:
+
+- badge-free modern US **cars** from model years 2022–2026 (midsize and compact sedans, hatches, crossovers, pickups),
+- **buses** (40 ft low-floor and 60 ft articulated),
+- **trains** and **trolleys**.
+
+Trains and trolleys are part of the set. None are in the library yet. Do not fill the gap with a branded locomotive.
+
+## 9. Stills
+
+Every asset has four stills, each **1280×720 or larger**, each **under 400 KB**, in a pass folder:
+
+| Role | What it shows | File token |
+| --- | --- | --- |
+| Quarter | Three-quarter of the whole object | `quarter`, `hero`, `three-quarter`, or the catalog stem |
+| Side | Side elevation | `side`, `profile` |
+| Close-up | The part a player reads up close (fascia, joint, bowl, door) | `close`, `nose`, `door`, `wheel`, `bowl`, `window`, `detail` |
+| Scale | Same object with the 1.8 m figure | `scale`, `figure` |
+
+Accepted folders, newest pass wins:
+
+- `Docs/AssetStills/passN/`
+- `Docs/AssetStills/street_kit/passN/`
+- `Docs/AssetStills/street_objects/passN/`
+- `Docs/AssetStills/vehicles/<slug>/passN/`
+- `Docs/Characters/passN/`
+- `Docs/LocoStills/passN/`
+
+A PNG or JPEG sitting outside a `passN` directory does not count. `before_` / `after_` pairs are comparison frames, not a substitute for a missing role unless the stem also carries the role token. Costume stills add `readability-30px` (a quarter of 1080p, figures about 30 px tall). That frame is extra. It does not replace the quartet.
+
+Every asset gets a `stillsCheck`. It is the quartet above: each role present in a `passN` folder, 1280×720 or larger, under 400 KB. The check record is on the validator row. A catalog frame at 960×540 fails it.
+
+Hero, side, and scale are whole-object frames. The close-up is the only role allowed to crop. The checker separates the silhouette from the backdrop (the calm corner colours, sky and ground). On hero, side, and scale:
+
+- the silhouette does not touch the frame edge
+- the silhouette's box covers 25–85% of the frame
+- the scale frame also shows the 1.8 m figure fully inside the frame. The colours and the name tag are in Stills spec below
+
+A pass fails `stills-quarter-edge`, `stills-side-edge`, or `stills-scale-edge` when the silhouette meets the edge, `stills-*-coverage` when the box is outside 25–85%, and `stills-scale-figure` when that figure is missing or cut off. `hero` is the quarter role.
+
+Every still in a pass folder is framed, not only the quartet the checker binds. A file with no role token takes the same silhouette test and fails `stills-frame-edge` or `stills-frame-coverage`. A close-up may still crop. A 1280×720 clip does not skip the test by leaving the role out of the file name.
+
+The quartet is matched on the full asset name. A shorter still — a family folder, or a frame whose name drops a colour, year, or variant token — is shared only when every asset that name prefixes has the same geometry hash: vertex positions, polygon indices, and UVs, per LOD. Material and colour are not in that hash. A paint sibling that matches is accepted on the base quartet and printed as `material-variant of <base>`. If any geometry hash differs, only the asset whose tokens equal the still may use it. `street` and `corner` in the file name are significant tokens. They are not folder noise and they are not optional suffixes. Costumes match their own id. They do not share one lineup, and `loadouts.json` is not a mesh hash.
+
+## Stills spec
+
+This is the camera contract the checker enforces. `Tools/Models/shoot_quartet.py` renders a quartet that meets it.
+
+The 25–85% test is the silhouette's bounding-box **area** divided by the frame area. It is not the longer side of that box. A pole that runs 80% of the frame height and 10% of the width covers 8% of the area and fails `stills-*-coverage`.
+
+The minimum margin is the frame border, not a 4% inset. The checker downscales until the long side is 160 pixels and counts foreground samples on that outer row and column. Four or more fail `stills-*-edge`. On a 1280×720 frame that outer sample is 8 pixels: **0.625% of the width** and **1.11% of the height**. A lane that instead sizes the longer side to 25–85% and leaves a 4% margin is not aiming at this test.
+
+The scale figure is `Assets/Art/Props/Library/Showcase/Mannequin.fbx`, **1.80 m** tall (1.75–1.85 m). The body is `Lib_PaintBlue` and the head is `Lib_PaintWhite`. Authored linear albedo:
+
+| Part | Material | Linear RGB | 8-bit |
+| --- | --- | --- | --- |
+| Torso and arms | `Lib_PaintBlue` | 0.239, 0.494, 1.0 | 61, 126, 255 |
+| Head | `Lib_PaintWhite` | 0.93, 0.93, 0.90 | 237, 237, 230 |
+
+The detector does not measure a distance from those authored numbers. A lit pixel counts as blue when blue ≥ 120, blue ≥ red + 40, blue ≥ green + 8, and green ≥ 50. A lit pixel counts as the white head when red ≥ 200, green ≥ 200, blue ≥ 190, and the channel spread is at most 40. The blue body has to be one standing island of at least 12 pixels, at most 18% of the frame wide, 8–55% of the frame tall, at least 1.3× as tall as it is wide, and off the border, with at least 3 white-head pixels on it. The library alternative is the tan Hier: red ≥ 130, green ≥ 70, blue ≥ 50, red ≥ green + 15, red ≥ blue + 15, green − blue < 50, red − blue < 100, at least 40 pixels, at most 22% wide, 12–62% tall, at least 1.8× as tall as wide.
+
+A green body does not match either test. `Sedan_Compact_26` pass 21 `scale.png` on #125 keeps the whole car and a green 1.8 m figure inside the frame. The box covers 56.3% of the frame and the edge count is 0. The only failure on that frame is `stills-scale-figure`. The body samples at about 144, 194, 130 and the head at about 179, 183, 186, under the white-head floor. Colour is the reason. The file has no `Figure` tag. The asset also fails `stills-side-edge` on `side.png`.
+
+A scale still may skip the colour test by naming the figure. A PNG `tEXt` keyword `Figure`, or a JPEG comment `Figure=...`, whose value is `Mannequin`, `Assets/Art/Props/Library/Showcase/Mannequin.fbx`, or `Dummy_Mannequin_Tan_Hier_Hi`, counts. The silhouette rules still apply. `shoot_quartet.py` writes that tag when it places the mannequin.
+
+```
+blender --background --python Tools/Models/shoot_quartet.py -- \
+  --mesh Assets/Art/Props/Library/Buildings/Cabin.fbx \
+  --out Docs/AssetStills/passN \
+  --name Cabin
+```
+
+## 10. Player rig
+
+The gameplay body is the Hier mannequin: rigid pieces parented to bones, not a skin. The clearance candidate is rebuilt with real ball-and-socket joints. The knee work is the model for the other hinges. Current authored balls on the candidate (`Tools/Tag/build_ball_joints.py`):
+
+| Joint | Ball radius | Notes |
+| --- | --- | --- |
+| Hip (`UpperLeg`) | 3.0 cm | Socket on the pelvis. Has to clear through the flex range, not only at rest and at a deep fold. |
+| Knee (`LowerLeg`) | 3.6 cm | Cone holds a bend past 140°. |
+| Ankle (`Foot`) | 3.0 cm | Same ball-and-socket as the hip. Not a hinge buried in the shin. |
+| Shoulder | 4.0 cm | |
+| Elbow | 3.0 cm | |
+| Wrist | 2.8 cm | |
+
+The candidate writes `Assets/Art/Characters/HiPoly/Candidate/Dummy_Mannequin_Tan_Hier_Clearance.fbx`. It does **not** replace `Dummy_Mannequin_Tan_Hier_Hi.fbx` and it is **not** bound into the game. Landon accepts the stills before anyone binds it.
+
+### No-clip
+
+Sample every **30 fps** frame of the motion set (`DT = 1.0 / 30.0` in `Tools/Tag/render_loco_stills.py`). Overlap deeper than **0.5 cm** fails. The depth is absolute. Do not subtract a bind pose to hide it.
+
+Verts within **3 cm** of the hinge are the joint hardware and are not a hit. Past that radius:
+
+- Overlap between a parent piece and its child at the **same joint**, measured on the rest pose, is `rigJoint`.
+- Overlap that appears on a live frame and was clean at rest is `pose`.
+
+`pose` must be **0**. `rigJoint` must be **0**. Report them as two numbers, never folded into one counter. `selfMax` and `worldMax` are in centimeters and both stay at or under 0.5.
+
+### Hip-sit
+
+On loaded frames, the pelvis sits behind the support foot (horizontal distance along the facing direction):
+
+- Plants and landings: at least **8 cm**.
+- Crouch: at least **12 cm**.
+- On those same frames, hip flexion is at least **1.5×** spine flexion.
+
+A single deep fold (the 110° hip still) does not satisfy this. The check is the loaded plant, the landing, and the crouch, every 30 fps frame.
+
+## 11. Costumes
+
+Costumes read as clothes on the Hier body, not as a second body. Hoodies, joggers, high-tops, caps, helmets, a small pack. No capes, scarves, or loose cloth. Hands stay bare. Who-is-who is a solid player color on the torso and the head: P1 Reed red, P2 Bram blue, P3 Pip orange, P4 Sol purple. Joggers, shoes, and the pack stay fixed colors.
+
+Each piece is its own mesh, weighted to **one** bone of the rig it was built for, and it has to be the clearance rig once that rig is the body. A costume fitted to the pre-ball Hier does not pass. Each piece is one connected mesh. The source piece count is one. Extra islands, from cutting the shell into floating shards, fail `cloth-shards`. Each dressed body segment keeps at least **90%** of its rest-pose surface area under the cloth. Less than that fails `cloth-coverage`. Cloth sits in a **0.3–1.0 cm** band **outside** the rendered hull. A shell inside the body, or z-fighting with it, fails even when `worldMax` is under 0.5 cm. The still is the check: on the quartet, at least 15% of the figure (everything that is not the backdrop) is player color. Torn color patches on a grey body fail as `shell-buried`. Costume-into-body and costume-into-costume stay under the same **0.5 cm** no-clip limit, measured on every 30 fps frame of idle, run, sprint, wall-run plant, slide, and landing roll. Worn LOD0, LOD1, and LOD2 stay inside the costume budget above. Gaps left so a sleeve does not eat the joint are acceptable only while the ball is visible and the piece still reads as a garment. The lab lives in `Art/CharacterLab/` and `Docs/Characters/`. It is not in the player build, and it is not bound into the map lane.
+
+## 12. What the validator grades
+
+`python3 Tools/Models/validate_assets.py --root <checkout>`
+
+It grades, on that checkout:
+
+- every entry in `Tools/Blender/AssetLibrary/manifest.json`,
+- any FBX under `Assets/Art/Props/Library/` that the manifest forgot,
+- `Dummy_Mannequin_*_Hier_Hi` and the clearance candidate,
+- every costume loadout in `Art/CharacterLab/loadouts.json`.
+
+It does not grade the playground kit under `Assets/Art/Props/Playground/` or the flat `Dummy_Runner` / `Dummy_It` block-in. Those are not this library.
+
+With Blender on `PYTHONPATH` (or `blender --background --python Tools/Models/validate_assets.py -- --root <checkout>`), slack is measured again from the FBX and the manifest colliders. Without Blender, slack is the manifest's `slackCm` from that same 3 cm test, and a missing `slackCm` fails.
+
+A second line, `models-split paperwork=A geometry=B`, splits the fails. Paperwork is license and stills only. Geometry is a collider, a LOD mesh, an envelope, a rig proof, or a shell buried in the body. An asset with both counts as geometry.
+
+One line per asset, then:
+
+```
+models-validate assets=N pass=P fail=F
+```
