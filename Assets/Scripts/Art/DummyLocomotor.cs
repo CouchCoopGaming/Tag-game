@@ -15503,6 +15503,10 @@ namespace Tag.Art
             ApplyPass3Targets(pass3Yield);
             ApplyPass4Life(dt, sliding, sinC);
             ApplyReachLead(speed, punching && phase != PunchPhase.Idle, flinchAmt > 0.04f);
+            // Post-slew overlays (arm coast, head look, wall hand) are this frame only. Take last
+            // frame's off first; left on the bone, the slew started from them and they integrated:
+            // the coast pitch added up every frame and the upper arm wound round to 180 deg.
+            ClearOverlays();
             Slew(ref _spine, _spineT, ref _slewSp, torsoSlew, dt);
             Slew(ref _hips, _hipsT, ref _slewHp, torsoSlew, dt);
             Slew(ref _head, _headT, ref _slewHd, slew, dt);
@@ -19466,6 +19470,36 @@ namespace Tag.Art
                 _hitFlinchAge = -1f;
         }
 
+        Quaternion _ovUaL = Quaternion.identity, _ovUaR = Quaternion.identity, _ovSp = Quaternion.identity, _ovHd = Quaternion.identity;
+
+        int _ovFrame = -1;
+
+        void Overlay(Transform t, ref Quaternion applied, Quaternion add)
+        {
+            if (_ovFrame != Time.frameCount)
+            {
+                // A frame that skipped the slew still runs these passes; undo last frame's first.
+                _ovFrame = Time.frameCount;
+                ClearOverlays();
+            }
+            t.localRotation = t.localRotation * add;
+            applied = applied * add;
+        }
+
+        static void Unlay(Transform t, ref Quaternion applied)
+        {
+            if (t != null) t.localRotation = t.localRotation * Quaternion.Inverse(applied);
+            applied = Quaternion.identity;
+        }
+
+        void ClearOverlays()
+        {
+            Unlay(_upperArmL, ref _ovUaL);
+            Unlay(_upperArmR, ref _ovUaR);
+            Unlay(_spine, ref _ovSp);
+            Unlay(_head, ref _ovHd);
+        }
+
         static void Slew(ref Transform t, Quaternion target, ref float vel, float speed, float dt)
         {
             if (t == null) return;
@@ -19982,9 +20016,9 @@ namespace Tag.Art
             {
                 float spineC = LocomotionPolish.SpineYaw(_headLook);
                 if (_spine != null)
-                    _spine.localRotation = _spine.localRotation * Quaternion.Euler(0f, spineC, 0f);
+                    Overlay(_spine, ref _ovSp, Quaternion.Euler(0f, spineC, 0f));
                 if (_head != null)
-                    _head.localRotation = _head.localRotation * Quaternion.Euler(0f, _headLook, 0f);
+                    Overlay(_head, ref _ovHd, Quaternion.Euler(0f, _headLook, 0f));
             }
             float rawL = (!yieldArms && _armSwingSet) ? _armSwingL : 0f;
             float rawR = (!yieldArms && _armSwingSet) ? _armSwingR : 0f;
@@ -19993,9 +20027,9 @@ namespace Tag.Art
             _armCoastL = SmoothMotion.Smooth(_armCoastL, wantL, ref _armCoastVelL, LocomotionPolish.SecondarySeconds, dt);
             _armCoastR = SmoothMotion.Smooth(_armCoastR, wantR, ref _armCoastVelR, LocomotionPolish.SecondarySeconds, dt);
             if (_upperArmL != null && Mathf.Abs(_armCoastL) > 0.05f)
-                _upperArmL.localRotation = _upperArmL.localRotation * Quaternion.Euler(_armCoastL, 0f, 0f);
+                Overlay(_upperArmL, ref _ovUaL, Quaternion.Euler(_armCoastL, 0f, 0f));
             if (_upperArmR != null && Mathf.Abs(_armCoastR) > 0.05f)
-                _upperArmR.localRotation = _upperArmR.localRotation * Quaternion.Euler(_armCoastR, 0f, 0f);
+                Overlay(_upperArmR, ref _ovUaR, Quaternion.Euler(_armCoastR, 0f, 0f));
         }
 
         /// <summary>
@@ -20262,9 +20296,9 @@ namespace Tag.Art
             float pitch = LocomotionPolish.HandPitch(0.78f - hit.distance);
             if (pitch > -0.5f && pitch < 0.5f) return;
             if (_upperArmL != null)
-                _upperArmL.localRotation = _upperArmL.localRotation * Quaternion.Euler(pitch, 0f, 0f);
+                Overlay(_upperArmL, ref _ovUaL, Quaternion.Euler(pitch, 0f, 0f));
             if (_upperArmR != null)
-                _upperArmR.localRotation = _upperArmR.localRotation * Quaternion.Euler(pitch, 0f, 0f);
+                Overlay(_upperArmR, ref _ovUaR, Quaternion.Euler(pitch, 0f, 0f));
         }
 
         void PlantFoot(Transform foot, Vector3 bind, bool stance, Transform face)

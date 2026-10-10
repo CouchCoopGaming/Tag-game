@@ -100,6 +100,14 @@ namespace TagArena.Movement
             {
                 bool padLook = _in.LookFromGamepad;
                 LookFeel.Deltas(_in.Look.x, _in.Look.y, padLook, out float yaw, out float pitch);
+                if (padLook)
+                {
+                    // A stick is a rate, not a delta. Per-frame degrees ran 12x fast at 720 fps.
+                    // Same feel as before at 60 fps.
+                    float k = Mathf.Min(Time.deltaTime, 0.1f) * 60f;
+                    yaw *= k;
+                    pitch *= k;
+                }
                 _yaw += yaw;
                 _pitch -= pitch;
             }
