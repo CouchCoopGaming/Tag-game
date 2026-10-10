@@ -48,8 +48,21 @@ namespace Tag.Tools
                 log.AppendLine("duplicate guid " + kv.Key + ": " + string.Join(", ", kv.Value.OrderBy(n => n, StringComparer.Ordinal)));
             }
 
-            bool ok = asmdefClash == 0 && dupGuids == 0;
-            line = "asset-layout metas=" + metas + " asmdefFolderClash=" + asmdefClash + " duplicateGuids=" + dupGuids
+            // Every asset and folder under Assets needs its committed .meta, or each
+            // machine's Unity invents its own guid for it.
+            int noMeta = 0;
+            foreach (string path in Directory.GetFileSystemEntries(assets, "*", SearchOption.AllDirectories))
+            {
+                if (path.EndsWith(".meta", StringComparison.Ordinal)) continue;
+                string name = Path.GetFileName(path);
+                if (name.StartsWith(".", StringComparison.Ordinal) || name.EndsWith("~", StringComparison.Ordinal)) continue;
+                if (File.Exists(path + ".meta")) continue;
+                noMeta++;
+                log.AppendLine("missing meta " + Rel(root, path));
+            }
+
+            bool ok = asmdefClash == 0 && dupGuids == 0 && noMeta == 0;
+            line = "asset-layout metas=" + metas + " asmdefFolderClash=" + asmdefClash + " duplicateGuids=" + dupGuids + " missingMeta=" + noMeta
                 + (ok ? "" : " FAIL");
             report = log.ToString();
             return ok;
