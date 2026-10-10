@@ -12,6 +12,6 @@
   <ItemGroup>
     <Compile Include="../../Assets/Scripts/Level/World/WorldPropTable.cs" />
     <Compile Include="../../Assets/Scripts/Level/World/MegaParkWorldDistrict.cs" />
-    <Compile Include="../../Assets/Tests/EditMode/WorldPropTableTests.cs" />
+    <Compile Include="../../Assets/Tests/EditMode/World/WorldPropTableTests.cs" />
   </ItemGroup>
 </Project>
