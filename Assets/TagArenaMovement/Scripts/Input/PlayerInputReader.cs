@@ -120,7 +120,7 @@ namespace TagArena.Movement
             bool cursorLocked = Cursor.lockState == CursorLockMode.Locked;
             bool playLive = Time.timeScale > 0f && cursorLocked;
             bool clingPhys = Input.GetKey(KeyCode.W) || Input.GetAxisRaw("Vertical") > 0.25f;
-            bool sprintPhys = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.LeftAlt);
+            bool sprintPhys = Input.GetKey(KeyCode.LeftShift);
             bool jumpPhys = JumpHeldNow();
             if (!playLive)
             {
@@ -209,8 +209,8 @@ namespace TagArena.Movement
             // Shift may also mean ski; PlayerMotor.WantsSki decides if ski engages.
             // When ski does not engage (flat jog), Shift still counts as sprint so run reads correctly.
             SprintHeld = useShiftAsSprintWhenNotSkiing
-                ? Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.LeftAlt)
-                : Input.GetKey(KeyCode.LeftAlt);
+                ? Input.GetKey(KeyCode.LeftShift)
+                : false;
 
             // Default: hold RMB / Left Shift+Space feel. Jet is dedicated.
             JetHeld = Input.GetKey(jetKey) || Input.GetMouseButton(1);

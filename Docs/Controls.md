@@ -26,7 +26,12 @@ Cling is not a separate button. Holding move into a wall is the cling. Rebinding
 | Practice ghost | G | Left stick press |
 | Practice input display | I | Right stick press |
 
-RT is free. The stutter double-tap on RT stays behind `EvasionMoves.Enabled`, and that flag defaults off. A single press of RT does nothing. LT stays the couch rope.
+Grapple is the left-hand rope: one click pulls, and a second click within 0.28 s releases. Keyboard is RMB. The pad column reads LT. RT is free. The stutter double-tap stays behind a flag that defaults off, so this list does not bind it.
+
+| Action | Keyboard / mouse | Gamepad |
+|---|---|---|
+| Grapple | RMB | LT |
+| RT | — | free |
 
 ## Debug
 

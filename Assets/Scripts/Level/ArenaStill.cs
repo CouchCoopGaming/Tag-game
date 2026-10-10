@@ -103,10 +103,17 @@ namespace Tag.Level
             string overview = Path.Combine(folder, park + "_Overview.png");
             string eye = Path.Combine(folder, park + "_Eye.png");
             float span = Math.Max(mapW, mapD);
+            // Above the yard, a little south of centre. The old corner camera
+            // sat in the treeline, so poles and trees drew a dark bar across the plate.
+            // Mega is wide enough that the same framing clipped the rim, so it sits higher.
+            bool wide = span > 140f;
+            float camY = span * (wide ? 1.82f : 1.48f);
+            float camZ = mapD * 0.50f - span * (wide ? 0.26f : 0.16f);
+            float fov = wide ? 50f : 40f;
             Render(tris, overview, mapW, mapD,
-                mapW * 0.5f - span * 0.62f, span * 0.78f, mapD * 0.5f - span * 0.70f,
-                mapW * 0.50f, span * 0.04f, mapD * 0.52f,
-                48f, false);
+                mapW * 0.50f, camY, camZ,
+                mapW * 0.50f, 1.2f, mapD * 0.50f,
+                fov, false);
             float ex = eyeSpawn.X;
             float ez = eyeSpawn.Z;
             float tx = mapW * 0.55f;
@@ -501,9 +508,12 @@ namespace Tag.Level
             }
         }
 
+        static bool _overview;
+
         static void Render(List<Tri> tris, string path, float mapW, float mapD,
             float ex, float ey, float ez, float tx, float ty, float tz, float fov, bool eyeLevel)
         {
+            _overview = !eyeLevel;
             Sun(out float sx, out float sy, out float sz);
             float half = Math.Max(mapW, mapD) * 0.70f + 28f;
             var shadow = new float[768 * 768];
@@ -515,6 +525,7 @@ namespace Tag.Level
             for (int i = 0; i < tris.Count; i++)
             {
                 if (tris[i].A < 0.99f) continue;
+                if (_overview && NearCamera(tris[i], ex, ey, ez)) continue;
                 ShadowTri(tris[i], shadow, 768, cx, cy, cz, rx, ry, rz, ux, uy, uz, sx, sy, sz, half);
             }
 
@@ -541,10 +552,29 @@ namespace Tag.Level
             BasisFrom(ex, ey, ez, tx, ty, tz, out float fx, out float fy, out float fz, out float crx, out float cry, out float crz, out float cux, out float cuy, out float cuz);
             for (int i = 0; i < tris.Count; i++)
             {
+                if (_overview && NearCamera(tris[i], ex, ey, ez)) continue;
                 DrawTri(tris[i], rgb, depth, Width, Height, ex, ey, ez, fx, fy, fz, crx, cry, crz, cux, cuy, cuz, fov,
                     shadow, 768, cx, cy, cz, rx, ry, rz, ux, uy, uz, sx, sy, sz, half);
             }
             WritePng(path, rgb, Width, Height);
+        }
+
+        static bool NearCamera(Tri t, float ex, float ey, float ez)
+        {
+            const float reach = 15f;
+            float r2 = reach * reach;
+            if (Dist2(t.X0, t.Y0, t.Z0, ex, ey, ez) < r2) return true;
+            if (Dist2(t.X1, t.Y1, t.Z1, ex, ey, ez) < r2) return true;
+            if (Dist2(t.X2, t.Y2, t.Z2, ex, ey, ez) < r2) return true;
+            return false;
+        }
+
+        static float Dist2(float x, float y, float z, float ex, float ey, float ez)
+        {
+            float dx = x - ex;
+            float dy = y - ey;
+            float dz = z - ez;
+            return dx * dx + dy * dy + dz * dz;
         }
 
         static void Sun(out float x, out float y, out float z)
@@ -764,12 +794,24 @@ namespace Tag.Level
             float lg = Lin(t.G);
             float lb = Lin(t.B);
             float keep = 1f - MegaParkP1Layout.ShadowStrength;
-            litR = Enc(lr * (ambR + sunR));
-            litG = Enc(lg * (ambG + sunG));
-            litB = Enc(lb * (ambB + sunB));
-            shR = Enc(lr * (ambR + sunR * keep));
-            shG = Enc(lg * (ambG + sunG * keep));
-            shB = Enc(lb * (ambB + sunB * keep));
+            float gain = _overview ? 1.72f : 1f;
+            float wr = _overview ? 1.06f : 1f;
+            float wg = _overview ? 1.04f : 1f;
+            float wb = _overview ? 0.94f : 1f;
+            litR = Plate(Enc(lr * (ambR + sunR) * gain * wr));
+            litG = Plate(Enc(lg * (ambG + sunG) * gain * wg));
+            litB = Plate(Enc(lb * (ambB + sunB) * gain * wb));
+            shR = Plate(Enc(lr * (ambR + sunR * keep) * gain * wr));
+            shG = Plate(Enc(lg * (ambG + sunG * keep) * gain * wg));
+            shB = Plate(Enc(lb * (ambB + sunB * keep) * gain * wb));
+        }
+
+        static float Plate(float e)
+        {
+            if (!_overview) return e;
+            if (e < 0f) e = 0f;
+            if (e > 1f) e = 1f;
+            return (float)Math.Pow(e, 0.78);
         }
 
         static float Lin(float c)

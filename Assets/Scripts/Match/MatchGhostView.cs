@@ -1,3 +1,4 @@
+using Tag.Couch;
 using Tag.Practice;
 using Tag.Settings;
 using UnityEngine;
@@ -84,8 +85,7 @@ namespace Tag.MatchStats
             {
                 var mat = new Material(shader);
                 int seat = slot < AccessibilityPalette.Players ? slot : 0;
-                int palette = GameSettings.Current != null ? GameSettings.Current.PaletteOf(seat) : 0;
-                AccessibilityPalette.Player(palette, slot & 3, out float r, out float g, out float b);
+                CouchPlay.Tint(seat, out float r, out float g, out float b);
                 mat.color = new Color(r, g, b, 0.45f);
                 renderer.sharedMaterial = mat;
             }

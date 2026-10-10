@@ -85,6 +85,7 @@ namespace Tag.Modes
         int _beepSec = -1;
         float _chase;
         float _longestChase;
+        string _longestName = "";
         string _taggedId = "";
         float _taggedUntil;
         string[] _scoreIds = System.Array.Empty<string>();
@@ -107,6 +108,36 @@ namespace Tag.Modes
         public ITagMode ActiveMode => _mode;
         public TagModeContext Context => _ctx;
         public MatchPhase Phase => _phase;
+        /// <summary>Seconds left in the current countdown or post-round beat. Display only.</summary>
+        public float PhaseSeconds => _phaseTimer;
+        /// <summary>Longest single time someone stayed It. One number for the match.</summary>
+        public float LongestChase => _longestChase;
+        /// <summary>Who held It for that chase, when the match recorded it.</summary>
+        public string LongestChaseName => _longestName != null ? _longestName : "";
+        /// <summary>1-based round for the top counter. Hot Potato and Least It use their own index.</summary>
+        public int RoundShown
+        {
+            get
+            {
+                HotPotatoMode hot = _mode as HotPotatoMode;
+                if (hot != null) return hot.RoundIndex;
+                LeastItMode least = _mode as LeastItMode;
+                if (least != null) return least.RoundIndex;
+                return 1;
+            }
+        }
+        /// <summary>Round cap already stored on the mode tuning. Display only.</summary>
+        public int RoundCap
+        {
+            get
+            {
+                if (selectedMode == TagModeId.HotPotato && hotPotatoTuning != null && hotPotatoTuning.maxRounds > 0)
+                    return hotPotatoTuning.maxRounds;
+                if (selectedMode == TagModeId.LeastIt && leastItTuning != null && leastItTuning.roundCount > 0)
+                    return leastItTuning.roundCount;
+                return 1;
+            }
+        }
         public bool SuddenDeath => _ctx.SuddenDeath;
         /// <summary>False during the short results arm so Esc/R/Q ignore the round-end click.</summary>
         public bool ResultsInputReady =>
@@ -114,9 +145,34 @@ namespace Tag.Modes
             && !_resultsActionTaken
             && Time.unscaledTime >= _resultsInputReadyAt;
         public string ResultMessage => _resultMessage;
+
+        /// <summary>Round wins for Hot Potato and Least It. Other modes return 0. Results screen only.</summary>
+        public int RoundWinsOf(string playerId)
+        {
+            HotPotatoMode hot = _mode as HotPotatoMode;
+            if (hot != null) return hot.RoundWins(playerId);
+            LeastItMode least = _mode as LeastItMode;
+            if (least != null) return least.RoundWins(playerId);
+            return 0;
+        }
+
+        /// <summary>True when this mode's own winner list names the player.</summary>
+        public bool WinnerNamed(string playerId)
+        {
+            if (_mode == null || _ctx == null || string.IsNullOrEmpty(playerId)) return false;
+            System.Collections.Generic.IReadOnlyList<string> list = _mode.GetWinnerIds(_ctx);
+            if (list == null) return false;
+            for (int i = 0; i < list.Count; i++)
+            {
+                if (list[i] == playerId) return true;
+            }
+            return false;
+        }
         /// <summary>Last punch/round handoff, for the local TAG flash.</summary>
         public string LastFromId { get; private set; }
         public string LastToId { get; private set; }
+        /// <summary>Bumps on every handoff so a repeated pair still reaches the feed.</summary>
+        public int TagSerial { get; private set; }
 
         /// <summary>Living players' TimeAsIt (already on ItController); empty if no context players.</summary>
         public IReadOnlyList<ItController> PlayersForHud => _ctx.Players;
@@ -345,6 +401,7 @@ namespace Tag.Modes
             _beepSec = -1;
             _chase = 0f;
             _longestChase = 0f;
+            _longestName = "";
             _taggedId = "";
             _taggedUntil = 0f;
             _scoreCount = 0;
@@ -426,7 +483,33 @@ namespace Tag.Modes
                     if (p != null && p.IsAlive) _livingScratch.Add(p);
                 }
                 if (_livingScratch.Count > 0)
-                    TransferIt(null, _livingScratch[Random.Range(0, _livingScratch.Count)]);
+                {
+                    int pick = -1;
+                    GameSettings rules = GameSettings.Current;
+                    int start = rules != null ? rules.StartIt : GameSettings.StartRandom;
+                    if (start == GameSettings.StartLast)
+                    {
+                        float worst = 0f;
+                        for (int n = 0; n < _livingScratch.Count; n++)
+                        {
+                            float held = _livingScratch[n].TimeAsIt;
+                            if (held > worst)
+                            {
+                                worst = held;
+                                pick = n;
+                            }
+                        }
+                    }
+                    else if (start == GameSettings.StartChosen && rules != null)
+                    {
+                        pick = rules.StartSeat;
+                        if (pick < 0) pick = 0;
+                        if (pick >= _livingScratch.Count) pick = _livingScratch.Count - 1;
+                    }
+                    if (pick < 0)
+                        pick = Random.Range(0, _livingScratch.Count);
+                    TransferIt(null, _livingScratch[pick]);
+                }
             }
             EnforceSpawnSafety();
             if (!PracticeSession.Active)
@@ -601,6 +684,7 @@ namespace Tag.Modes
         void PollResultsKeys()
         {
             if (_phase != MatchPhase.Results) return;
+            if (Tag.Ui.Menu.MenuHost.CoversResults) return;
             if (_resultsActionTaken) return;
             // Highlight can move during the arm. Activate still waits.
             // Ends stay put. Left on Rematch and Right on Menu do not wrap or leak.
@@ -729,13 +813,14 @@ namespace Tag.Modes
                 return;
             }
             LastFromId = from != null ? from.PlayerId : "";
+            TagSerial++;
             float tagBackSeconds = TagBackSeconds(from, to);
             if (from != null)
             {
                 from.NoteTagLanded();
                 if (to != null)
                     MatchLive.NoteTag(from, to);
-                if (_chase > _longestChase) _longestChase = _chase;
+                RememberChase(string.IsNullOrEmpty(from.PlayerId) ? from.name : from.PlayerId);
                 _chase = 0f;
                 if (IsLocalHuman(from) && to != null)
                 {
@@ -842,10 +927,20 @@ namespace Tag.Modes
                 EndMatch();
         }
 
+        void RememberChase(string who)
+        {
+            if (_chase <= _longestChase) return;
+            _longestChase = _chase;
+            if (!string.IsNullOrEmpty(who)) _longestName = who;
+        }
+
         void EndMatch()
         {
             if (_phase == MatchPhase.Results) return;
-            if (_chase > _longestChase) _longestChase = _chase;
+            string holder = "";
+            if (_ctx.CurrentIt != null)
+                holder = string.IsNullOrEmpty(_ctx.CurrentIt.PlayerId) ? _ctx.CurrentIt.name : _ctx.CurrentIt.PlayerId;
+            RememberChase(holder);
             SnapshotScores();
             if (FrontLive.KeepGoing(_scoreIds, _scoreTimes, _scoreTags, _scoreCount, _scoreLongest))
             {
@@ -1330,6 +1425,8 @@ namespace Tag.Modes
 
         void OnGUI()
         {
+            if (_phase == MatchPhase.Results && Tag.Ui.Menu.MenuHost.CoversResults)
+                return;
             WarmHudStyles();
             MinimapHud.Draw();
             if (_localPaused)
@@ -1339,11 +1436,18 @@ namespace Tag.Modes
             }
 
             PracticeHud.Draw();
-            DrawItBanner();
+            bool matchHud = Tag.Ui.Hud.MatchHud.Active;
+            if (!matchHud) DrawItBanner();
 
             if (_phase == MatchPhase.Countdown)
             {
-                DrawCountdownCard();
+                if (!matchHud) DrawCountdownCard();
+                return;
+            }
+
+            if (matchHud)
+            {
+                if (_phase == MatchPhase.Results) DrawResultsCard();
                 return;
             }
 

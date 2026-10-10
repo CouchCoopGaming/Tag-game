@@ -21,7 +21,7 @@ namespace Tag.Audio
         {
             if (Instance != null && Instance != this) { Destroy(this); return; }
             Instance = this;
-            DontDestroyOnLoad(gameObject);
+            if (Application.isPlaying) DontDestroyOnLoad(gameObject);
             _sfx = gameObject.AddComponent<AudioSource>();
             _sfx.playOnAwake = false;
             _sfx.volume = 0.7f;

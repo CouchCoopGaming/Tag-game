@@ -17,6 +17,9 @@ namespace Tag.Settings
         public const float HudDefault = 1f;
         public const float HudMin = 0.75f;
         public const float HudMax = 1.5f;
+        public const float UiScaleDefault = 1f;
+        public const float UiScaleMin = 0.80f;
+        public const float UiScaleMax = 1.30f;
         public const float MouseDefault = 1.8f;
         public const float MouseMin = 0.5f;
         public const float MouseMax = 5f;
@@ -62,7 +65,12 @@ namespace Tag.Settings
         public static readonly float[] SfxSteps = { 0f, 0.5f, 0.75f, 1f };
         public static readonly float[] UiSteps = { 0f, 0.5f, 0.75f, 1f };
         public static readonly float[] MusicSteps = { 0f, 0.15f, 0.35f, 0.55f, 1f };
-        public static readonly float[] HudSteps = { 0.75f, 1f, 1.25f, 1.5f };
+        /// <summary>Menu steps. 1.00 is the identity size. HudMin stays 0.75 so a saved smaller scale still clamps.</summary>
+        public static readonly float[] HudSteps = { 0.85f, 1f, 1.25f, 1.5f };
+        public const int QualityLow = 0;
+        public const int QualityMedium = 1;
+        public const int QualityHigh = 2;
+        public const int QualityUltra = 3;
         public static readonly float[] RumbleSteps = { 0f, 25f, 50f, 75f, 100f };
         static readonly string[] SeatNames = { "P1", "P2", "P3", "P4" };
 
@@ -82,7 +90,22 @@ namespace Tag.Settings
         public float Music = MusicDefault;
         public bool Muted;
         public float HudScale = HudDefault;
+        public float UiScale = UiScaleDefault;
+        /// <summary>Verb words on the match HUD. Missing from an old blob stays on.</summary>
+        public bool ComicWords = true;
+        public bool ReduceMotion;
+        public int PictureQuality = QualityMedium;
+        public int ResIndex = 2;
+        public bool Fullscreen = true;
+        public bool VSync = true;
         public bool Colorblind;
+        /// <summary>0 off (default seats). 1 Protan/Deutan. 2 Tritan. Missing from an old blob stays off.</summary>
+        public int CvdSeats;
+        /// <summary>
+        /// Air-dash and grapple speed lines. Off until a seat turns them on.
+        /// Not one of the 21 rows. The Options screen lists SpeedLinesLabel.
+        /// </summary>
+        public bool SpeedLines;
         public bool Minimap = true;
         public int Arena;
 
@@ -93,13 +116,6 @@ namespace Tag.Settings
         public readonly bool[] Captions = new bool[SeatCount];
         public readonly int[] Rumble = new int[SeatCount];
         public readonly bool[] ReduceFlash = new bool[SeatCount];
-        /// <summary>Comic contact words. On until a seat turns them off. Reduced flashing also hides them.</summary>
-        public bool ComicWords = true;
-        /// <summary>
-        /// Air-dash and grapple speed lines. Off until a seat turns them on.
-        /// Not one of the 21 rows. The Options screen lists <see cref="SpeedLinesLabel"/>.
-        /// </summary>
-        public bool SpeedLines;
         /// <summary>
         /// Seat-colored strip left on a wall run. Off until a seat turns it on.
         /// Not one of the 21 rows, and not one of the seven FX-kit toggles.
@@ -185,6 +201,29 @@ namespace Tag.Settings
         public int SplitAxis = SplitVertical;
         public int Listener = ListenP1;
 
+        public const int FaceAuto = -1;
+        public const int FaceSouth = 0;
+        public const int FaceEast = 1;
+        public const int StartRandom = 0;
+        public const int StartLast = 1;
+        public const int StartChosen = 2;
+        public const int WinTargetDefault = 2;
+        public const int WinTargetMin = 1;
+        public const int WinTargetMax = 5;
+        public const int HandicapOff = 0;
+        public const int HandicapLight = 1;
+        public const int HandicapHeavy = 2;
+
+        /// <summary>Menu confirm face. -1 follows the pad. 0 is south, 1 is east. Jump stays south.</summary>
+        public readonly int[] ConfirmFace = { FaceAuto, FaceAuto, FaceAuto, FaceAuto };
+        public int StartIt = StartRandom;
+        public int StartSeat;
+        public int WinTarget = WinTargetDefault;
+        /// <summary>Shown on the rules and loading screens. Movement does not read it.</summary>
+        public readonly int[] Handicap = new int[SeatCount];
+        public bool HazardPads = true;
+        public bool HazardZips = true;
+
         public static GameSettings Defaults()
         {
             return new GameSettings();
@@ -206,7 +245,16 @@ namespace Tag.Settings
             Music = other.Music;
             Muted = other.Muted;
             HudScale = other.HudScale;
+            UiScale = other.UiScale;
+            ComicWords = other.ComicWords;
+            SpeedLines = other.SpeedLines;
+            ReduceMotion = other.ReduceMotion;
+            PictureQuality = other.PictureQuality;
+            ResIndex = other.ResIndex;
+            Fullscreen = other.Fullscreen;
+            VSync = other.VSync;
             Colorblind = other.Colorblind;
+            CvdSeats = other.CvdSeats;
             Minimap = other.Minimap;
             Arena = other.Arena;
             AccessSeat = other.AccessSeat;
@@ -217,8 +265,6 @@ namespace Tag.Settings
             RoundsPerMatch = other.RoundsPerMatch;
             SplitAxis = other.SplitAxis;
             Listener = other.Listener;
-            ComicWords = other.ComicWords;
-            SpeedLines = other.SpeedLines;
             WallRibbon = other.WallRibbon;
             InkCard = other.InkCard;
             ItWedge = other.ItWedge;
@@ -233,11 +279,59 @@ namespace Tag.Settings
             StrokeYield = other.StrokeYield;
             LandStain = other.LandStain;
             Effects = other.Effects;
+            StartIt = other.StartIt;
+            StartSeat = other.StartSeat;
+            WinTarget = other.WinTarget;
+            HazardPads = other.HazardPads;
+            HazardZips = other.HazardZips;
         }
 
         public void ResetToDefaults()
         {
             CopyFrom(Defaults());
+        }
+
+        public void ResetSound()
+        {
+            GameSettings d = Defaults();
+            Master = d.Master;
+            Sfx = d.Sfx;
+            Ui = d.Ui;
+            Music = d.Music;
+            Muted = d.Muted;
+        }
+
+        public void ResetPicture()
+        {
+            GameSettings d = Defaults();
+            ResIndex = d.ResIndex;
+            Fullscreen = d.Fullscreen;
+            VSync = d.VSync;
+            PictureQuality = d.PictureQuality;
+            UiScale = d.UiScale;
+            SpeedLines = d.SpeedLines;
+        }
+
+        public void ResetAccess()
+        {
+            GameSettings d = Defaults();
+            ReduceMotion = d.ReduceMotion;
+            HudScale = d.HudScale;
+            AccessSeat = d.AccessSeat;
+            Colorblind = d.Colorblind;
+            CvdSeats = d.CvdSeats;
+            ComicWords = d.ComicWords;
+            for (int i = 0; i < SeatCount; i++)
+                Palette[i] = 0;
+        }
+
+        public void ResetLook()
+        {
+            GameSettings d = Defaults();
+            MouseSensitivity = d.MouseSensitivity;
+            GamepadLook = d.GamepadLook;
+            InvertY = d.InvertY;
+            Fov = d.Fov;
         }
 
         public void Clamp()
@@ -256,6 +350,11 @@ namespace Tag.Settings
             Ui = ClampFloat(Ui, 0f, 1f);
             Music = ClampFloat(Music, 0f, 1f);
             HudScale = ClampFloat(HudScale, HudMin, HudMax);
+            UiScale = ClampFloat(UiScale, UiScaleMin, UiScaleMax);
+            if (ResIndex < 0) ResIndex = 0;
+            if (ResIndex > 3) ResIndex = 3;
+            if (PictureQuality < 0) PictureQuality = 0;
+            if (PictureQuality > 8) PictureQuality = 8;
             int lastArena = Tag.Onboard.ArenaRegistry.Count - 1;
             if (lastArena < 0) lastArena = 0;
             if (Arena < 0) Arena = 0;
@@ -270,16 +369,28 @@ namespace Tag.Settings
             if (RoundsPerMatch > RoundsMax) RoundsPerMatch = RoundsMax;
             if (SplitAxis != SplitHorizontal) SplitAxis = SplitVertical;
             if (Listener != ListenAverage) Listener = ListenP1;
+            if (StartIt < StartRandom) StartIt = StartRandom;
+            if (StartIt > StartChosen) StartIt = StartChosen;
+            if (StartSeat < 0) StartSeat = 0;
+            if (StartSeat >= SeatCount) StartSeat = SeatCount - 1;
+            if (WinTarget < WinTargetMin) WinTarget = WinTargetMin;
+            if (WinTarget > WinTargetMax) WinTarget = WinTargetMax;
+            if (WinTarget > RoundsPerMatch) WinTarget = RoundsPerMatch;
             if (AccessSeat < 0) AccessSeat = 0;
             if (AccessSeat >= SeatCount) AccessSeat = SeatCount - 1;
             if (Effects < 0) Effects = 0;
             if (Effects > 2) Effects = 2;
+            if (CvdSeats < SeatCvd.Off) CvdSeats = SeatCvd.Off;
+            if (CvdSeats > SeatCvd.Tritan) CvdSeats = SeatCvd.Tritan;
             for (int i = 0; i < SeatCount; i++)
             {
                 if (Palette[i] < 0) Palette[i] = 0;
                 if (Palette[i] >= AccessibilityPalette.Count) Palette[i] = AccessibilityPalette.Count - 1;
                 if (Rumble[i] < 0) Rumble[i] = 0;
                 if (Rumble[i] > 100) Rumble[i] = 100;
+                if (ConfirmFace[i] != FaceSouth && ConfirmFace[i] != FaceEast) ConfirmFace[i] = FaceAuto;
+                if (Handicap[i] < HandicapOff) Handicap[i] = HandicapOff;
+                if (Handicap[i] > HandicapHeavy) Handicap[i] = HandicapHeavy;
             }
         }
 
@@ -317,6 +428,12 @@ namespace Tag.Settings
             return false;
         }
 
+        /// <summary>Label for the Options row. Default is Off.</summary>
+        public string SpeedLinesLabel()
+        {
+            return SpeedLines ? "Speed lines: On" : "Speed lines: Off";
+        }
+
         /// <summary>Flattens the tag-back strobe. The immunity window is not touched.</summary>
         public float GlowVisual(float pulse)
         {
@@ -343,7 +460,28 @@ namespace Tag.Settings
                 Captions[i] = other.Captions[i];
                 Rumble[i] = other.Rumble[i];
                 ReduceFlash[i] = other.ReduceFlash[i];
+                ConfirmFace[i] = other.ConfirmFace[i];
+                Handicap[i] = other.Handicap[i];
             }
+        }
+
+        public void StepConfirm(int seat, int dir)
+        {
+            if (seat < 0 || seat >= SeatCount || dir == 0) return;
+            int v = ConfirmFace[seat];
+            if (dir > 0)
+            {
+                if (v < 0) v = FaceSouth;
+                else if (v == FaceSouth) v = FaceEast;
+                else v = FaceAuto;
+            }
+            else
+            {
+                if (v < 0) v = FaceEast;
+                else if (v == FaceEast) v = FaceSouth;
+                else v = FaceAuto;
+            }
+            ConfirmFace[seat] = v;
         }
 
         public float DifficultyValue()
@@ -426,11 +564,6 @@ namespace Tag.Settings
             }
         }
 
-        /// <summary>Label for the Options row. Default is Off.</summary>
-        public string SpeedLinesLabel()
-        {
-            return SpeedLines ? "Speed lines: On" : "Speed lines: Off";
-        }
 
         /// <summary>Label for the Options row. Default is Off.</summary>
         public string WallRibbonLabel()
@@ -547,6 +680,21 @@ namespace Tag.Settings
             if (Math.Abs(br - yr) < 0.2f && Math.Abs(bg - yg) < 0.2f && Math.Abs(bb - yb) < 0.2f)
                 return false;
             return true;
+        }
+
+        public void CycleCvdSeats(int dir)
+        {
+            int next = CvdSeats + (dir < 0 ? -1 : 1);
+            if (next < SeatCvd.Off) next = SeatCvd.Tritan;
+            if (next > SeatCvd.Tritan) next = SeatCvd.Off;
+            CvdSeats = next;
+        }
+
+        public string CvdSeatWord()
+        {
+            if (CvdSeats == SeatCvd.ProtanDeutan) return "Protan/Deutan";
+            if (CvdSeats == SeatCvd.Tritan) return "Tritan";
+            return "Off";
         }
 
         void CyclePalette(int dir)

@@ -2,12 +2,14 @@
 using Tag.Level;
 using Tag.Modes;
 using Tag.Settings;
+using Tag.Ui.Menu;
 using UnityEngine;
 
 namespace Tag.Art
 {
     /// <summary>
     /// Third-person It tell: bright hat + bobbing crown + pulsing floor halo.
+    /// The hat, brim, tip, beacon, halo, and name plate are meshes, not primitives.
     /// Hot Potato: pulse harder (scale/color/light) as TagModeController.Remaining runs low.
     /// Readable at mid-arena distance without purchased VFX.
     /// </summary>
@@ -46,6 +48,7 @@ namespace Tag.Art
         Transform _plate;
         Renderer _plateRend;
         TextMesh _plateText;
+        TextMesh _shapeText;
         bool _plateBuilt;
 
         void Awake()
@@ -60,7 +63,7 @@ namespace Tag.Art
             SetIdentity(plateName, tint, 0);
         }
 
-        /// <summary>Shape 0 circle, 1 triangle, 2 square, 3 diamond. The glyph matches.</summary>
+        /// <summary>Seat index. The mark is MenuMannequin.Shape, and the glyph matches.</summary>
         public void SetIdentity(string plateName, Color tint, int shape)
         {
             _plateName = plateName ?? "";
@@ -76,20 +79,13 @@ namespace Tag.Art
         {
             if (_plateBuilt || !_hasPlate) return;
             _plateBuilt = true;
-            GameObject go;
-            if (_shape == 1)
-                go = TrianglePlate();
-            else
-            {
-                PrimitiveType kind = PrimitiveType.Sphere;
-                if (_shape == 2) kind = PrimitiveType.Cube;
-                else if (_shape == 3) kind = PrimitiveType.Cylinder;
-                go = GameObject.CreatePrimitive(kind);
-            }
+            int kind = MenuMannequin.Shape(_shape);
+            GameObject go = PlateMesh(kind);
             go.name = "NameTag";
             go.transform.SetParent(transform, false);
             go.transform.localPosition = new Vector3(0f, 2.45f, 0f);
             go.transform.localScale = new Vector3(0.28f, 0.18f, 0.28f);
+            if (kind == 3) go.transform.localRotation = Quaternion.Euler(0f, 0f, 45f);
             DestroyCollider(go);
             _plateRend = ApplyMat(go, _plateTint, true, 2.4f);
             _plate = go.transform;
@@ -106,7 +102,8 @@ namespace Tag.Art
             markGo.transform.localPosition = new Vector3(0f, 2.2f, 0f);
             var mark = markGo.AddComponent<TextMesh>();
             mark.text = AccessibilityPalette.Glyph(_shape);
-            mark.characterSize = 0.28f;
+            mark.characterSize = 0.42f;
+            _shapeText = mark;
             mark.anchor = TextAnchor.MiddleCenter;
             mark.alignment = TextAlignment.Center;
             mark.color = Color.white;
@@ -194,9 +191,8 @@ namespace Tag.Art
             if (_halo != null)
                 _halo.localScale = _haloBaseScale * (pulse * (1f + 0.55f * urgency));
 
-            int pal = 0;
-            if (GameSettings.Current != null)
-                pal = GameSettings.Current.PaletteOf(_shape);
+            Tag.Couch.CouchPlay.Tint(_shape, out float sr, out float sg, out float sb);
+            int pal = GameSettings.Current != null ? GameSettings.Current.PaletteOf(_shape) : 0;
             int crown = Tag.Profiles.LocalProfiles.SeatColor(_shape);
             if (crown < 0) crown = _shape;
             AccessibilityPalette.ItAgainst(pal, crown, out float ir, out float ig, out float ib);
@@ -211,10 +207,14 @@ namespace Tag.Art
             }
             if (_plateRend != null)
             {
-                AccessibilityPalette.Player(pal, _shape, out float pr, out float pg, out float pb);
-                Color plate = new Color(pr, pg, pb, 1f);
-                ApplyRuntimeColor(_plateRend, plate, 2.4f);
-                if (_plateText != null) _plateText.color = plate;
+                Color hue = new Color(sr, sg, sb, 1f);
+                ApplyRuntimeColor(_plateRend, new Color(0.02f, 0.02f, 0.04f, 1f), 0.35f);
+                if (_plateText != null) _plateText.color = hue;
+                if (_shapeText != null)
+                {
+                    Color fill = Tag.Ui.Menu.MenuTheme.SeatFill(_shape);
+                    _shapeText.color = fill;
+                }
             }
 
             // Hotter / brighter materials as fuse drains
@@ -254,8 +254,7 @@ namespace Tag.Art
             if (_built) return;
             _built = true;
 
-            var hatGo = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-            hatGo.name = "ItHat";
+            var hatGo = MeshPart("ItHat", UnitCylinder());
             hatGo.transform.SetParent(transform, false);
             _hatBaseLocal = new Vector3(0f, hatHeight, 0f);
             hatGo.transform.localPosition = _hatBaseLocal;
@@ -265,8 +264,7 @@ namespace Tag.Art
             _hatRend = ApplyMat(hatGo, itHat, emissive: true, emissionMul: 2.6f);
             _hat = hatGo.transform;
 
-            var brim = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-            brim.name = "ItHatBrim";
+            var brim = MeshPart("ItHatBrim", UnitCylinder());
             brim.transform.SetParent(_hat, false);
             brim.transform.localPosition = new Vector3(0f, -0.65f, 0f);
             brim.transform.localScale = new Vector3(1.7f, 0.14f, 1.7f);
@@ -274,8 +272,7 @@ namespace Tag.Art
             _brimRend = ApplyMat(brim, itHat, emissive: true, emissionMul: 2.4f);
 
             // Crown tip for silhouette read
-            var tip = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-            tip.name = "ItHatTip";
+            var tip = MeshPart("ItHatTip", UnitSphere());
             tip.transform.SetParent(_hat, false);
             tip.transform.localPosition = new Vector3(0f, 0.85f, 0f);
             tip.transform.localScale = new Vector3(0.55f, 0.55f, 0.55f);
@@ -283,8 +280,7 @@ namespace Tag.Art
             _tipRend = ApplyMat(tip, new Color(1f, 0.85f, 0.15f, 1f), emissive: true, emissionMul: 3.2f);
 
             // Tall emissive spike so the It reads before the brim does.
-            var beacon = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-            beacon.name = "ItHatBeacon";
+            var beacon = MeshPart("ItHatBeacon", UnitCylinder());
             beacon.transform.SetParent(_hat, false);
             beacon.transform.localPosition = new Vector3(0f, 2.4f, 0f);
             beacon.transform.localScale = new Vector3(0.22f, 2.8f, 0.22f);
@@ -292,8 +288,7 @@ namespace Tag.Art
             _beaconRend = ApplyMat(beacon, new Color(1f, 0.45f, 0.05f, 1f), emissive: true, emissionMul: 3.4f);
             _beacon = beacon.transform;
 
-            var haloGo = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-            haloGo.name = "ItHalo";
+            var haloGo = MeshPart("ItHalo", UnitCylinder());
             haloGo.transform.SetParent(transform, false);
             haloGo.transform.localPosition = new Vector3(0f, 0.06f, 0f);
             _haloBaseScale = new Vector3(1.45f, 0.1f, 1.45f);
@@ -318,33 +313,162 @@ namespace Tag.Art
             _light.enabled = on;
         }
 
+        static GameObject PlateMesh(int kind)
+        {
+            if (kind == 1) return TrianglePlate();
+            if (kind == 2 || kind == 3) return MeshPart("NameTag", UnitBox());
+            return MeshPart("NameTag", UnitSphere());
+        }
+
+        static GameObject MeshPart(string name, Mesh mesh)
+        {
+            var go = new GameObject(name);
+            var filter = go.AddComponent<MeshFilter>();
+            go.AddComponent<MeshRenderer>();
+            filter.sharedMesh = mesh;
+            return go;
+        }
+
+        static Mesh _cylinder;
+        static Mesh _sphere;
+        static Mesh _box;
+
+        /// <summary>Same bounds as a Unity cylinder: radius 0.5, height 2.</summary>
+        static Mesh UnitCylinder()
+        {
+            if (_cylinder != null) return _cylinder;
+            const int sides = 16;
+            var verts = new Vector3[sides * 2 + 2];
+            var tris = new int[sides * 12];
+            for (int i = 0; i < sides; i++)
+            {
+                float a = i * Mathf.PI * 2f / sides;
+                float x = Mathf.Cos(a) * 0.5f;
+                float z = Mathf.Sin(a) * 0.5f;
+                verts[i * 2] = new Vector3(x, -1f, z);
+                verts[i * 2 + 1] = new Vector3(x, 1f, z);
+            }
+            int bot = sides * 2;
+            int top = bot + 1;
+            verts[bot] = new Vector3(0f, -1f, 0f);
+            verts[top] = new Vector3(0f, 1f, 0f);
+            int t = 0;
+            for (int i = 0; i < sides; i++)
+            {
+                int n = (i + 1) % sides;
+                int b0 = i * 2;
+                int t0 = b0 + 1;
+                int b1 = n * 2;
+                int t1 = b1 + 1;
+                tris[t++] = b0; tris[t++] = t0; tris[t++] = b1;
+                tris[t++] = t0; tris[t++] = t1; tris[t++] = b1;
+                tris[t++] = bot; tris[t++] = b1; tris[t++] = b0;
+                tris[t++] = top; tris[t++] = t0; tris[t++] = t1;
+            }
+            _cylinder = new Mesh();
+            _cylinder.name = "ItCylinder";
+            _cylinder.vertices = verts;
+            _cylinder.triangles = tris;
+            _cylinder.RecalculateNormals();
+            return _cylinder;
+        }
+
+        /// <summary>Same bounds as a Unity sphere: radius 0.5.</summary>
+        static Mesh UnitSphere()
+        {
+            if (_sphere != null) return _sphere;
+            const int slices = 12;
+            const int stacks = 8;
+            int vertCount = (stacks + 1) * (slices + 1);
+            var verts = new Vector3[vertCount];
+            int v = 0;
+            for (int y = 0; y <= stacks; y++)
+            {
+                float vNorm = y / (float)stacks;
+                float phi = vNorm * Mathf.PI;
+                for (int x = 0; x <= slices; x++)
+                {
+                    float uNorm = x / (float)slices;
+                    float theta = uNorm * Mathf.PI * 2f;
+                    float sx = Mathf.Sin(phi) * Mathf.Cos(theta);
+                    float sy = Mathf.Cos(phi);
+                    float sz = Mathf.Sin(phi) * Mathf.Sin(theta);
+                    verts[v++] = new Vector3(sx, sy, sz) * 0.5f;
+                }
+            }
+            var tris = new int[stacks * slices * 6];
+            int ti = 0;
+            int stride = slices + 1;
+            for (int y = 0; y < stacks; y++)
+            {
+                for (int x = 0; x < slices; x++)
+                {
+                    int a = y * stride + x;
+                    int b = a + stride;
+                    tris[ti++] = a;
+                    tris[ti++] = b;
+                    tris[ti++] = a + 1;
+                    tris[ti++] = a + 1;
+                    tris[ti++] = b;
+                    tris[ti++] = b + 1;
+                }
+            }
+            _sphere = new Mesh();
+            _sphere.name = "ItSphere";
+            _sphere.vertices = verts;
+            _sphere.triangles = tris;
+            _sphere.RecalculateNormals();
+            return _sphere;
+        }
+
+        /// <summary>Same bounds as a Unity cube: 1 m on each side.</summary>
+        static Mesh UnitBox()
+        {
+            if (_box != null) return _box;
+            var verts = new[]
+            {
+                new Vector3(-0.5f, -0.5f, -0.5f), new Vector3(0.5f, -0.5f, -0.5f),
+                new Vector3(0.5f, 0.5f, -0.5f), new Vector3(-0.5f, 0.5f, -0.5f),
+                new Vector3(-0.5f, -0.5f, 0.5f), new Vector3(0.5f, -0.5f, 0.5f),
+                new Vector3(0.5f, 0.5f, 0.5f), new Vector3(-0.5f, 0.5f, 0.5f)
+            };
+            var tris = new[]
+            {
+                0, 2, 1, 0, 3, 2,
+                4, 5, 6, 4, 6, 7,
+                0, 1, 5, 0, 5, 4,
+                3, 6, 2, 3, 7, 6,
+                0, 7, 3, 0, 4, 7,
+                1, 2, 6, 1, 6, 5
+            };
+            _box = new Mesh();
+            _box.name = "ItBox";
+            _box.vertices = verts;
+            _box.triangles = tris;
+            _box.RecalculateNormals();
+            return _box;
+        }
+
         static GameObject TrianglePlate()
         {
             var go = new GameObject("NameTag");
-            var mesh = new Mesh { name = "SeatTriangle" };
+            var filter = go.AddComponent<MeshFilter>();
+            go.AddComponent<MeshRenderer>();
+            var mesh = new Mesh();
             mesh.vertices = new[]
             {
-                new Vector3(0f, 0.55f, 0f),
-                new Vector3(-0.5f, -0.4f, 0.08f),
-                new Vector3(0.5f, -0.4f, 0.08f),
-                new Vector3(0f, 0.55f, 0f),
-                new Vector3(0.5f, -0.4f, -0.08f),
-                new Vector3(-0.5f, -0.4f, -0.08f)
+                new Vector3(0f, 0.55f, 0.12f), new Vector3(-0.48f, -0.42f, 0.12f), new Vector3(0.48f, -0.42f, 0.12f),
+                new Vector3(0f, 0.55f, -0.12f), new Vector3(-0.48f, -0.42f, -0.12f), new Vector3(0.48f, -0.42f, -0.12f)
             };
             mesh.triangles = new[]
             {
-                0, 2, 1,
-                3, 4, 5,
-                0, 1, 5,
-                0, 5, 3,
-                0, 4, 2,
-                0, 3, 4,
-                1, 2, 4,
-                1, 4, 5
+                0, 2, 1, 3, 4, 5,
+                0, 3, 5, 0, 5, 2,
+                0, 1, 4, 0, 4, 3,
+                1, 2, 5, 1, 5, 4
             };
             mesh.RecalculateNormals();
-            go.AddComponent<MeshFilter>().sharedMesh = mesh;
-            go.AddComponent<MeshRenderer>();
+            filter.sharedMesh = mesh;
             return go;
         }
 
@@ -373,6 +497,7 @@ namespace Tag.Art
 
         void OnGUI()
         {
+            if (Tag.Ui.Hud.MatchHud.Active) return;
             WarmStyle();
             if (_it == null || !_it.IsIt || !_it.IsAlive) return;
             var modes = TagModeController.Instance;
@@ -402,33 +527,28 @@ namespace Tag.Art
             VerbHudLayout.PushMarker(Screen.width, Screen.height, ref x, ref y, mark, mark + 18f, ParkArena.IsPocket, ParkArena.IsStack);
 
             var prev = GUI.color;
-            GUI.color = new Color(0.05f, 0.07f, 0.1f, 0.85f);
-            GUI.DrawTexture(new Rect(x, y, mark, mark), Texture2D.whiteTexture);
-            int pal = 0;
+            // PaletteOf(_shape) is the player-color-set row, not this mark.
             float hud = 1f;
             if (GameSettings.Current != null)
-            {
-                pal = GameSettings.Current.PaletteOf(_shape);
                 hud = Tag.Profiles.LocalProfiles.TextScale(_shape);
-            }
-            int crown = Tag.Profiles.LocalProfiles.SeatColor(_shape);
-            if (crown < 0) crown = _shape;
-            AccessibilityPalette.ItAgainst(pal, crown, out float ir, out float ig, out float ib);
-            GUI.color = new Color(ir, ig, ib, 1f);
-            float inset = 5f;
-            GUI.DrawTexture(new Rect(x + inset, y + inset, mark - inset * 2f, mark - inset * 2f), Texture2D.whiteTexture);
+            Tag.Couch.CouchPlay.Tint(_shape, out float sr, out float sg, out float sb);
+            Color band = new Color(sr, sg, sb, 1f);
+            Color fill = Tag.Ui.Menu.MenuTheme.SeatFill(_shape);
+            GUI.color = band;
+            GUI.DrawTexture(new Rect(x - 3f, y - 3f, mark + 6f, mark + 6f), Texture2D.whiteTexture);
+            GUI.color = new Color(0.02f, 0.02f, 0.04f, 0.92f);
+            GUI.DrawTexture(new Rect(x, y, mark, mark), Texture2D.whiteTexture);
             GUI.color = Color.white;
             if (_itStyle == null) return;
-            _itStyle.fontSize = (int)((Screen.height >= 1000 ? 14 : 12) * hud);
-            _itStyle.normal.textColor = new Color(0.08f, 0.08f, 0.1f, 1f);
-            GUI.Label(new Rect(x, y, mark, mark * 0.46f), AccessibilityPalette.ItGlyph, _itStyle);
-            GUI.Label(new Rect(x, y + mark * 0.40f, mark, mark * 0.60f), Tag.Profiles.LocalProfiles.ItLabel(_shape), _itStyle);
-            int swatch = Tag.Profiles.LocalProfiles.SeatColor(_shape);
-            if (swatch < 0) swatch = _shape;
-            AccessibilityPalette.Player(pal, swatch, out float pr, out float pg, out float pb);
+            _itStyle.fontSize = (int)((Screen.height >= 1000 ? 13 : 11) * hud);
+            _itStyle.normal.textColor = new Color(1f, 0.98f, 0.92f, 1f);
+            GUI.Label(new Rect(x, y, mark, mark * 0.42f), AccessibilityPalette.ItGlyph, _itStyle);
+            _itStyle.fontSize = (int)((Screen.height >= 1000 ? 22 : 18) * hud);
+            _itStyle.normal.textColor = fill;
+            GUI.Label(new Rect(x, y + mark * 0.30f, mark, mark * 0.70f), AccessibilityPalette.Glyph(_shape), _itStyle);
             if (_plateName != null && _plateName.Length > 0)
             {
-                _itStyle.normal.textColor = new Color(pr, pg, pb, 1f);
+                _itStyle.normal.textColor = new Color(sr, sg, sb, 1f);
                 GUI.Label(new Rect(x - 20f, y + mark, mark + 40f, 16f), _plateName, _itStyle);
             }
             if (off)
@@ -441,7 +561,7 @@ namespace Tag.Art
                 var pivot = new Vector2(x + mark * 0.5f, y + mark + 8f);
                 Matrix4x4 matrix = GUI.matrix;
                 GUIUtility.RotateAroundPivot(ang, pivot);
-                _itStyle.normal.textColor = new Color(pr, pg, pb, 1f);
+                _itStyle.normal.textColor = new Color(sr, sg, sb, 1f);
                 GUI.Label(new Rect(pivot.x - 12f, pivot.y - 10f, 24f, 20f), "▲", _itStyle);
                 GUI.matrix = matrix;
             }

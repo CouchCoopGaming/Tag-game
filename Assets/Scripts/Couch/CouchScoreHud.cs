@@ -29,6 +29,7 @@ namespace Tag.Couch
 
         void OnGUI()
         {
+            if (Tag.Ui.Hud.MatchHud.Active) return;
             WarmStyle();
             if (CouchPlay.Humans != 3) return;
             int split = GameSettings.Current != null ? GameSettings.Current.SplitAxis : GameSettings.SplitVertical;

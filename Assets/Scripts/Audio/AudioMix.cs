@@ -15,6 +15,15 @@ namespace Tag.Audio
 
         public static bool WorldPaused { get; private set; }
 
+        /// <summary>
+        /// Master and mute are the listener. Sfx, UI, and music are the bus gains
+        /// PlayWorld and PlayFlat already multiply. There is no AudioMixer asset.
+        /// </summary>
+        public static void ApplyBuses()
+        {
+            Tag.Ui.Menu.OptionApply.SnapBuses(GameSettings.Current ?? GameSettings.Defaults());
+        }
+
         public static void SetWorldPaused(bool paused)
         {
             WorldPaused = paused;
@@ -114,7 +123,7 @@ namespace Tag.Audio
         {
             if (_voices != null) return;
             _root = new GameObject("AudioVoices");
-            Object.DontDestroyOnLoad(_root);
+            if (Application.isPlaying) Object.DontDestroyOnLoad(_root);
             _voices = new AudioSource[VoiceBudget.Cap];
             for (int i = 0; i < _voices.Length; i++)
             {

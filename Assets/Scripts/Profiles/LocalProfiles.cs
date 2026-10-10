@@ -309,6 +309,22 @@ namespace Tag.Profiles
             else if (rest == "win") Wins[slot] = Math.Max(0, Int(value, 0));
             else if (rest == "tag") Tags[slot] = Math.Max(0, Int(value, 0));
             else if (rest == "live") Live[slot] = Math.Max(0f, Num(value, 0f));
+            else if (rest == "grappleKey")
+            {
+                if (ActionBinds.KnownKeyboard(value))
+                    Binds[slot].SetGrappleKey(value);
+            }
+            else if (rest == "grapplePad")
+            {
+                if (!string.IsNullOrEmpty(value))
+                    Binds[slot].SetGrapplePad(value);
+            }
+            else if (rest == "jumpAlt")
+            {
+                if (Binds[slot] == null) Binds[slot] = ActionBinds.Defaults();
+                if (ActionBinds.KnownKeyboard(value))
+                    Binds[slot].SetJumpAlt(value);
+            }
             else if (rest.StartsWith("kb.", StringComparison.Ordinal))
                 AssignBind(slot, rest.Substring(3), value, true);
             else if (rest.StartsWith("pad.", StringComparison.Ordinal))
@@ -670,6 +686,40 @@ namespace Tag.Profiles
             int slot = Seat[seat];
             if (slot < 0 || slot >= Max || !Used[slot]) return -1;
             return Id[slot];
+        }
+
+        public static int SlotId(int slot)
+        {
+            if (slot < 0 || slot >= Max || !Used[slot]) return 0;
+            return Id[slot];
+        }
+
+        public static int MatchesOf(int id)
+        {
+            int slot = Find(id);
+            return slot < 0 ? 0 : Matches[slot];
+        }
+
+        public static float LiveOf(int id)
+        {
+            int slot = Find(id);
+            return slot < 0 ? 0f : Live[slot];
+        }
+
+        public static int NameCol
+        {
+            get { return _col; }
+        }
+
+        public static int NameRow
+        {
+            get { return _row; }
+        }
+
+        public static char KeyAt(int col, int row)
+        {
+            if (col < 0 || row < 0 || col >= Cols || row >= Rows) return '\0';
+            return Grid[row * Cols + col];
         }
 
         public static float TextScale(int seat)
@@ -1131,13 +1181,13 @@ namespace Tag.Profiles
             return true;
         }
 
-        static int WinsOf(int id)
+        public static int WinsOf(int id)
         {
             int slot = Find(id);
             return slot < 0 ? 0 : Wins[slot];
         }
 
-        static int TagsOf(int id)
+        public static int TagsOf(int id)
         {
             int slot = Find(id);
             return slot < 0 ? 0 : Tags[slot];
@@ -1427,6 +1477,9 @@ namespace Tag.Profiles
                 Binds[slot].SetKeyboard((PlayAction)i, src.Keyboard[i]);
                 Binds[slot].SetGamepad((PlayAction)i, src.Gamepad[i]);
             }
+            Binds[slot].SetJumpAlt(src.JumpAlt);
+            Binds[slot].SetGrappleKey(src.GrappleKey);
+            Binds[slot].SetGrapplePad(src.GrapplePad);
         }
 
         static void AssignBind(int slot, string name, string value, bool keyboard)
@@ -1750,6 +1803,27 @@ namespace Tag.Profiles
                 text.Append(action.ToString());
                 text.Append('=');
                 text.Append(binds.Gamepad[i] ?? "");
+                text.Append('\n');
+            }
+            if (!string.IsNullOrEmpty(binds.GrappleKey) && binds.GrappleKey != ActionBinds.GrappleKeyDefault)
+            {
+                text.Append(p);
+                text.Append(".grappleKey=");
+                text.Append(binds.GrappleKey);
+                text.Append('\n');
+            }
+            if (!string.IsNullOrEmpty(binds.GrapplePad) && binds.GrapplePad != ActionBinds.GrapplePadDefault)
+            {
+                text.Append(p);
+                text.Append(".grapplePad=");
+                text.Append(binds.GrapplePad);
+                text.Append('\n');
+            }
+            if (!string.IsNullOrEmpty(binds.JumpAlt))
+            {
+                text.Append(p);
+                text.Append(".jumpAlt=");
+                text.Append(binds.JumpAlt);
                 text.Append('\n');
             }
         }

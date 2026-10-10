@@ -183,5 +183,36 @@
     <Compile Include="../../Assets/Scripts/Match/MatchHighlight.cs" />
     <Compile Include="../../Assets/Scripts/Match/MatchStatsProof.cs" />
     <Compile Include="../../Assets/Scripts/Profiles/LocalProfiles.cs" />
+    <Compile Include="../../Assets/Scripts/Modes/TagModeId.cs" />
+    <Compile Include="../../Assets/Scripts/UI/Menu/MenuSession.cs" />
+    <Compile Include="../../Assets/Scripts/UI/Menu/MenuLobby.cs" />
+    <Compile Include="../../Assets/Scripts/UI/Menu/UiFlow.cs" />
+    <Compile Include="../../Assets/Scripts/UI/Menu/ScreenDeck.cs" />
+    <Compile Include="../../Assets/Scripts/UI/Menu/FontCover.cs" />
+    <Compile Include="../../Assets/Scripts/UI/Menu/MenuCatalog.cs" />
+    <Compile Include="../../Assets/Scripts/UI/Menu/UiFit.cs" />
+    <Compile Include="../../Assets/Scripts/UI/Menu/PadGlyph.cs" />
+    <Compile Include="../../Assets/Scripts/UI/Menu/FaceMap.cs" />
+    <Compile Include="../../Assets/Scripts/UI/Menu/RuleBook.cs" />
+    <Compile Include="../../Assets/Scripts/UI/Menu/UiSweep.cs" />
+    <Compile Include="../../Assets/Scripts/UI/Menu/MenuPolish.cs" />
+    <Compile Include="../../Assets/Scripts/UI/Menu/MenuAlive.cs" />
+    <Compile Include="../../Assets/Scripts/UI/Menu/MenuNoClip.cs" />
+    <Compile Include="../../Assets/Scripts/UI/Menu/MenuHandoff.cs" />
+    <Compile Include="../../Assets/Scripts/UI/Menu/MenuTravel.cs" />
+    <Compile Include="../../Assets/Scripts/UI/Menu/MenuSheet.cs" />
+    <Compile Include="../../Assets/Scripts/UI/Menu/MenuRuleNav.cs" />
+    <Compile Include="../../Assets/Scripts/UI/Menu/LoadGate.cs" />
+    <Compile Include="../../Assets/Scripts/UI/Menu/MenuTips.cs" />
+    <Compile Include="../../Assets/Scripts/UI/Menu/MenuMannequin.Colors.cs" />
+    <Compile Include="../../Assets/Scripts/UI/Menu/MenuVideo.cs" />
+    <Compile Include="../../Assets/Scripts/UI/Menu/OptionApply.cs" />
+    <Compile Include="../../Assets/Scripts/UI/Hud/MatchHudText.cs" />
+    <Compile Include="../../Assets/Scripts/UI/Hud/HudCorner.cs" />
+    <Compile Include="../../Assets/Scripts/UI/Hud/TagFeed.cs" />
+    <Compile Include="../../Assets/Scripts/UI/Hud/HudState.cs" />
+    <Compile Include="../../Assets/Scripts/UI/Hud/RoundCard.cs" />
+    <Compile Include="../../Assets/Scripts/UI/Hud/ScorePeek.cs" />
+    <Compile Include="../../Assets/Scripts/Audio/MenuCue.cs" />
   </ItemGroup>
 </Project>

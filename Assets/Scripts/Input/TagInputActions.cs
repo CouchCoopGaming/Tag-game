@@ -72,7 +72,6 @@ namespace Tag.Input
                 slide.AddBinding("<Keyboard>/leftCtrl");
                 slide.AddBinding("<Keyboard>/c");
                 punch.AddBinding("<Mouse>/leftButton");
-                airDash.AddBinding("<Keyboard>/leftAlt");
                 airDash.AddBinding("<Keyboard>/q");
                 minimap.AddBinding("<Keyboard>/m");
             }

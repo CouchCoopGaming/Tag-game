@@ -37,12 +37,11 @@ namespace Tag.MatchStats
                         break;
                     }
                 }
-                int awardSwatch = Tag.Profiles.LocalProfiles.SeatColor(leader);
-                if (awardSwatch < 0) awardSwatch = leader & 3;
+                int awardSeat = leader < AccessibilityPalette.Players ? leader : 0;
                 int awardPalette = 0;
                 if (GameSettings.Current != null)
-                    awardPalette = GameSettings.Current.PaletteOf(leader < AccessibilityPalette.Players ? leader : 0);
-                AccessibilityPalette.Player(awardPalette, awardSwatch, out float ar, out float ag, out float ab);
+                    awardPalette = GameSettings.Current.PaletteOf(awardSeat);
+                AccessibilityPalette.Player(awardPalette, awardSeat, out float ar, out float ag, out float ab);
                 _style.normal.textColor = new Color(ar, ag, ab, 1f);
                 string awardText = MatchBook.AwardLine[a] ?? "";
                 int awardRows = MatchBook.AwardRows(awardText, w - 24f, awardSize);
@@ -71,12 +70,23 @@ namespace Tag.MatchStats
                 int palette = 0;
                 if (GameSettings.Current != null)
                     palette = GameSettings.Current.PaletteOf(seat);
-                int swatch = Tag.Profiles.LocalProfiles.SeatColor(i);
-                if (swatch < 0) swatch = i & 3;
-                AccessibilityPalette.Player(palette, swatch, out float r, out float g, out float b);
-                _style.normal.textColor = new Color(r, g, b, 1f);
+                AccessibilityPalette.Player(palette, seat, out float r, out float g, out float b);
+                GUI.color = Color.white;
                 GUI.Box(new Rect(cx, cy, cw, ch), "");
-                GUI.Label(new Rect(cx + 8f, cy + 6f, cw - 16f, ch - 10f), MatchBook.Card[i] ?? "", _style);
+                Color band = new Color(r, g, b, 1f);
+                Color hue = Tag.Ui.Menu.MenuTheme.SeatFill(seat);
+                GUI.color = band;
+                GUI.DrawTexture(new Rect(cx + 6f, cy + 6f, 40f, 40f), Texture2D.whiteTexture);
+                GUI.color = new Color(0.02f, 0.02f, 0.04f, 1f);
+                GUI.DrawTexture(new Rect(cx + 8f, cy + 8f, 36f, 36f), Texture2D.whiteTexture);
+                GUI.color = hue;
+                _style.normal.textColor = hue;
+                _style.alignment = TextAnchor.MiddleCenter;
+                GUI.Label(new Rect(cx + 8f, cy + 8f, 36f, 36f), AccessibilityPalette.Glyph(seat), _style);
+                _style.alignment = TextAnchor.UpperLeft;
+                _style.normal.textColor = Color.white;
+                GUI.color = Color.white;
+                GUI.Label(new Rect(cx + 52f, cy + 6f, cw - 64f, ch - 10f), MatchBook.Card[i] ?? "", _style);
             }
         }
 

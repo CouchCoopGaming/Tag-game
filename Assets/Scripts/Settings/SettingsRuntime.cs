@@ -82,6 +82,8 @@ namespace Tag.Settings
             LookSensitivity.Assign(s.MouseSensitivity);
             AudioMaster.ApplyFromSettings(s.Master, s.Muted);
             AudioMaster.ApplyMusicFromSettings(s.Music);
+            Tag.Ui.Menu.OptionApply.Apply(s);
+            AudioMix.ApplyBuses();
             ArmInput();
             _applying = false;
         }
@@ -93,12 +95,11 @@ namespace Tag.Settings
         /// </summary>
         public static void ArmInput()
         {
-            int vsync = QualitySettings.vSyncCount;
-            if (vsync < FramePace.VsyncDefault)
-            {
+            if (!Tag.Ui.Menu.MenuVideo.VSync)
+                QualitySettings.vSyncCount = 0;
+            else if (QualitySettings.vSyncCount < FramePace.VsyncDefault)
                 QualitySettings.vSyncCount = FramePace.VsyncDefault;
-                vsync = FramePace.VsyncDefault;
-            }
+            int vsync = QualitySettings.vSyncCount;
 #if ENABLE_INPUT_SYSTEM
             UnityEngine.InputSystem.InputSystem.settings.updateMode =
                 UnityEngine.InputSystem.InputSettings.UpdateMode.ProcessEventsInDynamicUpdate;
