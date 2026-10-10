@@ -524,6 +524,8 @@ namespace Tag.Ui.Menu
             var camGo = new GameObject("ParadeCam");
             camGo.transform.SetParent(transform, false);
             var cam = camGo.AddComponent<Camera>();
+            // Born off. A new Camera is enabled, so the parade rendered under every match; ShowParade turns it on.
+            cam.enabled = false;
             cam.clearFlags = CameraClearFlags.SolidColor;
             cam.backgroundColor = new Color(0.05f, 0.12f, 0.28f, 1f);
             cam.fieldOfView = 32f;

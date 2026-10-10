@@ -20,7 +20,7 @@ namespace Tag.Art
 
         public const float ArmWalk = 32f;
         public const float ArmSprint = 46f;
-        public const float CruiseDeg = 6.5f;
+        public const float CruiseDeg = 15f; // was 6.5: a sprinter carries the trunk forward with speed (HIP_TARGETS sprint chest-forward)
         public const float CruiseSeconds = 0.12f;
         public const float HeadShare = 0.65f;
 
