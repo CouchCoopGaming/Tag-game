@@ -1337,6 +1337,54 @@ namespace Tag.Art
 
         void LateUpdate()
         {
+            LatePose();
+            if (_bound) GuardKnees();
+        }
+
+        /// <summary>Signed knee bend before the guard this frame (deg, + = flex forward, - = hyperextended).</summary>
+        public float KneeRawL { get; private set; }
+        public float KneeRawR { get; private set; }
+        /// <summary>Same, after the guard. Never below 0.</summary>
+        public float KneeOutL { get; private set; }
+        public float KneeOutR { get; private set; }
+        public const float KneeMaxFlex = 150f;
+
+        void GuardKnees()
+        {
+            Vector3 right = transform.right;
+            KneeRawL = Knee(_upperLegL, _lowerLegL, _footL, right, out float l);
+            KneeRawR = Knee(_upperLegR, _lowerLegR, _footR, right, out float r);
+            // Re-measure on the bones after the write, not the value we asked for.
+            KneeOutL = Knee(_upperLegL, _lowerLegL, _footL, right, out _, false);
+            KneeOutR = Knee(_upperLegR, _lowerLegR, _footR, right, out _, false);
+        }
+
+        /// <summary>
+        /// One hinge rule for every clip and rig. The shin is measured against the thigh around
+        /// the body's right axis; a backward bend is mirrored to the same forward flex, and flex
+        /// is capped at KneeMaxFlex. Feet keep their world rotation.
+        /// </summary>
+        static float Knee(Transform thigh, Transform shin, Transform foot, Vector3 right, out float after, bool fix = true)
+        {
+            after = 0f;
+            if (thigh == null || shin == null || foot == null) return 0f;
+            Vector3 a = shin.position - thigh.position, b = foot.position - shin.position;
+            Vector3 ap = Vector3.ProjectOnPlane(a, right), bp = Vector3.ProjectOnPlane(b, right);
+            if (ap.sqrMagnitude < 1e-6f || bp.sqrMagnitude < 1e-6f) return 0f;
+            float raw = Vector3.SignedAngle(ap, bp, right);
+            float want = Mathf.Clamp(Mathf.Abs(raw), 0f, KneeMaxFlex);
+            after = want;
+            if (fix && Mathf.Abs(want - raw) > 0.01f)
+            {
+                Quaternion keep = foot.rotation;
+                shin.rotation = Quaternion.AngleAxis(want - raw, right) * shin.rotation;
+                foot.rotation = keep;
+            }
+            return raw;
+        }
+
+        void LatePose()
+        {
             Tag.Core.FrameMeter.AddPose(Tag.Core.FrameMeter.PoseOps);
             float dt = Time.deltaTime;
             _stanceSole = false;

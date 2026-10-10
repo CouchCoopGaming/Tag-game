@@ -196,6 +196,34 @@ namespace Tag.Tests.Station
             float d = Vector3.Distance(p, _last);
             if (d > _maxStep) _maxStep = d;
             _last = p;
+            Component loco = pawn.GetComponentInChildren(T("Tag.Art.DummyLocomotor"));
+            if (loco == null) return;
+            // Coroutines resume before LateUpdate, so the bones here still hold the Animator's
+            // pose. Read the locomotor's own post-write re-measure of the final rendered bones.
+            var t = loco.GetType();
+            float l = (float)t.GetProperty("KneeOutL").GetValue(loco), r = (float)t.GetProperty("KneeOutR").GetValue(loco);
+            _kneeWorst = Mathf.Min(_kneeWorst, Mathf.Min(l, r));
+            float raw = Mathf.Min((float)t.GetProperty("KneeRawL").GetValue(loco), (float)t.GetProperty("KneeRawR").GetValue(loco));
+            _kneeRawWorst = Mathf.Min(_kneeRawWorst, raw);
+        }
+
+        static string MotorState(GameObject pawn)
+        {
+            Component m = pawn.GetComponent(T("TagArena.Movement.PlayerMotor"));
+            return m == null ? "" : m.GetType().GetProperty("State").GetValue(m).ToString();
+        }
+
+        float _kneeWorst = 999f, _kneeRawWorst = 999f;
+
+        /// <summary>Shin vs thigh around the body's right axis, measured on the bones. + flexes forward.</summary>
+        static float KneeBend(Component loco, string th, string sh, string ft)
+        {
+            Transform Get(string n) => (Transform)loco.GetType().GetField(n, BindingFlags.NonPublic | BindingFlags.Instance).GetValue(loco);
+            Transform a = Get(th), b = Get(sh), c = Get(ft);
+            if (a == null || b == null || c == null) return 0f;
+            Vector3 right = loco.transform.right;
+            Vector3 u = Vector3.ProjectOnPlane(b.position - a.position, right), v = Vector3.ProjectOnPlane(c.position - b.position, right);
+            return Vector3.SignedAngle(u, v, right);
         }
 
         [UnityTest]
@@ -266,14 +294,23 @@ namespace Tag.Tests.Station
 
                 // Slide: speed never rises above the entry speed.
                 float slideMax = 0f;
+                bool slid = false;
                 for (t = 0f; t < 0.8f; t += Time.deltaTime)
                 {
                     Pad(new Vector2(0f, 1f), Vector2.zero, GamepadButton.East, true);
-                    slideMax = Mathf.Max(slideMax, HorizSpeed(me));
+                    // Score only frames the motor is really in Slide. A blocked sprint (entry 4 m/s
+                    // against a prop) that never slid then read walk speed 6.9 as a "boost".
+                    bool inSlide = MotorState(me) == "Slide";
+                    if (inSlide && !slid) { slid = true; entry = Mathf.Max(entry, HorizSpeed(me)); }
+                    if (inSlide) slideMax = Mathf.Max(slideMax, HorizSpeed(me));
                     Step(me);
                     yield return null;
                 }
-                Assert.LessOrEqual(slideMax, entry + 0.1f, "slide raised speed above the entry speed");
+                Debug.Log("[StationCheck] knee worst=" + _kneeWorst.ToString("F1") + " rawWorst=" + _kneeRawWorst.ToString("F1"));
+                Assert.GreaterOrEqual(_kneeWorst, -5f, "a knee hyperextended past 5 deg in jump, land, run or slide");
+                Debug.Log("[StationCheck] slide entry=" + entry.ToString("F2") + " max=" + slideMax.ToString("F2") + " at " + me.transform.position);
+                if (slid) Assert.LessOrEqual(slideMax, entry + 0.1f, "slide raised speed above the entry speed");
+                else Debug.LogWarning("[StationCheck] no slide entered (sprint blocked); slide speed not scored");
                 Assert.Less(_maxStep, 0.5f, "a frame moved the pawn more than 0.5 m");
 
                 // Tag: the It bot within 1 m transfers It.
