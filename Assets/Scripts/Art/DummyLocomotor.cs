@@ -6748,6 +6748,10 @@ namespace Tag.Art
             _hipsT = _hips0 * Quaternion.Euler(lunging || dashing ? Mathf.Lerp(18f, 28f, dashAmt) : gliding ? Mathf.Lerp(8f, 22f, glideAmt) : bouncing ? 14f : mantle ? vault.Hip : jet ? -10f : climb ? 12f : air ? 8f : 0f, 0f, -leanZ * 0.55f);
             if (bodyLean && Mathf.Abs(_accelLean) > 0.05f)
                 _hipsT = _hipsT * Quaternion.Euler(_accelLean * 0.7f, 0f, 0f);
+            // Speed lean from the hip, not only the spine: a sprinter tips the whole trunk.
+            // 0.6 of the cruise lean (9 deg at sprint) on the pelvis, spine keeps its 15.
+            if (bodyLean && _cruiseLean > 0.05f && !air && !sliding && !mantle)
+                _hipsT = _hipsT * Quaternion.Euler(_cruiseLean * 0.6f, 0f, 0f);
             if (_skiBlend > 0.02f && !dashing && !sliding && !jet && !_walkFromSki && !_runFromSki && !_idleFromSki)
                 _hipsT = Quaternion.Slerp(_hipsT, _hips0 * Quaternion.Euler(14f, 0f, 0f), _skiBlend);
             _headT = _head0 * Quaternion.Euler(lunging || dashing ? Mathf.Lerp(16f, 22f, dashAmt) : gliding ? Mathf.Lerp(-4f, 8f, glideAmt) : bouncing ? 10f : mantle ? vault.Head : jet ? -8f : air ? -6f : -breath * 0.4f, 0f, 0f);
