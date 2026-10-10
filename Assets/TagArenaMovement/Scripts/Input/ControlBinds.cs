@@ -4,7 +4,7 @@ namespace TagArena.Movement
 {
     /// <summary>
     /// Air-dash and punch key stubs. Defaults stay Q and LMB.
-    /// Q dashes. E still punches. Choices are saved in PlayerPrefs.
+    /// Left Alt still dashes. E still punches. Choices are saved in PlayerPrefs.
     /// </summary>
     public static class ControlBinds
     {
@@ -37,7 +37,7 @@ namespace TagArena.Movement
             "Ctrl or C slide (hold with speed)\n" +
             "Ctrl in air falls faster\n" +
             PunchName + " or E punch (passes It)\n" +
-            DashName + " air dash (0.1 s, then 30 s)\n" +
+            DashName + " or Left Alt air dash (0.1 s, then 30 s)\n" +
             "MMB lunge when you are It, on the ground\n" +
             ClingCopy + "\n" +
             "Wall jump: cling and Space\n" +
