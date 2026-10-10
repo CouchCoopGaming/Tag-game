@@ -57,6 +57,10 @@ namespace Tag.FX
         {
             _ps = GetComponent<ParticleSystem>();
             if (_ps == null) _ps = gameObject.AddComponent<ParticleSystem>();
+            // A fresh AddComponent<ParticleSystem> is already playing (playOnAwake defaults on),
+            // and Unity refuses a duration change on a playing system. Stop and clear first;
+            // Burst() emits on demand, so nothing needs to play again here.
+            _ps.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
             _main = _ps.main;
             _main.playOnAwake = false;
             _main.loop = false;
