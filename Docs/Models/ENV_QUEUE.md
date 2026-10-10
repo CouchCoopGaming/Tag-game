@@ -2,6 +2,12 @@
 
 Environment sub-lead is buildings, draft PR #122, branch `cursor/tag-asset-library`. Helpers are vehicles B2 #125 (`cursor/tag-asset-street-kit`) and street props B3 #129 (`cursor/tag-street-objects`). The Models lead owns `Docs/Models/STANDARD.md`, the validator, and the ledger. Do not rebase these branches onto each other.
 
+## Still framing
+
+This is the camera rule for #122, #125, and #129. Hero, side, and scale each show the whole object. Leave at least 4% of the frame as margin on every edge. The longer side of that screen box covers 25–85% of the frame. Solve the distance from the mesh bounds, at a 35 mm lens, 1280×720. The scale frame also keeps the 1.8 m figure fully in view. A roof close-up is not a hero.
+
+#122 checked the binding hero, side, and scale of every library mesh. 32 quartets already met the rule. 94 did not, and those frames were reshot into `Docs/AssetStills/pass36/`. `Brick_Door` and `Brick_Window` stay in `pass36/brick_door/` and `pass36/brick_window/` so `door` and `window` stay folder tokens.
+
 ## Vehicles helper (#125)
 
 Closed on `0aa3061e`, merged into the world branch. `Sedan_Compact_25`, `Hatch_Compact_25`, and `Crossover_Compact_25` `Col_Wheel_*` now sit at y = 0.010–0.046. `Pickup_FullSize_25` wheels stay at y = 0.012. `Col_Nose` reaches z = 2.420 and `Col_Bumper` reaches z = 2.493. The world lane did not edit these prefabs. Parked-car world-check still passes.
@@ -34,9 +40,13 @@ LOD2 is at most 0.6× LOD1. LOD0 and LOD1 of these nine are unchanged: `Alley` 2
 
 `Dock_Straight` pivot stays at the origin. The deck top is the catalog 0.62 m: plank mesh and `Col_Plank` both top out at y = 0.620 (they were 0.618 and 0.613). Piles are a water seat, below grade on purpose. The mesh ends at y = −1.220. The pile capsule, caps included, ends at y = −1.165. LOD2 stays 336 against LOD1 672. Slack is 0.
 
-`Brick_Door` and `Brick_Window` keep their pass 31 pictures. The quartet also lives in `Docs/AssetStills/pass32/brick_door/` and `pass32/brick_window/` so the names `door` and `window` stay in the folder and are not read as a close-up role. Do not rename those two meshes. `Container_20_Blue` and `Container_20_Green` match the red cage and pass as a material variant of `Container_20`.
+`Container_20` bounds are the same before and after `a066d987`. LOD0 is ((−1.22, 0, −3.03), (1.2317, 2.59, 3.1004)). LOD1 is ((−1.22, 0, −3.03), (1.22, 2.59, 3.1004)). LOD2 is ((−1.22, 0, −3.03), (1.22, 2.59, 3.03)). Four vertices per LOD, indices 0, 1, 4, and 5, moved only on Y, from 0.05 to 0, at x = ±1.14 and z = ±2.97. None moved on X or Z. The UV change is those same four corners: V went from 0.05 to 0.0 and U stayed ±1.14. The reported 2.3125 m X move is not in the vertex buffer. The shell bottom is y = 0. That seat stays.
 
-MARKET, DINER, and WASH are mesh letters on the store LOD meshes, not `WorldSign` text. Each word is two outward sheets at positive scale on LOD0, LOD1, and LOD2. The street sheet faces the shop. The alley sheet is that same lettering turned 180 degrees, so it reads from inside the shop. It is not a negative scale and not a single sheet seen from the back. `Store_Corner` carries MARKET on +Z and +X, `Store_Diner` carries DINER on +Z, and `Store_Laundromat` carries WASH on +Z and -X. Tris are `Store_Corner` 6004/4732/344, `Store_Diner` 3516/2784/176, `Store_Laundromat` 4624/4048/268. Slack is 0.91 cm, 2.4 cm, and 2.4 cm. Street and alley stills are in `Docs/AssetStills/pass33/`. The `sign` token keeps them off the quartet.
+`Docs/AssetStills/pass35/` is a fresh quartet for `Container_20`, `Container_20_Blue`, `Container_20_Green`, and `Dock_Straight`. Blue and green are the same cage, with their own stills. No further geometry edits on the container or the straight dock.
+
+`Brick_Door` and `Brick_Window` keep their pass 31 pictures. The quartet also lives in `Docs/AssetStills/pass32/brick_door/` and `pass32/brick_window/` so the names `door` and `window` stay in the folder and are not read as a close-up role. Do not rename those two meshes. `Container_20_Blue` and `Container_20_Green` are the same cage as the red container.
+
+MARKET, DINER, and WASH are mesh letters on the store LOD meshes, not `WorldSign` text. Each word is two outward sheets at positive scale on LOD0, LOD1, and LOD2. The street sheet faces the shop. The alley sheet is that same lettering turned 180 degrees, so it reads from inside the shop. It is not a negative scale and not a single sheet seen from the back. `Store_Corner` carries MARKET on +Z and +X, `Store_Diner` carries DINER on +Z, and `Store_Laundromat` carries WASH on +Z and -X. Tris are `Store_Corner` 6004/4732/344, `Store_Diner` 3516/2784/176, `Store_Laundromat` 4624/4048/268. Slack is 0.91 cm, 2.4 cm, and 2.4 cm. The meshes were not rebuilt again. `Docs/AssetStills/pass34/` is the quartet that replaces pass 31 for these three. Street and alley stills sit in that folder as `sign_front` and `sign_back`. The `sign` token keeps them off the quartet.
 
 Lead validator at `5f5c4f4`. `1eec03a` was `models-validate assets=132 pass=97 fail=35` / `models-split paperwork=7 geometry=28`. After this cut:
 
