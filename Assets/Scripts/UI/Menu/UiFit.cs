@@ -140,7 +140,8 @@ namespace Tag.Ui.Menu
             GameSettings partial = GameSettings.Defaults();
             SettingsFile.Read("v=2\nmouse=1.8\n", partial, ActionBinds.Defaults());
             if (partial.UiScale < 0.99f || partial.UiScale > 1.01f) return false;
-            return GameSettings.RowCount == 19;
+            // 19 UI rows plus the FX lane's Comic words and Effects rows (playtest merge).
+            return GameSettings.RowCount == 21;
         }
 
         public static float BodyW(float scale)
